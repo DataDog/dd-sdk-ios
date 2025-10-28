@@ -7480,152 +7480,579 @@ public class objc_RUMViewEventViewSlowFrames: NSObject {
     }
 }
 
-@objc(DDTelemetryErrorEvent)
+@objc(DDRUMVitalAppLaunchEvent)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryErrorEvent: NSObject {
-    public internal(set) var swiftModel: TelemetryErrorEvent
-    internal var root: objc_TelemetryErrorEvent { self }
+public class objc_RUMVitalAppLaunchEvent: NSObject {
+    public internal(set) var swiftModel: RUMVitalAppLaunchEvent
+    internal var root: objc_RUMVitalAppLaunchEvent { self }
 
-    public init(swiftModel: TelemetryErrorEvent) {
+    public init(swiftModel: RUMVitalAppLaunchEvent) {
         self.swiftModel = swiftModel
     }
 
-    public var dd: objc_TelemetryErrorEventDD {
-        objc_TelemetryErrorEventDD(root: root)
+    public var dd: objc_RUMVitalAppLaunchEventDD {
+        objc_RUMVitalAppLaunchEventDD(root: root)
     }
 
-    public var action: objc_TelemetryErrorEventAction? {
-        root.swiftModel.action != nil ? objc_TelemetryErrorEventAction(root: root) : nil
+    public var account: objc_RUMVitalAppLaunchEventRUMAccount? {
+        root.swiftModel.account != nil ? objc_RUMVitalAppLaunchEventRUMAccount(root: root) : nil
     }
 
-    public var application: objc_TelemetryErrorEventApplication? {
-        root.swiftModel.application != nil ? objc_TelemetryErrorEventApplication(root: root) : nil
+    public var application: objc_RUMVitalAppLaunchEventApplication {
+        objc_RUMVitalAppLaunchEventApplication(root: root)
+    }
+
+    public var buildId: String? {
+        root.swiftModel.buildId
+    }
+
+    public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
+    public var ciTest: objc_RUMVitalAppLaunchEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? objc_RUMVitalAppLaunchEventRUMCITest(root: root) : nil
+    }
+
+    public var connectivity: objc_RUMVitalAppLaunchEventRUMConnectivity? {
+        root.swiftModel.connectivity != nil ? objc_RUMVitalAppLaunchEventRUMConnectivity(root: root) : nil
+    }
+
+    public var container: objc_RUMVitalAppLaunchEventContainer? {
+        root.swiftModel.container != nil ? objc_RUMVitalAppLaunchEventContainer(root: root) : nil
+    }
+
+    public var context: objc_RUMVitalAppLaunchEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? objc_RUMVitalAppLaunchEventRUMEventAttributes(root: root) : nil
     }
 
     public var date: NSNumber {
         root.swiftModel.date as NSNumber
     }
 
-    public var effectiveSampleRate: NSNumber? {
-        root.swiftModel.effectiveSampleRate as NSNumber?
+    public var ddtags: String? {
+        root.swiftModel.ddtags
     }
 
-    public var experimentalFeatures: [String]? {
-        root.swiftModel.experimentalFeatures
+    public var device: objc_RUMVitalAppLaunchEventDevice? {
+        root.swiftModel.device != nil ? objc_RUMVitalAppLaunchEventDevice(root: root) : nil
     }
 
-    public var service: String {
+    public var display: objc_RUMVitalAppLaunchEventDisplay? {
+        root.swiftModel.display != nil ? objc_RUMVitalAppLaunchEventDisplay(root: root) : nil
+    }
+
+    public var os: objc_RUMVitalAppLaunchEventOperatingSystem? {
+        root.swiftModel.os != nil ? objc_RUMVitalAppLaunchEventOperatingSystem(root: root) : nil
+    }
+
+    public var service: String? {
         root.swiftModel.service
     }
 
-    public var session: objc_TelemetryErrorEventSession? {
-        root.swiftModel.session != nil ? objc_TelemetryErrorEventSession(root: root) : nil
+    public var session: objc_RUMVitalAppLaunchEventSession {
+        objc_RUMVitalAppLaunchEventSession(root: root)
     }
 
-    public var source: objc_TelemetryErrorEventSource {
+    public var source: objc_RUMVitalAppLaunchEventSource {
         .init(swift: root.swiftModel.source)
     }
 
-    public var telemetry: objc_TelemetryErrorEventTelemetry {
-        objc_TelemetryErrorEventTelemetry(root: root)
+    public var stream: objc_RUMVitalAppLaunchEventStream? {
+        root.swiftModel.stream != nil ? objc_RUMVitalAppLaunchEventStream(root: root) : nil
+    }
+
+    public var synthetics: objc_RUMVitalAppLaunchEventRUMSyntheticsTest? {
+        root.swiftModel.synthetics != nil ? objc_RUMVitalAppLaunchEventRUMSyntheticsTest(root: root) : nil
     }
 
     public var type: String {
         root.swiftModel.type
     }
 
-    public var version: String {
+    public var usr: objc_RUMVitalAppLaunchEventRUMUser? {
+        root.swiftModel.usr != nil ? objc_RUMVitalAppLaunchEventRUMUser(root: root) : nil
+    }
+
+    public var version: String? {
         root.swiftModel.version
     }
 
-    public var view: objc_TelemetryErrorEventView? {
-        root.swiftModel.view != nil ? objc_TelemetryErrorEventView(root: root) : nil
+    public var view: objc_RUMVitalAppLaunchEventView? {
+        root.swiftModel.view != nil ? objc_RUMVitalAppLaunchEventView(root: root) : nil
+    }
+
+    public var vital: objc_RUMVitalAppLaunchEventVital {
+        objc_RUMVitalAppLaunchEventVital(root: root)
     }
 }
 
-@objc(DDTelemetryErrorEventDD)
+@objc(DDRUMVitalAppLaunchEventDD)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryErrorEventDD: NSObject {
-    internal let root: objc_TelemetryErrorEvent
+public class objc_RUMVitalAppLaunchEventDD: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
 
-    internal init(root: objc_TelemetryErrorEvent) {
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
         self.root = root
+    }
+
+    public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
+    }
+
+    public var configuration: objc_RUMVitalAppLaunchEventDDConfiguration? {
+        root.swiftModel.dd.configuration != nil ? objc_RUMVitalAppLaunchEventDDConfiguration(root: root) : nil
     }
 
     public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
     }
+
+    public var profiling: objc_RUMVitalAppLaunchEventDDProfiling? {
+        root.swiftModel.dd.profiling != nil ? objc_RUMVitalAppLaunchEventDDProfiling(root: root) : nil
+    }
+
+    public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
+    public var session: objc_RUMVitalAppLaunchEventDDSession? {
+        root.swiftModel.dd.session != nil ? objc_RUMVitalAppLaunchEventDDSession(root: root) : nil
+    }
 }
 
-@objc(DDTelemetryErrorEventAction)
+@objc(DDRUMVitalAppLaunchEventDDConfiguration)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryErrorEventAction: NSObject {
-    internal let root: objc_TelemetryErrorEvent
+public class objc_RUMVitalAppLaunchEventDDConfiguration: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
 
-    internal init(root: objc_TelemetryErrorEvent) {
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var profilingSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
+    }
+
+    public var sessionSampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventDDProfiling)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventDDProfiling: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var errorReason: objc_RUMVitalAppLaunchEventDDProfilingErrorReason {
+        .init(swift: root.swiftModel.dd.profiling!.errorReason)
+    }
+
+    public var status: objc_RUMVitalAppLaunchEventDDProfilingStatus {
+        .init(swift: root.swiftModel.dd.profiling!.status)
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventDDProfilingErrorReason)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventDDProfilingErrorReason: Int {
+    internal init(swift: RUMVitalAppLaunchEvent.DD.Profiling.ErrorReason?) {
+        switch swift {
+        case nil: self = .none
+        case .notSupportedByBrowser?: self = .notSupportedByBrowser
+        case .failedToLazyLoad?: self = .failedToLazyLoad
+        case .missingDocumentPolicyHeader?: self = .missingDocumentPolicyHeader
+        case .unexpectedException?: self = .unexpectedException
+        }
+    }
+
+    internal var toSwift: RUMVitalAppLaunchEvent.DD.Profiling.ErrorReason? {
+        switch self {
+        case .none: return nil
+        case .notSupportedByBrowser: return .notSupportedByBrowser
+        case .failedToLazyLoad: return .failedToLazyLoad
+        case .missingDocumentPolicyHeader: return .missingDocumentPolicyHeader
+        case .unexpectedException: return .unexpectedException
+        }
+    }
+
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+}
+
+@objc(DDRUMVitalAppLaunchEventDDProfilingStatus)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventDDProfilingStatus: Int {
+    internal init(swift: RUMVitalAppLaunchEvent.DD.Profiling.Status?) {
+        switch swift {
+        case nil: self = .none
+        case .starting?: self = .starting
+        case .running?: self = .running
+        case .stopped?: self = .stopped
+        case .error?: self = .error
+        }
+    }
+
+    internal var toSwift: RUMVitalAppLaunchEvent.DD.Profiling.Status? {
+        switch self {
+        case .none: return nil
+        case .starting: return .starting
+        case .running: return .running
+        case .stopped: return .stopped
+        case .error: return .error
+        }
+    }
+
+    case none
+    case starting
+    case running
+    case stopped
+    case error
+}
+
+@objc(DDRUMVitalAppLaunchEventDDSession)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventDDSession: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var plan: objc_RUMVitalAppLaunchEventDDSessionPlan {
+        .init(swift: root.swiftModel.dd.session!.plan)
+    }
+
+    public var sessionPrecondition: objc_RUMVitalAppLaunchEventDDSessionRUMSessionPrecondition {
+        .init(swift: root.swiftModel.dd.session!.sessionPrecondition)
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventDDSessionPlan)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventDDSessionPlan: Int {
+    internal init(swift: RUMVitalAppLaunchEvent.DD.Session.Plan?) {
+        switch swift {
+        case nil: self = .none
+        case .plan1?: self = .plan1
+        case .plan2?: self = .plan2
+        }
+    }
+
+    internal var toSwift: RUMVitalAppLaunchEvent.DD.Session.Plan? {
+        switch self {
+        case .none: return nil
+        case .plan1: return .plan1
+        case .plan2: return .plan2
+        }
+    }
+
+    case none
+    case plan1
+    case plan2
+}
+
+@objc(DDRUMVitalAppLaunchEventDDSessionRUMSessionPrecondition)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventDDSessionRUMSessionPrecondition: Int {
+    internal init(swift: RUMSessionPrecondition?) {
+        switch swift {
+        case nil: self = .none
+        case .userAppLaunch?: self = .userAppLaunch
+        case .inactivityTimeout?: self = .inactivityTimeout
+        case .maxDuration?: self = .maxDuration
+        case .backgroundLaunch?: self = .backgroundLaunch
+        case .prewarm?: self = .prewarm
+        case .fromNonInteractiveSession?: self = .fromNonInteractiveSession
+        case .explicitStop?: self = .explicitStop
+        }
+    }
+
+    internal var toSwift: RUMSessionPrecondition? {
+        switch self {
+        case .none: return nil
+        case .userAppLaunch: return .userAppLaunch
+        case .inactivityTimeout: return .inactivityTimeout
+        case .maxDuration: return .maxDuration
+        case .backgroundLaunch: return .backgroundLaunch
+        case .prewarm: return .prewarm
+        case .fromNonInteractiveSession: return .fromNonInteractiveSession
+        case .explicitStop: return .explicitStop
+        }
+    }
+
+    case none
+    case userAppLaunch
+    case inactivityTimeout
+    case maxDuration
+    case backgroundLaunch
+    case prewarm
+    case fromNonInteractiveSession
+    case explicitStop
+}
+
+@objc(DDRUMVitalAppLaunchEventRUMAccount)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventRUMAccount: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
         self.root = root
     }
 
     public var id: String {
-        root.swiftModel.action!.id
+        root.swiftModel.account!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.account!.name
+    }
+
+    public var accountInfo: [String: Any] {
+        set { root.swiftModel.account!.accountInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.account!.accountInfo.dd.objCAttributes }
     }
 }
 
-@objc(DDTelemetryErrorEventApplication)
+@objc(DDRUMVitalAppLaunchEventApplication)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryErrorEventApplication: NSObject {
-    internal let root: objc_TelemetryErrorEvent
+public class objc_RUMVitalAppLaunchEventApplication: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
 
-    internal init(root: objc_TelemetryErrorEvent) {
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
         self.root = root
     }
 
+    public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
     public var id: String {
-        root.swiftModel.application!.id
+        root.swiftModel.application.id
     }
 }
 
-@objc(DDTelemetryErrorEventSession)
+@objc(DDRUMVitalAppLaunchEventRUMCITest)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryErrorEventSession: NSObject {
-    internal let root: objc_TelemetryErrorEvent
+public class objc_RUMVitalAppLaunchEventRUMCITest: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
 
-    internal init(root: objc_TelemetryErrorEvent) {
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
         self.root = root
     }
 
-    public var id: String {
-        root.swiftModel.session!.id
+    public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
     }
 }
 
-@objc(DDTelemetryErrorEventSource)
+@objc(DDRUMVitalAppLaunchEventRUMConnectivity)
+@objcMembers
 @_spi(objc)
-public enum objc_TelemetryErrorEventSource: Int {
-    internal init(swift: TelemetryErrorEvent.Source) {
+public class objc_RUMVitalAppLaunchEventRUMConnectivity: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var cellular: objc_RUMVitalAppLaunchEventRUMConnectivityCellular? {
+        root.swiftModel.connectivity!.cellular != nil ? objc_RUMVitalAppLaunchEventRUMConnectivityCellular(root: root) : nil
+    }
+
+    public var effectiveType: objc_RUMVitalAppLaunchEventRUMConnectivityEffectiveType {
+        .init(swift: root.swiftModel.connectivity!.effectiveType)
+    }
+
+    public var interfaces: [Int]? {
+        root.swiftModel.connectivity!.interfaces?.map { objc_RUMVitalAppLaunchEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    }
+
+    public var status: objc_RUMVitalAppLaunchEventRUMConnectivityStatus {
+        .init(swift: root.swiftModel.connectivity!.status)
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventRUMConnectivityCellular)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventRUMConnectivityCellular: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var carrierName: String? {
+        root.swiftModel.connectivity!.cellular!.carrierName
+    }
+
+    public var technology: String? {
+        root.swiftModel.connectivity!.cellular!.technology
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventRUMConnectivityEffectiveType)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventRUMConnectivityEffectiveType: Int {
+    internal init(swift: RUMConnectivity.EffectiveType?) {
+        switch swift {
+        case nil: self = .none
+        case .slow2g?: self = .slow2g
+        case .effectiveType2g?: self = .effectiveType2g
+        case .effectiveType3g?: self = .effectiveType3g
+        case .effectiveType4g?: self = .effectiveType4g
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.EffectiveType? {
+        switch self {
+        case .none: return nil
+        case .slow2g: return .slow2g
+        case .effectiveType2g: return .effectiveType2g
+        case .effectiveType3g: return .effectiveType3g
+        case .effectiveType4g: return .effectiveType4g
+        }
+    }
+
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+}
+
+@objc(DDRUMVitalAppLaunchEventRUMConnectivityInterfaces)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces?) {
+        switch swift {
+        case nil: self = .none
+        case .bluetooth?: self = .bluetooth
+        case .cellular?: self = .cellular
+        case .ethernet?: self = .ethernet
+        case .wifi?: self = .wifi
+        case .wimax?: self = .wimax
+        case .mixed?: self = .mixed
+        case .other?: self = .other
+        case .unknown?: self = .unknown
+        case .interfacesNone?: self = .interfacesNone
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces? {
+        switch self {
+        case .none: return nil
+        case .bluetooth: return .bluetooth
+        case .cellular: return .cellular
+        case .ethernet: return .ethernet
+        case .wifi: return .wifi
+        case .wimax: return .wimax
+        case .mixed: return .mixed
+        case .other: return .other
+        case .unknown: return .unknown
+        case .interfacesNone: return .interfacesNone
+        }
+    }
+
+    case none
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case interfacesNone
+}
+
+@objc(DDRUMVitalAppLaunchEventRUMConnectivityStatus)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventRUMConnectivityStatus: Int {
+    internal init(swift: RUMConnectivity.Status) {
+        switch swift {
+        case .connected: self = .connected
+        case .notConnected: self = .notConnected
+        case .maybe: self = .maybe
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Status {
+        switch self {
+        case .connected: return .connected
+        case .notConnected: return .notConnected
+        case .maybe: return .maybe
+        }
+    }
+
+    case connected
+    case notConnected
+    case maybe
+}
+
+@objc(DDRUMVitalAppLaunchEventContainer)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventContainer: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var source: objc_RUMVitalAppLaunchEventContainerSource {
+        .init(swift: root.swiftModel.container!.source)
+    }
+
+    public var view: objc_RUMVitalAppLaunchEventContainerView {
+        objc_RUMVitalAppLaunchEventContainerView(root: root)
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventContainerSource)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventContainerSource: Int {
+    internal init(swift: RUMVitalAppLaunchEvent.Container.Source) {
         switch swift {
         case .android: self = .android
         case .ios: self = .ios
         case .browser: self = .browser
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
+        case .roku: self = .roku
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
-    internal var toSwift: TelemetryErrorEvent.Source {
+    internal var toSwift: RUMVitalAppLaunchEvent.Container.Source {
         switch self {
         case .android: return .android
         case .ios: return .ios
         case .browser: return .browser
         case .flutter: return .flutter
         case .reactNative: return .reactNative
+        case .roku: return .roku
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         }
@@ -7636,276 +8063,968 @@ public enum objc_TelemetryErrorEventSource: Int {
     case browser
     case flutter
     case reactNative
+    case roku
     case unity
     case kotlinMultiplatform
 }
 
-@objc(DDTelemetryErrorEventTelemetry)
+@objc(DDRUMVitalAppLaunchEventContainerView)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryErrorEventTelemetry: NSObject {
-    internal let root: objc_TelemetryErrorEvent
+public class objc_RUMVitalAppLaunchEventContainerView: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
 
-    internal init(root: objc_TelemetryErrorEvent) {
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
         self.root = root
     }
 
-    public var device: objc_TelemetryErrorEventTelemetryRUMTelemetryDevice? {
-        root.swiftModel.telemetry.device != nil ? objc_TelemetryErrorEventTelemetryRUMTelemetryDevice(root: root) : nil
-    }
-
-    public var error: objc_TelemetryErrorEventTelemetryError? {
-        root.swiftModel.telemetry.error != nil ? objc_TelemetryErrorEventTelemetryError(root: root) : nil
-    }
-
-    public var message: String {
-        root.swiftModel.telemetry.message
-    }
-
-    public var os: objc_TelemetryErrorEventTelemetryRUMTelemetryOperatingSystem? {
-        root.swiftModel.telemetry.os != nil ? objc_TelemetryErrorEventTelemetryRUMTelemetryOperatingSystem(root: root) : nil
-    }
-
-    public var status: String {
-        root.swiftModel.telemetry.status
-    }
-
-    public var type: String? {
-        root.swiftModel.telemetry.type
-    }
-
-    public var telemetryInfo: [String: Any] {
-        set { root.swiftModel.telemetry.telemetryInfo = newValue.dd.swiftAttributes }
-        get { root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes }
+    public var id: String {
+        root.swiftModel.container!.view.id
     }
 }
 
-@objc(DDTelemetryErrorEventTelemetryRUMTelemetryDevice)
+@objc(DDRUMVitalAppLaunchEventRUMEventAttributes)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryErrorEventTelemetryRUMTelemetryDevice: NSObject {
-    internal let root: objc_TelemetryErrorEvent
+public class objc_RUMVitalAppLaunchEventRUMEventAttributes: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
 
-    internal init(root: objc_TelemetryErrorEvent) {
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var contextInfo: [String: Any] {
+        set { root.swiftModel.context!.contextInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.context!.contextInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventDevice)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventDevice: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
         self.root = root
     }
 
     public var architecture: String? {
-        root.swiftModel.telemetry.device!.architecture
+        root.swiftModel.device!.architecture
+    }
+
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device!.batteryLevel as NSNumber?
     }
 
     public var brand: String? {
-        root.swiftModel.telemetry.device!.brand
+        root.swiftModel.device!.brand
+    }
+
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device!.brightnessLevel as NSNumber?
+    }
+
+    public var locale: String? {
+        root.swiftModel.device!.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device!.locales
     }
 
     public var model: String? {
-        root.swiftModel.telemetry.device!.model
+        root.swiftModel.device!.model
+    }
+
+    public var name: String? {
+        root.swiftModel.device!.name
+    }
+
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device!.powerSavingMode as NSNumber?
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device!.timeZone
+    }
+
+    public var type: objc_RUMVitalAppLaunchEventDeviceDeviceType {
+        .init(swift: root.swiftModel.device!.type)
     }
 }
 
-@objc(DDTelemetryErrorEventTelemetryError)
+@objc(DDRUMVitalAppLaunchEventDeviceDeviceType)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType?) {
+        switch swift {
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
+        }
+    }
+
+    internal var toSwift: Device.DeviceType? {
+        switch self {
+        case .none: return nil
+        case .mobile: return .mobile
+        case .desktop: return .desktop
+        case .tablet: return .tablet
+        case .tv: return .tv
+        case .gamingConsole: return .gamingConsole
+        case .bot: return .bot
+        case .other: return .other
+        }
+    }
+
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
+}
+
+@objc(DDRUMVitalAppLaunchEventDisplay)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryErrorEventTelemetryError: NSObject {
-    internal let root: objc_TelemetryErrorEvent
+public class objc_RUMVitalAppLaunchEventDisplay: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
 
-    internal init(root: objc_TelemetryErrorEvent) {
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
         self.root = root
     }
 
-    public var kind: String? {
-        root.swiftModel.telemetry.error!.kind
-    }
-
-    public var stack: String? {
-        root.swiftModel.telemetry.error!.stack
+    public var viewport: objc_RUMVitalAppLaunchEventDisplayViewport? {
+        root.swiftModel.display!.viewport != nil ? objc_RUMVitalAppLaunchEventDisplayViewport(root: root) : nil
     }
 }
 
-@objc(DDTelemetryErrorEventTelemetryRUMTelemetryOperatingSystem)
+@objc(DDRUMVitalAppLaunchEventDisplayViewport)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryErrorEventTelemetryRUMTelemetryOperatingSystem: NSObject {
-    internal let root: objc_TelemetryErrorEvent
+public class objc_RUMVitalAppLaunchEventDisplayViewport: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
 
-    internal init(root: objc_TelemetryErrorEvent) {
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var height: NSNumber {
+        root.swiftModel.display!.viewport!.height as NSNumber
+    }
+
+    public var width: NSNumber {
+        root.swiftModel.display!.viewport!.width as NSNumber
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventOperatingSystem)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventOperatingSystem: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
         self.root = root
     }
 
     public var build: String? {
-        root.swiftModel.telemetry.os!.build
+        root.swiftModel.os!.build
     }
 
-    public var name: String? {
-        root.swiftModel.telemetry.os!.name
+    public var name: String {
+        root.swiftModel.os!.name
     }
 
-    public var version: String? {
-        root.swiftModel.telemetry.os!.version
+    public var version: String {
+        root.swiftModel.os!.version
+    }
+
+    public var versionMajor: String {
+        root.swiftModel.os!.versionMajor
     }
 }
 
-@objc(DDTelemetryErrorEventView)
+@objc(DDRUMVitalAppLaunchEventSession)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryErrorEventView: NSObject {
-    internal let root: objc_TelemetryErrorEvent
+public class objc_RUMVitalAppLaunchEventSession: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
 
-    internal init(root: objc_TelemetryErrorEvent) {
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    public var id: String {
+        root.swiftModel.session.id
+    }
+
+    public var type: objc_RUMVitalAppLaunchEventSessionRUMSessionType {
+        .init(swift: root.swiftModel.session.type)
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventSessionRUMSessionType)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventSessionRUMSessionType: Int {
+    internal init(swift: RUMSessionType) {
+        switch swift {
+        case .user: self = .user
+        case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
+        }
+    }
+
+    internal var toSwift: RUMSessionType {
+        switch self {
+        case .user: return .user
+        case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
+        }
+    }
+
+    case user
+    case synthetics
+    case ciTest
+}
+
+@objc(DDRUMVitalAppLaunchEventSource)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventSource: Int {
+    internal init(swift: RUMVitalAppLaunchEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        case .roku?: self = .roku
+        case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
+        }
+    }
+
+    internal var toSwift: RUMVitalAppLaunchEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .roku: return .roku
+        case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+}
+
+@objc(DDRUMVitalAppLaunchEventStream)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventStream: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.stream!.id
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventRUMSyntheticsTest)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventRUMSyntheticsTest: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
+    }
+
+    public var resultId: String {
+        root.swiftModel.synthetics!.resultId
+    }
+
+    public var testId: String {
+        root.swiftModel.synthetics!.testId
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventRUMUser)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventRUMUser: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
+    public var email: String? {
+        root.swiftModel.usr!.email
+    }
+
+    public var id: String? {
+        root.swiftModel.usr!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.usr!.name
+    }
+
+    public var usrInfo: [String: Any] {
+        set { root.swiftModel.usr!.usrInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.usr!.usrInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventView)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventView: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
         self.root = root
     }
 
     public var id: String {
         root.swiftModel.view!.id
     }
+
+    public var name: String? {
+        set { root.swiftModel.view!.name = newValue }
+        get { root.swiftModel.view!.name }
+    }
+
+    public var referrer: String? {
+        set { root.swiftModel.view!.referrer = newValue }
+        get { root.swiftModel.view!.referrer }
+    }
+
+    public var url: String {
+        set { root.swiftModel.view!.url = newValue }
+        get { root.swiftModel.view!.url }
+    }
 }
 
-@objc(DDTelemetryDebugEvent)
+@objc(DDRUMVitalAppLaunchEventVital)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryDebugEvent: NSObject {
-    public internal(set) var swiftModel: TelemetryDebugEvent
-    internal var root: objc_TelemetryDebugEvent { self }
+public class objc_RUMVitalAppLaunchEventVital: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
 
-    public init(swiftModel: TelemetryDebugEvent) {
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var appLaunchMetric: objc_RUMVitalAppLaunchEventVitalAppLaunchMetric {
+        .init(swift: root.swiftModel.vital.appLaunchMetric)
+    }
+
+    public var vitalDescription: String? {
+        root.swiftModel.vital.vitalDescription
+    }
+
+    public var duration: NSNumber {
+        root.swiftModel.vital.duration as NSNumber
+    }
+
+    public var hasSavedInstanceStateBundle: NSNumber? {
+        root.swiftModel.vital.hasSavedInstanceStateBundle as NSNumber?
+    }
+
+    public var id: String {
+        root.swiftModel.vital.id
+    }
+
+    public var isPrewarmed: NSNumber? {
+        root.swiftModel.vital.isPrewarmed as NSNumber?
+    }
+
+    public var name: String? {
+        root.swiftModel.vital.name
+    }
+
+    public var startupType: objc_RUMVitalAppLaunchEventVitalStartupType {
+        .init(swift: root.swiftModel.vital.startupType)
+    }
+
+    public var type: String {
+        root.swiftModel.vital.type
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventVitalAppLaunchMetric)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventVitalAppLaunchMetric: Int {
+    internal init(swift: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric) {
+        switch swift {
+        case .ttid: self = .ttid
+        case .ttfd: self = .ttfd
+        }
+    }
+
+    internal var toSwift: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric {
+        switch self {
+        case .ttid: return .ttid
+        case .ttfd: return .ttfd
+        }
+    }
+
+    case ttid
+    case ttfd
+}
+
+@objc(DDRUMVitalAppLaunchEventVitalStartupType)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventVitalStartupType: Int {
+    internal init(swift: RUMVitalAppLaunchEvent.Vital.StartupType?) {
+        switch swift {
+        case nil: self = .none
+        case .coldStart?: self = .coldStart
+        case .warmStart?: self = .warmStart
+        }
+    }
+
+    internal var toSwift: RUMVitalAppLaunchEvent.Vital.StartupType? {
+        switch self {
+        case .none: return nil
+        case .coldStart: return .coldStart
+        case .warmStart: return .warmStart
+        }
+    }
+
+    case none
+    case coldStart
+    case warmStart
+}
+
+@objc(DDRUMVitalDurationEvent)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEvent: NSObject {
+    public internal(set) var swiftModel: RUMVitalDurationEvent
+    internal var root: objc_RUMVitalDurationEvent { self }
+
+    public init(swiftModel: RUMVitalDurationEvent) {
         self.swiftModel = swiftModel
     }
 
-    public var dd: objc_TelemetryDebugEventDD {
-        objc_TelemetryDebugEventDD(root: root)
+    public var dd: objc_RUMVitalDurationEventDD {
+        objc_RUMVitalDurationEventDD(root: root)
     }
 
-    public var action: objc_TelemetryDebugEventAction? {
-        root.swiftModel.action != nil ? objc_TelemetryDebugEventAction(root: root) : nil
+    public var account: objc_RUMVitalDurationEventRUMAccount? {
+        root.swiftModel.account != nil ? objc_RUMVitalDurationEventRUMAccount(root: root) : nil
     }
 
-    public var application: objc_TelemetryDebugEventApplication? {
-        root.swiftModel.application != nil ? objc_TelemetryDebugEventApplication(root: root) : nil
+    public var application: objc_RUMVitalDurationEventApplication {
+        objc_RUMVitalDurationEventApplication(root: root)
+    }
+
+    public var buildId: String? {
+        root.swiftModel.buildId
+    }
+
+    public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
+    public var ciTest: objc_RUMVitalDurationEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? objc_RUMVitalDurationEventRUMCITest(root: root) : nil
+    }
+
+    public var connectivity: objc_RUMVitalDurationEventRUMConnectivity? {
+        root.swiftModel.connectivity != nil ? objc_RUMVitalDurationEventRUMConnectivity(root: root) : nil
+    }
+
+    public var container: objc_RUMVitalDurationEventContainer? {
+        root.swiftModel.container != nil ? objc_RUMVitalDurationEventContainer(root: root) : nil
+    }
+
+    public var context: objc_RUMVitalDurationEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? objc_RUMVitalDurationEventRUMEventAttributes(root: root) : nil
     }
 
     public var date: NSNumber {
         root.swiftModel.date as NSNumber
     }
 
-    public var effectiveSampleRate: NSNumber? {
-        root.swiftModel.effectiveSampleRate as NSNumber?
+    public var ddtags: String? {
+        root.swiftModel.ddtags
     }
 
-    public var experimentalFeatures: [String]? {
-        root.swiftModel.experimentalFeatures
+    public var device: objc_RUMVitalDurationEventDevice? {
+        root.swiftModel.device != nil ? objc_RUMVitalDurationEventDevice(root: root) : nil
     }
 
-    public var service: String {
+    public var display: objc_RUMVitalDurationEventDisplay? {
+        root.swiftModel.display != nil ? objc_RUMVitalDurationEventDisplay(root: root) : nil
+    }
+
+    public var os: objc_RUMVitalDurationEventOperatingSystem? {
+        root.swiftModel.os != nil ? objc_RUMVitalDurationEventOperatingSystem(root: root) : nil
+    }
+
+    public var service: String? {
         root.swiftModel.service
     }
 
-    public var session: objc_TelemetryDebugEventSession? {
-        root.swiftModel.session != nil ? objc_TelemetryDebugEventSession(root: root) : nil
+    public var session: objc_RUMVitalDurationEventSession {
+        objc_RUMVitalDurationEventSession(root: root)
     }
 
-    public var source: objc_TelemetryDebugEventSource {
+    public var source: objc_RUMVitalDurationEventSource {
         .init(swift: root.swiftModel.source)
     }
 
-    public var telemetry: objc_TelemetryDebugEventTelemetry {
-        objc_TelemetryDebugEventTelemetry(root: root)
+    public var stream: objc_RUMVitalDurationEventStream? {
+        root.swiftModel.stream != nil ? objc_RUMVitalDurationEventStream(root: root) : nil
+    }
+
+    public var synthetics: objc_RUMVitalDurationEventRUMSyntheticsTest? {
+        root.swiftModel.synthetics != nil ? objc_RUMVitalDurationEventRUMSyntheticsTest(root: root) : nil
     }
 
     public var type: String {
         root.swiftModel.type
     }
 
-    public var version: String {
+    public var usr: objc_RUMVitalDurationEventRUMUser? {
+        root.swiftModel.usr != nil ? objc_RUMVitalDurationEventRUMUser(root: root) : nil
+    }
+
+    public var version: String? {
         root.swiftModel.version
     }
 
-    public var view: objc_TelemetryDebugEventView? {
-        root.swiftModel.view != nil ? objc_TelemetryDebugEventView(root: root) : nil
+    public var view: objc_RUMVitalDurationEventView {
+        objc_RUMVitalDurationEventView(root: root)
+    }
+
+    public var vital: objc_RUMVitalDurationEventVital {
+        objc_RUMVitalDurationEventVital(root: root)
     }
 }
 
-@objc(DDTelemetryDebugEventDD)
+@objc(DDRUMVitalDurationEventDD)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryDebugEventDD: NSObject {
-    internal let root: objc_TelemetryDebugEvent
+public class objc_RUMVitalDurationEventDD: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
 
-    internal init(root: objc_TelemetryDebugEvent) {
+    internal init(root: objc_RUMVitalDurationEvent) {
         self.root = root
+    }
+
+    public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
+    }
+
+    public var configuration: objc_RUMVitalDurationEventDDConfiguration? {
+        root.swiftModel.dd.configuration != nil ? objc_RUMVitalDurationEventDDConfiguration(root: root) : nil
     }
 
     public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
     }
+
+    public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
+    public var session: objc_RUMVitalDurationEventDDSession? {
+        root.swiftModel.dd.session != nil ? objc_RUMVitalDurationEventDDSession(root: root) : nil
+    }
 }
 
-@objc(DDTelemetryDebugEventAction)
+@objc(DDRUMVitalDurationEventDDConfiguration)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryDebugEventAction: NSObject {
-    internal let root: objc_TelemetryDebugEvent
+public class objc_RUMVitalDurationEventDDConfiguration: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
 
-    internal init(root: objc_TelemetryDebugEvent) {
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var profilingSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
+    }
+
+    public var sessionSampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
+    }
+}
+
+@objc(DDRUMVitalDurationEventDDSession)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventDDSession: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var plan: objc_RUMVitalDurationEventDDSessionPlan {
+        .init(swift: root.swiftModel.dd.session!.plan)
+    }
+
+    public var sessionPrecondition: objc_RUMVitalDurationEventDDSessionRUMSessionPrecondition {
+        .init(swift: root.swiftModel.dd.session!.sessionPrecondition)
+    }
+}
+
+@objc(DDRUMVitalDurationEventDDSessionPlan)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventDDSessionPlan: Int {
+    internal init(swift: RUMVitalDurationEvent.DD.Session.Plan?) {
+        switch swift {
+        case nil: self = .none
+        case .plan1?: self = .plan1
+        case .plan2?: self = .plan2
+        }
+    }
+
+    internal var toSwift: RUMVitalDurationEvent.DD.Session.Plan? {
+        switch self {
+        case .none: return nil
+        case .plan1: return .plan1
+        case .plan2: return .plan2
+        }
+    }
+
+    case none
+    case plan1
+    case plan2
+}
+
+@objc(DDRUMVitalDurationEventDDSessionRUMSessionPrecondition)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventDDSessionRUMSessionPrecondition: Int {
+    internal init(swift: RUMSessionPrecondition?) {
+        switch swift {
+        case nil: self = .none
+        case .userAppLaunch?: self = .userAppLaunch
+        case .inactivityTimeout?: self = .inactivityTimeout
+        case .maxDuration?: self = .maxDuration
+        case .backgroundLaunch?: self = .backgroundLaunch
+        case .prewarm?: self = .prewarm
+        case .fromNonInteractiveSession?: self = .fromNonInteractiveSession
+        case .explicitStop?: self = .explicitStop
+        }
+    }
+
+    internal var toSwift: RUMSessionPrecondition? {
+        switch self {
+        case .none: return nil
+        case .userAppLaunch: return .userAppLaunch
+        case .inactivityTimeout: return .inactivityTimeout
+        case .maxDuration: return .maxDuration
+        case .backgroundLaunch: return .backgroundLaunch
+        case .prewarm: return .prewarm
+        case .fromNonInteractiveSession: return .fromNonInteractiveSession
+        case .explicitStop: return .explicitStop
+        }
+    }
+
+    case none
+    case userAppLaunch
+    case inactivityTimeout
+    case maxDuration
+    case backgroundLaunch
+    case prewarm
+    case fromNonInteractiveSession
+    case explicitStop
+}
+
+@objc(DDRUMVitalDurationEventRUMAccount)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventRUMAccount: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
         self.root = root
     }
 
     public var id: String {
-        root.swiftModel.action!.id
+        root.swiftModel.account!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.account!.name
+    }
+
+    public var accountInfo: [String: Any] {
+        set { root.swiftModel.account!.accountInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.account!.accountInfo.dd.objCAttributes }
     }
 }
 
-@objc(DDTelemetryDebugEventApplication)
+@objc(DDRUMVitalDurationEventApplication)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryDebugEventApplication: NSObject {
-    internal let root: objc_TelemetryDebugEvent
+public class objc_RUMVitalDurationEventApplication: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
 
-    internal init(root: objc_TelemetryDebugEvent) {
+    internal init(root: objc_RUMVitalDurationEvent) {
         self.root = root
     }
 
+    public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
     public var id: String {
-        root.swiftModel.application!.id
+        root.swiftModel.application.id
     }
 }
 
-@objc(DDTelemetryDebugEventSession)
+@objc(DDRUMVitalDurationEventRUMCITest)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryDebugEventSession: NSObject {
-    internal let root: objc_TelemetryDebugEvent
+public class objc_RUMVitalDurationEventRUMCITest: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
 
-    internal init(root: objc_TelemetryDebugEvent) {
+    internal init(root: objc_RUMVitalDurationEvent) {
         self.root = root
     }
 
-    public var id: String {
-        root.swiftModel.session!.id
+    public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
     }
 }
 
-@objc(DDTelemetryDebugEventSource)
+@objc(DDRUMVitalDurationEventRUMConnectivity)
+@objcMembers
 @_spi(objc)
-public enum objc_TelemetryDebugEventSource: Int {
-    internal init(swift: TelemetryDebugEvent.Source) {
+public class objc_RUMVitalDurationEventRUMConnectivity: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var cellular: objc_RUMVitalDurationEventRUMConnectivityCellular? {
+        root.swiftModel.connectivity!.cellular != nil ? objc_RUMVitalDurationEventRUMConnectivityCellular(root: root) : nil
+    }
+
+    public var effectiveType: objc_RUMVitalDurationEventRUMConnectivityEffectiveType {
+        .init(swift: root.swiftModel.connectivity!.effectiveType)
+    }
+
+    public var interfaces: [Int]? {
+        root.swiftModel.connectivity!.interfaces?.map { objc_RUMVitalDurationEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    }
+
+    public var status: objc_RUMVitalDurationEventRUMConnectivityStatus {
+        .init(swift: root.swiftModel.connectivity!.status)
+    }
+}
+
+@objc(DDRUMVitalDurationEventRUMConnectivityCellular)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventRUMConnectivityCellular: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var carrierName: String? {
+        root.swiftModel.connectivity!.cellular!.carrierName
+    }
+
+    public var technology: String? {
+        root.swiftModel.connectivity!.cellular!.technology
+    }
+}
+
+@objc(DDRUMVitalDurationEventRUMConnectivityEffectiveType)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventRUMConnectivityEffectiveType: Int {
+    internal init(swift: RUMConnectivity.EffectiveType?) {
+        switch swift {
+        case nil: self = .none
+        case .slow2g?: self = .slow2g
+        case .effectiveType2g?: self = .effectiveType2g
+        case .effectiveType3g?: self = .effectiveType3g
+        case .effectiveType4g?: self = .effectiveType4g
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.EffectiveType? {
+        switch self {
+        case .none: return nil
+        case .slow2g: return .slow2g
+        case .effectiveType2g: return .effectiveType2g
+        case .effectiveType3g: return .effectiveType3g
+        case .effectiveType4g: return .effectiveType4g
+        }
+    }
+
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+}
+
+@objc(DDRUMVitalDurationEventRUMConnectivityInterfaces)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces?) {
+        switch swift {
+        case nil: self = .none
+        case .bluetooth?: self = .bluetooth
+        case .cellular?: self = .cellular
+        case .ethernet?: self = .ethernet
+        case .wifi?: self = .wifi
+        case .wimax?: self = .wimax
+        case .mixed?: self = .mixed
+        case .other?: self = .other
+        case .unknown?: self = .unknown
+        case .interfacesNone?: self = .interfacesNone
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces? {
+        switch self {
+        case .none: return nil
+        case .bluetooth: return .bluetooth
+        case .cellular: return .cellular
+        case .ethernet: return .ethernet
+        case .wifi: return .wifi
+        case .wimax: return .wimax
+        case .mixed: return .mixed
+        case .other: return .other
+        case .unknown: return .unknown
+        case .interfacesNone: return .interfacesNone
+        }
+    }
+
+    case none
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case interfacesNone
+}
+
+@objc(DDRUMVitalDurationEventRUMConnectivityStatus)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventRUMConnectivityStatus: Int {
+    internal init(swift: RUMConnectivity.Status) {
+        switch swift {
+        case .connected: self = .connected
+        case .notConnected: self = .notConnected
+        case .maybe: self = .maybe
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Status {
+        switch self {
+        case .connected: return .connected
+        case .notConnected: return .notConnected
+        case .maybe: return .maybe
+        }
+    }
+
+    case connected
+    case notConnected
+    case maybe
+}
+
+@objc(DDRUMVitalDurationEventContainer)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventContainer: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var source: objc_RUMVitalDurationEventContainerSource {
+        .init(swift: root.swiftModel.container!.source)
+    }
+
+    public var view: objc_RUMVitalDurationEventContainerView {
+        objc_RUMVitalDurationEventContainerView(root: root)
+    }
+}
+
+@objc(DDRUMVitalDurationEventContainerSource)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventContainerSource: Int {
+    internal init(swift: RUMVitalDurationEvent.Container.Source) {
         switch swift {
         case .android: self = .android
         case .ios: self = .ios
         case .browser: self = .browser
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
+        case .roku: self = .roku
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         }
     }
 
-    internal var toSwift: TelemetryDebugEvent.Source {
+    internal var toSwift: RUMVitalDurationEvent.Container.Source {
         switch self {
         case .android: return .android
         case .ios: return .ios
         case .browser: return .browser
         case .flutter: return .flutter
         case .reactNative: return .reactNative
+        case .roku: return .roku
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         }
@@ -7916,105 +9035,1388 @@ public enum objc_TelemetryDebugEventSource: Int {
     case browser
     case flutter
     case reactNative
+    case roku
     case unity
     case kotlinMultiplatform
 }
 
-@objc(DDTelemetryDebugEventTelemetry)
+@objc(DDRUMVitalDurationEventContainerView)
 @objcMembers
 @_spi(objc)
-public class objc_TelemetryDebugEventTelemetry: NSObject {
-    internal let root: objc_TelemetryDebugEvent
+public class objc_RUMVitalDurationEventContainerView: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
 
-    internal init(root: objc_TelemetryDebugEvent) {
-        self.root = root
-    }
-
-    public var device: objc_TelemetryDebugEventTelemetryRUMTelemetryDevice? {
-        root.swiftModel.telemetry.device != nil ? objc_TelemetryDebugEventTelemetryRUMTelemetryDevice(root: root) : nil
-    }
-
-    public var message: String {
-        root.swiftModel.telemetry.message
-    }
-
-    public var os: objc_TelemetryDebugEventTelemetryRUMTelemetryOperatingSystem? {
-        root.swiftModel.telemetry.os != nil ? objc_TelemetryDebugEventTelemetryRUMTelemetryOperatingSystem(root: root) : nil
-    }
-
-    public var status: String {
-        root.swiftModel.telemetry.status
-    }
-
-    public var type: String? {
-        root.swiftModel.telemetry.type
-    }
-
-    public var telemetryInfo: [String: Any] {
-        set { root.swiftModel.telemetry.telemetryInfo = newValue.dd.swiftAttributes }
-        get { root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes }
-    }
-}
-
-@objc(DDTelemetryDebugEventTelemetryRUMTelemetryDevice)
-@objcMembers
-@_spi(objc)
-public class objc_TelemetryDebugEventTelemetryRUMTelemetryDevice: NSObject {
-    internal let root: objc_TelemetryDebugEvent
-
-    internal init(root: objc_TelemetryDebugEvent) {
-        self.root = root
-    }
-
-    public var architecture: String? {
-        root.swiftModel.telemetry.device!.architecture
-    }
-
-    public var brand: String? {
-        root.swiftModel.telemetry.device!.brand
-    }
-
-    public var model: String? {
-        root.swiftModel.telemetry.device!.model
-    }
-}
-
-@objc(DDTelemetryDebugEventTelemetryRUMTelemetryOperatingSystem)
-@objcMembers
-@_spi(objc)
-public class objc_TelemetryDebugEventTelemetryRUMTelemetryOperatingSystem: NSObject {
-    internal let root: objc_TelemetryDebugEvent
-
-    internal init(root: objc_TelemetryDebugEvent) {
-        self.root = root
-    }
-
-    public var build: String? {
-        root.swiftModel.telemetry.os!.build
-    }
-
-    public var name: String? {
-        root.swiftModel.telemetry.os!.name
-    }
-
-    public var version: String? {
-        root.swiftModel.telemetry.os!.version
-    }
-}
-
-@objc(DDTelemetryDebugEventView)
-@objcMembers
-@_spi(objc)
-public class objc_TelemetryDebugEventView: NSObject {
-    internal let root: objc_TelemetryDebugEvent
-
-    internal init(root: objc_TelemetryDebugEvent) {
+    internal init(root: objc_RUMVitalDurationEvent) {
         self.root = root
     }
 
     public var id: String {
-        root.swiftModel.view!.id
+        root.swiftModel.container!.view.id
     }
+}
+
+@objc(DDRUMVitalDurationEventRUMEventAttributes)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventRUMEventAttributes: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var contextInfo: [String: Any] {
+        set { root.swiftModel.context!.contextInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.context!.contextInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMVitalDurationEventDevice)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventDevice: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var architecture: String? {
+        root.swiftModel.device!.architecture
+    }
+
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device!.batteryLevel as NSNumber?
+    }
+
+    public var brand: String? {
+        root.swiftModel.device!.brand
+    }
+
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device!.brightnessLevel as NSNumber?
+    }
+
+    public var locale: String? {
+        root.swiftModel.device!.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device!.locales
+    }
+
+    public var model: String? {
+        root.swiftModel.device!.model
+    }
+
+    public var name: String? {
+        root.swiftModel.device!.name
+    }
+
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device!.powerSavingMode as NSNumber?
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device!.timeZone
+    }
+
+    public var type: objc_RUMVitalDurationEventDeviceDeviceType {
+        .init(swift: root.swiftModel.device!.type)
+    }
+}
+
+@objc(DDRUMVitalDurationEventDeviceDeviceType)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType?) {
+        switch swift {
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
+        }
+    }
+
+    internal var toSwift: Device.DeviceType? {
+        switch self {
+        case .none: return nil
+        case .mobile: return .mobile
+        case .desktop: return .desktop
+        case .tablet: return .tablet
+        case .tv: return .tv
+        case .gamingConsole: return .gamingConsole
+        case .bot: return .bot
+        case .other: return .other
+        }
+    }
+
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
+}
+
+@objc(DDRUMVitalDurationEventDisplay)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventDisplay: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var viewport: objc_RUMVitalDurationEventDisplayViewport? {
+        root.swiftModel.display!.viewport != nil ? objc_RUMVitalDurationEventDisplayViewport(root: root) : nil
+    }
+}
+
+@objc(DDRUMVitalDurationEventDisplayViewport)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventDisplayViewport: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var height: NSNumber {
+        root.swiftModel.display!.viewport!.height as NSNumber
+    }
+
+    public var width: NSNumber {
+        root.swiftModel.display!.viewport!.width as NSNumber
+    }
+}
+
+@objc(DDRUMVitalDurationEventOperatingSystem)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventOperatingSystem: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var build: String? {
+        root.swiftModel.os!.build
+    }
+
+    public var name: String {
+        root.swiftModel.os!.name
+    }
+
+    public var version: String {
+        root.swiftModel.os!.version
+    }
+
+    public var versionMajor: String {
+        root.swiftModel.os!.versionMajor
+    }
+}
+
+@objc(DDRUMVitalDurationEventSession)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventSession: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    public var id: String {
+        root.swiftModel.session.id
+    }
+
+    public var type: objc_RUMVitalDurationEventSessionRUMSessionType {
+        .init(swift: root.swiftModel.session.type)
+    }
+}
+
+@objc(DDRUMVitalDurationEventSessionRUMSessionType)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventSessionRUMSessionType: Int {
+    internal init(swift: RUMSessionType) {
+        switch swift {
+        case .user: self = .user
+        case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
+        }
+    }
+
+    internal var toSwift: RUMSessionType {
+        switch self {
+        case .user: return .user
+        case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
+        }
+    }
+
+    case user
+    case synthetics
+    case ciTest
+}
+
+@objc(DDRUMVitalDurationEventSource)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventSource: Int {
+    internal init(swift: RUMVitalDurationEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        case .roku?: self = .roku
+        case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
+        }
+    }
+
+    internal var toSwift: RUMVitalDurationEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .roku: return .roku
+        case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+}
+
+@objc(DDRUMVitalDurationEventStream)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventStream: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.stream!.id
+    }
+}
+
+@objc(DDRUMVitalDurationEventRUMSyntheticsTest)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventRUMSyntheticsTest: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
+    }
+
+    public var resultId: String {
+        root.swiftModel.synthetics!.resultId
+    }
+
+    public var testId: String {
+        root.swiftModel.synthetics!.testId
+    }
+}
+
+@objc(DDRUMVitalDurationEventRUMUser)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventRUMUser: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
+    public var email: String? {
+        root.swiftModel.usr!.email
+    }
+
+    public var id: String? {
+        root.swiftModel.usr!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.usr!.name
+    }
+
+    public var usrInfo: [String: Any] {
+        set { root.swiftModel.usr!.usrInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.usr!.usrInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMVitalDurationEventView)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventView: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.view.id
+    }
+
+    public var name: String? {
+        set { root.swiftModel.view.name = newValue }
+        get { root.swiftModel.view.name }
+    }
+
+    public var referrer: String? {
+        set { root.swiftModel.view.referrer = newValue }
+        get { root.swiftModel.view.referrer }
+    }
+
+    public var url: String {
+        set { root.swiftModel.view.url = newValue }
+        get { root.swiftModel.view.url }
+    }
+}
+
+@objc(DDRUMVitalDurationEventVital)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventVital: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var vitalDescription: String? {
+        root.swiftModel.vital.vitalDescription
+    }
+
+    public var duration: NSNumber {
+        root.swiftModel.vital.duration as NSNumber
+    }
+
+    public var id: String {
+        root.swiftModel.vital.id
+    }
+
+    public var name: String? {
+        root.swiftModel.vital.name
+    }
+
+    public var type: String {
+        root.swiftModel.vital.type
+    }
+}
+
+@objc(DDRUMVitalOperationStepEvent)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEvent: NSObject {
+    public internal(set) var swiftModel: RUMVitalOperationStepEvent
+    internal var root: objc_RUMVitalOperationStepEvent { self }
+
+    public init(swiftModel: RUMVitalOperationStepEvent) {
+        self.swiftModel = swiftModel
+    }
+
+    public var dd: objc_RUMVitalOperationStepEventDD {
+        objc_RUMVitalOperationStepEventDD(root: root)
+    }
+
+    public var account: objc_RUMVitalOperationStepEventRUMAccount? {
+        root.swiftModel.account != nil ? objc_RUMVitalOperationStepEventRUMAccount(root: root) : nil
+    }
+
+    public var application: objc_RUMVitalOperationStepEventApplication {
+        objc_RUMVitalOperationStepEventApplication(root: root)
+    }
+
+    public var buildId: String? {
+        root.swiftModel.buildId
+    }
+
+    public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
+    public var ciTest: objc_RUMVitalOperationStepEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? objc_RUMVitalOperationStepEventRUMCITest(root: root) : nil
+    }
+
+    public var connectivity: objc_RUMVitalOperationStepEventRUMConnectivity? {
+        root.swiftModel.connectivity != nil ? objc_RUMVitalOperationStepEventRUMConnectivity(root: root) : nil
+    }
+
+    public var container: objc_RUMVitalOperationStepEventContainer? {
+        root.swiftModel.container != nil ? objc_RUMVitalOperationStepEventContainer(root: root) : nil
+    }
+
+    public var context: objc_RUMVitalOperationStepEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? objc_RUMVitalOperationStepEventRUMEventAttributes(root: root) : nil
+    }
+
+    public var date: NSNumber {
+        root.swiftModel.date as NSNumber
+    }
+
+    public var ddtags: String? {
+        root.swiftModel.ddtags
+    }
+
+    public var device: objc_RUMVitalOperationStepEventDevice? {
+        root.swiftModel.device != nil ? objc_RUMVitalOperationStepEventDevice(root: root) : nil
+    }
+
+    public var display: objc_RUMVitalOperationStepEventDisplay? {
+        root.swiftModel.display != nil ? objc_RUMVitalOperationStepEventDisplay(root: root) : nil
+    }
+
+    public var os: objc_RUMVitalOperationStepEventOperatingSystem? {
+        root.swiftModel.os != nil ? objc_RUMVitalOperationStepEventOperatingSystem(root: root) : nil
+    }
+
+    public var service: String? {
+        root.swiftModel.service
+    }
+
+    public var session: objc_RUMVitalOperationStepEventSession {
+        objc_RUMVitalOperationStepEventSession(root: root)
+    }
+
+    public var source: objc_RUMVitalOperationStepEventSource {
+        .init(swift: root.swiftModel.source)
+    }
+
+    public var stream: objc_RUMVitalOperationStepEventStream? {
+        root.swiftModel.stream != nil ? objc_RUMVitalOperationStepEventStream(root: root) : nil
+    }
+
+    public var synthetics: objc_RUMVitalOperationStepEventRUMSyntheticsTest? {
+        root.swiftModel.synthetics != nil ? objc_RUMVitalOperationStepEventRUMSyntheticsTest(root: root) : nil
+    }
+
+    public var type: String {
+        root.swiftModel.type
+    }
+
+    public var usr: objc_RUMVitalOperationStepEventRUMUser? {
+        root.swiftModel.usr != nil ? objc_RUMVitalOperationStepEventRUMUser(root: root) : nil
+    }
+
+    public var version: String? {
+        root.swiftModel.version
+    }
+
+    public var view: objc_RUMVitalOperationStepEventView {
+        objc_RUMVitalOperationStepEventView(root: root)
+    }
+
+    public var vital: objc_RUMVitalOperationStepEventVital {
+        objc_RUMVitalOperationStepEventVital(root: root)
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventDD)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventDD: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
+    }
+
+    public var configuration: objc_RUMVitalOperationStepEventDDConfiguration? {
+        root.swiftModel.dd.configuration != nil ? objc_RUMVitalOperationStepEventDDConfiguration(root: root) : nil
+    }
+
+    public var formatVersion: NSNumber {
+        root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
+    public var session: objc_RUMVitalOperationStepEventDDSession? {
+        root.swiftModel.dd.session != nil ? objc_RUMVitalOperationStepEventDDSession(root: root) : nil
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventDDConfiguration)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventDDConfiguration: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var profilingSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
+    }
+
+    public var sessionSampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventDDSession)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventDDSession: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var plan: objc_RUMVitalOperationStepEventDDSessionPlan {
+        .init(swift: root.swiftModel.dd.session!.plan)
+    }
+
+    public var sessionPrecondition: objc_RUMVitalOperationStepEventDDSessionRUMSessionPrecondition {
+        .init(swift: root.swiftModel.dd.session!.sessionPrecondition)
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventDDSessionPlan)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventDDSessionPlan: Int {
+    internal init(swift: RUMVitalOperationStepEvent.DD.Session.Plan?) {
+        switch swift {
+        case nil: self = .none
+        case .plan1?: self = .plan1
+        case .plan2?: self = .plan2
+        }
+    }
+
+    internal var toSwift: RUMVitalOperationStepEvent.DD.Session.Plan? {
+        switch self {
+        case .none: return nil
+        case .plan1: return .plan1
+        case .plan2: return .plan2
+        }
+    }
+
+    case none
+    case plan1
+    case plan2
+}
+
+@objc(DDRUMVitalOperationStepEventDDSessionRUMSessionPrecondition)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventDDSessionRUMSessionPrecondition: Int {
+    internal init(swift: RUMSessionPrecondition?) {
+        switch swift {
+        case nil: self = .none
+        case .userAppLaunch?: self = .userAppLaunch
+        case .inactivityTimeout?: self = .inactivityTimeout
+        case .maxDuration?: self = .maxDuration
+        case .backgroundLaunch?: self = .backgroundLaunch
+        case .prewarm?: self = .prewarm
+        case .fromNonInteractiveSession?: self = .fromNonInteractiveSession
+        case .explicitStop?: self = .explicitStop
+        }
+    }
+
+    internal var toSwift: RUMSessionPrecondition? {
+        switch self {
+        case .none: return nil
+        case .userAppLaunch: return .userAppLaunch
+        case .inactivityTimeout: return .inactivityTimeout
+        case .maxDuration: return .maxDuration
+        case .backgroundLaunch: return .backgroundLaunch
+        case .prewarm: return .prewarm
+        case .fromNonInteractiveSession: return .fromNonInteractiveSession
+        case .explicitStop: return .explicitStop
+        }
+    }
+
+    case none
+    case userAppLaunch
+    case inactivityTimeout
+    case maxDuration
+    case backgroundLaunch
+    case prewarm
+    case fromNonInteractiveSession
+    case explicitStop
+}
+
+@objc(DDRUMVitalOperationStepEventRUMAccount)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventRUMAccount: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.account!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.account!.name
+    }
+
+    public var accountInfo: [String: Any] {
+        set { root.swiftModel.account!.accountInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.account!.accountInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventApplication)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventApplication: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
+    public var id: String {
+        root.swiftModel.application.id
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventRUMCITest)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventRUMCITest: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventRUMConnectivity)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventRUMConnectivity: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var cellular: objc_RUMVitalOperationStepEventRUMConnectivityCellular? {
+        root.swiftModel.connectivity!.cellular != nil ? objc_RUMVitalOperationStepEventRUMConnectivityCellular(root: root) : nil
+    }
+
+    public var effectiveType: objc_RUMVitalOperationStepEventRUMConnectivityEffectiveType {
+        .init(swift: root.swiftModel.connectivity!.effectiveType)
+    }
+
+    public var interfaces: [Int]? {
+        root.swiftModel.connectivity!.interfaces?.map { objc_RUMVitalOperationStepEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    }
+
+    public var status: objc_RUMVitalOperationStepEventRUMConnectivityStatus {
+        .init(swift: root.swiftModel.connectivity!.status)
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventRUMConnectivityCellular)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventRUMConnectivityCellular: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var carrierName: String? {
+        root.swiftModel.connectivity!.cellular!.carrierName
+    }
+
+    public var technology: String? {
+        root.swiftModel.connectivity!.cellular!.technology
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventRUMConnectivityEffectiveType)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventRUMConnectivityEffectiveType: Int {
+    internal init(swift: RUMConnectivity.EffectiveType?) {
+        switch swift {
+        case nil: self = .none
+        case .slow2g?: self = .slow2g
+        case .effectiveType2g?: self = .effectiveType2g
+        case .effectiveType3g?: self = .effectiveType3g
+        case .effectiveType4g?: self = .effectiveType4g
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.EffectiveType? {
+        switch self {
+        case .none: return nil
+        case .slow2g: return .slow2g
+        case .effectiveType2g: return .effectiveType2g
+        case .effectiveType3g: return .effectiveType3g
+        case .effectiveType4g: return .effectiveType4g
+        }
+    }
+
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+}
+
+@objc(DDRUMVitalOperationStepEventRUMConnectivityInterfaces)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces?) {
+        switch swift {
+        case nil: self = .none
+        case .bluetooth?: self = .bluetooth
+        case .cellular?: self = .cellular
+        case .ethernet?: self = .ethernet
+        case .wifi?: self = .wifi
+        case .wimax?: self = .wimax
+        case .mixed?: self = .mixed
+        case .other?: self = .other
+        case .unknown?: self = .unknown
+        case .interfacesNone?: self = .interfacesNone
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces? {
+        switch self {
+        case .none: return nil
+        case .bluetooth: return .bluetooth
+        case .cellular: return .cellular
+        case .ethernet: return .ethernet
+        case .wifi: return .wifi
+        case .wimax: return .wimax
+        case .mixed: return .mixed
+        case .other: return .other
+        case .unknown: return .unknown
+        case .interfacesNone: return .interfacesNone
+        }
+    }
+
+    case none
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case interfacesNone
+}
+
+@objc(DDRUMVitalOperationStepEventRUMConnectivityStatus)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventRUMConnectivityStatus: Int {
+    internal init(swift: RUMConnectivity.Status) {
+        switch swift {
+        case .connected: self = .connected
+        case .notConnected: self = .notConnected
+        case .maybe: self = .maybe
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Status {
+        switch self {
+        case .connected: return .connected
+        case .notConnected: return .notConnected
+        case .maybe: return .maybe
+        }
+    }
+
+    case connected
+    case notConnected
+    case maybe
+}
+
+@objc(DDRUMVitalOperationStepEventContainer)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventContainer: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var source: objc_RUMVitalOperationStepEventContainerSource {
+        .init(swift: root.swiftModel.container!.source)
+    }
+
+    public var view: objc_RUMVitalOperationStepEventContainerView {
+        objc_RUMVitalOperationStepEventContainerView(root: root)
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventContainerSource)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventContainerSource: Int {
+    internal init(swift: RUMVitalOperationStepEvent.Container.Source) {
+        switch swift {
+        case .android: self = .android
+        case .ios: self = .ios
+        case .browser: self = .browser
+        case .flutter: self = .flutter
+        case .reactNative: self = .reactNative
+        case .roku: self = .roku
+        case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
+        }
+    }
+
+    internal var toSwift: RUMVitalOperationStepEvent.Container.Source {
+        switch self {
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .roku: return .roku
+        case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
+        }
+    }
+
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+}
+
+@objc(DDRUMVitalOperationStepEventContainerView)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventContainerView: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.container!.view.id
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventRUMEventAttributes)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventRUMEventAttributes: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var contextInfo: [String: Any] {
+        set { root.swiftModel.context!.contextInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.context!.contextInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventDevice)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventDevice: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var architecture: String? {
+        root.swiftModel.device!.architecture
+    }
+
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device!.batteryLevel as NSNumber?
+    }
+
+    public var brand: String? {
+        root.swiftModel.device!.brand
+    }
+
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device!.brightnessLevel as NSNumber?
+    }
+
+    public var locale: String? {
+        root.swiftModel.device!.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device!.locales
+    }
+
+    public var model: String? {
+        root.swiftModel.device!.model
+    }
+
+    public var name: String? {
+        root.swiftModel.device!.name
+    }
+
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device!.powerSavingMode as NSNumber?
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device!.timeZone
+    }
+
+    public var type: objc_RUMVitalOperationStepEventDeviceDeviceType {
+        .init(swift: root.swiftModel.device!.type)
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventDeviceDeviceType)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType?) {
+        switch swift {
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
+        }
+    }
+
+    internal var toSwift: Device.DeviceType? {
+        switch self {
+        case .none: return nil
+        case .mobile: return .mobile
+        case .desktop: return .desktop
+        case .tablet: return .tablet
+        case .tv: return .tv
+        case .gamingConsole: return .gamingConsole
+        case .bot: return .bot
+        case .other: return .other
+        }
+    }
+
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
+}
+
+@objc(DDRUMVitalOperationStepEventDisplay)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventDisplay: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var viewport: objc_RUMVitalOperationStepEventDisplayViewport? {
+        root.swiftModel.display!.viewport != nil ? objc_RUMVitalOperationStepEventDisplayViewport(root: root) : nil
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventDisplayViewport)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventDisplayViewport: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var height: NSNumber {
+        root.swiftModel.display!.viewport!.height as NSNumber
+    }
+
+    public var width: NSNumber {
+        root.swiftModel.display!.viewport!.width as NSNumber
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventOperatingSystem)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventOperatingSystem: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var build: String? {
+        root.swiftModel.os!.build
+    }
+
+    public var name: String {
+        root.swiftModel.os!.name
+    }
+
+    public var version: String {
+        root.swiftModel.os!.version
+    }
+
+    public var versionMajor: String {
+        root.swiftModel.os!.versionMajor
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventSession)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventSession: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    public var id: String {
+        root.swiftModel.session.id
+    }
+
+    public var type: objc_RUMVitalOperationStepEventSessionRUMSessionType {
+        .init(swift: root.swiftModel.session.type)
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventSessionRUMSessionType)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventSessionRUMSessionType: Int {
+    internal init(swift: RUMSessionType) {
+        switch swift {
+        case .user: self = .user
+        case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
+        }
+    }
+
+    internal var toSwift: RUMSessionType {
+        switch self {
+        case .user: return .user
+        case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
+        }
+    }
+
+    case user
+    case synthetics
+    case ciTest
+}
+
+@objc(DDRUMVitalOperationStepEventSource)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventSource: Int {
+    internal init(swift: RUMVitalOperationStepEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        case .roku?: self = .roku
+        case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
+        }
+    }
+
+    internal var toSwift: RUMVitalOperationStepEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .roku: return .roku
+        case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+}
+
+@objc(DDRUMVitalOperationStepEventStream)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventStream: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.stream!.id
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventRUMSyntheticsTest)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventRUMSyntheticsTest: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
+    }
+
+    public var resultId: String {
+        root.swiftModel.synthetics!.resultId
+    }
+
+    public var testId: String {
+        root.swiftModel.synthetics!.testId
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventRUMUser)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventRUMUser: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
+    public var email: String? {
+        root.swiftModel.usr!.email
+    }
+
+    public var id: String? {
+        root.swiftModel.usr!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.usr!.name
+    }
+
+    public var usrInfo: [String: Any] {
+        set { root.swiftModel.usr!.usrInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.usr!.usrInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventView)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventView: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.view.id
+    }
+
+    public var name: String? {
+        set { root.swiftModel.view.name = newValue }
+        get { root.swiftModel.view.name }
+    }
+
+    public var referrer: String? {
+        set { root.swiftModel.view.referrer = newValue }
+        get { root.swiftModel.view.referrer }
+    }
+
+    public var url: String {
+        set { root.swiftModel.view.url = newValue }
+        get { root.swiftModel.view.url }
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventVital)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventVital: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var vitalDescription: String? {
+        root.swiftModel.vital.vitalDescription
+    }
+
+    public var failureReason: objc_RUMVitalOperationStepEventVitalFailureReason {
+        .init(swift: root.swiftModel.vital.failureReason)
+    }
+
+    public var id: String {
+        root.swiftModel.vital.id
+    }
+
+    public var name: String? {
+        root.swiftModel.vital.name
+    }
+
+    public var operationKey: String? {
+        root.swiftModel.vital.operationKey
+    }
+
+    public var stepType: objc_RUMVitalOperationStepEventVitalStepType {
+        .init(swift: root.swiftModel.vital.stepType)
+    }
+
+    public var type: String {
+        root.swiftModel.vital.type
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventVitalFailureReason)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventVitalFailureReason: Int {
+    internal init(swift: RUMVitalOperationStepEvent.Vital.FailureReason?) {
+        switch swift {
+        case nil: self = .none
+        case .error?: self = .error
+        case .abandoned?: self = .abandoned
+        case .other?: self = .other
+        }
+    }
+
+    internal var toSwift: RUMVitalOperationStepEvent.Vital.FailureReason? {
+        switch self {
+        case .none: return nil
+        case .error: return .error
+        case .abandoned: return .abandoned
+        case .other: return .other
+        }
+    }
+
+    case none
+    case error
+    case abandoned
+    case other
+}
+
+@objc(DDRUMVitalOperationStepEventVitalStepType)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventVitalStepType: Int {
+    internal init(swift: RUMVitalOperationStepEvent.Vital.StepType) {
+        switch swift {
+        case .start: self = .start
+        case .update: self = .update
+        case .retry: self = .retry
+        case .end: self = .end
+        }
+    }
+
+    internal var toSwift: RUMVitalOperationStepEvent.Vital.StepType {
+        switch self {
+        case .start: return .start
+        case .update: return .update
+        case .retry: return .retry
+        case .end: return .end
+        }
+    }
+
+    case start
+    case update
+    case retry
+    case end
 }
 
 @objc(DDTelemetryConfigurationEvent)
@@ -8938,6 +11340,543 @@ public class objc_TelemetryConfigurationEventView: NSObject {
     }
 }
 
+@objc(DDTelemetryDebugEvent)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryDebugEvent: NSObject {
+    public internal(set) var swiftModel: TelemetryDebugEvent
+    internal var root: objc_TelemetryDebugEvent { self }
+
+    public init(swiftModel: TelemetryDebugEvent) {
+        self.swiftModel = swiftModel
+    }
+
+    public var dd: objc_TelemetryDebugEventDD {
+        objc_TelemetryDebugEventDD(root: root)
+    }
+
+    public var action: objc_TelemetryDebugEventAction? {
+        root.swiftModel.action != nil ? objc_TelemetryDebugEventAction(root: root) : nil
+    }
+
+    public var application: objc_TelemetryDebugEventApplication? {
+        root.swiftModel.application != nil ? objc_TelemetryDebugEventApplication(root: root) : nil
+    }
+
+    public var date: NSNumber {
+        root.swiftModel.date as NSNumber
+    }
+
+    public var effectiveSampleRate: NSNumber? {
+        root.swiftModel.effectiveSampleRate as NSNumber?
+    }
+
+    public var experimentalFeatures: [String]? {
+        root.swiftModel.experimentalFeatures
+    }
+
+    public var service: String {
+        root.swiftModel.service
+    }
+
+    public var session: objc_TelemetryDebugEventSession? {
+        root.swiftModel.session != nil ? objc_TelemetryDebugEventSession(root: root) : nil
+    }
+
+    public var source: objc_TelemetryDebugEventSource {
+        .init(swift: root.swiftModel.source)
+    }
+
+    public var telemetry: objc_TelemetryDebugEventTelemetry {
+        objc_TelemetryDebugEventTelemetry(root: root)
+    }
+
+    public var type: String {
+        root.swiftModel.type
+    }
+
+    public var version: String {
+        root.swiftModel.version
+    }
+
+    public var view: objc_TelemetryDebugEventView? {
+        root.swiftModel.view != nil ? objc_TelemetryDebugEventView(root: root) : nil
+    }
+}
+
+@objc(DDTelemetryDebugEventDD)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryDebugEventDD: NSObject {
+    internal let root: objc_TelemetryDebugEvent
+
+    internal init(root: objc_TelemetryDebugEvent) {
+        self.root = root
+    }
+
+    public var formatVersion: NSNumber {
+        root.swiftModel.dd.formatVersion as NSNumber
+    }
+}
+
+@objc(DDTelemetryDebugEventAction)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryDebugEventAction: NSObject {
+    internal let root: objc_TelemetryDebugEvent
+
+    internal init(root: objc_TelemetryDebugEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.action!.id
+    }
+}
+
+@objc(DDTelemetryDebugEventApplication)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryDebugEventApplication: NSObject {
+    internal let root: objc_TelemetryDebugEvent
+
+    internal init(root: objc_TelemetryDebugEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.application!.id
+    }
+}
+
+@objc(DDTelemetryDebugEventSession)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryDebugEventSession: NSObject {
+    internal let root: objc_TelemetryDebugEvent
+
+    internal init(root: objc_TelemetryDebugEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.session!.id
+    }
+}
+
+@objc(DDTelemetryDebugEventSource)
+@_spi(objc)
+public enum objc_TelemetryDebugEventSource: Int {
+    internal init(swift: TelemetryDebugEvent.Source) {
+        switch swift {
+        case .android: self = .android
+        case .ios: self = .ios
+        case .browser: self = .browser
+        case .flutter: self = .flutter
+        case .reactNative: self = .reactNative
+        case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
+        }
+    }
+
+    internal var toSwift: TelemetryDebugEvent.Source {
+        switch self {
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
+        }
+    }
+
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case unity
+    case kotlinMultiplatform
+}
+
+@objc(DDTelemetryDebugEventTelemetry)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryDebugEventTelemetry: NSObject {
+    internal let root: objc_TelemetryDebugEvent
+
+    internal init(root: objc_TelemetryDebugEvent) {
+        self.root = root
+    }
+
+    public var device: objc_TelemetryDebugEventTelemetryRUMTelemetryDevice? {
+        root.swiftModel.telemetry.device != nil ? objc_TelemetryDebugEventTelemetryRUMTelemetryDevice(root: root) : nil
+    }
+
+    public var message: String {
+        root.swiftModel.telemetry.message
+    }
+
+    public var os: objc_TelemetryDebugEventTelemetryRUMTelemetryOperatingSystem? {
+        root.swiftModel.telemetry.os != nil ? objc_TelemetryDebugEventTelemetryRUMTelemetryOperatingSystem(root: root) : nil
+    }
+
+    public var status: String {
+        root.swiftModel.telemetry.status
+    }
+
+    public var type: String? {
+        root.swiftModel.telemetry.type
+    }
+
+    public var telemetryInfo: [String: Any] {
+        set { root.swiftModel.telemetry.telemetryInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDTelemetryDebugEventTelemetryRUMTelemetryDevice)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryDebugEventTelemetryRUMTelemetryDevice: NSObject {
+    internal let root: objc_TelemetryDebugEvent
+
+    internal init(root: objc_TelemetryDebugEvent) {
+        self.root = root
+    }
+
+    public var architecture: String? {
+        root.swiftModel.telemetry.device!.architecture
+    }
+
+    public var brand: String? {
+        root.swiftModel.telemetry.device!.brand
+    }
+
+    public var model: String? {
+        root.swiftModel.telemetry.device!.model
+    }
+}
+
+@objc(DDTelemetryDebugEventTelemetryRUMTelemetryOperatingSystem)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryDebugEventTelemetryRUMTelemetryOperatingSystem: NSObject {
+    internal let root: objc_TelemetryDebugEvent
+
+    internal init(root: objc_TelemetryDebugEvent) {
+        self.root = root
+    }
+
+    public var build: String? {
+        root.swiftModel.telemetry.os!.build
+    }
+
+    public var name: String? {
+        root.swiftModel.telemetry.os!.name
+    }
+
+    public var version: String? {
+        root.swiftModel.telemetry.os!.version
+    }
+}
+
+@objc(DDTelemetryDebugEventView)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryDebugEventView: NSObject {
+    internal let root: objc_TelemetryDebugEvent
+
+    internal init(root: objc_TelemetryDebugEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.view!.id
+    }
+}
+
+@objc(DDTelemetryErrorEvent)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEvent: NSObject {
+    public internal(set) var swiftModel: TelemetryErrorEvent
+    internal var root: objc_TelemetryErrorEvent { self }
+
+    public init(swiftModel: TelemetryErrorEvent) {
+        self.swiftModel = swiftModel
+    }
+
+    public var dd: objc_TelemetryErrorEventDD {
+        objc_TelemetryErrorEventDD(root: root)
+    }
+
+    public var action: objc_TelemetryErrorEventAction? {
+        root.swiftModel.action != nil ? objc_TelemetryErrorEventAction(root: root) : nil
+    }
+
+    public var application: objc_TelemetryErrorEventApplication? {
+        root.swiftModel.application != nil ? objc_TelemetryErrorEventApplication(root: root) : nil
+    }
+
+    public var date: NSNumber {
+        root.swiftModel.date as NSNumber
+    }
+
+    public var effectiveSampleRate: NSNumber? {
+        root.swiftModel.effectiveSampleRate as NSNumber?
+    }
+
+    public var experimentalFeatures: [String]? {
+        root.swiftModel.experimentalFeatures
+    }
+
+    public var service: String {
+        root.swiftModel.service
+    }
+
+    public var session: objc_TelemetryErrorEventSession? {
+        root.swiftModel.session != nil ? objc_TelemetryErrorEventSession(root: root) : nil
+    }
+
+    public var source: objc_TelemetryErrorEventSource {
+        .init(swift: root.swiftModel.source)
+    }
+
+    public var telemetry: objc_TelemetryErrorEventTelemetry {
+        objc_TelemetryErrorEventTelemetry(root: root)
+    }
+
+    public var type: String {
+        root.swiftModel.type
+    }
+
+    public var version: String {
+        root.swiftModel.version
+    }
+
+    public var view: objc_TelemetryErrorEventView? {
+        root.swiftModel.view != nil ? objc_TelemetryErrorEventView(root: root) : nil
+    }
+}
+
+@objc(DDTelemetryErrorEventDD)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEventDD: NSObject {
+    internal let root: objc_TelemetryErrorEvent
+
+    internal init(root: objc_TelemetryErrorEvent) {
+        self.root = root
+    }
+
+    public var formatVersion: NSNumber {
+        root.swiftModel.dd.formatVersion as NSNumber
+    }
+}
+
+@objc(DDTelemetryErrorEventAction)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEventAction: NSObject {
+    internal let root: objc_TelemetryErrorEvent
+
+    internal init(root: objc_TelemetryErrorEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.action!.id
+    }
+}
+
+@objc(DDTelemetryErrorEventApplication)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEventApplication: NSObject {
+    internal let root: objc_TelemetryErrorEvent
+
+    internal init(root: objc_TelemetryErrorEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.application!.id
+    }
+}
+
+@objc(DDTelemetryErrorEventSession)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEventSession: NSObject {
+    internal let root: objc_TelemetryErrorEvent
+
+    internal init(root: objc_TelemetryErrorEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.session!.id
+    }
+}
+
+@objc(DDTelemetryErrorEventSource)
+@_spi(objc)
+public enum objc_TelemetryErrorEventSource: Int {
+    internal init(swift: TelemetryErrorEvent.Source) {
+        switch swift {
+        case .android: self = .android
+        case .ios: self = .ios
+        case .browser: self = .browser
+        case .flutter: self = .flutter
+        case .reactNative: self = .reactNative
+        case .unity: self = .unity
+        case .kotlinMultiplatform: self = .kotlinMultiplatform
+        }
+    }
+
+    internal var toSwift: TelemetryErrorEvent.Source {
+        switch self {
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
+        }
+    }
+
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case unity
+    case kotlinMultiplatform
+}
+
+@objc(DDTelemetryErrorEventTelemetry)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEventTelemetry: NSObject {
+    internal let root: objc_TelemetryErrorEvent
+
+    internal init(root: objc_TelemetryErrorEvent) {
+        self.root = root
+    }
+
+    public var device: objc_TelemetryErrorEventTelemetryRUMTelemetryDevice? {
+        root.swiftModel.telemetry.device != nil ? objc_TelemetryErrorEventTelemetryRUMTelemetryDevice(root: root) : nil
+    }
+
+    public var error: objc_TelemetryErrorEventTelemetryError? {
+        root.swiftModel.telemetry.error != nil ? objc_TelemetryErrorEventTelemetryError(root: root) : nil
+    }
+
+    public var message: String {
+        root.swiftModel.telemetry.message
+    }
+
+    public var os: objc_TelemetryErrorEventTelemetryRUMTelemetryOperatingSystem? {
+        root.swiftModel.telemetry.os != nil ? objc_TelemetryErrorEventTelemetryRUMTelemetryOperatingSystem(root: root) : nil
+    }
+
+    public var status: String {
+        root.swiftModel.telemetry.status
+    }
+
+    public var type: String? {
+        root.swiftModel.telemetry.type
+    }
+
+    public var telemetryInfo: [String: Any] {
+        set { root.swiftModel.telemetry.telemetryInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.telemetry.telemetryInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDTelemetryErrorEventTelemetryRUMTelemetryDevice)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEventTelemetryRUMTelemetryDevice: NSObject {
+    internal let root: objc_TelemetryErrorEvent
+
+    internal init(root: objc_TelemetryErrorEvent) {
+        self.root = root
+    }
+
+    public var architecture: String? {
+        root.swiftModel.telemetry.device!.architecture
+    }
+
+    public var brand: String? {
+        root.swiftModel.telemetry.device!.brand
+    }
+
+    public var model: String? {
+        root.swiftModel.telemetry.device!.model
+    }
+}
+
+@objc(DDTelemetryErrorEventTelemetryError)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEventTelemetryError: NSObject {
+    internal let root: objc_TelemetryErrorEvent
+
+    internal init(root: objc_TelemetryErrorEvent) {
+        self.root = root
+    }
+
+    public var kind: String? {
+        root.swiftModel.telemetry.error!.kind
+    }
+
+    public var stack: String? {
+        root.swiftModel.telemetry.error!.stack
+    }
+}
+
+@objc(DDTelemetryErrorEventTelemetryRUMTelemetryOperatingSystem)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEventTelemetryRUMTelemetryOperatingSystem: NSObject {
+    internal let root: objc_TelemetryErrorEvent
+
+    internal init(root: objc_TelemetryErrorEvent) {
+        self.root = root
+    }
+
+    public var build: String? {
+        root.swiftModel.telemetry.os!.build
+    }
+
+    public var name: String? {
+        root.swiftModel.telemetry.os!.name
+    }
+
+    public var version: String? {
+        root.swiftModel.telemetry.os!.version
+    }
+}
+
+@objc(DDTelemetryErrorEventView)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEventView: NSObject {
+    internal let root: objc_TelemetryErrorEvent
+
+    internal init(root: objc_TelemetryErrorEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.view!.id
+    }
+}
+
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/14ab2d9eba0140976da009fd124f675632855ca2
+// Generated from https://github.com/DataDog/rum-events-format/tree/fe242fe9a02cc373e61127d7a2ef629991a5c28f
