@@ -137,7 +137,7 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                 frame: context.convert(frame: item.frame),
                 clip: context.clip,
                 text: textObfuscator.mask(text: storage.string),
-                textAlignment: style.map { .init(systemTextAlignment: $0.alignment) },
+                textAlignment: style.map { .init(systemTextAlignment: $0.alignment, vertical: .top) },
                 textColor: foregroundColor?.cgColor,
                 font: font,
                 fontScalingEnabled: fontScalingEnabled,

@@ -83,7 +83,7 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
                 frame: wireframeRect,
                 clip: attributes.clip,
                 text: textObfuscator.mask(text: text),
-                textAlignment: .init(systemTextAlignment: textAlignment),
+                textAlignment: .init(systemTextAlignment: textAlignment, vertical: .top),
                 textColor: textColor,
                 font: font,
                 fontScalingEnabled: fontScalingEnabled,
