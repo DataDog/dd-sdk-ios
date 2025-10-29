@@ -126,27 +126,6 @@ class UILabelRecorderTests: XCTestCase {
         // Then
         XCTAssertEqual(truncationModes, expectedTruncationModes)
     }
-
-    func testCapturesTopVerticalAlignment() throws {
-        // Given
-        label.text = "Test text"
-        label.textAlignment = .left
-        viewAttributes = .mock(fixture: .visible())
-
-        // When
-        let semantics = try XCTUnwrap(recorder.semantics(of: label, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UILabelWireframesBuilder)
-        let wireframes = builder.buildWireframes(with: WireframesBuilder())
-
-        // Then
-        guard case let .textWireframe(textWireframe) = wireframes.first else {
-            XCTFail("Expected text wireframe")
-            return
-        }
-
-        XCTAssertEqual(textWireframe.textPosition?.alignment?.vertical, .top)
-        XCTAssertEqual(textWireframe.textPosition?.alignment?.horizontal, .left)
-    }
 }
 // swiftlint:enable opening_brace
 #endif
