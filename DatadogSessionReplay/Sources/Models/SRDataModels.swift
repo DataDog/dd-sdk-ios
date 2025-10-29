@@ -1719,10 +1719,14 @@ public struct SRTextStyle: Codable, Hashable {
     /// The font size in pixels.
     public let size: Int64
 
+    /// Defines how text should be truncated when it exceeds the wireframe bounds. If omitted, text wraps naturally.
+    public let truncationMode: TruncationMode?
+
     public enum CodingKeys: String, CodingKey {
         case color = "color"
         case family = "family"
         case size = "size"
+        case truncationMode = "truncationMode"
     }
 
     /// Schema of all properties of a TextStyle.
@@ -1731,14 +1735,26 @@ public struct SRTextStyle: Codable, Hashable {
     ///   - color: The font color as a string hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
     ///   - family: The preferred font family collection, ordered by preference and formatted as a String list: e.g. Century Gothic, Verdana, sans-serif
     ///   - size: The font size in pixels.
+    ///   - truncationMode: Defines how text should be truncated when it exceeds the wireframe bounds. If omitted, text wraps naturally.
     public init(
         color: String,
         family: String,
-        size: Int64
+        size: Int64,
+        truncationMode: TruncationMode? = nil
     ) {
         self.color = color
         self.family = family
         self.size = size
+        self.truncationMode = truncationMode
+    }
+
+    /// Defines how text should be truncated when it exceeds the wireframe bounds. If omitted, text wraps naturally.
+    @_spi(Internal)
+    public enum TruncationMode: String, Codable {
+        case clip = "clip"
+        case head = "head"
+        case tail = "tail"
+        case middle = "middle"
     }
 }
 
@@ -2113,4 +2129,4 @@ public enum SRWireframe: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/fe242fe9a02cc373e61127d7a2ef629991a5c28f
+// Generated from https://github.com/DataDog/rum-events-format/tree/72236fa673663c8cfed3ccb27d9f6f8e41f7c05f
