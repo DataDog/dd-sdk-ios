@@ -210,7 +210,7 @@
 		D294EA1B2D088257009582F3 /* PageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D294E9622D088257009582F3 /* PageViewController.swift */; };
 		D294EA1C2D088257009582F3 /* HeaderImageTitleSubtitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D294E9552D088257009582F3 /* HeaderImageTitleSubtitleView.swift */; };
 		D294EA1D2D088257009582F3 /* LayoutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D294E9B32D088257009582F3 /* LayoutsView.swift */; };
-		D294EA1E2D088257009582F3 /* AccesibilityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D294E9712D088257009582F3 /* AccesibilityView.swift */; };
+		D294EA1E2D088257009582F3 /* AccessibilityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D294E9712D088257009582F3 /* AccessibilityView.swift */; };
 		D294EA1F2D088257009582F3 /* ColorPickersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D294E97E2D088257009582F3 /* ColorPickersView.swift */; };
 		D294EA202D088257009582F3 /* CommonlyUsedViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D294E9542D088257009582F3 /* CommonlyUsedViews.swift */; };
 		D294EA212D088257009582F3 /* ContenView+SectionsBuilding.swift in Sources */ = {isa = PBXBuildFile; fileRef = D294E94D2D088257009582F3 /* ContenView+SectionsBuilding.swift */; };
@@ -417,7 +417,7 @@
 		D294E96D2D088257009582F3 /* UIFontTextStylePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIFontTextStylePicker.swift; sourceTree = "<group>"; };
 		D294E96E2D088257009582F3 /* VerticalAlignmentPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalAlignmentPicker.swift; sourceTree = "<group>"; };
 		D294E96F2D088257009582F3 /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
-		D294E9712D088257009582F3 /* AccesibilityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccesibilityView.swift; sourceTree = "<group>"; };
+		D294E9712D088257009582F3 /* AccessibilityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityView.swift; sourceTree = "<group>"; };
 		D294E9732D088257009582F3 /* AlertsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertsView.swift; sourceTree = "<group>"; };
 		D294E9742D088257009582F3 /* ChartsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartsViews.swift; sourceTree = "<group>"; };
 		D294E9752D088257009582F3 /* PopoversView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoversView.swift; sourceTree = "<group>"; };
@@ -933,12 +933,12 @@
 			path = "Reusable Custom Views";
 			sourceTree = "<group>";
 		};
-		D294E9722D088257009582F3 /* Accesibility */ = {
+		D294E9722D088257009582F3 /* Accessibility */ = {
 			isa = PBXGroup;
 			children = (
-				D294E9712D088257009582F3 /* AccesibilityView.swift */,
+				D294E9712D088257009582F3 /* AccessibilityView.swift */,
 			);
-			path = Accesibility;
+			path = Accessibility;
 			sourceTree = "<group>";
 		};
 		D294E97A2D088257009582F3 /* Additional Views */ = {
@@ -1091,7 +1091,7 @@
 		D294E9C52D088257009582F3 /* Sections */ = {
 			isa = PBXGroup;
 			children = (
-				D294E9722D088257009582F3 /* Accesibility */,
+				D294E9722D088257009582F3 /* Accessibility */,
 				D294E97A2D088257009582F3 /* Additional Views */,
 				D294E97C2D088257009582F3 /* Bars */,
 				D294E9892D088257009582F3 /* Controls */,
@@ -1493,7 +1493,7 @@
 				D294EA1B2D088257009582F3 /* PageViewController.swift in Sources */,
 				D294EA1C2D088257009582F3 /* HeaderImageTitleSubtitleView.swift in Sources */,
 				D294EA1D2D088257009582F3 /* LayoutsView.swift in Sources */,
-				D294EA1E2D088257009582F3 /* AccesibilityView.swift in Sources */,
+				D294EA1E2D088257009582F3 /* AccessibilityView.swift in Sources */,
 				D294EA1F2D088257009582F3 /* ColorPickersView.swift in Sources */,
 				D294EA202D088257009582F3 /* CommonlyUsedViews.swift in Sources */,
 				D294EA212D088257009582F3 /* ContenView+SectionsBuilding.swift in Sources */,

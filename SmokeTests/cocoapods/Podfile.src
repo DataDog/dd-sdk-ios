@@ -9,6 +9,7 @@ abstract_target 'Common' do
   pod 'DatadogSessionReplay', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
   pod 'DatadogCrashReporting', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
   pod 'DatadogFlags', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+  pod 'DatadogProfiling', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
 
   target 'App Dynamic iOS' do
     platform :ios, '13.0'

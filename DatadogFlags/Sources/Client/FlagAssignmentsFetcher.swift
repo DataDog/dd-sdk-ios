@@ -74,6 +74,25 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     case .success(let data):
                         do {
                             let response = try Self.decoder.decode(FlagAssignmentsResponse.self, from: data)
+
+                            // Log any flags that failed to decode to telemetry
+                            if !response.failedFlags.isEmpty {
+                                for (flagKey, errorDescription) in response.failedFlags {
+                                    let error = InternalError(description: errorDescription)
+                                    DD.logger.warn(
+                                        "Failed to decode flag '\(flagKey)' from flag assignments response. Flag will be dropped from configuration.",
+                                        error: error
+                                    )
+                                    featureScope.telemetry.debug(
+                                        "Failed to decode flag '\(flagKey)' from flag assignments response",
+                                        attributes: [
+                                            "flagKey": flagKey,
+                                            "errorDescription": errorDescription
+                                        ]
+                                    )
+                                }
+                            }
+
                             completion(.success(response.flags))
                         } catch {
                             featureScope.telemetry.error(
