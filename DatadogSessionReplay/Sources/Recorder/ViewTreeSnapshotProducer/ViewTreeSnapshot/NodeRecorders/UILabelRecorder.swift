@@ -45,6 +45,7 @@ internal class UILabelRecorder: NodeRecorder {
             textAlignment: label.textAlignment,
             font: label.font,
             fontScalingEnabled: label.adjustsFontSizeToFitWidth,
+            truncationMode: SRTextStyle.TruncationMode(label.lineBreakMode),
             textObfuscator: textObfuscator(context, attributes)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builderOverride(builder))
@@ -66,6 +67,8 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
     let font: UIFont?
     /// Flag that determines if font should be scaled
     var fontScalingEnabled: Bool
+    /// How text should be truncated when it overflows.
+    let truncationMode: SRTextStyle.TruncationMode?
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
 
@@ -84,6 +87,7 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
                 textColor: textColor,
                 font: font,
                 fontScalingEnabled: fontScalingEnabled,
+                truncationMode: truncationMode,
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,
                 backgroundColor: attributes.backgroundColor,
