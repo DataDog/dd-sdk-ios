@@ -131,6 +131,11 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             }
         }
 
+        // Extract GraphQL errors from response if present
+        if let errorsJSON = extractGraphQLErrorsIfPresent(from: interception) {
+            combinedAttributes[CrossPlatformAttributes.graphqlErrors] = errorsJSON
+        }
+
         if let resourceMetrics = interception.metrics {
             subscriber.process(
                 command: RUMAddResourceMetricsCommand(
@@ -168,6 +173,33 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
                 )
             )
         }
+    }
+
+    /// Extracts GraphQL errors from JSON response if present.
+    /// Only the errors array is extracted to avoid storing potentially large response data fields.
+    private func extractGraphQLErrorsIfPresent(from interception: URLSessionTaskInterception) -> String? {
+        guard let data = interception.data,
+              let httpResponse = interception.completion?.httpResponse,
+              let mimeType = httpResponse.mimeType,
+              mimeType.lowercased().contains("json") else {
+            return nil
+        }
+
+        // Fast check: does the response contain an "errors" key?
+        guard let result = try? JSONDecoder().decode(GraphQLResponseHasErrors.self, from: data),
+              result.hasErrors else {
+            return nil
+        }
+
+        // Extract only the errors array from the response
+        guard let jsonObject = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let errors = jsonObject["errors"],
+              let errorsData = try? JSONSerialization.data(withJSONObject: ["errors": errors]),
+              let errorsJSON = String(data: errorsData, encoding: .utf8) else {
+            return nil
+        }
+
+        return errorsJSON
     }
 }
 
