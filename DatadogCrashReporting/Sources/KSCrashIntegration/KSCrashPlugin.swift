@@ -6,8 +6,16 @@
 
 import Foundation
 import DatadogInternal
-import KSCrashRecording
-import KSCrashFilters
+
+// swiftlint:disable duplicate_imports
+#if swift(>=6.0)
+internal import KSCrashRecording
+internal import KSCrashFilters
+#else
+@_implementationOnly import KSCrashRecording
+@_implementationOnly import KSCrashFilters
+#endif
+// swiftlint:enable duplicate_imports
 
 /// The implementation of `CrashReportingPlugin`.
 /// Pass its instance as the crash reporting plugin for Datadog SDK to enable crash reporting feature.
