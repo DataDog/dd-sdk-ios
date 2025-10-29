@@ -252,13 +252,13 @@ public protocol OTSpanContext
     func forEachBaggageItem(callback: (_ key: String, _ value: String) -> Bool)
 public protocol OTTracer
     func startSpan(operationName: String,references: [OTReference]?,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
-    func startRootSpan(operationName: String,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
+    func startRootSpan(operationName: String,tags: [String: Encodable]?,startTime: Date?,customSamplingRate: SampleRate?) -> OTSpan
     func inject(spanContext: OTSpanContext, writer: OTFormatWriter)
     func extract(reader: OTFormatReader) -> OTSpanContext?
     var activeSpan: OTSpan?
 public extension OTTracer
     func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
-    func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
+    func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil,customSamplingRate: SampleRate? = nil) -> OTSpan
 public typealias SpanEventMapper = (SpanEvent) -> SpanEvent
 public struct SpanEvent: Encodable
     public var operationName: String
@@ -477,7 +477,7 @@ public struct DatadogInternalInterface
     public func setInternalViewAttribute(at time: Date,key: AttributeKey,value: AttributeValue)
     public func addResourceMetrics(at time: Date,resourceKey: String,fetch: (start: Date, end: Date),redirection: (start: Date, end: Date)?,dns: (start: Date, end: Date)?,connect: (start: Date, end: Date)?,ssl: (start: Date, end: Date)?,firstByte: (start: Date, end: Date)?,download: (start: Date, end: Date)?,responseSize: Int64?,attributes: [AttributeKey: AttributeValue] = [:])
 public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
-public typealias RUMFeatureOperationFailureReason = RUMVitalEvent.Vital.FailureReason
+public typealias RUMFeatureOperationFailureReason = RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason
 public enum RUMActionType
     case tap
     case click
@@ -1231,3 +1231,76 @@ public final class SessionReplayPrivacyOverrides
 public struct SessionReplayPrivacyView<Content: View>: View
     public init(isActive: Bool = true,textAndInputPrivacy: TextAndInputPrivacyLevel? = nil,imagePrivacy: ImagePrivacyLevel? = nil,touchPrivacy: TouchPrivacyLevel? = nil,hide: Bool? = nil,core: DatadogCoreProtocol = CoreRegistry.default,@ViewBuilder content: @escaping () -> Content)
     public var body: some View
+
+# ----------------------------------
+# API surface for DatadogFlags:
+# ----------------------------------
+
+public final class FlagsClient
+    public static let defaultName = "default"
+    public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
+    public static func shared(named name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
+[?] extension FlagsClient: FlagsClientProtocol
+    public func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)
+    public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
+public protocol FlagsClientProtocol: AnyObject
+    func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)
+    func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
+[?] extension FlagsClientProtocol
+    public func setEvaluationContext(_ context: FlagsEvaluationContext)
+    public func setEvaluationContext(_ context: FlagsEvaluationContext) async throws
+[?] extension FlagsClientProtocol
+    public func getValue<T>(key: String, defaultValue: T) -> T where T: Equatable, T: FlagValue
+    public func getBooleanValue(key: String, defaultValue: Bool) -> Bool
+    public func getStringValue(key: String, defaultValue: String) -> String
+    public func getIntegerValue(key: String, defaultValue: Int) -> Int
+    public func getDoubleValue(key: String, defaultValue: Double) -> Double
+    public func getObjectValue(key: String, defaultValue: AnyValue) -> AnyValue
+[?] extension FlagsClientProtocol
+    public func getBooleanDetails(key: String, defaultValue: Bool) -> FlagDetails<Bool>
+    public func getStringDetails(key: String, defaultValue: String) -> FlagDetails<String>
+    public func getIntegerDetails(key: String, defaultValue: Int) -> FlagDetails<Int>
+    public func getDoubleDetails(key: String, defaultValue: Double) -> FlagDetails<Double>
+    public func getObjectDetails(key: String, defaultValue: AnyValue) -> FlagDetails<AnyValue>
+public enum Flags
+    public struct Configuration
+        public var gracefulModeEnabled: Bool
+        public var customFlagsEndpoint: URL?
+        public var customFlagsHeaders: [String: String]?
+        public var customExposureEndpoint: URL?
+        public var trackExposures: Bool
+        public var rumIntegrationEnabled: Bool
+        public init(gracefulModeEnabled: Bool = true,customFlagsEndpoint: URL? = nil,customFlagsHeaders: [String: String]? = nil,customExposureEndpoint: URL? = nil,trackExposures: Bool = true,rumIntegrationEnabled: Bool = true)
+    public static func enable(with configuration: Flags.Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default)
+public enum AnyValue: Equatable
+    case string(String)
+    case bool(Bool)
+    case int(Int)
+    case double(Double)
+    case dictionary([String: AnyValue])
+    case array([AnyValue])
+    case null
+[?] extension AnyValue: Codable
+    public init(from decoder: Decoder) throws
+    public func encode(to encoder: Encoder) throws
+public enum FlagEvaluationError: Error
+    case providerNotReady
+    case flagNotFound
+    case typeMismatch
+public struct FlagDetails<T>: Equatable where T: Equatable
+    public var key: String
+    public var value: T
+    public var variant: String?
+    public var reason: String?
+    public var error: FlagEvaluationError?
+    public init(key: String,value: T,variant: String? = nil,reason: String? = nil,error: FlagEvaluationError? = nil)
+public protocol FlagValue: Encodable
+public enum FlagsError: Error
+    case networkError(Error)
+    case invalidResponse
+    case clientNotInitialized
+    case invalidConfiguration
+public struct FlagsEvaluationContext: Equatable, Codable
+    public let targetingKey: String
+    public let attributes: [String: AnyValue]
+    public init(targetingKey: String, attributes: [String: AnyValue] = [:])
