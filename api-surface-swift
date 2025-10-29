@@ -252,13 +252,13 @@ public protocol OTSpanContext
     func forEachBaggageItem(callback: (_ key: String, _ value: String) -> Bool)
 public protocol OTTracer
     func startSpan(operationName: String,references: [OTReference]?,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
-    func startRootSpan(operationName: String,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
+    func startRootSpan(operationName: String,tags: [String: Encodable]?,startTime: Date?,customSamplingRate: SampleRate?) -> OTSpan
     func inject(spanContext: OTSpanContext, writer: OTFormatWriter)
     func extract(reader: OTFormatReader) -> OTSpanContext?
     var activeSpan: OTSpan?
 public extension OTTracer
     func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
-    func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
+    func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil,customSamplingRate: SampleRate? = nil) -> OTSpan
 public typealias SpanEventMapper = (SpanEvent) -> SpanEvent
 public struct SpanEvent: Encodable
     public var operationName: String
@@ -477,7 +477,7 @@ public struct DatadogInternalInterface
     public func setInternalViewAttribute(at time: Date,key: AttributeKey,value: AttributeValue)
     public func addResourceMetrics(at time: Date,resourceKey: String,fetch: (start: Date, end: Date),redirection: (start: Date, end: Date)?,dns: (start: Date, end: Date)?,connect: (start: Date, end: Date)?,ssl: (start: Date, end: Date)?,firstByte: (start: Date, end: Date)?,download: (start: Date, end: Date)?,responseSize: Int64?,attributes: [AttributeKey: AttributeValue] = [:])
 public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
-public typealias RUMFeatureOperationFailureReason = RUMVitalOperationStepEvent.Vital.FailureReason
+public typealias RUMFeatureOperationFailureReason = RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason
 public enum RUMActionType
     case tap
     case click
@@ -563,6 +563,57 @@ public enum WebViewTracking
 
 [?] extension SRTextPosition.Alignment
     public init(systemTextAlignment: NSTextAlignment,vertical: SRTextPosition.Alignment.Vertical = .center)
+public struct SRSegment: SRDataModel
+    public let application: Application
+    public let end: Int64
+    public let hasFullSnapshot: Bool?
+    public let indexInView: Int64?
+    public let records: [SRRecord]
+    public let recordsCount: Int64
+    public let session: Session
+    public let source: Source
+    public let start: Int64
+    public let view: View
+    public enum CodingKeys: String, CodingKey
+        case application = "application"
+        case end = "end"
+        case hasFullSnapshot = "has_full_snapshot"
+        case indexInView = "index_in_view"
+        case records = "records"
+        case recordsCount = "records_count"
+        case session = "session"
+        case source = "source"
+        case start = "start"
+        case view = "view"
+    public init(application: Application,end: Int64,hasFullSnapshot: Bool? = nil,indexInView: Int64? = nil,records: [SRRecord],recordsCount: Int64,session: Session,source: Source,start: Int64,view: View)
+    public struct Application: Codable
+        public let id: String
+        public enum CodingKeys: String, CodingKey
+            case id = "id"
+        public init(id: String)
+    public struct Session: Codable
+        public let id: String
+        public enum CodingKeys: String, CodingKey
+            case id = "id"
+        public init(id: String)
+    public enum Source: String, Codable
+        case android = "android"
+        case ios = "ios"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case kotlinMultiplatform = "kotlin-multiplatform"
+    public struct View: Codable
+        public let id: String
+        public enum CodingKeys: String, CodingKey
+            case id = "id"
+        public init(id: String)
+public struct SRShapeBorder: Codable, Hashable
+    public let color: String
+    public let width: Int64
+    public enum CodingKeys: String, CodingKey
+        case color = "color"
+        case width = "width"
+    public init(color: String,width: Int64)
 public struct SRContentClip: Codable, Hashable
     public let bottom: Int64?
     public let left: Int64?
@@ -574,36 +625,105 @@ public struct SRContentClip: Codable, Hashable
         case right = "right"
         case top = "top"
     public init(bottom: Int64? = nil,left: Int64? = nil,right: Int64? = nil,top: Int64? = nil)
-public struct SRFocusRecord: Codable
-    public let data: Data
-    public let slotId: String?
-    public let timestamp: Int64
-    public let type: Int64 = 6
+public struct SRShapeStyle: Codable, Hashable
+    public let backgroundColor: String?
+    public let cornerRadius: Double?
+    public let opacity: Double?
     public enum CodingKeys: String, CodingKey
-        case data = "data"
-        case slotId = "slotId"
-        case timestamp = "timestamp"
-        case type = "type"
-    public init(data: Data,slotId: String? = nil,timestamp: Int64)
-    public struct Data: Codable
-        public let hasFocus: Bool
-        public enum CodingKeys: String, CodingKey
-            case hasFocus = "has_focus"
-        public init(hasFocus: Bool)
-public struct SRFullSnapshotRecord: Codable
-    public let data: Data
-    public let timestamp: Int64
-    public let type: Int64 = 10
+        case backgroundColor = "backgroundColor"
+        case cornerRadius = "cornerRadius"
+        case opacity = "opacity"
+    public init(backgroundColor: String? = nil,cornerRadius: Double? = nil,opacity: Double? = nil)
+public struct SRShapeWireframe: Codable, Hashable
+    public let border: SRShapeBorder?
+    public let clip: SRContentClip?
+    public let height: Int64
+    public let id: Int64
+    public let shapeStyle: SRShapeStyle?
+    public let type: String = "shape"
+    public let width: Int64
+    public let x: Int64
+    public let y: Int64
     public enum CodingKeys: String, CodingKey
-        case data = "data"
-        case timestamp = "timestamp"
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case shapeStyle = "shapeStyle"
         case type = "type"
-    public init(data: Data,timestamp: Int64)
-    public struct Data: Codable
-        public let wireframes: [SRWireframe]
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,shapeStyle: SRShapeStyle? = nil,width: Int64,x: Int64,y: Int64)
+public struct SRTextPosition: Codable, Hashable
+    public let alignment: Alignment?
+    public let padding: Padding?
+    public enum CodingKeys: String, CodingKey
+        case alignment = "alignment"
+        case padding = "padding"
+    public init(alignment: Alignment? = nil,padding: Padding? = nil)
+    public struct Alignment: Codable, Hashable
+        public let horizontal: Horizontal?
+        public let vertical: Vertical?
         public enum CodingKeys: String, CodingKey
-            case wireframes = "wireframes"
-        public init(wireframes: [SRWireframe])
+            case horizontal = "horizontal"
+            case vertical = "vertical"
+        public init(horizontal: Horizontal? = nil,vertical: Vertical? = nil)
+        public enum Horizontal: String, Codable
+            case left = "left"
+            case right = "right"
+            case center = "center"
+        public enum Vertical: String, Codable
+            case top = "top"
+            case bottom = "bottom"
+            case center = "center"
+    public struct Padding: Codable, Hashable
+        public let bottom: Int64?
+        public let left: Int64?
+        public let right: Int64?
+        public let top: Int64?
+        public enum CodingKeys: String, CodingKey
+            case bottom = "bottom"
+            case left = "left"
+            case right = "right"
+            case top = "top"
+        public init(bottom: Int64? = nil,left: Int64? = nil,right: Int64? = nil,top: Int64? = nil)
+public struct SRTextStyle: Codable, Hashable
+    public let color: String
+    public let family: String
+    public let size: Int64
+    public enum CodingKeys: String, CodingKey
+        case color = "color"
+        case family = "family"
+        case size = "size"
+    public init(color: String,family: String,size: Int64)
+public struct SRTextWireframe: Codable, Hashable
+    public let border: SRShapeBorder?
+    public let clip: SRContentClip?
+    public let height: Int64
+    public let id: Int64
+    public let shapeStyle: SRShapeStyle?
+    public var text: String
+    public let textPosition: SRTextPosition?
+    public let textStyle: SRTextStyle
+    public let type: String = "text"
+    public let width: Int64
+    public let x: Int64
+    public let y: Int64
+    public enum CodingKeys: String, CodingKey
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case shapeStyle = "shapeStyle"
+        case text = "text"
+        case textPosition = "textPosition"
+        case textStyle = "textStyle"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,shapeStyle: SRShapeStyle? = nil,text: String,textPosition: SRTextPosition? = nil,textStyle: SRTextStyle,width: Int64,x: Int64,y: Int64)
 public struct SRImageWireframe: Codable, Hashable
     public var base64: String?
     public let border: SRShapeBorder?
@@ -633,6 +753,72 @@ public struct SRImageWireframe: Codable, Hashable
         case x = "x"
         case y = "y"
     public init(base64: String? = nil,border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isEmpty: Bool? = nil,mimeType: String? = nil,resourceId: String? = nil,shapeStyle: SRShapeStyle? = nil,width: Int64,x: Int64,y: Int64)
+public struct SRPlaceholderWireframe: Codable, Hashable
+    public let clip: SRContentClip?
+    public let height: Int64
+    public let id: Int64
+    public var label: String?
+    public let type: String = "placeholder"
+    public let width: Int64
+    public let x: Int64
+    public let y: Int64
+    public enum CodingKeys: String, CodingKey
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case label = "label"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    public init(clip: SRContentClip? = nil,height: Int64,id: Int64,label: String? = nil,width: Int64,x: Int64,y: Int64)
+public struct SRWebviewWireframe: Codable, Hashable
+    public let border: SRShapeBorder?
+    public let clip: SRContentClip?
+    public let height: Int64
+    public let id: Int64
+    public let isVisible: Bool?
+    public let shapeStyle: SRShapeStyle?
+    public let slotId: String
+    public let type: String = "webview"
+    public let width: Int64
+    public let x: Int64
+    public let y: Int64
+    public enum CodingKeys: String, CodingKey
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case isVisible = "isVisible"
+        case shapeStyle = "shapeStyle"
+        case slotId = "slotId"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isVisible: Bool? = nil,shapeStyle: SRShapeStyle? = nil,slotId: String,width: Int64,x: Int64,y: Int64)
+public enum SRWireframe: Codable
+    case shapeWireframe(value: SRShapeWireframe)
+    case textWireframe(value: SRTextWireframe)
+    case imageWireframe(value: SRImageWireframe)
+    case placeholderWireframe(value: SRPlaceholderWireframe)
+    case webviewWireframe(value: SRWebviewWireframe)
+    public func encode(to encoder: Encoder) throws
+    public init(from decoder: Decoder) throws
+public struct SRFullSnapshotRecord: Codable
+    public let data: Data
+    public let timestamp: Int64
+    public let type: Int64 = 10
+    public enum CodingKeys: String, CodingKey
+        case data = "data"
+        case timestamp = "timestamp"
+        case type = "type"
+    public init(data: Data,timestamp: Int64)
+    public struct Data: Codable
+        public let wireframes: [SRWireframe]
+        public enum CodingKeys: String, CodingKey
+            case wireframes = "wireframes"
+        public init(wireframes: [SRWireframe])
 public struct SRIncrementalSnapshotRecord: Codable
     public let data: Data
     public let timestamp: Int64
@@ -871,184 +1057,22 @@ public struct SRMetaRecord: Codable
             case href = "href"
             case width = "width"
         public init(height: Int64,href: String? = nil,width: Int64)
-public struct SRPlaceholderWireframe: Codable, Hashable
-    public let clip: SRContentClip?
-    public let height: Int64
-    public let id: Int64
-    public var label: String?
-    public let type: String = "placeholder"
-    public let width: Int64
-    public let x: Int64
-    public let y: Int64
+public struct SRFocusRecord: Codable
+    public let data: Data
+    public let slotId: String?
+    public let timestamp: Int64
+    public let type: Int64 = 6
     public enum CodingKeys: String, CodingKey
-        case clip = "clip"
-        case height = "height"
-        case id = "id"
-        case label = "label"
+        case data = "data"
+        case slotId = "slotId"
+        case timestamp = "timestamp"
         case type = "type"
-        case width = "width"
-        case x = "x"
-        case y = "y"
-    public init(clip: SRContentClip? = nil,height: Int64,id: Int64,label: String? = nil,width: Int64,x: Int64,y: Int64)
-public enum SRRecord: Codable
-    case fullSnapshotRecord(value: SRFullSnapshotRecord)
-    case incrementalSnapshotRecord(value: SRIncrementalSnapshotRecord)
-    case metaRecord(value: SRMetaRecord)
-    case focusRecord(value: SRFocusRecord)
-    case viewEndRecord(value: SRViewEndRecord)
-    case visualViewportRecord(value: SRVisualViewportRecord)
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-public struct SRSegment: SRDataModel
-    public let application: Application
-    public let end: Int64
-    public let hasFullSnapshot: Bool?
-    public let indexInView: Int64?
-    public let records: [SRRecord]
-    public let recordsCount: Int64
-    public let session: Session
-    public let source: Source
-    public let start: Int64
-    public let view: View
-    public enum CodingKeys: String, CodingKey
-        case application = "application"
-        case end = "end"
-        case hasFullSnapshot = "has_full_snapshot"
-        case indexInView = "index_in_view"
-        case records = "records"
-        case recordsCount = "records_count"
-        case session = "session"
-        case source = "source"
-        case start = "start"
-        case view = "view"
-    public init(application: Application,end: Int64,hasFullSnapshot: Bool? = nil,indexInView: Int64? = nil,records: [SRRecord],recordsCount: Int64,session: Session,source: Source,start: Int64,view: View)
-    public struct Application: Codable
-        public let id: String
+    public init(data: Data,slotId: String? = nil,timestamp: Int64)
+    public struct Data: Codable
+        public let hasFocus: Bool
         public enum CodingKeys: String, CodingKey
-            case id = "id"
-        public init(id: String)
-    public struct Session: Codable
-        public let id: String
-        public enum CodingKeys: String, CodingKey
-            case id = "id"
-        public init(id: String)
-    public enum Source: String, Codable
-        case android = "android"
-        case ios = "ios"
-        case flutter = "flutter"
-        case reactNative = "react-native"
-        case kotlinMultiplatform = "kotlin-multiplatform"
-    public struct View: Codable
-        public let id: String
-        public enum CodingKeys: String, CodingKey
-            case id = "id"
-        public init(id: String)
-public struct SRShapeBorder: Codable, Hashable
-    public let color: String
-    public let width: Int64
-    public enum CodingKeys: String, CodingKey
-        case color = "color"
-        case width = "width"
-    public init(color: String,width: Int64)
-public struct SRShapeStyle: Codable, Hashable
-    public let backgroundColor: String?
-    public let cornerRadius: Double?
-    public let opacity: Double?
-    public enum CodingKeys: String, CodingKey
-        case backgroundColor = "backgroundColor"
-        case cornerRadius = "cornerRadius"
-        case opacity = "opacity"
-    public init(backgroundColor: String? = nil,cornerRadius: Double? = nil,opacity: Double? = nil)
-public struct SRShapeWireframe: Codable, Hashable
-    public let border: SRShapeBorder?
-    public let clip: SRContentClip?
-    public let height: Int64
-    public let id: Int64
-    public let shapeStyle: SRShapeStyle?
-    public let type: String = "shape"
-    public let width: Int64
-    public let x: Int64
-    public let y: Int64
-    public enum CodingKeys: String, CodingKey
-        case border = "border"
-        case clip = "clip"
-        case height = "height"
-        case id = "id"
-        case shapeStyle = "shapeStyle"
-        case type = "type"
-        case width = "width"
-        case x = "x"
-        case y = "y"
-    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,shapeStyle: SRShapeStyle? = nil,width: Int64,x: Int64,y: Int64)
-public struct SRTextPosition: Codable, Hashable
-    public let alignment: Alignment?
-    public let padding: Padding?
-    public enum CodingKeys: String, CodingKey
-        case alignment = "alignment"
-        case padding = "padding"
-    public init(alignment: Alignment? = nil,padding: Padding? = nil)
-    public struct Alignment: Codable, Hashable
-        public let horizontal: Horizontal?
-        public let vertical: Vertical?
-        public enum CodingKeys: String, CodingKey
-            case horizontal = "horizontal"
-            case vertical = "vertical"
-        public init(horizontal: Horizontal? = nil,vertical: Vertical? = nil)
-        public enum Horizontal: String, Codable
-            case left = "left"
-            case right = "right"
-            case center = "center"
-        public enum Vertical: String, Codable
-            case top = "top"
-            case bottom = "bottom"
-            case center = "center"
-    public struct Padding: Codable, Hashable
-        public let bottom: Int64?
-        public let left: Int64?
-        public let right: Int64?
-        public let top: Int64?
-        public enum CodingKeys: String, CodingKey
-            case bottom = "bottom"
-            case left = "left"
-            case right = "right"
-            case top = "top"
-        public init(bottom: Int64? = nil,left: Int64? = nil,right: Int64? = nil,top: Int64? = nil)
-public struct SRTextStyle: Codable, Hashable
-    public let color: String
-    public let family: String
-    public let size: Int64
-    public enum CodingKeys: String, CodingKey
-        case color = "color"
-        case family = "family"
-        case size = "size"
-    public init(color: String,family: String,size: Int64)
-public struct SRTextWireframe: Codable, Hashable
-    public let border: SRShapeBorder?
-    public let clip: SRContentClip?
-    public let height: Int64
-    public let id: Int64
-    public let shapeStyle: SRShapeStyle?
-    public var text: String
-    public let textPosition: SRTextPosition?
-    public let textStyle: SRTextStyle
-    public let type: String = "text"
-    public let width: Int64
-    public let x: Int64
-    public let y: Int64
-    public enum CodingKeys: String, CodingKey
-        case border = "border"
-        case clip = "clip"
-        case height = "height"
-        case id = "id"
-        case shapeStyle = "shapeStyle"
-        case text = "text"
-        case textPosition = "textPosition"
-        case textStyle = "textStyle"
-        case type = "type"
-        case width = "width"
-        case x = "x"
-        case y = "y"
-    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,shapeStyle: SRShapeStyle? = nil,text: String,textPosition: SRTextPosition? = nil,textStyle: SRTextStyle,width: Int64,x: Int64,y: Int64)
+            case hasFocus = "has_focus"
+        public init(hasFocus: Bool)
 public struct SRViewEndRecord: Codable
     public let slotId: String?
     public let timestamp: Int64
@@ -1086,37 +1110,13 @@ public struct SRVisualViewportRecord: Codable
             case scale = "scale"
             case width = "width"
         public init(height: Double,offsetLeft: Double,offsetTop: Double,pageLeft: Double,pageTop: Double,scale: Double,width: Double)
-public struct SRWebviewWireframe: Codable, Hashable
-    public let border: SRShapeBorder?
-    public let clip: SRContentClip?
-    public let height: Int64
-    public let id: Int64
-    public let isVisible: Bool?
-    public let shapeStyle: SRShapeStyle?
-    public let slotId: String
-    public let type: String = "webview"
-    public let width: Int64
-    public let x: Int64
-    public let y: Int64
-    public enum CodingKeys: String, CodingKey
-        case border = "border"
-        case clip = "clip"
-        case height = "height"
-        case id = "id"
-        case isVisible = "isVisible"
-        case shapeStyle = "shapeStyle"
-        case slotId = "slotId"
-        case type = "type"
-        case width = "width"
-        case x = "x"
-        case y = "y"
-    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isVisible: Bool? = nil,shapeStyle: SRShapeStyle? = nil,slotId: String,width: Int64,x: Int64,y: Int64)
-public enum SRWireframe: Codable
-    case shapeWireframe(value: SRShapeWireframe)
-    case textWireframe(value: SRTextWireframe)
-    case imageWireframe(value: SRImageWireframe)
-    case placeholderWireframe(value: SRPlaceholderWireframe)
-    case webviewWireframe(value: SRWebviewWireframe)
+public enum SRRecord: Codable
+    case fullSnapshotRecord(value: SRFullSnapshotRecord)
+    case incrementalSnapshotRecord(value: SRIncrementalSnapshotRecord)
+    case metaRecord(value: SRMetaRecord)
+    case focusRecord(value: SRFocusRecord)
+    case viewEndRecord(value: SRViewEndRecord)
+    case visualViewportRecord(value: SRVisualViewportRecord)
     public func encode(to encoder: Encoder) throws
     public init(from decoder: Decoder) throws
 public typealias WireframeID = NodeID

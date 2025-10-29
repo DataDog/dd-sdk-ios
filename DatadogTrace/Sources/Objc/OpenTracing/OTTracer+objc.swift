@@ -20,6 +20,7 @@ public protocol objc_OTTracer {
     func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?) -> objc_OTSpan
     func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?, tags: NSDictionary?) -> objc_OTSpan
     func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?, tags: NSDictionary?, startTime: Date?) -> objc_OTSpan
+    func startRootSpan(_ operationName: String, tags: NSDictionary?, startTime: Date?, customSamplingRate: NSNumber?) -> objc_OTSpan
     func inject(_ spanContext: objc_OTSpanContext, format: String, carrier: Any) throws
     func extractWithFormat(_ format: String, carrier: Any) throws
 }
