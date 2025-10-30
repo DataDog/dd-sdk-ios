@@ -220,12 +220,13 @@ Tools Tests:
     - ./tools/runner-setup.sh --python
     - make tools-test
 
-Benchmark Build:
-  stage: smoke-test
-  rules:
-    - !reference [.benchmark-pipeline-job, rules]
-  script:
-    - make benchmark-build
+# TODO: RUM-12512 - Enable benchmark build and upload
+# Benchmark Build:
+#   stage: smoke-test
+#   rules:
+#     - !reference [.benchmark-pipeline-job, rules]
+#   script:
+#     - make benchmark-build
 
 Smoke Tests (iOS):
   stage: smoke-test
