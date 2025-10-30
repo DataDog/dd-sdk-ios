@@ -954,10 +954,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         // Given
         var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
-        mockRequest.setValue("GetUser", forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-name")
-        mockRequest.setValue("query", forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-type")
-        mockRequest.setValue("{\"userId\":\"123\"}", forHTTPHeaderField: "_dd-custom-header-graph-ql-variables")
-        mockRequest.setValue("query GetUser($userId: ID!) { user(id: $userId) { name } }", forHTTPHeaderField: "_dd-custom-header-graph-ql-payload")
+        mockRequest.setValue("GetUser", forHTTPHeaderField: GraphQLHeaders.operationName)
+        mockRequest.setValue("query", forHTTPHeaderField: GraphQLHeaders.operationType)
+        mockRequest.setValue("{\"userId\":\"123\"}", forHTTPHeaderField: GraphQLHeaders.variables)
+        mockRequest.setValue("query GetUser($userId: ID!) { user(id: $userId) { name } }", forHTTPHeaderField: GraphQLHeaders.payload)
 
         let immutableRequest = ImmutableRequest(request: mockRequest)
         let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
@@ -989,8 +989,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         // Given
         var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
-        mockRequest.setValue("FailedMutation", forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-name")
-        mockRequest.setValue("mutation", forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-type")
+        mockRequest.setValue("FailedMutation", forHTTPHeaderField: GraphQLHeaders.operationName)
+        mockRequest.setValue("mutation", forHTTPHeaderField: GraphQLHeaders.operationType)
 
         let immutableRequest = ImmutableRequest(request: mockRequest)
         let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
