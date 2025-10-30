@@ -8,7 +8,9 @@ import Foundation
 import DatadogInternal
 
 // swiftlint:disable duplicate_imports
-#if swift(>=6.0)
+#if COCOAPODS
+import KSCrash
+#elseif swift(>=6.0)
 internal import KSCrashRecording
 internal import KSCrashFilters
 #else
