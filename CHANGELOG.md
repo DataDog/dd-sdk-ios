@@ -6,7 +6,7 @@
 - [FEATURE] Add `DatadogFlags` module for feature flag evaluation and management. See [#2532][]
 - [FEATURE] Send data for GraphQL requests in Resource Events. See [#2501][]
 - [FIX] Fix OTel parent spans with multiple sequential child spans. See [#2530][] (Thanks [@jbluntz][])
-- [FIX] Typos in internal accessibility implementation. See [#2538][] (Thanks [@tdr-alays][])
+- [FIX] Fix typos in internal accessibility implementation. See [#2538][] (Thanks [@tdr-alays][])
 
 # 3.1.0 / 18-09-2025
 
