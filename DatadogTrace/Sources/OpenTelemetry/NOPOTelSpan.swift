@@ -29,6 +29,8 @@ internal class NOPOTelSpan: Span {
 
     func setAttribute(key: String, value: OpenTelemetryApi.AttributeValue?) {}
 
+    func setAttributes(_ attributes: [String: OpenTelemetryApi.AttributeValue]) {}
+
     func addEvent(name: String) {}
 
     func addEvent(name: String, timestamp: Date) {}

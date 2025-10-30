@@ -321,6 +321,35 @@ final class OTelSpanTests: XCTestCase {
         DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
     }
 
+    func testSetAttributes() throws {
+        // Given
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
+        let span = tracer.spanBuilder(spanName: "Span").startSpan()
+
+        // When
+        span.setAttributes([
+            "key": .bool(true),
+            "key2": .string("value2"),
+            "key3": .int(3),
+            "key4": .double(4.0),
+        ])
+        span.end()
+
+        // Then
+        let recordedSpans = try featureScope.spanEventsWritten()
+        XCTAssertEqual(recordedSpans.count, 1)
+        let recordedSpan = recordedSpans.first!
+        let expectedTags =
+        [
+            "key": "true",
+            "key2": "value2",
+            "key3": "3",
+            "key4": "4.0",
+            "span.kind": "internal",
+        ]
+        DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
+    }
+
     func testSetGlobalAttribute() throws {
         // Given
         let tracer: DatadogTracer = .mockWith(
