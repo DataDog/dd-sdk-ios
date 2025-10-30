@@ -203,7 +203,7 @@ private final class FeatureScopeInterceptor: @unchecked Sendable {
 
             let event = value
             let data = try! InterceptingWriter.jsonEncoder.encode(value)
-            interception?.events.append((event, data))
+            interception?.events.append((event, metadata, data))
         }
     }
 
@@ -214,14 +214,14 @@ private final class FeatureScopeInterceptor: @unchecked Sendable {
     // MARK: - Synchronizing and awaiting events:
 
     @ReadWriteLock
-    private var events: [(event: Any, data: Data)] = []
+    private var events: [(event: Any, metadata: Any, data: Data)] = []
 
     private let group = DispatchGroup()
 
     func enter() { group.enter() }
     func leave() { group.leave() }
 
-    func waitAndReturnEvents(timeout: DispatchTime) -> [(event: Any, data: Data)] {
+    func waitAndReturnEvents(timeout: DispatchTime) -> [(event: Any, metadata: Any, data: Data)] {
         _ = group.wait(timeout: timeout)
         return events
     }
@@ -232,6 +232,7 @@ extension DatadogCoreProxy {
     /// - Parameters:
     ///   - name: The Feature to retrieve events from
     ///   - type: The type of events to filter out
+    ///   - timeout: The timeout to wait for events
     /// - Returns: A list of events.
     public func waitAndReturnEvents<T>(ofFeature name: String, ofType type: T.Type, timeout: DispatchTime = .distantFuture) -> [T] where T: Encodable {
         flush()
@@ -241,9 +242,26 @@ extension DatadogCoreProxy {
         return interceptor.waitAndReturnEvents(timeout: timeout).compactMap { $0.event as? T }
     }
 
+    /// Returns serialized events metadata of a given Feature.
+    ///
+    /// - Parameters:
+    ///   - name: The Feature to retrieve the metadata from
+    ///   - type: The type of metadata to filter out
+    ///   - timeout: The timeout to wait for events
+    /// - Returns: A list of serialized events metadata.
+    public func waitAndReturnEventsMetadata<T>(ofFeature name: String, ofType type: T.Type, timeout: DispatchTime = .distantFuture) -> [T] where T: Encodable {
+        flush()
+        guard let interceptor = self.featureScopeInterceptors[name] else {
+            return [] // feature scope was not requested, so there's no interception
+        }
+        return interceptor.waitAndReturnEvents(timeout: timeout).compactMap { $0.metadata as? T }
+    }
+
     /// Returns serialized events of given Feature.
     ///
-    /// - Parameter feature: The Feature to retrieve events from
+    /// - Parameters:
+    ///   - feature: The Feature to retrieve events from
+    ///   - timeout: The timeout to wait for events
     /// - Returns: A list of serialized events.
     public func waitAndReturnEventsData(ofFeature name: String, timeout: DispatchTime = .distantFuture) -> [Data] {
         flush()
