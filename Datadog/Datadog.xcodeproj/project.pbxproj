@@ -314,10 +314,6 @@
 		11F55FFE2DCE501A00DE4944 /* B3HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FDF2DCE501A00DE4944 /* B3HTTPHeadersWriter+objc.swift */; };
 		11F55FFF2DCE501A00DE4944 /* DDSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FE72DCE501A00DE4944 /* DDSpanContext+objc.swift */; };
 		11F560002DCE501A00DE4944 /* OTTracer+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F55FDD2DCE501A00DE4944 /* OTTracer+objc.swift */; };
-		1434A4612B7F73110072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
-		1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		1434A4632B7F73170072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
-		1434A4642B7F73170072E3BB /* OpenTelemetryApi.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1434A4662B7F8D880072E3BB /* DebugOTelTracingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */; };
 		1434A4672B7F8D880072E3BB /* DebugOTelTracingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */; };
 		261255872E2167E40015042B /* BaggageHeaderMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255862E2167E40015042B /* BaggageHeaderMerger.swift */; };
@@ -377,8 +373,6 @@
 		3C5D636A2B55512B00FEB4BA /* OTelTraceState+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5D63682B55512B00FEB4BA /* OTelTraceState+Datadog.swift */; };
 		3C5D636C2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5D636B2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift */; };
 		3C5D636D2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5D636B2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift */; };
-		3C5D691F2B76825500C4E07E /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
-		3C5D69222B76826000C4E07E /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
 		3C62C3612C3E852F00C7E336 /* MultiSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C62C3602C3E852F00C7E336 /* MultiSelector.swift */; };
 		3C6C7FE72B459AAA006F5CBC /* OTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */; };
 		3C6C7FE82B459AAA006F5CBC /* OTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */; };
@@ -2443,7 +2437,6 @@
 			files = (
 				D240685927CF5D0100C04F44 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */,
 				D240685527CF5D0100C04F44 /* DatadogCore.framework in ⚙️ Embed Framework Dependencies */,
-				1434A4642B7F73170072E3BB /* OpenTelemetryApi.xcframework in ⚙️ Embed Framework Dependencies */,
 				D24C9C4729A7A520002057CF /* DatadogLogs.framework in ⚙️ Embed Framework Dependencies */,
 			);
 			name = "⚙️ Embed Framework Dependencies";
@@ -2457,7 +2450,6 @@
 			files = (
 				3C2206F82AB9DBC600DE780C /* DatadogInternal.framework in Embed Frameworks */,
 				3C2206F72AB9DBB600DE780C /* DatadogTrace.framework in Embed Frameworks */,
-				1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */,
 				3C2206F62AB9DBA700DE780C /* DatadogRUM.framework in Embed Frameworks */,
 				3C2206F52AB9DB9000DE780C /* DatadogSessionReplay.framework in Embed Frameworks */,
 				D240687E27CF982D00C04F44 /* DatadogCrashReporting.framework in Embed Frameworks */,
@@ -3688,7 +3680,6 @@
 				D240687827CF982B00C04F44 /* CrashReporter.xcframework in Frameworks */,
 				D240687B27CF982C00C04F44 /* DatadogCore.framework in Frameworks */,
 				D240687D27CF982D00C04F44 /* DatadogCrashReporting.framework in Frameworks */,
-				1434A4612B7F73110072E3BB /* OpenTelemetryApi.xcframework in Frameworks */,
 				D24C9C4229A7A50D002057CF /* DatadogLogs.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3774,7 +3765,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				61A2CC342A44A6030000FF25 /* DatadogRUM.framework in Frameworks */,
-				1434A4632B7F73170072E3BB /* OpenTelemetryApi.xcframework in Frameworks */,
 				D25CFA9D29C4FC6E00E3A43D /* DatadogTrace.framework in Frameworks */,
 				9E5BD8062819742C00CB568E /* SwiftUI.framework in Frameworks */,
 				D240687027CF971C00C04F44 /* CrashReporter.xcframework in Frameworks */,
@@ -3819,7 +3809,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3C5D691F2B76825500C4E07E /* OpenTelemetryApi.xcframework in Frameworks */,
 				D2C1A50E29C4C4EF00946C31 /* DatadogInternal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3863,7 +3852,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3C5D69222B76826000C4E07E /* OpenTelemetryApi.xcframework in Frameworks */,
 				D2C1A57429C4F30000946C31 /* DatadogInternal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
