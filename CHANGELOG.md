@@ -1,5 +1,7 @@
 # Unreleased
 
+# 3.2.0 / 30-10-2025
+
 - [FIX] Fix Logger race condition. See [#2514][]
 - [FEATURE] Add `DatadogFlags` module for feature flag evaluation and management. See [#2532][]
 - [FEATURE] Send data for GraphQL requests in Resource Events. See [#2501][]
