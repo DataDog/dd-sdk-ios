@@ -233,4 +233,16 @@ internal class OTelSpan: OpenTelemetryApi.Span {
 
         attributes[key] = value
     }
+
+    func setAttributes(_ attributes: [String: OpenTelemetryApi.AttributeValue]) {
+        guard isRecording else {
+            return
+        }
+
+        _attributes.mutate {
+            for (key, value) in attributes {
+                $0[key] = value
+            }
+        }
+    }
 }
