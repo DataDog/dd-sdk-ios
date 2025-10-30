@@ -230,7 +230,9 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         // Given
         let ttfd = 2.0
         // The TTFD is only reported if the TTID is available
-        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockAny()
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(0.1)
+        )
         let ttfdCommand: RUMTimeToFullDisplayCommand = .mockWith(
             time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(ttfd)
         )
@@ -289,7 +291,9 @@ final class RUMAppLaunchManagerTests: XCTestCase {
             )
         )
         // The TTFD is only reported if the TTID is available
-        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockAny()
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: runtimeLoadDate.addingTimeInterval(0.1)
+        )
         let ttfdCommand: RUMTimeToFullDisplayCommand = .mockWith(
             time: runtimeLoadDate.addingTimeInterval(ttfd)
         )
@@ -323,7 +327,9 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         (appStateManager as? AppStateManagerMock)?.currentAppStateInfo = appStateInfo // similar AppStateInfo with the previous AppStateInfo
         let ttfd = 1.0
         // The TTFD is only reported if the TTID is available
-        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockAny()
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(0.1)
+        )
         let ttfdCommand: RUMTimeToFullDisplayCommand = .mockWith(
             time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(ttfd)
         )
@@ -353,7 +359,9 @@ final class RUMAppLaunchManagerTests: XCTestCase {
     func testTTFDCommand_isCapturedOnlyOnce() throws {
         // Given
         // The TTFD is only reported if the TTID is available
-        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockAny()
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(0.1)
+        )
         let firstTTFDCommand: RUMTimeToFullDisplayCommand = .mockWith(
             time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1)
         )
@@ -386,7 +394,9 @@ final class RUMAppLaunchManagerTests: XCTestCase {
     func testTTFDCommand_isIgnoredWhenTheDurationIsTooBig() throws {
         // Given
         // The TTFD is only reported if the TTID is available
-        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockAny()
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(0.1)
+        )
         let ttfdCommand: RUMTimeToFullDisplayCommand = .mockWith(
             time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(RUMAppLaunchManager.Constants.maxTTFDDuration + 1)
         )
