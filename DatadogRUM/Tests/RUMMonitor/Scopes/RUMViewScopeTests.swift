@@ -93,76 +93,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(scope.userActionScope?.actionUUID))
     }
 
-    func testWhenConfigurationSourceIsSet_applicationStartUsesTheConfigurationSource() throws {
-        // Given
-        let currentTime: Date = .mockDecember15th2019At10AMUTC()
-        let source = String.mockAnySource()
-        let customContext: DatadogContext = .mockWith(
-            source: source,
-            launchInfo: .mockWith(processLaunchDate: currentTime),
-            applicationStateHistory: .mockWith(initialState: .inactive, date: .distantPast)
-        )
-
-        let scope = RUMViewScope(
-            isInitialView: true,
-            parent: parent,
-            dependencies: .mockAny(),
-            identity: .mockViewIdentifier(),
-            path: "com/datadog/application-launch/view",
-            name: "ApplicationLaunch",
-            customTimings: [:],
-            startTime: currentTime,
-            serverTimeOffset: .zero,
-            interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
-        )
-
-        // When
-        _ = scope.process(
-            command: RUMApplicationStartCommand(time: currentTime, attributes: [:]),
-            context: customContext,
-            writer: writer
-        )
-
-        // Then
-        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
-        XCTAssertEqual(event.source, .init(rawValue: source))
-    }
-
-    func testWhenTimeToDidBecomeActiveTime_itSendsApplicationStartAction_basedOnLoadingDate() throws {
-        // Given
-        var context = self.context
-        let date = context.sdkInitDate
-        let processLaunchDate = date.addingTimeInterval(-2)
-        context.launchInfo = .mockWith(
-            launchReason: .userLaunch,
-            processLaunchDate: processLaunchDate,
-            timeToDidBecomeActive: nil
-        )
-        context.applicationStateHistory = .mockWith(initialState: .inactive, date: .distantPast)
-
-        let scope: RUMViewScope = .mockWith(
-            isInitialView: true,
-            parent: parent,
-            dependencies: .mockAny(),
-            identity: .mockViewIdentifier(),
-            path: "com/datadog/application-launch/view",
-            name: "ApplicationLaunch",
-            startTime: processLaunchDate
-        )
-
-        // When
-        _ = scope.process(
-            command: RUMApplicationStartCommand(time: date.addingTimeInterval(1), attributes: [:]),
-            context: context,
-            writer: writer
-        )
-
-        // Then
-        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
-        XCTAssertEqual(event.action.loadingTime, 3_000_000_000) // 2e+9 ns
-    }
-
     func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -849,7 +779,7 @@ class RUMViewScopeTests: XCTestCase {
         viewEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
 
         let actionEvents = writer.events(ofType: RUMActionEvent.self)
-        XCTAssertGreaterThan(actionEvents.count, 1)
+        XCTAssertEqual(actionEvents.count, 1)
         actionEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
 
         let errorEvents = writer.events(ofType: RUMErrorEvent.self)
@@ -3606,9 +3536,7 @@ class RUMViewScopeTests: XCTestCase {
                 resourceEventMapper: {
                     resourceMapperHolder.resourceEventMapper?($0)
                 },
-                actionEventMapper: { event in
-                    event.action.type == .applicationStart ? event : nil
-                }
+                actionEventMapper: { _ in nil }
             )
         )
         let dependencies: RUMScopeDependencies = .mockWith(

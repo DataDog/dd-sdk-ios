@@ -291,11 +291,11 @@ class RUMFeatureOperationsScenarioTests: IntegrationTests, RUMCommonAsserts {
         // Verify start event is associated with 1st view
         let startEvent = try XCTUnwrap(loginStartEvents.first)
         let firstView = session.views[1] // Skip application launch view
-        XCTAssertEqual(startEvent.view.id, firstView.viewID, "Start event should be associated with the view where it was started")
+        XCTAssertEqual(startEvent.view?.id, firstView.viewID, "Start event should be associated with the view where it was started")
 
         // Verify second event is associated with 2nd view
         let secondEvent = try XCTUnwrap(loginSucceedEvents.first)
         let secondView = session.views[2]
-        XCTAssertEqual(secondEvent.view.id, secondView.viewID, "Second event should be associated with the view where it was started")
+        XCTAssertEqual(secondEvent.view?.id, secondView.viewID, "Second event should be associated with the view where it was started")
     }
 }

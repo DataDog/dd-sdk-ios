@@ -51,15 +51,16 @@ internal final class RUMFeature: DatadogRemoteFeature {
         let tnsPredicateType = configuration.networkSettledResourcePredicate.metricPredicateType
         let invPredicateType = configuration.nextViewActionPredicate?.metricPredicateType ?? .disabled
 
+        let appStateManager = AppStateManager(
+            featureScope: featureScope,
+            processId: configuration.processID,
+            syntheticsEnvironment: configuration.syntheticsEnvironment
+        )
+
         let bundleType = BundleType(bundle: configuration.bundle)
         var watchdogTermination: WatchdogTerminationMonitor?
         if bundleType == .iOSApp,
             configuration.trackWatchdogTerminations {
-            let appStateManager = WatchdogTerminationAppStateManager(
-                featureScope: featureScope,
-                processId: configuration.processID,
-                syntheticsEnvironment: configuration.syntheticsEnvironment
-            )
             let monitor = WatchdogTerminationMonitor(
                 appStateManager: appStateManager,
                 checker: .init(
@@ -80,6 +81,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
         if  #available(iOS 13.0, tvOS 13.0, *), configuration.collectAccessibility {
              accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenter)
         }
+
+        let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
 
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
@@ -112,7 +115,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     return nil
                 }
             }(),
-            renderLoopObserver: DisplayLinker(notificationCenter: configuration.notificationCenter),
+            renderLoopObserver: DisplayLinker(
+                notificationCenter: configuration.notificationCenter,
+                frameInfoProviderFactory: configuration.frameInfoProviderFactory
+            ),
+            firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
                 configuration.featureFlags[.viewHitches]
                 ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
@@ -149,6 +156,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
                 return viewEndedController
             },
+            appStateManager: appStateManager,
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: { viewStartDate, viewName in
                 return TNSMetric(
@@ -176,6 +184,9 @@ internal final class RUMFeature: DatadogRemoteFeature {
         if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {
             dependencies.renderLoopObserver?.register(refreshRateVital)
         }
+
+        firstFrameReader.publish(to: monitor)
+        dependencies.renderLoopObserver?.register(firstFrameReader)
 
         var memoryWarningMonitor: MemoryWarningMonitor?
         if configuration.trackMemoryWarnings {

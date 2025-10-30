@@ -748,7 +748,7 @@ extension RUMTelemetryOperatingSystem: RandomMockable {
 
 extension RUMVitalEvent: RandomMockable {
     public static func mockRandom() -> RUMVitalEvent {
-        return RUMVitalEvent(
+        RUMVitalEvent(
             dd: .init(),
             application: .init(id: .mockRandom()),
             date: .mockRandom(),
@@ -761,13 +761,53 @@ extension RUMVitalEvent: RandomMockable {
 
 extension RUMVitalEvent.Vital: RandomMockable {
     public static func mockRandom() -> Self {
-        return .featureOperationProperties(value: .mockRandom())
+        let vitals = [
+            RUMVitalEvent.Vital.durationProperties(value: .mockRandom()),
+            .appLaunchProperties(value: .mockRandom()),
+            .featureOperationProperties(value: .mockRandom())
+        ]
+        return vitals.randomElement()!
+    }
+}
+
+extension RUMVitalEvent.Vital.DurationProperties: RandomMockable {
+    public static func mockRandom() -> Self {
+        .init(
+            duration: .mockRandom(),
+            id: .mockRandom(),
+            name: .mockRandom()
+        )
+    }
+}
+
+extension RUMVitalEvent.Vital.AppLaunchProperties: RandomMockable {
+    public static func mockRandom() -> Self {
+        .init(
+            appLaunchMetric: .mockRandom(),
+            duration: .mockRandom(),
+            id: .mockRandom(),
+            isPrewarmed: .mockRandom(),
+            name: .mockRandom(),
+            startupType: .mockRandom()
+        )
+    }
+}
+
+extension RUMVitalEvent.Vital.AppLaunchProperties.AppLaunchMetric: RandomMockable {
+    public static func mockRandom() -> Self {
+        [Self.ttid, .ttfd].randomElement()!
+    }
+}
+
+extension RUMVitalEvent.Vital.AppLaunchProperties.StartupType: RandomMockable {
+    public static func mockRandom() -> Self {
+        [Self.coldStart, .warmStart].randomElement()!
     }
 }
 
 extension RUMVitalEvent.Vital.FeatureOperationProperties: RandomMockable {
     public static func mockRandom() -> RUMVitalEvent.Vital.FeatureOperationProperties {
-        return RUMVitalEvent.Vital.FeatureOperationProperties(
+        .init(
             id: .mockRandom(),
             stepType: .mockRandom()
         )

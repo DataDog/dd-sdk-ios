@@ -251,7 +251,10 @@ extension LaunchInfo: AnyMockable, RandomMockable {
         return .init(
             launchReason: .mockAny(),
             processLaunchDate: .mockAny(),
-            timeToDidBecomeActive: .mockAny(),
+            runtimeLoadDate: .mockAny(),
+            runtimePreMainDate: .mockAny(),
+            didFinishLaunchingDate: .mockAny(),
+            didBecomeActiveDate: .mockAny(),
             raw: .mockAny()
         )
     }
@@ -259,13 +262,19 @@ extension LaunchInfo: AnyMockable, RandomMockable {
     public static func mockWith(
         launchReason: LaunchReason = .mockAny(),
         processLaunchDate: Date = Date(),
-        timeToDidBecomeActive: TimeInterval? = 1,
+        runtimeLoadDate: Date = Date(),
+        runtimePreMainDate: Date = Date(),
+        didFinishLaunchingDate: Date? = Date(),
+        didBecomeActiveDate: Date? = Date(),
         raw: LaunchInfo.Raw = .mockAny()
     ) -> LaunchInfo {
         return .init(
             launchReason: launchReason,
             processLaunchDate: processLaunchDate,
-            timeToDidBecomeActive: timeToDidBecomeActive,
+            runtimeLoadDate: runtimeLoadDate,
+            runtimePreMainDate: runtimePreMainDate,
+            didFinishLaunchingDate: didFinishLaunchingDate,
+            didBecomeActiveDate: didBecomeActiveDate,
             raw: raw
         )
     }
@@ -274,7 +283,10 @@ extension LaunchInfo: AnyMockable, RandomMockable {
         return .init(
             launchReason: .mockRandom(),
             processLaunchDate: .mockRandom(),
-            timeToDidBecomeActive: .mockRandom(),
+            runtimeLoadDate: .mockRandom(),
+            runtimePreMainDate: .mockRandom(),
+            didFinishLaunchingDate: .mockRandom(),
+            didBecomeActiveDate: .mockRandom(),
             raw: .mockRandom()
         )
     }
@@ -430,7 +442,7 @@ extension BatteryStatus: AnyMockable, RandomMockable {
     }
 }
 
-extension TrackingConsent {
+extension TrackingConsent: RandomMockable {
     public static func mockRandom() -> TrackingConsent {
         return [.granted, .notGranted, .pending].randomElement()!
     }

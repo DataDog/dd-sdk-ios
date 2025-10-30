@@ -42,6 +42,7 @@ internal struct RUMScopeDependencies {
     let ciTest: RUMCITest?
     let syntheticsTest: RUMSyntheticsTest?
     let renderLoopObserver: RenderLoopObserver?
+    let firstFrameReader: RenderLoopReader
     let viewHitchesReaderFactory: () -> (RenderLoopReader & ViewHitchesModel)?
     let vitalsReaders: VitalsReaders?
     let accessibilityReader: AccessibilityReading?
@@ -53,6 +54,7 @@ internal struct RUMScopeDependencies {
     let telemetry: Telemetry
     let sessionType: RUMSessionType
     let sessionEndedMetric: SessionEndedMetricController
+    let appStateManager: AppStateManaging
     let watchdogTermination: WatchdogTerminationMonitor?
 
     /// A factory function that creates `ViewEndedMetricController` for each new view started.
@@ -81,6 +83,7 @@ internal struct RUMScopeDependencies {
         ciTest: RUMCITest?,
         syntheticsTest: RUMSyntheticsTest?,
         renderLoopObserver: RenderLoopObserver?,
+        firstFrameReader: RenderLoopReader,
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)?,
         vitalsReaders: VitalsReaders?,
         accessibilityReader: AccessibilityReading?,
@@ -89,6 +92,7 @@ internal struct RUMScopeDependencies {
         fatalErrorContext: FatalErrorContextNotifying,
         sessionEndedMetric: SessionEndedMetricController,
         viewEndedMetricFactory: @escaping () -> ViewEndedController,
+        appStateManager: AppStateManaging,
         watchdogTermination: WatchdogTerminationMonitor?,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking,
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?,
@@ -107,6 +111,7 @@ internal struct RUMScopeDependencies {
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
         self.renderLoopObserver = renderLoopObserver
+        self.firstFrameReader = firstFrameReader
         self.viewHitchesReaderFactory = viewHitchesReaderFactory
         self.vitalsReaders = vitalsReaders
         self.accessibilityReader = accessibilityReader
@@ -116,6 +121,7 @@ internal struct RUMScopeDependencies {
         self.telemetry = featureScope.telemetry
         self.sessionEndedMetric = sessionEndedMetric
         self.viewEndedMetricFactory = viewEndedMetricFactory
+        self.appStateManager = appStateManager
         self.watchdogTermination = watchdogTermination
         self.networkSettledMetricFactory = networkSettledMetricFactory
         self.interactionToNextViewMetricFactory = interactionToNextViewMetricFactory

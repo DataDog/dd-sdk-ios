@@ -30,7 +30,7 @@ internal struct RUMDataStore {
         /// References pending App Hang information.
         /// If found during app start it is considered a fatal hang in previous process.
         case fatalAppHangKey = "fatal-app-hang"
-        case watchdogAppStateKey = "watchdog-app-state"
+        case appStateKey = "app-state"
         case watchdogRUMViewEvent = "watchdog-rum-view-event"
         case anonymousId = "rum-anonymous-id"
     }

@@ -630,10 +630,14 @@ class SessionEndedMetricTests: XCTestCase {
     func testReportingLaunchInfo() throws {
         let prewarmed: Bool = .mockRandom()
         let isUsingSceneLifecycle: Bool = .mockRandom()
+        let processLaunchDate = Date()
         let launchInfo = LaunchInfo(
             launchReason: .userLaunch,
-            processLaunchDate: Date(),
-            timeToDidBecomeActive: 1.84,
+            processLaunchDate: processLaunchDate,
+            runtimeLoadDate: nil,
+            runtimePreMainDate: nil,
+            didFinishLaunchingDate: nil,
+            didBecomeActiveDate: processLaunchDate.addingTimeInterval(1.84),
             raw: .init(taskPolicyRole: "TASK_ROLE_MOCK", isPrewarmed: prewarmed)
         )
         let sdkInitDate = launchInfo.processLaunchDate + 0.42

@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+import QuartzCore
 
 // swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.URLSessionInstrumentation
@@ -360,13 +361,18 @@ extension RUM {
         internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
         internal var spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator()
 
+        /// The provider of the current date.
         internal var dateProvider: DateProvider = SystemDateProvider()
+        /// The provider of the current media uptime.
+        internal var mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider()
         /// The main queue, subject to App Hangs monitoring.
         internal var mainQueue: DispatchQueue = .main
         /// Identifier of the current process, used to check if fatal App Hang originated in a previous process instance.
         internal var processID: UUID = currentProcessID
         /// The default notification center used for subscribing to app lifecycle events and system notifications.
         internal var notificationCenter: NotificationCenter = .default
+        /// The factory to create the frame info provider. Defaults to the `CADisplayLink`.
+        internal var frameInfoProviderFactory: (Any, Selector) -> FrameInfoProvider = { CADisplayLink(target: $0, selector: $1) }
         /// The bundle object that contains the current executable.
         internal var bundle: Bundle = .main
 

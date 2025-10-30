@@ -980,7 +980,10 @@ class RUMMonitorTests: XCTestCase {
             launchInfo: LaunchInfo(
                 launchReason: .userLaunch,
                 processLaunchDate: launchDate,
-                timeToDidBecomeActive: nil,
+                runtimeLoadDate: nil,
+                runtimePreMainDate: nil,
+                didFinishLaunchingDate: nil,
+                didBecomeActiveDate: nil,
                 raw: .mockAny()
             )
         )
@@ -1007,7 +1010,10 @@ class RUMMonitorTests: XCTestCase {
             launchInfo: LaunchInfo(
                 launchReason: .prewarming,
                 processLaunchDate: launchDate,
-                timeToDidBecomeActive: nil,
+                runtimeLoadDate: nil,
+                runtimePreMainDate: nil,
+                didFinishLaunchingDate: nil,
+                didBecomeActiveDate: nil,
                 raw: .mockAny()
             )
         )
@@ -1041,7 +1047,10 @@ class RUMMonitorTests: XCTestCase {
             launchInfo: LaunchInfo(
                 launchReason: .userLaunch,
                 processLaunchDate: launchDate,
-                timeToDidBecomeActive: nil,
+                runtimeLoadDate: nil,
+                runtimePreMainDate: nil,
+                didFinishLaunchingDate: nil,
+                didBecomeActiveDate: nil,
                 raw: .mockAny()
             )
         )
@@ -1105,13 +1114,9 @@ class RUMMonitorTests: XCTestCase {
             return resourceEvent
         }
         config.actionEventMapper = { actionEvent in
-            if actionEvent.action.type == .applicationStart {
-                return nil // drop `.applicationStart` action
-            } else {
-                var actionEvent = actionEvent
-                actionEvent.action.target?.name = "Modified tap action name"
-                return actionEvent
-            }
+            var actionEvent = actionEvent
+            actionEvent.action.target?.name = "Modified tap action name"
+            return actionEvent
         }
         config.errorEventMapper = { errorEvent in
             var errorEvent = errorEvent
@@ -1154,7 +1159,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testDroppingEventsBeforeTheyGetSent() throws {
         config.resourceEventMapper = { _ in nil }
-        config.actionEventMapper = { event in event.action.type == .applicationStart ? event : nil }
+        config.actionEventMapper = { _ in nil }
         config.errorEventMapper = { _ in nil }
         config.longTaskEventMapper = { _ in nil }
         RUM.enable(with: config, in: core)
