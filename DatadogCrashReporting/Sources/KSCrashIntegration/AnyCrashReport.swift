@@ -9,13 +9,10 @@ import Foundation
 // swiftlint:disable duplicate_imports
 #if COCOAPODS
 import KSCrash
-internal typealias KSCrashReport = KSCrash.CrashReport
 #elseif swift(>=6.0)
 internal import KSCrashRecording
-internal typealias KSCrashReport = KSCrashRecording.CrashReport
 #else
 @_implementationOnly import KSCrashRecording
-internal typealias KSCrashReport = KSCrashRecording.CrashReport
 #endif
 // swiftlint:enable duplicate_imports
 
@@ -33,7 +30,7 @@ internal typealias KSCrashReport = KSCrashRecording.CrashReport
 /// let report = AnyCrashReport(customData)
 /// // report can now be used anywhere KSCrashRecording.CrashReport is expected
 /// ```
-internal final class AnyCrashReport: NSObject, KSCrashReport {
+internal final class AnyCrashReport: NSObject, CrashReport {
     /// The wrapped value, stored as an untyped optional.
     ///
     /// This property holds the original value passed to the initializer without any
