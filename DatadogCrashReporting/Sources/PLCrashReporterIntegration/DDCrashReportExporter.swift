@@ -6,7 +6,7 @@
 
 import DatadogInternal
 
-/// Exports intermediate `CrashReport` to `DDCrashReport`.
+/// Exports intermediate `CrashReportInfo` to `DDCrashReport`.
 ///
 /// The responsibility of this component is to format crash information for integration with Error Tracking, namely:
 /// * `error.type`,
@@ -56,7 +56,7 @@ internal struct DDCrashReportExporter {
         "SIGUSR2": "User defined signal 2",
     ]
 
-    func export(_ crashReport: CrashReport) -> DDCrashReport {
+    func export(_ crashReport: CrashReportInfo) -> DDCrashReport {
         return DDCrashReport(
             date: crashReport.systemInfo?.timestamp,
             type: formattedType(for: crashReport),
@@ -76,14 +76,14 @@ internal struct DDCrashReportExporter {
     /// Formats the error type - in Datadog Error Tracking this corresponds to `error.type`.
     ///
     /// **Note:** This value is used for building error's fingerprint in Error Tracking, thus its cardinality must be controlled.
-    private func formattedType(for crashReport: CrashReport) -> String {
+    private func formattedType(for crashReport: CrashReportInfo) -> String {
         return "\(crashReport.signalInfo?.name ?? unknown) (\(crashReport.signalInfo?.code ?? unknown))"
     }
 
     /// Formats the error message - in Datadog Error Tracking this corresponds to `error.message`.
     ///
     /// **Note:** This value is used for building error's fingerprint in Error Tracking, thus its cardinality must be controlled.
-    private func formattedMessage(for crashReport: CrashReport) -> String {
+    private func formattedMessage(for crashReport: CrashReportInfo) -> String {
         if let exception = crashReport.exceptionInfo {
             // If the crash was caused by an uncaught exception
             let exceptionName = exception.name ?? unknown // e.g. `NSInvalidArgumentException`
@@ -106,7 +106,7 @@ internal struct DDCrashReportExporter {
     /// Formats the error stack - in Datadog Error Tracking this corresponds to `error.stack`.
     ///
     /// **Note:** This produces unsymbolicated stack trace, which is later symbolicated backend-side and used for building error's fingerprint in Error Tracking.
-    private func formattedStack(for crashReport: CrashReport) -> String {
+    private func formattedStack(for crashReport: CrashReportInfo) -> String {
         let crashedThread = crashReport.threads.first { $0.crashed }
         let exception = crashReport.exceptionInfo
 
@@ -142,7 +142,7 @@ internal struct DDCrashReportExporter {
 
     // MARK: - Exporting threads and binary images
 
-    private func formattedThreads(from crashReport: CrashReport) -> [DDThread] {
+    private func formattedThreads(from crashReport: CrashReportInfo) -> [DDThread] {
         return crashReport.threads.map { thread in
             return DDThread(
                 name: "Thread \(thread.threadNumber)",
@@ -153,7 +153,7 @@ internal struct DDCrashReportExporter {
         }
     }
 
-    private func formattedBinaryImages(from crashReport: CrashReport) -> [BinaryImage] {
+    private func formattedBinaryImages(from crashReport: CrashReportInfo) -> [BinaryImage] {
         return crashReport.binaryImages.map { image in
             // Ref. for this computation:
             // https://github.com/microsoft/plcrashreporter/blob/dbb05c0bc883bde1cfcad83e7add25862c95d11f/Source/PLCrashReportTextFormatter.m#L447
@@ -176,7 +176,7 @@ internal struct DDCrashReportExporter {
 
     // MARK: - Exporting meta information
 
-    private func formattedMeta(for crashReport: CrashReport) -> DDCrashReport.Meta {
+    private func formattedMeta(for crashReport: CrashReportInfo) -> DDCrashReport.Meta {
         let process = crashReport.processInfo.map { info in
             info.processName.map { "\($0) [\(info.processID)]" } ?? "[\(info.processID)]"
         }

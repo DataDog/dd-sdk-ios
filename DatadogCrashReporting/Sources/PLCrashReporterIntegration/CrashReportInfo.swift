@@ -11,7 +11,7 @@ import CrashReporter
 ///
 /// It implements preliminary consistency check for Objective-C `PLCrashReport` and provides additional
 /// type-safety for accessing its implicitly unwrapped optional values.
-internal struct CrashReport {
+internal struct CrashReportInfo {
     /// A client-generated 16-byte UUID of the incident.
     var incidentIdentifier: String?
     /// System information from the moment of crash.
@@ -125,7 +125,7 @@ internal struct CrashReportException: Error {
     let description: String
 }
 
-extension CrashReport {
+extension CrashReportInfo {
     init(from plcr: PLCrashReport) throws {
         guard let threads = plcr.threads,
               let images = plcr.images else {
