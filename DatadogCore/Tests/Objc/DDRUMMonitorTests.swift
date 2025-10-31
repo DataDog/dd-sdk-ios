@@ -254,6 +254,65 @@ class DDRUMMonitorTests: XCTestCase {
         XCTAssertNotEqual(try XCTUnwrap(sessionID1), try XCTUnwrap(sessionID2))
     }
 
+    func testSendingViewAttributes() throws {
+        RUM.enable(with: config)
+        let viewController = mockView
+        let objcRUMMonitor = objc_RUMMonitor.shared()
+
+        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: ["view-attribute3": "foobar"])
+
+        objcRUMMonitor.addViewAttribute(forKey: "view-attribute1", value: "foo")
+        objcRUMMonitor.addViewAttribute(forKey: "view-attribute2", value: "bar")
+        objcRUMMonitor.removeViewAttribute(forKey: "view-attribute2")
+
+        objcRUMMonitor.stopView(viewController: viewController, attributes: [:])
+
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
+            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+        }
+        XCTAssertEqual(viewEvents.count, 2)
+
+        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.view-attribute1"), "foo")
+        XCTAssertNil(try? viewEvents[1].attribute(forKeyPath: "context.view-attribute2") as String)
+        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.view-attribute3"), "foobar")
+    }
+
+    func testSendingMultipleViewAttributes() throws {
+        RUM.enable(with: config)
+        let viewController = mockView
+        let objcRUMMonitor = objc_RUMMonitor.shared()
+
+        objcRUMMonitor.startView(viewController: viewController, name: .mockAny(), attributes: [:])
+
+        objcRUMMonitor.addViewAttributes(
+            [
+                "view-attribute1": "foo",
+                "view-attribute2": "bar",
+                "view-attribute3": 3,
+                "view-attribute4": true,
+                "view-attribute5": "foobar"
+            ]
+        )
+        objcRUMMonitor.removeViewAttributes(forKeys: ["view-attribute2", "view-attribute5"])
+
+        objcRUMMonitor.stopView(viewController: viewController, attributes: [:])
+
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
+            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+        }
+        XCTAssertEqual(viewEvents.count, 2)
+
+        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.view-attribute1"), "foo")
+        XCTAssertNil(try? viewEvents[1].attribute(forKeyPath: "context.view-attribute2") as String)
+        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.view-attribute3"), 3)
+        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.view-attribute4"), true)
+        XCTAssertNil(try? viewEvents[1].attribute(forKeyPath: "context.view-attribute5") as String)
+    }
+
     func testSendingViewEvents() throws {
         RUM.enable(with: config)
 

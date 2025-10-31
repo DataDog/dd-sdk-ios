@@ -33,7 +33,7 @@ import DatadogInternal
 ///     
 public enum Datadog {
     /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
-    /// If set, internal events occuring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
+    /// If set, internal events occurring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
     /// Default is `nil`.
     public static var verbosityLevel: CoreLoggerLevel? {
         get { _verbosityLevel.wrappedValue }

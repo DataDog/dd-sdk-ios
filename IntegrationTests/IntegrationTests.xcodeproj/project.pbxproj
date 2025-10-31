@@ -91,6 +91,10 @@
 		963F72412DB0FD4C00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963F72402DB0FD4B00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift */; };
 		964537F02DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 964537EF2DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard */; };
 		964537F42DCBBAC900C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964537F32DCBBAC800C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootView.swift */; };
+		967850462E7C0D9000F2FC52 /* RUMFeatureOperationsScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967850452E7C0D9000F2FC52 /* RUMFeatureOperationsScenarioTests.swift */; };
+		9678504B2E7C223E00F2FC52 /* RUMFeatureOperationsScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 967850492E7C223E00F2FC52 /* RUMFeatureOperationsScenario.storyboard */; };
+		9678504C2E7C223E00F2FC52 /* RUMFeatureOperationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9678504A2E7C223E00F2FC52 /* RUMFeatureOperationsViewController.swift */; };
+		9678504E2E7C600F00F2FC52 /* NextScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9678504D2E7C600900F2FC52 /* NextScreenViewController.swift */; };
 		96E1E1B32DAFE4C700EF013F /* RUMSwiftUIAutoInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E1E1B22DAFE4C500EF013F /* RUMSwiftUIAutoInstrumentationTests.swift */; };
 		96F48F452DF97240000D6E56 /* RUMSwiftUIAutoInstrumentationActionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96F48F442DF9723F000D6E56 /* RUMSwiftUIAutoInstrumentationActionView.swift */; };
 		96F48F472DF97318000D6E56 /* RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 96F48F462DF97318000D6E56 /* RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard */; };
@@ -232,6 +236,10 @@
 		963F72402DB0FD4B00367298 /* RUMSwiftUIAutoInstrumentationTabbarRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationTabbarRootView.swift; sourceTree = "<group>"; };
 		964537EF2DCBB7EF00C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMSwiftUIAutoInstrumentationSingleRootViewScenario.storyboard; sourceTree = "<group>"; };
 		964537F32DCBBAC800C51BF4 /* RUMSwiftUIAutoInstrumentationSingleRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationSingleRootView.swift; sourceTree = "<group>"; };
+		967850452E7C0D9000F2FC52 /* RUMFeatureOperationsScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeatureOperationsScenarioTests.swift; sourceTree = "<group>"; };
+		967850492E7C223E00F2FC52 /* RUMFeatureOperationsScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMFeatureOperationsScenario.storyboard; sourceTree = "<group>"; };
+		9678504A2E7C223E00F2FC52 /* RUMFeatureOperationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeatureOperationsViewController.swift; sourceTree = "<group>"; };
+		9678504D2E7C600900F2FC52 /* NextScreenViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextScreenViewController.swift; sourceTree = "<group>"; };
 		96E1E1B22DAFE4C500EF013F /* RUMSwiftUIAutoInstrumentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationTests.swift; sourceTree = "<group>"; };
 		96F48F442DF9723F000D6E56 /* RUMSwiftUIAutoInstrumentationActionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSwiftUIAutoInstrumentationActionView.swift; sourceTree = "<group>"; };
 		96F48F462DF97318000D6E56 /* RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard; sourceTree = "<group>"; };
@@ -467,6 +475,7 @@
 			isa = PBXGroup;
 			children = (
 				61D50C532580EF41006038A3 /* RUMScenarios.swift */,
+				967850482E7C222400F2FC52 /* Feature Operations */,
 				96E1E1AD2DAFCC3800EF013F /* SwiftUIAutoInstrumentation */,
 				9EC2835C26CFF56B00FACF1C /* MobileVitals */,
 				61337037250F84FD00236D58 /* ManualInstrumentation */,
@@ -670,6 +679,7 @@
 				D2791EF827170A760046E07A /* RUMSwiftUIManualInstrumentationScenarioTests.swift */,
 				D22F06D329DAE59A0026CC3C /* RUMStopSessionScenarioTests.swift */,
 				96E1E1B22DAFE4C500EF013F /* RUMSwiftUIAutoInstrumentationTests.swift */,
+				967850452E7C0D9000F2FC52 /* RUMFeatureOperationsScenarioTests.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -681,6 +691,16 @@
 				61F9CA7F25125C01000A5E61 /* RUMNCSScreen3ViewController.swift */,
 			);
 			path = NavigationControllerAutoInstrumentation;
+			sourceTree = "<group>";
+		};
+		967850482E7C222400F2FC52 /* Feature Operations */ = {
+			isa = PBXGroup;
+			children = (
+				967850492E7C223E00F2FC52 /* RUMFeatureOperationsScenario.storyboard */,
+				9678504A2E7C223E00F2FC52 /* RUMFeatureOperationsViewController.swift */,
+				9678504D2E7C600900F2FC52 /* NextScreenViewController.swift */,
+			);
+			path = "Feature Operations";
 			sourceTree = "<group>";
 		};
 		96E1E1AD2DAFCC3800EF013F /* SwiftUIAutoInstrumentation */ = {
@@ -914,6 +934,7 @@
 				D240688627CFA64A00C04F44 /* LaunchScreen.storyboard in Resources */,
 				61441C0E24616DEC003D8BB8 /* Assets.xcassets in Resources */,
 				612C13752A9DFEF70086B5D1 /* SRMultipleViewsRecordingScenario.storyboard in Resources */,
+				9678504B2E7C223E00F2FC52 /* RUMFeatureOperationsScenario.storyboard in Resources */,
 				6137E649252DD88D00720485 /* RUMModalViewsAutoInstrumentationScenario.storyboard in Resources */,
 				96F48F472DF97318000D6E56 /* RUMSwiftUIAutoInstrumentationActionViewScenario.storyboard in Resources */,
 				615AAC36251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard in Resources */,
@@ -1069,6 +1090,7 @@
 				61D1C2E42E0EB55700BB0656 /* SceneDelegate.swift in Sources */,
 				61163C37252DDD60007DD5BF /* RUMMVSViewController.swift in Sources */,
 				61D50C5A2580EFF3006038A3 /* URLSessionScenarios.swift in Sources */,
+				9678504C2E7C223E00F2FC52 /* RUMFeatureOperationsViewController.swift in Sources */,
 				614CADCE250FCA0200B93D2D /* TestScenarios.swift in Sources */,
 				D22F06D029DAE5360026CC3C /* KioskSendEventsViewController.swift in Sources */,
 				6111542525C992F8007C84C9 /* CrashReportingScenarios.swift in Sources */,
@@ -1102,6 +1124,7 @@
 				61163C3E252E0015007DD5BF /* RUMMVSModalViewController.swift in Sources */,
 				617247AF25DA9BEA007085B3 /* CrashReportingObjcHelpers.m in Sources */,
 				6193DCE1251B692C009B8011 /* RUMTASTableViewController.swift in Sources */,
+				9678504E2E7C600F00F2FC52 /* NextScreenViewController.swift in Sources */,
 				6111544825C9A88B007C84C9 /* PersistenceHelper.swift in Sources */,
 				9EA95C1C2791C9BE00F6C1F3 /* WebViewTrackingFixtureViewController.swift in Sources */,
 				61D50C462580EF19006038A3 /* TracingScenarios.swift in Sources */,
@@ -1145,6 +1168,7 @@
 				615AAC07251E217B00C89EE9 /* RUMTapActionScenarioTests.swift in Sources */,
 				D263BCB829DB057E00FA0E21 /* RUMStopSessionScenarioTests.swift in Sources */,
 				963F6B112DB79B5700F9425A /* ExampleApplication+Extensions.swift in Sources */,
+				967850462E7C0D9000F2FC52 /* RUMFeatureOperationsScenarioTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

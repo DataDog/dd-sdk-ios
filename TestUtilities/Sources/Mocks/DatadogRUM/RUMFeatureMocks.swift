@@ -863,7 +863,7 @@ extension RUMOperationStepVitalCommand: AnyMockable, RandomMockable {
         vitalId: String = .mockAny(),
         name: String = .mockAny(),
         operationKey: String? = .mockAny(),
-        stepType: RUMVitalEvent.Vital.StepType = .mockAny(),
+        stepType: RUMVitalOperationStepEvent.Vital.StepType = .mockAny(),
         failureReason: RUMFeatureOperationFailureReason = .mockAny(),
         time: Date = .mockAny(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],

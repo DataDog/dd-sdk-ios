@@ -60,14 +60,20 @@
     [monitor currentSessionIDWithCompletion:^(NSString * _Nullable sessionID) {}];
     [monitor stopSession];
 
+    [monitor addViewAttributeForKey:@"key" value: @"value"];
+    [monitor addViewAttributes:@{@"string": @"value", @"integer": @1, @"boolean": @true}];
+    [monitor removeViewAttributeForKey:@"key"];
+    [monitor removeViewAttributesForKeys:@[@"string",@"integer",@"boolean"]];
     [monitor startViewWithViewController:anyVC name:@"" attributes:@{}];
     [monitor stopViewWithViewController:anyVC attributes:@{}];
     [monitor startViewWithKey:@"" name:nil attributes:@{}];
     [monitor stopViewWithKey:@"" attributes:@{}];
     [monitor addViewLoadingTimeWithOverwrite:YES];
+
     [monitor addErrorWithMessage:@"" stack:nil source:DDRUMErrorSourceCustom attributes:@{}];
     [monitor addErrorWithError:[NSError errorWithDomain:NSCocoaErrorDomain code:-100 userInfo:nil]
                         source:DDRUMErrorSourceNetwork attributes:@{}];
+
     [monitor startResourceWithResourceKey:@"" request:[NSURLRequest new] attributes:@{}];
     [monitor startResourceWithResourceKey:@"" url:[NSURL new] attributes:@{}];
     [monitor startResourceWithResourceKey:@"" httpMethod:DDRUMMethodGet urlString:@"" attributes:@{}];

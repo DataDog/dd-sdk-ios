@@ -45,7 +45,7 @@ public func randomRUMEvent() -> RUMDataModel {
         { RUMResourceEvent.mockRandom() },
         { RUMErrorEvent.mockRandom() },
         { RUMLongTaskEvent.mockRandom() },
-        { RUMVitalEvent.mockRandom() }
+        { RUMVitalOperationStepEvent.mockRandom() }
     ])
     // swiftlint:enable opening_brace
 }
@@ -746,9 +746,9 @@ extension RUMTelemetryOperatingSystem: RandomMockable {
     }
 }
 
-extension RUMVitalEvent: RandomMockable {
-    public static func mockRandom() -> RUMVitalEvent {
-        return RUMVitalEvent(
+extension RUMVitalOperationStepEvent: RandomMockable {
+    public static func mockRandom() -> RUMVitalOperationStepEvent {
+        return RUMVitalOperationStepEvent(
             dd: .init(),
             application: .init(id: .mockRandom()),
             date: .mockRandom(),
@@ -759,23 +759,17 @@ extension RUMVitalEvent: RandomMockable {
     }
 }
 
-extension RUMVitalEvent.Vital: RandomMockable {
-    public static func mockRandom() -> RUMVitalEvent.Vital {
-        return RUMVitalEvent.Vital(
+extension RUMVitalOperationStepEvent.Vital: RandomMockable {
+    public static func mockRandom() -> RUMVitalOperationStepEvent.Vital {
+        return RUMVitalOperationStepEvent.Vital(
             id: .mockRandom(),
-            type: .mockRandom()
+            stepType: .mockRandom()
         )
     }
 }
 
-extension RUMVitalEvent.Vital.VitalType: RandomMockable {
-    public static func mockRandom() -> RUMVitalEvent.Vital.VitalType {
-        return [.duration, .operationStep].randomElement()!
-    }
-}
-
-extension RUMVitalEvent.Vital.StepType: AnyMockable, RandomMockable, CaseIterable {
-    public static var allCases: [RUMVitalEvent.Vital.StepType]
+extension RUMVitalOperationStepEvent.Vital.StepType: AnyMockable, RandomMockable {
+    public static var allCases: [RUMVitalOperationStepEvent.Vital.StepType]
     = [.start, .end, .retry, .update]
 
     public static func mockAny() -> Self {
@@ -783,6 +777,6 @@ extension RUMVitalEvent.Vital.StepType: AnyMockable, RandomMockable, CaseIterabl
     }
 
     public static func mockRandom() -> Self {
-        return RUMVitalEvent.Vital.StepType.allCases.randomElement()!
+        return RUMVitalOperationStepEvent.Vital.StepType.allCases.randomElement()!
     }
 }

@@ -51,11 +51,7 @@ def main():
         
         # Post issue notification with analysis to Slack
         slack = create_slack_handler()
-        slack.post_issue_with_analysis(issue, {
-            "summary": analysis.summary,
-            "suggested_response": analysis.suggested_response,
-            "confidence_level": analysis.confidence_level
-        })
+        slack.post_issue_with_analysis(issue, analysis)
         print("\nPosted issue notification with analysis to Slack")
         
         # Print results to console too

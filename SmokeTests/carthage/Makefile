@@ -13,6 +13,7 @@ EXPECTED_XCFRAMEWORKS := DatadogInternal \
 						DatadogRUM \
 						DatadogSessionReplay \
 						DatadogCrashReporting \
+						DatadogFlags \
 						CrashReporter \
 						DatadogWebViewTracking \
 						OpenTelemetryApi
@@ -25,6 +26,7 @@ EXPECTED_XCFRAMEWORKS := DatadogInternal \
 						DatadogTrace \
 						DatadogRUM \
 						DatadogCrashReporting \
+						DatadogFlags \
 						CrashReporter \
 						OpenTelemetryApi
 endif

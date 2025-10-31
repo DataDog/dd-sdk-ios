@@ -221,6 +221,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 featureScope: featureScope,
                 monitor: monitor
             ),
+            FlagEvaluationReceiver(monitor: monitor),
             WebViewEventReceiver(
                 featureScope: featureScope,
                 dateProvider: configuration.dateProvider,

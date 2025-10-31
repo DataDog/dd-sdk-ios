@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		3CB7A04C29F6ABDA007A27ED /* DatadogWebViewTracking in Frameworks */ = {isa = PBXBuildFile; productRef = 3CB7A04B29F6ABDA007A27ED /* DatadogWebViewTracking */; };
+		6125A4042E79876700185E4F /* DatadogFlags in Frameworks */ = {isa = PBXBuildFile; productRef = 6125A4032E79876700185E4F /* DatadogFlags */; };
+		6125A4062E79877000185E4F /* DatadogFlags in Frameworks */ = {isa = PBXBuildFile; productRef = 6125A4052E79877000185E4F /* DatadogFlags */; };
 		61C363DA24374D5F00C4D4E6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363D924374D5F00C4D4E6 /* AppDelegate.swift */; };
 		61C363DC24374D5F00C4D4E6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363DB24374D5F00C4D4E6 /* SceneDelegate.swift */; };
 		61C363DE24374D5F00C4D4E6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363DD24374D5F00C4D4E6 /* ViewController.swift */; };
@@ -121,6 +123,7 @@
 				D2966C2E29CA1F2D00FC6B3C /* DatadogTrace in Frameworks */,
 				D2344E1F29ACDE61007F5BD2 /* DatadogLogs in Frameworks */,
 				D2CE76BC29F6B9EE00D79713 /* DatadogRUM in Frameworks */,
+				6125A4042E79876700185E4F /* DatadogFlags in Frameworks */,
 				3CB7A04C29F6ABDA007A27ED /* DatadogWebViewTracking in Frameworks */,
 				9E73374026B0123500917C24 /* DatadogCrashReporting in Frameworks */,
 			);
@@ -146,6 +149,7 @@
 			files = (
 				D2966C3029CA1F3300FC6B3C /* DatadogTrace in Frameworks */,
 				D2344E2129ACDE68007F5BD2 /* DatadogLogs in Frameworks */,
+				6125A4062E79877000185E4F /* DatadogFlags in Frameworks */,
 				D276FB592D109E0800771673 /* DatadogSessionReplay in Frameworks */,
 				D2CE76BA29F6B9E300D79713 /* DatadogRUM in Frameworks */,
 				D26A32D92A4C893300903514 /* DatadogCore in Frameworks */,
@@ -277,6 +281,7 @@
 				3CB7A04B29F6ABDA007A27ED /* DatadogWebViewTracking */,
 				D26A32D62A4C892A00903514 /* DatadogCore */,
 				D266C6882B766095008866F9 /* DatadogSessionReplay */,
+				6125A4032E79876700185E4F /* DatadogFlags */,
 			);
 			productName = SPMProject;
 			productReference = 61C363D624374D5F00C4D4E6 /* App.app */;
@@ -340,6 +345,7 @@
 				D2CE76B929F6B9E300D79713 /* DatadogRUM */,
 				D26A32D82A4C893300903514 /* DatadogCore */,
 				D276FB582D109E0800771673 /* DatadogSessionReplay */,
+				6125A4052E79877000185E4F /* DatadogFlags */,
 			);
 			productName = SPMProject;
 			productReference = D23BF5FE27CCCC3300BB4CCD /* App.app */;
@@ -1076,7 +1082,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/DataDog/dd-sdk-ios";
 			requirement = {
-				branch = GIT_REFERENCE;
+				branch = "GIT_REFERENCE";
 				kind = branch;
 			};
 		};
@@ -1084,7 +1090,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/DataDog/dd-sdk-ios";
 			requirement = {
-				branch = GIT_REFERENCE;
+				branch = "GIT_REFERENCE";
 				kind = branch;
 			};
 		};
@@ -1095,6 +1101,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
 			productName = DatadogWebViewTracking;
+		};
+		6125A4032E79876700185E4F /* DatadogFlags */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogFlags;
+		};
+		6125A4052E79877000185E4F /* DatadogFlags */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogFlags;
 		};
 		9E73373F26B0123500917C24 /* DatadogCrashReporting */ = {
 			isa = XCSwiftPackageProductDependency;

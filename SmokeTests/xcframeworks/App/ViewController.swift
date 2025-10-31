@@ -10,6 +10,7 @@ import DatadogLogs
 import DatadogTrace
 import DatadogRUM
 import DatadogCrashReporting
+import DatadogFlags
 #if os(iOS)
 import DatadogSessionReplay
 #endif

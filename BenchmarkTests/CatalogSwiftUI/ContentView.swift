@@ -255,12 +255,12 @@ public struct ContentView: View {
     }
     
     var accessibility: some View {
-        Section(header: Text("Accesibility")
+        Section(header: Text("Accessibility")
             .font(.title)
             .modifier(ListSectionFontModifier())) {
                 
-                Link(destination: AccesibilityView().trackView(name: "Accesibility"),
-                     label: "Accesibility")
+                Link(destination: AccessibilityView().trackView(name: "Accessibility"),
+                     label: "Accessibility")
             }
             .listRowBackground(Color(sectionColor, bundle: .module))
 

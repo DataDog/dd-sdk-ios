@@ -154,4 +154,41 @@ class InternalLoggerTests: XCTestCase {
             "It souldn evaluate autoclosure for 'message 2' as the message was printed"
         )
     }
+
+    // MARK: - Thread Safety Tests
+
+    func testConcurrentLoggerReplacementDoesNotCrash() {
+        // Ensures DD.logger can be safely replaced while being accessed from multiple threads
+        let expectation = self.expectation(description: "Concurrent operations complete")
+        expectation.expectedFulfillmentCount = 10
+
+        // Simulate multiple threads reading DD.logger
+        for threadId in 0..<8 {
+            DispatchQueue.global(qos: .userInitiated).async {
+                for i in 0..<1_000 {
+                    DD.logger.debug("Thread \(threadId) message \(i)")
+                    DD.logger.error("Thread \(threadId) error \(i)")
+                }
+                expectation.fulfill()
+            }
+        }
+
+        // Simulate threads replacing DD.logger (like during SDK initialization)
+        for _ in 0..<2 {
+            DispatchQueue.global(qos: .userInitiated).async {
+                for _ in 0..<200 {
+                    DD.logger = InternalLogger(
+                        dateProvider: SystemDateProvider(),
+                        timeZone: .current,
+                        printFunction: { _, _ in /* no-op */ },
+                        verbosityLevel: { .debug }
+                    )
+                    Thread.sleep(forTimeInterval: 0.00001)
+                }
+                expectation.fulfill()
+            }
+        }
+
+        waitForExpectations(timeout: 2)
+    }
 }
