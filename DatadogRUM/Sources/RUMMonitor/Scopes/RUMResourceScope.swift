@@ -138,10 +138,17 @@ internal class RUMResourceScope: RUMScope {
         let graphqlOperationName: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationName)?.dd.decode()
         let graphqlPayload: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlPayload)?.dd.decode()
         let graphqlVariables: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlVariables)?.dd.decode()
+        let graphqlErrorsString: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlErrors)?.dd.decode()
+
+        // Parse GraphQL errors if present
+        let graphqlErrors = parseGraphQLErrors(from: graphqlErrorsString)
+
         if
             let rawGraphqlOperationType: String = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationType)?.dd.decode(),
             let graphqlOperationType = RUMResourceEvent.Resource.Graphql.OperationType(rawValue: rawGraphqlOperationType) {
             graphql = .init(
+                errorCount: graphqlErrors?.count.toInt64,
+                errors: graphqlErrors,
                 operationName: graphqlOperationName,
                 operationType: graphqlOperationType,
                 payload: graphqlPayload,
@@ -409,5 +416,45 @@ internal class RUMResourceScope: RUMScope {
         }
 
         return duration.toInt64Nanoseconds
+    }
+
+    /// Decodes GraphQL errors from JSON string and returns them as RUM event errors
+    private func parseGraphQLErrors(from jsonString: String?) -> [RUMResourceEvent.Resource.Graphql.Errors]? {
+        guard let jsonString, let jsonData = jsonString.data(using: .utf8) else {
+            return nil
+        }
+
+        do {
+            let response = try JSONDecoder().decode(GraphQLResponse.self, from: jsonData)
+
+            guard let responseErrors = response.errors, !responseErrors.isEmpty else {
+                return nil
+            }
+            let parsedErrors = responseErrors.map { error in
+                RUMResourceEvent.Resource.Graphql.Errors(
+                    code: error.code,
+                    locations: error.locations?.map { location in
+                        RUMResourceEvent.Resource.Graphql.Errors.Locations(
+                            column: Int64(location.column),
+                            line: Int64(location.line)
+                        )
+                    },
+                    message: error.message,
+                    path: error.path?.map { pathElement in
+                        switch pathElement {
+                        case .string(let value):
+                            return .string(value: value)
+                        case .int(let value):
+                            return .integer(value: Int64(value))
+                        }
+                    }
+                )
+            }
+
+            return parsedErrors
+        } catch {
+            DD.logger.debug("Failed to decode GraphQL errors: \(error)")
+            return nil
+        }
     }
 }
