@@ -268,8 +268,8 @@ public class PLCrashReportMock: PLCrashReport {
 }
 // swiftlint:enable implicitly_unwrapped_optional
 
-extension CrashReport {
-    public static func mockAny() -> CrashReport {
+extension CrashReportInfo {
+    public static func mockAny() -> CrashReportInfo {
         return mockWith()
     }
 
@@ -283,8 +283,8 @@ extension CrashReport {
         binaryImages: [BinaryImageInfo] = [],
         contextData: Data? = nil,
         wasTruncated: Bool = false
-    ) -> CrashReport {
-        return CrashReport(
+    ) -> CrashReportInfo {
+        return CrashReportInfo(
             incidentIdentifier: incidentIdentifier,
             systemInfo: systemInfo,
             processInfo: processInfo,

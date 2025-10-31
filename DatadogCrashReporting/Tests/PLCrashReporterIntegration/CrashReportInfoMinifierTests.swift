@@ -7,8 +7,8 @@
 import XCTest
 @testable import DatadogCrashReporting
 
-class CrashReportMinifierTests: XCTestCase {
-    private var crashReport: CrashReport = .mockAny()
+class CrashReportInfoMinifierTests: XCTestCase {
+    private var crashReport: CrashReportInfo = .mockAny()
 
     // MARK: - Minimizing number of stack frames
 
@@ -25,7 +25,7 @@ class CrashReportMinifierTests: XCTestCase {
         crashReport.threads = (0..<Int.mockRandom(min: 1, max: 10)).map { _ in ThreadInfo.mockWith(stackFrames: stackFrames) }
 
         // Then
-        let minifier = CrashReportMinifier(stackFramesLimit: limit)
+        let minifier = CrashReportInfoMinifier(stackFramesLimit: limit)
         minifier.minify(crashReport: &crashReport)
 
         XCTAssertTrue(crashReport.wasTruncated)
@@ -48,7 +48,7 @@ class CrashReportMinifierTests: XCTestCase {
         crashReport.threads = (0..<Int.mockRandom(min: 1, max: 10)).map { _ in ThreadInfo.mockWith(stackFrames: stackFrames) }
 
         // Then
-        let minifier = CrashReportMinifier(stackFramesLimit: limit)
+        let minifier = CrashReportInfoMinifier(stackFramesLimit: limit)
         minifier.minify(crashReport: &crashReport)
 
         XCTAssertFalse(crashReport.wasTruncated)
@@ -71,7 +71,7 @@ class CrashReportMinifierTests: XCTestCase {
         crashReport.threads = (0..<Int.mockRandom(min: 1, max: 10)).map { _ in ThreadInfo.mockWith(stackFrames: stackFrames) }
 
         // Then
-        let minifier = CrashReportMinifier(stackFramesLimit: limit)
+        let minifier = CrashReportInfoMinifier(stackFramesLimit: limit)
         minifier.minify(crashReport: &crashReport)
 
         XCTAssertFalse(crashReport.wasTruncated)
@@ -86,7 +86,7 @@ class CrashReportMinifierTests: XCTestCase {
         crashReport.exceptionInfo = .mockWith(
             stackFrames: (0..<3).map { .mockWith(number: $0) } // 3 frames
         )
-        CrashReportMinifier(stackFramesLimit: 2).minify(crashReport: &crashReport) // remove 1 frames
+        CrashReportInfoMinifier(stackFramesLimit: 2).minify(crashReport: &crashReport) // remove 1 frames
         XCTAssertTrue(crashReport.wasTruncated)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames.count, 2)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames[0].number, 0)
@@ -96,7 +96,7 @@ class CrashReportMinifierTests: XCTestCase {
         crashReport.exceptionInfo = .mockWith(
             stackFrames: (0..<4).map { .mockWith(number: $0) } // 4 frames
         )
-        CrashReportMinifier(stackFramesLimit: 2).minify(crashReport: &crashReport) // remove 2 frames
+        CrashReportInfoMinifier(stackFramesLimit: 2).minify(crashReport: &crashReport) // remove 2 frames
         XCTAssertTrue(crashReport.wasTruncated)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames.count, 2)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames[0].number, 0)
@@ -106,7 +106,7 @@ class CrashReportMinifierTests: XCTestCase {
         crashReport.exceptionInfo = .mockWith(
             stackFrames: (0..<5).map { .mockWith(number: $0) } // 4 frames
         )
-        CrashReportMinifier(stackFramesLimit: 3).minify(crashReport: &crashReport) // remove 2 frames
+        CrashReportInfoMinifier(stackFramesLimit: 3).minify(crashReport: &crashReport) // remove 2 frames
         XCTAssertTrue(crashReport.wasTruncated)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames.count, 3)
         XCTAssertEqual(crashReport.exceptionInfo?.stackFrames[0].number, 0)
@@ -133,7 +133,7 @@ class CrashReportMinifierTests: XCTestCase {
         crashReport.threads = []
 
         // When
-        let minifier = CrashReportMinifier(stackFramesLimit: .max)
+        let minifier = CrashReportInfoMinifier(stackFramesLimit: .max)
         minifier.minify(crashReport: &crashReport)
 
         // Then
@@ -177,7 +177,7 @@ class CrashReportMinifierTests: XCTestCase {
         }
 
         // When
-        let minifier = CrashReportMinifier(stackFramesLimit: limit)
+        let minifier = CrashReportInfoMinifier(stackFramesLimit: limit)
         minifier.minify(crashReport: &crashReport)
 
         // Then

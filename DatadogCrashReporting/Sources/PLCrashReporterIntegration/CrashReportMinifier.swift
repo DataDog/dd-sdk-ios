@@ -6,10 +6,10 @@
 
 import Foundation
 
-/// Reduces information in intermediate `CrashReport`:
+/// Reduces information in intermediate `CrashReportInfo`:
 /// - it removes binary images which are not necessary for symbolication,
 /// - it removes less important stack frames from stack frames which exceed our limits.
-internal struct CrashReportMinifier {
+internal struct CrashReportInfoMinifier {
     struct Constants {
         /// The maximum number of stack frames in each stack trace.
         /// When stack trace exceeds this limit, it will be reduced by dropping less important frames.
@@ -23,7 +23,7 @@ internal struct CrashReportMinifier {
         self.stackFramesLimit = stackFramesLimit
     }
 
-    func minify(crashReport: inout CrashReport) {
+    func minify(crashReport: inout CrashReportInfo) {
         var ifAnyStackFrameWasRemoved = false
 
         // Keep exception stack trace under limit:
@@ -72,9 +72,9 @@ internal struct CrashReportMinifier {
         return stackFrames
     }
 
-    /// Removes binary images not referenced from any stack in given `CrashReport`.
+    /// Removes binary images not referenced from any stack in given `CrashReportInfo`.
     /// These images are not important for symbolication process, thus we can remove them.
-    private func remove(binaryImages: [BinaryImageInfo], notUsedInAnyStackOf crashReport: CrashReport) -> [BinaryImageInfo] {
+    private func remove(binaryImages: [BinaryImageInfo], notUsedInAnyStackOf crashReport: CrashReportInfo) -> [BinaryImageInfo] {
         var imageNamesFromStackFrames: Set<String> = []
 
         // Add image names from exception stack

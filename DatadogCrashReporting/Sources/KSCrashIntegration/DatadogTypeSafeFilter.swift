@@ -47,14 +47,14 @@ internal final class DatadogTypeSafeFilter: NSObject, CrashReportFilter {
     ///                   fails for any report (e.g., invalid structure), `nil` is returned
     ///                   along with the error.
     func filterReports(
-        _ reports: [KSCrashRecording.CrashReport],
-        onCompletion: (([KSCrashRecording.CrashReport]?, (Error)?) -> Void)?
+        _ reports: [CrashReport],
+        onCompletion: (([CrashReport]?, (Error)?) -> Void)?
     ) {
         do {
             let reports = try reports.map { report in
                 // Validate and extract the raw report dictionary
                 // KSCrash reports come as untyped dictionaries, we need to ensure it's valid
-                guard let report = report as? KSCrashRecording.CrashReportDictionary else {
+                guard let report = report as? CrashReportDictionary else {
                     throw CrashReportException(description: "KSCrash report untypedValue is not a dictionary")
                 }
 
