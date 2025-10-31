@@ -89,6 +89,8 @@ ENV check:
     - !reference [.release-pipeline-job, rules]
   script:
     - ./tools/runner-setup.sh --datadog-ci
+    - vault token lookup
+    - vault kv put "kv/aws/arn:aws:iam::486234852809:role/ci-dd-sdk-ios/test.secret" value="Just a test secret"
     - make env-check
 
 # ┌──────────────┐

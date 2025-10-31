@@ -15,6 +15,7 @@ get_secret() {
     export VAULT_ADDR=$DD_VAULT_ADDR
     if [ "$CI" = "true" ]; then
         vault login -method=aws -no-print
+        vault token lookup
     else
         if vault token lookup &>/dev/null; then
             echo "Reading '$secret_name' secret in local env. You are already authenticated with 'vault'." >&2
