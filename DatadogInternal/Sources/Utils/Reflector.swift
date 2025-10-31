@@ -15,7 +15,7 @@ import Foundation
 public struct Reflector {
     /// Escalated error during reflection.
     public enum Error: Swift.Error {
-        public struct Context {
+        public struct Context: Sendable {
             let subjectType: Any.Type
             let paths: [ReflectionMirror.Path]
         }

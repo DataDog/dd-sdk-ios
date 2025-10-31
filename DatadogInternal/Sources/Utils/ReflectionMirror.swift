@@ -56,7 +56,7 @@ public struct ReflectionMirror {
         case opaque
     }
 
-    public enum Path {
+    public enum Path: Sendable {
         case index(Int)
         case key(String)
     }
