@@ -100,6 +100,32 @@ class UILabelRecorderTests: XCTestCase {
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UILabelWireframesBuilder)
         XCTAssertTrue(builder.textObfuscator is SpacePreservingMaskObfuscator)
     }
+
+    func testCapturesTruncationMode() throws {
+        // Given
+        let lineBreakModes: [NSLineBreakMode] = [
+            .byTruncatingTail, .byTruncatingHead, .byTruncatingMiddle, .byClipping,
+            .byWordWrapping, .byCharWrapping
+        ]
+        let expectedTruncationModes: [SRTextStyle.TruncationMode?] = [
+            .tail, .head, .middle, .clip,
+            nil, nil
+        ]
+        label.text = "Test text that might be truncated"
+        viewAttributes = .mock(fixture: .visible())
+
+        // When
+        let truncationModes = try lineBreakModes.map { lineBreakMode in
+            label.lineBreakMode = lineBreakMode
+            let semantics = try XCTUnwrap(recorder.semantics(of: label, with: viewAttributes, in: .mockAny()) as? SpecificElement)
+            let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UILabelWireframesBuilder)
+
+            return builder.truncationMode
+        }
+
+        // Then
+        XCTAssertEqual(truncationModes, expectedTruncationModes)
+    }
 }
 // swiftlint:enable opening_brace
 #endif

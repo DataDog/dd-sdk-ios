@@ -161,5 +161,50 @@ class WireframesBuilderTests: XCTestCase {
         XCTAssertNil(shapeWireframe.shapeStyle?.cornerRadius, "NaN cornerRadius should be filtered to nil")
         XCTAssertNil(shapeWireframe.shapeStyle?.opacity, "NaN opacity should be filtered to nil")
     }
+
+    func testCreateTextWireframe_withTruncationMode() throws {
+        // Given
+        let builder = WireframesBuilder()
+        let frame: CGRect = .mockRandom()
+
+        // When
+        let wireframe = builder.createTextWireframe(
+            id: .mockRandom(),
+            frame: frame,
+            clip: frame,
+            text: "Test text with truncation",
+            truncationMode: .tail
+        )
+
+        // Then
+        guard case let .textWireframe(textWireframe) = wireframe else {
+            return XCTFail("Expected text wireframe")
+        }
+
+        XCTAssertEqual(textWireframe.textStyle.truncationMode, .tail)
+        XCTAssertEqual(textWireframe.text, "Test text with truncation")
+    }
+
+    func testCreateTextWireframe_withoutTruncationMode() throws {
+        // Given
+        let builder = WireframesBuilder()
+        let frame: CGRect = .mockRandom()
+
+        // When
+        let wireframe = builder.createTextWireframe(
+            id: .mockRandom(),
+            frame: frame,
+            clip: frame,
+            text: "Test text without truncation"
+        )
+
+        // Then
+        guard case let .textWireframe(textWireframe) = wireframe else {
+            return XCTFail("Expected text wireframe")
+        }
+
+        XCTAssertNil(textWireframe.textStyle.truncationMode, "truncationMode should be nil when not specified")
+        XCTAssertEqual(textWireframe.text, "Test text without truncation")
+    }
 }
 #endif
