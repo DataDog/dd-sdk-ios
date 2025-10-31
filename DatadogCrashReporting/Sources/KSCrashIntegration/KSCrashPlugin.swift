@@ -31,7 +31,8 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
             filters: [
                 DatadogTypeSafeFilter(),
                 DatadogMinifyFilter(),
-                DatadogDiagnosticFilter()
+                DatadogDiagnosticFilter(),
+                DatadogCrashReportFilter()
             ]
         )
 
@@ -41,11 +42,36 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
     // MARK: - CrashReportingPlugin
 
     func readPendingCrashReport(completion: @escaping (DDCrashReport?) -> Bool) {
-        /* no-op */
+        guard let store = kscrash.reportStore else {
+            _ = completion(nil)
+            return
+        }
+
+        store.sendAllReports { reports, error in
+            do {
+                if let error {
+                    throw error
+                }
+
+                guard let report = reports?.first?.untypedValue as? DDCrashReport else {
+                    throw CrashReportException(description: "Report is not of type DDCrashReport")
+                }
+
+                if completion(report) {
+                    store.deleteAllReports()
+                }
+            } catch {
+                _ = completion(nil)
+                consolePrint("🔥 DatadogCrashReporting error: failed to load crash report: \(error)", .error)
+            }
+        }
     }
 
     func inject(context: Data) {
-        /* no-op */
+        // Convert Data to base64 string for JSON serialization compatibility
+        // NSJSONSerialization doesn't support NSData directly
+        let contextBase64 = context.base64EncodedString()
+        kscrash.userInfo = [CrashField.dd.rawValue: contextBase64]
     }
 
     var backtraceReporter: BacktraceReporting? {
