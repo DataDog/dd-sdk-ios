@@ -1020,7 +1020,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         // Given
         var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
-        mockRequest.setValue("GetUser", forHTTPHeaderField: GraphQLHeaders.operationName)
+        mockRequest.setValue("GetUser", forHTTPHeaderField: ExpectedGraphQLHeaders.operationName)
 
         let responseWithErrors = """
         {
@@ -1059,7 +1059,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         // Given
         var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
-        mockRequest.setValue("GetUser", forHTTPHeaderField: GraphQLHeaders.operationName)
+        mockRequest.setValue("GetUser", forHTTPHeaderField: ExpectedGraphQLHeaders.operationName)
 
         let responseWithErrors = """
         {
