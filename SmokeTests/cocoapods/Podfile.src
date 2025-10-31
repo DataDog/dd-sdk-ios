@@ -1,3 +1,8 @@
+## Workaround KSCrash static linking issue
+# https://github.com/kstenerud/KSCrash/issues/713
+use_modular_headers!
+#
+
 abstract_target 'Common' do
   pod 'OpenTelemetrySwiftApi', '1.13.1'
   pod 'DatadogInternal', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE

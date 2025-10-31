@@ -31,12 +31,12 @@ public final class CrashReporting {
     /// - Provide crash report
     /// - Store context data associated with crashes
     /// - Provide backtraces
-    public static func enable(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default) {
+    public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default) {
         do {
             // To ensure the correct registration order between Core and Features,
             // the entire initialization flow is synchronized on the main thread.
             try runOnMainThreadSync {
-                try enableOrThrow(with: plugin, in: core)
+                try enableOrThrow(with: plugin(), in: core)
             }
         } catch let error {
             consolePrint("\(error)", .error)
