@@ -1256,6 +1256,10 @@
 		D2268AE22EB4F58700875E44 /* DatadogMinifyFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268AE02EB4F58700875E44 /* DatadogMinifyFilter.swift */; };
 		D2268AE42EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268AE32EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift */; };
 		D2268AE52EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268AE32EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift */; };
+		D2268AE72EB50F4C00875E44 /* DatadogDiagnosticFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268AE62EB50F4C00875E44 /* DatadogDiagnosticFilter.swift */; };
+		D2268AE82EB50F4C00875E44 /* DatadogDiagnosticFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268AE62EB50F4C00875E44 /* DatadogDiagnosticFilter.swift */; };
+		D2268AEA2EB50F7F00875E44 /* DatadogDiagnosticFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268AE92EB50F7F00875E44 /* DatadogDiagnosticFilterTests.swift */; };
+		D2268AEB2EB50F7F00875E44 /* DatadogDiagnosticFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268AE92EB50F7F00875E44 /* DatadogDiagnosticFilterTests.swift */; };
 		D22743D829DEB8B4001A7EF9 /* VitalInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C3B2653A97700DEED9E /* VitalInfoTests.swift */; };
 		D22743D929DEB8B4001A7EF9 /* VitalInfoSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2EF44E2694FA14008A7DAE /* VitalInfoSamplerTests.swift */; };
 		D22743DA29DEB8B4001A7EF9 /* VitalMemoryReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BBBCBB265E71D100943419 /* VitalMemoryReaderTests.swift */; };
@@ -3378,6 +3382,8 @@
 		D2268ADD2EB4EC6700875E44 /* DatadogTypeSafeFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogTypeSafeFilterTests.swift; sourceTree = "<group>"; };
 		D2268AE02EB4F58700875E44 /* DatadogMinifyFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogMinifyFilter.swift; sourceTree = "<group>"; };
 		D2268AE32EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogMinifyFilterTests.swift; sourceTree = "<group>"; };
+		D2268AE62EB50F4C00875E44 /* DatadogDiagnosticFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogDiagnosticFilter.swift; sourceTree = "<group>"; };
+		D2268AE92EB50F7F00875E44 /* DatadogDiagnosticFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogDiagnosticFilterTests.swift; sourceTree = "<group>"; };
 		D22789352D64A0D3007E9DB0 /* UploadQualityMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadQualityMetric.swift; sourceTree = "<group>"; };
 		D227A0A32C7622EA00C83324 /* BenchmarkProfiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkProfiler.swift; sourceTree = "<group>"; };
 		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
@@ -6596,6 +6602,7 @@
 				D2268AD72EB4DAC400875E44 /* AnyCrashReport.swift */,
 				D2268AD12EB4DA4100875E44 /* DatadogTypeSafeFilter.swift */,
 				D2268AE02EB4F58700875E44 /* DatadogMinifyFilter.swift */,
+				D2268AE62EB50F4C00875E44 /* DatadogDiagnosticFilter.swift */,
 			);
 			path = KSCrashIntegration;
 			sourceTree = "<group>";
@@ -6607,6 +6614,7 @@
 				D2268ADA2EB4E69C00875E44 /* CrashFieldDictionaryTests.swift */,
 				D2268ADD2EB4EC6700875E44 /* DatadogTypeSafeFilterTests.swift */,
 				D2268AE32EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift */,
+				D2268AE92EB50F7F00875E44 /* DatadogDiagnosticFilterTests.swift */,
 			);
 			path = KSCrashIntegration;
 			sourceTree = "<group>";
@@ -9455,6 +9463,7 @@
 				612556BB268DD9BF002BCE74 /* DDCrashReportExporter.swift in Sources */,
 				61FDBA1326971953001D9D43 /* CrashReportMinifier.swift in Sources */,
 				D214DA8329DF2D5E004D0AE8 /* CrashReporting.swift in Sources */,
+				D2268AE72EB50F4C00875E44 /* DatadogDiagnosticFilter.swift in Sources */,
 				D2268AD82EB4DAC400875E44 /* AnyCrashReport.swift in Sources */,
 				61F2728B25C9561A00D54BF8 /* PLCrashReporterIntegration.swift in Sources */,
 				D214DA8129DF2D5E004D0AE8 /* CrashReportingPlugin.swift in Sources */,
@@ -9478,6 +9487,7 @@
 				D2268ADF2EB4EC6700875E44 /* DatadogTypeSafeFilterTests.swift in Sources */,
 				D2268ADC2EB4E69C00875E44 /* CrashFieldDictionaryTests.swift in Sources */,
 				D243BBC0276C9D640019C857 /* PLCrashReporterIntegrationTests.swift in Sources */,
+				D2268AEB2EB50F7F00875E44 /* DatadogDiagnosticFilterTests.swift in Sources */,
 				61FDBA15269722B4001D9D43 /* CrashReportInfoMinifierTests.swift in Sources */,
 				D22689C82EB2151F00875E44 /* KSCrashPluginTests.swift in Sources */,
 				61E95D882695C00200EA3115 /* DDCrashReportExporterTests.swift in Sources */,
@@ -10674,6 +10684,7 @@
 				D2CB6FC127C5348200A62B57 /* DDCrashReportExporter.swift in Sources */,
 				D2CB6FC227C5348200A62B57 /* CrashReportMinifier.swift in Sources */,
 				D214DA8429DF2D5E004D0AE8 /* CrashReporting.swift in Sources */,
+				D2268AE82EB50F4C00875E44 /* DatadogDiagnosticFilter.swift in Sources */,
 				D2268AD92EB4DAC400875E44 /* AnyCrashReport.swift in Sources */,
 				D2CB6FC327C5348200A62B57 /* PLCrashReporterIntegration.swift in Sources */,
 				D214DA8229DF2D5E004D0AE8 /* CrashReportingPlugin.swift in Sources */,
@@ -10697,6 +10708,7 @@
 				D2268ADE2EB4EC6700875E44 /* DatadogTypeSafeFilterTests.swift in Sources */,
 				D2268ADB2EB4E69C00875E44 /* CrashFieldDictionaryTests.swift in Sources */,
 				D2CB6FDC27C5352300A62B57 /* PLCrashReporterIntegrationTests.swift in Sources */,
+				D2268AEA2EB50F7F00875E44 /* DatadogDiagnosticFilterTests.swift in Sources */,
 				D2CB6FDD27C5352300A62B57 /* CrashReportInfoMinifierTests.swift in Sources */,
 				D22689C72EB2151F00875E44 /* KSCrashPluginTests.swift in Sources */,
 				D2CB6FDE27C5352300A62B57 /* DDCrashReportExporterTests.swift in Sources */,
