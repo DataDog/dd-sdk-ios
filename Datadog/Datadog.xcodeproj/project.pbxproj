@@ -1252,6 +1252,10 @@
 		D2268ADC2EB4E69C00875E44 /* CrashFieldDictionaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268ADA2EB4E69C00875E44 /* CrashFieldDictionaryTests.swift */; };
 		D2268ADE2EB4EC6700875E44 /* DatadogTypeSafeFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268ADD2EB4EC6700875E44 /* DatadogTypeSafeFilterTests.swift */; };
 		D2268ADF2EB4EC6700875E44 /* DatadogTypeSafeFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268ADD2EB4EC6700875E44 /* DatadogTypeSafeFilterTests.swift */; };
+		D2268AE12EB4F58700875E44 /* DatadogMinifyFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268AE02EB4F58700875E44 /* DatadogMinifyFilter.swift */; };
+		D2268AE22EB4F58700875E44 /* DatadogMinifyFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268AE02EB4F58700875E44 /* DatadogMinifyFilter.swift */; };
+		D2268AE42EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268AE32EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift */; };
+		D2268AE52EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2268AE32EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift */; };
 		D22743D829DEB8B4001A7EF9 /* VitalInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C3B2653A97700DEED9E /* VitalInfoTests.swift */; };
 		D22743D929DEB8B4001A7EF9 /* VitalInfoSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2EF44E2694FA14008A7DAE /* VitalInfoSamplerTests.swift */; };
 		D22743DA29DEB8B4001A7EF9 /* VitalMemoryReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BBBCBB265E71D100943419 /* VitalMemoryReaderTests.swift */; };
@@ -3372,6 +3376,8 @@
 		D2268AD72EB4DAC400875E44 /* AnyCrashReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCrashReport.swift; sourceTree = "<group>"; };
 		D2268ADA2EB4E69C00875E44 /* CrashFieldDictionaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashFieldDictionaryTests.swift; sourceTree = "<group>"; };
 		D2268ADD2EB4EC6700875E44 /* DatadogTypeSafeFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogTypeSafeFilterTests.swift; sourceTree = "<group>"; };
+		D2268AE02EB4F58700875E44 /* DatadogMinifyFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogMinifyFilter.swift; sourceTree = "<group>"; };
+		D2268AE32EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogMinifyFilterTests.swift; sourceTree = "<group>"; };
 		D22789352D64A0D3007E9DB0 /* UploadQualityMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadQualityMetric.swift; sourceTree = "<group>"; };
 		D227A0A32C7622EA00C83324 /* BenchmarkProfiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkProfiler.swift; sourceTree = "<group>"; };
 		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
@@ -6587,8 +6593,9 @@
 			children = (
 				D22689C22EB12D3D00875E44 /* KSCrashPlugin.swift */,
 				D2268AD42EB4DA5800875E44 /* CrashFieldDictionary.swift */,
-				D2268AD12EB4DA4100875E44 /* DatadogTypeSafeFilter.swift */,
 				D2268AD72EB4DAC400875E44 /* AnyCrashReport.swift */,
+				D2268AD12EB4DA4100875E44 /* DatadogTypeSafeFilter.swift */,
+				D2268AE02EB4F58700875E44 /* DatadogMinifyFilter.swift */,
 			);
 			path = KSCrashIntegration;
 			sourceTree = "<group>";
@@ -6599,6 +6606,7 @@
 				D22689C62EB2151F00875E44 /* KSCrashPluginTests.swift */,
 				D2268ADA2EB4E69C00875E44 /* CrashFieldDictionaryTests.swift */,
 				D2268ADD2EB4EC6700875E44 /* DatadogTypeSafeFilterTests.swift */,
+				D2268AE32EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift */,
 			);
 			path = KSCrashIntegration;
 			sourceTree = "<group>";
@@ -9452,6 +9460,7 @@
 				D214DA8129DF2D5E004D0AE8 /* CrashReportingPlugin.swift in Sources */,
 				6167E7032B81F2EB00C3CA2D /* BacktraceReporter.swift in Sources */,
 				612556B0268C8D31002BCE74 /* CrashReportInfo.swift in Sources */,
+				D2268AE12EB4F58700875E44 /* DatadogMinifyFilter.swift in Sources */,
 				D214DA8B29DF2D6A004D0AE8 /* CrashContextProvider.swift in Sources */,
 				615CC40C2694A56D0005F08C /* SwiftExtensions.swift in Sources */,
 				D2268AD52EB4DA5800875E44 /* CrashFieldDictionary.swift in Sources */,
@@ -9474,6 +9483,7 @@
 				61E95D882695C00200EA3115 /* DDCrashReportExporterTests.swift in Sources */,
 				61B7886225C180CB002675B5 /* CrashReportingPluginTests.swift in Sources */,
 				615CC4132695957C0005F08C /* CrashReportInfoTests.swift in Sources */,
+				D2268AE42EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10669,6 +10679,7 @@
 				D214DA8229DF2D5E004D0AE8 /* CrashReportingPlugin.swift in Sources */,
 				6167E7042B81F2EB00C3CA2D /* BacktraceReporter.swift in Sources */,
 				D2CB6FC427C5348200A62B57 /* CrashReportInfo.swift in Sources */,
+				D2268AE22EB4F58700875E44 /* DatadogMinifyFilter.swift in Sources */,
 				D214DA8E29DF2D6B004D0AE8 /* CrashContextProvider.swift in Sources */,
 				D2CB6FC527C5348200A62B57 /* SwiftExtensions.swift in Sources */,
 				D2268AD62EB4DA5800875E44 /* CrashFieldDictionary.swift in Sources */,
@@ -10691,6 +10702,7 @@
 				D2CB6FDE27C5352300A62B57 /* DDCrashReportExporterTests.swift in Sources */,
 				D2CB6FE027C5352300A62B57 /* CrashReportingPluginTests.swift in Sources */,
 				D2CB6FE127C5352300A62B57 /* CrashReportInfoTests.swift in Sources */,
+				D2268AE52EB4F5CA00875E44 /* DatadogMinifyFilterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
