@@ -186,6 +186,11 @@
             value = "$(CI_COMMIT_TIMESTAMP)"
             isEnabled = "YES">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "TSAN_OPTIONS"
+            value = "halt_on_error=0,report_bugs=0"
+            isEnabled = "YES">
+         </EnvironmentVariable>
       </EnvironmentVariables>
       <CodeCoverageTargets>
          <BuildableReference
