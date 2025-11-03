@@ -4,7 +4,7 @@
 DD_SWIFT_SDK_PRODUCT_NAME=DatadogCore
 DD_CR_SDK_PRODUCT_NAME=DatadogCrashReporting
 
-ARCHS[sdk=iphoneos*][config=Release]=$(ARCHS_STANDARD) arm64e
+ARCHS[sdk=iphoneos*]=$(ARCHS_STANDARD) arm64e
 
 // Minimum deployment targets for building the SDK (including Carthage build from sources)
 IPHONEOS_DEPLOYMENT_TARGET=12.0
