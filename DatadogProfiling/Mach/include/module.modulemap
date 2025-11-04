@@ -16,4 +16,9 @@ module DatadogMachProfiler {
       header "profile.pb-c.h"
       export *
   }
+
+  explicit module Testing {
+      header "ctor_profiler_testing.h"
+      export *
+  }
 }

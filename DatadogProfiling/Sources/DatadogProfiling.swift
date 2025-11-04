@@ -48,7 +48,8 @@ public enum Profiling {
                     customUploadURL: configuration.customEndpoint,
                     telemetry: core.telemetry
                 ),
-                messageReceiver: AppLaunchProfiler()
+                messageReceiver: AppLaunchProfiler(),
+                dataStore: UserDefaultsDataStore() //swiftlint:disable:this required_reason_api_name
             )
         )
 

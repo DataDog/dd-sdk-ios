@@ -16,11 +16,21 @@
 #include <cstring>
 #include <random>
 
+// UserDefaults configuration
+#define DD_USER_DEFAULTS_SUITE_NAME "com.datadoghq.ios-sdk"
+#define DD_IS_PROFILING_ENABLED_KEY "is_profiling_enabled"
+
 static constexpr int64_t CTOR_PROFILER_TIMEOUT_NS = 5000000000ULL; // 5 seconds
+
+static constexpr int64_t SAMPLING_RATE = 10; // 10%
 
 namespace dd::profiler { class ctor_profiler; }
 
 static dd::profiler::ctor_profiler* g_ctor_profiler = nullptr;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * Checks if the current process was launched via pre-warming by examining
@@ -54,35 +64,54 @@ bool sample(double sample_rate) {
 }
 
 /**
- * Reads the DatadogProfiling configuration from the main bundle's Info.plist
- * and extracts the AppLaunchProfileSampleRate value.
+ * Reads the DatadogProfiling info from the `UserDefaults`
+ * to validate that the feature was enabled before.
  *
- * @return The sample rate as a double, or 0.0 if not found or invalid
+ * @return If Profiling was enabled, or false if the key is not found
  */
-double read_app_launch_sample_rate() {
-    CFBundleRef main_bundle = CFBundleGetMainBundle();
-    if (!main_bundle) return 0.0;
-    
-    CFDictionaryRef info_dict = CFBundleGetInfoDictionary(main_bundle);
-    if (!info_dict) return 0.0;
-    
-    // Look for DatadogProfiling dictionary
-    CFDictionaryRef profiling_dict = (CFDictionaryRef)CFDictionaryGetValue(info_dict, CFSTR("DatadogProfiling"));
-    if (!profiling_dict || CFGetTypeID(profiling_dict) != CFDictionaryGetTypeID()) return 0.0;
-    
-    // Look for AppLaunchProfileSampleRate key
-    CFNumberRef sample_rate_ref = (CFNumberRef)CFDictionaryGetValue(profiling_dict, CFSTR("AppLaunchProfileSampleRate"));
-    if (!sample_rate_ref || CFGetTypeID(sample_rate_ref) != CFNumberGetTypeID()) return 0.0;
-    
-    double sample_rate = 0.0;
-    if (!CFNumberGetValue(sample_rate_ref, kCFNumberDoubleType, &sample_rate)) return 0.0;
-    
-    // Validate sample rate is between 0 and 100
-    if (sample_rate < 0.0) return 0.0;
-    if (sample_rate > 100.0) return 100.0;
-    
-    return sample_rate;
+bool is_profiling_enabled() {
+    CFStringRef suiteName = CFSTR(DD_USER_DEFAULTS_SUITE_NAME);
+    CFStringRef key = CFSTR(DD_IS_PROFILING_ENABLED_KEY);
+    CFPropertyListRef value = CFPreferencesCopyAppValue(key, suiteName);
+
+    bool result = false;
+
+    if (value) {
+         if (CFGetTypeID(value) == CFDataGetTypeID()) {
+             CFDataRef data = (CFDataRef)value;
+             CFIndex length = CFDataGetLength(data);
+             const CFIndex versionLength = 2;
+
+             // Check we have bytes for version (2 bytes) and for the data (at least 1 byte for bool)
+             if (length >= versionLength + 1) {
+                 const UInt8* bytes = CFDataGetBytePtr(data);
+                 const UInt8* storedData = bytes + versionLength;
+
+                 // Read bool as a single byte
+                 result = (storedData[0] != 0);
+             }
+         }
+         CFRelease(value);
+     }
+
+    return result;
 }
+
+/**
+ * Deletes the DatadogProfiling defaults from the `UserDefaults`
+ * to be re-evaluated during `Profiling.enable()`.
+ */
+void delete_profiling_defaults() {
+    CFStringRef suiteName = CFSTR(DD_USER_DEFAULTS_SUITE_NAME);
+    CFStringRef key = CFSTR(DD_IS_PROFILING_ENABLED_KEY);
+
+    CFPreferencesSetValue(key, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    CFPreferencesSynchronize(suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+}
+
+#ifdef __cplusplus
+}
+#endif
 
 namespace dd::profiler {
 
@@ -108,6 +137,9 @@ public:
      * Start the profiler using constructor configuration
      */
     void start() {
+        // Reset profiling defaults to be re-evaluated again
+        delete_profiling_defaults();
+
         if (is_prewarming) {
             status = CTOR_PROFILER_STATUS_PREWARMED;
             return;
@@ -210,8 +242,12 @@ private:
  */
 __attribute__((constructor(65535)))
 static void ctor_profiler_auto_start() {
+    if (!is_profiling_enabled()) {
+        return;
+    }
+
     // Create profiler and start with sample rate
-    g_ctor_profiler = new dd::profiler::ctor_profiler(read_app_launch_sample_rate(), is_active_prewarm());
+    g_ctor_profiler = new dd::profiler::ctor_profiler(SAMPLING_RATE, is_active_prewarm());
     g_ctor_profiler->start();
 }
 

@@ -10,9 +10,16 @@ import DatadogInternal
 internal final class ProfilerFeature: DatadogRemoteFeature {
     static let name = "profiler"
 
+    internal enum Constants {
+        /// The key to check if Profiling is enabled .
+        static let isProfilingEnabledKey = "is_profiling_enabled"
+    }
+
     let requestBuilder: FeatureRequestBuilder
 
     let messageReceiver: FeatureMessageReceiver
+
+    let dataStore: DataStore
 
     /// Setting max-file-age to minimum will force creating a batch per profile.
     /// It is necessary as the profiling intake only accepts one profile per request.
@@ -20,9 +27,17 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
     init(
         requestBuilder: FeatureRequestBuilder,
-        messageReceiver: FeatureMessageReceiver
+        messageReceiver: FeatureMessageReceiver,
+        dataStore: DataStore
     ) {
         self.requestBuilder = requestBuilder
         self.messageReceiver = messageReceiver
+        self.dataStore = dataStore
+
+        setProfilingEnabled()
+    }
+
+    private func setProfilingEnabled() {
+        dataStore.setValue(withUnsafeBytes(of: true) { Data($0) }, forKey: Constants.isProfilingEnabledKey)
     }
 }

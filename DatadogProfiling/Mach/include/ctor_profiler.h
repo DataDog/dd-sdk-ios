@@ -20,25 +20,8 @@
  * 
  * # Automatic Startup
  * 
- * The profiler automatically checks the application's Info.plist for configuration
- * and starts profiling if enabled. No manual initialization is required.
- * 
- * # Configuration
- * 
- * Add the following to your application's Info.plist to enable constructor profiling:
- * 
- * ```xml
- * <key>DatadogProfiling</key>
- * <dict>
- *     <key>AppLaunchProfileSampleRate</key>
- *     <real>20.0</real>
- * </dict>
- * ```
- * 
- * - `AppLaunchProfileSampleRate`: Sample rate percentage (0.0-100.0)
- *   - 0.0 = profiling disabled
- *   - 100.0 = always profile
- *   - Values between 0-100 can be used for probabilistic sampling
+ * The profiler automatically checks if the profiling was enabled before, and starts it if so.
+ * No manual initialization is required.
  * 
  * # Profiling Characteristics
  * 
@@ -47,14 +30,15 @@
  * - **Buffer Size**: 10,000 samples to capture entire launch phase
  * - **Stack Depth**: 64 frames maximum per trace
  * - **Thread Coverage**: All threads in the process
- * 
+ * - **Profiling Sample Rate**: 10% sampled sessions.
+ *
  * # Usage Example
  * 
  * ```c
  * #include "ctor_profiler.h"
  * 
- * // Profiling starts automatically if configured in Info.plist
- * 
+ * // Profiling starts automatically if enabled before
+ *
  * int main(int argc, char* argv[]) {
  *     // Your app initialization...
  *     
@@ -88,7 +72,7 @@
  * - Profiling starts right before main()
  * - Uses 101 Hz sampling frequency - provides good resolution without impacting launch performance
  * - Automatically stops when ctor_profiler_stop() is called
- * - No overhead when disabled via Info.plist configuration
+ * - No overhead when the feature is disabled
  * - Designed to have minimal impact on application launch time and user experience
  * 
  * # Thread Safety
