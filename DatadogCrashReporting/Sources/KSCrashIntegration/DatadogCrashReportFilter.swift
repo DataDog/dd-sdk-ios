@@ -121,15 +121,6 @@ internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
                 return nil
             }
 
-            // Detect system libraries based on path patterns
-            #if targetEnvironment(simulator)
-            // Simulator: system images are in Xcode.app/Contents/Developer/Platforms/ or .simruntime bundles (Xcode 16+)
-            let isSystemImage = path.contains("/Contents/Developer/Platforms/") || path.contains("simruntime")
-            #else
-            // Device: user images are in /var/containers/Bundle/Application/, everything else is system
-            let isSystemImage = !path.contains("/Bundle/Application/")
-            #endif
-
             let imageAddress: UInt64 = try image.value(forKey: .imageAddress)
             let imageSize: UInt64 = try image.value(forKey: .imageSize)
 
@@ -137,9 +128,9 @@ internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
                 libraryName: path.lastPathComponent,
                 uuid: image.value(forKey: .uuid),
                 architecture: arch,
-                isSystemLibrary: isSystemImage,
-                loadAddress: String(format: "0x%016llx", imageAddress),
-                maxAddress: String(format: "0x%016llx", imageAddress + imageSize)
+                path: path,
+                loadAddress: imageAddress,
+                maxAddress: imageAddress + imageSize
             )
         }
 
@@ -199,6 +190,33 @@ internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
                 context: context,
                 additionalAttributes: nil
             )
+        )
+    }
+}
+
+extension BinaryImage {
+    init(
+        libraryName: String,
+        uuid: String,
+        architecture: String,
+        path: NSString,
+        loadAddress: UInt64,
+        maxAddress: UInt64
+    ) {
+        #if targetEnvironment(simulator)
+        // Simulator: system images are in Xcode.app/Contents/Developer/Platforms/ or .simruntime bundles (Xcode 16+)
+        let isSystemLibrary = path.contains("/Contents/Developer/Platforms/") || path.contains("simruntime")
+        #else
+        // Device: user images are in /var/containers/Bundle/Application/, everything else is system
+        let isSystemLibrary = !path.contains("/Bundle/Application/")
+        #endif
+        self.init(
+            libraryName: libraryName,
+            uuid: uuid,
+            architecture: architecture,
+            isSystemLibrary: isSystemLibrary,
+            loadAddress: String(format: "0x%016llx", loadAddress),
+            maxAddress: String(format: "0x%016llx", maxAddress)
         )
     }
 }
