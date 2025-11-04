@@ -114,21 +114,21 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             interception.completion?.error
         ) ?? [:]
 
-        let originalRequest = interception.request.unsafeOriginal
-
-        // Extract GraphQL attributes from request headers
+        // Extract GraphQL attributes from trace context
         var combinedAttributes = userAttributes
-        if let operationName = originalRequest.value(forHTTPHeaderField: GraphQLHeaders.operationName) {
-            combinedAttributes[CrossPlatformAttributes.graphqlOperationName] = operationName
-        }
-        if let operationType = originalRequest.value(forHTTPHeaderField: GraphQLHeaders.operationType) {
-            combinedAttributes[CrossPlatformAttributes.graphqlOperationType] = operationType
-        }
-        if let variables = originalRequest.value(forHTTPHeaderField: GraphQLHeaders.variables) {
-            combinedAttributes[CrossPlatformAttributes.graphqlVariables] = variables
-        }
-        if let payload = originalRequest.value(forHTTPHeaderField: GraphQLHeaders.payload) {
-            combinedAttributes[CrossPlatformAttributes.graphqlPayload] = payload
+        if let graphqlHeaders = interception.trace?.graphql {
+            if let operationName = graphqlHeaders.operationName {
+                combinedAttributes[CrossPlatformAttributes.graphqlOperationName] = operationName
+            }
+            if let operationType = graphqlHeaders.operationType {
+                combinedAttributes[CrossPlatformAttributes.graphqlOperationType] = operationType
+            }
+            if let variables = graphqlHeaders.variables {
+                combinedAttributes[CrossPlatformAttributes.graphqlVariables] = variables
+            }
+            if let payload = graphqlHeaders.payload {
+                combinedAttributes[CrossPlatformAttributes.graphqlPayload] = payload
+            }
         }
 
         if let resourceMetrics = interception.metrics {
@@ -175,6 +175,15 @@ extension DistributedTracing {
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?) -> (URLRequest, TraceContext?) {
         let traceID = traceIDGenerator.generate()
         let spanID = spanIDGenerator.generate()
+
+        // Extract GraphQL headers from request before they are removed
+        let graphql = GraphQLRequestAttributes(
+            operationName: request.value(forHTTPHeaderField: GraphQLHeaders.operationName),
+            operationType: request.value(forHTTPHeaderField: GraphQLHeaders.operationType),
+            variables: request.value(forHTTPHeaderField: GraphQLHeaders.variables),
+            payload: request.value(forHTTPHeaderField: GraphQLHeaders.payload)
+        )
+
         let injectedSpanContext = TraceContext(
             traceID: traceID,
             spanID: spanID,
@@ -183,7 +192,8 @@ extension DistributedTracing {
             isKept: sampler.sample(),
             rumSessionId: rumSessionId,
             userId: userId,
-            accountId: accountId
+            accountId: accountId,
+            graphql: graphql
         )
 
         var request = request
