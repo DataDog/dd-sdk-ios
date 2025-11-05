@@ -139,10 +139,10 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         swizzlers.removeValue(forKey: identifier)
     }
 
-    private func removeGraphQLFromRequest(_ request: URLRequest) -> URLRequest {
+    private func removeGraphQLHeadersFromRequest(_ request: URLRequest) -> URLRequest {
         var modifiedRequest = request
 
-        // Remove all GraphQL headers
+        // Remove all GraphQL information
         modifiedRequest.setValue(nil, forHTTPHeaderField: GraphQLHeaders.operationName)
         modifiedRequest.setValue(nil, forHTTPHeaderField: GraphQLHeaders.operationType)
         modifiedRequest.setValue(nil, forHTTPHeaderField: GraphQLHeaders.variables)
@@ -182,7 +182,7 @@ extension NetworkInstrumentationFeature {
         }
 
         // Remove GraphQL headers before returning the modified request
-        request = removeGraphQLFromRequest(request)
+        request = removeGraphQLHeadersFromRequest(request)
 
         return (request, traceContexts)
     }

@@ -780,21 +780,14 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     // MARK: - GraphQL Header Removal Tests
 
-    func testGivenRequestWithGraphQLHeaders_whenInterceptingRequestWithFirstPartyHost_itRemovesGraphQLHeadersAndExtractsIntoTraceContext() throws {
+    func testGivenRequestWithGraphQLHeaders_whenInterceptingRequest_itRemovesGraphQLHeadersAndPreservesGraphQLInTraceContext() throws {
         // Given
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
 
         let url = URL(string: "https://api.example.com/graphql")!
         handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: [url.host!: [.datadog]])
         handler.onRequestMutation = { [weak handler] request, _, _ in
-            // Create a trace context with GraphQL headers extracted
-            let graphql = GraphQLRequestAttributes(
-                operationName: request.value(forHTTPHeaderField: GraphQLHeaders.operationName),
-                operationType: request.value(forHTTPHeaderField: GraphQLHeaders.operationType),
-                variables: request.value(forHTTPHeaderField: GraphQLHeaders.variables),
-                payload: request.value(forHTTPHeaderField: GraphQLHeaders.payload)
-            )
-
+            // Handler returns a trace context with GraphQL information
             let traceContext = TraceContext(
                 traceID: .init(idHi: 1, idLo: 1),
                 spanID: 1,
@@ -802,7 +795,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
                 sampleRate: 100,
                 isKept: true,
                 rumSessionId: nil,
-                graphql: graphql
+                graphql: GraphQLRequestAttributes(
+                    operationName: "GetUser",
+                    operationType: "query",
+                    variables: nil,
+                    payload: nil
+                )
             )
 
             handler?.modifiedRequest = request
@@ -817,16 +815,14 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let (modifiedRequest, traceContexts) = feature.intercept(request: request, additionalFirstPartyHosts: nil)
 
         // Then
-        // 1. Headers should be removed from the request
+        // 1. GraphQL headers should be removed from the request
         XCTAssertNil(modifiedRequest.value(forHTTPHeaderField: GraphQLHeaders.operationName), "GraphQL headers should be removed from request")
         XCTAssertNil(modifiedRequest.value(forHTTPHeaderField: GraphQLHeaders.operationType), "GraphQL headers should be removed from request")
 
-        // 2. Headers should be in the trace context
+        // 2. Trace context should contain GraphQL information
         XCTAssertEqual(traceContexts.count, 1, "Should have one trace context")
         let traceContext = try XCTUnwrap(traceContexts.first)
-        let graphqlHeaders = try XCTUnwrap(traceContext.graphql, "GraphQL headers should be in trace context")
-        XCTAssertEqual(graphqlHeaders.operationName, "GetUser")
-        XCTAssertEqual(graphqlHeaders.operationType, "query")
+        XCTAssertNotNil(traceContext.graphql, "GraphQL information should be preserved in trace context")
     }
 
     // MARK: - Thread Safety

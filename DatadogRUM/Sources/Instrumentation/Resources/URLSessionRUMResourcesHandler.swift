@@ -116,17 +116,17 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
         // Extract GraphQL attributes from trace context
         var combinedAttributes = userAttributes
-        if let graphqlHeaders = interception.trace?.graphql {
-            if let operationName = graphqlHeaders.operationName {
+        if let graphqlAttributes = interception.trace?.graphql {
+            if let operationName = graphqlAttributes.operationName {
                 combinedAttributes[CrossPlatformAttributes.graphqlOperationName] = operationName
             }
-            if let operationType = graphqlHeaders.operationType {
+            if let operationType = graphqlAttributes.operationType {
                 combinedAttributes[CrossPlatformAttributes.graphqlOperationType] = operationType
             }
-            if let variables = graphqlHeaders.variables {
+            if let variables = graphqlAttributes.variables {
                 combinedAttributes[CrossPlatformAttributes.graphqlVariables] = variables
             }
-            if let payload = graphqlHeaders.payload {
+            if let payload = graphqlAttributes.payload {
                 combinedAttributes[CrossPlatformAttributes.graphqlPayload] = payload
             }
         }
@@ -176,7 +176,7 @@ extension DistributedTracing {
         let traceID = traceIDGenerator.generate()
         let spanID = spanIDGenerator.generate()
 
-        // Extract GraphQL headers from request before they are removed
+        // Extract GraphQL attributes from request before they are removed
         let graphql = GraphQLRequestAttributes(
             operationName: request.value(forHTTPHeaderField: GraphQLHeaders.operationName),
             operationType: request.value(forHTTPHeaderField: GraphQLHeaders.operationType),

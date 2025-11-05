@@ -973,11 +973,11 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // Then
-        let graphqlHeaders = try XCTUnwrap(traceContext?.graphql, "GraphQL headers must be extracted into TraceContext")
-        XCTAssertEqual(graphqlHeaders.operationName, "GetUser")
-        XCTAssertEqual(graphqlHeaders.operationType, "query")
-        XCTAssertEqual(graphqlHeaders.variables, "{\"userId\":\"123\"}")
-        XCTAssertEqual(graphqlHeaders.payload, "query GetUser($userId: ID!) { user(id: $userId) { name } }")
+        let graphqlAttributes = try XCTUnwrap(traceContext?.graphql, "GraphQL attributes must be extracted into TraceContext")
+        XCTAssertEqual(graphqlAttributes.operationName, "GetUser")
+        XCTAssertEqual(graphqlAttributes.operationType, "query")
+        XCTAssertEqual(graphqlAttributes.variables, "{\"userId\":\"123\"}")
+        XCTAssertEqual(graphqlAttributes.payload, "query GetUser($userId: ID!) { user(id: $userId) { name } }")
     }
 
     func testGivenRequestWithGraphQLHeaders_whenInterceptionCompletes_itExtractsGraphQLAttributesFromTraceContext() throws {
@@ -995,7 +995,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let immutableRequest = ImmutableRequest(request: mockRequest)
         let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
 
-        // Register trace context with GraphQL headers
+        // Register trace context with GraphQL attributes
         let traceContext = TraceContext(
             traceID: .init(idHi: 10, idLo: 100),
             spanID: 100,
@@ -1043,7 +1043,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let immutableRequest = ImmutableRequest(request: mockRequest)
         let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
 
-        // Register trace context with GraphQL headers
+        // Register trace context with GraphQL attributes
         let traceContext = TraceContext(
             traceID: .init(idHi: 10, idLo: 100),
             spanID: 100,

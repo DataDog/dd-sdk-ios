@@ -44,7 +44,7 @@ public struct TraceContext: Equatable {
     ///   - rumSessionId: The unique identifier for the current RUM Session, if any.
     ///   - userId: The unique identifier for the current user, if any.
     ///   - accountId: The unique identifier for the current account, if any.
-    ///   - graphqlHeaders: GraphQL request headers extracted from the request, if any.
+    ///   - graphql: GraphQL request attributes extracted from the request, if any.
     public init(
         traceID: TraceID,
         spanID: SpanID,
