@@ -48,6 +48,12 @@
 		116506152E9533A700FD815C /* AppStateManagerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116506132E95339B00FD815C /* AppStateManagerMock.swift */; };
 		116506172E9535A500FD815C /* WatchdogTerminationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116506162E9535A500FD815C /* WatchdogTerminationMocks.swift */; };
 		116506182E9535A500FD815C /* WatchdogTerminationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116506162E9535A500FD815C /* WatchdogTerminationMocks.swift */; };
+		116656D52EB501D3004248E8 /* ProfilingRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116656D42EB501C2004248E8 /* ProfilingRUMIntegrationTests.swift */; };
+		116656D62EB501D3004248E8 /* ProfilingRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116656D42EB501C2004248E8 /* ProfilingRUMIntegrationTests.swift */; };
+		116656D72EB504A8004248E8 /* DatadogProfiling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D229FFA72E3BC6D4009CCD62 /* DatadogProfiling.framework */; };
+		116656DC2EB504B3004248E8 /* DatadogProfiling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D229FF8A2E3BC5B8009CCD62 /* DatadogProfiling.framework */; };
+		116656E12EB504F1004248E8 /* DatadogFlags.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; };
+		116656E52EB50501004248E8 /* DatadogFlags.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C3192E785B6F00B1DA80 /* DatadogFlags.framework */; };
 		116F84062CFDD06700705755 /* SampleRateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116F84052CFDD06700705755 /* SampleRateTests.swift */; };
 		116F84072CFDD06700705755 /* SampleRateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116F84052CFDD06700705755 /* SampleRateTests.swift */; };
 		117ADDD92EAA8A90008BD9D8 /* StartupTypeHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ADDD82EAA8A90008BD9D8 /* StartupTypeHandlerTests.swift */; };
@@ -2111,6 +2117,34 @@
 			remoteGlobalIDString = D2CB6FBA27C5348200A62B57;
 			remoteInfo = "DatadogCrashReporting tvOS";
 		};
+		116656D92EB504A8004248E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D229FF8B2E3BC6D4009CCD62;
+			remoteInfo = "DatadogProfiling iOS";
+		};
+		116656DE2EB504B3004248E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D229FF6E2E3BC5B8009CCD62;
+			remoteInfo = "DatadogProfiling tvOS";
+		};
+		116656E32EB504F1004248E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5BA8C2EC2E784B3C00B1DA80;
+			remoteInfo = "DatadogFlags iOS";
+		};
+		116656E72EB50501004248E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5BA8C3182E785B6F00B1DA80;
+			remoteInfo = "DatadogFlags tvOS";
+		};
 		117E52242D91A61A00A8E930 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
@@ -2586,6 +2620,7 @@
 		115F480A2E0BFE02006FAB07 /* DeterministicSamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSamplerTests.swift; sourceTree = "<group>"; };
 		116506132E95339B00FD815C /* AppStateManagerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManagerMock.swift; sourceTree = "<group>"; };
 		116506162E9535A500FD815C /* WatchdogTerminationMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationMocks.swift; sourceTree = "<group>"; };
+		116656D42EB501C2004248E8 /* ProfilingRUMIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingRUMIntegrationTests.swift; sourceTree = "<group>"; };
 		116F84052CFDD06700705755 /* SampleRateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleRateTests.swift; sourceTree = "<group>"; };
 		117ADDD82EAA8A90008BD9D8 /* StartupTypeHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTypeHandlerTests.swift; sourceTree = "<group>"; };
 		118246772D90416A00E3D16F /* DirectoriesStub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoriesStub.swift; sourceTree = "<group>"; };
@@ -3712,6 +3747,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				118248522D908BEF00E3D16F /* DatadogWebViewTracking.framework in Frameworks */,
+				116656E12EB504F1004248E8 /* DatadogFlags.framework in Frameworks */,
+				116656D72EB504A8004248E8 /* DatadogProfiling.framework in Frameworks */,
 				118248532D908BEF00E3D16F /* DatadogSessionReplay.framework in Frameworks */,
 				118248542D908BEF00E3D16F /* DatadogTrace.framework in Frameworks */,
 				118248552D908BEF00E3D16F /* DatadogRUM.framework in Frameworks */,
@@ -3728,6 +3765,8 @@
 			files = (
 				118249052D9094EA00E3D16F /* DatadogTrace.framework in Frameworks */,
 				118249062D9094EA00E3D16F /* DatadogRUM.framework in Frameworks */,
+				116656DC2EB504B3004248E8 /* DatadogProfiling.framework in Frameworks */,
+				116656E52EB50501004248E8 /* DatadogFlags.framework in Frameworks */,
 				118249072D9094EA00E3D16F /* DatadogCrashReporting.framework in Frameworks */,
 				118249082D9094EA00E3D16F /* DatadogLogs.framework in Frameworks */,
 				118249092D9094EA00E3D16F /* TestUtilities.framework in Frameworks */,
@@ -4142,6 +4181,14 @@
 			path = RenderLoop;
 			sourceTree = "<group>";
 		};
+		116656D32EB501B6004248E8 /* Profiling */ = {
+			isa = PBXGroup;
+			children = (
+				116656D42EB501C2004248E8 /* ProfilingRUMIntegrationTests.swift */,
+			);
+			path = Profiling;
+			sourceTree = "<group>";
+		};
 		118246762D90412800E3D16F /* TestUtilities */ = {
 			isa = PBXGroup;
 			children = (
@@ -4229,7 +4276,6 @@
 				1182F9EC2DA2F827007FE71A /* HostsSanitizerMock.swift */,
 				1182F9ED2DA2F827007FE71A /* MockFeature.swift */,
 				1182F9EE2DA2F827007FE71A /* PassthroughCoreMock.swift */,
-				D266ECF82DBA5B1800CB9B3A /* RUMDataModelMocks.swift */,
 				1182F9EF2DA2F827007FE71A /* SamplerMock.swift */,
 				1182F9F02DA2F827007FE71A /* SingleFeatureCoreMock.swift */,
 				1182F9F12DA2F827007FE71A /* TelemetryMocks.swift */,
@@ -5117,13 +5163,14 @@
 			isa = PBXGroup;
 			children = (
 				6119DDD82DD24AB700DA80F9 /* AppRunner */,
-				D2C5D52E2B84F6E700B63F36 /* SessionReplay */,
 				6179DB542B60229D00E9E04E /* CrashReporting */,
-				61E8C5062B28896100E709B4 /* RUM */,
-				61F3E36B2BC7D51400C7881E /* Trace */,
 				5B4F37672E93C59A0093778F /* Flags */,
-				610ABD4A2A6930AB00AFEA34 /* Public */,
 				618353BA2A6946F40085F84A /* Internal */,
+				116656D32EB501B6004248E8 /* Profiling */,
+				610ABD4A2A6930AB00AFEA34 /* Public */,
+				61E8C5062B28896100E709B4 /* RUM */,
+				D2C5D52E2B84F6E700B63F36 /* SessionReplay */,
+				61F3E36B2BC7D51400C7881E /* Trace */,
 			);
 			path = IntegrationUnitTests;
 			sourceTree = "<group>";
@@ -7662,6 +7709,8 @@
 			);
 			dependencies = (
 				118247B42D908BEF00E3D16F /* PBXTargetDependency */,
+				116656DA2EB504A8004248E8 /* PBXTargetDependency */,
+				116656E42EB504F1004248E8 /* PBXTargetDependency */,
 			);
 			name = "DatadogIntegrationTests iOS";
 			productName = DatadogTests;
@@ -7681,6 +7730,8 @@
 			);
 			dependencies = (
 				118248862D9094EA00E3D16F /* PBXTargetDependency */,
+				116656DF2EB504B3004248E8 /* PBXTargetDependency */,
+				116656E82EB50501004248E8 /* PBXTargetDependency */,
 			);
 			name = "DatadogIntegrationTests tvOS";
 			productName = DatadogTests;
@@ -9173,6 +9224,7 @@
 				118248682D908CF400E3D16F /* WatchdogTerminationsMonitoringTests.swift in Sources */,
 				6119DDEE2DD4E94300DA80F9 /* AppRunStep.swift in Sources */,
 				118248692D908CF400E3D16F /* AppHangsMonitoringTests.swift in Sources */,
+				116656D62EB501D3004248E8 /* ProfilingRUMIntegrationTests.swift in Sources */,
 				1182486A2D908CF400E3D16F /* ViewLoadingMetricsTests.swift in Sources */,
 				6119DDC82DD24A9600DA80F9 /* RUMSessionTestsBase.swift in Sources */,
 				6119DDC92DD24A9600DA80F9 /* RUMSessionWithNoViewTests.swift in Sources */,
@@ -9222,6 +9274,7 @@
 				118249372D9096B400E3D16F /* HeadBasedSamplingTests.swift in Sources */,
 				118249382D9096B400E3D16F /* RUMAttributesIntegrationTests.swift in Sources */,
 				118249392D9096B400E3D16F /* SendingCrashReportTests.swift in Sources */,
+				116656D52EB501D3004248E8 /* ProfilingRUMIntegrationTests.swift in Sources */,
 				5B4F376A2E93C5C90093778F /* FlagsRUMIntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -11376,6 +11429,26 @@
 			target = D2CB6FBA27C5348200A62B57 /* DatadogCrashReporting tvOS */;
 			targetProxy = 11030D732D95A51100732D5F /* PBXContainerItemProxy */;
 		};
+		116656DA2EB504A8004248E8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D229FF8B2E3BC6D4009CCD62 /* DatadogProfiling iOS */;
+			targetProxy = 116656D92EB504A8004248E8 /* PBXContainerItemProxy */;
+		};
+		116656DF2EB504B3004248E8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D229FF6E2E3BC5B8009CCD62 /* DatadogProfiling tvOS */;
+			targetProxy = 116656DE2EB504B3004248E8 /* PBXContainerItemProxy */;
+		};
+		116656E42EB504F1004248E8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5BA8C2EC2E784B3C00B1DA80 /* DatadogFlags iOS */;
+			targetProxy = 116656E32EB504F1004248E8 /* PBXContainerItemProxy */;
+		};
+		116656E82EB50501004248E8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5BA8C3182E785B6F00B1DA80 /* DatadogFlags tvOS */;
+			targetProxy = 116656E72EB50501004248E8 /* PBXContainerItemProxy */;
+		};
 		117E52252D91A61A00A8E930 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 6133D1E52A6ED9E100384BEF /* DatadogSessionReplay iOS */;
@@ -11700,6 +11773,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach/include";
 				INFOPLIST_FILE = TargetSupport/DatadogTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -11724,6 +11798,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach/include";
 				INFOPLIST_FILE = TargetSupport/DatadogTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -11747,6 +11822,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach/include";
 				INFOPLIST_FILE = TargetSupport/DatadogTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -11770,6 +11846,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach/include";
 				INFOPLIST_FILE = TargetSupport/DatadogTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -11792,6 +11869,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach/include";
 				INFOPLIST_FILE = TargetSupport/DatadogTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -11813,6 +11891,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach/include";
 				INFOPLIST_FILE = TargetSupport/DatadogTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
