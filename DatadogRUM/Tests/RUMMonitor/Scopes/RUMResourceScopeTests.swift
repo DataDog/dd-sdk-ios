@@ -1588,7 +1588,7 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: "/graphql",
                     time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
                     attributes: [
-                        CrossPlatformAttributes.graphqlErrors: graphQLResponseJSON,
+                        CrossPlatformAttributes.graphqlErrors: graphQLResponseJSON.data(using: .utf8)!,
                         CrossPlatformAttributes.graphqlOperationType: "query",
                         CrossPlatformAttributes.graphqlOperationName: "GetBookAndUser"
                     ],
@@ -1659,7 +1659,7 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: "/graphql",
                     time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
                     attributes: [
-                        CrossPlatformAttributes.graphqlErrors: "{ invalid json }",
+                        CrossPlatformAttributes.graphqlErrors: "{ invalid json }".data(using: .utf8)!,
                         CrossPlatformAttributes.graphqlOperationType: "query"
                     ],
                     kind: .xhr,
@@ -1702,7 +1702,7 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: "/graphql",
                     time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
                     attributes: [
-                        CrossPlatformAttributes.graphqlErrors: emptyErrorsJSON,
+                        CrossPlatformAttributes.graphqlErrors: emptyErrorsJSON.data(using: .utf8)!,
                         CrossPlatformAttributes.graphqlOperationType: "query"
                     ],
                     kind: .xhr,

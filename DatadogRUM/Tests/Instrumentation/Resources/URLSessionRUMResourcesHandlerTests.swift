@@ -1143,7 +1143,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
         XCTAssertNotNil(attributes[CrossPlatformAttributes.graphqlErrors])
-        let errorsJSON = try XCTUnwrap(attributes[CrossPlatformAttributes.graphqlErrors] as? String)
+        let errorsData = try XCTUnwrap(attributes[CrossPlatformAttributes.graphqlErrors] as? Data)
+        let errorsJSON = try XCTUnwrap(String(data: errorsData, encoding: .utf8))
         XCTAssertTrue(errorsJSON.contains("Not found"))
     }
 

@@ -138,10 +138,10 @@ internal class RUMResourceScope: RUMScope {
         let graphqlOperationName: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationName)?.dd.decode()
         let graphqlPayload: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlPayload)?.dd.decode()
         let graphqlVariables: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlVariables)?.dd.decode()
-        let graphqlErrorsString: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlErrors)?.dd.decode()
+        let graphqlErrorsData: Data? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlErrors)?.dd.decode()
 
         // Parse GraphQL errors if present
-        let graphqlErrors = parseGraphQLErrors(from: graphqlErrorsString)
+        let graphqlErrors = parseGraphQLErrors(from: graphqlErrorsData)
 
         if
             let rawGraphqlOperationType: String = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationType)?.dd.decode(),
@@ -418,14 +418,14 @@ internal class RUMResourceScope: RUMScope {
         return duration.toInt64Nanoseconds
     }
 
-    /// Decodes GraphQL errors from JSON string and returns them as RUM event errors
-    private func parseGraphQLErrors(from jsonString: String?) -> [RUMResourceEvent.Resource.Graphql.Errors]? {
-        guard let jsonString, let jsonData = jsonString.data(using: .utf8) else {
+    /// Decodes GraphQL errors from JSON data and returns them as RUM event errors
+    private func parseGraphQLErrors(from data: Data?) -> [RUMResourceEvent.Resource.Graphql.Errors]? {
+        guard let data else {
             return nil
         }
 
         do {
-            let response = try JSONDecoder().decode(GraphQLResponse.self, from: jsonData)
+            let response = try JSONDecoder().decode(GraphQLResponse.self, from: data)
 
             guard let responseErrors = response.errors, !responseErrors.isEmpty else {
                 return nil

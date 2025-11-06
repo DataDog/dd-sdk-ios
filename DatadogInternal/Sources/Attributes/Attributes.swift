@@ -145,8 +145,8 @@ public struct CrossPlatformAttributes {
     public static let graphqlVariables = "_dd.graphql.variables"
 
     /// Custom attribute passed when completing GraphQL RUM resources that contain errors in the response.
-    /// It sets the GraphQL errors from the response body as a JSON string.
-    /// Expects `String` value.
+    /// It sets the GraphQL errors from the response body as JSON data.
+    /// Expects `Data` value.
     public static let graphqlErrors = "_dd.graphql.errors"
 
     /// Override the `source_type` of errors reported by the native crash handler. This is used on
