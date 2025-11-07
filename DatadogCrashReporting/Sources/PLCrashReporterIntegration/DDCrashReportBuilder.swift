@@ -9,12 +9,12 @@ import CrashReporter
 
 /// Builds `DDCrashReport` from `PLCrashReport`.
 internal struct DDCrashReportBuilder {
-    private let minifier = CrashReportMinifier()
+    private let minifier = CrashReportInfoMinifier()
     private let exporter = DDCrashReportExporter()
 
     func createDDCrashReport(from plCrashReport: PLCrashReport) throws -> DDCrashReport {
         // Read intermediate report:
-        var crashReport = try CrashReport(from: plCrashReport)
+        var crashReport = try CrashReportInfo(from: plCrashReport)
 
         // Minify intermediate report:
         minifier.minify(crashReport: &crashReport)

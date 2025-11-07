@@ -28,7 +28,9 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
     init(_ kscrash: KSCrash = .shared) throws {
         try kscrash.install(with: .datadog())
         kscrash.reportStore?.sink = CrashReportFilterPipeline(
-            filters: [/* no-op */]
+            filters: [
+                DatadogTypeSafeFilter()
+            ]
         )
 
         self.kscrash = kscrash
