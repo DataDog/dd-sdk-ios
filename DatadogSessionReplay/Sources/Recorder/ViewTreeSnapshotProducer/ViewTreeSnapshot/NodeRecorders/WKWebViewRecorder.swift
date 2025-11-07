@@ -23,9 +23,46 @@ internal class WKWebViewRecorder: NodeRecorder {
         // Add the webview to cache
         context.webViewCache.add(webView)
 
-        let builder = WKWebViewWireframesBuilder(slotID: webView.hash, attributes: attributes)
-        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        // Adjust the frame for webviews that extends beyond safe area (RUM-6227)
+        var adjustedAttributes = attributes
+        if let frameAdjustment = calculateFrameOffset(for: webView, with: attributes) {
+            adjustedAttributes.frame = attributes.frame.offsetBy(dx: 0, dy: frameAdjustment)
+        }
+
+        let builder = WKWebViewWireframesBuilder(slotID: webView.hash, attributes: adjustedAttributes)
+        let node = Node(viewAttributes: adjustedAttributes, wireframesBuilder: builder)
         return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
+    }
+
+    private func calculateFrameOffset(
+        for webView: WKWebView,
+        with attributes: ViewAttributes
+    ) -> CGFloat? {
+        // When `contentInsetAdjustmentBehavior` is set to `.automatic` or `.always`, WebKit
+        // internally adjusts the web content viewport to account for safe area insets. This
+        // creates a mismatch between the native frame position (which can start at y=0) and
+        // where the web content actually renders (which starts below the safe area).
+        //
+        // To compensate for this, we need to offset the webview frame ensuring that:
+        // - Native touch coordinates align with web content touch coordinates
+        // - Web content from the Browser SDK integration displays at the expected position
+        guard webView.scrollView.contentInsetAdjustmentBehavior != .never else {
+            return nil
+        }
+
+        let safeAreaTop = webView.safeAreaInsets.top
+
+        if attributes.frame.minY < safeAreaTop {
+            // This offset is based on empirical testing and investigation.
+            // WebKit appears to apply internal coordinate transformations that
+            // create a mismatch between the native frame position and where web
+            // content renders.
+            // We don't fully understand the exact WebKit internal behavior causing
+            // the issue, but applying this offset resolves the coordinate mismatch.
+            return safeAreaTop / (webView.window?.screen.scale ?? 1)
+        }
+
+        return nil
     }
 }
 
