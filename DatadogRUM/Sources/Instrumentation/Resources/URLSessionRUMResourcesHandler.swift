@@ -191,14 +191,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             return nil
         }
 
-        // Extract only the errors array from the response
-        guard let jsonObject = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let errors = jsonObject["errors"],
-              let errorsData = try? JSONSerialization.data(withJSONObject: ["errors": errors]) else {
-            return nil
-        }
-
-        return errorsData
+        return data
     }
 }
 
