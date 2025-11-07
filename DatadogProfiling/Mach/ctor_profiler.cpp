@@ -28,10 +28,6 @@ namespace dd::profiler { class ctor_profiler; }
 
 static dd::profiler::ctor_profiler* g_ctor_profiler = nullptr;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * Checks if the current process was launched via pre-warming by examining
  * the ActivePrewarm environment variable.
@@ -62,6 +58,10 @@ bool sample(double sample_rate) {
     double random_value = dis(gen);
     return random_value < sample_rate;
 }
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * Reads the DatadogProfiling info from the `UserDefaults`
@@ -137,9 +137,6 @@ public:
      * Start the profiler using constructor configuration
      */
     void start() {
-        // Reset profiling defaults to be re-evaluated again
-        delete_profiling_defaults();
-
         if (is_prewarming) {
             status = CTOR_PROFILER_STATUS_PREWARMED;
             return;
@@ -246,6 +243,9 @@ static void ctor_profiler_auto_start() {
         return;
     }
 
+    // Reset profiling defaults to be re-evaluated again
+    delete_profiling_defaults();
+
     // Create profiler and start with sample rate
     g_ctor_profiler = new dd::profiler::ctor_profiler(SAMPLING_RATE, is_active_prewarm());
     g_ctor_profiler->start();
@@ -270,10 +270,18 @@ void ctor_profiler_destroy(void) {
     g_ctor_profiler = nullptr;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void ctor_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns) {
     delete g_ctor_profiler;
     g_ctor_profiler = new dd::profiler::ctor_profiler(sample_rate, is_prewarming, timeout_ns);
     g_ctor_profiler->start();
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __APPLE__

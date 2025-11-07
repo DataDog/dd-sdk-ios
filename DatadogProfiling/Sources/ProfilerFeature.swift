@@ -19,8 +19,6 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
     let messageReceiver: FeatureMessageReceiver
 
-    let dataStore: DataStore
-
     /// Setting max-file-age to minimum will force creating a batch per profile.
     /// It is necessary as the profiling intake only accepts one profile per request.
     let performanceOverride = PerformancePresetOverride(maxFileSize: .min)
@@ -32,12 +30,11 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
     ) {
         self.requestBuilder = requestBuilder
         self.messageReceiver = messageReceiver
-        self.dataStore = dataStore
 
-        setProfilingEnabled()
+        setProfilingEnabled(in: dataStore)
     }
 
-    private func setProfilingEnabled() {
+    private func setProfilingEnabled(in dataStore: DataStore) {
         dataStore.setValue(withUnsafeBytes(of: true) { Data($0) }, forKey: Constants.isProfilingEnabledKey)
     }
 }
