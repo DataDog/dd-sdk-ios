@@ -188,7 +188,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
         _ operationName: String,
         tags: NSDictionary?,
         startTime: Date?,
-        customSamplingRate: NSNumber?
+        customSampleRate: NSNumber?
     ) -> any objc_OTSpan {
         return objc_SpanObjc(
             objcTracer: self,
@@ -196,7 +196,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
                 operationName: operationName,
                 tags: tags.flatMap { castTagsToSwift($0) },
                 startTime: startTime,
-                customSamplingRate: customSamplingRate?.floatValue
+                customSampleRate: customSampleRate?.floatValue
             )
         )
     }

@@ -44,7 +44,7 @@ class DatadogTracer_SamplingTests: XCTestCase {
         // When
         let tracer = createTracer(sampleRate: 0)
         (0..<10).forEach { _ in
-            let span = tracer.startRootSpan(operationName: .mockAny(), customSamplingRate: 100)
+            let span = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 100)
             span.finish()
         }
 
@@ -57,7 +57,7 @@ class DatadogTracer_SamplingTests: XCTestCase {
     func testRootSampleInOverridesTracerAndPropagatesToChildSpans() throws {
         // When
         let tracer = createTracer(sampleRate: 0)
-        let root = tracer.startRootSpan(operationName: .mockAny(), customSamplingRate: 100)
+        let root = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 100)
         let child = tracer.startSpan(operationName: .mockAny(), childOf: root.context)
         let grandChild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
         grandChild.finish()
@@ -74,7 +74,7 @@ class DatadogTracer_SamplingTests: XCTestCase {
     func testRootSampleOutOverridesTracerAndPropagatesToChildSpans() throws {
         // When
         let tracer = createTracer(sampleRate: 100)
-        let root = tracer.startRootSpan(operationName: .mockAny(), customSamplingRate: 0)
+        let root = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 0)
         let child = tracer.startSpan(operationName: .mockAny(), childOf: root.context)
         let grandChild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
         grandChild.finish()

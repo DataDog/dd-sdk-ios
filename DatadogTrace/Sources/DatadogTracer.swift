@@ -87,9 +87,9 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         )
     }
 
-    func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil, customSamplingRate: SampleRate? = nil) -> OTSpan {
-        let sampler: Sampling = if let customSamplingRate {
-            Sampler(samplingRate: customSamplingRate)
+    func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil, customSampleRate: SampleRate? = nil) -> OTSpan {
+        let sampler: Sampling = if let customSampleRate {
+            Sampler(samplingRate: customSampleRate)
         } else {
             localTraceSampler
         }

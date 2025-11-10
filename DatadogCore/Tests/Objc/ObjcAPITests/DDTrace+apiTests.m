@@ -58,7 +58,7 @@
 }
 
 - (void)testDDTracerAPI {
-    id<OTSpan> rootSpan = [[DDTracer shared] startRootSpan:@"" tags:NULL startTime:NULL customSamplingRate:NULL];
+    id<OTSpan> rootSpan = [[DDTracer shared] startRootSpan:@"" tags:NULL startTime:NULL customSampleRate:NULL];
     [rootSpan setActive];
     [[DDTracer shared] startSpan:@""];
     [[DDTracer shared] startSpan:@"" tags:@{}];
