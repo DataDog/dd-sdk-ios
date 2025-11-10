@@ -67,6 +67,11 @@ public final class objc_Datadog: NSObject {
         Datadog.setUserInfo(id: userId, name: name, email: email, extraInfo: extraInfo.dd.swiftAttributes)
     }
 
+    /// Returns the current user ID if set.
+    public static func currentUserId() -> String? {
+        (CoreRegistry.default as? DatadogCore)?.userInfoPublisher.current.id
+    }
+
     public static func clearUserInfo() {
         Datadog.clearUserInfo()
     }
@@ -77,6 +82,11 @@ public final class objc_Datadog: NSObject {
 
     public static func setAccountInfo(accountId: String, name: String? = nil, extraInfo: [String: Any] = [:]) {
         Datadog.setAccountInfo(id: accountId, name: name, extraInfo: extraInfo.dd.swiftAttributes)
+    }
+
+    /// Returns the current account ID if set.
+    public static func currentAccountId() -> String? {
+        (CoreRegistry.default as? DatadogCore)?.accountInfoPublisher.current?.id
     }
 
     public static func addAccountExtraInfo(_ extraInfo: [String: Any]) {

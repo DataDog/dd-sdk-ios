@@ -36,7 +36,9 @@
     [DDDatadog setVerbosityLevel:verbosity];
 
     [DDDatadog setUserInfoWithUserId:@"" name:@"" email:@"" extraInfo:@{}];
+    [DDDatadog currentUserId];
     [DDDatadog addUserExtraInfo:@{}];
+    [DDDatadog currentAccountId];
     [DDDatadog setTrackingConsentWithConsent:[DDTrackingConsent notGranted]];
 
     [DDDatadog clearAllData];

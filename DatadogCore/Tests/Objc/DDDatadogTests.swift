@@ -151,6 +151,29 @@ class DDDatadogTests: XCTestCase {
         XCTAssertNil(userInfo.current.email)
         XCTAssertTrue(userInfo.current.extraInfo.isEmpty)
 
+        XCTAssertEqual(objc_Datadog.currentUserId(), "id")
+
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testItReturnsCurrentUserAndAccountIdsFromObjcAPI() throws {
+        objc_Datadog.initialize(
+            configuration: objc_Configuration(clientToken: "abcefghi", env: "tests"),
+            trackingConsent: randomConsent().objc
+        )
+
+        objc_Datadog.setUserInfo(userId: "user-id", name: nil, email: nil, extraInfo: [:])
+        objc_Datadog.setAccountInfo(accountId: "account-id", name: nil, extraInfo: [:])
+
+        XCTAssertEqual(objc_Datadog.currentUserId(), "user-id")
+        XCTAssertEqual(objc_Datadog.currentAccountId(), "account-id")
+
+        objc_Datadog.clearUserInfo()
+        objc_Datadog.clearAccountInfo()
+
+        XCTAssertNil(objc_Datadog.currentUserId())
+        XCTAssertNil(objc_Datadog.currentAccountId())
+
         Datadog.flushAndDeinitialize()
     }
 

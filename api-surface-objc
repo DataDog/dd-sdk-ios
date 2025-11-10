@@ -11,9 +11,11 @@ public final class objc_Datadog: NSObject
     public static func setVerbosityLevel(_ verbosityLevel: objc_CoreLoggerLevel)
     public static func verbosityLevel() -> objc_CoreLoggerLevel
     public static func setUserInfo(userId: String, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
+    public static func currentUserId() -> String?
     public static func clearUserInfo()
     public static func addUserExtraInfo(_ extraInfo: [String: Any])
     public static func setAccountInfo(accountId: String, name: String? = nil, extraInfo: [String: Any] = [:])
+    public static func currentAccountId() -> String?
     public static func addAccountExtraInfo(_ extraInfo: [String: Any])
     public static func clearAccountInfo()
     public static func setTrackingConsent(consent: objc_TrackingConsent)
