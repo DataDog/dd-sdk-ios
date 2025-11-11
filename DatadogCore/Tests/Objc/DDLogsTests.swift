@@ -253,7 +253,7 @@ class DDLogsTests: XCTestCase {
         let logMatcher = try core.waitAndReturnLogMatchers()[0]
         logMatcher.assertValue(forKeyPath: "foo", equals: "bar")
         logMatcher.assertNoValue(forKey: "bizz")
-        logMatcher.assertTags(equal: ["foo:bar", "foobar", "env:test", "version:1.2.3"])
+        logMatcher.assertTags(equal: ["foo:bar", "foobar", "env:test", "version:1.2.3", "service:abc"])
     }
 
     func testItForwardsLoggerConfigurationToSwift() {
