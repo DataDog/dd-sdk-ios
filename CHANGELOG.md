@@ -1,4 +1,5 @@
 # Unreleased
+- [BUGFIX] Fix tracing header injection for sampled out requests. See [#2473][]
 
 # 3.2.0 / 30-10-2025
 
@@ -973,6 +974,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2410]: https://github.com/DataDog/dd-sdk-ios/pull/2410
 [#2436]: https://github.com/DataDog/dd-sdk-ios/pull/2436
 [#2469]: https://github.com/DataDog/dd-sdk-ios/pull/2469
+[#2473]: https://github.com/DataDog/dd-sdk-ios/pull/2473
 [#2474]: https://github.com/DataDog/dd-sdk-ios/pull/2474
 [#2501]: https://github.com/DataDog/dd-sdk-ios/pull/2501
 [#2530]: https://github.com/DataDog/dd-sdk-ios/pull/2530

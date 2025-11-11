@@ -95,7 +95,10 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         writer.write(traceContext: .mockWith(isKept: false))
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
-        XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
+        let ids = reader.read()
+        XCTAssertEqual(ids?.traceID, 0)
+        XCTAssertEqual(ids?.spanID, 0)
+        XCTAssertNil(ids?.parentSpanID)
         XCTAssertEqual(reader.sampled, false)
     }
 
