@@ -339,6 +339,7 @@ internal struct LogEventEncoder {
 
         // Encode tags
         var tags = log.tags ?? []
+        tags.append("service:\(log.serviceName)") // include default service tag
         tags.append("env:\(log.environment)") // include default env tag
         tags.append("version:\(log.applicationVersion)") // include default version tag
         if let variant = log.variant {

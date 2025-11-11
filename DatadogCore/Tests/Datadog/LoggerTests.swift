@@ -91,7 +91,7 @@ class LoggerTests: XCTestCase {
           "date" : "2019-12-15T10:00:00.000Z",
           "version": "1.0.0",
           "build_version": "1",
-          "ddtags": "env:tests,version:1.0.0",
+          "ddtags": "service:default-service-name,env:tests,version:1.0.0",
           "os": {
             "build": "FFFFFF",
             "name": "testOS",
@@ -642,9 +642,9 @@ class LoggerTests: XCTestCase {
         logger.info("info message 3")
 
         let logMatchers = try core.waitAndReturnLogMatchers()
-        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3"])
-        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3"])
-        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3"])
+        logMatchers[0].assertTags(equal: ["tag1", "service:abc", "env:tests", "version:1.2.3"])
+        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "service:abc", "env:tests", "version:1.2.3"])
+        logMatchers[2].assertTags(equal: ["service:abc", "env:tests", "version:1.2.3"])
     }
 
     func testSendingTagsWithVariant() throws {
@@ -681,9 +681,9 @@ class LoggerTests: XCTestCase {
         logger.info("info message 3")
 
         let logMatchers = try core.waitAndReturnLogMatchers()
-        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3", "variant:integration"])
-        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3", "variant:integration"])
-        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3", "variant:integration"])
+        logMatchers[0].assertTags(equal: ["tag1", "service:abc", "env:tests", "version:1.2.3", "variant:integration"])
+        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "service:abc", "env:tests", "version:1.2.3", "variant:integration"])
+        logMatchers[2].assertTags(equal: ["service:abc", "env:tests", "version:1.2.3", "variant:integration"])
     }
 
     // MARK: - Integration With RUM Feature

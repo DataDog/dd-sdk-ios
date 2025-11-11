@@ -76,7 +76,7 @@ class WebViewLogReceiverTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
         let received: AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
         let expected: [String: Any] = [
-            "ddtags": "version:abc,env:abc",
+            "ddtags": "service:abc,version:abc,env:abc",
             "test": value
         ]
 
@@ -131,7 +131,7 @@ class WebViewLogReceiverTests: XCTestCase {
             "application_id": "123456",
             "session_id": mockSessionID.uuidString.lowercased(),
             "status": "error",
-            "ddtags": "version:\(applicationVersion),env:\(environment)",
+            "ddtags": "service:abc,version:\(applicationVersion),env:\(environment)",
             "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
         ]
 
