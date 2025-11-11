@@ -126,7 +126,9 @@ internal final class DDSpan: OTSpan {
             ddTracer.removeSpan(span: self)
             activity.leave()
         }
-        sendSpan(finishTime: time, sampler: ddTracer.localTraceSampler)
+        if self.ddContext.isKept {
+            sendSpan(finishTime: time, sampler: ddTracer.localTraceSampler)
+        }
     }
 
     // MARK: - Writing SpanEvent

@@ -252,13 +252,13 @@ public protocol OTSpanContext
     func forEachBaggageItem(callback: (_ key: String, _ value: String) -> Bool)
 public protocol OTTracer
     func startSpan(operationName: String,references: [OTReference]?,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
-    func startRootSpan(operationName: String,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
+    func startRootSpan(operationName: String,tags: [String: Encodable]?,startTime: Date?,customSampleRate: SampleRate?) -> OTSpan
     func inject(spanContext: OTSpanContext, writer: OTFormatWriter)
     func extract(reader: OTFormatReader) -> OTSpanContext?
     var activeSpan: OTSpan?
 public extension OTTracer
     func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
-    func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
+    func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil,customSampleRate: SampleRate? = nil) -> OTSpan
 public typealias SpanEventMapper = (SpanEvent) -> SpanEvent
 public struct SpanEvent: Encodable
     public var operationName: String

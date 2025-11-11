@@ -1,4 +1,5 @@
 import Foundation
+import DatadogInternal
 
 /// Tracer is the starting point for all OpenTracing instrumentation. Use it
 /// to create OTSpans, inject/extract them between processes, and so on.
@@ -25,16 +26,18 @@ public protocol OTTracer {
 
     /// Start a new root span with the given operation name.
     /// - Parameters:
-    ///   - operationName: the operation name for the newly-started span
-    ///   - tags:          a set of tag keys and values per `OTSpan#setTag:value:`, or `nil` to start with
-    ///                    an empty tag map
-    ///   - startTime:     an explicitly specified start timestamp for the `OTSpan`, or `nil` to use the
-    ///                    current walltime
-    /// - returns:         a valid Span instance; it is the caller's responsibility to call `finish()`.
+    ///   - operationName:    the operation name for the newly-started span
+    ///   - tags:             a set of tag keys and values per `OTSpan#setTag:value:`, or `nil` to start with
+    ///                       an empty tag map
+    ///   - startTime:        an explicitly specified start timestamp for the `OTSpan`, or `nil` to use the
+    ///                       current walltime
+    ///   - customSampleRate: a sample rate that overrides the general Tracing configuration’s sample rate.
+    /// - returns:            a valid Span instance; it is the caller's responsibility to call `finish()`.
     func startRootSpan(
         operationName: String,
         tags: [String: Encodable]?,
-        startTime: Date?
+        startTime: Date?,
+        customSampleRate: SampleRate?
     ) -> OTSpan
 
     /// Transfer the span information into the carrier of the given format.
@@ -108,21 +111,24 @@ public extension OTTracer {
 
     /// Start a new root span with the given operation name.
     /// - Parameters:
-    ///   - operationName: the operation name for the newly-started span
-    ///   - tags:          a set of tag keys and values per `OTSpan#setTag:value:`, or `nil` to start with
-    ///                    an empty tag map
-    ///   - startTime:     an explicitly specified start timestamp for the `OTSpan`, or `nil` to use the
-    ///                    current walltime
-    /// - returns:         a valid Span instance; it is the caller's responsibility to call `finish()`.
+    ///   - operationName:    the operation name for the newly-started span
+    ///   - tags:             a set of tag keys and values per `OTSpan#setTag:value:`, or `nil` to start with
+    ///                       an empty tag map
+    ///   - startTime:        an explicitly specified start timestamp for the `OTSpan`, or `nil` to use the
+    ///                       current walltime
+    ///   - customSampleRate: a sample rate that overrides the general Tracing configuration’s sample rate.
+    /// - returns:            a valid Span instance; it is the caller's responsibility to call `finish()`.
     func startRootSpan(
         operationName: String,
         tags: [String: Encodable]? = nil,
-        startTime: Date? = nil
+        startTime: Date? = nil,
+        customSampleRate: SampleRate? = nil
     ) -> OTSpan {
         return self.startRootSpan(
             operationName: operationName,
             tags: tags,
-            startTime: startTime
+            startTime: startTime,
+            customSampleRate: customSampleRate
         )
     }
 }
