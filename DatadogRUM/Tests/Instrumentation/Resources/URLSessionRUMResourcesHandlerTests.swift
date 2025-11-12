@@ -32,7 +32,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -72,7 +72,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -108,7 +108,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -147,7 +147,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -183,7 +183,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         /// Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockRejectAll(),
+                samplingRate: 0,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -215,7 +215,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         /// Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockRejectAll(),
+                samplingRate: 0,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -245,7 +245,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         /// Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockRejectAll(),
+                samplingRate: 0,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -278,7 +278,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         /// Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockRejectAll(),
+                samplingRate: 0,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -308,7 +308,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -368,7 +368,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -427,7 +427,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -511,11 +511,11 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
 
         // Given
-        let traceSamplingRate: Double = .mockRandom(min: 0, max: 100)
+        let traceSamplingRate: Float = .mockRandom(min: 0, max: 100)
 
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: Sampler(samplingRate: Float(traceSamplingRate)),
+                samplingRate: traceSamplingRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: DefaultTraceIDGenerator(),
                 spanIDGenerator: DefaultSpanIDGenerator(),
@@ -544,7 +544,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let spanContext = try XCTUnwrap(resourceStartCommand.spanContext)
         XCTAssertEqual(spanContext.traceID, .init(idLo: 100))
         XCTAssertEqual(spanContext.spanID, .init(rawValue: 200))
-        XCTAssertEqual(spanContext.samplingRate, traceSamplingRate / 100, accuracy: 0.01)
+        XCTAssertEqual(spanContext.samplingRate, Double(traceSamplingRate / 100), accuracy: 0.01)
     }
 
     func testGivenTaskInterceptionWithMetricsAndResponse_whenInterceptionCompletes_itStopsRUMResourceWithMetrics() throws {
@@ -700,7 +700,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
     func testGivenAllTracingHeaderTypes_itUsesTheSameIds() throws {
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -744,7 +744,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -781,7 +781,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -819,7 +819,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -872,7 +872,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -904,7 +904,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -946,7 +946,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -1070,6 +1070,42 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let attributes = try XCTUnwrap(stopResourceWithErrorCommand?.attributes)
         XCTAssertEqual(attributes[CrossPlatformAttributes.graphqlOperationName] as? String, "FailedMutation")
         XCTAssertEqual(attributes[CrossPlatformAttributes.graphqlOperationType] as? String, "mutation")
+    }
+
+    // MARK: - Deterministic Sampling Tests
+
+    func testGivenSameSessionID_withDeterministicSampling_itProducesConsistentSamplingDecision() throws {
+        // Given
+        let sessionID = "12345678-1234-4abc-9def-123456789abc"
+        let handler = createHandler(
+            distributedTracing: .init(
+                samplingRate: 50,
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 1),
+                traceContextInjection: .all
+            )
+        )
+
+        // When - Make multiple requests with the same session ID
+        var samplingDecisions: [Bool] = []
+        for _ in 1...10 {
+            let (_, traceContext) = handler.modify(
+                request: .mockWith(url: "https://www.example.com"),
+                headerTypes: [.datadog],
+                networkContext: NetworkContext(
+                    rumContext: .init(
+                        applicationID: .mockRandom(),
+                        sessionID: sessionID
+                    )
+                )
+            )
+            samplingDecisions.append(traceContext?.isKept ?? false)
+        }
+
+        // Then - All sampling decisions should be the same
+        let firstDecision = try XCTUnwrap(samplingDecisions.first)
+        XCTAssertTrue(samplingDecisions.allSatisfy { $0 == firstDecision }, "All sampling decisions for the same session should be identical")
     }
 
     // MARK: - Helper Methods

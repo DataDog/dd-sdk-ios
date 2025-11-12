@@ -492,6 +492,6 @@ class RUMTests: XCTestCase {
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         let urlSessionHandler = try XCTUnwrap(feature.handlers.first as? URLSessionRUMResourcesHandler)
         XCTAssertEqual(urlSessionHandler.distributedTracing?.firstPartyHosts.hosts, hosts)
-        XCTAssertEqual(urlSessionHandler.distributedTracing?.sampler.samplingRate, debugSDK ? 100.0 : sampleRate)
+        XCTAssertEqual(urlSessionHandler.distributedTracing?.samplingRate, debugSDK ? 100.0 : sampleRate)
     }
 }
