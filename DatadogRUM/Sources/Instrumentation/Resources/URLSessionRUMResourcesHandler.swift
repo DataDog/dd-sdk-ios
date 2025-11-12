@@ -285,8 +285,6 @@ extension DistributedTracing {
             .last
             .flatMap({ UInt64($0, radix: 16) }) {
             return DeterministicSampler(seed: seed, samplingRate: samplingRate)
-        } else if let traceID {
-            return DeterministicSampler(seed: traceID, samplingRate: samplingRate)
         }
 
         return Sampler(samplingRate: samplingRate)
