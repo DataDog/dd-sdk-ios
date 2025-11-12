@@ -9,7 +9,10 @@ import DatadogInternal
 import TestUtilities
 
 @testable import DatadogProfiling
+//swiftlint:disable duplicate_imports
 import DatadogMachProfiler
+import DatadogMachProfiler.Testing
+//swiftlint:enable duplicate_imports
 
 final class AppLaunchProfilerTests: XCTestCase {
     override func setUp() {
@@ -22,6 +25,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         super.tearDown()
         ctor_profiler_stop()
         ctor_profiler_destroy()
+        delete_profiling_defaults()
     }
 
     // MARK: - Message Handling Tests
@@ -127,7 +131,8 @@ final class AppLaunchProfilerTests: XCTestCase {
             ),
             feature: ProfilerFeature(
                 requestBuilder: FeatureRequestBuilderMock(),
-                messageReceiver: profiler
+                messageReceiver: profiler,
+                dataStore: DataStoreMock()
             )
         )
 
@@ -199,5 +204,87 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         // Then
         XCTAssertEqual(status, .running, "Current status should reflect actual profiler status")
+    }
+
+    // MARK: - UserDefaults Integration
+
+    func testIsProfilingEnabled_whenNoKeyExists() {
+        // When
+        let result = is_profiling_enabled()
+
+        // Then
+        XCTAssertFalse(result)
+    }
+
+    func testIsProfilingEnabled_whenKeyIsTrue() {
+        // Given
+        let dataStore = UserDefaultsDataStore()
+        let boolData = withUnsafeBytes(of: true) { Data($0) }
+        dataStore.setValue(boolData, forKey: ProfilerFeature.Constants.isProfilingEnabledKey)
+
+        // When
+        let result = is_profiling_enabled()
+
+        // Then
+        XCTAssertTrue(result)
+    }
+
+    func testIsProfilingDisabled_whenKeyIsFalse() {
+        // Given
+        let dataStore = UserDefaultsDataStore()
+        let boolData = withUnsafeBytes(of: false) { Data($0) }
+        dataStore.setValue(boolData, forKey: ProfilerFeature.Constants.isProfilingEnabledKey)
+
+        // When
+        let result = is_profiling_enabled()
+
+        // Then
+        XCTAssertFalse(result)
+    }
+
+    func testDeleteProfilingDefaults_removesKeyFromUserDefaults() {
+        // Given
+        let dataStore = UserDefaultsDataStore()
+        let boolData = withUnsafeBytes(of: true) { Data($0) }
+        dataStore.setValue(boolData, forKey: ProfilerFeature.Constants.isProfilingEnabledKey)
+
+        XCTAssertTrue(is_profiling_enabled())
+
+        // When
+        delete_profiling_defaults()
+
+        // Then
+        XCTAssertFalse(is_profiling_enabled())
+    }
+
+    func testDeleteProfilingDefaults_multipleCallsAreSafe() {
+        // Given
+        let dataStore = UserDefaultsDataStore()
+        let boolData = withUnsafeBytes(of: true) { Data($0) }
+        dataStore.setValue(boolData, forKey: ProfilerFeature.Constants.isProfilingEnabledKey)
+
+        // When
+        delete_profiling_defaults()
+        delete_profiling_defaults()
+        delete_profiling_defaults()
+
+        // Then
+        XCTAssertFalse(is_profiling_enabled())
+    }
+
+    func testProfilingDefaults_persistAcrossTestCases() {
+        // Given
+        let dataStore = UserDefaultsDataStore()
+        let boolData = withUnsafeBytes(of: true) { Data($0) }
+        dataStore.setValue(boolData, forKey: ProfilerFeature.Constants.isProfilingEnabledKey)
+
+        // When
+        let newStore = UserDefaultsDataStore()
+        var result: DataStoreValueResult?
+        newStore.value(forKey: ProfilerFeature.Constants.isProfilingEnabledKey) { result = $0 }
+
+        // Then
+        XCTAssertNotNil(result?.data())
+        XCTAssertTrue(is_profiling_enabled())
     }
 }

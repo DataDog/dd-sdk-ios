@@ -10,6 +10,11 @@ import DatadogInternal
 internal final class ProfilerFeature: DatadogRemoteFeature {
     static let name = "profiler"
 
+    internal enum Constants {
+        /// The key to check if Profiling is enabled .
+        static let isProfilingEnabledKey = "is_profiling_enabled"
+    }
+
     let requestBuilder: FeatureRequestBuilder
 
     let messageReceiver: FeatureMessageReceiver
@@ -20,9 +25,16 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
     init(
         requestBuilder: FeatureRequestBuilder,
-        messageReceiver: FeatureMessageReceiver
+        messageReceiver: FeatureMessageReceiver,
+        dataStore: DataStore
     ) {
         self.requestBuilder = requestBuilder
         self.messageReceiver = messageReceiver
+
+        setProfilingEnabled(in: dataStore)
+    }
+
+    private func setProfilingEnabled(in dataStore: DataStore) {
+        dataStore.setValue(withUnsafeBytes(of: true) { Data($0) }, forKey: Constants.isProfilingEnabledKey)
     }
 }

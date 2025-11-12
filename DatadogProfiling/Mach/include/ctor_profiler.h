@@ -20,25 +20,8 @@
  * 
  * # Automatic Startup
  * 
- * The profiler automatically checks the application's Info.plist for configuration
- * and starts profiling if enabled. No manual initialization is required.
- * 
- * # Configuration
- * 
- * Add the following to your application's Info.plist to enable constructor profiling:
- * 
- * ```xml
- * <key>DatadogProfiling</key>
- * <dict>
- *     <key>AppLaunchProfileSampleRate</key>
- *     <real>20.0</real>
- * </dict>
- * ```
- * 
- * - `AppLaunchProfileSampleRate`: Sample rate percentage (0.0-100.0)
- *   - 0.0 = profiling disabled
- *   - 100.0 = always profile
- *   - Values between 0-100 can be used for probabilistic sampling
+ * The profiler automatically checks if the profiling was enabled before, and starts it if so.
+ * No manual initialization is required.
  * 
  * # Profiling Characteristics
  * 
@@ -47,14 +30,15 @@
  * - **Buffer Size**: 10,000 samples to capture entire launch phase
  * - **Stack Depth**: 64 frames maximum per trace
  * - **Thread Coverage**: All threads in the process
- * 
+ * - **Profiling Sample Rate**: 10% sampled sessions.
+ *
  * # Usage Example
  * 
  * ```c
  * #include "ctor_profiler.h"
  * 
- * // Profiling starts automatically if configured in Info.plist
- * 
+ * // Profiling starts automatically if enabled before
+ *
  * int main(int argc, char* argv[]) {
  *     // Your app initialization...
  *     
@@ -88,7 +72,7 @@
  * - Profiling starts right before main()
  * - Uses 101 Hz sampling frequency - provides good resolution without impacting launch performance
  * - Automatically stops when ctor_profiler_stop() is called
- * - No overhead when disabled via Info.plist configuration
+ * - No overhead when the feature is disabled
  * - Designed to have minimal impact on application launch time and user experience
  * 
  * # Thread Safety
@@ -216,37 +200,6 @@ ctor_profile_t* ctor_profiler_get_profile(void);
  * @see `ctor_profiler_get_profile()`
  */
 void ctor_profiler_destroy(void);
-
-/**
- * @brief Manually starts constructor profiling for testing purposes
- *
- * This function bypasses the automatic constructor-based startup mechanism and allows
- * manual control over profiling for testing scenarios.
- *
- * The profiler uses 101 Hz sampling frequency and 10,000 sample buffer.
- * It will automatically stop when the specified timeout is reached.
- *
- * @param sample_rate Sample rate percentage (0.0-100.0)
- *                    - 0.0 will not start profiling
- *                    - Values 0.0-100.0 use probabilistic sampling
- *                    - Values > 100.0 are treated as 100%
- * @param is_prewarming Whether the app is in prewarming state
- *                      - true: Will not start profiling
- *                      - false: Normal profiling behavior
- * @param timeout_ns Timeout in nanoseconds after which profiling automatically stops
- *                   - Default: 5000000000ULL (5 seconds)
- *                   - Timeout checking occurs during sample processing
- *
- * @note Safe to call multiple times - destroys existing instance before creating new one
- * @note Check `ctor_profiler_get_status()` for detailed status after calling
- * @note Designed for unit tests, integration tests, and development builds
- *
- * @warning FOR TESTING USE ONLY - Not intended for production environments
- * @warning May impact application performance if used inappropriately
- *
- * @see `ctor_profiler_get_status()`, `ctor_profiler_stop()`, `ctor_profiler_get_profile()`
- */
-void ctor_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns);
 
 #ifdef __cplusplus
 }

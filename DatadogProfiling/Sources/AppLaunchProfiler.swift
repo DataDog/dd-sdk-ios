@@ -21,7 +21,8 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
             return false
         }
 
-        guard ctor_profiler_get_status() == CTOR_PROFILER_STATUS_RUNNING else {
+        guard ctor_profiler_get_status() == CTOR_PROFILER_STATUS_RUNNING
+                || ctor_profiler_get_status() == CTOR_PROFILER_STATUS_TIMEOUT else {
             return false
         }
 
