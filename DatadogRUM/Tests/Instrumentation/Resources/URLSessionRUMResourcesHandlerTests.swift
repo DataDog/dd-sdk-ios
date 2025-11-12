@@ -946,7 +946,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
