@@ -942,7 +942,45 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
     // MARK: - GraphQL Header Extraction Tests
 
-    func testGivenRequestWithGraphQLHeaders_whenInterceptionCompletes_itExtractsGraphQLAttributes() throws {
+    func testGivenRequestWithGraphQLHeaders_whenModifyingRequest_itExtractsGraphQLHeadersIntoTraceContext() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
+            )
+        )
+
+        var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
+        mockRequest.setValue("GetUser", forHTTPHeaderField: ExpectedGraphQLHeaders.operationName)
+        mockRequest.setValue("query", forHTTPHeaderField: ExpectedGraphQLHeaders.operationType)
+        mockRequest.setValue("{\"userId\":\"123\"}", forHTTPHeaderField: ExpectedGraphQLHeaders.variables)
+        mockRequest.setValue("query GetUser($userId: ID!) { user(id: $userId) { name } }", forHTTPHeaderField: ExpectedGraphQLHeaders.payload)
+
+        // When
+        let (_, traceContext) = handler.modify(
+            request: mockRequest,
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        // Then
+        let graphqlAttributes = try XCTUnwrap(traceContext?.graphql, "GraphQL attributes must be extracted into TraceContext")
+        XCTAssertEqual(graphqlAttributes.operationName, "GetUser")
+        XCTAssertEqual(graphqlAttributes.operationType, "query")
+        XCTAssertEqual(graphqlAttributes.variables, "{\"userId\":\"123\"}")
+        XCTAssertEqual(graphqlAttributes.payload, "query GetUser($userId: ID!) { user(id: $userId) { name } }")
+    }
+
+    func testGivenRequestWithGraphQLHeaders_whenInterceptionCompletes_itExtractsGraphQLAttributesFromTraceContext() throws {
         let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
         var stopResourceCommand: RUMStopResourceCommand?
         commandSubscriber.onCommandReceived = { command in
@@ -953,14 +991,27 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
-        mockRequest.setValue("GetUser", forHTTPHeaderField: ExpectedGraphQLHeaders.operationName)
-        mockRequest.setValue("query", forHTTPHeaderField: ExpectedGraphQLHeaders.operationType)
-        mockRequest.setValue("{\"userId\":\"123\"}", forHTTPHeaderField: ExpectedGraphQLHeaders.variables)
-        mockRequest.setValue("query GetUser($userId: ID!) { user(id: $userId) { name } }", forHTTPHeaderField: ExpectedGraphQLHeaders.payload)
-
+        let mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
         let immutableRequest = ImmutableRequest(request: mockRequest)
         let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+
+        // Register trace context with GraphQL attributes
+        let traceContext = TraceContext(
+            traceID: .init(idHi: 10, idLo: 100),
+            spanID: 100,
+            parentSpanID: nil,
+            sampleRate: 100,
+            isKept: true,
+            rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789",
+            graphql: GraphQLRequestAttributes(
+                operationName: "GetUser",
+                operationType: "query",
+                variables: "{\"userId\":\"123\"}",
+                payload: "query GetUser($userId: ID!) { user(id: $userId) { name } }"
+            )
+        )
+        taskInterception.register(trace: traceContext)
+
         let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
         taskInterception.register(response: response, error: nil)
 
@@ -977,7 +1028,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(attributes[CrossPlatformAttributes.graphqlPayload] as? String, "query GetUser($userId: ID!) { user(id: $userId) { name } }")
     }
 
-    func testGivenRequestWithGraphQLHeaders_whenInterceptionCompletesWithError_itExtractsGraphQLAttributes() throws {
+    func testGivenRequestWithGraphQLHeaders_whenInterceptionCompletesWithError_itExtractsGraphQLAttributesFromTraceContext() throws {
         let receiveCommand = expectation(description: "Receive RUMStopResourceWithErrorCommand")
         var stopResourceWithErrorCommand: RUMStopResourceWithErrorCommand?
         commandSubscriber.onCommandReceived = { command in
@@ -988,12 +1039,25 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
-        mockRequest.setValue("FailedMutation", forHTTPHeaderField: ExpectedGraphQLHeaders.operationName)
-        mockRequest.setValue("mutation", forHTTPHeaderField: ExpectedGraphQLHeaders.operationType)
-
+        let mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
         let immutableRequest = ImmutableRequest(request: mockRequest)
         let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+
+        // Register trace context with GraphQL attributes
+        let traceContext = TraceContext(
+            traceID: .init(idHi: 10, idLo: 100),
+            spanID: 100,
+            parentSpanID: nil,
+            sampleRate: 100,
+            isKept: true,
+            rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789",
+            graphql: GraphQLRequestAttributes(
+                operationName: "FailedMutation",
+                operationType: "mutation"
+            )
+        )
+        taskInterception.register(trace: traceContext)
+
         let taskError = NSError(domain: "network", code: -1, userInfo: [NSLocalizedDescriptionKey: "Connection failed"])
         taskInterception.register(response: nil, error: taskError)
 
