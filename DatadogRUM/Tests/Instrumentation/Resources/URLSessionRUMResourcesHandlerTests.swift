@@ -1104,7 +1104,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Then - All sampling decisions should be the same
-        let firstDecision = samplingDecisions.first!
+        let firstDecision = try XCTUnwrap(samplingDecisions.first)
         XCTAssertTrue(samplingDecisions.allSatisfy { $0 == firstDecision }, "All sampling decisions for the same session should be identical")
     }
 
