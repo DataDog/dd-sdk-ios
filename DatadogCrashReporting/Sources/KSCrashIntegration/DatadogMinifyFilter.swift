@@ -111,7 +111,8 @@ internal final class DatadogMinifyFilter: NSObject, CrashReportFilter {
     }
 
     /// Removes less important stack frames to ensure that their count is equal or below `stackFramesLimit`.
-    /// Frames are removed at the middle of stack trace, which preserves the most important upper and bottom frames.
+    /// Frames are removed at the middle of stack trace, which preserves the most important upper and bottom frames:
+    /// Top frames show the crash site and bottom frames the entry point.
     private func limit(backtrace frames: inout [CrashFieldDictionary]) -> Bool {
         guard frames.count > stackFramesLimit else {
             return false
