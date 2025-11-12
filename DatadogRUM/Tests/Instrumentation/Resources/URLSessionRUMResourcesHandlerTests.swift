@@ -1183,7 +1183,6 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         XCTAssertNil(stopResourceCommand?.attributes[CrossPlatformAttributes.graphqlErrors])
     }
-    }
 
     // MARK: - Helper Methods
 
