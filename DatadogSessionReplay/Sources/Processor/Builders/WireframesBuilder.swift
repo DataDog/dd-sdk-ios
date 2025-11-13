@@ -130,6 +130,7 @@ extension SessionReplayWireframesBuilder {
         font: UIFont? = nil,
         fontOverride: FontOverride? = nil,
         fontScalingEnabled: Bool = false,
+        truncationMode: SRTextStyle.TruncationMode? = nil,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
@@ -161,7 +162,8 @@ extension SessionReplayWireframesBuilder {
         let textStyle = SRTextStyle(
             color: textColor.flatMap { hexString(from: $0) } ?? Fallback.color,
             family: Fallback.fontFamily,
-            size: fontSize
+            size: fontSize,
+            truncationMode: truncationMode
         )
 
         let wireframe = SRTextWireframe(
