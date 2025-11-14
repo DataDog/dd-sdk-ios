@@ -1,6 +1,8 @@
 # Unreleased
 - [BUGFIX] Fix tracing header injection for sampled out requests. See [#2473][]
 
+- [FEATURE] Support errors for GraphQL requests. See [#2552]
+
 # 3.2.0 / 30-10-2025
 
 - [FIX] Fix Logger race condition. See [#2514][]
@@ -981,6 +983,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2538]: https://github.com/DataDog/dd-sdk-ios/pull/2538
 [#2532]: https://github.com/DataDog/dd-sdk-ios/pull/2532
 [#2514]: https://github.com/DataDog/dd-sdk-ios/pull/2514
+[#2552]: https://github.com/DataDog/dd-sdk-ios/pull/2552
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

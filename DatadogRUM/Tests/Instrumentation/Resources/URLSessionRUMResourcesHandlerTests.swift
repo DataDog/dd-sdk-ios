@@ -1108,6 +1108,82 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertTrue(samplingDecisions.allSatisfy { $0 == firstDecision }, "All sampling decisions for the same session should be identical")
     }
 
+    func testGivenGraphQLResponseBodyWithErrors_whenInterceptionCompletes_itExtractsErrors() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
+        mockRequest.setValue("GetUser", forHTTPHeaderField: ExpectedGraphQLHeaders.operationName)
+
+        let responseWithErrors = """
+        {
+            "errors": [{"message": "Not found"}],
+            "data": null
+        }
+        """
+
+        let immutableRequest = ImmutableRequest(request: mockRequest)
+        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+        let response: HTTPURLResponse = .mockWith(statusCode: 200, mimeType: "application/json")
+        taskInterception.register(nextData: responseWithErrors.data(using: .utf8)!)
+        taskInterception.register(response: response, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
+        XCTAssertNotNil(attributes[CrossPlatformAttributes.graphqlErrors])
+        let errorsData = try XCTUnwrap(attributes[CrossPlatformAttributes.graphqlErrors] as? Data)
+        let errorsJSON = try XCTUnwrap(String(data: errorsData, encoding: .utf8))
+        XCTAssertTrue(errorsJSON.contains("Not found"))
+    }
+
+    func testGivenGraphQLResponseWithNonJSONContentType_whenInterceptionCompletes_itDoesNotParseErrors() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
+        mockRequest.setValue("GetUser", forHTTPHeaderField: ExpectedGraphQLHeaders.operationName)
+
+        let responseWithErrors = """
+        {
+            "errors": [{"message": "Not found"}],
+            "data": null
+        }
+        """
+
+        let immutableRequest = ImmutableRequest(request: mockRequest)
+        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+        let nonJSONResponse: HTTPURLResponse = .mockWith(statusCode: 200, mimeType: "text/html")
+        taskInterception.register(nextData: responseWithErrors.data(using: .utf8)!)
+        taskInterception.register(response: nonJSONResponse, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        XCTAssertNil(stopResourceCommand?.attributes[CrossPlatformAttributes.graphqlErrors])
+    }
+
     // MARK: - Helper Methods
 
     private func extractBaggageKeyValuePairs(from header: String) -> [String: String] {
