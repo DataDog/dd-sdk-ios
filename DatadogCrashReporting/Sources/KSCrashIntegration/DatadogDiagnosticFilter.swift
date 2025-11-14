@@ -50,9 +50,6 @@ internal final class DatadogDiagnosticFilter: NSObject, CrashReportFilter {
     /// Placeholder text used when crash information is unavailable.
     private let unknown = "<unknown>"
 
-    /// Placeholder text used for optional fields that are not present.
-    private let unavailable = "???"
-
     /// Mapping of Unix signal names to human-readable descriptions.
     ///
     /// This dictionary provides user-friendly descriptions for all standard POSIX signals,
@@ -114,11 +111,13 @@ internal final class DatadogDiagnosticFilter: NSObject, CrashReportFilter {
                     throw CrashReportException(description: "KSCrash report untypedValue is not a CrashDictionary")
                 }
 
-                if let crash: CrashFieldDictionary = try dict.valueIfPresent(forKey: .crash), let diagnosis = try diagnose(crash: crash) {
+                if let crash: CrashFieldDictionary = try dict.valueIfPresent(forKey: .crash) {
+                    let diagnosis = try diagnose(crash: crash)
                     dict.setValue(forKey: .crash, .diagnosis, value: diagnosis)
                 }
 
-                if let crash: CrashFieldDictionary = try dict.valueIfPresent(forKey: .recrashReport, .crash), let diagnosis = try diagnose(crash: crash) {
+                if let crash: CrashFieldDictionary = try dict.valueIfPresent(forKey: .recrashReport, .crash) {
+                    let diagnosis = try diagnose(crash: crash)
                     dict.setValue(forKey: .recrashReport, .crash, .diagnosis, value: diagnosis)
                 }
 
@@ -149,7 +148,7 @@ internal final class DatadogDiagnosticFilter: NSObject, CrashReportFilter {
     /// - Exception: `"Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: 'unrecognized selector'."`
     /// - Signal: `"Application crash: SIGSEGV (Segmentation fault)"`
     /// - Unknown: `"Application crash: <unknown>"`
-    func diagnose(crash dict: CrashFieldDictionary) throws -> String? {
+    func diagnose(crash dict: CrashFieldDictionary) throws -> String {
         // Check for uncaught exception
         if let exception: CrashFieldDictionary = try dict.valueIfPresent(forKey: .error, .nsException) {
             let name: String = try exception.valueIfPresent(forKey: .name) ?? unknown // e.g. `NSInvalidArgumentException`
