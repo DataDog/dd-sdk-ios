@@ -267,25 +267,6 @@ SPM Build (Swift 5.10):
     - make spm-build-macos
     - make spm-build-watchos
 
-SPM Build (Swift 5.9):
-  stage: smoke-test
-  rules: 
-    - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
-  tags:
-    - macos:ventura
-    - specific:true
-  variables:
-    XCODE: "15.2.0"
-  script:
-    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --visionOS --watchOS
-    - make clean repo-setup ENV=ci
-    - make spm-build-ios
-    - make spm-build-tvos
-    - make spm-build-visionos
-    - make spm-build-macos
-    - make spm-build-watchos
-
 SPI Docs Build:
   stage: lint
   rules: 
