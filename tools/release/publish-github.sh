@@ -54,6 +54,10 @@ upload() {
     fi
 }
 
+echo_info "Publishing '$GH_ASSET_WITHOUT_ARM64E' and '$GH_ASSET_WITH_ARM64E' to '$tag' release in '$REPO_NAME'"
+echo_info "▸ Using DRY_RUN = $DRY_RUN"
+echo_info "▸ Using OVERWRITE_EXISTING = $overwrite_existing"
+
 export GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/dd-sdk-ios --policy self.release)
 verify_gh_auth
 upload
