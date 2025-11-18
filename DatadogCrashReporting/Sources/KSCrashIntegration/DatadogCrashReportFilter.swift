@@ -37,6 +37,14 @@ internal import KSCrashRecording
 /// If a report cannot be converted (invalid format, missing required fields),
 /// the original report is passed through and an error is provided to the completion handler.
 internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
+    // Parse timestamp with fractional seconds support
+    // KSCrash timestamps use ISO8601 format with microsecond precision (e.g., "2025-10-22T14:14:12.007336Z")
+    let dateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+
     /// Filters and converts crash reports to Datadog's format.
     ///
     /// This method processes each report by converting it from KSCrash's format
@@ -74,11 +82,7 @@ internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
             throw CrashReportException(description: "KSCrash report untypedValue is not a CrashDictionary")
         }
 
-        // Parse timestamp with fractional seconds support
-        // KSCrash timestamps use ISO8601 format with microsecond precision (e.g., "2025-10-22T14:14:12.007336Z")
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let date = try formatter.date(from: dict.value(forKey: .report, .timestamp))
+        let date = try dateFormatter.date(from: dict.value(forKey: .report, .timestamp))
 
         // Extract required crash and system information
         let system: CrashFieldDictionary = try dict.value(forKey: .system)
@@ -118,14 +122,11 @@ internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
             }
 
             // Detect system libraries based on path patterns
-            // In device: user images are in /var/containers/Bundle/Application/
-            // System images are in /System/, /usr/lib/, or framework paths
             #if targetEnvironment(simulator)
-            // In simulator: system images are in Xcode.app/Contents/Developer/Platforms/
-            // In Xcode 26: /**/*/iOS *.simruntime
+            // Simulator: system images are in Xcode.app/Contents/Developer/Platforms/ or .simruntime bundles (Xcode 16+)
             let isSystemImage = path.contains("/Contents/Developer/Platforms/") || path.contains("simruntime")
             #else
-            // In device: user images contain /Bundle/Application/
+            // Device: user images are in /var/containers/Bundle/Application/, everything else is system
             let isSystemImage = !path.contains("/Bundle/Application/")
             #endif
 
@@ -149,14 +150,15 @@ internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
         let threads: [DDThread] = try crash.value([CrashFieldDictionary].self, forKey: .threads).map { thread in
             // Format each stack frame: "index objectName instructionAddr symbolAddr + offset"
             let backtrace: [String] = try thread.value([CrashFieldDictionary].self, forKey: .backtrace, .contents).enumerated().compactMap { index, frame in
+                let instructionAddr: Int64 = try frame.value(forKey: .instructionAddr)
+
                 guard
                     let symbolAddr: Int64 = try frame.valueIfPresent(forKey: .symbolAddr),
                     let objectName: NSString = try frame.valueIfPresent(forKey: .objectName)
                 else {
-                    return nil
+                    return String(format: "%-4ld ??? 0x%016llx 0x0 + 0", index, instructionAddr)
                 }
 
-                let instructionAddr: Int64 = try frame.value(forKey: .instructionAddr)
                 // Format: frame_index (4 chars left-aligned) + library_name (35 chars left-aligned) + addresses + offset
                 return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, objectName, instructionAddr, symbolAddr, instructionAddr - symbolAddr)
             }
