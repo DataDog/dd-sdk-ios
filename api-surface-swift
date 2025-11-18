@@ -252,13 +252,13 @@ public protocol OTSpanContext
     func forEachBaggageItem(callback: (_ key: String, _ value: String) -> Bool)
 public protocol OTTracer
     func startSpan(operationName: String,references: [OTReference]?,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
-    func startRootSpan(operationName: String,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
+    func startRootSpan(operationName: String,tags: [String: Encodable]?,startTime: Date?,customSampleRate: SampleRate?) -> OTSpan
     func inject(spanContext: OTSpanContext, writer: OTFormatWriter)
     func extract(reader: OTFormatReader) -> OTSpanContext?
     var activeSpan: OTSpan?
 public extension OTTracer
     func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
-    func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
+    func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil,customSampleRate: SampleRate? = nil) -> OTSpan
 public typealias SpanEventMapper = (SpanEvent) -> SpanEvent
 public struct SpanEvent: Encodable
     public var operationName: String
@@ -1017,11 +1017,18 @@ public struct SRTextStyle: Codable, Hashable
     public let color: String
     public let family: String
     public let size: Int64
+    public let truncationMode: TruncationMode?
     public enum CodingKeys: String, CodingKey
         case color = "color"
         case family = "family"
         case size = "size"
-    public init(color: String,family: String,size: Int64)
+        case truncationMode = "truncationMode"
+    public init(color: String,family: String,size: Int64,truncationMode: TruncationMode? = nil)
+    public enum TruncationMode: String, Codable
+        case clip = "clip"
+        case head = "head"
+        case tail = "tail"
+        case middle = "middle"
 public struct SRTextWireframe: Codable, Hashable
     public let border: SRShapeBorder?
     public let clip: SRContentClip?
@@ -1125,7 +1132,7 @@ public class SessionReplayWireframesBuilder
         public init(size: CGFloat?)
     public func createShapeWireframe(id: WireframeID,frame: CGRect,clip: CGRect,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
     public func createImageWireframe(id: WireframeID,resource: SessionReplayResource,frame: CGRect,clip: CGRect,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
-    public func createTextWireframe(id: WireframeID,frame: CGRect,clip: CGRect,text: String,textFrame: CGRect? = nil,textAlignment: SRTextPosition.Alignment? = nil,textColor: CGColor? = nil,font: UIFont? = nil,fontOverride: FontOverride? = nil,fontScalingEnabled: Bool = false,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
+    public func createTextWireframe(id: WireframeID,frame: CGRect,clip: CGRect,text: String,textFrame: CGRect? = nil,textAlignment: SRTextPosition.Alignment? = nil,textColor: CGColor? = nil,font: UIFont? = nil,fontOverride: FontOverride? = nil,fontScalingEnabled: Bool = false,truncationMode: SRTextStyle.TruncationMode? = nil,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
     public func createPlaceholderWireframe(id: Int64,frame: CGRect,clip: CGRect,label: String) -> SRWireframe
     public func visibleWebViewWireframe(id: Int,frame: CGRect,clip: CGRect,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
     public func hiddenWebViewWireframes() -> [SRWireframe]

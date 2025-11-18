@@ -778,6 +778,31 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
     }
 
+    // MARK: - GraphQL Header Removal Tests
+
+    func testGivenRequestWithGraphQLHeaders_whenInterceptingRequest_itRemovesGraphQLHeaders() throws {
+        // Given
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+
+        let url = URL(string: "https://api.example.com/graphql")!
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: [url.host!: [.datadog]])
+
+        var request = URLRequest(url: url)
+        request.setValue("GetUser", forHTTPHeaderField: GraphQLHeaders.operationName)
+        request.setValue("query", forHTTPHeaderField: GraphQLHeaders.operationType)
+        request.setValue("{\"userId\":\"123\"}", forHTTPHeaderField: GraphQLHeaders.variables)
+        request.setValue("query GetUser { user { name } }", forHTTPHeaderField: GraphQLHeaders.payload)
+
+        // When
+        let (modifiedRequest, _) = feature.intercept(request: request, additionalFirstPartyHosts: nil)
+
+        // Then
+        XCTAssertNil(modifiedRequest.value(forHTTPHeaderField: GraphQLHeaders.operationName), "GraphQL operation name header should be removed")
+        XCTAssertNil(modifiedRequest.value(forHTTPHeaderField: GraphQLHeaders.operationType), "GraphQL operation type header should be removed")
+        XCTAssertNil(modifiedRequest.value(forHTTPHeaderField: GraphQLHeaders.variables), "GraphQL variables header should be removed")
+        XCTAssertNil(modifiedRequest.value(forHTTPHeaderField: GraphQLHeaders.payload), "GraphQL payload header should be removed")
+    }
+
     // MARK: - Thread Safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() throws {

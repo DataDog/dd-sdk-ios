@@ -140,9 +140,14 @@ public struct CrossPlatformAttributes {
     public static let graphqlPayload = "_dd.graphql.payload"
 
     /// Custom attribute passed when starting GraphQL RUM resources resources from a cross platform SDK.
-    /// It sets the GraphQL varibles as a JSON string if they were defined by the developer.
+    /// It sets the GraphQL variables as a JSON string if they were defined by the developer.
     /// Expects `String` value.
     public static let graphqlVariables = "_dd.graphql.variables"
+
+    /// Custom attribute passed when completing GraphQL RUM resources that contain errors in the response.
+    /// It sets the GraphQL errors from the response body as JSON data.
+    /// Expects `Data` value.
+    public static let graphqlErrors = "_dd.graphql.errors"
 
     /// Override the `source_type` of errors reported by the native crash handler. This is used on
     /// platforms that can supply extra steps or information on a native crash (such as Unity's IL2CPP)
@@ -158,6 +163,22 @@ public struct CrossPlatformAttributes {
     /// Custom value for Interaction To Next view.
     /// For Flutter this is the amount of time between an action occurring and the First Build Complete ocurring on the next view.
     public static let customINVValue: String = "_dd.view.custom_inv_value"
+}
+
+/// HTTP header names used to pass GraphQL metadata from the application to the SDK.
+/// These headers are read from intercepted requests and mapped to internal attributes.
+public struct GraphQLHeaders {
+    /// HTTP header name for GraphQL operation name.
+    public static let operationName: String = "_dd-custom-header-graph-ql-operation-name"
+
+    /// HTTP header name for GraphQL operation type.
+    public static let operationType: String = "_dd-custom-header-graph-ql-operation-type"
+
+    /// HTTP header name for GraphQL variables.
+    public static let variables: String = "_dd-custom-header-graph-ql-variables"
+
+    /// HTTP header name for GraphQL payload.
+    public static let payload: String = "_dd-custom-header-graph-ql-payload"
 }
 
 public struct LaunchArguments {

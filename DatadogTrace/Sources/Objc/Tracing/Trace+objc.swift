@@ -184,6 +184,23 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
         )
     }
 
+    public func startRootSpan(
+        _ operationName: String,
+        tags: NSDictionary?,
+        startTime: Date?,
+        customSampleRate: NSNumber?
+    ) -> any objc_OTSpan {
+        return objc_SpanObjc(
+            objcTracer: self,
+            swiftSpan: swiftTracer.startRootSpan(
+                operationName: operationName,
+                tags: tags.flatMap { castTagsToSwift($0) },
+                startTime: startTime,
+                customSampleRate: customSampleRate?.floatValue
+            )
+        )
+    }
+
     public func inject(_ spanContext: objc_OTSpanContext, format: String, carrier: Any) throws {
         if let objcWriter = carrier as? objc_HTTPHeadersWriter, format == OT.formatTextMap {
             guard let ddspanContext = spanContext.dd else {

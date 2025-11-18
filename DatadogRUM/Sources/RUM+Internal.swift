@@ -51,7 +51,7 @@ extension InternalExtension where ExtendedType == RUM {
         switch configuration.firstPartyHostsTracing {
         case let .trace(hosts, sampleRate, traceContextInjection):
             distributedTracing = DistributedTracing(
-                sampler: Sampler(samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate),
+                samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate,
                 firstPartyHosts: FirstPartyHosts(hosts),
                 traceIDGenerator: rumConfiguration.traceIDGenerator,
                 spanIDGenerator: rumConfiguration.spanIDGenerator,
@@ -59,7 +59,7 @@ extension InternalExtension where ExtendedType == RUM {
             )
         case let .traceWithHeaders(hostsWithHeaders, sampleRate, traceContextInjection):
             distributedTracing = DistributedTracing(
-                sampler: Sampler(samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate),
+                samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate,
                 firstPartyHosts: FirstPartyHosts(hostsWithHeaders),
                 traceIDGenerator: rumConfiguration.traceIDGenerator,
                 spanIDGenerator: rumConfiguration.spanIDGenerator,

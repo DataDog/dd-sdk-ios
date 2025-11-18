@@ -32,7 +32,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -72,7 +72,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -108,7 +108,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -147,7 +147,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -183,7 +183,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         /// Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockRejectAll(),
+                samplingRate: 0,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -215,7 +215,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         /// Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockRejectAll(),
+                samplingRate: 0,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -236,7 +236,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "0")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-0")
 
         XCTAssertNil(traceContext, "It must return no trace context")
     }
@@ -245,7 +245,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         /// Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockRejectAll(),
+                samplingRate: 0,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -266,8 +266,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField))
-        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "0")
 
@@ -278,7 +278,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         /// Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockRejectAll(),
+                samplingRate: 0,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -308,7 +308,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -368,7 +368,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -427,7 +427,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -511,11 +511,11 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
 
         // Given
-        let traceSamplingRate: Double = .mockRandom(min: 0, max: 100)
+        let traceSamplingRate: Float = .mockRandom(min: 0, max: 100)
 
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: Sampler(samplingRate: Float(traceSamplingRate)),
+                samplingRate: traceSamplingRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: DefaultTraceIDGenerator(),
                 spanIDGenerator: DefaultSpanIDGenerator(),
@@ -544,7 +544,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let spanContext = try XCTUnwrap(resourceStartCommand.spanContext)
         XCTAssertEqual(spanContext.traceID, .init(idLo: 100))
         XCTAssertEqual(spanContext.spanID, .init(rawValue: 200))
-        XCTAssertEqual(spanContext.samplingRate, traceSamplingRate / 100, accuracy: 0.01)
+        XCTAssertEqual(spanContext.samplingRate, Double(traceSamplingRate / 100), accuracy: 0.01)
     }
 
     func testGivenTaskInterceptionWithMetricsAndResponse_whenInterceptionCompletes_itStopsRUMResourceWithMetrics() throws {
@@ -700,7 +700,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
     func testGivenAllTracingHeaderTypes_itUsesTheSameIds() throws {
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -744,7 +744,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -781,7 +781,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -819,7 +819,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -872,7 +872,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -904,7 +904,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
-                sampler: .mockKeepAll(),
+                samplingRate: .maxSampleRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
@@ -942,7 +942,45 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
     // MARK: - GraphQL Header Extraction Tests
 
-    func testGivenRequestWithGraphQLHeaders_whenInterceptionCompletes_itExtractsGraphQLAttributes() throws {
+    func testGivenRequestWithGraphQLHeaders_whenModifyingRequest_itExtractsGraphQLHeadersIntoTraceContext() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                samplingRate: .maxSampleRate,
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
+            )
+        )
+
+        var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
+        mockRequest.setValue("GetUser", forHTTPHeaderField: ExpectedGraphQLHeaders.operationName)
+        mockRequest.setValue("query", forHTTPHeaderField: ExpectedGraphQLHeaders.operationType)
+        mockRequest.setValue("{\"userId\":\"123\"}", forHTTPHeaderField: ExpectedGraphQLHeaders.variables)
+        mockRequest.setValue("query GetUser($userId: ID!) { user(id: $userId) { name } }", forHTTPHeaderField: ExpectedGraphQLHeaders.payload)
+
+        // When
+        let (_, traceContext) = handler.modify(
+            request: mockRequest,
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        // Then
+        let graphqlAttributes = try XCTUnwrap(traceContext?.graphql, "GraphQL attributes must be extracted into TraceContext")
+        XCTAssertEqual(graphqlAttributes.operationName, "GetUser")
+        XCTAssertEqual(graphqlAttributes.operationType, "query")
+        XCTAssertEqual(graphqlAttributes.variables, "{\"userId\":\"123\"}")
+        XCTAssertEqual(graphqlAttributes.payload, "query GetUser($userId: ID!) { user(id: $userId) { name } }")
+    }
+
+    func testGivenRequestWithGraphQLHeaders_whenInterceptionCompletes_itExtractsGraphQLAttributesFromTraceContext() throws {
         let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
         var stopResourceCommand: RUMStopResourceCommand?
         commandSubscriber.onCommandReceived = { command in
@@ -953,14 +991,27 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
-        mockRequest.setValue("GetUser", forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-name")
-        mockRequest.setValue("query", forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-type")
-        mockRequest.setValue("{\"userId\":\"123\"}", forHTTPHeaderField: "_dd-custom-header-graph-ql-variables")
-        mockRequest.setValue("query GetUser($userId: ID!) { user(id: $userId) { name } }", forHTTPHeaderField: "_dd-custom-header-graph-ql-payload")
-
+        let mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
         let immutableRequest = ImmutableRequest(request: mockRequest)
         let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+
+        // Register trace context with GraphQL attributes
+        let traceContext = TraceContext(
+            traceID: .init(idHi: 10, idLo: 100),
+            spanID: 100,
+            parentSpanID: nil,
+            sampleRate: 100,
+            isKept: true,
+            rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789",
+            graphql: GraphQLRequestAttributes(
+                operationName: "GetUser",
+                operationType: "query",
+                variables: "{\"userId\":\"123\"}",
+                payload: "query GetUser($userId: ID!) { user(id: $userId) { name } }"
+            )
+        )
+        taskInterception.register(trace: traceContext)
+
         let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
         taskInterception.register(response: response, error: nil)
 
@@ -977,7 +1028,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(attributes[CrossPlatformAttributes.graphqlPayload] as? String, "query GetUser($userId: ID!) { user(id: $userId) { name } }")
     }
 
-    func testGivenRequestWithGraphQLHeaders_whenInterceptionCompletesWithError_itExtractsGraphQLAttributes() throws {
+    func testGivenRequestWithGraphQLHeaders_whenInterceptionCompletesWithError_itExtractsGraphQLAttributesFromTraceContext() throws {
         let receiveCommand = expectation(description: "Receive RUMStopResourceWithErrorCommand")
         var stopResourceWithErrorCommand: RUMStopResourceWithErrorCommand?
         commandSubscriber.onCommandReceived = { command in
@@ -988,12 +1039,25 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
-        mockRequest.setValue("FailedMutation", forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-name")
-        mockRequest.setValue("mutation", forHTTPHeaderField: "_dd-custom-header-graph-ql-operation-type")
-
+        let mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
         let immutableRequest = ImmutableRequest(request: mockRequest)
         let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+
+        // Register trace context with GraphQL attributes
+        let traceContext = TraceContext(
+            traceID: .init(idHi: 10, idLo: 100),
+            spanID: 100,
+            parentSpanID: nil,
+            sampleRate: 100,
+            isKept: true,
+            rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789",
+            graphql: GraphQLRequestAttributes(
+                operationName: "FailedMutation",
+                operationType: "mutation"
+            )
+        )
+        taskInterception.register(trace: traceContext)
+
         let taskError = NSError(domain: "network", code: -1, userInfo: [NSLocalizedDescriptionKey: "Connection failed"])
         taskInterception.register(response: nil, error: taskError)
 
@@ -1006,6 +1070,118 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let attributes = try XCTUnwrap(stopResourceWithErrorCommand?.attributes)
         XCTAssertEqual(attributes[CrossPlatformAttributes.graphqlOperationName] as? String, "FailedMutation")
         XCTAssertEqual(attributes[CrossPlatformAttributes.graphqlOperationType] as? String, "mutation")
+    }
+
+    // MARK: - Deterministic Sampling Tests
+
+    func testGivenSameSessionID_withDeterministicSampling_itProducesConsistentSamplingDecision() throws {
+        // Given
+        let sessionID = "12345678-1234-4abc-9def-123456789abc"
+        let handler = createHandler(
+            distributedTracing: .init(
+                samplingRate: 50,
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 1),
+                traceContextInjection: .all
+            )
+        )
+
+        // When - Make multiple requests with the same session ID
+        var samplingDecisions: [Bool] = []
+        for _ in 1...10 {
+            let (_, traceContext) = handler.modify(
+                request: .mockWith(url: "https://www.example.com"),
+                headerTypes: [.datadog],
+                networkContext: NetworkContext(
+                    rumContext: .init(
+                        applicationID: .mockRandom(),
+                        sessionID: sessionID
+                    )
+                )
+            )
+            samplingDecisions.append(traceContext?.isKept ?? false)
+        }
+
+        // Then - All sampling decisions should be the same
+        let firstDecision = try XCTUnwrap(samplingDecisions.first)
+        XCTAssertTrue(samplingDecisions.allSatisfy { $0 == firstDecision }, "All sampling decisions for the same session should be identical")
+    }
+
+    func testGivenGraphQLResponseBodyWithErrors_whenInterceptionCompletes_itExtractsErrors() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
+        mockRequest.setValue("GetUser", forHTTPHeaderField: ExpectedGraphQLHeaders.operationName)
+
+        let responseWithErrors = """
+        {
+            "errors": [{"message": "Not found"}],
+            "data": null
+        }
+        """
+
+        let immutableRequest = ImmutableRequest(request: mockRequest)
+        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+        let response: HTTPURLResponse = .mockWith(statusCode: 200, mimeType: "application/json")
+        taskInterception.register(nextData: responseWithErrors.data(using: .utf8)!)
+        taskInterception.register(response: response, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
+        XCTAssertNotNil(attributes[CrossPlatformAttributes.graphqlErrors])
+        let errorsData = try XCTUnwrap(attributes[CrossPlatformAttributes.graphqlErrors] as? Data)
+        let errorsJSON = try XCTUnwrap(String(data: errorsData, encoding: .utf8))
+        XCTAssertTrue(errorsJSON.contains("Not found"))
+    }
+
+    func testGivenGraphQLResponseWithNonJSONContentType_whenInterceptionCompletes_itDoesNotParseErrors() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        var mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
+        mockRequest.setValue("GetUser", forHTTPHeaderField: ExpectedGraphQLHeaders.operationName)
+
+        let responseWithErrors = """
+        {
+            "errors": [{"message": "Not found"}],
+            "data": null
+        }
+        """
+
+        let immutableRequest = ImmutableRequest(request: mockRequest)
+        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+        let nonJSONResponse: HTTPURLResponse = .mockWith(statusCode: 200, mimeType: "text/html")
+        taskInterception.register(nextData: responseWithErrors.data(using: .utf8)!)
+        taskInterception.register(response: nonJSONResponse, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        XCTAssertNil(stopResourceCommand?.attributes[CrossPlatformAttributes.graphqlErrors])
     }
 
     // MARK: - Helper Methods
@@ -1027,4 +1203,13 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         return dict
     }
+}
+
+// MARK: - Test Helpers
+
+struct ExpectedGraphQLHeaders {
+    static let operationName: String = "_dd-custom-header-graph-ql-operation-name"
+    static let operationType: String = "_dd-custom-header-graph-ql-operation-type"
+    static let variables: String = "_dd-custom-header-graph-ql-variables"
+    static let payload: String = "_dd-custom-header-graph-ql-payload"
 }

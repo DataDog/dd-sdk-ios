@@ -280,6 +280,7 @@ public protocol objc_OTTracer
     func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?) -> objc_OTSpan
     func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?, tags: NSDictionary?) -> objc_OTSpan
     func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?, tags: NSDictionary?, startTime: Date?) -> objc_OTSpan
+    func startRootSpan(_ operationName: String, tags: NSDictionary?, startTime: Date?, customSampleRate: NSNumber?) -> objc_OTSpan
     func inject(_ spanContext: objc_OTSpanContext, format: String, carrier: Any) throws
     func extractWithFormat(_ format: String, carrier: Any) throws
 public enum objc_InjectEncoding: Int
@@ -323,6 +324,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer
     public func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?) -> objc_OTSpan
     public func startSpan(_ operationName: String,childOf parent: objc_OTSpanContext?,tags: NSDictionary?) -> objc_OTSpan
     public func startSpan(_ operationName: String,childOf parent: objc_OTSpanContext?,tags: NSDictionary?,startTime: Date?) -> objc_OTSpan
+    public func startRootSpan(_ operationName: String,tags: NSDictionary?,startTime: Date?,customSampleRate: NSNumber?) -> any objc_OTSpan
     public func inject(_ spanContext: objc_OTSpanContext, format: String, carrier: Any) throws
     public func extractWithFormat(_ format: String, carrier: Any) throws
 
