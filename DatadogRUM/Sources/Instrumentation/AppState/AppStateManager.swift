@@ -128,16 +128,20 @@ internal final class AppStateManager: AppStateManaging {
     /// Builds the current app state and stores it in the data store.
     func storeCurrentAppState() {
         currentAppStateInfo { [self] appState in
-            featureScope.rumDataStore.setValue(appState, forKey: .appStateKey)
+            featureScope.rumDataStore.setValue(appState, forKey: .appStateKey, version: Constants.appStateVersion)
         }
     }
 
     /// Reads the app state from the data store asynchronously.
     /// - Parameter completion: The completion block called with the app state.
     private func readAppState(completion: @escaping (AppStateInfo?) -> Void) {
-        featureScope.rumDataStore.value(forKey: .appStateKey) { (state: AppStateInfo?) in
+        featureScope.rumDataStore.value(forKey: .appStateKey, version: Constants.appStateVersion) { (state: AppStateInfo?) in
             DD.logger.debug("Reading app state from data store.")
             completion(state)
         }
+    }
+
+    private enum Constants {
+        static let appStateVersion: UInt16 = 1
     }
 }
