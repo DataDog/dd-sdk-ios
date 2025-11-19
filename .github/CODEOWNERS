@@ -7,4 +7,3 @@
 /docs/ @DataDog/documentation @DataDog/rum-mobile 
 *README.md @DataDog/documentation @DataDog/rum-mobile
 *MIGRATION.md @DataDog/documentation
-*CHANGELOG.md @DataDog/documentation

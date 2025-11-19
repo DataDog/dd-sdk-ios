@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Provide XCFramework without arm64e slice for Xcode 26+ compatibility. See [#2576][]
+
 # 3.3.0 / 17-11-2025
 
 - [FIX] Fix tracing header injection for sampled out requests. See [#2473][]
@@ -988,6 +990,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2514]: https://github.com/DataDog/dd-sdk-ios/pull/2514
 [#2552]: https://github.com/DataDog/dd-sdk-ios/pull/2552
 [#2566]: https://github.com/DataDog/dd-sdk-ios/pull/2566
+[#2576]: https://github.com/DataDog/dd-sdk-ios/pull/2576
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
