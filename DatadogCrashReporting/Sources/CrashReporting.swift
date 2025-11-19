@@ -92,3 +92,11 @@ public final class objc_CrashReporting: NSObject {
         CrashReporting.enable()
     }
 }
+
+extension CrashReporting: InternalExtended {}
+extension InternalExtension where ExtendedType: CrashReporting {
+    /// Initializes the Datadog Crash Reporter using the default `KSCrash` plugin.
+    public static func kscrash_enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
+        ExtendedType.enable(with: try KSCrashPlugin(telemetry: core.telemetry), in: core)
+    }
+}
