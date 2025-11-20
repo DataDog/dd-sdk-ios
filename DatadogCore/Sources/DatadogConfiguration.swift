@@ -66,6 +66,12 @@ extension Datadog {
         /// Default value is set to application bundle identifier.
         public var service: String?
 
+        /// The application version used for Unified Service Tagging.
+        ///
+        /// If not provided, the SDK will use the version from the application's Info.plist
+        /// (`CFBundleShortVersionString` or `CFBundleVersion`).
+        public var version: String?
+
         /// The preferred size of batched data uploaded to Datadog servers.
         /// This value impacts the size and number of requests performed by the SDK.
         ///
@@ -126,6 +132,10 @@ extension Datadog {
         ///   - service:                    The service name associated with data send to Datadog.
         ///                                 Default value is set to application bundle identifier.
         ///
+        ///   - version:                    The application version used for Unified Service Tagging.
+        ///                                 If not provided, the SDK will use the version from the application's Info.plist
+        ///                                 (`CFBundleShortVersionString` or `CFBundleVersion`).
+        ///
         ///   - bundle:                     The bundle object that contains the current executable.
         ///
         ///   - batchSize:                  The preferred size of batched data uploaded to Datadog servers.
@@ -159,6 +169,7 @@ extension Datadog {
             env: String,
             site: DatadogSite = .us1,
             service: String? = nil,
+            version: String? = nil,
             bundle: Bundle = .main,
             batchSize: BatchSize = .medium,
             uploadFrequency: UploadFrequency = .average,
@@ -172,6 +183,7 @@ extension Datadog {
             self.env = env
             self.site = site
             self.service = service
+            self.version = version
             self.bundle = bundle
             self.batchSize = batchSize
             self.uploadFrequency = uploadFrequency

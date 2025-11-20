@@ -48,6 +48,7 @@ public enum Datadog
         public var env: String
         public var site: DatadogSite
         public var service: String?
+        public var version: String?
         public var batchSize: BatchSize
         public var uploadFrequency: UploadFrequency
         public var proxyConfiguration: [AnyHashable: Any]?
@@ -56,7 +57,7 @@ public enum Datadog
         public var bundle: Bundle
         public var batchProcessingLevel: BatchProcessingLevel
         public var backgroundTasksEnabled: Bool
-        public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil,batchProcessingLevel: BatchProcessingLevel = .medium,backgroundTasksEnabled: Bool = false)
+        public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,version: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil,batchProcessingLevel: BatchProcessingLevel = .medium,backgroundTasksEnabled: Bool = false)
 
 # ----------------------------------
 # API surface for DatadogLogs:

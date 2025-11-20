@@ -379,6 +379,7 @@ extension DatadogCore {
         }
 
         let applicationVersion = configuration.additionalConfiguration[CrossPlatformAttributes.version] as? String
+            ?? configuration.version
             ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
             ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
             ?? "0.0.0"

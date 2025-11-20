@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Add support for configuring a custom version parameter in DatadogConfiguration. See [#2585][]
 - [IMPROVEMENT] Provide XCFramework without arm64e slice for Xcode 26+ compatibility. See [#2576][]
 
 # 3.3.0 / 17-11-2025
