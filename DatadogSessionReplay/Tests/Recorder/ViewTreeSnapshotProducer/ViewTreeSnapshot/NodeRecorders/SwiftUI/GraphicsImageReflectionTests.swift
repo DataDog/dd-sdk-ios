@@ -58,6 +58,10 @@ class GraphicsImageReflectionTests: XCTestCase {
 
     // MARK: Reflection tests
     func testGraphicsImageReflection() throws {
+        if #available(iOS 26, tvOS 26, *) {
+            throw XCTSkip("This test uses a test fixture that doesn't match iOS 26's internal structure")
+        }
+
         let cgImage: CGImage = MockCGImage.mockWith(width: 20)
         let graphicsImage = GraphicsImage(
             contents: .cgImage(cgImage),
