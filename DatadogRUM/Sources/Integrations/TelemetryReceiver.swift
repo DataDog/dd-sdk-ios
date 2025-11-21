@@ -117,7 +117,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         record(event: id) { context, writer in
             let rum = context.additionalContext(ofType: RUMCoreContext.self)
 
-            let uptimeMs = date.timeIntervalSince(context.launchInfo.processLaunchDate).dd_toInt64Milliseconds
+            let uptimeMs = date.timeIntervalSince(context.launchInfo.processLaunchDate).dd.toInt64Milliseconds
             var attributes = attributes ?? [:]
             attributes[TelemetryReceiver.uptimeAttributeName] = uptimeMs
 
@@ -125,7 +125,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: $0) },
                 application: rum.map { .init(id: $0.applicationID) },
-                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd_toInt64Milliseconds,
+                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(self.sampler.samplingRate),
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
@@ -162,7 +162,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         record(event: id) { context, writer in
             let rum = context.additionalContext(ofType: RUMCoreContext.self)
 
-            let uptimeMs = date.timeIntervalSince(context.launchInfo.processLaunchDate).dd_toInt64Milliseconds
+            let uptimeMs = date.timeIntervalSince(context.launchInfo.processLaunchDate).dd.toInt64Milliseconds
             let attributes: [String: Encodable] = [
                 TelemetryReceiver.uptimeAttributeName: uptimeMs
             ]
@@ -171,7 +171,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: $0) },
                 application: rum.map { .init(id: $0.applicationID) },
-                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd_toInt64Milliseconds,
+                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(self.sampler.samplingRate),
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
@@ -202,7 +202,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: $0) },
                 application: rum.map { .init(id: $0.applicationID) },
-                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd_toInt64Milliseconds,
+                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(usage.sampleRate.composed(with: self.sampler.samplingRate)),
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
@@ -242,7 +242,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: $0) },
                 application: rum.map { .init(id: $0.applicationID) },
-                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd_toInt64Milliseconds,
+                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(self.configurationExtraSampler.samplingRate.composed(with: self.sampler.samplingRate)),
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
@@ -279,14 +279,14 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 effectiveSampleRate = effectiveSampleRate.composed(with: headSampleRate)
             }
 
-            let uptimeMs = date.timeIntervalSince(context.launchInfo.processLaunchDate).dd_toInt64Milliseconds
+            let uptimeMs = date.timeIntervalSince(context.launchInfo.processLaunchDate).dd.toInt64Milliseconds
             attributes[TelemetryReceiver.uptimeAttributeName] = uptimeMs
 
             let event = TelemetryDebugEvent(
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: $0) },
                 application: rum.map { .init(id: $0.applicationID) },
-                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd_toInt64Milliseconds,
+                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(effectiveSampleRate),
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",

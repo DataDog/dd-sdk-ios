@@ -15,7 +15,7 @@ public enum RUMPayloadMessages {
 /// Lightweight representation of current RUM session state, used to compute `RUMOffViewEventsHandlingRule`.
 /// It gets serialized into fatal error context for computing the rule upon app process restart.
 public struct RUMSessionState: Codable, Equatable {
-    /// The session ID. Can be `.dd_nullUUID` if the session was rejected by sampler.
+    /// The session ID. Can be `.nullUUID` if the session was rejected by sampler.
     public let sessionUUID: UUID
     /// If this is the very first session in the app process (`true`) or was re-created upon timeout (`false`).
     public let isInitialSession: Bool
@@ -26,7 +26,7 @@ public struct RUMSessionState: Codable, Equatable {
 
     /// Creates a RUM Session State
     /// - Parameters:
-    ///   - sessionUUID: The session ID. Can be `.dd_nullUUID` if the session was rejected by sampler.
+    ///   - sessionUUID: The session ID. Can be `.nullUUID` if the session was rejected by sampler.
     ///   - isInitialSession: If this is the very first session in the app process (`true`) or was re-created upon timeout (`false`).
     ///   - hasTrackedAnyView: If this session has ever tracked any view (used to reason about "application launch" events).
     ///   - didStartWithReplay: If there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).

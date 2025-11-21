@@ -19,8 +19,8 @@ class AppHangsMonitoringTests: XCTestCase {
     private let mainQueue = DispatchQueue(label: "main-queue-mock", qos: .userInteractive)
 
     private var expectedHangDurationRangeNs: ClosedRange<Int64> {
-        let min = hangDuration.dd_toInt64Nanoseconds / 2 // -50% margin
-        let max = hangDuration.dd_toInt64Nanoseconds * 5 // +500% margin to avoid flakiness
+        let min = hangDuration.dd.toInt64Nanoseconds / 2 // -50% margin
+        let max = hangDuration.dd.toInt64Nanoseconds * 5 // +500% margin to avoid flakiness
         return (min...max)
     }
 

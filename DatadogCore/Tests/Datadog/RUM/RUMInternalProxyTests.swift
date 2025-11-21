@@ -44,8 +44,8 @@ class RUMInternalProxyTests: XCTestCase {
         let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
         let views = try session.views.dropApplicationLaunchView()
         let longTask = views[0].longTaskEvents.first
-        XCTAssertEqual(longTask?.date, (date - duration).timeIntervalSince1970.dd_toInt64Milliseconds)
-        XCTAssertEqual(longTask?.longTask.duration, duration.dd_toInt64Nanoseconds)
+        XCTAssertEqual(longTask?.date, (date - duration).timeIntervalSince1970.dd.toInt64Milliseconds)
+        XCTAssertEqual(longTask?.longTask.duration, duration.dd.toInt64Nanoseconds)
     }
 
     func testProxyRecordsPerformanceMetricsAreSent() throws {

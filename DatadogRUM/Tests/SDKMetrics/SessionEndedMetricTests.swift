@@ -237,8 +237,8 @@ class SessionEndedMetricTests: XCTestCase {
 
         // Then
         let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
-        XCTAssertEqual(rse.ntpOffset.atStart, offsetAtStart.dd_toInt64Milliseconds)
-        XCTAssertEqual(rse.ntpOffset.atEnd, offsetAtEnd.dd_toInt64Milliseconds)
+        XCTAssertEqual(rse.ntpOffset.atStart, offsetAtStart.dd.toInt64Milliseconds)
+        XCTAssertEqual(rse.ntpOffset.atEnd, offsetAtEnd.dd.toInt64Milliseconds)
     }
 
     // MARK: - Views Count
@@ -658,8 +658,8 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertEqual(rse.launchInfo.launchReason, "user launch")
         XCTAssertEqual(rse.launchInfo.taskRole, "TASK_ROLE_MOCK")
         XCTAssertEqual(rse.launchInfo.prewarmed, prewarmed)
-        XCTAssertEqual(rse.launchInfo.timeToSdkInit, sdkInitDate.timeIntervalSince(launchInfo.processLaunchDate).dd_toInt64Milliseconds)
-        XCTAssertEqual(rse.launchInfo.timeToDidBecomeActive, 1.84.dd_toInt64Milliseconds)
+        XCTAssertEqual(rse.launchInfo.timeToSdkInit, sdkInitDate.timeIntervalSince(launchInfo.processLaunchDate).dd.toInt64Milliseconds)
+        XCTAssertEqual(rse.launchInfo.timeToDidBecomeActive, 1.84.dd.toInt64Milliseconds)
         XCTAssertEqual(rse.launchInfo.hasScenesLifecycle, isUsingSceneLifecycle)
         XCTAssertEqual(rse.launchInfo.appStateAtSdkInit, "inactive")
     }
@@ -694,8 +694,8 @@ class SessionEndedMetricTests: XCTestCase {
             view: .mockRandomWith(
                 sessionID: sessionID.rawValue,
                 viewID: "view1",
-                date: view1Start.timeIntervalSince1970.dd_toInt64Milliseconds,
-                viewTimeSpent: (view1Stop.timeIntervalSince(view1Start)).dd_toInt64Nanoseconds
+                date: view1Start.timeIntervalSince1970.dd.toInt64Milliseconds,
+                viewTimeSpent: (view1Stop.timeIntervalSince(view1Start)).dd.toInt64Nanoseconds
             ),
             instrumentationType: .manual
         )
@@ -703,8 +703,8 @@ class SessionEndedMetricTests: XCTestCase {
             view: .mockRandomWith(
                 sessionID: sessionID.rawValue,
                 viewID: "view2",
-                date: view2Start.timeIntervalSince1970.dd_toInt64Milliseconds,
-                viewTimeSpent: (view2Stop.timeIntervalSince(view2Start)).dd_toInt64Nanoseconds
+                date: view2Start.timeIntervalSince1970.dd.toInt64Milliseconds,
+                viewTimeSpent: (view2Stop.timeIntervalSince(view2Start)).dd.toInt64Nanoseconds
             ),
             instrumentationType: .manual
         )
@@ -712,7 +712,7 @@ class SessionEndedMetricTests: XCTestCase {
 
         // Then
         let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
-        XCTAssertEqual(rse.lifecycleInfo?.timeToSessionStart, view1Start.timeIntervalSince(processLaunchDate).dd_toInt64Milliseconds)
+        XCTAssertEqual(rse.lifecycleInfo?.timeToSessionStart, view1Start.timeIntervalSince(processLaunchDate).dd.toInt64Milliseconds)
         XCTAssertEqual(rse.lifecycleInfo?.sessionsCount, validSessionCount)
         XCTAssertEqual(rse.lifecycleInfo?.appStateAtSessionStart, "inactive")
         XCTAssertEqual(rse.lifecycleInfo?.appStateAtSessionEnd, "active")

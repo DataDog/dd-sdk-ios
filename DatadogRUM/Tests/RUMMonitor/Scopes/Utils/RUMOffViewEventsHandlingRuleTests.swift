@@ -22,7 +22,7 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
         }
 
         let notSampledSession = RUMSessionState(
-            sessionUUID: .dd_nullUUID,
+            sessionUUID: .dd.nullUUID,
             isInitialSession: true,
             hasTrackedAnyView: false,
             didStartWithReplay: nil

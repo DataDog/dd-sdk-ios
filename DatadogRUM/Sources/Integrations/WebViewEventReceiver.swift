@@ -81,13 +81,13 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 let offsetMilliseconds: Int64
 
                 if let offset = webViewContext.serverTimeOffset(forView: id) {
-                    offsetMilliseconds = offset.dd_toInt64Milliseconds
+                    offsetMilliseconds = offset.dd.toInt64Milliseconds
                 } else {
                     let offset = context.serverTimeOffset
                     webViewContext.setServerTimeOffset(offset, forView: id)
 
                     self.featureScope.set(context: webViewContext)
-                    offsetMilliseconds = offset.dd_toInt64Milliseconds
+                    offsetMilliseconds = offset.dd.toInt64Milliseconds
                 }
 
                 let correctedDate = Int64(date) + offsetMilliseconds
@@ -137,7 +137,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             var event = event
 
             if let date = event["date"] as? Int {
-                event["date"] = Int64(date) + context.serverTimeOffset.dd_toInt64Milliseconds
+                event["date"] = Int64(date) + context.serverTimeOffset.dd.toInt64Milliseconds
             }
 
             if var application = event["application"] as? JSON {

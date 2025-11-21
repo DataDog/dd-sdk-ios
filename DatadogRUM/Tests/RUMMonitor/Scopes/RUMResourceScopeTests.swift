@@ -108,7 +108,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
@@ -189,7 +189,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .ciTest)
@@ -272,7 +272,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .synthetics)
@@ -437,7 +437,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
@@ -503,7 +503,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
@@ -569,7 +569,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd_toInt64Milliseconds)
+        XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
@@ -681,7 +681,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd_toInt64Milliseconds)
+        XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
@@ -745,7 +745,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd_toInt64Milliseconds)
+        XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .ciTest)
@@ -810,7 +810,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd_toInt64Milliseconds)
+        XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .synthetics)
@@ -960,7 +960,7 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let metrics = metricsCommand.metrics
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        XCTAssertEqual(event.date, metrics.fetch.start.timeIntervalSince1970.dd_toInt64Milliseconds)
+        XCTAssertEqual(event.date, metrics.fetch.start.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)

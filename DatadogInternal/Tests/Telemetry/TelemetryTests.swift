@@ -180,7 +180,7 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(metric.attributes[MethodCalledMetric.isSuccessful] as? Bool, isSuccessful)
         let executionTime = try XCTUnwrap(metric.attributes[MethodCalledMetric.executionTime] as? Int64)
         XCTAssertGreaterThan(executionTime, 0)
-        XCTAssertLessThan(executionTime, TimeInterval(1).dd_toInt64Nanoseconds)
+        XCTAssertLessThan(executionTime, TimeInterval(1).dd.toInt64Nanoseconds)
         XCTAssertEqual(metric.sampleRate, MetricTelemetry.defaultSampleRate)
     }
 

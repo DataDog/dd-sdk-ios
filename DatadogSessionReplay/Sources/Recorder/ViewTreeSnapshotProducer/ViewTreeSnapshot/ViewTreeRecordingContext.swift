@@ -59,7 +59,7 @@ internal extension ViewTreeRecordingContext {
                     self = .activity
                 } else if viewController is SFSafariViewController {
                     self = .safari
-                } else if Bundle(for: type(of: viewController)).dd_isSwiftUI {
+                } else if Bundle(for: type(of: viewController)).dd.isSwiftUI {
                     self = .swiftUI
                 } else {
                     self = .other

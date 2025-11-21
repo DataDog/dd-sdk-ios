@@ -101,7 +101,7 @@ internal class RUMFeatureOperationManager {
             connectivity: .init(context: context),
             container: nil,
             context: .init(contextInfo: mergedAttributes),
-            date: command.time.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd_toInt64Milliseconds,
+            date: command.time.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,

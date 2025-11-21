@@ -74,7 +74,7 @@ class WebLogIntegrationTests: XCTestCase {
         try logMatcher.assertItFullyMatches(
             jsonString: """
         {
-            "date": \(1_635_932_927_012 + 123.dd_toInt64Milliseconds),
+            "date": \(1_635_932_927_012 + 123.dd.toInt64Milliseconds),
             "ddtags": "version:1.1.1,env:test",
             "message": "message",
             "session_id": "0110cab4-7471-480e-aa4e-7ce039ced355",
@@ -125,7 +125,7 @@ class WebLogIntegrationTests: XCTestCase {
         try logMatcher.assertItFullyMatches(
             jsonString: """
         {
-            "date": \(1_635_932_927_012 + 123.dd_toInt64Milliseconds),
+            "date": \(1_635_932_927_012 + 123.dd.toInt64Milliseconds),
             "ddtags": "version:1.1.1,env:test",
             "message": "message",
             "application_id": "\(randomApplicationID)",

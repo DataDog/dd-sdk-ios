@@ -326,7 +326,7 @@ class AppHangsMonitorTests: XCTestCase {
         XCTAssertEqual(viewEvent.view.action.count, lastView.view.action.count)
         XCTAssertEqual(
             viewEvent.date,
-            hangDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd_toInt64Milliseconds - 1,
+            hangDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds - 1,
             "It must be issued at hang date corrected by recorded offset and shifted back by 1ms"
         )
         XCTAssertEqual(viewEvent.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
@@ -399,7 +399,7 @@ class AppHangsMonitorTests: XCTestCase {
         )
         XCTAssertEqual(
             errorEvent.date,
-            hangDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd_toInt64Milliseconds,
+            hangDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
             "It must include error date corrected by recorded server time offset"
         )
         XCTAssertEqual(errorEvent.error.type, AppHangsMonitor.Constants.appHangErrorType)
@@ -449,6 +449,6 @@ class AppHangsMonitorTests: XCTestCase {
         // Then
         let errorEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(errorEvent.error.category, .appHang)
-        XCTAssertEqual(errorEvent.error.timeSinceAppStart, hangTimeSinceAppStart.dd_toInt64Milliseconds)
+        XCTAssertEqual(errorEvent.error.timeSinceAppStart, hangTimeSinceAppStart.dd.toInt64Milliseconds)
     }
 }
