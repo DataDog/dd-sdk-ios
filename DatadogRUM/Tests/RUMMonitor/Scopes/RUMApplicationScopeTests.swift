@@ -31,7 +31,7 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         XCTAssertEqual(scope.context.rumApplicationID, "abc-123")
-        XCTAssertEqual(scope.context.sessionID, .nullUUID)
+        XCTAssertEqual(scope.context.sessionID, .dd_nullUUID)
         XCTAssertNil(scope.context.activeViewID)
         XCTAssertNil(scope.context.activeViewPath)
         XCTAssertNil(scope.context.activeUserActionID)

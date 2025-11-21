@@ -179,7 +179,7 @@ internal class Monitor: RUMCommandSubscriber {
         var mutableCommand = command
 
         if let customTimestampInMilliseconds: Int64 = mutableCommand.attributes.removeValue(forKey: CrossPlatformAttributes.timestampInMilliseconds)?.dd.decode() {
-            let customTimeInterval = TimeInterval(fromMilliseconds: customTimestampInMilliseconds)
+            let customTimeInterval = TimeInterval(dd_fromMilliseconds: customTimestampInMilliseconds)
             mutableCommand.time = Date(timeIntervalSince1970: customTimeInterval)
         }
 

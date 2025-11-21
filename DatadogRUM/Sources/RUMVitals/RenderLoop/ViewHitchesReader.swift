@@ -83,7 +83,7 @@ internal final class ViewHitchesReader: ViewHitchesModel {
     private var didApplyDynamicFraming = false
     var telemetryModel: HitchesTelemetryModel {
         queue.sync {
-            let ignoredDurationNs = hitchesDuration.toInt64Nanoseconds - hitches.reduce(into: 0) { $0 += $1.duration }
+            let ignoredDurationNs = hitchesDuration.dd_toInt64Nanoseconds - hitches.reduce(into: 0) { $0 += $1.duration }
 
             return .init(
                 hitchesCount: self.hitches.count + self.removedHitchesCount,
@@ -143,7 +143,7 @@ extension ViewHitchesReader: RenderLoopReader {
                 }
 
                 let hitchStart = nextFrameTimestamp - self.startTimestamp
-                self.hitches.append((hitchStart.toInt64Nanoseconds, hitchFrameDuration.toInt64Nanoseconds))
+                self.hitches.append((hitchStart.dd_toInt64Nanoseconds, hitchFrameDuration.dd_toInt64Nanoseconds))
             } else if hitchFrameDuration > Constants.timestampTolerance {
                 self.ignoredHitchesCount += 1
             }

@@ -167,7 +167,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         if let history = contextReceiver.context.applicationStateHistory {
             let fetchDuration = resourceMetrics.fetch.start...resourceMetrics.fetch.end
             let foregroundDuration = history.foregroundDuration(during: fetchDuration)
-            span.setTag(key: SpanTags.foregroundDuration, value: foregroundDuration.toNanoseconds)
+            span.setTag(key: SpanTags.foregroundDuration, value: foregroundDuration.dd_toNanoseconds)
 
             let didStartInBackground = history.state(at: resourceMetrics.fetch.start) == .background
             let doesEndInBackground = history.state(at: resourceMetrics.fetch.end) == .background

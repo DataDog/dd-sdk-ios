@@ -141,8 +141,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                         metric: ViewHitchesMetric(
                             maxCount: ViewHitchesReader.Constants.maxCollectedHitches,
                             slowFrameThreshold: Int64(ViewHitchesReader.Constants.hitchesMultiplier),
-                            maxDuration: (configuration.appHangThreshold ?? ViewHitchesReader.Constants.frozenFrameThreshold).toInt64Nanoseconds,
-                            viewMinDuration: RUMViewScope.Constants.minimumTimeSpentForRates.toInt64Nanoseconds
+                            maxDuration: (configuration.appHangThreshold ?? ViewHitchesReader.Constants.frozenFrameThreshold).dd_toInt64Nanoseconds,
+                            viewMinDuration: RUMViewScope.Constants.minimumTimeSpentForRates.dd_toInt64Nanoseconds
                         )
                     )
                 }
@@ -265,13 +265,13 @@ internal final class RUMFeature: DatadogRemoteFeature {
         // Send configuration telemetry:
 
         core.telemetry.configuration(
-            appHangThreshold: configuration.appHangThreshold?.toInt64Milliseconds,
-            invTimeThresholdMs: (configuration.nextViewActionPredicate as? TimeBasedINVActionPredicate)?.maxTimeToNextView.toInt64Milliseconds,
-            mobileVitalsUpdatePeriod: configuration.vitalsUpdateFrequency?.timeInterval.toInt64Milliseconds,
-            sessionSampleRate: Int64(withNoOverflow: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
-            telemetrySampleRate: Int64(withNoOverflow: configuration.debugSDK ? 100 : configuration.telemetrySampleRate),
-            tnsTimeThresholdMs: (configuration.networkSettledResourcePredicate as? TimeBasedTNSResourcePredicate)?.threshold.toInt64Milliseconds,
-            traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64(withNoOverflow: $0.sampleRate) },
+            appHangThreshold: configuration.appHangThreshold?.dd_toInt64Milliseconds,
+            invTimeThresholdMs: (configuration.nextViewActionPredicate as? TimeBasedINVActionPredicate)?.maxTimeToNextView.dd_toInt64Milliseconds,
+            mobileVitalsUpdatePeriod: configuration.vitalsUpdateFrequency?.timeInterval.dd_toInt64Milliseconds,
+            sessionSampleRate: Int64(dd_withNoOverflow: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
+            telemetrySampleRate: Int64(dd_withNoOverflow: configuration.debugSDK ? 100 : configuration.telemetrySampleRate),
+            tnsTimeThresholdMs: (configuration.networkSettledResourcePredicate as? TimeBasedTNSResourcePredicate)?.threshold.dd_toInt64Milliseconds,
+            traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64(dd_withNoOverflow: $0.sampleRate) },
             swiftUIViewTrackingEnabled: configuration.swiftUIViewsPredicate != nil,
             swiftUIActionTrackingEnabled: configuration.swiftUIActionsPredicate != nil,
             trackBackgroundEvents: configuration.trackBackgroundEvents,

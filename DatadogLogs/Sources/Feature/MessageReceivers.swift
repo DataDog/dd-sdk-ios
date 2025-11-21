@@ -88,7 +88,7 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
             }
 
             if let timestampInMs = event[dateKey] as? Int {
-                let serverTimeOffsetInMs = context.serverTimeOffset.toInt64Milliseconds
+                let serverTimeOffsetInMs = context.serverTimeOffset.dd_toInt64Milliseconds
                 let correctedTimestamp = Int64(timestampInMs) + serverTimeOffsetInMs
                 event[dateKey] = correctedTimestamp
             }

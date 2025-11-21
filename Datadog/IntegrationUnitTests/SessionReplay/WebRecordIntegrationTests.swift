@@ -110,7 +110,7 @@ class WebRecordIntegrationTests: XCTestCase {
 
         let record = try XCTUnwrap(segment.records.first)
         DDAssertDictionariesEqual(record, [
-            "timestamp": 1_635_932_927_012 + 123.toInt64Milliseconds,
+            "timestamp": 1_635_932_927_012 + 123.dd_toInt64Milliseconds,
             "type": 2,
             "slotId": expectedSlotID
         ])
@@ -178,7 +178,7 @@ class WebRecordIntegrationTests: XCTestCase {
 
         let record = try XCTUnwrap(segment.records.first)
         DDAssertDictionariesEqual(record, [
-            "timestamp": 1_635_932_927_012 + 123.toInt64Milliseconds,
+            "timestamp": 1_635_932_927_012 + 123.dd_toInt64Milliseconds,
             "type": 2,
             "slotId": expectedSlotID
         ])

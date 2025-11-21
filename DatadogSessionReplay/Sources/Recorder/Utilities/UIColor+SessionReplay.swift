@@ -33,10 +33,10 @@ extension DatadogExtension where ExtendedType: UIColor {
 
         type.getRed(&r, green: &g, blue: &b, alpha: &a)
 
-        let ri = Int16(withNoOverflow: round(r * 255))
-        let gi = Int16(withNoOverflow: round(g * 255))
-        let bi = Int16(withNoOverflow: round(b * 255))
-        let ai = Int16(withNoOverflow: round(a * 255))
+        let ri = Int16(dd_withNoOverflow: round(r * 255))
+        let gi = Int16(dd_withNoOverflow: round(g * 255))
+        let bi = Int16(dd_withNoOverflow: round(b * 255))
+        let ai = Int16(dd_withNoOverflow: round(a * 255))
 
         var rstr = String(ri, radix: 16, uppercase: true)
         var gstr = String(gi, radix: 16, uppercase: true)

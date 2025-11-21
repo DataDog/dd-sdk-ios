@@ -67,7 +67,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// Automatically detect background events by creating "Background" view if no other view is active
     let trackBackgroundEvents: Bool
 
-    /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
+    /// This Session UUID. Equals `.dd_nullUUID` if the Session is sampled.
     let sessionUUID: RUMUUID
     /// The precondition that led to the creation of this session.
     /// TODO: RUM-1650 This should become non-optional after all preconditions are implemented.
@@ -358,7 +358,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Cache the view id at each view start
         dependencies.viewCache.insert(
             id: id,
-            timestamp: startTime.timeIntervalSince1970.toInt64Milliseconds,
+            timestamp: startTime.timeIntervalSince1970.dd_toInt64Milliseconds,
             hasReplay: hasReplay
         )
     }

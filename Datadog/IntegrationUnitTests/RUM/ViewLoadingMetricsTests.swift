@@ -59,7 +59,7 @@ class ViewLoadingMetricsTests: XCTestCase {
 
         let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
         let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
-        let expectedTNS = lastResourceTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+        let expectedTNS = lastResourceTime.timeIntervalSince(viewStartTime).dd_toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource.")
     }
 
@@ -101,7 +101,7 @@ class ViewLoadingMetricsTests: XCTestCase {
 
         let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
         let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
-        let expectedTNS = lastResourceTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+        let expectedTNS = lastResourceTime.timeIntervalSince(viewStartTime).dd_toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource (resource1 with correct metrics).")
     }
 
@@ -140,7 +140,7 @@ class ViewLoadingMetricsTests: XCTestCase {
 
         let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
         let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
-        let expectedTNS = lastInitialResourceTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+        let expectedTNS = lastInitialResourceTime.timeIntervalSince(viewStartTime).dd_toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource.")
     }
 
@@ -220,7 +220,7 @@ class ViewLoadingMetricsTests: XCTestCase {
 
         let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
         let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources end.")
-        let expectedTNS = resource1EndTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+        let expectedTNS = resource1EndTime.timeIntervalSince(viewStartTime).dd_toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should only reflect ACCEPTED resources.")
     }
 
@@ -294,7 +294,7 @@ class ViewLoadingMetricsTests: XCTestCase {
 
         let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
         let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
-        let expectedTNS = lastInitialResourceCompletionTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+        let expectedTNS = lastInitialResourceCompletionTime.timeIntervalSince(viewStartTime).dd_toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the completion of last classified resource.")
     }
 
@@ -328,7 +328,7 @@ class ViewLoadingMetricsTests: XCTestCase {
 
         let nextViewEvent = try XCTUnwrap(session.views.first(where: { $0.name == "NextView" })?.viewEvents.last)
         let actualINV = try XCTUnwrap(nextViewEvent.view.interactionToNextViewTime)
-        XCTAssertEqual(TimeInterval(fromNanoseconds: actualINV), expectedINV, accuracy: 0.01)
+        XCTAssertEqual(TimeInterval(dd_fromNanoseconds: actualINV), expectedINV, accuracy: 0.01)
     }
 
     func testWhenActionOccursInPreviousView_andNextViewStartsAfterThreshold_thenINVIsNotTrackedForNextView() throws {
@@ -393,7 +393,7 @@ class ViewLoadingMetricsTests: XCTestCase {
 
         let nextViewEvent = try XCTUnwrap(session.views.first(where: { $0.name == "NextView" })?.viewEvents.last)
         let actualINV = try XCTUnwrap(nextViewEvent.view.interactionToNextViewTime)
-        XCTAssertEqual(TimeInterval(fromNanoseconds: actualINV), expectedINV, accuracy: 0.01)
+        XCTAssertEqual(TimeInterval(dd_fromNanoseconds: actualINV), expectedINV, accuracy: 0.01)
     }
 
     func testWhenActionInPreviousViewIsDropped_thenINVIsNotTracked() throws {
@@ -516,7 +516,7 @@ class ViewLoadingMetricsTests: XCTestCase {
         // Check the INV metric
         let actualINV = try XCTUnwrap(nextViewEvent.view.interactionToNextViewTime)
         XCTAssertEqual(
-            TimeInterval(fromNanoseconds: actualINV),
+            TimeInterval(dd_fromNanoseconds: actualINV),
             expectedINV,
             accuracy: 0.01,
             "The INV value should be computed from the last 'Sign Up' action that leads to 'WelcomeView'."

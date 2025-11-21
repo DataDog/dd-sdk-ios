@@ -52,7 +52,7 @@ class WebViewRecordReceiverTests: XCTestCase {
             "viewID": browserViewID,
             "records": [
                 [
-                    "timestamp": 100_000 + serverTimeOffset.toInt64Milliseconds,
+                    "timestamp": 100_000 + serverTimeOffset.dd_toInt64Milliseconds,
                     "type": 2
                 ].merging(random, uniquingKeysWith: { old, _ in old })
             ]

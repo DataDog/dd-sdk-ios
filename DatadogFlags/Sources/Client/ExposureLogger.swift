@@ -53,7 +53,7 @@ internal final class ExposureLogger: ExposureLogging {
 
             let date = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
             let exposureEvent = ExposureEvent(
-                timestamp: date.timeIntervalSince1970.toInt64Milliseconds,
+                timestamp: date.timeIntervalSince1970.dd_toInt64Milliseconds,
                 allocation: .init(key: assignment.allocationKey),
                 flag: .init(key: flagKey),
                 variant: .init(key: assignment.variationKey),

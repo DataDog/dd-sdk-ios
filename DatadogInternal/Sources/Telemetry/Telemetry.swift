@@ -239,7 +239,7 @@ public extension Telemetry {
             return
         }
 
-        let executionTime = -metric.startTime.timeIntervalSinceNow.toInt64Nanoseconds
+        let executionTime = -metric.startTime.timeIntervalSinceNow.dd_toInt64Nanoseconds
         send(
             telemetry: .metric(
                 MetricTelemetry(

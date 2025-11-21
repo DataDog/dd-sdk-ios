@@ -452,8 +452,8 @@ extension DatadogCore {
         telemetry.configuration(
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
             batchProcessingLevel: Int64(exactly: configuration.batchProcessingLevel.maxBatchesPerUpload),
-            batchSize: performance.uploaderWindow.toInt64Milliseconds,
-            batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
+            batchSize: performance.uploaderWindow.dd_toInt64Milliseconds,
+            batchUploadFrequency: performance.minUploadDelay.dd_toInt64Milliseconds,
             useLocalEncryption: configuration.encryption != nil,
             useProxy: configuration.proxyConfiguration != nil
         )

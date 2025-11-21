@@ -9,7 +9,7 @@ import Foundation
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
-        static let frozenFrameThresholdInNs = (0.7).toInt64Nanoseconds // 700ms
+        static let frozenFrameThresholdInNs = (0.7).dd_toInt64Nanoseconds // 700ms
         static let slowRenderingThresholdFPS = 55.0
         static let minimumTimeSpentForRates = 1.0 // 1s
         /// Minimum duration of a view (1ns). Prevents negative durations and serves as placeholder value assigned when view starts.
@@ -304,7 +304,7 @@ extension RUMViewScope {
             addViewLoadingTime(on: command)
         case let command as RUMAddViewTimingCommand where isActiveView:
             attributes.merge(command.attributes) { $1 }
-            customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+            customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).dd_toInt64Nanoseconds
             needsViewUpdate = true
 
         // Resource commands
@@ -376,7 +376,7 @@ extension RUMViewScope {
             if let viewHitchesReader {
                 viewEndedMetric.track(
                     hitchesTelemetry: viewHitchesReader.telemetryModel,
-                    viewDuration: command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
+                    viewDuration: command.time.timeIntervalSince(viewStartTime).dd_toInt64Nanoseconds
                 )
                 dependencies.renderLoopObserver?.unregister(viewHitchesReader)
             }
@@ -516,7 +516,7 @@ extension RUMViewScope {
             commandAttributes[Constants.activePrewarm] = true
         } else if let launchTime = context.launchInfo.timeToDidBecomeActive {
             // Report Application Launch Time only if not pre-warmed
-            loadingTime = launchTime.toInt64Nanoseconds
+            loadingTime = launchTime.dd_toInt64Nanoseconds
         } else {
             // The launchTime can be `nil` if the application is not yet
             // active (UIApplicationDidBecomeActiveNotification). That is
@@ -527,7 +527,7 @@ extension RUMViewScope {
             // launch and the sdkInitialization as the application loading
             // time.
             let launchDate = context.launchInfo.processLaunchDate
-            loadingTime = command.time.timeIntervalSince(launchDate).toInt64Nanoseconds
+            loadingTime = command.time.timeIntervalSince(launchDate).dd_toInt64Nanoseconds
         }
 
         let actionEvent = RUMActionEvent(
@@ -559,7 +559,7 @@ extension RUMViewScope {
             connectivity: .init(context: context),
             container: nil,
             context: .init(contextInfo: commandAttributes),
-            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd_toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
@@ -628,7 +628,7 @@ extension RUMViewScope {
            command.identity == identity,
            timeSpent >= Constants.minimumTimeSpentForRates {
             if let totalHitchesDuration = viewHitchesReader?.dataModel.hitchesDuration {
-                slowFramesRate = totalHitchesDuration / timeSpent * Double(1.toMilliseconds) // milliseconds/second
+                slowFramesRate = totalHitchesDuration / timeSpent * Double(1.dd_toMilliseconds) // milliseconds/second
             }
             if dependencies.hasAppHangsEnabled {
                 freezeRate = totalAppHangDuration / timeSpent * 1.hours // seconds/hour
@@ -638,7 +638,7 @@ extension RUMViewScope {
         if interactionToNextViewTime == .failure(.disabled),
            let customInvValue = internalAttributes[CrossPlatformAttributes.customINVValue] as? (any BinaryInteger),
            let customInvValue = Int64(exactly: customInvValue) {
-            interactionToNextViewTime = .success(TimeInterval(fromNanoseconds: customInvValue))
+            interactionToNextViewTime = .success(TimeInterval(dd_fromNanoseconds: customInvValue))
         }
 
         // Only add the performance member if we have a value for it
@@ -701,7 +701,7 @@ extension RUMViewScope {
             connectivity: .init(context: context),
             container: nil,
             context: .init(contextInfo: attributes),
-            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd_toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
@@ -724,7 +724,7 @@ extension RUMViewScope {
                 accessibility: accessibility,
                 action: .init(count: actionsCount.toInt64),
                 cpuTicksCount: cpuInfo?.greatestDiff,
-                cpuTicksPerSecond: timeSpent > 1.0 ? cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)) : nil,
+                cpuTicksPerSecond: timeSpent > 1.0 ? cpuInfo?.greatestDiff?.dd_divideIfNotZero(by: Double(timeSpent)) : nil,
                 crash: isCrash ? .init(count: 1) : .init(count: 0),
                 cumulativeLayoutShift: nil,
                 cumulativeLayoutShiftTargetSelector: nil,
@@ -751,20 +751,20 @@ extension RUMViewScope {
                 interactionToNextPaint: nil,
                 interactionToNextPaintTargetSelector: nil,
                 interactionToNextPaintTime: nil,
-                interactionToNextViewTime: interactionToNextViewTime.value?.toInt64Nanoseconds,
+                interactionToNextViewTime: interactionToNextViewTime.value?.dd_toInt64Nanoseconds,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered ?? false,
                 jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
                 largestContentfulPaint: nil,
                 largestContentfulPaintTargetSelector: nil,
                 loadEvent: nil,
-                loadingTime: viewLoadingTime?.toInt64Nanoseconds,
+                loadingTime: viewLoadingTime?.dd_toInt64Nanoseconds,
                 loadingType: nil,
                 longTask: .init(count: longTasksCount),
                 memoryAverage: memoryInfo?.meanValue,
                 memoryMax: memoryInfo?.maxValue,
                 name: viewName,
-                networkSettledTime: networkSettledTime.value?.toInt64Nanoseconds,
+                networkSettledTime: networkSettledTime.value?.dd_toInt64Nanoseconds,
                 performance: performance,
                 referrer: nil,
                 refreshRateAverage: refreshRateInfo?.meanValue,
@@ -772,7 +772,7 @@ extension RUMViewScope {
                 resource: .init(count: resourcesCount.toInt64),
                 slowFrames: viewHitchesReader?.dataModel.hitches.map { .init(duration: $0.duration, start: $0.start) },
                 slowFramesRate: slowFramesRate,
-                timeSpent: timeSpent.toInt64Nanoseconds,
+                timeSpent: timeSpent.dd_toInt64Nanoseconds,
                 url: viewPath
             )
         )
@@ -823,7 +823,7 @@ extension RUMViewScope {
             .merging(attributes) { $1 }
             .merging(command.attributes) { $1 }
         let errorFingerprint: String? = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
-        let timeSinceAppStart = command.time.timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Milliseconds
+        let timeSinceAppStart = command.time.timeIntervalSince(context.launchInfo.processLaunchDate).dd_toInt64Milliseconds
 
         var binaryImages = command.binaryImages?.compactMap { $0.toRUMDataFormat }
         if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() == true {
@@ -854,7 +854,7 @@ extension RUMViewScope {
             connectivity: .init(context: context),
             container: nil,
             context: .init(contextInfo: commandAttributes),
-            date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd_toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
@@ -881,7 +881,7 @@ extension RUMViewScope {
             ),
             featureFlags: .init(featureFlagsInfo: featureFlags),
             freeze: (command as? RUMAddCurrentViewAppHangCommand).map { appHangCommand in
-                .init(duration: appHangCommand.hangDuration.toInt64Nanoseconds)
+                .init(duration: appHangCommand.hangDuration.dd_toInt64Nanoseconds)
             },
             os: context.os,
             service: context.service,
@@ -916,7 +916,7 @@ extension RUMViewScope {
     }
 
     private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogContext, writer: Writer) {
-        let taskDurationInNs = command.duration.toInt64Nanoseconds
+        let taskDurationInNs = command.duration.dd_toInt64Nanoseconds
         let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
 
         // Long task event attributes
@@ -946,7 +946,7 @@ extension RUMViewScope {
             connectivity: .init(context: context),
             container: nil,
             context: .init(contextInfo: commandAttributes),
-            date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd_toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
@@ -986,7 +986,7 @@ extension RUMViewScope {
             longTasksCount += 1
             needsViewUpdate = true
 
-            if command.duration.toInt64Nanoseconds > Constants.frozenFrameThresholdInNs {
+            if command.duration.dd_toInt64Nanoseconds > Constants.frozenFrameThresholdInNs {
                 frozenFramesCount += 1
             }
         }
@@ -1039,10 +1039,10 @@ private extension VitalInfo {
 
     func asJsRefreshRate() -> RUMViewEvent.View.JsRefreshRate {
         return RUMViewEvent.View.JsRefreshRate(
-            average: meanValue.map { $0.inverted } ?? 0,
-            max: minValue.map { $0.inverted } ?? 0,
+            average: meanValue.map { $0.dd_inverted } ?? 0,
+            max: minValue.map { $0.dd_inverted } ?? 0,
             metricMax: 60.0,
-            min: maxValue.map { $0.inverted } ?? 0
+            min: maxValue.map { $0.dd_inverted } ?? 0
         )
     }
 }

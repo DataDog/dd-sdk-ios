@@ -243,7 +243,7 @@ class WebViewEventReceiverTests: XCTestCase {
         )
 
         dateProvider.advance(bySeconds: 1)
-        let date = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let date = dateProvider.now.timeIntervalSince1970.dd_toInt64Milliseconds
         let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
         let webEventMock: JSON = [
             // Known properties:
@@ -271,7 +271,7 @@ class WebViewEventReceiverTests: XCTestCase {
                 "id": rumContext.sessionID,
             ],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": date + featureScope.contextMock.serverTimeOffset.toInt64Milliseconds,
+            "date": date + featureScope.contextMock.serverTimeOffset.dd_toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         XCTAssertTrue(result, "It must accept the message")
@@ -321,12 +321,12 @@ class WebViewEventReceiverTests: XCTestCase {
         let containerViewID: String = .mockRandom()
         receiver.viewCache.insert(
             id: containerViewID,
-            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            timestamp: dateProvider.now.timeIntervalSince1970.dd_toInt64Milliseconds,
             hasReplay: true
         )
 
         dateProvider.advance(bySeconds: 1)
-        let date = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let date = dateProvider.now.timeIntervalSince1970.dd_toInt64Milliseconds
         let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
         let webHasReplay: Bool = .mockRandom()
         let webEventMock: JSON = [
@@ -372,7 +372,7 @@ class WebViewEventReceiverTests: XCTestCase {
                 "has_replay": webHasReplay
             ] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": date + featureScope.contextMock.serverTimeOffset.toInt64Milliseconds,
+            "date": date + featureScope.contextMock.serverTimeOffset.dd_toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         XCTAssertTrue(result, "It must accept the message")
@@ -403,12 +403,12 @@ class WebViewEventReceiverTests: XCTestCase {
         let containerViewID: String = .mockRandom()
         receiver.viewCache.insert(
             id: containerViewID,
-            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            timestamp: dateProvider.now.timeIntervalSince1970.dd_toInt64Milliseconds,
             hasReplay: true
         )
 
         dateProvider.advance(bySeconds: 1)
-        let date = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let date = dateProvider.now.timeIntervalSince1970.dd_toInt64Milliseconds
         let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
         let webEventMock: JSON = [
             // Known properties:
@@ -448,7 +448,7 @@ class WebViewEventReceiverTests: XCTestCase {
                 "has_replay": false
             ] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": date + featureScope.contextMock.serverTimeOffset.toInt64Milliseconds,
+            "date": date + featureScope.contextMock.serverTimeOffset.dd_toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         XCTAssertTrue(result, "It must accept the message")

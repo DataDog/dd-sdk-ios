@@ -50,7 +50,7 @@ internal struct FatalErrorBuilder {
 
     /// Creates RUM error linked to given view.
     func createRUMError(with lastRUMView: RUMViewEvent) -> RUMErrorEvent {
-        let msSinceAppStart = timeSinceAppStart.map { max(0, $0.toInt64Milliseconds) }
+        let msSinceAppStart = timeSinceAppStart.map { max(0, $0.dd_toInt64Milliseconds) }
 
         // Merge last view attributes with crash report attributes
         let lastViewContextAttributes = lastRUMView.context?.contextInfo ?? [:]
@@ -82,7 +82,7 @@ internal struct FatalErrorBuilder {
             context: RUMEventAttributes(
                 contextInfo: contextInfo
             ),
-            date: errorDate.timeIntervalSince1970.toInt64Milliseconds,
+            date: errorDate.timeIntervalSince1970.dd_toInt64Milliseconds,
             ddtags: context.ddTags,
             device: lastRUMView.device,
             display: nil,
@@ -161,7 +161,7 @@ internal struct FatalErrorBuilder {
             connectivity: original.connectivity,
             container: original.container,
             context: original.context,
-            date: errorDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the fatal error after view in RUM session
+            date: errorDate.timeIntervalSince1970.dd_toInt64Milliseconds - 1, // -1ms to put the fatal error after view in RUM session
             ddtags: context.ddTags,
             device: original.device,
             display: original.display,

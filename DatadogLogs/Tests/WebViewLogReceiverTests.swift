@@ -125,7 +125,7 @@ class WebViewLogReceiverTests: XCTestCase {
 
         // Then
         let expectedWebLogEvent: [String: Any] = [
-            "date": 1_635_932_927_012 + 123.toInt64Milliseconds,
+            "date": 1_635_932_927_012 + 123.dd_toInt64Milliseconds,
             "error": ["origin": "console"],
             "message": "console error: error",
             "application_id": "123456",

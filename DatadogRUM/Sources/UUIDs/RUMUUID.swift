@@ -10,7 +10,7 @@ internal struct RUMUUID: Equatable, Hashable {
     let rawValue: UUID
 
     /// UUID with all zeros, used to represent no-op values.
-    static let nullUUID = RUMUUID(rawValue: .nullUUID)
+    static let nullUUID = RUMUUID(rawValue: .dd_nullUUID)
 }
 
 extension Optional where Wrapped == RUMUUID {

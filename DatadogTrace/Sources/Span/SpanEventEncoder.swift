@@ -188,8 +188,8 @@ internal struct SpanEventEncoder {
         try container.encode(span.resource, forKey: .resource)
         try container.encode("custom", forKey: .type)
 
-        try container.encode(span.startTime.timeIntervalSince1970.toNanoseconds, forKey: .startTime)
-        try container.encode(span.duration.toNanoseconds, forKey: .duration)
+        try container.encode(span.startTime.timeIntervalSince1970.dd_toNanoseconds, forKey: .startTime)
+        try container.encode(span.duration.dd_toNanoseconds, forKey: .duration)
 
         let isError = span.isError ? 1 : 0
         try container.encode(isError, forKey: .isError)

@@ -562,7 +562,7 @@ extension RUMSessionMatcher.View {
     public var durationNs: Int64? { viewEvents.last?.view.timeSpent }
 
     /// The duration of this view, in seconds.
-    public var duration: TimeInterval? { durationNs.map { TimeInterval(fromNanoseconds: $0) } }
+    public var duration: TimeInterval? { durationNs.map { TimeInterval(dd_fromNanoseconds: $0) } }
 }
 
 extension RUMSessionMatcher: CustomStringConvertible {
@@ -588,7 +588,7 @@ extension RUMSessionMatcher: CustomStringConvertible {
     }
 
     /// The duration of this session, in seconds.
-    public var duration: TimeInterval? { durationNs.map { TimeInterval(fromNanoseconds: $0) } }
+    public var duration: TimeInterval? { durationNs.map { TimeInterval(dd_fromNanoseconds: $0) } }
 
     /// The application start action.
     public var applicationStartAction: RUMActionEvent? {
@@ -599,7 +599,7 @@ extension RUMSessionMatcher: CustomStringConvertible {
 
     /// The application startup time (nanoseconds).
     public var applicationStartupTime: TimeInterval? {
-        return applicationStartAction?.action.loadingTime.map { TimeInterval(fromNanoseconds: $0) }
+        return applicationStartAction?.action.loadingTime.map { TimeInterval(dd_fromNanoseconds: $0) }
     }
 
     private func renderSession() -> String {

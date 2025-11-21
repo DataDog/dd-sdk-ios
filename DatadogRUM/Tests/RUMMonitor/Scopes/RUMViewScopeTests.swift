@@ -193,7 +193,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
-        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
@@ -284,7 +284,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
-        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
@@ -353,13 +353,13 @@ class RUMViewScopeTests: XCTestCase {
         viewEvents.forEach { viewEvent in
             XCTAssertEqual(
                 viewEvent.date,
-                Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds,
+                Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds,
                 "All View events must share the same creation date"
             )
         }
 
         let event = try XCTUnwrap(viewEvents.dropFirst().first)
-        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
@@ -488,13 +488,13 @@ class RUMViewScopeTests: XCTestCase {
         viewEvents.forEach { viewEvent in
             XCTAssertEqual(
                 viewEvent.date,
-                Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds,
+                Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds,
                 "All View events must share the same creation date"
             )
         }
 
         let event = try XCTUnwrap(viewEvents.dropFirst().first)
-        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .ciTest)
@@ -566,13 +566,13 @@ class RUMViewScopeTests: XCTestCase {
         viewEvents.forEach { viewEvent in
             XCTAssertEqual(
                 viewEvent.date,
-                Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds,
+                Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds,
                 "All View events must share the same creation date"
             )
         }
 
         let event = try XCTUnwrap(viewEvents.dropFirst().first)
-        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .synthetics)
@@ -638,7 +638,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewEvents.count, 1)
 
         let event = try XCTUnwrap(viewEvents.first)
-        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd_toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
@@ -2148,7 +2148,7 @@ class RUMViewScopeTests: XCTestCase {
         wait(for: [completionExpectation], timeout: 0)
 
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
-        XCTAssertEqual(error.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(error.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.dd_toInt64Milliseconds)
         XCTAssertEqual(error.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(error.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(error.session.type, .user)
@@ -2563,7 +2563,7 @@ class RUMViewScopeTests: XCTestCase {
         (0...Int.mockRandom(min: 0, max: 1_000)).forEach {
             hitches.append((start: TimeInterval($0).toInt64Nanoseconds, duration: 0.016.toInt64Nanoseconds))
         }
-        let hitchesDuration = TimeInterval(fromNanoseconds: hitches.map { $0.duration }.reduce(0, +))
+        let hitchesDuration = TimeInterval(dd_fromNanoseconds: hitches.map { $0.duration }.reduce(0, +))
         let viewHitchesReaderFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -2684,7 +2684,7 @@ class RUMViewScopeTests: XCTestCase {
         (0...Int.mockRandom(min: 0, max: 1_000)).forEach {
             hitches.append((start: TimeInterval($0).toInt64Nanoseconds, duration: 0.016.toInt64Nanoseconds))
         }
-        let hitchesDuration = TimeInterval(fromNanoseconds: hitches.map { $0.duration }.reduce(0, +))
+        let hitchesDuration = TimeInterval(dd_fromNanoseconds: hitches.map { $0.duration }.reduce(0, +))
         let viewHitchesReaderFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -2732,7 +2732,7 @@ class RUMViewScopeTests: XCTestCase {
         (0..<10).forEach {
             hitches.append((start: TimeInterval($0).toInt64Nanoseconds, duration: 0.016.toInt64Nanoseconds))
         }
-        let hitchesDuration = TimeInterval(fromNanoseconds: hitches.map { $0.duration }.reduce(0, +))
+        let hitchesDuration = TimeInterval(dd_fromNanoseconds: hitches.map { $0.duration }.reduce(0, +))
         let viewHitchesReaderFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -2937,7 +2937,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
-        XCTAssertEqual(error.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(error.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.dd_toInt64Milliseconds)
         XCTAssertEqual(error.view.url, "UIViewController")
         XCTAssertEqual(error.view.name, "ViewName")
         XCTAssertEqual(error.error.message, "App Hang")
@@ -3005,7 +3005,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.session.hasReplay, hasReplay)
         XCTAssertNil(event.connectivity)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.date, longTaskStartingDate.timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.date, longTaskStartingDate.timeIntervalSince1970.dd_toInt64Milliseconds)
         XCTAssertEqual(event.dd.session?.plan, .plan1)
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.longTask.duration, (1.0).toInt64Nanoseconds)
@@ -3564,8 +3564,8 @@ class RUMViewScopeTests: XCTestCase {
         let actionEvents = writer.events(ofType: RUMActionEvent.self)
 
         let initialRealTime = initialDeviceTime.addingTimeInterval(initialServerTimeOffset)
-        let expectedViewEventsDate = initialRealTime.timeIntervalSince1970.toInt64Milliseconds
-        let expectedOtherEventsDate = initialRealTime.addingTimeInterval(1).timeIntervalSince1970.toInt64Milliseconds
+        let expectedViewEventsDate = initialRealTime.timeIntervalSince1970.dd_toInt64Milliseconds
+        let expectedOtherEventsDate = initialRealTime.addingTimeInterval(1).timeIntervalSince1970.dd_toInt64Milliseconds
 
         XCTAssertFalse(viewEvents.isEmpty)
         XCTAssertFalse(resourceEvents.isEmpty)
