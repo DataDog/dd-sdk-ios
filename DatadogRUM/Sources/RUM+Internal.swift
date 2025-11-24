@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 extension RUM: InternalExtended {}
@@ -78,5 +79,8 @@ extension InternalExtension where ExtendedType == RUM {
         // Connect URLSession instrumentation to RUM monitor:
         urlSessionHandler.publish(to: rum.monitor)
         try core.register(urlSessionHandler: urlSessionHandler)
+
+        // Enable network tracking automatically (no delegate registration required)
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
     }
 }

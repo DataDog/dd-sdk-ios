@@ -492,7 +492,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             url: .mockRandom(),
             httpMethod: ["GET", "POST", "PUT", "DELETE"].randomElement()!
         )
-        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random(), trackingMode: .mockRandom())
         XCTAssertNil(taskInterception.trace)
 
         // When
@@ -527,7 +527,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .mockRandom())
         taskInterception.register(trace: TraceContext(
             traceID: 100,
             spanID: 200,
@@ -562,7 +562,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .mockRandom())
         let resourceMetrics: ResourceMetrics = .mockAny()
         taskInterception.register(metrics: resourceMetrics)
         let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
@@ -599,7 +599,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .mockRandom())
         let taskError = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
         let resourceMetrics: ResourceMetrics = .mockAny()
         taskInterception.register(metrics: resourceMetrics)
@@ -655,7 +655,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // When
-        let taskInterception = URLSessionTaskInterception(request: mockRequest, isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: mockRequest, isFirstParty: .random(), trackingMode: .mockRandom())
         taskInterception.register(nextData: mockData)
         taskInterception.register(metrics: .mockAny())
         taskInterception.register(response: mockResponse, error: nil)
@@ -691,7 +691,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // When
-        let taskInterception = URLSessionTaskInterception(request: mockRequest, isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: mockRequest, isFirstParty: .random(), trackingMode: .mockRandom())
         taskInterception.register(metrics: .mockAny())
         taskInterception.register(response: nil, error: mockError)
         handler.interceptionDidComplete(interception: taskInterception)
@@ -998,7 +998,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
         let immutableRequest = ImmutableRequest(request: mockRequest)
-        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false, trackingMode: .mockRandom())
 
         // Register trace context with GraphQL attributes
         let traceContext = TraceContext(
@@ -1047,7 +1047,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
         let immutableRequest = ImmutableRequest(request: mockRequest)
-        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false, trackingMode: .mockRandom())
 
         // Register trace context with GraphQL attributes
         let traceContext = TraceContext(
@@ -1137,7 +1137,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         """
 
         let immutableRequest = ImmutableRequest(request: mockRequest)
-        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false, trackingMode: .mockRandom())
         let response: HTTPURLResponse = .mockWith(statusCode: 200, mimeType: "application/json")
         taskInterception.register(nextData: responseWithErrors.data(using: .utf8)!)
         taskInterception.register(response: response, error: nil)
@@ -1177,7 +1177,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         """
 
         let immutableRequest = ImmutableRequest(request: mockRequest)
-        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false, trackingMode: .mockRandom())
         let nonJSONResponse: HTTPURLResponse = .mockWith(statusCode: 200, mimeType: "text/html")
         taskInterception.register(nextData: responseWithErrors.data(using: .utf8)!)
         taskInterception.register(response: nonJSONResponse, error: nil)
