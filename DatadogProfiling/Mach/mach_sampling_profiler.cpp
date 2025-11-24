@@ -298,6 +298,22 @@ bool stack_trace_get_thread_info(stack_trace_t* trace, thread_t thread) {
 }
 
 /**
+ * Safely reads memory from a potentially invalid address.
+ * Uses vm_read_overwrite to avoid crashes on bad memory access.
+ */
+bool safe_read_memory(void* addr, void* buffer, size_t size) {
+    vm_size_t read_size = size;
+    kern_return_t kr = vm_read_overwrite(
+        mach_task_self(),
+        (vm_address_t)addr,
+        size,
+        (vm_address_t)buffer,
+        &read_size
+    );
+    return kr == KERN_SUCCESS && read_size == size;
+}
+
+/**
  * Samples a thread's stack to collect stack trace information.
  *
  * @param trace Pre-allocated stack trace to fill
@@ -320,12 +336,14 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
         if (fp == nullptr) break;
         // Validate frame pointer before dereferencing
         if (!is_valid_frame_pointer((uintptr_t)fp)) break;
+
+        // Safely read the next frame pointer and return address
+        void* next_frame[2];
+        if (!safe_read_memory(fp, next_frame, sizeof(next_frame))) break;
         
-        // Read the next frame pointer and return address
-        void** frame_ptr = (void**)fp;
-        fp = frame_ptr[0];  // Next frame pointer
-        pc = frame_ptr[1];  // Return address
-        
+        fp = next_frame[0];  // Next frame pointer
+        pc = next_frame[1];  // Return address
+
         // Validate the new PC
         if (!is_valid_userspace_addr((uintptr_t)pc)) break;
     }
