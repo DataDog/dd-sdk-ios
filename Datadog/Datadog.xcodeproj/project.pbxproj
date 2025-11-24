@@ -1123,6 +1123,8 @@
 		A76332692EC349840048112E /* DatadogContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A76332662EC349840048112E /* DatadogContextTests.swift */; };
 		A763326C2EC34A000048112E /* DDSharedContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = A763326B2EC34A000048112E /* DDSharedContext.swift */; };
 		A763326D2EC34A000048112E /* DDSharedContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = A763326B2EC34A000048112E /* DDSharedContext.swift */; };
+		A76B1B282ED4A7BC0048E434 /* DDSharedContextPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A76B1B272ED4A7BC0048E434 /* DDSharedContextPublisherTests.swift */; };
+		A76B1B292ED4A7BC0048E434 /* DDSharedContextPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A76B1B272ED4A7BC0048E434 /* DDSharedContextPublisherTests.swift */; };
 		A795069C2B974C8200AC4814 /* SessionReplay+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A795069B2B974C8100AC4814 /* SessionReplay+objc.swift */; };
 		A79B0F64292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F63292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m */; };
 		A79B0F65292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F63292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m */; };
@@ -3287,6 +3289,7 @@
 		A763325F2EC349610048112E /* DDSharedContextPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSharedContextPublisher.swift; sourceTree = "<group>"; };
 		A76332662EC349840048112E /* DatadogContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogContextTests.swift; sourceTree = "<group>"; };
 		A763326B2EC34A000048112E /* DDSharedContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSharedContext.swift; sourceTree = "<group>"; };
+		A76B1B272ED4A7BC0048E434 /* DDSharedContextPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSharedContextPublisherTests.swift; sourceTree = "<group>"; };
 		A795069B2B974C8100AC4814 /* SessionReplay+objc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SessionReplay+objc.swift"; sourceTree = "<group>"; };
 		A795069D2B974CAA00AC4814 /* DDSessionReplay+apiTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DDSessionReplay+apiTests.m"; sourceTree = "<group>"; };
 		A79B0F5A292B7C06008742B3 /* B3HTTPHeadersWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = B3HTTPHeadersWriterTests.swift; sourceTree = "<group>"; };
@@ -7133,6 +7136,7 @@
 		D2DA239C298D58F300C6C7E6 /* Context */ = {
 			isa = PBXGroup;
 			children = (
+				A76B1B272ED4A7BC0048E434 /* DDSharedContextPublisherTests.swift */,
 				A76332662EC349840048112E /* DatadogContextTests.swift */,
 				D2DA239D298D58F300C6C7E6 /* AppStateHistoryTests.swift */,
 				D2DA239E298D58F300C6C7E6 /* DeviceInfoTests.swift */,
@@ -10799,6 +10803,7 @@
 				D2160CDE29C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift in Sources */,
 				960A0D422D6F88DE004BB999 /* ReflectionMirrorTests.swift in Sources */,
 				D270CDE02B46E5A50002EACD /* URLSessionDataDelegateSwizzlerTests.swift in Sources */,
+				A76B1B292ED4A7BC0048E434 /* DDSharedContextPublisherTests.swift in Sources */,
 				D2DA23A1298D58F400C6C7E6 /* ReadWriteLockTests.swift in Sources */,
 				D2160CD829C0DF6700FAA9A5 /* FirstPartyHostsTests.swift in Sources */,
 				D284C7402C2059F3005142CC /* ObjcExceptionTests.swift in Sources */,
@@ -10853,6 +10858,7 @@
 				D2160CD929C0DF6700FAA9A5 /* FirstPartyHostsTests.swift in Sources */,
 				D284C7412C2059F3005142CC /* ObjcExceptionTests.swift in Sources */,
 				D2C5D5292B83FD5400B63F36 /* WebViewMessageTests.swift in Sources */,
+				A76B1B282ED4A7BC0048E434 /* DDSharedContextPublisherTests.swift in Sources */,
 				D20731CE29A52E8700ECBF94 /* SamplerTests.swift in Sources */,
 				D2160CEA29C0E00200FAA9A5 /* MethodSwizzlerTests.swift in Sources */,
 				D2EBEE4229BA163F00B15732 /* W3CHTTPHeadersReaderTests.swift in Sources */,
