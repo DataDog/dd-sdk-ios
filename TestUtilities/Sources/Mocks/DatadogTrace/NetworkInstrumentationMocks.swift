@@ -224,3 +224,13 @@ extension ResourceMetrics: AnyMockable {
         )
     }
 }
+
+extension TrackingMode: AnyMockable, RandomMockable {
+    public static func mockAny() -> DatadogInternal.TrackingMode {
+        return .automatic
+    }
+
+    public static func mockRandom() -> DatadogInternal.TrackingMode {
+        return [.automatic, .metrics].randomElement()!
+    }
+}

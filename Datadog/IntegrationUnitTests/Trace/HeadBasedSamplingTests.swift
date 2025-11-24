@@ -6,6 +6,7 @@
 
 import XCTest
 @testable import DatadogTrace
+@_spi(Internal)
 import DatadogInternal
 import TestUtilities
 
@@ -21,7 +22,7 @@ class HeadBasedSamplingTests: XCTestCase {
         traceConfig = Trace.Configuration()
     }
 
-        override func tearDownWithError() throws {
+    override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
         traceConfig = nil

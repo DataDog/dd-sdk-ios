@@ -16,7 +16,7 @@ internal class URLSessionTaskDelegateSwizzler {
         self.lock = lock
     }
 
-    /// Swizzles  methods:
+    /// Swizzles methods:
     /// - `URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:)`
     /// - `URLSessionTaskDelegate.urlSession(_:task:didCompleteWithError:)`
     func swizzle(
