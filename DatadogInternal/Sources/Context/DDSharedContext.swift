@@ -8,7 +8,7 @@ import Foundation
 
 /// This class exposes a subset of `DatadogContext` properties that can be represented in Objective-C.
 /// This is done mainly to improve capabilities of cross-platform SDKs.
-@_spi(objc)
+@_spi(Internal)
 public final class DDSharedContext: NSObject {
     /// Current user identifier set in the `UserInfo` object.
     public let userId: String?
