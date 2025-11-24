@@ -392,9 +392,11 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let samplingDecision = SamplingDecision.autoKept()
 
         // Given
+        // TODO: RUM-13455 - Trace requires metrics mode for now
         let interception = URLSessionTaskInterception(
             request: .mockAny(),
-            isFirstParty: true
+            isFirstParty: true,
+            trackingMode: .metrics
         )
         interception.register(response: .mockAny(), error: nil)
         interception.register(
@@ -440,7 +442,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         // Given
         let request: ImmutableRequest = .mockWith(httpMethod: "POST")
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
+        // TODO: RUM-13455 - Trace requires metrics mode for now
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .metrics)
         interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
         interception.register(
             metrics: .mockWith(
@@ -476,7 +479,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
-        let incompleteInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true)
+        // TODO: RUM-13455 - Trace requires metrics mode for now
+        let incompleteInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .metrics)
         // `incompleteInterception` has no metrics and no completion
 
         // When
@@ -493,7 +497,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: false)
+        // TODO: RUM-13455 - Trace requires metrics mode for now
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: false, trackingMode: .metrics)
         interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
@@ -521,7 +526,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let request: ImmutableRequest = .mockWith(
             allHTTPHeaderFields: [TracingHTTPHeaders.originField: "rum"]
         )
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: false)
+        // TODO: RUM-13455 - Trace requires metrics mode for now
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: false, trackingMode: .metrics)
         interception.register(response: .mockAny(), error: nil)
 
         // When
@@ -537,7 +543,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true)
+        // TODO: RUM-13455 - Trace requires metrics mode for now
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .metrics)
         interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
@@ -577,7 +584,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         core.context.applicationStateHistory = .mockAppInForeground()
 
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true)
+        // TODO: RUM-13455 - Trace requires metrics mode for now
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .metrics)
         interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(

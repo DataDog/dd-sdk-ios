@@ -57,7 +57,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         // Given
         let request: ImmutableRequest = .mockWith(httpMethod: "POST")
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
+        // TODO: RUM-13455 - Trace requires metrics mode for now
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .metrics)
         interception.register(metrics: .mockAny())
         interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
 
@@ -85,7 +86,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             httpMethod: "GET"
         )
         let error = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
+        // TODO: RUM-13455 - Trace requires metrics mode for now
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .metrics)
         interception.register(response: nil, error: error)
         interception.register(
             metrics: .mockWith(
@@ -154,7 +156,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         // Given
         let request: ImmutableRequest = .mockWith(httpMethod: "GET")
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
+        // TODO: RUM-13455 - Trace requires metrics mode for now
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .metrics)
         interception.register(response: .mockResponseWith(statusCode: 404), error: nil)
         interception.register(
             metrics: .mockWith(

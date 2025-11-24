@@ -129,11 +129,15 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
+        // TODO: RUM-13455 - Add support for automatic mode in tracing
+        // Currently, tracing requires metrics mode because spans need accurate timing (fetch start/end).
+        // Automatic mode doesn't capture timing without URLSessionTaskMetrics.
+        // Investigate if we want to support automatic mode for Tracing.
         guard
             interception.isFirstPartyRequest, // `Span` should be only send for 1st party requests
             interception.origin != "rum", // if that request was tracked as RUM resource, the RUM backend will create the span on our behalf
             let tracer = tracer,
-            let resourceMetrics = interception.metrics,
+            let resourceMetrics = interception.metrics, // Currently requires metrics mode for accurate timing
             let resourceCompletion = interception.completion
         else {
             return
