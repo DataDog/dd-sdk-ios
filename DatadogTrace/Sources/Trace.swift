@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// An entry point to Datadog Trace feature.
@@ -69,6 +70,11 @@ public enum Trace {
             )
 
             try core.register(urlSessionHandler: urlSessionHandler)
+
+            // Enable automatic network tracking as the foundation for metrics mode.
+            // Distributed tracing requires metrics mode (enabled separately via URLSessionInstrumentation.enable)
+            // to capture accurate timing from URLSessionTaskMetrics.
+            try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
         }
     }
 }

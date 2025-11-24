@@ -27,9 +27,8 @@ class URLSessionDataDelegateSwizzlerTests: XCTestCase {
 
         // When
         let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
-        let url = URL(string: "https://www.datadoghq.com/")!
         session
-            .dataTask(with: url)
+            .dataTask(with: URL.mockAny())
             .resume() // intercepted
 
         wait(for: [didReceiveData], timeout: 5)
@@ -52,9 +51,8 @@ class URLSessionDataDelegateSwizzlerTests: XCTestCase {
 
         // When
         let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
-        let url = URL(string: "https://www.datadoghq.com/")!
         session
-            .dataTask(with: url)
+            .dataTask(with: URL.mockAny())
             .resume() // intercepted
 
         wait(for: [didReceiveData], timeout: 5)
@@ -77,9 +75,8 @@ class URLSessionDataDelegateSwizzlerTests: XCTestCase {
 
         // When
         let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
-        let url = URL(string: "https://www.datadoghq.com/")!
         session
-            .dataTask(with: url)
+            .dataTask(with: URL.mockAny())
             .resume() // not intercepted
 
         swizzler.unswizzle()

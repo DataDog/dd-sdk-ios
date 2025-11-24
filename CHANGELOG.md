@@ -3,6 +3,7 @@
 - [FEATURE] Report time to initial display (TTID). See [#2517][] [#2464][] 
 - [FEATURE] Add public API to report time to full display (TTFD). See [#2522][]
 - [IMPROVEMENT] Remove `application_start` action from `ApplicationLaunch`. See [#2533][]
+- [FEATURE] Automatic network instrumentation now tracks `URLSession` requests without requiring delegate registration. See [#2620][]
 - [IMPROVEMENT] Upgrade `DatadogTrace` to OpenTelemetryApi 2.3.0. See [#2614][]
 - [IMPROVEMENT] RUM auto-instrumentation now supports Alerts, Confirmation Dialogs and Action Sheets. See [#2612][] 
 
@@ -1012,6 +1013,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2598]: https://github.com/DataDog/dd-sdk-ios/pull/2598
 [#2599]: https://github.com/DataDog/dd-sdk-ios/pull/2599
 [#2614]: https://github.com/DataDog/dd-sdk-ios/pull/2614
+[#2620]: https://github.com/DataDog/dd-sdk-ios/pull/2620
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
