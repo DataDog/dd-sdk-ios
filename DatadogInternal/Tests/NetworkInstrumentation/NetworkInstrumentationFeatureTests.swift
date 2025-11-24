@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 @testable import DatadogInternal
 
 class NetworkInstrumentationFeatureTests: XCTestCase {
@@ -911,5 +912,197 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     class MockDelegate2: NSObject, URLSessionDataDelegate {
+    }
+
+    // MARK: - Automatic Mode Tests
+
+    func testAutomaticMode_tracksTasksWithoutDelegateRegistration() throws {
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+
+        handler.onInterceptionDidStart = { _ in
+            notifyInterceptionDidStart.fulfill()
+        }
+        handler.onInterceptionDidComplete = { interception in
+            // In automatic mode, we should NOT have metrics
+            XCTAssertNil(interception.metrics, "Automatic mode should not capture URLSessionTaskMetrics")
+            notifyInterceptionDidComplete.fulfill()
+        }
+
+        // Given - Enable automatic mode (no delegate class)
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession(delegate: nil)
+
+        // When
+        let task = session.dataTask(with: URL.mockAny()) { _, _, _ in }
+        task.resume()
+
+        // Then
+        wait(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 15,
+            enforceOrder: true
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    @available(iOS 13.0, *)
+    func testAutomaticMode_tracksAsyncAwaitTasks() async throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
+
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { _ in
+            notifyInterceptionDidStart.fulfill()
+        }
+        handler.onInterceptionDidComplete = { _ in
+            notifyInterceptionDidComplete.fulfill()
+        }
+
+        // Given - Enable automatic mode
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession(delegate: nil)
+
+        // When - Use async/await API
+        let url = URL.mockAny()
+        _ = try? await session.data(from: url)
+
+        // Then
+        await dd_fulfillment(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    func testAutomaticMode_doesNotTrackDatadogIntakeRequests() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+
+        // Set up handler to fail if interception occurs
+        handler.onInterceptionDidStart = { _ in
+            XCTFail("Should not intercept Datadog intake requests")
+        }
+
+        // Given - Enable automatic mode
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession(delegate: nil)
+
+        // When - Make requests to Datadog intake domains
+        let datadogURLs = [
+            URL(string: "https://intake.datadoghq.com/api/v2/logs")!,
+            URL(string: "https://session-replay.datadoghq.com/api/v2/replay")!,
+            URL(string: "https://browser-intake-datadoghq.com/api/v2/rum")!,
+            URL(string: "https://intake.datad0g.com/api/v2/logs")!
+        ]
+
+        for url in datadogURLs {
+            let task = session.dataTask(with: url) { _, _, _ in }
+            task.resume()
+        }
+
+        // Then - Wait a bit to ensure no interceptions occur
+        Thread.sleep(forTimeInterval: 1.0)
+        // If handler.onInterceptionDidStart was called, XCTFail would have triggered
+    }
+
+    func testDualMode_automaticAndManualModesCanCoexist() throws {
+        let automaticInterception = expectation(description: "Automatic mode interception")
+        let trackMetricsInterception = expectation(description: "Track metrics mode interception")
+        let automaticServer = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let trackMetricsServer = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+
+        var interceptionsReceived = 0
+        handler.onInterceptionDidComplete = { interception in
+            interceptionsReceived += 1
+
+            if interception.metrics != nil {
+                // This is from track metrics mode (has metrics)
+                trackMetricsInterception.fulfill()
+            } else {
+                // This is from automatic mode (no metrics)
+                automaticInterception.fulfill()
+            }
+        }
+
+        // Given - Enable both automatic and track metrics modes
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core) // Automatic
+        let manualDelegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core) // Track metrics
+
+        // When - Create tasks with and without delegates
+        let automaticSession = automaticServer.getInterceptedURLSession(delegate: nil)
+        let trackMetricsSession = trackMetricsServer.getInterceptedURLSession(delegate: manualDelegate)
+
+        let automaticTask = automaticSession.dataTask(with: URL.mockAny()) { _, _, _ in }
+        automaticTask.resume()
+
+        let trackMetricsTask = trackMetricsSession.dataTask(with: URL.mockAny())
+        trackMetricsTask.resume()
+
+        // Then
+        wait(
+            for: [
+                automaticInterception,
+                trackMetricsInterception
+            ],
+            timeout: 5
+        )
+        XCTAssertEqual(interceptionsReceived, 2, "Should receive both interceptions")
+        _ = automaticServer.waitAndReturnRequests(count: 2)
+        _ = trackMetricsServer.waitAndReturnRequests(count: 2)
+    }
+
+    func testAutomaticMode_enabledOnlyOnce() throws {
+        // Given - Enable automatic mode
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        // When - Try to enable again
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        // Then - Should not crash or cause issues (idempotent)
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        XCTAssertNotNil(feature)
+    }
+
+    func testManualMode_backwardCompatibility() throws {
+        let notifyInterceptionWithMetrics = expectation(description: "Manual mode with metrics")
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+
+        handler.onInterceptionDidComplete = { interception in
+            // Manual mode should capture metrics
+            XCTAssertNotNil(interception.metrics, "Manual mode should capture URLSessionTaskMetrics")
+            notifyInterceptionWithMetrics.fulfill()
+        }
+
+        // Given - Enable manual mode (existing API)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        // When
+        let task = session.dataTask(with: URL.mockAny())
+        task.resume()
+
+        // Then
+        wait(for: [notifyInterceptionWithMetrics], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 1)
     }
 }

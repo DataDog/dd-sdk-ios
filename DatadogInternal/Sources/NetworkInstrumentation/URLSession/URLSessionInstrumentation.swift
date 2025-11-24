@@ -25,7 +25,8 @@ public enum URLSessionInstrumentation {
         }
     }
 
-    internal static func enableOrThrow(with configuration: URLSessionInstrumentation.Configuration, in core: DatadogCoreProtocol) throws {
+    @_spi(Internal)
+    public static func enableOrThrow(with configuration: URLSessionInstrumentation.Configuration?, in core: DatadogCoreProtocol) throws {
         guard let feature = core.get(feature: NetworkInstrumentationFeature.self) else {
             throw ProgrammerError(description: "URLSession tracking must be enabled before enabling URLSessionInstrumentation using either RUM or Trace feature.")
         }

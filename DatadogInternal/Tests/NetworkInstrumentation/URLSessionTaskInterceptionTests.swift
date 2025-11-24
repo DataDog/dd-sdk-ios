@@ -42,15 +42,44 @@ class URLSessionTaskInterceptionTests: XCTestCase {
         XCTAssertEqual(data3, chunk1 + chunk2 + chunk3)
     }
 
-    func testWhenInterceptionReceivesBothMetricsAndCompletion_itIsConsideredDone() {
+    func testWhenInterceptionReceivesCompletion_itIsConsideredDone() {
         let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny())
 
         // When
         interception.register(response: .mockAny(), error: nil)
+
+        // Then - In automatic mode, completion alone is sufficient
+        XCTAssertTrue(interception.isDone)
+    }
+
+    func testWhenInterceptionReceivesCompletionState_itIsConsideredDone() {
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny())
+
+        // When - Register state >= 2 (Canceling or Completed)
+        interception.register(state: 3) // Completed
+
+        // Then - State-based completion is sufficient
+        XCTAssertTrue(interception.isDone)
+    }
+
+    func testWhenInterceptionReceivesOnlyRunningState_itIsNotDone() {
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny())
+
+        // When - Register state = 1 (Running)
+        interception.register(state: 1)
+
+        // Then - Running state is not sufficient for completion
         XCTAssertFalse(interception.isDone)
+    }
+
+    func testWhenInterceptionReceivesMetricsAndCompletion_itIsConsideredDone() {
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny())
+
+        // When
+        interception.register(response: .mockAny(), error: nil)
         interception.register(metrics: .mockAny())
 
-        // Then
+        // Then - Manual mode: both metrics and completion
         XCTAssertTrue(interception.isDone)
     }
 }

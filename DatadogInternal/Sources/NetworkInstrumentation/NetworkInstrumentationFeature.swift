@@ -59,23 +59,37 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// Swizzles `URLSessionTaskDelegate`, `URLSessionDataDelegate`, and `URLSessionTask` methods
     /// to intercept `URLSessionTask` lifecycles.
     ///
-    /// - Parameter configuration: The configuration to use for swizzling.
-    /// Note: We are only concerned with type of the delegate here but to provide compile time safety, we
-    ///      use the instance of the delegate to get the type.
-    internal func bind(configuration: URLSessionInstrumentation.Configuration) throws {
-        let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration.firstPartyHostsTracing) ?? .init()
-
-        let identifier = ObjectIdentifier(configuration.delegateClass)
-
-        if let swizzler = swizzlers[identifier] {
-            DD.logger.warn(
-                """
-                The delegate class \(configuration.delegateClass) is already instrumented.
-                The previous instrumentation will be disabled in favor of the new one.
-                """
-            )
-
-            swizzler.unswizzle()
+    /// This method supports two modes:
+    /// - Automatic Mode (`configuration == nil`): Tracks all tasks without requiring delegate registration.
+    ///   Does not capture `URLSessionTaskMetrics` (DNS, SSL, connect timing).
+    /// - Track Metrics Mode (`configuration != nil`): Tracks tasks with registered delegate class.
+    ///   Captures `URLSessionTaskMetrics` for detailed timing breakdown.
+    ///
+    /// - Parameter configuration: The configuration to use for delegate swizzling. If `nil`, enables Automatic Mode
+    ///   without delegate method swizzling. If provided, enables Track Metrics Mode with delegate method swizzling
+    ///   for the specified delegate class.
+    internal func bind(configuration: URLSessionInstrumentation.Configuration?) throws {
+        // Determine identifier for this swizzler instance
+        let identifier: ObjectIdentifier
+        if let delegateClass = configuration?.delegateClass {
+            // Track Metrics Mode: use delegate class as identifier
+            identifier = ObjectIdentifier(delegateClass)
+            if let existingSwizzler = swizzlers[identifier] {
+                DD.logger.warn(
+                    """
+                    The delegate class \(delegateClass) is already instrumented.
+                    The previous instrumentation will be disabled in favor of the new one.
+                    """
+                )
+                existingSwizzler.unswizzle()
+            }
+        } else {
+            // Automatic Mode: use sentinel identifier
+            identifier = ObjectIdentifier(NetworkInstrumentationFeature.self)
+            if swizzlers[identifier] != nil {
+                DD.logger.debug("Automatic network instrumentation is already enabled.")
+                return
+            }
         }
 
         let swizzler = NetworkInstrumentationSwizzler()
@@ -83,13 +97,18 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
         try swizzler.swizzle(
             interceptResume: { [weak self] task in
-                // intercept task if delegate match
-                guard let self = self, task.dd.delegate?.isKind(of: configuration.delegateClass) == true else {
+                guard let self = self else {
+                    return
+                }
+
+                // Skip Datadog's own intake requests to prevent infinite recursion
+                if self.isDatadogIntakeRequest(task.currentRequest?.url) {
                     return
                 }
 
                 var injectedTraceContexts: [TraceContext]?
 
+                let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration?.firstPartyHostsTracing) ?? .init()
                 if let currentRequest = task.currentRequest {
                     let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
                     task.dd.override(currentRequest: request)
@@ -100,34 +119,48 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             }
         )
 
-        try swizzler.swizzle(
-            delegateClass: configuration.delegateClass,
-            interceptDidFinishCollecting: { [weak self] session, task, metrics in
-                self?.task(task, didFinishCollecting: metrics)
+        // In Track Metrics Mode (delegate class provided), swizzle delegate methods to capture `URLSessionTaskMetrics`
+        if let delegateClass = configuration?.delegateClass {
+            try swizzler.swizzle(
+                delegateClass: delegateClass,
+                interceptDidFinishCollecting: { [weak self] session, task, metrics in
+                    self?.task(task, didFinishCollecting: metrics)
 
-                if #available(iOS 15, tvOS 15, *), !task.dd.hasCompletion {
-                    // iOS 15 and above, didCompleteWithError is not called hence we use task state to detect task completion
-                    // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
-                    self?.task(task, didCompleteWithError: task.error)
+                    if #available(iOS 15, tvOS 15, *), !task.dd.hasCompletion {
+                        // iOS 15 and above, didCompleteWithError is not called hence we use task state to detect task completion
+                        // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
+                        self?.task(task, didCompleteWithError: task.error)
+                    }
+                },
+                interceptDidCompleteWithError: { [weak self] session, task, error in
+                    self?.task(task, didCompleteWithError: error)
                 }
-            },
-            interceptDidCompleteWithError: { [weak self] session, task, error in
-                self?.task(task, didCompleteWithError: error)
-            }
-        )
+            )
 
-        try swizzler.swizzle(
-            delegateClass: configuration.delegateClass,
-            interceptDidReceive: { [weak self] session, task, data in
-                self?.task(task, didReceive: data)
-            }
-        )
+            try swizzler.swizzle(
+                delegateClass: delegateClass,
+                interceptDidReceive: { [weak self] session, task, data in
+                    self?.task(task, didReceive: data)
+                }
+            )
+        }
 
+        // Swizzle completion handlers for URLSession.dataTask(with:completionHandler:) methods
         try swizzler.swizzle(
             interceptCompletionHandler: { [weak self] task, _, error in
                 self?.task(task, didCompleteWithError: error)
             }, didReceive: { [weak self] task, data in
                 self?.task(task, didReceive: data)
+            }
+        )
+
+        // Swizzle `setState:` to detect completion for async/await and delegate-less tasks without completion handlers
+        // This is necessary because:
+        // - Async/await APIs use internal delegates that cannot be swizzled
+        // - Tasks without completion handlers and without delegates won't trigger any other callback
+        try swizzler.swizzle(
+            interceptSetState: { [weak self] task, state in
+                self?.task(task, didChangeToState: state)
             }
         )
     }
@@ -153,6 +186,19 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 }
 
 extension NetworkInstrumentationFeature {
+    /// Checks if the given URL is a Datadog intake request to prevent infinite recursion.
+    ///
+    /// - Parameter url: The URL to check.
+    /// - Returns: `true` if the URL is a Datadog intake request, `false` otherwise.
+    private func isDatadogIntakeRequest(_ url: URL?) -> Bool {
+        guard let host = url?.host else {
+            return false
+        }
+
+        // Filter Datadog intake domains (both production and staging)
+        return host.hasSuffix("datadoghq.com") || host.hasSuffix("datad0g.com")
+    }
+
     /// Intercepts the provided request by injecting trace headers based on first-party hosts configuration.
     ///
     /// Only requests with URLs that match the list of first-party hosts have tracing headers injected.
@@ -293,6 +339,36 @@ extension NetworkInstrumentationFeature {
     private func finish(task: URLSessionTask, interception: URLSessionTaskInterception) {
         handlers.forEach { $0.interceptionDidComplete(interception: interception) }
         interceptions[task] = nil
+    }
+
+    /// Tells the interceptors that the task's state has changed.
+    ///
+    /// - Parameters:
+    ///   - task: The task whose state has changed.
+    ///   - state: The new state of the task (0=Suspended, 1=Running, 2=Canceling, 3=Completed).
+    func task(_ task: URLSessionTask, didChangeToState state: Int) {
+        queue.async { [weak self] in
+            guard let self = self, let interception = self.interceptions[task] else {
+                return
+            }
+
+            // Register the state change
+            interception.register(state: state)
+
+            // When task completes (state >= 2), also register the response/error if not already done
+            // This ensures completion is recorded even for async/await or delegate-less tasks without completion handlers
+            if state >= 2 && interception.completion == nil {
+                interception.register(
+                    response: task.response,
+                    error: task.error
+                )
+            }
+
+            // Check if the interception is now complete and finish if needed
+            if interception.isDone {
+                self.finish(task: task, interception: interception)
+            }
+        }
     }
 }
 

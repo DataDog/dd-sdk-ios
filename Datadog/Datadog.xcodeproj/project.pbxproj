@@ -1084,6 +1084,8 @@
 		969994052E54A26800C3E989 /* RUMFeatureOperationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969994032E54A26800C3E989 /* RUMFeatureOperationManager.swift */; };
 		969B3B212C33F80500D62400 /* UIActivityIndicatorRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */; };
 		969B3B232C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969B3B222C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift */; };
+		96CD20642ED4808900B4686E /* URLSessionTaskStateSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96CD20632ED4808900B4686E /* URLSessionTaskStateSwizzler.swift */; };
+		96CD20652ED4808900B4686E /* URLSessionTaskStateSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96CD20632ED4808900B4686E /* URLSessionTaskStateSwizzler.swift */; };
 		96D331ED2CFF740700649EE8 /* GraphicImagePrivacyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96D331EC2CFF740700649EE8 /* GraphicImagePrivacyTests.swift */; };
 		96E414142C2AF56F005A6119 /* UIProgressViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E414132C2AF56F005A6119 /* UIProgressViewRecorder.swift */; };
 		96E414162C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E414152C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift */; };
@@ -3238,6 +3240,7 @@
 		969994032E54A26800C3E989 /* RUMFeatureOperationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeatureOperationManager.swift; sourceTree = "<group>"; };
 		969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIActivityIndicatorRecorder.swift; sourceTree = "<group>"; };
 		969B3B222C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIActivityIndicatorRecorderTests.swift; sourceTree = "<group>"; };
+		96CD20632ED4808900B4686E /* URLSessionTaskStateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskStateSwizzler.swift; sourceTree = "<group>"; };
 		96D331EC2CFF740700649EE8 /* GraphicImagePrivacyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphicImagePrivacyTests.swift; sourceTree = "<group>"; };
 		96E414132C2AF56F005A6119 /* UIProgressViewRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIProgressViewRecorder.swift; sourceTree = "<group>"; };
 		96E414152C2AF5C1005A6119 /* UIProgressViewRecorderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIProgressViewRecorderTests.swift; sourceTree = "<group>"; };
@@ -6501,6 +6504,7 @@
 		D2160CC029C0DED100FAA9A5 /* URLSession */ = {
 			isa = PBXGroup;
 			children = (
+				96CD20632ED4808900B4686E /* URLSessionTaskStateSwizzler.swift */,
 				614A708D2BF754D700D9AF42 /* ImmutableRequest.swift */,
 				D2181A8A2B0500BB00A518C0 /* NetworkInstrumentationSwizzler.swift */,
 				D270CDDC2B46E3DB0002EACD /* URLSessionDataDelegateSwizzler.swift */,
@@ -9506,6 +9510,7 @@
 				11B5439F2DE9C40B006F6C0A /* OperatingSystem+Utils.swift in Sources */,
 				D2EBEE2929BA160F00B15732 /* HTTPHeadersWriter.swift in Sources */,
 				D2432CF929EDB22C00D93657 /* Flushable.swift in Sources */,
+				96CD20652ED4808900B4686E /* URLSessionTaskStateSwizzler.swift in Sources */,
 				D23039F7298D5236001A1FA3 /* AttributesSanitizer.swift in Sources */,
 				D23039EB298D5236001A1FA3 /* DatadogFeature.swift in Sources */,
 				D2BEEDBA2B33638F0065F3AC /* NetworkInstrumentationSwizzler.swift in Sources */,
@@ -10628,6 +10633,7 @@
 				D2DA2358298D57AA00C6C7E6 /* CoreLogger.swift in Sources */,
 				D2160CA329C0DE5700FAA9A5 /* NetworkInstrumentationFeature.swift in Sources */,
 				D2EBEE2D29BA161100B15732 /* HTTPHeadersReader.swift in Sources */,
+				96CD20642ED4808900B4686E /* URLSessionTaskStateSwizzler.swift in Sources */,
 				D24EC3DA2DD1F117007A7E8F /* SessionReplayCoreContext.swift in Sources */,
 				E2AA55E82C32C6D9002FEF28 /* ApplicationNotifications.swift in Sources */,
 				D22789362D64A0D7007E9DB0 /* UploadQualityMetric.swift in Sources */,
