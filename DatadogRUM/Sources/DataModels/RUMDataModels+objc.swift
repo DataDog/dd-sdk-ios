@@ -887,8 +887,8 @@ public class objc_RUMActionEventDevice: NSObject {
         root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
-    public var isLowRamDevice: NSNumber? {
-        root.swiftModel.device!.isLowRamDevice as NSNumber?
+    public var isLowRam: NSNumber? {
+        root.swiftModel.device!.isLowRam as NSNumber?
     }
 
     public var locale: String? {
@@ -897,6 +897,10 @@ public class objc_RUMActionEventDevice: NSObject {
 
     public var locales: [String]? {
         root.swiftModel.device!.locales
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.device!.logicalCpuCount as NSNumber?
     }
 
     public var model: String? {
@@ -909,10 +913,6 @@ public class objc_RUMActionEventDevice: NSObject {
 
     public var powerSavingMode: NSNumber? {
         root.swiftModel.device!.powerSavingMode as NSNumber?
-    }
-
-    public var processorCount: NSNumber? {
-        root.swiftModel.device!.processorCount as NSNumber?
     }
 
     public var timeZone: String? {
@@ -1839,8 +1839,8 @@ public class objc_RUMErrorEventDevice: NSObject {
         root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
-    public var isLowRamDevice: NSNumber? {
-        root.swiftModel.device!.isLowRamDevice as NSNumber?
+    public var isLowRam: NSNumber? {
+        root.swiftModel.device!.isLowRam as NSNumber?
     }
 
     public var locale: String? {
@@ -1849,6 +1849,10 @@ public class objc_RUMErrorEventDevice: NSObject {
 
     public var locales: [String]? {
         root.swiftModel.device!.locales
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.device!.logicalCpuCount as NSNumber?
     }
 
     public var model: String? {
@@ -1861,10 +1865,6 @@ public class objc_RUMErrorEventDevice: NSObject {
 
     public var powerSavingMode: NSNumber? {
         root.swiftModel.device!.powerSavingMode as NSNumber?
-    }
-
-    public var processorCount: NSNumber? {
-        root.swiftModel.device!.processorCount as NSNumber?
     }
 
     public var timeZone: String? {
@@ -3500,8 +3500,8 @@ public class objc_RUMLongTaskEventDevice: NSObject {
         root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
-    public var isLowRamDevice: NSNumber? {
-        root.swiftModel.device!.isLowRamDevice as NSNumber?
+    public var isLowRam: NSNumber? {
+        root.swiftModel.device!.isLowRam as NSNumber?
     }
 
     public var locale: String? {
@@ -3510,6 +3510,10 @@ public class objc_RUMLongTaskEventDevice: NSObject {
 
     public var locales: [String]? {
         root.swiftModel.device!.locales
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.device!.logicalCpuCount as NSNumber?
     }
 
     public var model: String? {
@@ -3522,10 +3526,6 @@ public class objc_RUMLongTaskEventDevice: NSObject {
 
     public var powerSavingMode: NSNumber? {
         root.swiftModel.device!.powerSavingMode as NSNumber?
-    }
-
-    public var processorCount: NSNumber? {
-        root.swiftModel.device!.processorCount as NSNumber?
     }
 
     public var timeZone: String? {
@@ -4627,8 +4627,8 @@ public class objc_RUMResourceEventDevice: NSObject {
         root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
-    public var isLowRamDevice: NSNumber? {
-        root.swiftModel.device!.isLowRamDevice as NSNumber?
+    public var isLowRam: NSNumber? {
+        root.swiftModel.device!.isLowRam as NSNumber?
     }
 
     public var locale: String? {
@@ -4637,6 +4637,10 @@ public class objc_RUMResourceEventDevice: NSObject {
 
     public var locales: [String]? {
         root.swiftModel.device!.locales
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.device!.logicalCpuCount as NSNumber?
     }
 
     public var model: String? {
@@ -4649,10 +4653,6 @@ public class objc_RUMResourceEventDevice: NSObject {
 
     public var powerSavingMode: NSNumber? {
         root.swiftModel.device!.powerSavingMode as NSNumber?
-    }
-
-    public var processorCount: NSNumber? {
-        root.swiftModel.device!.processorCount as NSNumber?
     }
 
     public var timeZone: String? {
@@ -6316,8 +6316,8 @@ public class objc_RUMViewEventDevice: NSObject {
         root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
-    public var isLowRamDevice: NSNumber? {
-        root.swiftModel.device!.isLowRamDevice as NSNumber?
+    public var isLowRam: NSNumber? {
+        root.swiftModel.device!.isLowRam as NSNumber?
     }
 
     public var locale: String? {
@@ -6326,6 +6326,10 @@ public class objc_RUMViewEventDevice: NSObject {
 
     public var locales: [String]? {
         root.swiftModel.device!.locales
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.device!.logicalCpuCount as NSNumber?
     }
 
     public var model: String? {
@@ -6338,10 +6342,6 @@ public class objc_RUMViewEventDevice: NSObject {
 
     public var powerSavingMode: NSNumber? {
         root.swiftModel.device!.powerSavingMode as NSNumber?
-    }
-
-    public var processorCount: NSNumber? {
-        root.swiftModel.device!.processorCount as NSNumber?
     }
 
     public var timeZone: String? {
@@ -8212,8 +8212,8 @@ public class objc_RUMVitalAppLaunchEventDevice: NSObject {
         root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
-    public var isLowRamDevice: NSNumber? {
-        root.swiftModel.device!.isLowRamDevice as NSNumber?
+    public var isLowRam: NSNumber? {
+        root.swiftModel.device!.isLowRam as NSNumber?
     }
 
     public var locale: String? {
@@ -8222,6 +8222,10 @@ public class objc_RUMVitalAppLaunchEventDevice: NSObject {
 
     public var locales: [String]? {
         root.swiftModel.device!.locales
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.device!.logicalCpuCount as NSNumber?
     }
 
     public var model: String? {
@@ -8234,10 +8238,6 @@ public class objc_RUMVitalAppLaunchEventDevice: NSObject {
 
     public var powerSavingMode: NSNumber? {
         root.swiftModel.device!.powerSavingMode as NSNumber?
-    }
-
-    public var processorCount: NSNumber? {
-        root.swiftModel.device!.processorCount as NSNumber?
     }
 
     public var timeZone: String? {
@@ -9200,8 +9200,8 @@ public class objc_RUMVitalDurationEventDevice: NSObject {
         root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
-    public var isLowRamDevice: NSNumber? {
-        root.swiftModel.device!.isLowRamDevice as NSNumber?
+    public var isLowRam: NSNumber? {
+        root.swiftModel.device!.isLowRam as NSNumber?
     }
 
     public var locale: String? {
@@ -9210,6 +9210,10 @@ public class objc_RUMVitalDurationEventDevice: NSObject {
 
     public var locales: [String]? {
         root.swiftModel.device!.locales
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.device!.logicalCpuCount as NSNumber?
     }
 
     public var model: String? {
@@ -9222,10 +9226,6 @@ public class objc_RUMVitalDurationEventDevice: NSObject {
 
     public var powerSavingMode: NSNumber? {
         root.swiftModel.device!.powerSavingMode as NSNumber?
-    }
-
-    public var processorCount: NSNumber? {
-        root.swiftModel.device!.processorCount as NSNumber?
     }
 
     public var timeZone: String? {
@@ -10127,8 +10127,8 @@ public class objc_RUMVitalOperationStepEventDevice: NSObject {
         root.swiftModel.device!.brightnessLevel as NSNumber?
     }
 
-    public var isLowRamDevice: NSNumber? {
-        root.swiftModel.device!.isLowRamDevice as NSNumber?
+    public var isLowRam: NSNumber? {
+        root.swiftModel.device!.isLowRam as NSNumber?
     }
 
     public var locale: String? {
@@ -10137,6 +10137,10 @@ public class objc_RUMVitalOperationStepEventDevice: NSObject {
 
     public var locales: [String]? {
         root.swiftModel.device!.locales
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.device!.logicalCpuCount as NSNumber?
     }
 
     public var model: String? {
@@ -10149,10 +10153,6 @@ public class objc_RUMVitalOperationStepEventDevice: NSObject {
 
     public var powerSavingMode: NSNumber? {
         root.swiftModel.device!.powerSavingMode as NSNumber?
-    }
-
-    public var processorCount: NSNumber? {
-        root.swiftModel.device!.processorCount as NSNumber?
     }
 
     public var timeZone: String? {
@@ -11433,16 +11433,16 @@ public class objc_TelemetryConfigurationEventTelemetryRUMTelemetryDevice: NSObje
         root.swiftModel.telemetry.device!.brand
     }
 
-    public var isLowRamDevice: NSNumber? {
-        root.swiftModel.telemetry.device!.isLowRamDevice as NSNumber?
+    public var isLowRam: NSNumber? {
+        root.swiftModel.telemetry.device!.isLowRam as NSNumber?
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.telemetry.device!.logicalCpuCount as NSNumber?
     }
 
     public var model: String? {
         root.swiftModel.telemetry.device!.model
-    }
-
-    public var processorCount: NSNumber? {
-        root.swiftModel.telemetry.device!.processorCount as NSNumber?
     }
 
     public var totalRam: NSNumber? {
@@ -11702,16 +11702,16 @@ public class objc_TelemetryDebugEventTelemetryRUMTelemetryDevice: NSObject {
         root.swiftModel.telemetry.device!.brand
     }
 
-    public var isLowRamDevice: NSNumber? {
-        root.swiftModel.telemetry.device!.isLowRamDevice as NSNumber?
+    public var isLowRam: NSNumber? {
+        root.swiftModel.telemetry.device!.isLowRam as NSNumber?
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.telemetry.device!.logicalCpuCount as NSNumber?
     }
 
     public var model: String? {
         root.swiftModel.telemetry.device!.model
-    }
-
-    public var processorCount: NSNumber? {
-        root.swiftModel.telemetry.device!.processorCount as NSNumber?
     }
 
     public var totalRam: NSNumber? {
@@ -11975,16 +11975,16 @@ public class objc_TelemetryErrorEventTelemetryRUMTelemetryDevice: NSObject {
         root.swiftModel.telemetry.device!.brand
     }
 
-    public var isLowRamDevice: NSNumber? {
-        root.swiftModel.telemetry.device!.isLowRamDevice as NSNumber?
+    public var isLowRam: NSNumber? {
+        root.swiftModel.telemetry.device!.isLowRam as NSNumber?
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.telemetry.device!.logicalCpuCount as NSNumber?
     }
 
     public var model: String? {
         root.swiftModel.telemetry.device!.model
-    }
-
-    public var processorCount: NSNumber? {
-        root.swiftModel.telemetry.device!.processorCount as NSNumber?
     }
 
     public var totalRam: NSNumber? {
@@ -12051,4 +12051,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/9095192ef42663e455f26376202b447649e0acd6
+// Generated from https://github.com/DataDog/rum-events-format/tree/32918d999701fb7bfd876369e27ced77d6de1809
