@@ -118,6 +118,8 @@ extension Device: AnyMockable, RandomMockable {
         model: String = "iPhone10,1",
         name: String = "iPhone",
         powerSavingMode: Bool = false,
+        processorCount: Double = 6,
+        totalRam: Double = 2_048,
         type: DeviceType = .mobile
     ) -> Device {
         .init(
@@ -129,6 +131,8 @@ extension Device: AnyMockable, RandomMockable {
             model: model,
             name: name,
             powerSavingMode: powerSavingMode,
+            processorCount: processorCount,
+            totalRam: totalRam,
             type: type
         )
     }
