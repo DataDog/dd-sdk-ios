@@ -550,7 +550,7 @@ public struct RUMActionEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
-            /// The percentage of sessions profiled
+            /// The percentage of views profiled
             public let profilingSampleRate: Double?
 
             /// The percentage of sessions with RUM & Session Replay pricing tracked
@@ -559,33 +559,26 @@ public struct RUMActionEvent: RUMDataModel {
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
 
-            /// The percentage of sessions with traced resources
-            public let traceSampleRate: Double?
-
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
-                case traceSampleRate = "trace_sample_rate"
             }
 
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
-            ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
-            ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
-                sessionSampleRate: Double,
-                traceSampleRate: Double? = nil
+                sessionSampleRate: Double
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
-                self.traceSampleRate = traceSampleRate
             }
         }
 
@@ -1487,7 +1480,7 @@ public struct RUMErrorEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
-            /// The percentage of sessions profiled
+            /// The percentage of views profiled
             public let profilingSampleRate: Double?
 
             /// The percentage of sessions with RUM & Session Replay pricing tracked
@@ -1496,33 +1489,26 @@ public struct RUMErrorEvent: RUMDataModel {
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
 
-            /// The percentage of sessions with traced resources
-            public let traceSampleRate: Double?
-
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
-                case traceSampleRate = "trace_sample_rate"
             }
 
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
-            ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
-            ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
-                sessionSampleRate: Double,
-                traceSampleRate: Double? = nil
+                sessionSampleRate: Double
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
-                self.traceSampleRate = traceSampleRate
             }
         }
 
@@ -2679,7 +2665,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
-            /// The percentage of sessions profiled
+            /// The percentage of views profiled
             public let profilingSampleRate: Double?
 
             /// The percentage of sessions with RUM & Session Replay pricing tracked
@@ -2688,33 +2674,26 @@ public struct RUMLongTaskEvent: RUMDataModel {
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
 
-            /// The percentage of sessions with traced resources
-            public let traceSampleRate: Double?
-
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
-                case traceSampleRate = "trace_sample_rate"
             }
 
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
-            ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
-            ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
-                sessionSampleRate: Double,
-                traceSampleRate: Double? = nil
+                sessionSampleRate: Double
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
-                self.traceSampleRate = traceSampleRate
             }
         }
 
@@ -3560,7 +3539,7 @@ public struct RUMResourceEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
-            /// The percentage of sessions profiled
+            /// The percentage of views profiled
             public let profilingSampleRate: Double?
 
             /// The percentage of sessions with RUM & Session Replay pricing tracked
@@ -3569,33 +3548,26 @@ public struct RUMResourceEvent: RUMDataModel {
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
 
-            /// The percentage of sessions with traced resources
-            public let traceSampleRate: Double?
-
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
-                case traceSampleRate = "trace_sample_rate"
             }
 
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
-            ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
-            ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
-                sessionSampleRate: Double,
-                traceSampleRate: Double? = nil
+                sessionSampleRate: Double
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
-                self.traceSampleRate = traceSampleRate
             }
         }
 
@@ -4987,7 +4959,7 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
-            /// The percentage of sessions profiled
+            /// The percentage of views profiled
             public let profilingSampleRate: Double?
 
             /// The percentage of sessions with RUM & Session Replay pricing tracked
@@ -4999,37 +4971,30 @@ public struct RUMViewEvent: RUMDataModel {
             /// Whether session replay recording configured to start manually
             public let startSessionReplayRecordingManually: Bool?
 
-            /// The percentage of sessions with traced resources
-            public let traceSampleRate: Double?
-
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
-                case traceSampleRate = "trace_sample_rate"
             }
 
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
-            ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
-            ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
-                startSessionReplayRecordingManually: Bool? = nil,
-                traceSampleRate: Double? = nil
+                startSessionReplayRecordingManually: Bool? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
-                self.traceSampleRate = traceSampleRate
             }
         }
 
@@ -7057,7 +7022,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
-            /// The percentage of sessions profiled
+            /// The percentage of views profiled
             public let profilingSampleRate: Double?
 
             /// The percentage of sessions with RUM & Session Replay pricing tracked
@@ -7066,33 +7031,26 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
 
-            /// The percentage of sessions with traced resources
-            public let traceSampleRate: Double?
-
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
-                case traceSampleRate = "trace_sample_rate"
             }
 
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
-            ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
-            ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
-                sessionSampleRate: Double,
-                traceSampleRate: Double? = nil
+                sessionSampleRate: Double
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
-                self.traceSampleRate = traceSampleRate
             }
         }
 
@@ -7761,7 +7719,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
-            /// The percentage of sessions profiled
+            /// The percentage of views profiled
             public let profilingSampleRate: Double?
 
             /// The percentage of sessions with RUM & Session Replay pricing tracked
@@ -7770,33 +7728,26 @@ public struct RUMVitalDurationEvent: RUMDataModel {
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
 
-            /// The percentage of sessions with traced resources
-            public let traceSampleRate: Double?
-
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
-                case traceSampleRate = "trace_sample_rate"
             }
 
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
-            ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
-            ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
-                sessionSampleRate: Double,
-                traceSampleRate: Double? = nil
+                sessionSampleRate: Double
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
-                self.traceSampleRate = traceSampleRate
             }
         }
 
@@ -8343,7 +8294,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
 
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
-            /// The percentage of sessions profiled
+            /// The percentage of views profiled
             public let profilingSampleRate: Double?
 
             /// The percentage of sessions with RUM & Session Replay pricing tracked
@@ -8352,33 +8303,26 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
 
-            /// The percentage of sessions with traced resources
-            public let traceSampleRate: Double?
-
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
-                case traceSampleRate = "trace_sample_rate"
             }
 
             /// Subset of the SDK configuration options in use during its execution
             ///
             /// - Parameters:
-            ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - profilingSampleRate: The percentage of views profiled
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
-            ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
                 sessionReplaySampleRate: Double? = nil,
-                sessionSampleRate: Double,
-                traceSampleRate: Double? = nil
+                sessionSampleRate: Double
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
-                self.traceSampleRate = traceSampleRate
             }
         }
 
@@ -8983,9 +8927,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The upload frequency of batches (in milliseconds)
             public let batchUploadFrequency: Int64?
 
-            /// Whether the beta encode cookie options is enabled
-            public var betaEncodeCookieOptions: Bool?
-
             /// Whether intake requests are compressed
             public let compressIntakeRequests: Bool?
 
@@ -9250,7 +9191,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case batchProcessingLevel = "batch_processing_level"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
-                case betaEncodeCookieOptions = "beta_encode_cookie_options"
                 case compressIntakeRequests = "compress_intake_requests"
                 case dartVersion = "dart_version"
                 case defaultPrivacyLevel = "default_privacy_level"
@@ -9349,7 +9289,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - batchProcessingLevel: Maximum number of batches processed sequentially without a delay
             ///   - batchSize: The window duration for batches sent by the SDK (in milliseconds)
             ///   - batchUploadFrequency: The upload frequency of batches (in milliseconds)
-            ///   - betaEncodeCookieOptions: Whether the beta encode cookie options is enabled
             ///   - compressIntakeRequests: Whether intake requests are compressed
             ///   - dartVersion: The version of Dart used in a Flutter application
             ///   - defaultPrivacyLevel: Session replay default privacy level
@@ -9444,7 +9383,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 batchProcessingLevel: Int64? = nil,
                 batchSize: Int64? = nil,
                 batchUploadFrequency: Int64? = nil,
-                betaEncodeCookieOptions: Bool? = nil,
                 compressIntakeRequests: Bool? = nil,
                 dartVersion: String? = nil,
                 defaultPrivacyLevel: String? = nil,
@@ -9539,7 +9477,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.batchProcessingLevel = batchProcessingLevel
                 self.batchSize = batchSize
                 self.batchUploadFrequency = batchUploadFrequency
-                self.betaEncodeCookieOptions = betaEncodeCookieOptions
                 self.compressIntakeRequests = compressIntakeRequests
                 self.dartVersion = dartVersion
                 self.defaultPrivacyLevel = defaultPrivacyLevel
@@ -11396,4 +11333,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/834392ddf77531ed3f383e0808192879490c221d
+// Generated from https://github.com/DataDog/rum-events-format/tree/72236fa673663c8cfed3ccb27d9f6f8e41f7c05f
