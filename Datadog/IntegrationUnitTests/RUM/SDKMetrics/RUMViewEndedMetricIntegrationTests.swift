@@ -187,5 +187,5 @@ private extension TelemetryDebugEvent {
 }
 
 private extension Int64 {
-    var nanosecondsToSeconds: TimeInterval { TimeInterval.ddFromNanoseconds( self) }
+    var nanosecondsToSeconds: TimeInterval { TimeInterval.ddFromNanoseconds(self) }
 }
