@@ -277,6 +277,10 @@ public class objc_RUMActionEventDDConfiguration: NSObject {
     public var sessionSampleRate: NSNumber {
         root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
+
+    public var traceSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.traceSampleRate as NSNumber?
+    }
 }
 
 @objc(DDRUMActionEventDDSession)
@@ -1376,6 +1380,10 @@ public class objc_RUMErrorEventDDConfiguration: NSObject {
 
     public var sessionSampleRate: NSNumber {
         root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
+    }
+
+    public var traceSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.traceSampleRate as NSNumber?
     }
 }
 
@@ -2943,6 +2951,10 @@ public class objc_RUMLongTaskEventDDConfiguration: NSObject {
     public var sessionSampleRate: NSNumber {
         root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
+
+    public var traceSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.traceSampleRate as NSNumber?
+    }
 }
 
 @objc(DDRUMLongTaskEventDDProfiling)
@@ -4132,6 +4144,10 @@ public class objc_RUMResourceEventDDConfiguration: NSObject {
 
     public var sessionSampleRate: NSNumber {
         root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
+    }
+
+    public var traceSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.traceSampleRate as NSNumber?
     }
 }
 
@@ -5690,6 +5706,10 @@ public class objc_RUMViewEventDDConfiguration: NSObject {
 
     public var startSessionReplayRecordingManually: NSNumber? {
         root.swiftModel.dd.configuration!.startSessionReplayRecordingManually as NSNumber?
+    }
+
+    public var traceSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.traceSampleRate as NSNumber?
     }
 }
 
@@ -7644,6 +7664,10 @@ public class objc_RUMVitalAppLaunchEventDDConfiguration: NSObject {
     public var sessionSampleRate: NSNumber {
         root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
+
+    public var traceSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.traceSampleRate as NSNumber?
+    }
 }
 
 @objc(DDRUMVitalAppLaunchEventDDProfiling)
@@ -8695,6 +8719,10 @@ public class objc_RUMVitalDurationEventDDConfiguration: NSObject {
     public var sessionSampleRate: NSNumber {
         root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
+
+    public var traceSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.traceSampleRate as NSNumber?
+    }
 }
 
 @objc(DDRUMVitalDurationEventDDSession)
@@ -9605,6 +9633,10 @@ public class objc_RUMVitalOperationStepEventDDConfiguration: NSObject {
 
     public var sessionSampleRate: NSNumber {
         root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
+    }
+
+    public var traceSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.traceSampleRate as NSNumber?
     }
 }
 
@@ -10651,6 +10683,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     public var batchUploadFrequency: NSNumber? {
         root.swiftModel.telemetry.configuration.batchUploadFrequency as NSNumber?
+    }
+
+    public var betaEncodeCookieOptions: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.betaEncodeCookieOptions = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.betaEncodeCookieOptions as NSNumber? }
     }
 
     public var compressIntakeRequests: NSNumber? {
@@ -11879,4 +11916,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/72236fa673663c8cfed3ccb27d9f6f8e41f7c05f
+// Generated from https://github.com/DataDog/rum-events-format/tree/834392ddf77531ed3f383e0808192879490c221d
