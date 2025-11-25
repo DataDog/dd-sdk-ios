@@ -191,6 +191,15 @@ public final class objc_Configuration: NSObject {
         set { sdkConfiguration.service = newValue }
     }
 
+    /// The application version used for Unified Service Tagging.
+    ///
+    /// If not provided, the SDK will use the version from the application's Info.plist
+    /// (`CFBundleShortVersionString` or `CFBundleVersion`).
+    public var version: String? {
+        get { sdkConfiguration.version }
+        set { sdkConfiguration.version = newValue }
+    }
+
     /// The preferred size of batched data uploaded to Datadog servers.
     /// This value impacts the size and number of requests performed by the SDK.
     ///

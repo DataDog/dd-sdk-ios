@@ -50,6 +50,7 @@ public final class objc_Configuration: NSObject
     public var env: String
     public var site: objc_DatadogSite
     public var service: String?
+    public var version: String?
     public var batchSize: objc_BatchSize
     public var uploadFrequency: objc_UploadFrequency
     public var batchProcessingLevel: objc_BatchProcessingLevel
