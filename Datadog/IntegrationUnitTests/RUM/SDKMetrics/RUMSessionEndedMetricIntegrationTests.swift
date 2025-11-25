@@ -234,8 +234,8 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
 
         // Then
         let metric = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
-        XCTAssertEqual(metric.attributes?.ntpOffset.atStart, offsetAtStart.toInt64Milliseconds)
-        XCTAssertEqual(metric.attributes?.ntpOffset.atEnd, offsetAtEnd.toInt64Milliseconds)
+        XCTAssertEqual(metric.attributes?.ntpOffset.atStart, offsetAtStart.dd.toInt64Milliseconds)
+        XCTAssertEqual(metric.attributes?.ntpOffset.atEnd, offsetAtEnd.dd.toInt64Milliseconds)
     }
 
     func testTrackingNoViewEventsCount() throws {
@@ -351,5 +351,5 @@ private extension TelemetryDebugEvent {
 }
 
 private extension Int64 {
-    var nanosecondsToSeconds: TimeInterval { TimeInterval(fromNanoseconds: self) }
+    var nanosecondsToSeconds: TimeInterval { TimeInterval.ddFromNanoseconds(self) }
 }

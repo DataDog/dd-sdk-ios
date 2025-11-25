@@ -155,7 +155,7 @@ class RUMSessionScopeTests: XCTestCase {
 
         // Then - the view is added to the cache
         let firstViewID = try XCTUnwrap(scope.viewScopes.first?.context.activeViewID?.toRUMDataFormat)
-        XCTAssertEqual(viewCache.lastView(before: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds), firstViewID)
+        XCTAssertEqual(viewCache.lastView(before: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds), firstViewID)
 
         // When - updating the view
         dateProvider.advance(bySeconds: ttl)
@@ -169,7 +169,7 @@ class RUMSessionScopeTests: XCTestCase {
         )
 
         // Then - it updates the timestamp in cache
-        XCTAssertEqual(viewCache.lastView(before: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds), firstViewID)
+        XCTAssertEqual(viewCache.lastView(before: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds), firstViewID)
     }
 
     // MARK: - Background Events Tracking
