@@ -1,6 +1,6 @@
 # Unreleased
 
-- [FEATURE] Add support for configuring a custom version parameter in DatadogConfiguration. See [#2585][]
+- [FEATURE] Add support for configuring a custom version parameter in DatadogConfiguration. See [#2585][] (Thanks [@blimmer][])
 - [IMPROVEMENT] Provide XCFramework without arm64e slice for Xcode 26+ compatibility. See [#2576][]
 
 # 3.3.0 / 17-11-2025
@@ -992,6 +992,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2552]: https://github.com/DataDog/dd-sdk-ios/pull/2552
 [#2566]: https://github.com/DataDog/dd-sdk-ios/pull/2566
 [#2576]: https://github.com/DataDog/dd-sdk-ios/pull/2576
+[#2585]: https://github.com/DataDog/dd-sdk-ios/pull/2585
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
@@ -1028,3 +1029,4 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@naftaly]: https://github.com/naftaly
 [@jbluntz]: https://github.com/jbluntz
 [@tdr-alays]: https://github.com/tdr-alays
+[@blimmer]: https://github.com/blimmer
