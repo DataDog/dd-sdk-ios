@@ -53,7 +53,7 @@
                                         <color key="backgroundColor" red="1" green="0.864335344423108" blue="0.51734547555716937" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <color key="minimumTrackTintColor" systemColor="systemGreenColor"/>
                                         <color key="maximumTrackTintColor" name="BAD7E9"/>
-                                        <color key="thumbTintColor" name="AccentColor"/>
+                                        <color key="thumbTintColor" red="0.19607841970000001" green="0.45098042490000001" blue="0.86274516580000005" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                     </slider>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Disabled" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6pJ-Hu-FuQ">
                                         <rect key="frame" x="0.0" y="211" width="377" height="20.333333333333343"/>
@@ -749,9 +749,6 @@
         <image name="cloud.fill" catalog="system" width="128" height="87"/>
         <image name="cloud.rain.fill" catalog="system" width="126" height="128"/>
         <image name="sun.max.fill" catalog="system" width="128" height="125"/>
-        <namedColor name="AccentColor">
-            <color red="0.019999999552965164" green="0.004999999888241291" blue="0.037999998778104782" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-        </namedColor>
         <namedColor name="BAD7E9">
             <color red="0.72899997234344482" green="0.84299999475479126" blue="0.91399997472763062" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
