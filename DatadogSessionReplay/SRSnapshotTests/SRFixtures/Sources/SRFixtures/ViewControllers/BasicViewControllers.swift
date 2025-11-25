@@ -27,6 +27,20 @@ internal class TextsViewController: UIViewController {
 }
 
 public class PopupsViewController: UIViewController {
+    @IBOutlet var buttons: [UIButton]!
+
+    override public func viewDidLoad() {
+        super.viewDidLoad()
+
+        if #available(iOS 15.0, *) {
+            // Xcode 26 Interface Builder uses Background Configuration with corner radius that mismatch iOS 17.
+            // Use fixed corner radius of 6 for backward compatibility
+            buttons.forEach { button in
+                button.configuration?.background.cornerRadius = 6
+            }
+        }
+    }
+
     @IBAction public func showSafari() {
         present(SFSafariViewController(url: URL(string: "http://127.0.0.1")!), animated: false)
     }
