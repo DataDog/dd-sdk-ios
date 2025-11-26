@@ -79,7 +79,8 @@ internal struct LogEventBuilder {
             buildId: context.buildId,
             variant: context.variant,
             dd: LogEvent.Dd(
-                device: .init(architecture: context.device.architecture)
+                device: .init(architecture: context.device.architecture),
+                ddTags: context.ddTags
             ),
             device: context.normalizedDevice(),
             os: context.os,

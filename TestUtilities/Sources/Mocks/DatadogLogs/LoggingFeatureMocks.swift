@@ -106,6 +106,7 @@ extension LogEvent: AnyMockable, RandomMockable {
         buildId: String? = .mockAny(),
         variant: String? = .mockAny(),
         device: Device = .mockAny(),
+        ddTags: String = .mockRandomDDTags(),
         os: OperatingSystem = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         accountInfo: AccountInfo = .mockAny(),
@@ -128,7 +129,10 @@ extension LogEvent: AnyMockable, RandomMockable {
             applicationBuildNumber: applicationBuildNumber,
             buildId: nil,
             variant: variant,
-            dd: .init(device: .init(architecture: device.architecture ?? "")),
+            dd: .init(
+                device: .init(architecture: device.architecture ?? ""),
+                ddTags: ddTags
+            ),
             device: device,
             os: os,
             userInfo: userInfo,
@@ -155,7 +159,10 @@ extension LogEvent: AnyMockable, RandomMockable {
             applicationBuildNumber: .mockRandom(),
             buildId: .mockRandom(),
             variant: .mockRandom(),
-            dd: .init(device: .init(architecture: .mockRandom())),
+            dd: .init(
+                device: .init(architecture: .mockRandom()),
+                ddTags: .mockRandomDDTags()
+            ),
             device: .mockRandom(),
             os: .mockRandom(),
             userInfo: .mockRandom(),

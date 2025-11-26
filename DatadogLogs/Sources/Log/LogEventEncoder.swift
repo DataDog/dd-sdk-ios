@@ -106,6 +106,8 @@ public struct LogEvent: Encodable {
         }
         /// Device with the architecture info
         public let device: Device
+        /// Datadog tags to send with logs.
+        public let ddTags: String
     }
 
     /// The log's timestamp
@@ -339,11 +341,11 @@ internal struct LogEventEncoder {
 
         // Encode tags
         var tags = log.tags ?? []
-        tags.append("env:\(log.environment)") // include default env tag
-        tags.append("version:\(log.applicationVersion)") // include default version tag
-        if let variant = log.variant {
-            tags.append("variant:\(variant)")
-        }
+        // Include dd tags
+        // log.dd.ddTags is already a string with multiple tags
+        // joined by ",". That is OK, as it gets joined with
+        // the specific ones for this log.
+        tags.append(log.dd.ddTags)
         let tagsString = tags.joined(separator: ",")
         try container.encode(tagsString, forKey: .tags)
     }
