@@ -502,7 +502,7 @@ class CrashReportReceiverTests: XCTestCase {
         DDAssertJSONEqual(sendRUMErrorEvent.error.wasTruncated, crashReport.wasTruncated)
     }
 
-    func testGivenCrashDuringRUMSessionWithActiveViewAndOverridenSourceType_whenSendingRUMViewEvent_itSendsOverrideSourceType() throws {
+    func testGivenCrashDuringRUMSessionWithActiveViewAndOverriddenSourceType_whenSendingRUMViewEvent_itSendsOverrideSourceType() throws {
         featureScope.contextMock = .mockWith(nativeSourceOverride: "ios+il2cpp")
         let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
@@ -884,7 +884,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
     }
 
-    func testGivenCrashDuringRUMSessionWithNoActiveViewAndOverriddenSourceType_whenSendingRUMViewEvent_itSendsOverridenSourceType() throws {
+    func testGivenCrashDuringRUMSessionWithNoActiveViewAndOverriddenSourceType_whenSendingRUMViewEvent_itSendsOverriddenSourceType() throws {
         func test(
             lastRUMSessionState: RUMSessionState,
             launchInForeground: Bool,

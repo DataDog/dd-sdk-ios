@@ -120,7 +120,7 @@ open class MethodSwizzler<Signature, Override> {
 
     /// Unswizzle a method override.
     ///
-    /// If found, the given override will be remove from the hierachy and swizzling will
+    /// If found, the given override will be remove from the hierarchy and swizzling will
     /// be re-applied for children to also remove the override from the callstack.
     ///
     /// - Parameters:
@@ -144,7 +144,7 @@ open class MethodSwizzler<Signature, Override> {
         // swizzling override
         guard let override = swizzling.override.closure as? (Signature) -> Override else {
             // we should never get here as the closure will always
-            // satify the type: remove the node by returning its
+            // satisfy the type: remove the node by returning its
             // parent
             return swizzling.parent
         }

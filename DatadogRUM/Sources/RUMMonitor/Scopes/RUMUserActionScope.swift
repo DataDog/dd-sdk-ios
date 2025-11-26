@@ -9,7 +9,7 @@ import DatadogInternal
 
 internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     struct Constants {
-        /// If no activity is observed within this period in a discrete (discontinous) User Action, it is condiered ended.
+        /// If no activity is observed within this period in a discrete (discontinuous) User Action, it is considered ended.
         /// The activity may be i.e. due to Resource started loading.
         static let discreteActionTimeoutDuration: TimeInterval = 0.1 // 100 milliseconds
         /// Maximum duration of a continuous User Action. If it gets exceeded, a new session is started.

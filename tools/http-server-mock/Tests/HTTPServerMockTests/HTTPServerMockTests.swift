@@ -27,13 +27,13 @@ final class HTTPServerMockTests: XCTestCase {
 
     func testItReturnsRecordedRequests() throws {
         let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
-        guard let serverProces = runner.waitUntilServerIsReachable() else {
+        guard let serverProcess = runner.waitUntilServerIsReachable() else {
             XCTFail("Failed to connect with the server.")
             return
         }
 
         // Given
-        let server = ServerMock(serverProcess: serverProces)
+        let server = ServerMock(serverProcess: serverProcess)
         let session = server.obtainUniqueRecordingSession()
 
         var request1 = URLRequest(url: session.recordingURL.appendingPathComponent("/resource/1"))
@@ -67,13 +67,13 @@ final class HTTPServerMockTests: XCTestCase {
 
     func testItPullsRecordedRequests() throws {
         let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
-        guard let serverProces = runner.waitUntilServerIsReachable() else {
+        guard let serverProcess = runner.waitUntilServerIsReachable() else {
             XCTFail("Failed to connect with the server.")
             return
         }
 
         // Given
-        let server = ServerMock(serverProcess: serverProces)
+        let server = ServerMock(serverProcess: serverProcess)
         let session = server.obtainUniqueRecordingSession()
 
         var request1 = URLRequest(url: session.recordingURL.appendingPathComponent("/resource/1"))
@@ -113,12 +113,12 @@ final class HTTPServerMockTests: XCTestCase {
 
     func testWhenPullingRecordedRequestExceedsTimeout_itThrowsAnError() throws {
         let runner = ServerProcessRunner(serverURL: URL(string: "http://127.0.0.1:8000")!)
-        guard let serverProces = runner.waitUntilServerIsReachable() else {
+        guard let serverProcess = runner.waitUntilServerIsReachable() else {
             XCTFail("Failed to connect with the server.")
             return
         }
 
-        let server = ServerMock(serverProcess: serverProces)
+        let server = ServerMock(serverProcess: serverProcess)
         let session = server.obtainUniqueRecordingSession()
 
         XCTAssertThrowsError(

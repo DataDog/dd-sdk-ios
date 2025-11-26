@@ -163,7 +163,7 @@ class SegmentJSONTests: XCTestCase {
             .chunkedRandomly(numberOfChunks: .random(in: 1...segment.records.count))
             .map { EnrichedRecord(context: context, records: $0) }
             // Encode `EnrichedRecords` into `Data`, just like it happens in `DatadogCore` when
-            // writting them into batches:
+            // writing them into batches:
             .map { try encoder.encode($0) }
             // Decode it back to `EnrichedRecordJSON` just like it happens when preparing
             // upload requests for SR:

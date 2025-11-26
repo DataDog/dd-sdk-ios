@@ -93,7 +93,7 @@ public struct Reflector {
     }
 }
 
-/// A `Reflection` object can intialize itself by reflecting an instance
+/// A `Reflection` object can initialize itself by reflecting an instance
 /// through a ``Reflector``.
 ///
 /// Similar to `Decodable`, a `Reflection` can access mirroring descendant

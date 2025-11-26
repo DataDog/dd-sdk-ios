@@ -163,7 +163,7 @@ extension ResourceMetrics {
         // Note: `transactions` contain metrics for each individual
         // `request → response` transaction done for given resource, e.g.:
         // * if `200 OK` was received, it will contain 1 transaction,
-        // * if `200 OK` was preceeded by `301` redirection, it will contain 2 transactions.
+        // * if `200 OK` was preceded by `301` redirection, it will contain 2 transactions.
         let mainTransaction = transactions.last
         let redirectionTransactions = transactions.dropLast()
 

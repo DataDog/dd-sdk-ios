@@ -2223,7 +2223,7 @@ class RUMViewScopeTests: XCTestCase {
 
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.source, .init(rawValue: source))
-        // Configured source should not muck with sourceType, which is set seperately.
+        // Configured source should not muck with sourceType, which is set separately.
         XCTAssertEqual(error.error.sourceType, .ios)
     }
 

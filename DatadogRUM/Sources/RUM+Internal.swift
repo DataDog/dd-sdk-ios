@@ -24,7 +24,7 @@ extension InternalExtension where ExtendedType == RUM {
 
     /// Enable URL session tracking after RUM has already been enabled. This method
     /// is only needed if the configuration of URL session tracking is not known at initialization time,
-    /// or in the case of cross platform frameworks that do not initalize native URL session tracking.
+    /// or in the case of cross platform frameworks that do not initialize native URL session tracking.
     ///
     /// - Parameters:
     ///    - configuration: the configuration for URL session tracking

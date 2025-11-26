@@ -78,7 +78,7 @@ class MainThreadSchedulerTests: XCTestCase {
 
     /// Collects dates when running recurring operation and checks if intervals are close to expected value.
     ///
-    /// It asserts on p25 to mitigate precision issues in underlying`Timer`. Precission lost is expected and comes from `Timer.tolerance`
+    /// It asserts on p25 to mitigate precision issues in underlying`Timer`. Precision lost is expected and comes from `Timer.tolerance`
     /// used internally in `MainThreadScheduler`. Setting tolerance is recommended (ref.: https://developer.apple.com/documentation/foundation/timer )
     /// as it vastly improves performance and leads to less overhead on the app and device. The trade-off of this is more skews in actual intervals.
     func testItRepeatsScheduledOperationInGivenIntervals() {

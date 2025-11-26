@@ -43,7 +43,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         // When
-        let expectation = XCTestExpectation(description: "currentSessionID callback recieved")
+        let expectation = XCTestExpectation(description: "currentSessionID callback received")
         monitor.currentSessionID { sessionId in
             // Then
             XCTAssertNotNil(sessionId)
@@ -62,7 +62,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         // When
-        let expectation = XCTestExpectation(description: "currentSessionID callback recieved")
+        let expectation = XCTestExpectation(description: "currentSessionID callback received")
         monitor.currentSessionID { sessionId in
             // Then
             XCTAssertNil(sessionId)
@@ -84,7 +84,7 @@ class RUMMonitorTests: XCTestCase {
 
         // When
         monitor.stopSession()
-        let expectation = XCTestExpectation(description: "currentSessionID callback recieved")
+        let expectation = XCTestExpectation(description: "currentSessionID callback received")
         monitor.currentSessionID { sessionId in
             // Then
             XCTAssertNil(sessionId)
