@@ -176,8 +176,9 @@ public struct ContentView: View {
             .listRowBackground(Color(sectionColor, bundle: .module))
     }
     
-    var hierachicalViews: some View {
-        Section(header: Text("Hierachical Views")               .font(.title)
+    var hierarchicalViews: some View {
+        Section(header: Text("Hierarchical Views")
+            .font(.title)
             .modifier(ListSectionFontModifier())) {
                 Link(destination: NavigationBarsComponentView().trackView(name: "Navigation"),
                      label: "Navigation")

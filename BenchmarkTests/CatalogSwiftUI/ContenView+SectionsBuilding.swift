@@ -22,9 +22,9 @@ extension ContentView {
         let layouts = MenuSection(name: "Layouts",
                                   state: .ready,
                                   view: AnyView(layouts))
-        let hierachicalViews = MenuSection(name: "Hierarchical Views",
+        let hierarchicalViews = MenuSection(name: "Hierarchical Views",
                                            state: .ready,
-                                           view: AnyView(hierachicalViews))
+                                           view: AnyView(hierarchicalViews))
         let drawings = MenuSection(name: "Drawings",
                                    state: .ready,
                                    view: AnyView(drawings))
@@ -59,7 +59,7 @@ extension ContentView {
             controls,
             storeKit,
             layouts,
-            hierachicalViews,
+            hierarchicalViews,
             drawings,
             charts,
             gestures,
