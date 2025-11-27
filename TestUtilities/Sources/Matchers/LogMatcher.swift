@@ -25,7 +25,7 @@ public class LogMatcher: JSONDataMatcher {
         // MARK: - Logger info
 
         static let loggerName = "logger.name"
-        static let loggerVersion = "logger.version"
+        public static let loggerVersion = "logger.version"
         static let threadName = "logger.thread_name"
 
         // MARK: - User info

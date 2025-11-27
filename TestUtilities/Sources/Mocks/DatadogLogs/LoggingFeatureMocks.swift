@@ -106,13 +106,13 @@ extension LogEvent: AnyMockable, RandomMockable {
         buildId: String? = .mockAny(),
         variant: String? = .mockAny(),
         device: Device = .mockAny(),
-        ddTags: String = .mockRandomDDTags(),
         os: OperatingSystem = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         accountInfo: AccountInfo = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
         attributes: LogEvent.Attributes = .mockAny(),
+        ddTags: String = .mockRandomDDTags(),
         tags: [String]? = nil
     ) -> LogEvent {
         return LogEvent(
@@ -130,8 +130,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             buildId: nil,
             variant: variant,
             dd: .init(
-                device: .init(architecture: device.architecture ?? ""),
-                ddTags: ddTags
+                device: .init(architecture: device.architecture ?? "")
             ),
             device: device,
             os: os,
@@ -140,6 +139,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             networkConnectionInfo: networkConnectionInfo,
             mobileCarrierInfo: mobileCarrierInfo,
             attributes: attributes,
+            ddTags: ddTags,
             tags: tags
         )
     }
@@ -160,8 +160,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             buildId: .mockRandom(),
             variant: .mockRandom(),
             dd: .init(
-                device: .init(architecture: .mockRandom()),
-                ddTags: .mockRandomDDTags()
+                device: .init(architecture: .mockRandom())
             ),
             device: .mockRandom(),
             os: .mockRandom(),
@@ -170,6 +169,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             networkConnectionInfo: .mockRandom(),
             mobileCarrierInfo: .mockRandom(),
             attributes: .mockRandom(),
+            ddTags: .mockRandomDDTags(),
             tags: .mockRandom()
         )
     }
