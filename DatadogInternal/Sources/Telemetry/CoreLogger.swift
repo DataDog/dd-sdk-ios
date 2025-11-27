@@ -20,7 +20,7 @@ public enum CoreLoggerLevel: Int, Comparable, CaseIterable {
     /// The "⚠️" emoji prefix should be added by the logger when showing this log to the user.
     case warn
 
-    /// Level indicating **an error in the SDK**. It shuld be only used for logging errors
+    /// Level indicating **an error in the SDK**. It should be only used for logging errors
     /// which are not caused by the user (e.g. SDK logic fault).
     ///
     /// The "🔥" emoji prefix should be added by the logger when showing this log to the user.
@@ -66,7 +66,7 @@ extension CoreLogger {
     /// It should be used to log all events which might be important for us in diagnosing the SDK
     /// in user apps (e.g.: printing the SDK version or important aspects of configuration).
     ///
-    /// No emoji prefix is added by the logger when priting this log to the console.
+    /// No emoji prefix is added by the logger when printing this log to the console.
     ///
     /// - Parameters:
     ///   - message: the message
@@ -78,7 +78,7 @@ extension CoreLogger {
     /// Print error message which indicates **an user error when using the SDK**. It should be used for
     /// indicating errors that are caused by user fault (e.g. wrong configuration).
     ///
-    /// The "⚠️" emoji prefix is added by the logger when priting this log to the console.
+    /// The "⚠️" emoji prefix is added by the logger when printing this log to the console.
     ///
     /// - Parameters:
     ///   - message: the message
@@ -87,10 +87,10 @@ extension CoreLogger {
         log(.warn, message: message(), error: error)
     }
 
-    /// Print error message which indicates **an error in the SDK**. It shuld be only used for errors
+    /// Print error message which indicates **an error in the SDK**. It should be only used for errors
     /// which are not caused by the user (e.g. SDK user fault).
     ///
-    /// The "🔥" emoji prefix is added by the logger when priting this log to the console.
+    /// The "🔥" emoji prefix is added by the logger when printing this log to the console.
     ///
     /// - Parameters:
     ///   - message: the message
@@ -102,7 +102,7 @@ extension CoreLogger {
     /// Print error message which indicates an error which **makes some part of the SDK unfunctional**.
     /// It can be used to indicate either fatal SDK errors or user fault.
     ///
-    /// The "⛔️" emoji prefix is added by the logger when priting this log to the console.
+    /// The "⛔️" emoji prefix is added by the logger when printing this log to the console.
     ///
     /// - Parameters:
     ///   - message: the message

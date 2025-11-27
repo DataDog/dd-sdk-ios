@@ -214,7 +214,7 @@ internal protocol RUMErrorCommand: RUMCommand {
     /// Indicates whether any stack trace information in `stack` or `threads` was truncated due to stack trace minimization.
     var isStackTraceTruncated: Bool? { get }
     /// A completion closure called when processing the command is completed.
-    /// Processing the command includes writting data.
+    /// Processing the command includes writing data.
     var completionHandler: CompletionHandler { get }
 }
 

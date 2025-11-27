@@ -7,7 +7,7 @@
 import Foundation
 
 /// The Network Instrumentation Feature that can be registered into a core if
-/// any hander is provided.
+/// any handler is provided.
 ///
 /// Usage:
 ///

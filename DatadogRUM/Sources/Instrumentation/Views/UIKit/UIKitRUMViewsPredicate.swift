@@ -41,7 +41,7 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
         guard !Bundle(for: type(of: viewController)).dd.isSwiftUI else {
             // `SwiftUI` requires manual instrumentation in views. Therefore, all SwiftUI
             // `UIKit` containers (e.g. `UIHostingController`) will be ignored from
-            // auto-intrumentation.
+            // auto-instrumentation.
             // This condition is wider and it ignores all view controllers defined in `SwiftUI` bundle.
             return nil
         }

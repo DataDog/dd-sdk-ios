@@ -15,7 +15,7 @@ import Network
 /// * pushing the value with `monitor.pathUpdateHandler = { path in ... }`.
 ///
 /// We found the pulling model to not be thread-safe: accessing `currentPath` properties lead to occasional crashes.
-/// The `ThreadSafeNWPathMonitor` listens to path updates and synchonizes the values on `.current` property.
+/// The `ThreadSafeNWPathMonitor` listens to path updates and synchronizes the values on `.current` property.
 /// This adds the necessary thread-safety and keeps the convenience of pulling.
 internal struct NWPathMonitorPublisher: ContextValuePublisher {
     private static let defaultQueue = DispatchQueue(

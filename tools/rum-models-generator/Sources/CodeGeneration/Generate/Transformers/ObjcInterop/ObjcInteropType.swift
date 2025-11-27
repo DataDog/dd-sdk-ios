@@ -133,7 +133,7 @@ internal class ObjcInteropPropertyWrapper: ObjcInteropType {
     }
 }
 
-/// A property wrapper which uses another `ObjcInteropType` for managing acces to a property in nested `SwiftStruct`.
+/// A property wrapper which uses another `ObjcInteropType` for managing access to a property in nested `SwiftStruct`.
 internal protocol ObjcInteropPropertyWrapperForTransitiveType {
     var objcTransitiveType: ObjcInteropType { get }
 }

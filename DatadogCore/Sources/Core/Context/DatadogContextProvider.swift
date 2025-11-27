@@ -57,7 +57,7 @@ internal final class DatadogContextProvider {
     /// Creates a context provider to perform reads and writes on the
     /// shared Datadog context.
     ///
-    /// - Parameter context: The inital context value.
+    /// - Parameter context: The initial context value.
     init(context: DatadogContext) {
         self.context = context
         self.receivers = []

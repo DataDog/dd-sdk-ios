@@ -51,19 +51,19 @@ extension DatadogExtension where ExtendedType == Double {
 
     /// `TimeInterval` represented in milliseconds (capped to `.min` or `.max` respectively to its sign).
     public var toInt64Milliseconds: Int64 {
-        let miliseconds = type * 1_000
-        return Int64.ddWithNoOverflow(miliseconds)
+        let milliseconds = type * 1_000
+        return Int64.ddWithNoOverflow(milliseconds)
     }
 
     /// `TimeInterval` represented in nanoseconds (capped to `.min` or `.max` respectively to its sign).
-    /// Note: as `TimeInterval` yields sub-millisecond precision the nanoseconds precission will be lost.
+    /// Note: as `TimeInterval` yields sub-millisecond precision the nanoseconds precision will be lost.
     public var toNanoseconds: UInt64 {
         let nanoseconds = type * 1_000_000_000
         return UInt64.ddWithNoOverflow(nanoseconds)
     }
 
     /// `TimeInterval` represented in nanoseconds (capped to `.min` or `.max` respectively to its sign).
-    /// Note: as `TimeInterval` yields sub-millisecond precision the nanoseconds precission will be lost.
+    /// Note: as `TimeInterval` yields sub-millisecond precision the nanoseconds precision will be lost.
     public var toInt64Nanoseconds: Int64 {
         let nanoseconds = type * 1_000_000_000
         return Int64.ddWithNoOverflow(nanoseconds)

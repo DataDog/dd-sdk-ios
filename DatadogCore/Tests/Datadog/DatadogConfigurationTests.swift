@@ -298,7 +298,7 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertEqual(context.service, "ios")
     }
 
-    func testGivenNoBundleIdentifier_itUsesUnkown() throws {
+    func testGivenNoBundleIdentifier_itUsesUnknown() throws {
         var configuration = defaultConfig
 
         configuration.bundle = .mockWith(
