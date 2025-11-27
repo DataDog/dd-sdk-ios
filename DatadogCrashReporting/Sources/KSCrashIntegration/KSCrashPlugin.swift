@@ -24,8 +24,9 @@ internal import KSCrashFilters
 @objc
 internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
     private let kscrash: KSCrash
+    private let telemetry: Telemetry
 
-    init(_ kscrash: KSCrash = .shared) throws {
+    init(_ kscrash: KSCrash = .shared, telemetry: Telemetry = NOPTelemetry()) throws {
         try kscrash.install(with: .datadog())
         kscrash.reportStore?.sink = CrashReportFilterPipeline(
             filters: [
@@ -37,6 +38,7 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
         )
 
         self.kscrash = kscrash
+        self.telemetry = telemetry
     }
 
     // MARK: - CrashReportingPlugin
@@ -74,10 +76,7 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
         kscrash.userInfo = [CrashField.dd.rawValue: contextBase64]
     }
 
-    var backtraceReporter: BacktraceReporting? {
-        /* no-op */
-        return nil
-    }
+    var backtraceReporter: BacktraceReporting? { KSCrashBacktrace(telemetry: telemetry) }
 }
 
 extension KSCrashConfiguration {
