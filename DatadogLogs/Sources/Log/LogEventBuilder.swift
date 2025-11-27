@@ -79,8 +79,7 @@ internal struct LogEventBuilder {
             buildId: context.buildId,
             variant: context.variant,
             dd: LogEvent.Dd(
-                device: .init(architecture: context.device.architecture),
-                ddTags: context.ddTags
+                device: .init(architecture: context.device.architecture)
             ),
             device: context.normalizedDevice(),
             os: context.os,
@@ -89,6 +88,7 @@ internal struct LogEventBuilder {
             networkConnectionInfo: networkInfoEnabled ? context.networkConnectionInfo : nil,
             mobileCarrierInfo: networkInfoEnabled ? context.carrierInfo : nil,
             attributes: attributes,
+            ddTags: context.ddTags,
             tags: !tags.isEmpty ? Array(tags) : nil
         )
 
