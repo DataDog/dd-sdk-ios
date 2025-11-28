@@ -42,6 +42,7 @@ internal func generateSRSwiftModels(from schema: URL) throws -> String {
     return try generator
         .generateCode(from: schema)
         .decorate(using: SRCodeDecorator())
+        .sortTypes()
         .print(using: template, and: printer)
 }
 

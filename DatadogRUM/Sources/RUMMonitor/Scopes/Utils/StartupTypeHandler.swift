@@ -30,7 +30,7 @@ internal final class StartupTypeHandler {
         self.coldStartRules = coldStartRules
     }
 
-    func startupType(currentAppState: AppStateInfo) -> RUMVitalEvent.Vital.AppLaunchProperties.StartupType {
+    func startupType(currentAppState: AppStateInfo) -> RUMVitalAppLaunchEvent.Vital.StartupType {
         for rule in coldStartRules {
             switch rule {
             case .freshInstall:

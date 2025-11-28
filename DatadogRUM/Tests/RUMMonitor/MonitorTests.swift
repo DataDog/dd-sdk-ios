@@ -110,17 +110,11 @@ class MonitorTests: XCTestCase {
         monitor.reportAppFullyDisplayed()
 
         // Then
-        let vitalEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMVitalEvent.self)
-        let vitals = vitalEvents?.compactMap {
-            if case let .appLaunchProperties(vital) = $0.vital {
-                return vital
-            }
-            return nil
-        }
+        let vitalEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMVitalAppLaunchEvent.self)
 
-        XCTAssertEqual(vitals?.count, 2)
-        XCTAssertEqual(vitals?.first?.appLaunchMetric, .ttid)
-        XCTAssertEqual(vitals?.last?.appLaunchMetric, .ttfd)
+        XCTAssertEqual(vitalEvents?.count, 2)
+        XCTAssertEqual(vitalEvents?.first?.vital.appLaunchMetric, .ttid)
+        XCTAssertEqual(vitalEvents?.last?.vital.appLaunchMetric, .ttfd)
     }
 
     func testReportTTFDWithoutTTID_thenTheyAreNotWritten() throws {
@@ -135,15 +129,9 @@ class MonitorTests: XCTestCase {
         monitor.reportAppFullyDisplayed()
 
         // Then
-        let vitalEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMVitalEvent.self)
-        let vitals = vitalEvents?.compactMap {
-            if case let .appLaunchProperties(vital) = $0.vital {
-                return vital
-            }
-            return nil
-        }
+        let vitalEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMVitalAppLaunchEvent.self)
 
-        XCTAssertEqual(vitals?.count, 0)
+        XCTAssertEqual(vitalEvents?.count, 0)
     }
 
     func testReportTTIDWithoutTTFD_thenTTIDIsWrittenAsVitalEvent() throws {
@@ -158,16 +146,10 @@ class MonitorTests: XCTestCase {
         monitor.process(command: RUMTimeToInitialDisplayCommand(time: Date()))
 
         // Then
-        let vitalEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMVitalEvent.self)
-        let vitals = vitalEvents?.compactMap {
-            if case let .appLaunchProperties(vital) = $0.vital {
-                return vital
-            }
-            return nil
-        }
+        let vitalEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMVitalAppLaunchEvent.self)
 
-        XCTAssertEqual(vitals?.count, 1)
-        XCTAssertEqual(vitals?.first?.appLaunchMetric, .ttid)
+        XCTAssertEqual(vitalEvents?.count, 1)
+        XCTAssertEqual(vitalEvents?.first?.vital.appLaunchMetric, .ttid)
     }
 
     // MARK: - View Loading Time

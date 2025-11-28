@@ -31,4 +31,25 @@ extension SRTextPosition.Alignment {
         }
     }
 }
+
+extension SRTextStyle.TruncationMode {
+    /// Creates a truncation mode from `NSLineBreakMode`.
+    /// Returns `nil` for wrapping modes (`byWordWrapping`, `byCharWrapping`)
+    internal init?(_ lineBreakMode: NSLineBreakMode) {
+        switch lineBreakMode {
+        case .byClipping:
+            self = .clip
+        case .byTruncatingHead:
+            self = .head
+        case .byTruncatingTail:
+            self = .tail
+        case .byTruncatingMiddle:
+            self = .middle
+        case .byWordWrapping, .byCharWrapping:
+            return nil
+        @unknown default:
+            return nil
+        }
+    }
+}
 #endif

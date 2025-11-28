@@ -44,7 +44,7 @@ final class ExposureLoggerTests: XCTestCase {
                     timestamp: Date.mockAny()
                         .addingTimeInterval(serverTimeOffset)
                         .timeIntervalSince1970
-                        .toInt64Milliseconds,
+                        .dd.toInt64Milliseconds,
                     allocation: .init(key: "allocation-123"),
                     flag: .init(key: "some-flag"),
                     variant: .init(key: "variation-123"),

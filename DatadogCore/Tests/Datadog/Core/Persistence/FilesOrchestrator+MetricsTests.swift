@@ -69,13 +69,13 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "track": "track name",
             "consent": "consent value",
             "uploader_delay": [
-                "min": upload.minUploadDelay.toMilliseconds,
-                "max": upload.maxUploadDelay.toMilliseconds
+                "min": upload.minUploadDelay.dd.toMilliseconds,
+                "max": upload.maxUploadDelay.dd.toMilliseconds
             ],
-            "uploader_window": storage.uploaderWindow.toMilliseconds,
+            "uploader_window": storage.uploaderWindow.dd.toMilliseconds,
             "in_background": false,
             "background_tasks_enabled": false,
-            "batch_age": expectedBatchAge.toMilliseconds,
+            "batch_age": expectedBatchAge.dd.toMilliseconds,
             "batch_removal_reason": "intake-code-202",
             "pending_batches": 1
         ])
@@ -101,13 +101,13 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "track": "track name",
             "consent": "consent value",
             "uploader_delay": [
-                "min": upload.minUploadDelay.toMilliseconds,
-                "max": upload.maxUploadDelay.toMilliseconds
+                "min": upload.minUploadDelay.dd.toMilliseconds,
+                "max": upload.maxUploadDelay.dd.toMilliseconds
             ],
-            "uploader_window": storage.uploaderWindow.toMilliseconds,
+            "uploader_window": storage.uploaderWindow.dd.toMilliseconds,
             "in_background": false,
             "background_tasks_enabled": false,
-            "batch_age": (storage.maxFileAgeForRead + 1).toMilliseconds,
+            "batch_age": (storage.maxFileAgeForRead + 1).dd.toMilliseconds,
             "batch_removal_reason": "obsolete",
             "pending_batches": 0
         ])
@@ -136,13 +136,13 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "track": "track name",
             "consent": "consent value",
             "uploader_delay": [
-                "min": upload.minUploadDelay.toMilliseconds,
-                "max": upload.maxUploadDelay.toMilliseconds
+                "min": upload.minUploadDelay.dd.toMilliseconds,
+                "max": upload.maxUploadDelay.dd.toMilliseconds
             ],
-            "uploader_window": storage.uploaderWindow.toMilliseconds,
+            "uploader_window": storage.uploaderWindow.dd.toMilliseconds,
             "in_background": false,
             "background_tasks_enabled": false,
-            "batch_age": expectedBatchAge.toMilliseconds,
+            "batch_age": expectedBatchAge.dd.toMilliseconds,
             "batch_removal_reason": "purged",
             "pending_batches": 0
         ])
@@ -180,10 +180,10 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "metric_type": "batch closed",
             "track": "track name",
             "consent": "consent value",
-            "uploader_window": storage.uploaderWindow.toMilliseconds,
+            "uploader_window": storage.uploaderWindow.dd.toMilliseconds,
             "batch_size": expectedWrites.reduce(0, +),
             "batch_events_count": expectedWrites.count,
-            "batch_duration": expectedWriteDelays.reduce(0, +).toMilliseconds
+            "batch_duration": expectedWriteDelays.reduce(0, +).dd.toMilliseconds
         ])
         XCTAssertEqual(metric.sampleRate, BatchClosedMetric.sampleRate)
     }

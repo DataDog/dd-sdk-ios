@@ -89,7 +89,7 @@ POD_STATUS__ERROR=3
 #   POD_STATUS__SUCCESS     : If the command succeeds.
 #   POD_STATUS__NEEDS_RETRY : If the command fails due to a dependency issue and requires retrying.
 #   POD_STATUS__ALREADY_EXISTS : If the podspec already exists in the trunk.
-#   POD_STATUS__ERROR       : If an unexpected error occured in the last `pod` command.
+#   POD_STATUS__ERROR       : If an unexpected error occurred in the last `pod` command.
 check_pod_command_status() {
     # This error likely indicates that podspec for one of dependencies isn not yet available
     #

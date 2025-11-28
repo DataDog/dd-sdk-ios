@@ -21,7 +21,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
     override func setUp() {
         super.setUp()
         ctor_profiler_stop()
-        ctor_profiler_start_testing(100, false, 5.seconds.toInt64Nanoseconds)
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         let launchInfo: LaunchInfo = .mockWith(processLaunchDate: Date())
         core = DatadogCoreProxy(
@@ -82,16 +82,12 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         frameInfoProvider?.triggerCallback(interval: 1)
 
         // Then
-        let rumVitalEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMVitalEvent.self)
+        let rumVitalEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMVitalAppLaunchEvent.self)
 
         XCTAssertEqual(rumVitalEvents.count, 1)
         let ttidVitalEvent = try XCTUnwrap(rumVitalEvents.first)
         XCTAssertEqual(ttidVitalEvent.dd.profiling?.status, .running)
-        if case let .appLaunchProperties(vital) = ttidVitalEvent.vital {
-            XCTAssertEqual(vital.appLaunchMetric, .ttid)
-        } else {
-            XCTFail("No TTID vital found.")
-        }
+        XCTAssertEqual(ttidVitalEvent.vital.appLaunchMetric, .ttid)
 
         let pprofData = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: ProfilerFeature.name, ofType: Data.self))
         XCTAssertEqual(pprofData.count, 1)
@@ -124,7 +120,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         Profiling.enable(in: self.core)
 
         // Then
-        let rumVitalEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMVitalEvent.self)
+        let rumVitalEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertTrue(rumVitalEvents.isEmpty)
 
         let pprofData = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: ProfilerFeature.name, ofType: Data.self))

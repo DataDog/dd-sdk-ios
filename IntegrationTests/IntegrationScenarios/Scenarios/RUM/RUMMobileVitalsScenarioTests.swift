@@ -105,7 +105,7 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let oneSecond: TimeInterval = 1
 
         // When
-        XCTAssertLessThan(lastViewEvent.view.timeSpent, oneSecond.toInt64Nanoseconds, "When view lasts less than 1s")
+        XCTAssertLessThan(lastViewEvent.view.timeSpent, oneSecond.dd.toInt64Nanoseconds, "When view lasts less than 1s")
 
         // Then
         XCTAssertNil(lastViewEvent.view.cpuTicksPerSecond, "It should have no CPU ticks reported")

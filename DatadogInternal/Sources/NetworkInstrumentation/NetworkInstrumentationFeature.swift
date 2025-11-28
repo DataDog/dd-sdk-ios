@@ -7,7 +7,7 @@
 import Foundation
 
 /// The Network Instrumentation Feature that can be registered into a core if
-/// any hander is provided.
+/// any handler is provided.
 ///
 /// Usage:
 ///
@@ -138,6 +138,18 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         let identifier = ObjectIdentifier(delegateClass)
         swizzlers.removeValue(forKey: identifier)
     }
+
+    private func removeGraphQLHeadersFromRequest(_ request: URLRequest) -> URLRequest {
+        var modifiedRequest = request
+
+        // Remove all GraphQL information
+        modifiedRequest.setValue(nil, forHTTPHeaderField: GraphQLHeaders.operationName)
+        modifiedRequest.setValue(nil, forHTTPHeaderField: GraphQLHeaders.operationType)
+        modifiedRequest.setValue(nil, forHTTPHeaderField: GraphQLHeaders.variables)
+        modifiedRequest.setValue(nil, forHTTPHeaderField: GraphQLHeaders.payload)
+
+        return modifiedRequest
+    }
 }
 
 extension NetworkInstrumentationFeature {
@@ -168,6 +180,9 @@ extension NetworkInstrumentationFeature {
                 traceContexts.append(nextTraceContext)
             }
         }
+
+        // Remove GraphQL headers before returning the modified request
+        request = removeGraphQLHeadersFromRequest(request)
 
         return (request, traceContexts)
     }
