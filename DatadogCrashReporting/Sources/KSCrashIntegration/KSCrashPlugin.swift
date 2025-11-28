@@ -27,18 +27,25 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
     private let telemetry: Telemetry
 
     init(_ kscrash: KSCrash = .shared, telemetry: Telemetry = NOPTelemetry()) throws {
-        try kscrash.install(with: .datadog())
-        kscrash.reportStore?.sink = CrashReportFilterPipeline(
-            filters: [
-                DatadogTypeSafeFilter(),
-                DatadogMinifyFilter(),
-                DatadogDiagnosticFilter(),
-                DatadogCrashReportFilter()
-            ]
-        )
-
         self.kscrash = kscrash
         self.telemetry = telemetry
+
+        do {
+            try kscrash.install(with: .datadog())
+
+            kscrash.reportStore?.sink = CrashReportFilterPipeline(
+                filters: [
+                    DatadogTypeSafeFilter(),
+                    DatadogMinifyFilter(),
+                    DatadogDiagnosticFilter(),
+                    DatadogCrashReportFilter()
+                ]
+            )
+        } catch KSCrashInstallError.alreadyInstalled {
+            consolePrint("DatadogCrashReporting error: crash reporting is already installed", .warn)
+        } catch {
+            throw error
+        }
     }
 
     // MARK: - CrashReportingPlugin
@@ -55,7 +62,12 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
                     throw error
                 }
 
-                guard let report = reports?.first?.untypedValue as? DDCrashReport else {
+                guard let report = reports?.first else {
+                    _ = completion(nil)
+                    return
+                }
+
+                guard let report = report.untypedValue as? DDCrashReport else {
                     throw CrashReportException(description: "Report is not of type DDCrashReport")
                 }
 
