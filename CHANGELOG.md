@@ -7,7 +7,7 @@
 
 - [FIX] Fix tracing header injection for sampled out requests. See [#2473][]
 - [FIX] Remove GraphQL headers from request after processing it. See [#2566][]
-- [FEATURE] Support errors for GraphQL requests. See [#2552]
+- [FEATURE] Support errors for GraphQL requests. See [#2552][]
 
 # 3.2.0 / 30-10-2025
 

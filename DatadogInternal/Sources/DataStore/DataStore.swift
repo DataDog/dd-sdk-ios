@@ -13,7 +13,7 @@ import Foundation
 public typealias DataStoreKeyVersion = UInt16
 
 /// The default version of data stored for keys (equals `0`).
-public let dataStoreDefaultKeyVersion: DataStoreKeyVersion = 0
+public let dataStoreDefaultKeyVersion: DataStoreKeyVersion = 1
 
 /// Possible results of retrieving a value from the data store.
 public enum DataStoreValueResult {

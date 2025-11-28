@@ -34,7 +34,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler()
-        ctor_profiler_start_testing(100.0, false, 5.seconds.toInt64Nanoseconds)
+        ctor_profiler_start_testing(100.0, false, 5.seconds.dd.toInt64Nanoseconds)
 
         // When
         let result = profiler.receive(
@@ -62,7 +62,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler()
 
-        ctor_profiler_start_testing(100, false, 5.seconds.toInt64Nanoseconds)
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING, "Profiler should be running")
 
         // When
@@ -91,7 +91,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler()
 
-        ctor_profiler_start_testing(0.0, false, 5.seconds.toInt64Nanoseconds) // 0% sample rate
+        ctor_profiler_start_testing(0.0, false, 5.seconds.dd.toInt64Nanoseconds) // 0% sample rate
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_SAMPLED_OUT, "Profiler should be sampled out")
 
         // When
@@ -106,7 +106,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler()
 
-        ctor_profiler_start_testing(100.0, true, 5.seconds.toInt64Nanoseconds) // prewarming = true
+        ctor_profiler_start_testing(100.0, true, 5.seconds.dd.toInt64Nanoseconds) // prewarming = true
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_PREWARMED, "Profiler should be prewarmed")
 
         // When
@@ -136,7 +136,7 @@ final class AppLaunchProfilerTests: XCTestCase {
             )
         )
 
-        ctor_profiler_start_testing(100.0, false, 5.seconds.toInt64Nanoseconds)
+        ctor_profiler_start_testing(100.0, false, 5.seconds.dd.toInt64Nanoseconds)
         Thread.sleep(forTimeInterval: 0.1) // allow few samples
 
         let stopContext = mockRandomAttributes()
@@ -197,7 +197,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     func testProfilingContextStatus_currentProperty() {
         // Given
-        ctor_profiler_start_testing(100.0, false, 5.seconds.toInt64Nanoseconds)
+        ctor_profiler_start_testing(100.0, false, 5.seconds.dd.toInt64Nanoseconds)
 
         // When
         let status: ProfilingContext.Status = .current
