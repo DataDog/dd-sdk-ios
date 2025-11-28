@@ -30,6 +30,28 @@ extension GraphicsImage.Contents: Reflection {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
         case let (.enum("cgImage"), cgImage as CGImage):
             self = .cgImage(cgImage)
+        case let (.enum("vectorLayer"), contents):
+            self = try .vectorImage(reflector.reflect(contents))
+        default:
+            self = .unknown
+        }
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension GraphicsImage.VectorImage: Reflection {
+    init(from reflector: Reflector) throws {
+        location = try reflector.descendant("location")
+        name = try reflector.descendant("name")
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension GraphicsImage.Location: Reflection {
+    init(from reflector: Reflector) throws {
+        switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
+        case let (.enum("bundle"), bundle as Bundle):
+            self = .bundle(bundle)
         default:
             self = .unknown
         }
