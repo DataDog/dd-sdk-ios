@@ -181,6 +181,34 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
                         label: imagePrivacyLevel == .maskNonBundledOnly ? "Content Image" : "Image"
                     )
                 }
+            case .vectorImage(let vectorImage):
+                let shouldRecordImage = self.imagePrivacyLevel.shouldRecordGraphicsImagePredicate(resolvedImage)
+                if shouldRecordImage {
+                    guard
+                        let bundle = vectorImage.bundle,
+                        let image = UIImage(named: vectorImage.name, in: bundle, with: nil)
+                    else {
+                        // Report unknown image
+                        fallthrough
+                    }
+                    let imageResource = UIImageResource(
+                        image: image,
+                        tintColor: resolvedImage.maskColor?.uiColor
+                    )
+                    return context.builder.createImageWireframe(
+                        id: id,
+                        resource: imageResource,
+                        frame: context.convert(frame: item.frame),
+                        clip: context.clip
+                    )
+                } else {
+                    return context.builder.createPlaceholderWireframe(
+                        id: id,
+                        frame: context.convert(frame: item.frame),
+                        clip: context.clip,
+                        label: "Image"
+                    )
+                }
             case .unknown:
                 return context.builder.createPlaceholderWireframe(
                     id: id,
@@ -259,6 +287,8 @@ internal extension ImagePrivacyLevel {
                 switch graphicImage.contents {
                 case .cgImage(let cgImage):
                     return cgImage.isLikelyBundled(scale: graphicImage.scale)
+                case .vectorImage:
+                    return true
                 case .unknown:
                     return false
                 }
