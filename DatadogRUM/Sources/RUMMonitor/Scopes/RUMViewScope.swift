@@ -568,7 +568,8 @@ extension RUMViewScope {
                 configuration: .init(
                     sessionReplaySampleRate: nil,
                     sessionSampleRate: Double(dependencies.sessionSampler.samplingRate),
-                    startSessionReplayRecordingManually: nil
+                    startSessionReplayRecordingManually: nil,
+                    traceSampleRate: context.additionalContext(ofType: TraceConfiguration.self)?.sampleRate
                 ),
                 documentVersion: version.toInt64,
                 pageStates: nil,

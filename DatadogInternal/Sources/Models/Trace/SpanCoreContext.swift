@@ -24,3 +24,18 @@ public struct SpanCoreContext: AdditionalContext {
         self.spanID = spanID
     }
 }
+
+/// The APM configuration.
+public struct TraceConfiguration: AdditionalContext {
+    public static let key = "trace_configuration"
+
+    /// The sample rate for traces
+    public let sampleRate: Double
+
+    /// Creates a Trace configuration.
+    /// 
+    /// - Parameter sampleRate: The sample rate for traces
+    public init(sampleRate: Double) {
+        self.sampleRate = sampleRate
+    }
+}

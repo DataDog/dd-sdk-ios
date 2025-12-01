@@ -112,9 +112,11 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let hasReplay: Bool = .mockRandom()
+        let traceSampleRate: Double = .mockRandom(min: 0, max: 100)
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
         context.set(additionalContext: SessionReplayCoreContext.RecordsCount(value: [scope.viewUUID.toRUMDataFormat: 1]))
+        context.set(additionalContext: TraceConfiguration(sampleRate: traceSampleRate))
 
         _ = scope.process(
             command: RUMCommandMock(time: currentTime),
@@ -140,6 +142,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.networkSettledTime, 420_000_000)
         XCTAssertEqual(event.view.interactionToNextViewTime, 840_000_000)
         XCTAssertEqual(event.dd.documentVersion, 1)
+        XCTAssertEqual(event.dd.configuration?.traceSampleRate, traceSampleRate)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")

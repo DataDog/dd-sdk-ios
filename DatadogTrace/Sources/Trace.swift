@@ -43,6 +43,9 @@ public enum Trace {
         let trace = TraceFeature(in: core, configuration: configuration)
         try core.register(feature: trace)
 
+        // advertise the trace configuration through core context
+        core.set(context: TraceConfiguration(sampleRate: Double(configuration.sampleRate)))
+
         // If `URLSession` tracking is configured, register `URLSessionHandler` to enable distributed tracing:
         if let firstPartyHostsTracing = configuration.urlSessionTracking?.firstPartyHostsTracing {
             let firstPartyHosts: FirstPartyHosts
