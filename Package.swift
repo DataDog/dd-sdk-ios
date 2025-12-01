@@ -64,6 +64,10 @@ let package = Package(
             name: "DatadogFlags",
             targets: ["DatadogFlags"]
         ),
+        .plugin(
+            name: "DatadogSCI",
+            targets: ["DatadogSCI"]
+        ),
         .library(
             name: "DatadogProfiling",
             targets: ["DatadogProfiling"]
@@ -258,6 +262,12 @@ let package = Package(
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogFlags/Tests"
+        ),
+
+        .plugin(
+            name: "DatadogSCI",
+            capability: .buildTool(),
+            path: "DatadogSCI/Sources"
         ),
 
         .target(
