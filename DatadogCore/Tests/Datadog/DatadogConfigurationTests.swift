@@ -298,7 +298,7 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertEqual(context.service, "ios")
     }
 
-    func testGivenNoBundleIdentifier_itUsesUnkown() throws {
+    func testGivenNoBundleIdentifier_itUsesUnknown() throws {
         var configuration = defaultConfig
 
         configuration.bundle = .mockWith(
@@ -391,6 +391,56 @@ class DatadogConfigurationTests: XCTestCase {
         let context = core.contextProvider.read()
 
         XCTAssertEqual(context.version, "5.23.2")
+    }
+
+    func testPublicVersionProperty() throws {
+        var configuration = defaultConfig
+        configuration.version = "my-completely-custom-version"
+        configuration.bundle = .mockWith(
+            CFBundleShortVersionString: "1.0.0"
+        )
+
+        Datadog.initialize(with: configuration, trackingConsent: .mockRandom())
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+
+        XCTAssertEqual(context.version, "my-completely-custom-version")
+    }
+
+    func testPublicVersionPropertyWithNilUsesBundle() throws {
+        var configuration = defaultConfig
+        configuration.version = nil
+        configuration.bundle = .mockWith(
+            CFBundleShortVersionString: "1.5.0"
+        )
+
+        Datadog.initialize(with: configuration, trackingConsent: .mockRandom())
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+
+        XCTAssertEqual(context.version, "1.5.0")
+    }
+
+    func testCrossPlatformVersionOverridesTakePrecedenceOverPublicVersion() throws {
+        var configuration = defaultConfig
+        configuration.version = "2.0.0-native"
+        configuration.bundle = .mockWith(
+            CFBundleShortVersionString: "1.0.0"
+        )
+        configuration.additionalConfiguration[CrossPlatformAttributes.version] = "3.0.0-crossplatform"
+
+        Datadog.initialize(with: configuration, trackingConsent: .mockRandom())
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+
+        // Cross-platform override should take precedence
+        XCTAssertEqual(context.version, "3.0.0-crossplatform")
     }
 
     func testGivenBuildId_itSetsContext() throws {

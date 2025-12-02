@@ -136,8 +136,8 @@ internal extension XCTestCase {
         diffAttachement.lifetime = .deleteOnSuccess
         add(diffAttachement)
 
-        // Check if both wireframe images are identical (precission: 1) or their difference is not
-        // noticable for the human eye (perceptualPrecision: 0.98).
+        // Check if both wireframe images are identical (precision: 1) or their difference is not
+        // noticeable for the human eye (perceptualPrecision: 0.98).
         // Ref.: http://zschuessler.github.io/DeltaE/learn/#toc-defining-delta-e
         return compare(oldImages.rightImage, newImages.rightImage, precision: 1, perceptualPrecision: 0.98)
     }

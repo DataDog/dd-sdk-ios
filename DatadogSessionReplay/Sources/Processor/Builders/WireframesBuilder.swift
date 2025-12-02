@@ -77,12 +77,12 @@ extension SessionReplayWireframesBuilder {
         let wireframe = SRShapeWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: SRContentClip(frame, intersecting: clip),
-            height: Int64(withNoOverflow: frame.height),
+            height: Int64.ddWithNoOverflow( frame.height),
             id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
-            width: Int64(withNoOverflow: frame.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int64.ddWithNoOverflow( frame.width),
+            x: Int64.ddWithNoOverflow( frame.minX),
+            y: Int64.ddWithNoOverflow( frame.minY)
         )
 
         return .shapeWireframe(value: wireframe)
@@ -106,15 +106,15 @@ extension SessionReplayWireframesBuilder {
             base64: nil, // field deprecated - we should use resource endpoint instead
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: SRContentClip(frame, intersecting: clip),
-            height: Int64(withNoOverflow: frame.height),
+            height: Int64.ddWithNoOverflow( frame.height),
             id: id,
             isEmpty: false, // field deprecated - we should use placeholder wireframe instead
             mimeType: resource.mimeType,
             resourceId: resource.calculateIdentifier(),
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
-            width: Int64(withNoOverflow: frame.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int64.ddWithNoOverflow( frame.width),
+            x: Int64.ddWithNoOverflow( frame.minX),
+            y: Int64.ddWithNoOverflow( frame.minY)
         )
         return .imageWireframe(value: wireframe)
     }
@@ -130,6 +130,7 @@ extension SessionReplayWireframesBuilder {
         font: UIFont? = nil,
         fontOverride: FontOverride? = nil,
         fontScalingEnabled: Bool = false,
+        truncationMode: SRTextStyle.TruncationMode? = nil,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
@@ -140,14 +141,14 @@ extension SessionReplayWireframesBuilder {
         let textPosition = SRTextPosition(
             alignment: textAlignment,
             padding: .init(
-                bottom: Int64(withNoOverflow: frame.maxY - textFrame.maxY),
-                left: Int64(withNoOverflow: textFrame.minX - frame.minX),
-                right: Int64(withNoOverflow: frame.maxX - textFrame.maxX),
-                top: Int64(withNoOverflow: textFrame.minY - frame.minY)
+                bottom: Int64.ddWithNoOverflow( frame.maxY - textFrame.maxY),
+                left: Int64.ddWithNoOverflow( textFrame.minX - frame.minX),
+                right: Int64.ddWithNoOverflow( frame.maxX - textFrame.maxX),
+                top: Int64.ddWithNoOverflow( textFrame.minY - frame.minY)
             )
         )
 
-        var fontSize = Int64(withNoOverflow: fontOverride?.size ?? font?.pointSize ?? Fallback.fontSize)
+        var fontSize = Int64.ddWithNoOverflow( fontOverride?.size ?? font?.pointSize ?? Fallback.fontSize)
         if text.count > 0, fontScalingEnabled {
             // Calculates the approximate font size for available text area √(frameArea / numberOfCharacters)
             let area = textFrame.width * textFrame.height
@@ -161,21 +162,22 @@ extension SessionReplayWireframesBuilder {
         let textStyle = SRTextStyle(
             color: textColor.flatMap { hexString(from: $0) } ?? Fallback.color,
             family: Fallback.fontFamily,
-            size: fontSize
+            size: fontSize,
+            truncationMode: truncationMode
         )
 
         let wireframe = SRTextWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: SRContentClip(frame, intersecting: clip),
-            height: Int64(withNoOverflow: frame.height),
+            height: Int64.ddWithNoOverflow( frame.height),
             id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             text: text,
             textPosition: textPosition,
             textStyle: textStyle,
-            width: Int64(withNoOverflow: frame.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int64.ddWithNoOverflow( frame.width),
+            x: Int64.ddWithNoOverflow( frame.minX),
+            y: Int64.ddWithNoOverflow( frame.minY)
         )
 
         return .textWireframe(value: wireframe)
@@ -189,12 +191,12 @@ extension SessionReplayWireframesBuilder {
     ) -> SRWireframe {
         let wireframe = SRPlaceholderWireframe(
             clip: SRContentClip(frame, intersecting: clip),
-            height: Int64(withNoOverflow: frame.size.height),
+            height: Int64.ddWithNoOverflow( frame.size.height),
             id: id,
             label: label,
-            width: Int64(withNoOverflow: frame.size.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int64.ddWithNoOverflow( frame.size.width),
+            x: Int64.ddWithNoOverflow( frame.minX),
+            y: Int64.ddWithNoOverflow( frame.minY)
         )
         return .placeholderWireframe(value: wireframe)
     }
@@ -212,14 +214,14 @@ extension SessionReplayWireframesBuilder {
         let wireframe = SRWebviewWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: SRContentClip(frame, intersecting: clip),
-            height: Int64(withNoOverflow: frame.height),
+            height: Int64.ddWithNoOverflow( frame.height),
             id: Int64(id),
             isVisible: true,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             slotId: String(id),
-            width: Int64(withNoOverflow: frame.size.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int64.ddWithNoOverflow( frame.size.width),
+            x: Int64.ddWithNoOverflow( frame.minX),
+            y: Int64.ddWithNoOverflow( frame.minY)
         )
 
         /// Remove the slot from the builder because a wireframe
@@ -257,7 +259,7 @@ extension SessionReplayWireframesBuilder {
 
         return .init(
             color: hexString(from: borderColor) ?? Fallback.color,
-            width: Int64(withNoOverflow: borderWidth.rounded(.up))
+            width: Int64.ddWithNoOverflow( borderWidth.rounded(.up))
         )
     }
 
@@ -329,9 +331,9 @@ extension SRContentClip {
         guard !intersection.isEmpty else {
             self.init(
                 bottom: nil,
-                left: Int64(withNoOverflow: frame.width),
+                left: Int64.ddWithNoOverflow( frame.width),
                 right: nil,
-                top: Int64(withNoOverflow: frame.height)
+                top: Int64.ddWithNoOverflow( frame.height)
             )
 
             return
@@ -348,10 +350,10 @@ extension SRContentClip {
         }
 
         self.init(
-            bottom: bottom.isZero ? nil : Int64(withNoOverflow: bottom),
-            left: left.isZero ? nil : Int64(withNoOverflow: left),
-            right: right.isZero ? nil : Int64(withNoOverflow: right),
-            top: top.isZero ? nil : Int64(withNoOverflow: top)
+            bottom: bottom.isZero ? nil : Int64.ddWithNoOverflow( bottom),
+            left: left.isZero ? nil : Int64.ddWithNoOverflow( left),
+            right: right.isZero ? nil : Int64.ddWithNoOverflow( right),
+            top: top.isZero ? nil : Int64.ddWithNoOverflow( top)
         )
     }
 }

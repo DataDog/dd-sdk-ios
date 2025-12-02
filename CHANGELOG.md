@@ -1,7 +1,21 @@
 # Unreleased
 
+- [FEATURE] Add support for configuring a custom version parameter in DatadogConfiguration. See [#2585][] (Thanks [@blimmer][])
+- [IMPROVEMENT] Provide XCFramework without arm64e slice for Xcode 26+ compatibility. See [#2576][]
+
+# 3.3.0 / 17-11-2025
+
+- [FIX] Fix tracing header injection for sampled out requests. See [#2473][]
+- [FIX] Remove GraphQL headers from request after processing it. See [#2566][]
+- [FEATURE] Support errors for GraphQL requests. See [#2552][]
+
+# 3.2.0 / 30-10-2025
+
 - [FIX] Fix Logger race condition. See [#2514][]
 - [FEATURE] Add `DatadogFlags` module for feature flag evaluation and management. See [#2532][]
+- [FEATURE] Send data for GraphQL requests in Resource Events. See [#2501][]
+- [FIX] Fix OTel parent spans with multiple sequential child spans. See [#2530][] (Thanks [@jbluntz][])
+- [FIX] Fix typos in internal accessibility implementation. See [#2538][] (Thanks [@tdr-alays][])
 
 # 3.1.0 / 18-09-2025
 
@@ -968,8 +982,17 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2410]: https://github.com/DataDog/dd-sdk-ios/pull/2410
 [#2436]: https://github.com/DataDog/dd-sdk-ios/pull/2436
 [#2469]: https://github.com/DataDog/dd-sdk-ios/pull/2469
+[#2473]: https://github.com/DataDog/dd-sdk-ios/pull/2473
 [#2474]: https://github.com/DataDog/dd-sdk-ios/pull/2474
+[#2501]: https://github.com/DataDog/dd-sdk-ios/pull/2501
+[#2530]: https://github.com/DataDog/dd-sdk-ios/pull/2530
+[#2538]: https://github.com/DataDog/dd-sdk-ios/pull/2538
+[#2532]: https://github.com/DataDog/dd-sdk-ios/pull/2532
 [#2514]: https://github.com/DataDog/dd-sdk-ios/pull/2514
+[#2552]: https://github.com/DataDog/dd-sdk-ios/pull/2552
+[#2566]: https://github.com/DataDog/dd-sdk-ios/pull/2566
+[#2576]: https://github.com/DataDog/dd-sdk-ios/pull/2576
+[#2585]: https://github.com/DataDog/dd-sdk-ios/pull/2585
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
@@ -1004,3 +1027,6 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@jfiser-paylocity]: https://github.com/jfiser-paylocity
 [@Hengyu]: https://github.com/Hengyu
 [@naftaly]: https://github.com/naftaly
+[@jbluntz]: https://github.com/jbluntz
+[@tdr-alays]: https://github.com/tdr-alays
+[@blimmer]: https://github.com/blimmer

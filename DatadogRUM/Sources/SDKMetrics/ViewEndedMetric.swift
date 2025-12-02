@@ -122,13 +122,13 @@ extension ViewEndedMetric: MetricAttributesConvertible {
         var inv = Attributes.MetricValue(config: invConfigPredicate.rawValue)
 
         switch tnsResult {
-        case .success(let value): tns.value = value.toInt64Nanoseconds
+        case .success(let value): tns.value = value.dd.toInt64Nanoseconds
         case .failure(let noValueReason): tns.noValueReason = noValueReason.rawValue
         default: break
         }
 
         switch invResult {
-        case .success(let value): inv.value = value.toInt64Nanoseconds
+        case .success(let value): inv.value = value.dd.toInt64Nanoseconds
         case .failure(let noValueReason): inv.noValueReason = noValueReason.rawValue
         default: break
         }

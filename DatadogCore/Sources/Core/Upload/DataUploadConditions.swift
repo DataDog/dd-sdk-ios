@@ -42,7 +42,7 @@ internal struct DataUploadConditions {
 
         guard let battery = context.batteryStatus, battery.state != .unknown else {
             // Note: in RUMS-132 we got the report on `.unknown` battery state reporing `-1` battery level on iPad device
-            // plugged to Mac through lightning cable. As `.unkown` may lead to other unreliable values,
+            // plugged to Mac through lightning cable. As `.unknown` may lead to other unreliable values,
             // it seems safer to arbitrary allow uploads in such case.
             return blockers
         }

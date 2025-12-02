@@ -28,7 +28,7 @@ extension Array where Element == URLQueryItem {
         guard let ddtags = first(where: { $0.name == "ddtags" })?.value else {
             return nil
         }
-        return ddtags.split(seperator: ",", keyValueSeperator: ":")
+        return ddtags.split(separator: ",", keyValueSeparator: ":")
     }
 
     /// Returns the value of the first query item with the given name.
@@ -49,16 +49,16 @@ extension Array where Element == URLQueryItem {
 extension String {
     /// Splits the string into a dictionary.
     /// - Parameters:
-    ///   - seperator: Seperator to split the string.
-    ///   - keyValueSeperator: Seperator to split the key and value.
+    ///   - separator: Separator to split the string.
+    ///   - keyValueSeparator: Separator to split the key and value.
     /// - Returns: The string as a dictionary. If the string is not in the expected format, an empty dictionary is returned.
-    public func split(seperator: String, keyValueSeperator: String) -> [String: String] {
-        let components = self.components(separatedBy: seperator)
+    public func split(separator: String, keyValueSeparator: String) -> [String: String] {
+        let components = self.components(separatedBy: separator)
         var result: [String: String] = [:]
         components.forEach { header in
-            let components = header.components(separatedBy: keyValueSeperator)
+            let components = header.components(separatedBy: keyValueSeparator)
             if let field = components.first {
-                let value = components.dropFirst().joined(separator: keyValueSeperator)
+                let value = components.dropFirst().joined(separator: keyValueSeparator)
                 result[field] = value
             }
         }

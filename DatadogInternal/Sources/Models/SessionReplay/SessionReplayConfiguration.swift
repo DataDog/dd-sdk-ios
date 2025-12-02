@@ -62,7 +62,7 @@ public enum TouchPrivacyLevel: String {
 /// The Session Replay shared configuration.
 ///
 /// The Feature object  named `session-replay` will be registered to the core
-/// when enabling Session Replay. If available, the configuration can be retreived
+/// when enabling Session Replay. If available, the configuration can be retrieved
 /// with:
 ///
 ///     let sessionReplay = core.feature(

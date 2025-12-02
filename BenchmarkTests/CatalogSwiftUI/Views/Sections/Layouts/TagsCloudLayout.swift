@@ -26,14 +26,14 @@ struct TagsCloudLayout: Layout {
             let viewSize = subview.sizeThatFits(.unspecified)
             
             // safe bounds were the subview can fit without going out of bounds
-            let viewWidht = viewSize.width / 2
+            let viewWidth = viewSize.width / 2
             let viewHeight = viewSize.height / 2
-            let safeBound = CGRect(x: bounds.minX + viewWidht,
+            let safeBound = CGRect(x: bounds.minX + viewWidth,
                                    y: bounds.minY + viewHeight,
-                                   width: bounds.width - viewWidht,
+                                   width: bounds.width - viewWidth,
                                    height: bounds.height - viewHeight)
-            
-            // calculate the X and Y position radomly, inside the safe bounds
+
+            // calculate the X and Y position randomly, inside the safe bounds
             let x = CGFloat.random(in: safeBound.minX..<safeBound.maxX)
             let y = CGFloat.random(in: safeBound.minY..<safeBound.maxY)
 

@@ -379,6 +379,7 @@ extension DatadogCore {
         }
 
         let applicationVersion = configuration.additionalConfiguration[CrossPlatformAttributes.version] as? String
+            ?? configuration.version
             ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
             ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
             ?? "0.0.0"
@@ -452,8 +453,8 @@ extension DatadogCore {
         telemetry.configuration(
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
             batchProcessingLevel: Int64(exactly: configuration.batchProcessingLevel.maxBatchesPerUpload),
-            batchSize: performance.uploaderWindow.toInt64Milliseconds,
-            batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
+            batchSize: performance.uploaderWindow.dd.toInt64Milliseconds,
+            batchUploadFrequency: performance.minUploadDelay.dd.toInt64Milliseconds,
             useLocalEncryption: configuration.encryption != nil,
             useProxy: configuration.proxyConfiguration != nil
         )

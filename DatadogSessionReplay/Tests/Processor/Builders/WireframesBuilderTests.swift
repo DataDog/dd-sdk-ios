@@ -28,11 +28,11 @@ class WireframesBuilderTests: XCTestCase {
             XCTAssertTrue(wireframe.isVisible ?? false)
             XCTAssertNil(wireframe.border)
             XCTAssertNil(wireframe.clip)
-            XCTAssertEqual(wireframe.height, Int64(withNoOverflow: frame.height))
+            XCTAssertEqual(wireframe.height, Int64.ddWithNoOverflow( frame.height))
             XCTAssertNil(wireframe.shapeStyle)
-            XCTAssertEqual(wireframe.width, Int64(withNoOverflow: frame.size.width))
-            XCTAssertEqual(wireframe.x, Int64(withNoOverflow: frame.minX))
-            XCTAssertEqual(wireframe.y, Int64(withNoOverflow: frame.minY))
+            XCTAssertEqual(wireframe.width, Int64.ddWithNoOverflow( frame.size.width))
+            XCTAssertEqual(wireframe.x, Int64.ddWithNoOverflow( frame.minX))
+            XCTAssertEqual(wireframe.y, Int64.ddWithNoOverflow( frame.minY))
         }
 
         XCTAssertTrue(builder.hiddenWebViewWireframes().isEmpty)
@@ -82,11 +82,11 @@ class WireframesBuilderTests: XCTestCase {
         XCTAssertEqual(wireframe.id, id)
         XCTAssertNil(wireframe.border)
         XCTAssertEqual(wireframe.clip, .init(bottom: 1, left: 1, right: 1, top: 1))
-        XCTAssertEqual(wireframe.height, Int64(withNoOverflow: frame.height))
+        XCTAssertEqual(wireframe.height, Int64.ddWithNoOverflow( frame.height))
         XCTAssertNil(wireframe.shapeStyle)
-        XCTAssertEqual(wireframe.width, Int64(withNoOverflow: frame.width))
-        XCTAssertEqual(wireframe.x, Int64(withNoOverflow: frame.minX))
-        XCTAssertEqual(wireframe.y, Int64(withNoOverflow: frame.minY))
+        XCTAssertEqual(wireframe.width, Int64.ddWithNoOverflow( frame.width))
+        XCTAssertEqual(wireframe.x, Int64.ddWithNoOverflow( frame.minX))
+        XCTAssertEqual(wireframe.y, Int64.ddWithNoOverflow( frame.minY))
         XCTAssertEqual(builder.resources.first?.calculateIdentifier(), resource.identifier)
         XCTAssertEqual(builder.resources.first?.calculateData(), resource.data)
     }
@@ -127,8 +127,8 @@ class WireframesBuilderTests: XCTestCase {
             intersecting: frame.offsetBy(dx: frame.width, dy: frame.height)
         )
 
-        XCTAssertEqual(clip?.top, Int64(withNoOverflow: frame.height))
-        XCTAssertEqual(clip?.left, Int64(withNoOverflow: frame.width))
+        XCTAssertEqual(clip?.top, Int64.ddWithNoOverflow( frame.height))
+        XCTAssertEqual(clip?.left, Int64.ddWithNoOverflow( frame.width))
         XCTAssertNil(clip?.bottom)
         XCTAssertNil(clip?.right)
     }
@@ -160,6 +160,51 @@ class WireframesBuilderTests: XCTestCase {
         XCTAssertNotNil(shapeWireframe.shapeStyle?.backgroundColor, "backgroundColor should not be nil")
         XCTAssertNil(shapeWireframe.shapeStyle?.cornerRadius, "NaN cornerRadius should be filtered to nil")
         XCTAssertNil(shapeWireframe.shapeStyle?.opacity, "NaN opacity should be filtered to nil")
+    }
+
+    func testCreateTextWireframe_withTruncationMode() throws {
+        // Given
+        let builder = WireframesBuilder()
+        let frame: CGRect = .mockRandom()
+
+        // When
+        let wireframe = builder.createTextWireframe(
+            id: .mockRandom(),
+            frame: frame,
+            clip: frame,
+            text: "Test text with truncation",
+            truncationMode: .tail
+        )
+
+        // Then
+        guard case let .textWireframe(textWireframe) = wireframe else {
+            return XCTFail("Expected text wireframe")
+        }
+
+        XCTAssertEqual(textWireframe.textStyle.truncationMode, .tail)
+        XCTAssertEqual(textWireframe.text, "Test text with truncation")
+    }
+
+    func testCreateTextWireframe_withoutTruncationMode() throws {
+        // Given
+        let builder = WireframesBuilder()
+        let frame: CGRect = .mockRandom()
+
+        // When
+        let wireframe = builder.createTextWireframe(
+            id: .mockRandom(),
+            frame: frame,
+            clip: frame,
+            text: "Test text without truncation"
+        )
+
+        // Then
+        guard case let .textWireframe(textWireframe) = wireframe else {
+            return XCTFail("Expected text wireframe")
+        }
+
+        XCTAssertNil(textWireframe.textStyle.truncationMode, "truncationMode should be nil when not specified")
+        XCTAssertEqual(textWireframe.text, "Test text without truncation")
     }
 }
 #endif

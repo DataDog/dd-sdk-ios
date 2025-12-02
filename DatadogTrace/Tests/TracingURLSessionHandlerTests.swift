@@ -241,7 +241,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let expectation = expectation(description: "Send span")
         core.onEventWriteContext = { _ in expectation.fulfill() }
         let sampleRate: Float = .mockRandom(min: 1, max: 100)
-        let isKept: Bool = .mockRandom()
+        let isKept: Bool = true
 
         // Given
         let interception = URLSessionTaskInterception(

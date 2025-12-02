@@ -38,8 +38,8 @@ class TouchIdentifierGeneratorTests: XCTestCase {
         idsB.insert(generator.touchIdentifier(for: touchB))
 
         // Then
-        XCTAssertEqual(idsA.count, 1, "It must persist `TouchIdentifier` thru all touch phases")
-        XCTAssertEqual(idsB.count, 1, "It must persist `TouchIdentifier` thru all touch phases")
+        XCTAssertEqual(idsA.count, 1, "It must persist `TouchIdentifier` through all touch phases")
+        XCTAssertEqual(idsB.count, 1, "It must persist `TouchIdentifier` through all touch phases")
         XCTAssertNotEqual(idsA, idsB, "Each `UITouch` must be given an unique identifier")
     }
 

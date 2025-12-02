@@ -76,7 +76,7 @@ public struct DDCrashReport {
     public let wasTruncated: Bool
     /// The last context injected through `inject(context:)`
     public let context: Data?
-    /// Addtional attributes of the crash
+    /// Additional attributes of the crash
     public let additionalAttributes: AnyCodable
 
     public init(

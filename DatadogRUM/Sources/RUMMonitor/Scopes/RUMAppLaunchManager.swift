@@ -21,7 +21,7 @@ internal class RUMAppLaunchManager {
 
     private var timeToInitialDisplay: Double?
     private var timeToFullDisplay: Double?
-    private var startupType: RUMVitalEvent.Vital.AppLaunchProperties.StartupType?
+    private var startupType: RUMVitalAppLaunchEvent.Vital.StartupType?
 
     private lazy var startupTypeHandler = StartupTypeHandler(appStateManager: dependencies.appStateManager)
 
@@ -73,7 +73,7 @@ private extension RUMAppLaunchManager {
 
             self.writeVitalEvent(
                 vitalId: ttidVitalId,
-                duration: Double(ttid.toInt64Nanoseconds),
+                duration: Double(ttid.dd.toInt64Nanoseconds),
                 appLaunchMetric: .ttid,
                 startupType: startupType,
                 attributes: attributes,
@@ -87,7 +87,7 @@ private extension RUMAppLaunchManager {
                 let ttfd = max(ttid, timeToFullDisplay)
                 self.writeVitalEvent(
                     vitalId: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                    duration: Double(ttfd.toInt64Nanoseconds),
+                    duration: Double(ttfd.dd.toInt64Nanoseconds),
                     appLaunchMetric: .ttfd,
                     startupType: startupType,
                     attributes: attributes,
@@ -137,31 +137,29 @@ private extension RUMAppLaunchManager {
     func writeVitalEvent(
         vitalId: String,
         duration: TimeInterval,
-        appLaunchMetric: RUMVitalEvent.Vital.AppLaunchProperties.AppLaunchMetric,
-        startupType: RUMVitalEvent.Vital.AppLaunchProperties.StartupType,
+        appLaunchMetric: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric,
+        startupType: RUMVitalAppLaunchEvent.Vital.StartupType,
         attributes: [AttributeKey: AttributeValue],
         context: DatadogContext,
         writer: Writer,
         activeView: RUMViewScope?
     ) {
-        let vital = RUMVitalEvent.Vital.appLaunchProperties(
-            value: RUMVitalEvent.Vital.AppLaunchProperties(
+        let vital = RUMVitalAppLaunchEvent.Vital(
                 appLaunchMetric: appLaunchMetric,
                 duration: duration,
                 id: vitalId,
                 isPrewarmed: context.launchInfo.launchReason == .prewarming,
                 name: appLaunchMetric.name,
                 startupType: startupType
-            )
         )
 
-        var profiling: RUMVitalEvent.DD.Profiling?
+        var profiling: RUMVitalAppLaunchEvent.DD.Profiling?
         if let profilingContext = context.additionalContext(ofType: ProfilingContext.self) {
             profiling = .init(errorReason: profilingContext.error, status: profilingContext.profilingStatus)
         }
 
-        let vitalEvent = RUMVitalEvent(
-            dd: .init(profiling: profiling, vital: .init(computedValue: true)),
+        let vitalEvent = RUMVitalAppLaunchEvent(
+            dd: .init(profiling: profiling),
             account: .init(context: context),
             application: .init(id: parent.context.rumApplicationID),
             buildId: context.buildId,
@@ -169,7 +167,7 @@ private extension RUMAppLaunchManager {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: RUMEventAttributes(contextInfo: attributes),
-            date: context.launchInfo.processLaunchDate.timeIntervalSince1970.toInt64Milliseconds,
+            date: context.launchInfo.processLaunchDate.timeIntervalSince1970.dd.toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             os: context.os,
@@ -225,7 +223,7 @@ private extension RUMAppLaunchManager {
 
             self.writeVitalEvent(
                 vitalId: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                duration: Double(ttfd.toInt64Nanoseconds),
+                duration: Double(ttfd.dd.toInt64Nanoseconds),
                 appLaunchMetric: .ttfd,
                 startupType: startupType,
                 attributes: attributes,
@@ -253,7 +251,7 @@ private extension RUMAppLaunchManager {
     }
 }
 
-private extension RUMVitalEvent.Vital.AppLaunchProperties.AppLaunchMetric {
+private extension RUMVitalAppLaunchEvent.Vital.AppLaunchMetric {
     var name: String {
         switch self {
         case .ttid: return "time_to_initial_display"
@@ -263,7 +261,7 @@ private extension RUMVitalEvent.Vital.AppLaunchProperties.AppLaunchMetric {
 }
 
 private extension ProfilingContext {
-    var profilingStatus: RUMVitalEvent.DD.Profiling.Status {
+    var profilingStatus: RUMVitalAppLaunchEvent.DD.Profiling.Status {
         switch self.status {
         case .running: .running
         case .stopped: .stopped
@@ -272,7 +270,7 @@ private extension ProfilingContext {
         }
     }
 
-    var error: RUMVitalEvent.DD.Profiling.ErrorReason? {
+    var error: RUMVitalAppLaunchEvent.DD.Profiling.ErrorReason? {
         if case .error(reason: let reason) = self.status {
             switch reason {
             case .memoryAllocationFailed:

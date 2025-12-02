@@ -54,13 +54,13 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         )
 
         // Then
-        let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
+        let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
         XCTAssertEqual(vitalEvents.count, 1)
 
         let event = try XCTUnwrap(vitalEvents.first)
         // View properties
-        XCTAssertEqual(event.view?.id, view.viewUUID.toRUMDataFormat)
-        XCTAssertEqual(event.view?.url, view.viewPath)
+        XCTAssertEqual(event.view.id, view.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, view.viewPath)
 
         // Common properties
         XCTAssertNil(event.account)
@@ -81,16 +81,14 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertNotNil(event.version)
 
         // Operation Step specific properties
-        guard case let .featureOperationProperties(vital) = event.vital else {
-            return XCTFail("Expected event.vital to be .featureOperationProperties, but got \(event.vital)")
-        }
+        let vital = event.vital
         XCTAssertEqual(vital.type, "operation_step")
         XCTAssertEqual(vital.id, command.vitalId)
         XCTAssertEqual(vital.name, command.name)
         XCTAssertEqual(vital.operationKey, command.operationKey)
         XCTAssertEqual(vital.stepType, command.stepType)
         XCTAssertEqual(vital.failureReason, command.failureReason)
-        XCTAssertNil(vital.featureOperationPropertiesDescription)
+        XCTAssertNil(vital.vitalDescription)
     }
 
     func testProcess_MultipleOperations_CreatesCorrectNumberOfEvents() {
@@ -109,24 +107,22 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         }
 
         // Then
-        let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
+        let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
         XCTAssertEqual(vitalEvents.count, commands.count)
 
         for (index, operation) in commands.enumerated() {
             let event = vitalEvents[index]
-            XCTAssertEqual(event.view?.id, view.viewUUID.toRUMDataFormat)
-            XCTAssertEqual(event.view?.url, view.viewPath)
+            XCTAssertEqual(event.view.id, view.viewUUID.toRUMDataFormat)
+            XCTAssertEqual(event.view.url, view.viewPath)
 
-            guard case let .featureOperationProperties(vital) = event.vital else {
-                return XCTFail("Expected event.vital to be .featureOperationProperties, but got \(event.vital)")
-            }
+            let vital = event.vital
             XCTAssertEqual(vital.type, "operation_step")
             XCTAssertEqual(vital.id, operation.vitalId)
             XCTAssertEqual(vital.name, operation.name)
             XCTAssertEqual(vital.operationKey, operation.operationKey)
             XCTAssertEqual(vital.stepType, operation.stepType)
             XCTAssertEqual(vital.failureReason, operation.failureReason)
-            XCTAssertNil(vital.featureOperationPropertiesDescription)
+            XCTAssertNil(vital.vitalDescription)
         }
     }
 
@@ -148,7 +144,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         }
 
         // Then
-        let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
+        let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
         XCTAssertEqual(vitalEvents.count, 0)
     }
 
@@ -167,7 +163,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         }
 
         // Then
-        let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
+        let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
         XCTAssertEqual(vitalEvents.count, 0)
     }
 
@@ -179,9 +175,9 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         defer { dd.reset() }
         let operationName: String = .mockRandom()
         let stepType = [
-            RUMVitalEvent.Vital.FeatureOperationProperties.StepType.end,
-            RUMVitalEvent.Vital.FeatureOperationProperties.StepType.retry,
-            RUMVitalEvent.Vital.FeatureOperationProperties.StepType.update
+            RUMVitalOperationStepEvent.Vital.StepType.end,
+            RUMVitalOperationStepEvent.Vital.StepType.retry,
+            RUMVitalOperationStepEvent.Vital.StepType.update
         ].randomElement()!
         let command = RUMOperationStepVitalCommand.mockWith(
             name: operationName,
@@ -268,7 +264,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         )
 
         // Then
-        let vitalEvents = mockWriter.events(ofType: RUMVitalEvent.self)
+        let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
         XCTAssertEqual(vitalEvents.count, 1)
 
         let event = try XCTUnwrap(vitalEvents.first)

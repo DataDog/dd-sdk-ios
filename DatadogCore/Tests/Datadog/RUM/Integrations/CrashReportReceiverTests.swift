@@ -287,7 +287,7 @@ class CrashReportReceiverTests: XCTestCase {
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
         let activeRUMSessionState: RUMSessionState = .mockWith(
-            sessionUUID: .nullUUID, // there was RUM session but it was not sampled
+            sessionUUID: .dd.nullUUID, // there was RUM session but it was not sampled
             isInitialSession: .mockRandom(),
             hasTrackedAnyView: false // as it was not sampled, it couldn't track any view
         )
@@ -380,7 +380,7 @@ class CrashReportReceiverTests: XCTestCase {
         XCTAssertEqual(sendRUMViewEvent.view.action.count, lastRUMViewEvent.view.action.count)
         XCTAssertEqual(
             sendRUMViewEvent.date,
-            crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds - 1,
+            crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.dd.toInt64Milliseconds - 1,
             "The `RUMViewEvent` sent must include crash date corrected by current correction offset and shifted back by 1ms."
         )
         XCTAssertEqual(sendRUMViewEvent.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
@@ -476,7 +476,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
         XCTAssertEqual(
             sendRUMErrorEvent.date,
-            crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds,
+            crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
             "The `RUMErrorEvent` sent must include crash date corrected by current correction offset."
         )
         XCTAssertEqual(
@@ -502,7 +502,7 @@ class CrashReportReceiverTests: XCTestCase {
         DDAssertJSONEqual(sendRUMErrorEvent.error.wasTruncated, crashReport.wasTruncated)
     }
 
-    func testGivenCrashDuringRUMSessionWithActiveViewAndOverridenSourceType_whenSendingRUMViewEvent_itSendsOverrideSourceType() throws {
+    func testGivenCrashDuringRUMSessionWithActiveViewAndOverriddenSourceType_whenSendingRUMViewEvent_itSendsOverrideSourceType() throws {
         featureScope.contextMock = .mockWith(nativeSourceOverride: "ios+il2cpp")
         let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
@@ -676,7 +676,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
         XCTAssertEqual(
             sendRUMErrorEvent.date,
-            crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds,
+            crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
             "The `RUMErrorEvent` sent must include crash date corrected by current correction offset."
         )
         XCTAssertEqual(
@@ -830,7 +830,7 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertEqual(sentRUMView.buildVersion, randomBuildNumber)
             XCTAssertEqual(
                 sentRUMView.date,
-                crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds - 1,
+                crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.dd.toInt64Milliseconds - 1,
                 "The view must include crash date corrected by current correction offset and shifted back by 1ms."
             )
             XCTAssertEqual(sentRUMView.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
@@ -854,7 +854,7 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertTrue(sentRUMError.error.isCrash == true, "RUM error must be marked as crash.")
             XCTAssertEqual(
                 sentRUMError.date,
-                crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds,
+                crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 "RUM error must include crash date corrected by current correction offset."
             )
             XCTAssertEqual(sentRUMError.error.type, randomCrashType)
@@ -884,7 +884,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
     }
 
-    func testGivenCrashDuringRUMSessionWithNoActiveViewAndOverriddenSourceType_whenSendingRUMViewEvent_itSendsOverridenSourceType() throws {
+    func testGivenCrashDuringRUMSessionWithNoActiveViewAndOverriddenSourceType_whenSendingRUMViewEvent_itSendsOverriddenSourceType() throws {
         func test(
             lastRUMSessionState: RUMSessionState,
             launchInForeground: Bool,
@@ -1178,7 +1178,7 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertEqual(sentRUMView.view.action.count, 0)
             XCTAssertEqual(
                 sentRUMView.date,
-                crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds - 1,
+                crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.dd.toInt64Milliseconds - 1,
                 "The view must include crash date corrected by current correction offset and shifted back by 1ms."
             )
             XCTAssertEqual(sentRUMView.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
@@ -1200,7 +1200,7 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertTrue(sentRUMError.error.isCrash == true, "RUM error must be marked as crash.")
             XCTAssertEqual(
                 sentRUMError.date,
-                crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds,
+                crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 "RUM error must include crash date corrected by current correction offset."
             )
             XCTAssertEqual(sentRUMError.error.type, randomCrashType)
@@ -1368,7 +1368,7 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertTrue(sentRUMError.error.isCrash == true, "RUM error must be marked as crash.")
             XCTAssertEqual(
                 sentRUMError.date,
-                crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds,
+                crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 "RUM error must include crash date corrected by current correction offset."
             )
             XCTAssertEqual(sentRUMError.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")

@@ -79,7 +79,7 @@ internal struct Deflate {
             defer { buffer.deallocate() }
 
             // The number of bytes written to the destination buffer after compressing
-            // the input. If the funtion can't compress the entire input to fit into
+            // the input. If the function can't compress the entire input to fit into
             // the provided destination buffer, or an error occurs, 0 is returned.
             let size = compression_encode_buffer(buffer, data.count, ptr, data.count, nil, COMPRESSION_ZLIB)
             guard size > 0 else {

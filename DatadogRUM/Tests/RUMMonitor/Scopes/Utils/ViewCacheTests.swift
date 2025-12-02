@@ -17,13 +17,13 @@ class ViewCacheTests: XCTestCase {
         let viewId: String = .mockRandom()
         cache.insert(
             id: viewId,
-            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
             hasReplay: true
         )
 
         dateProvider.advance(bySeconds: 1)
 
-        let timestamp = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let timestamp = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
         XCTAssertEqual(cache.lastView(before: timestamp), viewId)
         XCTAssertEqual(cache.lastView(before: timestamp, hasReplay: true), viewId)
         XCTAssertNil(cache.lastView(before: timestamp, hasReplay: false))
@@ -36,13 +36,13 @@ class ViewCacheTests: XCTestCase {
         let viewId: String = .mockRandom()
         cache.insert(
             id: viewId,
-            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
             hasReplay: false
         )
 
         dateProvider.advance(bySeconds: 1)
 
-        let timestamp = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let timestamp = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
         XCTAssertEqual(cache.lastView(before: timestamp), viewId)
         XCTAssertEqual(cache.lastView(before: timestamp, hasReplay: false), viewId)
         XCTAssertNil(cache.lastView(before: timestamp, hasReplay: true))
@@ -56,20 +56,20 @@ class ViewCacheTests: XCTestCase {
         let firstId: String = .mockRandom()
         cache.insert(
             id: firstId,
-            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
             hasReplay: .mockRandom()
         )
 
         dateProvider.advance(bySeconds: 1)
 
-        let timestamp = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let timestamp = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
         XCTAssertEqual(cache.lastView(before: timestamp), firstId)
 
         for _ in (0..<capacity - 1) {
             dateProvider.advance(bySeconds: 1)
             cache.insert(
                 id: .mockRandom(),
-                timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+                timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
                 hasReplay: .mockRandom()
             )
         }
@@ -79,7 +79,7 @@ class ViewCacheTests: XCTestCase {
         dateProvider.advance(bySeconds: 1)
         cache.insert(
             id: .mockRandom(),
-            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
             hasReplay: .mockRandom()
         )
 
@@ -93,20 +93,20 @@ class ViewCacheTests: XCTestCase {
         let firstId: String = .mockRandom()
         cache.insert(
             id: firstId,
-            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
             hasReplay: .mockRandom()
         )
 
         dateProvider.advance(bySeconds: 10)
 
-        let timestamp = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let timestamp = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
         XCTAssertEqual(cache.lastView(before: timestamp), firstId)
 
         dateProvider.advance(bySeconds: 30)
 
         cache.insert(
             id: .mockRandom(),
-            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
             hasReplay: .mockRandom()
         )
 

@@ -13,8 +13,8 @@ import UIKit
 /// Features, and create the root view-controller.
 protocol Scenario {
     /// Starts the scenario.
-    /// 
-    /// Starting the scenario should intialize the SDK and enable Features based on
+    ///
+    /// Starting the scenario should initialize the SDK and enable Features based on
     /// the provided ``TestInfo`` and scenario's needs.
     ///
     /// The returned view-controller will be used as the root view controller of the

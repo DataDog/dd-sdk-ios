@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-/// UI spacing, margings, colors, used accross the app
+/// UI spacing, margings, colors, used across the app
 struct Style {
     
     let images: [Image] = [

@@ -131,15 +131,17 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
             let style = storage.attribute(.paragraphStyle, at: 0, effectiveRange: nil) as? NSParagraphStyle
             let foregroundColor = storage.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? UIColor
             let font = storage.attribute(.font, at: 0, effectiveRange: nil) as? UIFont
+            let truncationMode = style.flatMap { SRTextStyle.TruncationMode($0.lineBreakMode) }
             return context.builder.createTextWireframe(
                 id: id,
                 frame: context.convert(frame: item.frame),
                 clip: context.clip,
                 text: textObfuscator.mask(text: storage.string),
-                textAlignment: style.map { .init(systemTextAlignment: $0.alignment) },
+                textAlignment: style.map { .init(systemTextAlignment: $0.alignment, vertical: .top) },
                 textColor: foregroundColor?.cgColor,
                 font: font,
-                fontScalingEnabled: fontScalingEnabled
+                fontScalingEnabled: fontScalingEnabled,
+                truncationMode: truncationMode
             )
         case .color:
             return context.builder.createShapeWireframe(

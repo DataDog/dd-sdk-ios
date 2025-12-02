@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 /// in this layout we distribute the views in columns
-/// each colum can have different boxes
+/// each column can have different boxes
 struct Column {
     /// this will be the structural definition of the rows
     let boxes: [Box]
