@@ -63,6 +63,18 @@ static constexpr uint32_t MAX_LOAD_COMMAND_SIZE = 0x10000;  // 64KB max per load
 
 static constexpr size_t PTHREAD_THREAD_NAME_MAX = 64;
 
+// Main thread pthread identifier for comparison
+static pthread_t g_main_pthread = NULL;
+
+/**
+ * Initialize the main thread pthread identifier.
+ * This constructor runs early to capture the main thread's pthread_t.
+ */
+__attribute__((constructor))
+static void init_main_thread_id() {
+    g_main_pthread = pthread_self();
+}
+
 /**
  * Validates if an address is within reasonable user-space bounds.
  * Rejects null pointers, kernel addresses, and other invalid ranges.
@@ -284,12 +296,18 @@ bool stack_trace_get_thread_info(stack_trace_t* trace, thread_t thread) {
     
     pthread_t pthread = pthread_from_mach_thread_np(thread);
     if (!pthread) return false;
-    
+
     // Allocate buffer and get thread name
     trace->thread_name = (char*)malloc(PTHREAD_THREAD_NAME_MAX);
     if (!trace->thread_name) return false;
     
     int result = pthread_getname_np(pthread, (char*)trace->thread_name, PTHREAD_THREAD_NAME_MAX);
+
+    // If it's the main thread and has no name
+    if (pthread == g_main_pthread && trace->thread_name[0] == '\0') {
+        strcpy((char*)trace->thread_name, "com.apple.main-thread");
+    }
+    
     if (result == KERN_SUCCESS) return true;
     
     free((void*)trace->thread_name);
