@@ -105,6 +105,9 @@ public struct SpanEvent: Encodable {
     /// Tags associated with the span.
     public var tags: [String: String]
 
+    /// Git information
+    public var gitInfo: GitInfo?
+
     public func encode(to encoder: Encoder) throws {
         let sanitizedSpan = SpanSanitizer().sanitize(span: self)
         try SpanEventEncoder().encode(sanitizedSpan, to: encoder)
@@ -164,6 +167,9 @@ internal struct SpanEventEncoder {
         case mobileNetworkCarrierISOCountryCode = "meta.network.client.sim_carrier.iso_country"
         case mobileNetworkCarrierRadioTechnology = "meta.network.client.sim_carrier.technology"
         case mobileNetworkCarrierAllowsVoIP = "meta.network.client.sim_carrier.allows_voip"
+
+        case repositoryURL = "meta.git.repository_url"
+        case commitSHA = "meta.git.commit.sha"
     }
 
     /// Coding keys for dynamic `SpanEvent` attributes specified by user.
@@ -266,6 +272,11 @@ internal struct SpanEventEncoder {
         }
 
         try container.encode(span.traceID.idHiHex, forKey: .ptid)
+
+        if let gitInfo = span.gitInfo {
+            try container.encode(gitInfo.repositoryURL, forKey: .repositoryURL)
+            try container.encode(gitInfo.commitSHA, forKey: .commitSHA)
+        }
     }
 
     /// Encodes `meta.*` attributes coming from user

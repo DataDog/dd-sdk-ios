@@ -2011,6 +2011,10 @@
 		D2DA23BA298D59DC00C6C7E6 /* DeviceInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DA239E298D58F300C6C7E6 /* DeviceInfoTests.swift */; };
 		D2DA23C5298D59F300C6C7E6 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257958B298ABB83008A1BE5 /* TestUtilities.framework */; };
 		D2DA23D1298D61FB00C6C7E6 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
+		D2DB894B2EDF048B0086FC32 /* GitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DB894A2EDF048B0086FC32 /* GitInfo.swift */; };
+		D2DB894C2EDF048B0086FC32 /* GitInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DB894A2EDF048B0086FC32 /* GitInfo.swift */; };
+		D2DB89512EDF05AA0086FC32 /* SourceCodeIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DB89502EDF05AA0086FC32 /* SourceCodeIntegration.swift */; };
+		D2DB89522EDF05AA0086FC32 /* SourceCodeIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DB89502EDF05AA0086FC32 /* SourceCodeIntegration.swift */; };
 		D2DC4BBD27F234E000E4FB96 /* CITestIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */; };
 		D2DC4BF627F484AA00E4FB96 /* DataEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */; };
 		D2DC4BF727F484AA00E4FB96 /* DataEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */; };
@@ -3761,6 +3765,8 @@
 		D2DA239E298D58F300C6C7E6 /* DeviceInfoTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceInfoTests.swift; sourceTree = "<group>"; };
 		D2DA23A0298D58F400C6C7E6 /* FeatureMessageReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeatureMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D2DA23C3298D59DC00C6C7E6 /* DatadogInternalTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogInternalTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2DB894A2EDF048B0086FC32 /* GitInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitInfo.swift; sourceTree = "<group>"; };
+		D2DB89502EDF05AA0086FC32 /* SourceCodeIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceCodeIntegration.swift; sourceTree = "<group>"; };
 		D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataEncryption.swift; sourceTree = "<group>"; };
 		D2DE63522A30A7CA00441A54 /* CoreRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreRegistry.swift; sourceTree = "<group>"; };
 		D2E6E8FA2D8039B200FF1398 /* BenchmarkURLSessionTaskDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkURLSessionTaskDelegate.swift; sourceTree = "<group>"; };
@@ -5632,6 +5638,7 @@
 			isa = PBXGroup;
 			children = (
 				E11625D727B681D200E428C6 /* CITestIntegration.swift */,
+				D2DB89502EDF05AA0086FC32 /* SourceCodeIntegration.swift */,
 			);
 			path = FeaturesIntegration;
 			sourceTree = "<group>";
@@ -5935,6 +5942,7 @@
 			isa = PBXGroup;
 			children = (
 				D27465732E78679700C47FE2 /* Profiling */,
+				D2DB89492EDF04270086FC32 /* SCI */,
 				D2D748282DC1210A00C61353 /* Logs */,
 				D2D748342DC223EE00C61353 /* Trace */,
 				6167E6E02B81204B00C3CA2D /* CrashReporting */,
@@ -7495,6 +7503,14 @@
 				6174D6152BFDF29B00EC7469 /* BundleTypeTests.swift */,
 			);
 			path = Context;
+			sourceTree = "<group>";
+		};
+		D2DB89492EDF04270086FC32 /* SCI */ = {
+			isa = PBXGroup;
+			children = (
+				D2DB894A2EDF048B0086FC32 /* GitInfo.swift */,
+			);
+			path = SCI;
 			sourceTree = "<group>";
 		};
 		D2EA0F442C0E1A8700CB20F8 /* SessionReplay */ = {
@@ -9530,6 +9546,7 @@
 				11EA5C2E2DC3CCA500E8DFA2 /* DatadogConfiguration.swift in Sources */,
 				D2FB1254292E0E96005B13F8 /* TrackingConsentPublisher.swift in Sources */,
 				61D3E0D6277B23F1008BE766 /* KronosClock.swift in Sources */,
+				D2DB89512EDF05AA0086FC32 /* SourceCodeIntegration.swift in Sources */,
 				D2A7841129A53B2F003B03BB /* File.swift in Sources */,
 				D2E6E8FB2D8039BB00FF1398 /* BenchmarkURLSessionTaskDelegate.swift in Sources */,
 				D286626E2A43487500852CE3 /* Datadog.swift in Sources */,
@@ -10119,6 +10136,7 @@
 				D2160CED29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift in Sources */,
 				D2160C9E29C0DE5700FAA9A5 /* TracingHeaderType.swift in Sources */,
 				D23039F5298D5236001A1FA3 /* AnyEncodable.swift in Sources */,
+				D2DB894B2EDF048B0086FC32 /* GitInfo.swift in Sources */,
 				D2303A00298D5236001A1FA3 /* DatadogExtended.swift in Sources */,
 				D233E7CF2E4627B100E7CFDE /* MultipartFormData.swift in Sources */,
 				D23039E6298D5236001A1FA3 /* Sysctl.swift in Sources */,
@@ -11053,6 +11071,7 @@
 				D2CB6E5527C50EAE00A62B57 /* KronosNSTimer+ClosureKit.swift in Sources */,
 				D2CB6E6627C50EAE00A62B57 /* Reader.swift in Sources */,
 				D2CB6E6927C50EAE00A62B57 /* KronosDNSResolver.swift in Sources */,
+				D2DB89522EDF05AA0086FC32 /* SourceCodeIntegration.swift in Sources */,
 				D2E6E8FC2D8039BB00FF1398 /* BenchmarkURLSessionTaskDelegate.swift in Sources */,
 				D286626F2A43487500852CE3 /* Datadog.swift in Sources */,
 				61F930C32BA1C41A005F0EE2 /* TLVBlockReader.swift in Sources */,
@@ -11291,6 +11310,7 @@
 				D2DA235F298D57AA00C6C7E6 /* CarrierInfo.swift in Sources */,
 				D2DA2360298D57AA00C6C7E6 /* DDError.swift in Sources */,
 				B3E46CAC2D91B3AD00BABF66 /* NetworkContextProvider.swift in Sources */,
+				D2DB894C2EDF048B0086FC32 /* GitInfo.swift in Sources */,
 				D2DA2361298D57AA00C6C7E6 /* AnyCodable.swift in Sources */,
 				D29A9F9629DDB1DB005C54A4 /* UIKitExtensions.swift in Sources */,
 				6167E6E92B8122E900C3CA2D /* BacktraceReport.swift in Sources */,

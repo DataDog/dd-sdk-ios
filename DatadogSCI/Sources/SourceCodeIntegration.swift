@@ -9,7 +9,7 @@ import Foundation
 ///
 /// The plugin implements both `BuildToolPlugin` and `XcodeBuildToolPlugin` to support different build environments.
 @main
-struct SourceCodeIntegrationPlugin {
+struct SourceCodeIntegration {
     private let originURLPattern = #"\[remote "origin"\][^\[]*?url\s*=\s*([^\n\r]+)"#
 
     /// Creates build commands with collected git information.
@@ -147,7 +147,7 @@ struct SourceCodeIntegrationPlugin {
     }
 }
 
-extension SourceCodeIntegrationPlugin: BuildToolPlugin {
+extension SourceCodeIntegration: BuildToolPlugin {
     /// Creates build commands for SPM builds.
     ///
     /// This method is invoked by SwiftPM when building packages from the command line.
@@ -171,7 +171,7 @@ extension SourceCodeIntegrationPlugin: BuildToolPlugin {
 #if canImport(XcodeProjectPlugin)
 import XcodeProjectPlugin
 
-extension SourceCodeIntegrationPlugin: XcodeBuildToolPlugin {
+extension SourceCodeIntegration: XcodeBuildToolPlugin {
     /// Creates build commands for Xcode builds.
     ///
     /// This method is invoked by Xcode when building projects that depend on DatadogCore.

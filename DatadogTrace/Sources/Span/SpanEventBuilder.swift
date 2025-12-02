@@ -36,7 +36,8 @@ internal struct SpanEventBuilder {
         isKept: Bool,
         tags: [String: Encodable],
         baggageItems: [String: String],
-        logFields: [[String: Encodable]]
+        logFields: [[String: Encodable]],
+        gitInfo: GitInfo?
     ) -> SpanEvent {
         let tagsReducer = SpanTagsReducer(spanTags: tags, logFields: logFields)
 
@@ -101,7 +102,8 @@ internal struct SpanEventBuilder {
             os: context.os,
             userInfo: spanUserInfo,
             accountInfo: spanEventAccountInfo,
-            tags: tags
+            tags: tags,
+            gitInfo: gitInfo
         )
 
         if let eventMapper = eventsMapper {

@@ -498,7 +498,8 @@ extension DatadogContextProvider {
         serverDateProvider: ServerDateProvider,
         notificationCenter: NotificationCenter,
         appLaunchHandler: AppLaunchHandling,
-        appStateProvider: AppStateProvider
+        appStateProvider: AppStateProvider,
+        gitInfo: GitInfo?
     ) {
         // `ContextProvider` must be initialized on the main thread for two key reasons:
         // - It interacts with UIKit APIs to read the initial app state, which is only safe on the main thread.
@@ -510,7 +511,7 @@ extension DatadogContextProvider {
         let appStateHistory = AppStateHistory(initialState: initialAppState, date: dateProvider.now)
         let launchInfo = appLaunchHandler.resolveLaunchInfo(using: processInfo)
 
-        let context = DatadogContext(
+        var context = DatadogContext(
             site: site,
             clientToken: clientToken,
             service: service,
@@ -531,8 +532,10 @@ extension DatadogContextProvider {
             localeInfo: locale,
             nativeSourceOverride: nativeSourceOverride,
             launchInfo: launchInfo,
-            applicationStateHistory: appStateHistory
+            applicationStateHistory: appStateHistory,
         )
+
+        context.set(additionalContext: gitInfo)
 
         self.init(context: context)
 

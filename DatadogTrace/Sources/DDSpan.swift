@@ -148,7 +148,8 @@ internal final class DDSpan: OTSpan {
                 isKept: self.ddContext.isKept,
                 tags: self.tags,
                 baggageItems: self.ddContext.baggageItems.all,
-                logFields: self.logFields
+                logFields: self.logFields,
+                gitInfo: context.additionalContext(ofType: GitInfo.self)
             )
 
             let envelope = SpanEventsEnvelope(span: event, environment: context.env)

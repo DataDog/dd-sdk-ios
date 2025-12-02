@@ -31,7 +31,8 @@ class SpanEventBuilderTests: XCTestCase {
                 "bizz": 123
             ],
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         XCTAssertEqual(span.traceID, .init(idHi: 10, idLo: 100))
@@ -69,7 +70,8 @@ class SpanEventBuilderTests: XCTestCase {
             isKept: .mockAny(),
             tags: [:],
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         XCTAssertEqual(span.operationName, "modified operation name")
@@ -92,7 +94,8 @@ class SpanEventBuilderTests: XCTestCase {
             isKept: .mockAny(),
             tags: [OTTags.error: true],
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // then
@@ -112,7 +115,8 @@ class SpanEventBuilderTests: XCTestCase {
             isKept: .mockAny(),
             tags: [OTTags.error: false],
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // then
@@ -138,7 +142,8 @@ class SpanEventBuilderTests: XCTestCase {
             baggageItems: [:],
             logFields: [
                 [OTLogFields.errorKind: "Swift error"]
-            ]
+            ],
+            gitInfo: nil
         )
 
         // then
@@ -165,7 +170,8 @@ class SpanEventBuilderTests: XCTestCase {
                     OTLogFields.message: "Error occurred",
                     OTLogFields.stack: "Foo.swift:42",
                 ]
-            ]
+            ],
+            gitInfo: nil
         )
 
         // then
@@ -196,7 +202,8 @@ class SpanEventBuilderTests: XCTestCase {
                 ["foo": "bar"], // ignored
                 [OTLogFields.errorKind: "Swift error 1"], // captured
                 [OTLogFields.errorKind: "Swift error 2"] // ignored
-            ]
+            ],
+            gitInfo: nil
         )
 
         // then
@@ -224,7 +231,8 @@ class SpanEventBuilderTests: XCTestCase {
             baggageItems: [:],
             logFields: [
                 [OTLogFields.event: "error"]
-            ]
+            ],
+            gitInfo: nil
         )
 
         // then
@@ -247,7 +255,8 @@ class SpanEventBuilderTests: XCTestCase {
             baggageItems: [:],
             logFields: [
                 [OTLogFields.event: "error"]
-            ]
+            ],
+            gitInfo: nil
         )
 
         // then
@@ -272,7 +281,8 @@ class SpanEventBuilderTests: XCTestCase {
                 SpanTags.resource: "custom resource name"
             ],
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // then
@@ -298,7 +308,8 @@ class SpanEventBuilderTests: XCTestCase {
                 SpanTags.operation: "custom operation name"
             ],
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // then
@@ -324,7 +335,8 @@ class SpanEventBuilderTests: XCTestCase {
                 SpanTags.service: "custom service name"
             ],
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // then
@@ -354,7 +366,8 @@ class SpanEventBuilderTests: XCTestCase {
                 "item-2": "value 2",
                 "tag-name": "baggage item value"
             ],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // Then
@@ -386,7 +399,8 @@ class SpanEventBuilderTests: XCTestCase {
                 "item-2": "value 2",
                 "tag-name": "baggage item value"
             ],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // Then
@@ -416,7 +430,8 @@ class SpanEventBuilderTests: XCTestCase {
                 "item-2": "value 2",
                 "tag-name": "baggage item value"
             ],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // Then
@@ -477,7 +492,8 @@ class SpanEventBuilderTests: XCTestCase {
             isKept: .mockAny(),
             tags: createMockAttributes(),
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // Then
@@ -509,7 +525,8 @@ class SpanEventBuilderTests: XCTestCase {
             isKept: .mockAny(),
             tags: [:],
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // Then
@@ -539,7 +556,8 @@ class SpanEventBuilderTests: XCTestCase {
                 "failing-tag": FailingEncodableMock(errorMessage: "Value cannot be encoded.")
             ],
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // Then
@@ -600,7 +618,8 @@ class SpanEventBuilderTests: XCTestCase {
                 DatadogTagKeys.spanLinks.rawValue: [spanLink]
             ],
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // Then
@@ -637,7 +656,8 @@ class SpanEventBuilderTests: XCTestCase {
             isKept: .mockAny(),
             tags: [:],
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // Then
@@ -672,7 +692,8 @@ class SpanEventBuilderTests: XCTestCase {
             isKept: .mockAny(),
             tags: [:],
             baggageItems: [:],
-            logFields: []
+            logFields: [],
+            gitInfo: nil
         )
 
         // Then
