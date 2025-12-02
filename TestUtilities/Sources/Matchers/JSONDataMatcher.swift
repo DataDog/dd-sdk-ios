@@ -69,7 +69,7 @@ public class JSONDataMatcher {
             try comparator(thisValue as Any, theirValue as Any, file, line)
         }
 
-        XCTAssertEqual(thisJSON as NSDictionary, theirJSON as NSDictionary, file: file, line: line)
+        DDAssertDictionariesEqual(thisJSON, theirJSON, file: file, line: line)
     }
 
     public func assertValue<T: Equatable>(forKey key: String, equals value: T, file: StaticString = #file, line: UInt = #line) {
