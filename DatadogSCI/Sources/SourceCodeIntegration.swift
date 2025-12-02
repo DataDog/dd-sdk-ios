@@ -10,46 +10,79 @@ import Foundation
 /// The plugin implements both `BuildToolPlugin` and `XcodeBuildToolPlugin` to support different build environments.
 @main
 struct SourceCodeIntegrationPlugin {
-    private let originURLPattern = #"\[remote "origin"\][^\[]*?url\s*=\s*(.+)"#
+    private let originURLPattern = #"\[remote "origin"\][^\[]*?url\s*=\s*([^\n\r]+)"#
 
     /// Creates build commands with collected git information.
     ///
-    /// - Parameter path: The directory path to search for git information
+    /// - Parameters:
+    ///   - path: The directory path to search for git information
+    ///   - outputDirectory: The directory where output files should be created
     /// - Returns: Array of build commands configured with repository URL and commit SHA
     /// - Throws: If command generation fails or git information cannot be collected
-    func command(from path: PackagePlugin.Path) throws -> [Command] {
+    func command(from path: PackagePlugin.Path, outputDirectory: PackagePlugin.Path) throws -> [Command] {
         // Try environment variables first
         if
             let repo = ProcessInfo.processInfo.environment["DD_GIT_REPOSITORY_URL"],
             let commit = ProcessInfo.processInfo.environment["DD_GIT_COMMIT_SHA"]
         {
-            return try [command(repo: repo, commit: commit)]
+            return try commands(repo: repo, commit: commit, outputDirectory: outputDirectory)
         }
-
-        print("[SourceCodeIntegrationPlugin] path:", path)
 
         // Else, try reading from .git
         if
             let repo = try repositoryURL(from: path),
             let commit = try commitSHA(from: path)
         {
-            return try [command(repo: repo, commit: commit)]
+            return try commands(repo: repo, commit: commit, outputDirectory: outputDirectory)
         }
+
+        Diagnostics.warning("""
+            DatadogSCI: No git context found. Either:
+            1. Set DD_GIT_REPOSITORY_URL and DD_GIT_COMMIT_SHA environment variables, or
+            2. Ensure the project is in a git repository with a remote origin configured
+            """
+        )
 
         return []
     }
 
-    /// Generates a build command using the provided git repository information.
+    /// Generates build commands to create DatadogSCI.plist with git information.
+    ///
+    /// Creates a new plist file with repository URL and commit SHA using three separate commands.
     ///
     /// - Parameters:
     ///   - repo: The git repository URL
     ///   - commit: The git commit SHA
-    /// - Returns: A configured build command
+    ///   - outputDirectory: The directory where the plist should be created
+    /// - Returns: Array of build commands to create DatadogSCI.plist
     /// - Throws: If command creation fails
-    func command(repo: String, commit: String) throws -> Command  {
-        print("📦 DatadogSCI: Repository: \(repo)")
-        print("📦 DatadogSCI: Commit: \(commit)")
-        throw PluginDeserializationError.internalError("Not implemented")
+    func commands(repo: String, commit: String, outputDirectory: PackagePlugin.Path) throws -> [Command]  {
+        Diagnostics.remark("""
+            DatadogSCI: 
+                Repository: \(repo)
+                Commit: \(commit)
+            """)
+
+        let outputFile = outputDirectory.appending("DatadogSCI.plist")
+
+        return [
+            .buildCommand(
+                displayName: "Initialize DatadogSCI.plist",
+                executable: Path("/usr/libexec/PlistBuddy"),
+                arguments: ["-c", "Clear dict", outputFile.string],
+                outputFiles: [outputFile]
+            ),
+            .buildCommand(
+                displayName: "Add Repository URL",
+                executable: Path("/usr/libexec/PlistBuddy"),
+                arguments: ["-c", "Add :RepositoryURL string \(repo)", outputFile.string]
+            ),
+            .buildCommand(
+                displayName: "Add Commit SHA",
+                executable: Path("/usr/libexec/PlistBuddy"),
+                arguments: ["-c", "Add :CommitSHA string \(commit)", outputFile.string]
+            )
+        ]
     }
 
     /// Reads the repository URL from `.git/config` file.
@@ -67,8 +100,6 @@ struct SourceCodeIntegrationPlugin {
         guard let content = String(data: data, encoding: .utf8) else {
             return nil
         }
-
-        print("[SourceCodeIntegrationPlugin] config:", content)
 
         let regex = try NSRegularExpression(pattern: originURLPattern, options: [.dotMatchesLineSeparators])
         guard
@@ -94,13 +125,9 @@ struct SourceCodeIntegrationPlugin {
         let url = URL(fileURLWithPath: path.appending(".git/HEAD").string)
         let data = try Data(contentsOf: url)
 
-        guard
-            let content = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        else {
+        guard let content = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) else {
             return nil
         }
-
-        print("[SourceCodeIntegrationPlugin] HEAD:", content)
 
         // Case 1: Detached HEAD (direct SHA)
         if !content.hasPrefix("ref:") {
@@ -112,9 +139,7 @@ struct SourceCodeIntegrationPlugin {
         let refURL = URL(fileURLWithPath: path.appending(".git/\(ref)").string)
         let refData = try Data(contentsOf: refURL)
 
-        guard
-            let sha = String(data: refData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        else {
+        guard let sha = String(data: refData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) else {
             return nil
         }
 
@@ -123,15 +148,23 @@ struct SourceCodeIntegrationPlugin {
 }
 
 extension SourceCodeIntegrationPlugin: BuildToolPlugin {
-    /// Invoked by SwiftPM to create build commands for a particular target.
-    /// The context parameter contains information about the package and its
-    /// dependencies, as well as other environmental inputs.
+    /// Creates build commands for SPM builds.
     ///
-    /// This function should create and return build commands or prebuild
-    /// commands, configured based on the information in the context. Note
-    /// that it does not directly run those commands.
+    /// This method is invoked by SwiftPM when building packages from the command line.
+    /// It attempts to collect git information from environment variables only, as
+    /// `context.package.directory` points to the dd-sdk-ios package, not the consuming app.
+    ///
+    /// - Parameters:
+    ///   - context: Plugin context containing package and build information
+    ///   - target: The target being built
+    /// - Returns: Array of build commands to create DatadogSCI.plist, or empty array on failure
     func createBuildCommands(context: PluginContext, target: Target) async throws -> [Command] {
-        return try command(from: context.package.directory)
+        do {
+            return try command(from: context.package.directory, outputDirectory: context.pluginWorkDirectory)
+        } catch {
+            Diagnostics.warning("DatadogSCI: Failed to collect git information - \(error.localizedDescription)")
+            return []
+        }
     }
 }
 
@@ -139,9 +172,24 @@ extension SourceCodeIntegrationPlugin: BuildToolPlugin {
 import XcodeProjectPlugin
 
 extension SourceCodeIntegrationPlugin: XcodeBuildToolPlugin {
+    /// Creates build commands for Xcode builds.
+    ///
+    /// This method is invoked by Xcode when building projects that depend on DatadogCore.
+    /// It has access to `context.xcodeProject.directory` which points to the consuming app's
+    /// project directory, enabling git information collection from `.git` files.
+    ///
+    /// - Parameters:
+    ///   - context: Xcode plugin context containing project and build information
+    ///   - target: The Xcode target being built
+    /// - Returns: Array of build commands to create DatadogSCI.plist, or empty array on failure
+    /// - Throws: Does not throw; catches errors and returns empty array with warning
     func createBuildCommands(context: XcodePluginContext, target: XcodeTarget) throws -> [Command] {
-        // For Xcode builds, we have access to the project directory
-        return try command(from: context.xcodeProject.directory)
+        do {
+            return try command(from: context.xcodeProject.directory, outputDirectory: context.pluginWorkDirectory)
+        } catch {
+            Diagnostics.warning("DatadogSCI: Failed to collect git information - \(error.localizedDescription)")
+            return []
+        }
     }
 }
 #endif
