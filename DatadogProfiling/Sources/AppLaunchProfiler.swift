@@ -47,6 +47,25 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
         dd_pprof_free_serialized_data(data)
 
         core.scope(for: ProfilerFeature.self).eventWriteContext { context, writer in
+            var tags = [
+                "service:\(context.service)",
+                "version:\(context.version)",
+                "sdk_version:\(context.sdkVersion)",
+                "env:\(context.env)",
+                "source:\(context.source)",
+                "language:swift",
+                "format:pprof",
+                "remote_symbols:yes",
+                "operation:launch"
+            ]
+
+            if let gitInfo = context.additionalContext(ofType: GitInfo.self) {
+                tags += [
+                    "git.repository_url:\(gitInfo.repositoryURL)",
+                    "git.commit.sha:\(gitInfo.commitSHA)"
+                ]
+            }
+
             let event = ProfileEvent(
                 family: "ios",
                 runtime: "ios",
@@ -54,17 +73,7 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                 start: Date(timeIntervalSince1970: start),
                 end: Date(timeIntervalSince1970: end),
                 attachments: [ProfileEvent.Constants.wallFilename],
-                tags: [
-                    "service:\(context.service)",
-                    "version:\(context.version)",
-                    "sdk_version:\(context.sdkVersion)",
-                    "env:\(context.env)",
-                    "source:\(context.source)",
-                    "language:swift",
-                    "format:pprof",
-                    "remote_symbols:yes",
-                    "operation:launch"
-                ].joined(separator: ","),
+                tags: tags.joined(separator: ","),
                 additionalAttributes: cmd.context
             )
 
