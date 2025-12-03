@@ -338,6 +338,97 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertNil(flagsDetails["missing-flag"])
     }
 
+    func testTrackEvaluation() {
+        // Given
+        let exposureLogger = ExposureLoggerMock()
+        let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(
+                state: .init(
+                    flags: [
+                        "string-flag": .init(
+                            allocationKey: "allocation-123",
+                            variationKey: "variation-123",
+                            variation: .string("red"),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "boolean-flag": .init(
+                            allocationKey: "allocation-124",
+                            variationKey: "variation-124",
+                            variation: .boolean(true),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "integer-flag": .init(
+                            allocationKey: "allocation-125",
+                            variationKey: "variation-125",
+                            variation: .integer(42),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "numeric-flag": .init(
+                            allocationKey: "allocation-126",
+                            variationKey: "variation-126",
+                            variation: .double(3.14),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "json-flag": .init(
+                            allocationKey: "allocation-127",
+                            variationKey: "variation-127",
+                            variation: .object(
+                                .dictionary(["key": .string("value"), "prop": .int(123)])
+                            ),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                    ],
+                    context: .mockAny(),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: exposureLogger,
+            rumFlagEvaluationReporter: rumFlagEvaluationReporter
+        )
+
+        // When
+        client.trackEvaluation(key: "boolean-flag")
+        client.trackEvaluation(key: "string-flag")
+        client.trackEvaluation(key: "integer-flag")
+        client.trackEvaluation(key: "numeric-flag")
+        client.trackEvaluation(key: "json-flag")
+        client.trackEvaluation(key: "missing-flag")
+
+        // Then
+        // `missing-flag` is not tracked because it is not in the repository
+        XCTAssertEqual(exposureLogger.logExposureCalls.count, 5)
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls.count, 5)
+
+        XCTAssertEqual(exposureLogger.logExposureCalls[0].flagKey, "boolean-flag")
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[0].0, "boolean-flag")
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[0].1 as? Bool, true)
+
+        XCTAssertEqual(exposureLogger.logExposureCalls[1].flagKey, "string-flag")
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[1].0, "string-flag")
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[1].1 as? String, "red")
+
+        XCTAssertEqual(exposureLogger.logExposureCalls[2].flagKey, "integer-flag")
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[2].0, "integer-flag")
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[2].1 as? Int, 42)
+
+        XCTAssertEqual(exposureLogger.logExposureCalls[3].flagKey, "numeric-flag")
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[3].0, "numeric-flag")
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[3].1 as? Double, 3.14)
+
+        XCTAssertEqual(exposureLogger.logExposureCalls[4].flagKey, "json-flag")
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[4].0, "json-flag")
+        XCTAssertEqual(
+            rumFlagEvaluationReporter.sendFlagEvaluationCalls[4].1 as? AnyValue,
+            .dictionary(["key": .string("value"), "prop": .int(123)])
+        )
+    }
+
     func testExposureTrackingDisabled() throws {
         // Given
         let initialState = FlagsData(
@@ -359,10 +450,9 @@ final class FlagsClientTests: XCTestCase {
         // When
         Flags.enable(with: .init(trackExposures: false), in: core)
         let client = FlagsClient.create(in: core)
-        let value = client.getStringValue(key: "test", defaultValue: "")
+        client.trackEvaluation(key: "test")
 
         // Then
-        XCTAssertEqual(value, .mockAny())
         XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 0, "No exposure events should be written")
         XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, 1, "RUM integration should still work")
     }
@@ -388,10 +478,9 @@ final class FlagsClientTests: XCTestCase {
         // When
         Flags.enable(with: .init(rumIntegrationEnabled: false), in: core)
         let client = FlagsClient.create(in: core)
-        let value = client.getStringValue(key: "test", defaultValue: "")
+        client.trackEvaluation(key: "test")
 
         // Then
-        XCTAssertEqual(value, .mockAny())
         XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, 0, "No RUM messages should be sent")
         XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 1, "Exposure should still be logged")
     }

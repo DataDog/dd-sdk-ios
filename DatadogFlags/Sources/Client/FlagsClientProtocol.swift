@@ -73,6 +73,11 @@ public protocol FlagsClientProtocol: AnyObject {
     /// Note: This is an internal method. Expect breaking changes in the future.
     @_spi(Internal)
     func getFlagsDetails() -> [String: FlagDetails<AnyValue>]?
+
+    /// Note: This is an internal method. Expect breaking changes in the future.
+    @_spi(Internal)
+    func trackEvaluation(key: String)
+
 }
 
 extension FlagsClientProtocol {

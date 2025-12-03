@@ -211,18 +211,7 @@ extension FlagsClient: FlagsClientProtocol {
             reason: flagAssignment.reason
         )
 
-        if let context = repository.context {
-            exposureLogger.logExposure(
-                for: key,
-                // TODO: Pass a variation key instead of assignment here
-                assignment: flagAssignment,
-                evaluationContext: context
-            )
-            rumFlagEvaluationReporter.sendFlagEvaluation(
-                flagKey: key,
-                value: value
-            )
-        }
+        trackEvaluation(key: key)
 
         return details
     }
@@ -258,5 +247,35 @@ extension FlagsClient: FlagsClientProtocol {
         return result
     }
 
-    // TODO: New method for logging exposure.
+    @_spi(Internal)
+    public func trackEvaluation(key: String) {
+        guard let flagAssignment = repository.flagAssignment(for: key) else {
+            return
+        }
+
+        guard let context = repository.context else {
+            return
+        }
+
+        let value: FlagValue
+        switch flagAssignment.variation {
+        case .boolean(let v):   value = v
+        case .string(let v):    value = v
+        case .integer(let v):   value = v
+        case .double(let v):    value = v
+        case .object(let v):    value = v
+        case .unknown:          return
+        }
+
+        exposureLogger.logExposure(
+            for: key,
+            assignment: flagAssignment,
+            evaluationContext: context
+        )
+
+        rumFlagEvaluationReporter.sendFlagEvaluation(
+            flagKey: key,
+            value: value
+        )
+    }
 }
