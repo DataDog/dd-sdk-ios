@@ -1117,6 +1117,14 @@
 		A727C4BB2BADB3AB00707DFD /* DDSessionReplay+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A795069D2B974CAA00AC4814 /* DDSessionReplay+apiTests.m */; };
 		A728ADB02934EB0900397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
 		A728ADB12934EB0C00397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
+		A731B7DA2EE06362003D1E4F /* ContextSharingExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A731B7D82EE06362003D1E4F /* ContextSharingExtension.swift */; };
+		A731B7DB2EE06362003D1E4F /* SharedContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = A731B7D92EE06362003D1E4F /* SharedContext.swift */; };
+		A731B7DC2EE06362003D1E4F /* ContextSharingExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A731B7D82EE06362003D1E4F /* ContextSharingExtension.swift */; };
+		A731B7DD2EE06362003D1E4F /* SharedContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = A731B7D92EE06362003D1E4F /* SharedContext.swift */; };
+		A731B7DF2EE08FA6003D1E4F /* ContextSharingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A731B7DE2EE08FA5003D1E4F /* ContextSharingFeature.swift */; };
+		A731B7E02EE08FA6003D1E4F /* ContextSharingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A731B7DE2EE08FA5003D1E4F /* ContextSharingFeature.swift */; };
+		A731B7E22EE08FBE003D1E4F /* ContextSharingTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A731B7E12EE08FBD003D1E4F /* ContextSharingTransformer.swift */; };
+		A731B7E32EE08FBE003D1E4F /* ContextSharingTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A731B7E12EE08FBD003D1E4F /* ContextSharingTransformer.swift */; };
 		A73A54982B16406900E1F7E3 /* ResourcesFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73A54972B16406900E1F7E3 /* ResourcesFeature.swift */; };
 		A74A72812B0CEE4900771FEB /* ResourceRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72802B0CEE4900771FEB /* ResourceRequestBuilder.swift */; };
 		A74A72852B10CC6700771FEB /* ResourceRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72842B10CC6700771FEB /* ResourceRequestBuilderTests.swift */; };
@@ -3278,6 +3286,10 @@
 		A728ADA22934DB5000397996 /* W3CHTTPHeadersWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersWriterTests.swift; sourceTree = "<group>"; };
 		A728ADA52934DF2400397996 /* W3CHTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
 		A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDW3CHTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
+		A731B7D82EE06362003D1E4F /* ContextSharingExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextSharingExtension.swift; sourceTree = "<group>"; };
+		A731B7D92EE06362003D1E4F /* SharedContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedContext.swift; sourceTree = "<group>"; };
+		A731B7DE2EE08FA5003D1E4F /* ContextSharingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextSharingFeature.swift; sourceTree = "<group>"; };
+		A731B7E12EE08FBD003D1E4F /* ContextSharingTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextSharingTransformer.swift; sourceTree = "<group>"; };
 		A73A54972B16406900E1F7E3 /* ResourcesFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesFeature.swift; sourceTree = "<group>"; };
 		A74A72802B0CEE4900771FEB /* ResourceRequestBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResourceRequestBuilder.swift; sourceTree = "<group>"; };
 		A74A72842B10CC6700771FEB /* ResourceRequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceRequestBuilderTests.swift; sourceTree = "<group>"; };
@@ -5102,6 +5114,7 @@
 				61BB2B1A244A185D009F3F56 /* PerformancePreset.swift */,
 				E1D5AEA624B4D45A007F194B /* Versioning.swift */,
 				D28FCC342B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy */,
+				A731B7D02EE0606F003D1E4F /* Extensions */,
 				61133B9E2423979B00786299 /* Core */,
 				61216277247D1F2100AC5D67 /* FeaturesIntegration */,
 				61D3E0C7277B237D008BE766 /* Kronos */,
@@ -6411,6 +6424,25 @@
 				A728ADA02934CE5D00397996 /* W3CHTTPHeadersReader.swift */,
 			);
 			path = W3C;
+			sourceTree = "<group>";
+		};
+		A731B7D02EE0606F003D1E4F /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				A731B7D72EE06348003D1E4F /* ContextSharing */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		A731B7D72EE06348003D1E4F /* ContextSharing */ = {
+			isa = PBXGroup;
+			children = (
+				A731B7D92EE06362003D1E4F /* SharedContext.swift */,
+				A731B7D82EE06362003D1E4F /* ContextSharingExtension.swift */,
+				A731B7DE2EE08FA5003D1E4F /* ContextSharingFeature.swift */,
+				A731B7E12EE08FBD003D1E4F /* ContextSharingTransformer.swift */,
+			);
+			path = ContextSharing;
 			sourceTree = "<group>";
 		};
 		A7B932F62B1F6A0A00AE6477 /* Models */ = {
@@ -9004,6 +9036,7 @@
 				61F930C22BA1C41A005F0EE2 /* TLVBlockReader.swift in Sources */,
 				613E793B2577B6EE00DFCC17 /* DataReader.swift in Sources */,
 				D2B3F04D282A85FD00C2B5EE /* DatadogCore.swift in Sources */,
+				A731B7E22EE08FBE003D1E4F /* ContextSharingTransformer.swift in Sources */,
 				2671348E2D688AD60048CB54 /* AccountInfoPublisher.swift in Sources */,
 				61133BD62423979B00786299 /* DataUploader.swift in Sources */,
 				617699182A860D9D0030022B /* HTTPClient.swift in Sources */,
@@ -9027,8 +9060,11 @@
 				11BBF8E22DC1268800875558 /* Datadog+objc.swift in Sources */,
 				11BBF8E32DC1268800875558 /* DatadogConfiguration+objc.swift in Sources */,
 				D2A1EE32287DA51900D28DFB /* UserInfoPublisher.swift in Sources */,
+				A731B7E02EE08FA6003D1E4F /* ContextSharingFeature.swift in Sources */,
 				61133BD52423979B00786299 /* DataUploadConditions.swift in Sources */,
 				61D3E0D7277B23F1008BE766 /* KronosData+Bytes.swift in Sources */,
+				A731B7DC2EE06362003D1E4F /* ContextSharingExtension.swift in Sources */,
+				A731B7DD2EE06362003D1E4F /* SharedContext.swift in Sources */,
 				61133BD92423979B00786299 /* DataUploadDelay.swift in Sources */,
 				61BB2B1B244A185D009F3F56 /* PerformancePreset.swift in Sources */,
 				D2A1EE23287740B500D28DFB /* ApplicationStatePublisher.swift in Sources */,
@@ -10435,6 +10471,7 @@
 				D2A7841229A53B2F003B03BB /* File.swift in Sources */,
 				D2CB6E7627C50EAE00A62B57 /* KronosClock.swift in Sources */,
 				2671348D2D688AD60048CB54 /* AccountInfoPublisher.swift in Sources */,
+				A731B7E32EE08FBE003D1E4F /* ContextSharingTransformer.swift in Sources */,
 				D2CB6E7727C50EAE00A62B57 /* DataReader.swift in Sources */,
 				617699192A860D9D0030022B /* HTTPClient.swift in Sources */,
 				D2FB1255292E0E99005B13F8 /* TrackingConsentPublisher.swift in Sources */,
@@ -10458,8 +10495,11 @@
 				11BBF8E02DC1268800875558 /* Datadog+objc.swift in Sources */,
 				11BBF8E12DC1268800875558 /* DatadogConfiguration+objc.swift in Sources */,
 				D2CB6EA827C50EAE00A62B57 /* URLSessionClient.swift in Sources */,
+				A731B7DF2EE08FA6003D1E4F /* ContextSharingFeature.swift in Sources */,
 				D2CB6EB327C50EAE00A62B57 /* KronosNTPClient.swift in Sources */,
 				D2CB6EBA27C50EAE00A62B57 /* DataUploadConditions.swift in Sources */,
+				A731B7DA2EE06362003D1E4F /* ContextSharingExtension.swift in Sources */,
+				A731B7DB2EE06362003D1E4F /* SharedContext.swift in Sources */,
 				D2CB6EBF27C50EAE00A62B57 /* KronosData+Bytes.swift in Sources */,
 				D2CB6EC427C50EAE00A62B57 /* DataUploadDelay.swift in Sources */,
 				D2CB6EC727C50EAE00A62B57 /* PerformancePreset.swift in Sources */,
