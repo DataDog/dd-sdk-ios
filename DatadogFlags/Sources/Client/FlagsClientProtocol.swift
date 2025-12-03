@@ -69,6 +69,10 @@ public protocol FlagsClientProtocol: AnyObject {
     ///
     /// - Returns: A ``FlagDetails`` struct containing the evaluated value and metadata.
     func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
+
+    /// Note: This is an internal method. Expect breaking changes in the future.
+    @_spi(Internal)
+    func getFlagsDetails() -> [String: FlagDetails<AnyValue>]?
 }
 
 extension FlagsClientProtocol {

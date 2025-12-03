@@ -169,6 +169,10 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
         state?.flags[key]
     }
 
+    func flagAssignments() -> [String: DatadogFlags.FlagAssignment]? {
+        state?.flags
+    }
+
     func reset() {
         state = nil
     }

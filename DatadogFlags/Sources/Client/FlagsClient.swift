@@ -214,6 +214,7 @@ extension FlagsClient: FlagsClientProtocol {
         if let context = repository.context {
             exposureLogger.logExposure(
                 for: key,
+                // TODO: Pass a variation key instead of assignment here
                 assignment: flagAssignment,
                 evaluationContext: context
             )
@@ -225,4 +226,37 @@ extension FlagsClient: FlagsClientProtocol {
 
         return details
     }
+
+    @_spi(Internal)
+    public func getFlagsDetails() -> [String: FlagDetails<AnyValue>]? {
+        guard let flagAssignments = repository.flagAssignments() else {
+            return nil
+        }
+
+        var result: [String: FlagDetails<AnyValue>] = [:]
+
+        for (key, assignment) in flagAssignments {
+            let value: AnyValue
+
+            switch assignment.variation {
+            case .boolean(let v):   value = .bool(v)
+            case .string(let v):    value = .string(v)
+            case .integer(let v):   value = .int(v)
+            case .double(let v):    value = .double(v)
+            case .object(let v):    value = v
+            case .unknown:          continue
+            }
+
+            result[key] = FlagDetails(
+                key: key,
+                value: value,
+                variant: assignment.variationKey,
+                reason: assignment.reason
+            )
+        }
+
+        return result
+    }
+
+    // TODO: New method for logging exposure.
 }

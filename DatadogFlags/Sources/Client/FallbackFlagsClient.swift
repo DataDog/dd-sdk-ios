@@ -39,4 +39,14 @@ internal final class FallbackFlagsClient: FlagsClientProtocol {
         )
         return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
     }
+
+    func getFlagsDetails() -> [String: FlagDetails<AnyValue>]? {
+        DD.logger.error(
+            """
+            Using fallback client to get all flag values. \
+            Ensure that a client named '\(name)' is created before using it.
+            """
+        )
+        return nil
+    }
 }

@@ -8,7 +8,7 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 
-@testable import DatadogFlags
+@_spi(Internal) @testable import DatadogFlags
 
 final class FlagsClientTests: XCTestCase {
     func testCreate() {
@@ -249,6 +249,93 @@ final class FlagsClientTests: XCTestCase {
         )
         XCTAssertEqual(exposureLogger.logExposureCalls.count, 6)
         XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls.count, 6)
+    }
+
+    func testAllFlagsEvaluation() {
+        // Given
+        let exposureLogger = ExposureLoggerMock()
+        let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(
+                state: .init(
+                    flags: [
+                        "string-flag": .init(
+                            allocationKey: "allocation-123",
+                            variationKey: "variation-123",
+                            variation: .string("red"),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "boolean-flag": .init(
+                            allocationKey: "allocation-124",
+                            variationKey: "variation-124",
+                            variation: .boolean(true),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "integer-flag": .init(
+                            allocationKey: "allocation-125",
+                            variationKey: "variation-125",
+                            variation: .integer(42),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "numeric-flag": .init(
+                            allocationKey: "allocation-126",
+                            variationKey: "variation-126",
+                            variation: .double(3.14),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "json-flag": .init(
+                            allocationKey: "allocation-127",
+                            variationKey: "variation-127",
+                            variation: .object(
+                                .dictionary(["key": .string("value"), "prop": .int(123)])
+                            ),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                    ],
+                    context: .mockAny(),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: exposureLogger,
+            rumFlagEvaluationReporter: rumFlagEvaluationReporter
+        )
+
+        // When
+        guard let flagsDetails = client.getFlagsDetails() else {
+            XCTFail("Failed to get flags details")
+            return
+        }
+
+        // Then
+        XCTAssertEqual(flagsDetails.count, 5)
+        XCTAssertEqual(flagsDetails["boolean-flag"]?.value, .bool(true))
+        XCTAssertEqual(flagsDetails["string-flag"]?.value, .string("red"))
+        XCTAssertEqual(flagsDetails["integer-flag"]?.value, .int(42))
+        XCTAssertEqual(flagsDetails["numeric-flag"]?.value, .double(3.14))
+        XCTAssertEqual(
+            flagsDetails["json-flag"]?.value,
+            .dictionary(
+                [
+                    "key": .string("value"),
+                    "prop": .int(123)
+                ]
+            )
+        )
+        XCTAssertEqual(
+            flagsDetails["boolean-flag"],
+            FlagDetails(
+                key: "boolean-flag",
+                value: AnyValue.bool(true),
+                variant: "variation-124",
+                reason: "TARGETING_MATCH"
+            )
+        )
+        XCTAssertNil(flagsDetails["missing-flag"])
     }
 
     func testExposureTrackingDisabled() throws {
