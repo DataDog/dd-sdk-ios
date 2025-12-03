@@ -406,15 +406,21 @@ void* mach_sampling_profiler::sampling_thread_entry(void* arg) {
 
 /**
  * Starts the sampling process.
+ * Thread-safe: protected by mutex.
  *
  * @return true if sampling was started successfully
  */
 bool mach_sampling_profiler::start_sampling() {
+    std::lock_guard<std::mutex> lock(state_mutex);
+    
     if (running) return false;
 
     if (config.profile_current_thread_only) {
         target_thread = pthread_self();
     }
+
+    // Clear any leftover data from previous runs
+    sample_buffer.clear();
 
     running = true;
 
@@ -430,10 +436,17 @@ bool mach_sampling_profiler::start_sampling() {
 
 /**
  * Stops the sampling process.
+ * Thread-safe: protected by mutex. Holds lock during join to prevent
+ * new sampling sessions from starting until cleanup is complete.
  */
 void mach_sampling_profiler::stop_sampling() {
+    std::lock_guard<std::mutex> lock(state_mutex);
+    
     if (!running) return;
     running = false;
+    
+    // Join while holding the lock to ensure the sampling thread
+    // completes its flush_buffer() before any new session can start
     pthread_join(sampling_thread, nullptr);
 }
 

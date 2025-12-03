@@ -174,4 +174,117 @@ final class CTorProfilerTests: XCTestCase {
         ctor_profiler_start_testing(100, true, 5.seconds.dd.toInt64Nanoseconds) // prewarming = true
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_PREWARMED, "Should return PREWARMED status when prewarming is true")
     }
+
+    // MARK: - Concurrency Tests
+
+    func testConcurrentStop_doesNotCrash() {
+        // Given
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING)
+
+        let concurrentOperations = 10
+        let expectation = expectation(description: "All concurrent stops complete")
+        expectation.expectedFulfillmentCount = concurrentOperations
+
+        // When
+        DispatchQueue.concurrentPerform(iterations: concurrentOperations) { index in
+            ctor_profiler_stop()
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_STOPPED)
+    }
+
+    func testConcurrentGetStatus_doesNotCrash() {
+        // Given
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING)
+
+        let concurrentOperations = 100
+        let expectation = expectation(description: "All concurrent status checks complete")
+        expectation.expectedFulfillmentCount = concurrentOperations
+
+        // When
+        DispatchQueue.concurrentPerform(iterations: concurrentOperations) { index in
+            ctor_profiler_get_status()
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
+    }
+
+    func testConcurrentGetProfile_doesNotCrash() {
+        // Given
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING)
+        Thread.sleep(forTimeInterval: 0.1) // Allow some sampling
+
+        let concurrentOperations = 50
+        let expectation = expectation(description: "All concurrent profile fetches complete")
+        expectation.expectedFulfillmentCount = 50
+
+        // When
+        DispatchQueue.concurrentPerform(iterations: concurrentOperations) { index in
+            ctor_profiler_get_profile()
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
+    }
+
+    func testConcurrentDestroy_doesNotCrash() {
+        // Given
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING)
+        Thread.sleep(forTimeInterval: 0.1) // Allow some sampling
+        ctor_profiler_stop()
+
+        let concurrentOperations = 10
+        let expectation = expectation(description: "All concurrent destroys complete")
+        expectation.expectedFulfillmentCount = concurrentOperations
+
+        // When
+        DispatchQueue.concurrentPerform(iterations: concurrentOperations) { index in
+            ctor_profiler_destroy()
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
+        XCTAssertNil(ctor_profiler_get_profile())
+    }
+
+    func testConcurrentMixedOperations_doesNotCrash() {
+        // Given
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        Thread.sleep(forTimeInterval: 0.1) // Allow some sampling
+
+        let concurrentOperations = 50
+        let expectation = expectation(description: "All concurrent mixed operations complete")
+        expectation.expectedFulfillmentCount = concurrentOperations
+
+        // When
+        DispatchQueue.concurrentPerform(iterations: concurrentOperations) { index in
+            switch index % 4 {
+            case 0:
+                ctor_profiler_stop()
+            case 1:
+                ctor_profiler_get_status()
+            case 2:
+                ctor_profiler_get_profile()
+            case 3:
+                ctor_profiler_destroy()
+            default:
+                break
+            }
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
+    }
 }

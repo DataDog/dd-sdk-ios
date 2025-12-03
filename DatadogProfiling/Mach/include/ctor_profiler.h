@@ -82,6 +82,10 @@
 
 #ifdef __APPLE__
 
+// UserDefaults constants centralized for Profiling
+#define DD_PROFILING_USER_DEFAULTS_SUITE_NAME "com.datadoghq.ios-sdk.profiling"
+#define DD_PROFILING_IS_ENABLED_KEY "is_profiling_enabled"
+
 #ifdef __cplusplus
 namespace dd::profiler {
 
