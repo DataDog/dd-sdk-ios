@@ -8,7 +8,8 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 
-@_spi(Internal) @testable import DatadogFlags
+@_spi(Internal)
+@testable import DatadogFlags
 
 final class FlagsClientTests: XCTestCase {
     func testCreate() {
