@@ -21,7 +21,7 @@ class ContextSharingExtensionTests: XCTestCase {
     }
 
     override func tearDown() {
-        objc_ContextSharingExtension.unsubscribe()
+        CrossPlatformExtension.unsubscribeFromSharedContext()
         try? core.flushAndTearDown()
         CoreRegistry.unregisterDefault()
         core = nil
@@ -36,7 +36,7 @@ class ContextSharingExtensionTests: XCTestCase {
         var receivedContexts: [SharedContext?] = []
 
         // When
-        objc_ContextSharingExtension.subscribe { context in
+        CrossPlatformExtension.subscribe { context in
             self.queue.sync {
                 receivedContexts.append(context)
             }
@@ -59,7 +59,7 @@ class ContextSharingExtensionTests: XCTestCase {
 
         var receivedContexts: [SharedContext?] = []
 
-        objc_ContextSharingExtension.subscribe { context in
+        CrossPlatformExtension.subscribe { context in
             self.queue.sync {
                 receivedContexts.append(context)
             }
@@ -87,13 +87,13 @@ class ContextSharingExtensionTests: XCTestCase {
         var subscriptionIds = [Int]()
 
         // When
-        objc_ContextSharingExtension.subscribe { _ in
+        CrossPlatformExtension.subscribe { _ in
             self.queue.sync {
                 subscriptionIds.append(1)
             }
         }
 
-        objc_ContextSharingExtension.subscribe { _ in
+        CrossPlatformExtension.subscribe { _ in
             self.queue.sync {
                 subscriptionIds.append(2)
             }

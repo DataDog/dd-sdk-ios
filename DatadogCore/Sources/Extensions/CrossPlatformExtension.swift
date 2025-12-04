@@ -13,10 +13,10 @@ import DatadogInternal
 /// to the Datadog shared context from Objective-C code.
 ///
 /// Note: It only works for single core setup, relying on `CoreRegistry.default` existence.
-@objc(DDContextSharingExtension)
+@objc(DDCrossPlatformExtension)
 @objcMembers
 @_spi(Internal)
-public final class objc_ContextSharingExtension: NSObject {
+public final class CrossPlatformExtension: NSObject {
     private static var contextSharingTransformer: ContextSharingTransformer?
 
     /// Subscribes to shared context updates.
@@ -37,7 +37,7 @@ public final class objc_ContextSharingExtension: NSObject {
     }
 
     @objc
-    public static func unsubscribe() {
+    public static func unsubscribeFromSharedContext() {
         contextSharingTransformer = nil
     }
 }
