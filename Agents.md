@@ -16,7 +16,7 @@ This is the **Datadog SDK for iOS and tvOS** - Swift and Objective-C libraries t
 - **Feature Flags**: Feature flag integration
 
 
-## ⚠️ Critical: Module Architecture
+## Critical: Module Architecture
 
 The SDK is organized as a **modular monorepo**. Understanding module dependencies is crucial:
 
@@ -38,7 +38,7 @@ DatadogInternal (shared protocols, types, utilities)
 - Only DatadogCore may orchestrate feature lifecycles
 - DatadogInternal is the ONLY allowed place for shared types
 
-### ⚡ IMPORTANT: Call Site Synchronization
+### IMPORTANT: Call Site Synchronization
 
 **When modifying code in feature modules (Logs, Trace, RUM, etc.), you MUST check and update corresponding call sites in `DatadogCore` and `DatadogInternal`.**
 
