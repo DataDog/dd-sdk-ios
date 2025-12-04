@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import Foundation
 import DatadogInternal
 
 /// Objective-C compatible type that exposes selected properties from `DatadogContext` to Objective-C.
