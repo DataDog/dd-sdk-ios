@@ -54,7 +54,7 @@ Common oversight: Agents modify a module's interface or behavior but forget to:
 
 ### Commit Requirements
 - **All commits MUST be signed** (GPG or SSH signature)
-- **Prefix**: `[RUM-XXXX]` where XXXX is the JIRA ticket number
+- **Prefix**: `[RUM-XXXX]` where XXXX is the JIRA ticket number. It applies only for internal development. Third party contributions do not need it.
 - Example: `[RUM-1234] Add baggage header merging support`
 
 ### PR Requirements
