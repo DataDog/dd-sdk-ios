@@ -8,19 +8,19 @@
 @import DatadogCore;
 @import DatadogInternal;
 
-@interface DDContextSharingExtension_apiTests : XCTestCase
+@interface DDCrossPlatformExtension_apiTests : XCTestCase
 @end
 
 /*
  * Objc APIs smoke tests - only check if the interface is available to Objc.
  */
-@implementation DDContextSharingExtension_apiTests
+@implementation DDCrossPlatformExtension_apiTests
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-value"
 
 - (void)testDDContextSharingExtensionAPI {
-    [DDContextSharingExtension subscribeToSharedContext:^(DDSharedContext * _Nullable context) {
+    [DDCrossPlatformExtension subscribeToSharedContext:^(DDSharedContext * _Nullable context) {
         // Just check API availability in Objective-C
     }];
 }
