@@ -4,12 +4,15 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import Foundation
 import DatadogInternal
 
 /// Objective-C extension for subscribing to Datadog context updates.
 ///
 /// This class provides cross-platform libraries with the ability to receive real-time updates
 /// to the Datadog shared context from Objective-C code.
+///
+/// Note: It only works for single core setup, relying on `CoreRegistry.default` existence.
 @objc(DDContextSharingExtension)
 @objcMembers
 @_spi(Internal)
@@ -31,5 +34,10 @@ public final class objc_ContextSharingExtension: NSObject {
             Self.contextSharingTransformer = contextSharingTransformer
         }
         contextSharingTransformer?.publish(to: toSharedContext)
+    }
+
+    @objc
+    public static func unsubscribe() {
+        contextSharingTransformer = nil
     }
 }
