@@ -24,6 +24,12 @@
 		11196A7D2EBACA2700B15BC1 /* UserDefaultsDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11196A7B2EBACA2700B15BC1 /* UserDefaultsDataStore.swift */; };
 		11196A7F2EBACBE400B15BC1 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 11196A7E2EBACBE400B15BC1 /* PrivacyInfo.xcprivacy */; };
 		11196A802EBACBE400B15BC1 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 11196A7E2EBACBE400B15BC1 /* PrivacyInfo.xcprivacy */; };
+		1121FCFC2EE305F600297156 /* AppLaunchMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFB2EE305F100297156 /* AppLaunchMetric.swift */; };
+		1121FCFD2EE305F600297156 /* AppLaunchMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFB2EE305F100297156 /* AppLaunchMetric.swift */; };
+		1121FCFF2EE319F000297156 /* ProfilingMetricController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFE2EE319E600297156 /* ProfilingMetricController.swift */; };
+		1121FD002EE319F000297156 /* ProfilingMetricController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFE2EE319E600297156 /* ProfilingMetricController.swift */; };
+		1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */; };
+		1121FD032EE33B3400297156 /* ConfigurationMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */; };
 		1124D52F2EA6D23C0002E053 /* StartupTypeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */; };
 		1124D5302EA6D23C0002E053 /* StartupTypeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */; };
 		1124D5322EA6D4050002E053 /* RUMAppLaunchManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D5312EA6D4050002E053 /* RUMAppLaunchManagerTests.swift */; };
@@ -2662,6 +2668,9 @@
 		1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAttributesIntegrationTests.swift; sourceTree = "<group>"; };
 		11196A7B2EBACA2700B15BC1 /* UserDefaultsDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsDataStore.swift; sourceTree = "<group>"; };
 		11196A7E2EBACBE400B15BC1 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../DatadogInternal/Resources/PrivacyInfo.xcprivacy; sourceTree = SOURCE_ROOT; };
+		1121FCFB2EE305F100297156 /* AppLaunchMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchMetric.swift; sourceTree = "<group>"; };
+		1121FCFE2EE319E600297156 /* ProfilingMetricController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingMetricController.swift; sourceTree = "<group>"; };
+		1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationMetric.swift; sourceTree = "<group>"; };
 		1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTypeHandler.swift; sourceTree = "<group>"; };
 		1124D5312EA6D4050002E053 /* RUMAppLaunchManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAppLaunchManagerTests.swift; sourceTree = "<group>"; };
 		1124D5342EA6D4390002E053 /* RUMAppLaunchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAppLaunchManager.swift; sourceTree = "<group>"; };
@@ -4230,6 +4239,16 @@
 				111201BF2E93C13000375DA3 /* AppStateManager.swift */,
 			);
 			path = AppState;
+			sourceTree = "<group>";
+		};
+		1121FCFA2EE305D900297156 /* SDKMetrics */ = {
+			isa = PBXGroup;
+			children = (
+				1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */,
+				1121FCFE2EE319E600297156 /* ProfilingMetricController.swift */,
+				1121FCFB2EE305F100297156 /* AppLaunchMetric.swift */,
+			);
+			path = SDKMetrics;
 			sourceTree = "<group>";
 		};
 		112877982D708D300082D11B /* RenderLoop */ = {
@@ -7413,6 +7432,7 @@
 				D233E7C32E4625D400E7CFDE /* RequestBuilder.swift */,
 				1126B2512EBAB22600A74226 /* PrivacyInfo.xcprivacy */,
 				D229FF5B2E3BA298009CCD62 /* Mach */,
+				1121FCFA2EE305D900297156 /* SDKMetrics */,
 			);
 			name = DatadogProfiling;
 			path = ../DatadogProfiling/Sources;
@@ -10029,13 +10049,16 @@
 				D233E7CB2E46264600E7CFDE /* ProfilerFeature.swift in Sources */,
 				D233E7C72E4625D400E7CFDE /* RequestBuilder.swift in Sources */,
 				D233E7C82E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
+				1121FCFF2EE319F000297156 /* ProfilingMetricController.swift in Sources */,
 				D233E8032E4B653F00E7CFDE /* dd_pprof.cpp in Sources */,
+				1121FD032EE33B3400297156 /* ConfigurationMetric.swift in Sources */,
 				D233E7C92E4625D400E7CFDE /* DatadogProfiling.swift in Sources */,
 				D2D0E1F32E3CE59700BA4113 /* mach_profiler.cpp in Sources */,
 				D233E7F62E4B588000E7CFDE /* profile.pb-c.c in Sources */,
 				D233E7F72E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */,
 				D274657B2E7B199A00C47FE2 /* AppLaunchProfiler.swift in Sources */,
 				D233E7F82E4B588000E7CFDE /* profile.cpp in Sources */,
+				1121FCFC2EE305F600297156 /* AppLaunchMetric.swift in Sources */,
 				D233E7F92E4B588000E7CFDE /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -10049,13 +10072,16 @@
 				D233E7CC2E46264600E7CFDE /* ProfilerFeature.swift in Sources */,
 				D233E7C42E4625D400E7CFDE /* RequestBuilder.swift in Sources */,
 				D233E7C52E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
+				1121FD002EE319F000297156 /* ProfilingMetricController.swift in Sources */,
 				D233E8022E4B653F00E7CFDE /* dd_pprof.cpp in Sources */,
+				1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */,
 				D233E7C62E4625D400E7CFDE /* DatadogProfiling.swift in Sources */,
 				D2D0E1F22E3CE59700BA4113 /* mach_profiler.cpp in Sources */,
 				D233E7EE2E4B588000E7CFDE /* profile.pb-c.c in Sources */,
 				D233E7EF2E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */,
 				D274657C2E7B199A00C47FE2 /* AppLaunchProfiler.swift in Sources */,
 				D233E7F02E4B588000E7CFDE /* profile.cpp in Sources */,
+				1121FCFD2EE305F600297156 /* AppLaunchMetric.swift in Sources */,
 				D233E7F12E4B588000E7CFDE /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -42,13 +42,15 @@ public enum Profiling {
     ///   - configuration: The profiling configuration to use.
     ///   - core: The Datadog core instance to register with. Defaults to the default core.
     public static func enable(with configuration: Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default) {
+        let telemetryController = ProfilingTelemetryController(telemetry: core.telemetry)
         try? core.register(
             feature: ProfilerFeature(
                 requestBuilder: RequestBuilder(
                     customUploadURL: configuration.customEndpoint,
                     telemetry: core.telemetry
                 ),
-                messageReceiver: AppLaunchProfiler(),
+                messageReceiver: AppLaunchProfiler(telemetryController: telemetryController),
+                telemetryController: telemetryController,
                 dataStore: UserDefaultsDataStore() //swiftlint:disable:this required_reason_api_name
             )
         )

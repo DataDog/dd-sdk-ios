@@ -22,8 +22,6 @@
 
 static constexpr int64_t CTOR_PROFILER_TIMEOUT_NS = 5000000000ULL; // 5 seconds
 
-static constexpr int64_t SAMPLING_RATE = 10; // 10%
-
 namespace dd::profiler { class ctor_profiler; }
 
 static dd::profiler::ctor_profiler* g_ctor_profiler = nullptr;
@@ -160,7 +158,6 @@ public:
         // Configure profiler
         sampling_config_t config = SAMPLING_CONFIG_DEFAULT;
         config.sampling_interval_nanos = sampling_interval_ns;
-        config.max_buffer_size = 10000; // Larger buffer to delay stack aggregation
 
         profiler = new mach_sampling_profiler(&config, callback, this);
         if (!profiler) {
@@ -247,7 +244,7 @@ static void ctor_profiler_auto_start() {
     delete_profiling_defaults();
 
     // Create profiler and start with sample rate
-    g_ctor_profiler = new dd::profiler::ctor_profiler(SAMPLING_RATE, is_active_prewarm());
+    g_ctor_profiler = new dd::profiler::ctor_profiler(DD_PROFILING_SAMPLE_RATE, is_active_prewarm());
     g_ctor_profiler->start();
 }
 

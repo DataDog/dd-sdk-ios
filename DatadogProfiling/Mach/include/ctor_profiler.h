@@ -82,6 +82,10 @@
 
 #ifdef __APPLE__
 
+// Profiling configuration constants
+/// Profiling sampling rate percentage (0-100).
+#define DD_PROFILING_SAMPLE_RATE 100
+
 #ifdef __cplusplus
 namespace dd::profiler {
 
