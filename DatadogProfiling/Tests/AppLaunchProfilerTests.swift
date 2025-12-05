@@ -138,7 +138,8 @@ final class AppLaunchProfilerTests: XCTestCase {
             feature: ProfilerFeature(
                 requestBuilder: FeatureRequestBuilderMock(),
                 messageReceiver: profiler,
-                sampleRate: .maxSampleRate
+                sampleRate: .maxSampleRate,
+                telemetryController: .init()
             )
         )
 

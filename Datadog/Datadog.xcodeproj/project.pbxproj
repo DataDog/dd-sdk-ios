@@ -30,6 +30,12 @@
 		111201C22E93C13000375DA3 /* AppStateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BE2E93C13000375DA3 /* AppStateInfo.swift */; };
 		111201C32E93C13000375DA3 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BF2E93C13000375DA3 /* AppStateManager.swift */; };
 		111201C42E93C13000375DA3 /* AppStateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BE2E93C13000375DA3 /* AppStateInfo.swift */; };
+		1121FCFC2EE305F600297156 /* AppLaunchMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFB2EE305F100297156 /* AppLaunchMetric.swift */; };
+		1121FCFD2EE305F600297156 /* AppLaunchMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFB2EE305F100297156 /* AppLaunchMetric.swift */; };
+		1121FCFF2EE319F000297156 /* ProfilingTelemetryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */; };
+		1121FD002EE319F000297156 /* ProfilingTelemetryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */; };
+		1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */; };
+		1121FD032EE33B3400297156 /* ConfigurationMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */; };
 		1124D52F2EA6D23C0002E053 /* StartupTypeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */; };
 		1124D5302EA6D23C0002E053 /* StartupTypeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */; };
 		1124D5322EA6D4050002E053 /* RUMAppLaunchManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D5312EA6D4050002E053 /* RUMAppLaunchManagerTests.swift */; };
@@ -294,6 +300,8 @@
 		1182FAC72DA2F827007FE71A /* DatadogRemoteFeatureMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9E12DA2F827007FE71A /* DatadogRemoteFeatureMock.swift */; };
 		118AAE082EBBB7F10018E745 /* ctor_profiler_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 118AAE052EBBB74D0018E745 /* ctor_profiler_testing.h */; };
 		118AAE092EBBB7F80018E745 /* ctor_profiler_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 118AAE052EBBB74D0018E745 /* ctor_profiler_testing.h */; };
+		118ACA412EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA402EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift */; };
+		118ACA422EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA402EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift */; };
 		11A2F24A2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */; };
 		11A2F24B2E70CC08006EDC52 /* MediaTimeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2492E70CC08006EDC52 /* MediaTimeProvider.swift */; };
 		11A2F24C2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */; };
@@ -2669,6 +2677,9 @@
 		111201BE2E93C13000375DA3 /* AppStateInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateInfo.swift; sourceTree = "<group>"; };
 		111201BF2E93C13000375DA3 /* AppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManager.swift; sourceTree = "<group>"; };
 		1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAttributesIntegrationTests.swift; sourceTree = "<group>"; };
+		1121FCFB2EE305F100297156 /* AppLaunchMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchMetric.swift; sourceTree = "<group>"; };
+		1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingTelemetryController.swift; sourceTree = "<group>"; };
+		1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationMetric.swift; sourceTree = "<group>"; };
 		1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTypeHandler.swift; sourceTree = "<group>"; };
 		1124D5312EA6D4050002E053 /* RUMAppLaunchManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAppLaunchManagerTests.swift; sourceTree = "<group>"; };
 		1124D5342EA6D4390002E053 /* RUMAppLaunchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAppLaunchManager.swift; sourceTree = "<group>"; };
@@ -2771,6 +2782,7 @@
 		1182FA1B2DA2F827007FE71A /* ServerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerMock.swift; sourceTree = "<group>"; };
 		1182FA1D2DA2F827007FE71A /* PrintFunctionSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintFunctionSpy.swift; sourceTree = "<group>"; };
 		118AAE052EBBB74D0018E745 /* ctor_profiler_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ctor_profiler_testing.h; sourceTree = "<group>"; };
+		118ACA402EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingTelemetryControllerTests.swift; sourceTree = "<group>"; };
 		11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameInfoProvider.swift; sourceTree = "<group>"; };
 		11A2F2492E70CC08006EDC52 /* MediaTimeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTimeProvider.swift; sourceTree = "<group>"; };
 		11A2F2512E71B730006EDC52 /* MediaTimeProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTimeProviderMock.swift; sourceTree = "<group>"; };
@@ -4236,6 +4248,24 @@
 				111201BF2E93C13000375DA3 /* AppStateManager.swift */,
 			);
 			path = AppState;
+			sourceTree = "<group>";
+		};
+		1121FCFA2EE305D900297156 /* SDKMetrics */ = {
+			isa = PBXGroup;
+			children = (
+				1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */,
+				1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */,
+				1121FCFB2EE305F100297156 /* AppLaunchMetric.swift */,
+			);
+			path = SDKMetrics;
+			sourceTree = "<group>";
+		};
+		1121FD0B2EE848F700297156 /* SDKMetrics */ = {
+			isa = PBXGroup;
+			children = (
+				118ACA402EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift */,
+			);
+			path = SDKMetrics;
 			sourceTree = "<group>";
 		};
 		112877982D708D300082D11B /* RenderLoop */ = {
@@ -7411,6 +7441,7 @@
 				D233E7C32E4625D400E7CFDE /* RequestBuilder.swift */,
 				1126B2512EBAB22600A74226 /* PrivacyInfo.xcprivacy */,
 				D229FF5B2E3BA298009CCD62 /* Mach */,
+				1121FCFA2EE305D900297156 /* SDKMetrics */,
 			);
 			name = DatadogProfiling;
 			path = ../DatadogProfiling/Sources;
@@ -7433,6 +7464,7 @@
 				D233E7DD2E4A109100E7CFDE /* ProfilingTest.swift */,
 				D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */,
 				110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */,
+				1121FD0B2EE848F700297156 /* SDKMetrics */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -10030,13 +10062,16 @@
 				110DD1B12EEB6BBD002F3B8B /* ProfilingConfiguration.swift in Sources */,
 				D233E7C72E4625D400E7CFDE /* RequestBuilder.swift in Sources */,
 				D233E7C82E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
+				1121FCFF2EE319F000297156 /* ProfilingTelemetryController.swift in Sources */,
 				D233E8032E4B653F00E7CFDE /* dd_pprof.cpp in Sources */,
 				D233E7C92E4625D400E7CFDE /* Profiling.swift in Sources */,
+				1121FD032EE33B3400297156 /* ConfigurationMetric.swift in Sources */,
 				D2D0E1F32E3CE59700BA4113 /* mach_profiler.cpp in Sources */,
 				D233E7F62E4B588000E7CFDE /* profile.pb-c.c in Sources */,
 				D233E7F72E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */,
 				D274657B2E7B199A00C47FE2 /* AppLaunchProfiler.swift in Sources */,
 				D233E7F82E4B588000E7CFDE /* profile.cpp in Sources */,
+				1121FCFC2EE305F600297156 /* AppLaunchMetric.swift in Sources */,
 				D233E7F92E4B588000E7CFDE /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -10051,13 +10086,16 @@
 				110DD1B22EEB6BBD002F3B8B /* ProfilingConfiguration.swift in Sources */,
 				D233E7C42E4625D400E7CFDE /* RequestBuilder.swift in Sources */,
 				D233E7C52E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
+				1121FD002EE319F000297156 /* ProfilingTelemetryController.swift in Sources */,
 				D233E8022E4B653F00E7CFDE /* dd_pprof.cpp in Sources */,
 				D233E7C62E4625D400E7CFDE /* Profiling.swift in Sources */,
+				1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */,
 				D2D0E1F22E3CE59700BA4113 /* mach_profiler.cpp in Sources */,
 				D233E7EE2E4B588000E7CFDE /* profile.pb-c.c in Sources */,
 				D233E7EF2E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */,
 				D274657C2E7B199A00C47FE2 /* AppLaunchProfiler.swift in Sources */,
 				D233E7F02E4B588000E7CFDE /* profile.cpp in Sources */,
+				1121FCFD2EE305F600297156 /* AppLaunchMetric.swift in Sources */,
 				D233E7F12E4B588000E7CFDE /* protobuf-c.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -10986,6 +11024,7 @@
 				D233E7E42E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
 				D27465782E796A1F00C47FE2 /* CTorProfilerTests.swift in Sources */,
 				D262DA662E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,
+				118ACA422EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift in Sources */,
 				D233E7DE2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
 				D2D0E2192E40E34A00BA4113 /* MockThread.swift in Sources */,
 				110DD1B52EEB7090002F3B8B /* ProfilingConfigurationTests.swift in Sources */,
@@ -11008,6 +11047,7 @@
 				D233E7E52E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
 				D27465792E796A1F00C47FE2 /* CTorProfilerTests.swift in Sources */,
 				D262DA652E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,
+				118ACA412EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift in Sources */,
 				D233E7DF2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
 				D2D0E21A2E40E34A00BA4113 /* MockThread.swift in Sources */,
 				110DD1B42EEB7090002F3B8B /* ProfilingConfigurationTests.swift in Sources */,

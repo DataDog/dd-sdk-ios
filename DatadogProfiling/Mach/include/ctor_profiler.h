@@ -87,6 +87,10 @@
 #define DD_PROFILING_IS_ENABLED_KEY "is_profiling_enabled"
 #define DD_PROFILING_SAMPLE_RATE_KEY "profiling_sample_rate"
 
+// Profiling configuration constants
+/// Profiling sample rate percentage (0-100).
+#define DD_PROFILING_SAMPLE_RATE 10 // 10%
+
 #ifdef __cplusplus
 namespace dd::profiler {
 
