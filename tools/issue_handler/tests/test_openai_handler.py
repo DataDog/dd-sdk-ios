@@ -10,7 +10,7 @@ Tests for OpenAI handler functionality.
 import pytest
 import os
 from unittest.mock import patch, Mock, MagicMock
-from src.openai_handler import OpenAIHandler, AnalysisResult, OpenAIError
+from src.openai_handler import OpenAIHandler, AnalysisResult, FeatureDocsUsed, OpenAIError
 from src.github_handler import GithubIssue
 
 
@@ -104,7 +104,7 @@ class TestOpenAIHandler:
         # Mock response
         mock_response = Mock()
         mock_response.choices = [Mock()]
-        mock_response.choices[0].message.content = '{"summary": "Test summary", "problem": "Test problem", "scope": "sdk", "category": "bug", "confidence_level": "high", "next_steps": ["Step 1"], "clarifying_questions": ["Question 1"], "suggested_response": "Test response"}'
+        mock_response.choices[0].message.content = '{"summary": "Test summary", "problem": "Test problem", "scope": "sdk", "category": "bug", "confidence_level": "high", "next_steps": ["Step 1"], "clarifying_questions": ["Question 1"], "suggested_response": "Test response", "feature_docs_used": {"consulted": ["RUM"], "helpful": true, "relevant_sections": ["Troubleshooting"]}}'
         mock_client.chat.completions.create.return_value = mock_response
         
         # Create handler with mocked client and environment
@@ -134,6 +134,10 @@ class TestOpenAIHandler:
             assert result.next_steps == ["Step 1"]
             assert result.clarifying_questions == ["Question 1"]
             assert result.suggested_response == "Test response"
+            assert isinstance(result.feature_docs_used, FeatureDocsUsed)
+            assert result.feature_docs_used.consulted == ["RUM"]
+            assert result.feature_docs_used.helpful is True
+            assert result.feature_docs_used.relevant_sections == ["Troubleshooting"]
             
             # Verify OpenAI call
             mock_client.chat.completions.create.assert_called_once()
@@ -212,6 +216,10 @@ class TestOpenAIHandler:
             assert result.next_steps == []      # default
             assert result.clarifying_questions == []  # default
             assert result.suggested_response == "[missing]"  # default
+            assert isinstance(result.feature_docs_used, FeatureDocsUsed)
+            assert result.feature_docs_used.consulted == []  # default
+            assert result.feature_docs_used.helpful is False  # default
+            assert result.feature_docs_used.relevant_sections == []  # default
 
 
 class TestAnalysisResult:
@@ -219,6 +227,11 @@ class TestAnalysisResult:
     
     def test_analysis_result_creation(self):
         """Test AnalysisResult object creation."""
+        feature_docs = FeatureDocsUsed(
+            consulted=["RUM", "Session Replay"],
+            helpful=True,
+            relevant_sections=["Configuration", "Troubleshooting"]
+        )
         result = AnalysisResult(
             summary="Test summary",
             problem="Test problem",
@@ -227,7 +240,8 @@ class TestAnalysisResult:
             confidence_level="high",
             next_steps=["Step 1", "Step 2"],
             clarifying_questions=["Question 1"],
-            suggested_response="Test response"
+            suggested_response="Test response",
+            feature_docs_used=feature_docs
         )
         
         assert result.summary == "Test summary"
@@ -238,6 +252,58 @@ class TestAnalysisResult:
         assert result.next_steps == ["Step 1", "Step 2"]
         assert result.clarifying_questions == ["Question 1"]
         assert result.suggested_response == "Test response"
+        assert result.feature_docs_used.consulted == ["RUM", "Session Replay"]
+        assert result.feature_docs_used.helpful is True
+        assert result.feature_docs_used.relevant_sections == ["Configuration", "Troubleshooting"]
+
+    def test_analysis_result_default_feature_docs(self):
+        """Test AnalysisResult with default feature_docs_used."""
+        result = AnalysisResult(
+            summary="Test summary",
+            problem="Test problem",
+            scope="sdk",
+            category="bug",
+            confidence_level="high",
+            next_steps=[],
+            clarifying_questions=[],
+            suggested_response="Test response"
+        )
+        
+        assert isinstance(result.feature_docs_used, FeatureDocsUsed)
+        assert result.feature_docs_used.consulted == []
+        assert result.feature_docs_used.helpful is False
+        assert result.feature_docs_used.relevant_sections == []
+
+
+class TestFeatureDocsUsed:
+    """Test cases for FeatureDocsUsed dataclass."""
+    
+    def test_feature_docs_used_creation(self):
+        """Test FeatureDocsUsed object creation."""
+        docs = FeatureDocsUsed(
+            consulted=["RUM"],
+            helpful=True,
+            relevant_sections=["Troubleshooting Patterns"]
+        )
+        
+        assert docs.consulted == ["RUM"]
+        assert docs.helpful is True
+        assert docs.relevant_sections == ["Troubleshooting Patterns"]
+    
+    def test_feature_docs_used_to_dict(self):
+        """Test FeatureDocsUsed to_dict method."""
+        docs = FeatureDocsUsed(
+            consulted=["Session Replay"],
+            helpful=False,
+            relevant_sections=[]
+        )
+        
+        result = docs.to_dict()
+        assert result == {
+            "consulted": ["Session Replay"],
+            "helpful": False,
+            "relevant_sections": []
+        }
 
 
 class TestOpenAIHandlerFactory:

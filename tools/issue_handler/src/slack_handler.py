@@ -57,6 +57,22 @@ class SlackHandler:
             # Compact badges line
             badges = f"*Category:* `{sanitized['category']}`   *Scope:* `{sanitized['scope']}`   *Confidence:* `{sanitized['confidence_level']}`"
 
+            # Feature docs usage line (if any docs were consulted)
+            feature_docs = sanitized.get('feature_docs_used', {})
+            docs_consulted = feature_docs.get('consulted', [])
+            docs_helpful = feature_docs.get('helpful', False)
+            docs_sections = feature_docs.get('relevant_sections', [])
+            if docs_consulted:
+                docs_list = ", ".join(docs_consulted)
+                # Add relevant sections in parentheses if available
+                if docs_sections:
+                    sections_str = ", ".join(docs_sections)
+                    docs_list = f"{docs_list} ({sections_str})"
+                helpful_indicator = "✅" if docs_helpful else "❌"
+                docs_badge = f"*Docs:* `{docs_list}`   *Helpful:* {helpful_indicator}"
+            else:
+                docs_badge = "*Docs:* `none`"
+
             # Build bullets for steps & questions
             def bullets(items: List[str]) -> str:
                 return "\n".join([f"• {i}" for i in items]) if items else "_None_"
@@ -79,6 +95,7 @@ class SlackHandler:
 
             blocks.extend([
                 {"type": "context", "elements": [{"type": "mrkdwn", "text": badges}]},
+                {"type": "context", "elements": [{"type": "mrkdwn", "text": docs_badge}]},
                 {"type": "section", "text": {"type": "mrkdwn", "text": f"*Next Steps (for handler)*\n{bullets(sanitized.get('next_steps', []))}"}},
             ])
 
@@ -167,6 +184,22 @@ class SlackHandler:
                 out.append(sanitize_text(items.strip(), item_type))
             return out
 
+        # Handle feature_docs_used - can be dict or dataclass
+        feature_docs_raw = analysis.get("feature_docs_used", {})
+        if hasattr(feature_docs_raw, '__dict__'):
+            # It's a dataclass, convert to dict
+            feature_docs_raw = {
+                "consulted": getattr(feature_docs_raw, 'consulted', []),
+                "helpful": getattr(feature_docs_raw, 'helpful', False),
+                "relevant_sections": getattr(feature_docs_raw, 'relevant_sections', [])
+            }
+        
+        feature_docs_used = {
+            "consulted": sanitize_list(feature_docs_raw.get("consulted", []), "docs"),
+            "helpful": bool(feature_docs_raw.get("helpful", False)),
+            "relevant_sections": sanitize_list(feature_docs_raw.get("relevant_sections", []), "docs"),
+        }
+
         return {
             "summary": sanitize_text(analysis.get("summary", ""), "summary"),
             "problem": sanitize_text(analysis.get("problem", ""), "problem"),
@@ -176,6 +209,7 @@ class SlackHandler:
             "next_steps": sanitize_list(analysis.get("next_steps"), "next_steps"),
             "clarifying_questions": sanitize_list(analysis.get("clarifying_questions"), "questions"),
             "suggested_response": sanitize_text(analysis.get("suggested_response", ""), "response"),
+            "feature_docs_used": feature_docs_used,
         }
 
 class SlackError(Exception):

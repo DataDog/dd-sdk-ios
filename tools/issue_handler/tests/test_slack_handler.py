@@ -45,7 +45,12 @@ class TestSlackHandler:
         analysis = {
             'summary': 'This is a normal summary',
             'suggested_response': 'This is a normal response',
-            'confidence_level': 'high'
+            'confidence_level': 'high',
+            'feature_docs_used': {
+                'consulted': ['RUM'],
+                'helpful': True,
+                'relevant_sections': ['Troubleshooting']
+            }
         }
         
         result = self.handler._sanitize_analysis(analysis)
@@ -53,6 +58,9 @@ class TestSlackHandler:
         assert result['summary'] == 'This is a normal summary'
         assert result['suggested_response'] == 'This is a normal response'
         assert result['confidence_level'] == 'high'
+        assert result['feature_docs_used']['consulted'] == ['RUM']
+        assert result['feature_docs_used']['helpful'] is True
+        assert result['feature_docs_used']['relevant_sections'] == ['Troubleshooting']
     
     def test_sanitize_analysis_markdown_links(self):
         """Test that markdown links are removed."""
@@ -185,11 +193,16 @@ class TestSlackHandler:
         mock_response.raise_for_status.return_value = None
         mock_post.return_value = mock_response
         
-        # Test analysis
+        # Test analysis with feature_docs_used
         analysis = {
             'summary': 'Test summary',
             'suggested_response': 'Test response',
-            'confidence_level': 'high'
+            'confidence_level': 'high',
+            'feature_docs_used': {
+                'consulted': ['RUM'],
+                'helpful': True,
+                'relevant_sections': ['Troubleshooting']
+            }
         }
         
         # Mock environment for URL building
@@ -212,7 +225,7 @@ class TestSlackHandler:
         
         # Verify blocks contain expected content
         blocks = payload["blocks"]
-        assert len(blocks) >= 5  # Should have multiple blocks
+        assert len(blocks) >= 6  # Should have multiple blocks including docs badge
         
         # Check for issue notification
         issue_block = blocks[0]
@@ -223,7 +236,59 @@ class TestSlackHandler:
         # Check for analysis
         analysis_block = blocks[3]  # Summary block
         assert "Test summary" in analysis_block["text"]["text"]
+        
+        # Check for feature docs badge (context block after main badges)
+        # Find the docs badge block
+        docs_badge_found = False
+        for block in blocks:
+            if block.get("type") == "context":
+                elements = block.get("elements", [])
+                for elem in elements:
+                    text = elem.get("text", "")
+                    if "Docs:" in text and "RUM" in text:
+                        docs_badge_found = True
+                        assert "✅" in text  # helpful indicator
+                        assert "Troubleshooting" in text  # relevant sections in parentheses
+                        break
+        assert docs_badge_found, "Feature docs badge not found in Slack message"
     
+    @patch('src.slack_handler.requests.post')
+    def test_post_issue_with_analysis_no_docs_consulted(self, mock_post):
+        """Test posting to Slack when no feature docs were consulted."""
+        # Mock successful response
+        mock_response = Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_post.return_value = mock_response
+        
+        # Test analysis without feature_docs_used
+        analysis = {
+            'summary': 'Test summary',
+            'suggested_response': 'Test response',
+            'confidence_level': 'high'
+        }
+        
+        # Mock environment for URL building
+        with patch.dict(os.environ, {'GITHUB_REPOSITORY': 'DataDog/dd-sdk-ios'}):
+            self.handler.post_issue_with_analysis(self.test_issue, analysis)
+        
+        # Verify Slack API call
+        mock_post.assert_called_once()
+        call_args = mock_post.call_args
+        payload = call_args[1]["json"]
+        blocks = payload["blocks"]
+        
+        # Check for "none" docs badge
+        docs_badge_found = False
+        for block in blocks:
+            if block.get("type") == "context":
+                elements = block.get("elements", [])
+                for elem in elements:
+                    text = elem.get("text", "")
+                    if "Docs:" in text and "none" in text:
+                        docs_badge_found = True
+                        break
+        assert docs_badge_found, "Docs: none badge not found in Slack message"
+
     @patch('src.slack_handler.requests.post')
     def test_post_issue_with_analysis_slack_error(self, mock_post):
         """Test handling of Slack API errors."""

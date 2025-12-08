@@ -10,8 +10,8 @@ Manages OpenAI API calls for issue analysis.
 import os
 import json
 import re
-from typing import Dict, Optional, List, Any
-from dataclasses import dataclass, asdict
+from typing import Dict, Optional, List, Any, TypedDict
+from dataclasses import dataclass, asdict, field
 import openai
 from .github_handler import GithubIssue
 
@@ -35,6 +35,17 @@ def _norm_list_str(value: Any) -> List[str]:
     return []
 
 @dataclass
+class FeatureDocsUsed:
+    """Tracks which feature documentation was consulted during analysis."""
+    consulted: List[str]  # e.g., ["RUM", "Session Replay"]
+    helpful: bool
+    relevant_sections: List[str]  # e.g., ["Troubleshooting Patterns", "Configuration Categories"]
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class AnalysisResult:
     """Represents the analysis of a GitHub issue."""
     summary: str
@@ -45,6 +56,7 @@ class AnalysisResult:
     next_steps: List[str]
     clarifying_questions: List[str]
     suggested_response: str
+    feature_docs_used: FeatureDocsUsed = field(default_factory=lambda: FeatureDocsUsed([], False, []))
     
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -195,6 +207,17 @@ Content:
 
         suggested_response = _norm_str(r.get("suggested_response"), "[missing]")
 
+        # Normalize feature_docs_used
+        feature_docs_raw = r.get("feature_docs_used", {})
+        if isinstance(feature_docs_raw, dict):
+            feature_docs_used = FeatureDocsUsed(
+                consulted=_norm_list_str(feature_docs_raw.get("consulted"))[:5],
+                helpful=bool(feature_docs_raw.get("helpful", False)),
+                relevant_sections=_norm_list_str(feature_docs_raw.get("relevant_sections"))[:5]
+            )
+        else:
+            feature_docs_used = FeatureDocsUsed([], False, [])
+
         return {
             "summary": summary,
             "problem": problem,
@@ -204,6 +227,7 @@ Content:
             "next_steps": next_steps,
             "clarifying_questions": questions,
             "suggested_response": suggested_response,
+            "feature_docs_used": feature_docs_used,
         }
 
 class OpenAIError(Exception):
