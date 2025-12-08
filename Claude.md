@@ -169,9 +169,10 @@ The SDK can be compiled against either:
 1. Read the module's source code to understand existing patterns
 2. Add implementation in `<Module>/Sources/`
 3. Add comprehensive unit tests in `<Module>/Tests/`
-4. Update API surface: `make api-surface`
-5. Run linter: `make lint`
-6. Run tests: `make test-ios SCHEME="<Module> iOS"`
+4. Ensure all file creation, removal, move are reflected in corresponding pbxproj files when needed 
+5. Update API surface: `make api-surface`
+6. Run linter: `make lint`
+7. Run tests: `make test-ios SCHEME="<Module> iOS"`
 
 ### Modifying RUM or Session Replay Data Models
 
@@ -208,3 +209,7 @@ The `ENV=ci` flag is used in CI to enable special behaviors (e.g., different API
 - Keep PRs small and atomic, solving one issue each
 - Code must pass `make lint`, `make test-ios-all`, `make test-tvos-all`, and API surface checks
 - Follow patterns established in the codebase (OOP, SOLID principles, dependency injection)
+
+## Claude additional Agent documentation
+
+Claude can look at the Agents.md to gather more information about the project.
