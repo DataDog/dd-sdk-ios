@@ -300,3 +300,18 @@ extension FlagsClientProtocol {
         getDetails(key: key, defaultValue: defaultValue)
     }
 }
+
+// MARK: - Internal methods consumed by the React Native SDK
+
+extension FlagsClientProtocol {
+    @_spi(Internal)
+    public func getAllFlagsDetails() -> [String: FlagDetails<AnyValue>]? {
+        // no-op
+        return nil
+    }
+
+    @_spi(Internal)
+    public func trackEvaluation(key: String) {
+        // no-op
+    }
+}
