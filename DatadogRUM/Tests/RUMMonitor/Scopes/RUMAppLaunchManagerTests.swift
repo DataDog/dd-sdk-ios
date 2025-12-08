@@ -32,7 +32,8 @@ final class RUMAppLaunchManagerTests: XCTestCase {
 
         manager = RUMAppLaunchManager(
             parent: mockParent,
-            dependencies: mockDependencies
+            dependencies: mockDependencies,
+            telemetryController: .init()
         )
     }
 

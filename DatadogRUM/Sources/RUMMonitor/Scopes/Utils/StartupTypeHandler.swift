@@ -7,7 +7,7 @@
 import DatadogInternal
 import Foundation
 
-internal enum ColdStartRule: CaseIterable {
+internal enum ColdStartRule: String, CaseIterable {
     case freshInstall
     case appUpdate
     case systemRestart
@@ -20,13 +20,16 @@ internal final class StartupTypeHandler {
         static let maxInactivityDuration: TimeInterval = 604_800 // 1 week
     }
     private let appStateManager: AppStateManaging
+    private let telemetryController: AppLaunchMetricController
     private let coldStartRules: [ColdStartRule]
 
     init(
         appStateManager: AppStateManaging,
+        telemetryController: AppLaunchMetricController,
         coldStartRules: [ColdStartRule] = ColdStartRule.allCases
     ) {
         self.appStateManager = appStateManager
+        self.telemetryController = telemetryController
         self.coldStartRules = coldStartRules
     }
 
@@ -35,21 +38,25 @@ internal final class StartupTypeHandler {
             switch rule {
             case .freshInstall:
                 if appStateManager.previousAppStateInfo == nil {
+                    telemetryController.track(coldStartRule: rule)
                     return .coldStart
                 }
             case .appUpdate:
                 if let previousAppStateInfo = appStateManager.previousAppStateInfo,
                    previousAppStateInfo.appVersion != currentAppState.appVersion {
+                    telemetryController.track(coldStartRule: rule)
                     return .coldStart
                 }
             case .systemRestart:
                 if let previousAppStateInfo = appStateManager.previousAppStateInfo,
                    previousAppStateInfo.systemBootTime < currentAppState.systemBootTime {
+                    telemetryController.track(coldStartRule: rule)
                     return .coldStart
                 }
             case .longInactivity:
                 if let previousAppStateInfo = appStateManager.previousAppStateInfo,
                    (currentAppState.appLaunchTime - previousAppStateInfo.appLaunchTime) > Constants.maxInactivityDuration {
+                    telemetryController.track(coldStartRule: rule)
                     return .coldStart
                 }
             }
