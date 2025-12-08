@@ -248,8 +248,42 @@ final class FlagsClientTests: XCTestCase {
                 error: .typeMismatch
             )
         )
+
+        // Test exposure logging and RUM reporting
         XCTAssertEqual(exposureLogger.logExposureCalls.count, 6)
         XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls.count, 6)
+    }
+
+    func testFlagEvaluationTracking() {
+        // Given
+        let exposureLogger = ExposureLoggerMock()
+        let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(
+                state: .init(
+                    flags: [
+                        "string-flag": .init(
+                            allocationKey: "allocation-123",
+                            variationKey: "variation-123",
+                            variation: .string("red"),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                    ],
+                    context: .mockAny(),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: exposureLogger,
+            rumFlagEvaluationReporter: rumFlagEvaluationReporter
+        )
+
+        // When
+        _ = client.getDetails(key: "string-flag", defaultValue: "default")
+
+        // Then
+        XCTAssertEqual(exposureLogger.logExposureCalls.count, 1)
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls.count, 1)
     }
 
     func testGetAllFlagsDetails() {
