@@ -222,27 +222,14 @@ extension FlagsClient: FlagsClientProtocol {
             return nil
         }
 
-        var result: [String: FlagDetails<AnyValue>] = [:]
-
-        for (key, assignment) in flagAssignments {
-            let value: AnyValue
-
-            switch assignment.variation {
-            case .boolean(let v):   value = .bool(v)
-            case .string(let v):    value = .string(v)
-            case .integer(let v):   value = .int(v)
-            case .double(let v):    value = .double(v)
-            case .object(let v):    value = v
-            case .unknown:          continue
+        let result: [String: FlagDetails<AnyValue>] = Dictionary(
+            uniqueKeysWithValues: flagAssignments.compactMap { key, value in
+                guard let details = FlagDetails(key: key, flagAssignment: value) else {
+                    return nil
+                }
+                return (key, details)
             }
-
-            result[key] = FlagDetails(
-                key: key,
-                value: value,
-                variant: assignment.variationKey,
-                reason: assignment.reason
-            )
-        }
+        )
 
         return result
     }
@@ -257,25 +244,36 @@ extension FlagsClient: FlagsClientProtocol {
             return
         }
 
-        let value: FlagValue
-        switch flagAssignment.variation {
-        case .boolean(let v):   value = v
-        case .string(let v):    value = v
-        case .integer(let v):   value = v
-        case .double(let v):    value = v
-        case .object(let v):    value = v
-        case .unknown:          return
-        }
-
         exposureLogger.logExposure(
             for: key,
             assignment: flagAssignment,
             evaluationContext: context
         )
 
+        let details = FlagDetails(key: key, flagAssignment: flagAssignment)
+
         rumFlagEvaluationReporter.sendFlagEvaluation(
             flagKey: key,
-            value: value
+            value: details?.value ?? AnyValue.null
         )
+    }
+}
+
+extension FlagDetails where T == AnyValue {
+    fileprivate init?(key: String, flagAssignment: FlagAssignment) {
+        switch flagAssignment.variation {
+        case .boolean(let value):
+            self.init(key: key, value: .bool(value), variant: flagAssignment.variationKey, reason: flagAssignment.reason)
+        case .string(let value):
+            self.init(key: key, value: .string(value), variant: flagAssignment.variationKey, reason: flagAssignment.reason)
+        case .integer(let value):
+            self.init(key: key, value: .int(value), variant: flagAssignment.variationKey, reason: flagAssignment.reason)
+        case .double(let value):
+            self.init(key: key, value: .double(value), variant: flagAssignment.variationKey, reason: flagAssignment.reason)
+        case .object(let value):
+            self.init(key: key, value: value, variant: flagAssignment.variationKey, reason: flagAssignment.reason)
+        case .unknown:
+            return nil
+        }
     }
 }
