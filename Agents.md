@@ -42,11 +42,14 @@ DatadogInternal (shared protocols, types, utilities)
 
 **When modifying code in feature modules (Logs, Trace, RUM, etc.), you MUST check and update corresponding call sites in `DatadogCore` and `DatadogInternal`.**
 
-Common oversight: Agents modify a module's interface or behavior but forget to:
+Common oversight:
+Agents modify a module's interface or behavior but forget to:
 - Update how `DatadogCore` initializes or registers the feature
 - Update extraction/encoding logic in `DatadogInternal`
 - Update integration points in other modules that depend on the changed code
-- Do not forget to update ObjC bridges when needed
+- update ObjC bridges when needed
+Agents add, remove, move files but forget to:
+- Update the corresponding pbxproj files accordingly.
 
 **Always search for usages across the entire codebase before considering a change complete.**
 
