@@ -217,7 +217,7 @@ extension FlagsClient: FlagsClientProtocol {
     }
 
     @_spi(Internal)
-    public func getFlagsDetails() -> [String: FlagDetails<AnyValue>]? {
+    public func getAllFlagsDetails() -> [String: FlagDetails<AnyValue>]? {
         guard let flagAssignments = repository.flagAssignments() else {
             return nil
         }

@@ -252,7 +252,7 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls.count, 6)
     }
 
-    func testAllFlagsEvaluation() {
+    func testGetAllFlagsDetails() {
         // Given
         let exposureLogger = ExposureLoggerMock()
         let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
@@ -307,7 +307,7 @@ final class FlagsClientTests: XCTestCase {
         )
 
         // When
-        guard let flagsDetails = client.getFlagsDetails() else {
+        guard let flagsDetails = client.getAllFlagsDetails() else {
             XCTFail("Failed to get flags details")
             return
         }

@@ -62,7 +62,7 @@ final class FallbackFlagsClientTests: XCTestCase {
         )
     }
 
-    func testGetFlagsDetails() {
+    func testGetAllFlagsDetails() {
         // Given
         let core = SingleFeatureCoreMock<FlagsFeature>()
         Flags.enable(in: core)
@@ -71,7 +71,7 @@ final class FallbackFlagsClientTests: XCTestCase {
         defer { dd.reset() }
 
         // When
-        let flagsDetails = client.getFlagsDetails()
+        let flagsDetails = client.getAllFlagsDetails()
 
         // Then
         XCTAssertNil(flagsDetails)
