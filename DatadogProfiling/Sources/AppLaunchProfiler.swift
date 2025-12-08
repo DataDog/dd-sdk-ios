@@ -37,9 +37,9 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
 
         ctor_profiler_stop()
         core.set(context: ProfilingContext(status: .current))
+        defer { Self.unregisterInstance() }
 
         guard let profile = ctor_profiler_get_profile() else {
-            Self.unregisterInstance()
             return false
         }
 
@@ -49,7 +49,6 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
         let size = dd_pprof_serialize(profile, &data)
 
         guard let data = data else {
-            Self.unregisterInstance()
             return false
         }
 
@@ -81,7 +80,6 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
             writer.write(value: pprof, metadata: event)
         }
 
-        Self.unregisterInstance()
         return true
     }
 }
@@ -111,7 +109,6 @@ private extension AppLaunchProfiler {
 
 // MARK: - Testing funcs
 
-#if DD_SDK_COMPILED_FOR_TESTING
 extension AppLaunchProfiler {
     /// Returns the current pending instances count.
     static var currentPendingInstances: Int {
@@ -127,7 +124,6 @@ extension AppLaunchProfiler {
         pendingInstances = 0
     }
 }
-#endif
 
 extension ProfilingContext.Status {
     static var current: Self { .init(ctor_profiler_get_status()) }

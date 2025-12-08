@@ -237,7 +237,6 @@ private extension RUMAppLaunchManager {
     func shouldProcess(command: RUMTimeToFullDisplayCommand, context: DatadogContext) -> Bool {
         // Ignore command if the time to full display was already written
         guard self.timeToFullDisplay == nil else {
-            DD.logger.warn("Time to Full Display was already processed. Make sure the `reportAppFullyDisplayed()` API is only called once.")
             return false
         }
 
