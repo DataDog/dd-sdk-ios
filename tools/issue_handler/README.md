@@ -1,10 +1,10 @@
 # GitHub Issue Handler
 
-A tool that automatically analyzes new GitHub issues for the Datadog iOS SDK using OpenAI and posts summaries to Slack.
+Automated GitHub issue analyzer that uses OpenAI to analyze new issues and posts summaries to Slack.
 
 ## Features
 
-- 🔍 Fetches GitHub issue details
+- 🔍 Fetches GitHub issue details via API
 - 🤖 Analyzes issues using OpenAI
 - 💬 Posts analysis to Slack
 - 🔄 Runs automatically on new issues via GitHub Actions
@@ -36,90 +36,57 @@ First, create your local environment file:
 ./setup_env.sh
 ```
 
-This creates a `.env` file that you will need to fill with the required tokens. The file looks like the following:
-```bash
-# GitHub token with repo access
-GITHUB_TOKEN=
+This creates a `.env` file that you will need to fill with the required tokens and optional configuration. The file includes:
 
-# OpenAI API token
-OPENAI_TOKEN=
+**Required variables:**
+- `GITHUB_TOKEN` - GitHub token with repo access
+- `OPENAI_TOKEN` - OpenAI API token
+- `OPENAI_SYSTEM_PROMPT` - Prompt for OpenAI to analyze issues
+- `SLACK_WEBHOOK_URL` - Slack webhook URL for posting notifications
+- `SLACK_CHANNEL_ID` - Slack channel ID
+- `GITHUB_REPOSITORY` - Repository in format `owner/repo`
 
-# Prompt for OpenAI to analyze GitHub issues
-OPENAI_SYSTEM_PROMPT=
-
-# Slack webhook URL (for posting notifications)
-SLACK_WEBHOOK_URL=
-
-# Slack channel ID (where to post notifications)
-SLACK_CHANNEL_ID=
-
-# Github repository (optional, defaults to DataDog/dd-sdk-ios)
-GITHUB_REPOSITORY=
-```
-
-### 4. Required Tokens
-
-You need several tokens to use the tool locally. See the instructions below to get each token:
-
-#### GitHub Token
-1. Go to [GitHub Settings > Developer Settings > Personal Access Tokens](https://github.com/settings/tokens)
-2. Generate a new token with `repo` scope
-3. Copy the token
-
-#### OpenAI Token
-1. Go to [OpenAI API Keys](https://platform.openai.com/api-keys)
-2. Create a new API key
-3. Copy the key (starts with `sk-`)
-
-#### OpenAI System Prompt
-1. Create your AI prompt for analyzing GitHub issues
-2. This prompt is used to guide the AI's analysis and response generation
-
-#### Slack Access
-The iOS SDK team already has a Slack app configured for this tool. You need:
-
-1. **Slack Webhook URL**:
-   - Create a webhook in your Slack workspace: https://api.slack.com/apps
-   - Go to "Incoming Webhooks", and create a new webhook
-   - Copy the webhook URL (starts with `https://hooks.slack.com/services/`)
-   - Store it securely, and never commit it
-
-2. **Slack Channel Setup**:
-   - Get the channel ID by clicking the channel's details in Slack, and copy the ID at the bottom
-   - The ID starts with "C" (for example, "C12345678")
-   - Invite the bot to your channel: `/invite @bot-name`
-
-Note: If you need to post to a new channel, make sure to:
-1. Invite the bot to that channel first
-2. Use that channel's ID in your `.env` file
+**Optional variables** (override defaults):
+- `OPENAI_MODEL` - Model to use (default: `chatgpt-4o-latest`)
+- `OPENAI_TEMPERATURE` - Response creativity 0.0-1.0 (default: `0.4`)
+- `OPENAI_MAX_RESPONSE_TOKENS` - Max response length (default: `500`)
 
 ## Usage
 
 ### Run Manually
 
-Make sure your virtual environment is activated, then analyze a specific issue:
+Activate your virtual environment and analyze a specific issue:
 ```bash
-python src/analyze_issue.py ISSUE_NUMBER
+python -m src.analyze_issue ISSUE_NUMBER
 ```
 
-For example:
+Example:
 ```bash
-python src/analyze_issue.py 1234
+python -m src.analyze_issue 1234
 ```
 
 ### GitHub Action
 
 The tool runs:
-1. Automatically when a new issue is opened in the repository
-2. Manually when triggered through GitHub Actions with an issue number
+1. Automatically when a new issue is opened
+2. Manually via workflow dispatch with an issue number
 
-The GitHub Action uses repository secrets for authentication. These are already configured in the repository settings:
-- `GITHUB_TOKEN` (automatically provided)
-- `OPENAI_TOKEN`
-- `OPENAI_SYSTEM_PROMPT`
-- `SLACK_WEBHOOK_URL`
-- `SLACK_CHANNEL_ID`
-- `GITHUB_REPOSITORY` (defaults to `DataDog/dd-sdk-ios`)
+**Required GitHub Secrets** (configured in protected environment):
+- `OPENAI_TOKEN` - OpenAI API key
+- `SLACK_WEBHOOK_URL` - Slack webhook URL
+- `SLACK_CHANNEL_ID` - Slack channel ID (for reference, not currently used in code)
+
+**Required GitHub Variables** (configured in protected environment):
+- `OPENAI_SYSTEM_PROMPT` - OpenAI analysis prompt (stored as variable for easier updates)
+
+**Optional GitHub Variables** (override defaults if needed):
+- `OPENAI_MODEL` - Model to use (default: `chatgpt-4o-latest`)
+- `OPENAI_TEMPERATURE` - Response creativity 0.0-1.0 (default: `0.4`)
+- `OPENAI_MAX_RESPONSE_TOKENS` - Max response length (default: `500`)
+
+**Automatically Provided**:
+- `GITHUB_TOKEN` - Provided by GitHub Actions
+- `GITHUB_REPOSITORY` - Repository name (e.g., `DataDog/dd-sdk-ios`)
 
 ## Output
 
@@ -154,62 +121,71 @@ Main Components:
 - Analyzes issue with OpenAI using a custom prompt
 - Posts Github issue notification and analysis on Slack
 
-## Security Notes
+## Security
 
-- Never commit your `.env` file
-- Keep all tokens secure and private
-- Use GitHub Secrets for CI/CD
-- The `.env` file is git-ignored by default
+### Protection Mechanisms
+
+**Content Limits**
+- GitHub issue content: Configurable limit (default 4,000 characters)
+- OpenAI responses: Configurable token limit (default 500 tokens)
+- Slack messages: Configurable character limits (default 2,000-3,000 characters)
+- GitHub Action timeout: 5 minutes
+
+**Input Sanitization**
+- Removes HTML comments and system instructions
+- Filters prompt injection attempts
+- Validates issue numbers (must be integers)
+
+**Output Sanitization**
+- Removes markdown links and URLs from AI-generated content
+- Strips HTML tags and suspicious patterns
+- Filters script-like content before posting to Slack
+
+**Dependencies**
+- All Python dependencies pinned to exact versions
+- Dependabot configured for automated security updates
+- Third-party GitHub Actions pinned to commit SHAs
+
+### Best Practices
+
+- Never commit `.env` files (git-ignored by default)
+- Store tokens in GitHub Secrets
+- Store prompts in GitHub Variables (for easier updates)
+- Use protected environments for workflow execution
 
 ## Running Tests
 
-Make sure your virtual environment is activated, then run all tests:
+Make sure your virtual environment is activated before running tests.
+
+### Unit Tests
+
+Run unit tests (no API calls required):
+
 ```bash
 pytest tests/
 ```
 
-### CI Integration
-
-The issue handler tests are automatically run in the CI pipeline:
-
-**GitLab CI**: Tests run as part of the `tools-test` target when changes are made to the `tools/` directory. The CI environment automatically sets up Python 3 and runs the tests as part of the existing tools testing pipeline.
-
-#### Running Tests Locally
-
-You can run tests locally using this command:
-
+Or using make:
 ```bash
 make issue-handler-test
 ```
 
-### Integration Tests (manual execution)
+### Integration Tests
 
-These integration tests verify the tool works with real APIs and should be run manually when needed. They require proper environment variables and API tokens:
+These tests make real API calls. Ensure your `.env` file is configured before running:
 
 ```bash
-cd tools/issue_handler
-source venv/bin/activate  # if not already active
-
-# Test full workflow: fetch real GitHub issue + analyze with OpenAI
+# Test full workflow with a real issue
 PYTHONPATH=. python integration_tests/test_analysis.py --issue 1234
 
-# Test GitHub API connectivity with real issues
+# Test GitHub API connectivity
 PYTHONPATH=. python integration_tests/test_real_issue.py --issue 1
 
-# Slack webhook quick checks (requires env vars: SLACK_WEBHOOK_URL and GITHUB_REPOSITORY)
-PYTHONPATH=. python test_local.py
+# Test Slack webhook
 PYTHONPATH=. python test_slack_webhook.py
 ```
 
-**Quick integration test**: You can also use the make command:
+Or use make:
 ```bash
 make issue-handler-integration-test
 ```
-
-**Note**: These are integration tests. They make real API calls and should only be run when you want to verify the tool works with actual services.
-
-## Development Notes
-
-- Always activate your virtual environment before running the tool: `source venv/bin/activate`
-- The virtual environment is already git-ignored by default
-- If you need to recreate the virtual environment, delete the `venv/` folder and run the setup steps again
