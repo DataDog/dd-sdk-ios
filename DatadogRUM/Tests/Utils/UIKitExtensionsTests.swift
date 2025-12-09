@@ -1,10 +1,8 @@
-//
-//  UIKitExtensionsTests.swift
-//  DatadogInternalTests iOS
-//
-//  Created by Miguel Arroz on 04/12/2025.
-//  Copyright © 2025 Datadog. All rights reserved.
-//
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
 
 import Testing
 import UIKit
@@ -165,6 +163,27 @@ struct UIKitExtensionsTests {
 
         #expect(alertController.isUIAlertController)
 
-        #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertActionView }).count == numberOfActionButtons - 1)
+        // There are multiple rules around buttons using .cancel role on confirmation dialogs:
+        //   - iOS 26 will not show any .cancel button. The dialogs are displayed on a popover,
+        //   and it's assumed clicking outside of the popover is the cancel action.
+        //   - All previous versions of iOS, and all tvOS versions at the time of this writing
+        //   will show only one .cancel button, even if there are multiple in the dialog.
+        //
+        // To test this properly, we add one (and only one) .cancel button as the first item of
+        // the buttonRoles array above, guaranteeing all dialogs have one and only one .cancel
+        // button. We also add a special way of handling iOS 26 below, since on that specific
+        // iOS version, that button will be missing from the UI.
+        let buttonCountOffset: Int
+        #if os(iOS)
+        if #available(iOS 26.0, *) {
+            buttonCountOffset = -1
+        } else {
+            buttonCountOffset = 0
+        }
+        #else
+        buttonCountOffset = 0
+        #endif
+
+        #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertActionView }).count == numberOfActionButtons + buttonCountOffset)
     }
 }
