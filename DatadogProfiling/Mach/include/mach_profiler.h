@@ -81,15 +81,29 @@ typedef struct sampling_config {
 } sampling_config_t;
 
 /**
- * Default sampling configuration with safe default values
+ * Default sampling configuration values.
+ */
+/// Sampling frequency. Default to ~101 Hz (1/101 seconds ≈ 9.9ms)
+#define SAMPLING_CONFIG_DEFAULT_INTERVAL_HZ     101     // 101 Hz
+#define SAMPLING_CONFIG_DEFAULT_INTERVAL_NANOS  1000000 // 1ms
+/// Max buffer size of samples. It is a larger buffer to delay stack aggregation.
+#define SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE     10000
+/// Max frames per trace.
+#define SAMPLING_CONFIG_DEFAULT_STACK_DEPTH     128
+/// Max threads count.
+#define SAMPLING_CONFIG_DEFAULT_THREAD_COUNT    100
+
+/**
+ * Default sampling configuration with safe default values.
+ * For C++ use only. Use sampling_config_get_default() from Swift.
  */
 static const sampling_config_t SAMPLING_CONFIG_DEFAULT = {
-    1000000,                    // sampling_interval_nanos (1ms)
-    0,                          // profile_current_thread_only
-    1000,                       // max_buffer_size
-    128,                        // max_stack_depth
-    100,                        // max_thread_count
-    QOS_CLASS_USER_INTERACTIVE  // qos_class
+    SAMPLING_CONFIG_DEFAULT_INTERVAL_NANOS,  // sampling_interval_nanos
+    0,                                       // profile_current_thread_only
+    SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE,     // max_buffer_size
+    SAMPLING_CONFIG_DEFAULT_STACK_DEPTH,     // max_stack_depth
+    SAMPLING_CONFIG_DEFAULT_THREAD_COUNT,    // max_thread_count
+    QOS_CLASS_USER_INTERACTIVE               // qos_class
 };
 
 /**
