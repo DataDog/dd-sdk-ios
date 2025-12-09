@@ -484,7 +484,10 @@ final class FlagsClientTests: XCTestCase {
 
         // When
         Flags.enable(with: .init(trackExposures: false), in: core)
-        let client = FlagsClient.create(in: core)
+        guard let client = FlagsClient.create(in: core) as? FlagsClientInternal else {
+            XCTFail("Flags client created with FlagsClient.create() should be castable to FlagsClientInternal")
+            return
+        }
         client.trackEvaluation(key: "test")
 
         // Then
@@ -512,12 +515,15 @@ final class FlagsClientTests: XCTestCase {
 
         // When
         Flags.enable(with: .init(rumIntegrationEnabled: false), in: core)
-        let client = FlagsClient.create(in: core)
+        guard let client = FlagsClient.create(in: core) as? FlagsClientInternal else {
+            XCTFail("Flags client created with FlagsClient.create() should be castable to FlagsClientInternal")
+            return
+        }
         client.trackEvaluation(key: "test")
 
         // Then
-        XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, 0, "No RUM messages should be sent")
         XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 1, "Exposure should still be logged")
+        XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, 0, "No RUM messages should be sent")
     }
 }
 

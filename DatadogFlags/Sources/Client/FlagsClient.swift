@@ -215,7 +215,11 @@ extension FlagsClient: FlagsClientProtocol {
 
         return details
     }
+}
 
+// MARK: - Internal methods consumed by the React Native SDK
+
+extension FlagsClient: FlagsClientInternal {
     @_spi(Internal)
     public func getAllFlagsDetails() -> [String: FlagDetails<AnyValue>]? {
         guard let flagAssignments = repository.flagAssignments() else {
@@ -244,17 +248,25 @@ extension FlagsClient: FlagsClientProtocol {
             return
         }
 
+        var value: FlagValue
+        switch flagAssignment.variation {
+        case .boolean(let v): value = v
+        case .string(let v): value = v
+        case .integer(let v): value = v
+        case .double(let v): value = v
+        case .object(let v): value = v
+        case .unknown: value = AnyValue.null
+        }
+
         exposureLogger.logExposure(
             for: key,
             assignment: flagAssignment,
             evaluationContext: context
         )
 
-        let details = FlagDetails(key: key, flagAssignment: flagAssignment)
-
         rumFlagEvaluationReporter.sendFlagEvaluation(
             flagKey: key,
-            value: details?.value ?? AnyValue.null
+            value: value
         )
     }
 }

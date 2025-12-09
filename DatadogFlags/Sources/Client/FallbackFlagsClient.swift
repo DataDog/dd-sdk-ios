@@ -39,7 +39,11 @@ internal final class FallbackFlagsClient: FlagsClientProtocol {
         )
         return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
     }
+}
 
+// MARK: - Internal methods consumed by the React Native SDK
+
+extension FallbackFlagsClient: FlagsClientInternal {
     func getAllFlagsDetails() -> [String: FlagDetails<AnyValue>]? {
         DD.logger.error(
             """

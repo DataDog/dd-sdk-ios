@@ -1005,6 +1005,8 @@
 		61FDBA1326971953001D9D43 /* CrashReportMinifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1226971953001D9D43 /* CrashReportMinifier.swift */; };
 		61FDBA15269722B4001D9D43 /* CrashReportMinifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA14269722B4001D9D43 /* CrashReportMinifierTests.swift */; };
 		61FDBA1726974CA9001D9D43 /* DDCrashReportBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */; };
+		6482FB0E2EE885C60042234B /* FlagsClientInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482FB0D2EE885C20042234B /* FlagsClientInternal.swift */; };
+		6482FB0F2EE885C60042234B /* FlagsClientInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482FB0D2EE885C20042234B /* FlagsClientInternal.swift */; };
 		86092FDD2DEDC6830075D63B /* AccessibilityValuesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */; };
 		86092FDE2DEDC6830075D63B /* AccessibilityValuesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */; };
 		861FD6852DF2EAED00F59823 /* LocaleInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861FD6842DF2EAED00F59823 /* LocaleInfoPublisherTests.swift */; };
@@ -3195,6 +3197,7 @@
 		61FF282024B8981D000B3D9B /* RUMEventBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventBuilderTests.swift; sourceTree = "<group>"; };
 		61FF282F24BC5E2D000B3D9B /* RUMEventFileOutputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMEventFileOutputTests.swift; sourceTree = "<group>"; };
 		61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewIdentifier.swift; sourceTree = "<group>"; };
+		6482FB0D2EE885C20042234B /* FlagsClientInternal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientInternal.swift; sourceTree = "<group>"; };
 		86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityValuesMock.swift; sourceTree = "<group>"; };
 		861FD6842DF2EAED00F59823 /* LocaleInfoPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleInfoPublisherTests.swift; sourceTree = "<group>"; };
 		861FD6872DF3366400F59823 /* LocaleInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleInfo.swift; sourceTree = "<group>"; };
@@ -4421,6 +4424,7 @@
 		5BD6C6542E8AC5D800F5D2CC /* Client */ = {
 			isa = PBXGroup;
 			children = (
+				6482FB0D2EE885C20042234B /* FlagsClientInternal.swift */,
 				5BB294BF2E83E02100CAA44B /* ExposureLogger.swift */,
 				5B0E75D92E9690C400F66739 /* ExposureTracker.swift */,
 				5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */,
@@ -8856,6 +8860,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5B5B8CC52E8C14B900A6740E /* FlagsClientRegistry.swift in Sources */,
+				6482FB0E2EE885C60042234B /* FlagsClientInternal.swift in Sources */,
 				5B9565FD2E86BBFA00EAF677 /* FlagDetails.swift in Sources */,
 				5BD6C6572E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */,
 				5BB294BD2E82E66500CAA44B /* FlagValue.swift in Sources */,
@@ -8887,6 +8892,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5B5B8CC62E8C14B900A6740E /* FlagsClientRegistry.swift in Sources */,
+				6482FB0F2EE885C60042234B /* FlagsClientInternal.swift in Sources */,
 				5B9565FC2E86BBFA00EAF677 /* FlagDetails.swift in Sources */,
 				5BD6C6562E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */,
 				5BB294BE2E82E66500CAA44B /* FlagValue.swift in Sources */,
