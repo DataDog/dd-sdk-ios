@@ -218,6 +218,12 @@ All source files must include the Apache License header:
  */
 ```
 
+## Documentation
+
+Feature might have available documentation in files with the naming structure `*_FEATURE.md`
+Documentation must be updated if necessary following changes.
+Follow @LLM_FEATURE_DOCS_GUIDELINES.md on how to update the feature documentation.
+
 ## Dependencies
 
 - **PLCrashReporter**: Crash reporting (via Carthage)
