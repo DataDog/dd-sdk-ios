@@ -73,7 +73,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertTrue(profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core))
 
         // Then
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Profiler should be destroyed after processing message")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Profiler should be destroyed after processing message")
         XCTAssertNil(ctor_profiler_get_profile(), "Profile should be nil after destroy")
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
     }
@@ -83,7 +83,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler()
 
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Profiler should not be started")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Profiler should not be created")
 
         // When
         let result = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core)

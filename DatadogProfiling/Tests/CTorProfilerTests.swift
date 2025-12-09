@@ -18,7 +18,7 @@ final class CTorProfilerTests: XCTestCase {
     // MARK: - State Management Tests
 
     func testCtorProfiler_initiallyNotStarted() {
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Constructor profiler should not be started initially")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Constructor profiler should not be started initially")
     }
 
     func testCtorProfiler_startTesting_withValidSampleRate_startsSuccessfully() {
@@ -60,11 +60,11 @@ final class CTorProfilerTests: XCTestCase {
 
     func testCtorProfiler_stop_whenNotRunning_doesNotCrash() {
         // Given
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Precondition: profiler should not be running")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Precondition: profiler should not be running")
 
         // When/Then - should not crash
         ctor_profiler_stop()
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Status should remain unchanged")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Status should remain unchanged")
     }
 
     func testCtorProfiler_multipleStops_doesNotCrash() {
@@ -83,7 +83,7 @@ final class CTorProfilerTests: XCTestCase {
 
     func testCtorProfiler_getProfile_whenNotStarted_returnsNil() {
         // Given
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Precondition: profiler should not be started")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Precondition: profiler should not be started")
 
         // When/Then
         XCTAssertNil(ctor_profiler_get_profile(), "Profile should be nil when profiler was never started")
@@ -138,7 +138,7 @@ final class CTorProfilerTests: XCTestCase {
 
         // Then
         XCTAssertNil(ctor_profiler_get_profile(), "Profile should be nil after destroying")
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Status should be reset to not started")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Status should be reset to not created")
     }
 
     func testCtorProfiler_destroy_whenNotStarted_doesNotCrash() {
@@ -148,7 +148,7 @@ final class CTorProfilerTests: XCTestCase {
         // When/Then - should not crash
         ctor_profiler_destroy()
         XCTAssertNil(ctor_profiler_get_profile(), "Profile should still be nil")
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Status should be not started")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Profiler Status should be not created")
     }
 
     func testCtorProfiler_multipleDestroy_doesNotCrash() {
@@ -167,7 +167,7 @@ final class CTorProfilerTests: XCTestCase {
         ctor_profiler_destroy()
         ctor_profiler_destroy()
         XCTAssertNil(ctor_profiler_get_profile(), "Profile should remain nil")
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Status should remain not started")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Status should be reset to not created")
     }
 
     func testCtorProfiler_statusCodes_prewarmed() {

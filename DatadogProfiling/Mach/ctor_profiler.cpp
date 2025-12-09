@@ -247,7 +247,7 @@ void ctor_profiler_stop(void) {
 
 ctor_profiler_status_t ctor_profiler_get_status(void) {
     std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
-    return g_ctor_profiler ? g_ctor_profiler->status : CTOR_PROFILER_STATUS_NOT_STARTED;
+    return g_ctor_profiler ? g_ctor_profiler->status : CTOR_PROFILER_STATUS_NOT_CREATED;
 }
 
 ctor_profile_t* ctor_profiler_get_profile(void) {
