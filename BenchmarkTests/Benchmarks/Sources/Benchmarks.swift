@@ -11,7 +11,6 @@
 import Foundation
 import OpenTelemetryApi
 import OpenTelemetrySdk
-import DatadogExporter
 
 /// Benchmark entrypoint to configure opentelemetry with metrics meters
 /// and tracer.
@@ -78,7 +77,7 @@ public enum Benchmarks {
     /// Configure an OpenTelemetry meter provider.
     ///
     /// - Parameter configuration: The Benchmark configuration.
-    public static func meterProvider(with configuration: Configuration) -> MeterProvider {
+    public static func meterProvider(with configuration: Configuration) -> MeterProviderSdk {
         let metricExporter = MetricExporter(
             configuration: MetricExporter.Configuration(
                 apiKey: configuration.apiKey,
@@ -86,11 +85,12 @@ public enum Benchmarks {
             )
         )
 
-        return MeterProviderBuilder()
-            .with(pushInterval: 10)
-            .with(processor: MetricProcessorSdk())
-            .with(exporter: metricExporter)
-            .with(resource: Resource(attributes: [
+        let metricReader = PeriodicMetricReaderBuilder(exporter: metricExporter)
+            .setInterval(timeInterval: 10)
+            .build()
+
+        return MeterProviderSdk.builder()
+            .setResource(resource: Resource(attributes: [
                 "device_model": .string(configuration.context.deviceModel),
                 "os": .string(configuration.context.osName),
                 "os_version": .string(configuration.context.osVersion),
@@ -101,6 +101,14 @@ public enum Benchmarks {
                 "sdk_version": .string(configuration.context.sdkVersion),
                 "branch": .string(configuration.context.branch),
             ]))
+            .registerMetricReader(reader: metricReader)
+            // Workaround: register a catch-all view since the SDK doesn't use default views
+            .registerView(
+                selector: InstrumentSelector.builder()
+                    .setInstrument(name: ".*")
+                    .build(),
+                view: View.builder().build()
+            )
             .build()
     }
 
@@ -108,22 +116,6 @@ public enum Benchmarks {
     ///
     /// - Parameter configuration: The Benchmark configuration.
     public static func tracerProvider(with configuration: Configuration) -> TracerProvider {
-        let exporterConfiguration = ExporterConfiguration(
-            serviceName: configuration.context.applicationIdentifier,
-            resource: "Benchmark Tracer",
-            applicationName: configuration.context.applicationName,
-            applicationVersion: configuration.context.applicationVersion,
-            environment: "benchmarks",
-            apiKey: configuration.apiKey,
-            endpoint: .us1,
-            uploadCondition: { true }
-        )
-
-        let exporter = try! DatadogExporter(config: exporterConfiguration)
-        let processor = SimpleSpanProcessor(spanExporter: exporter)
-
-        return TracerProviderBuilder()
-            .add(spanProcessor: processor)
-            .build()
+        return NOPTracerProvider()
     }
 }

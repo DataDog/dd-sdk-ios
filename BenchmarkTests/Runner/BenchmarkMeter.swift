@@ -8,46 +8,56 @@ import Foundation
 import DatadogInternal
 import DatadogBenchmarks
 import OpenTelemetryApi
+import OpenTelemetrySdk
 
 internal final class Meter: DatadogInternal.BenchmarkMeter {
-    let meter: OpenTelemetryApi.Meter
+    let meter: MeterSdk
 
-    init(provider: MeterProvider) {
-        self.meter = provider.get(
-            instrumentationName: "benchmarks",
-            instrumentationVersion: nil
-        )
+    init(provider: MeterProviderSdk) {
+        self.meter = provider.get(name: "benchmarks")
     }
 
     func counter(metric: @autoclosure () -> String) -> DatadogInternal.BenchmarkCounter {
-        meter.createDoubleCounter(name: metric())
+        DoubleCounterWrapper(counter: meter.counterBuilder(name: metric()).ofDoubles().build())
     }
 
     func gauge(metric: @autoclosure () -> String) -> DatadogInternal.BenchmarkGauge {
-        meter.createDoubleMeasure(name: metric())
+        DoubleGaugeWrapper(gauge: meter.gaugeBuilder(name: metric()).build())
     }
 
     func observe(metric: @autoclosure () -> String, callback: @escaping (any DatadogInternal.BenchmarkGauge) -> Void) {
-        _ = meter.createDoubleObserver(name: metric()) { callback(DoubleObserverWrapper(observer: $0)) }
+        _ = meter.gaugeBuilder(name: metric()).buildWithCallback { callback(ObservableDoubleMeasurementWrapper(measurement: $0)) }
     }
 }
 
-extension AnyCounterMetric<Double>: DatadogInternal.BenchmarkCounter {
-    public func add(value: Double, attributes: @autoclosure () -> [String: String]) {
-        add(value: value, labelset: LabelSet(labels: attributes()))
+private final class DoubleCounterWrapper: DatadogInternal.BenchmarkCounter {
+    var counter: DoubleCounterSdk
+
+    init(counter: DoubleCounterSdk) {
+        self.counter = counter
+    }
+
+    func add(value: Double, attributes: @autoclosure () -> [String: String]) {
+        counter.add(value: value, attributes: attributes().mapValues { AttributeValue.string($0) })
     }
 }
 
-extension AnyMeasureMetric<Double>: DatadogInternal.BenchmarkGauge {
-    public func record(value: Double, attributes: @autoclosure () -> [String: String]) {
-        record(value: value, labelset: LabelSet(labels: attributes()))
-    }
-}
+private final class DoubleGaugeWrapper: DatadogInternal.BenchmarkGauge {
+    let gauge: DoubleGaugeSdk
 
-private struct DoubleObserverWrapper: DatadogInternal.BenchmarkGauge {
-    let observer: DoubleObserverMetric
+    init(gauge: DoubleGaugeSdk) {
+        self.gauge = gauge
+    }
 
     func record(value: Double, attributes: @autoclosure () -> [String: String]) {
-        observer.observe(value: value, labelset: LabelSet(labels: attributes()))
+        gauge.record(value: value, attributes: attributes().mapValues { AttributeValue.string($0) })
+    }
+}
+
+private struct ObservableDoubleMeasurementWrapper: DatadogInternal.BenchmarkGauge {
+    let measurement: ObservableMeasurementSdk
+
+    func record(value: Double, attributes: @autoclosure () -> [String: String]) {
+        measurement.record(value: value, attributes: attributes().mapValues { AttributeValue.string($0) })
     }
 }

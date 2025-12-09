@@ -7,28 +7,29 @@
 import Foundation
 import DatadogBenchmarks
 import OpenTelemetryApi
+import OpenTelemetrySdk
 
 /// Collect Vital Metrics such CPU, Memory, and FPS.
 ///
 /// The metrics are reported via opentelemetry.
 internal final class Vitals {
-    let provider: OpenTelemetryApi.MeterProvider
+    let provider: MeterProviderSdk
 
-    private lazy var meter: OpenTelemetryApi.Meter = provider.get(instrumentationName: "vitals", instrumentationVersion: nil)
+    private lazy var meter: MeterSdk = provider.get(name: "vitals")
 
     let queue = DispatchQueue(label: "com.datadoghq.benchmarks.vitals", target: .global(qos: .utility))
 
-    init(provider: MeterProvider) {
+    init(provider: MeterProviderSdk) {
         self.provider = provider
     }
 
     @discardableResult
-    func observeMemory() -> OpenTelemetryApi.DoubleObserverMetric {
+    func observeMemory() -> ObservableInstrumentSdk {
         let memory = Memory(queue: queue)
-        return meter.createDoubleObservableGauge(name: "ios.benchmark.memory") { metric in
+        return meter.gaugeBuilder(name: "ios.benchmark.memory").buildWithCallback { measurement in
             // report the maximum memory footprint that was recorded during push interval
             if let value = memory.aggregation?.max {
-                metric.observe(value: value, labelset: .empty)
+                measurement.record(value: value)
             }
 
             memory.reset()
@@ -36,12 +37,12 @@ internal final class Vitals {
     }
 
     @discardableResult
-    func observeCPU() -> OpenTelemetryApi.DoubleObserverMetric {
+    func observeCPU() -> ObservableInstrumentSdk {
         let cpu = CPU(queue: queue)
-        return meter.createDoubleObservableGauge(name: "ios.benchmark.cpu") { metric in
+        return meter.gaugeBuilder(name: "ios.benchmark.cpu").buildWithCallback { measurement in
             // report the average cpu usage that was recorded during push interval
             if let value = cpu.aggregation?.avg {
-                metric.observe(value: value, labelset: .empty)
+                measurement.record(value: value)
             }
 
             cpu.reset()
@@ -49,12 +50,12 @@ internal final class Vitals {
     }
 
     @discardableResult
-    func observeFPS() -> OpenTelemetryApi.IntObserverMetric {
+    func observeFPS() -> ObservableInstrumentSdk {
         let fps = FPS()
-        return meter.createIntObservableGauge(name: "ios.benchmark.fps.min") { metric in
+        return meter.gaugeBuilder(name: "ios.benchmark.fps.min").ofLongs().buildWithCallback { measurement in
             // report the minimum frame rate that was recorded during push interval
             if let value = fps.aggregation?.min {
-                metric.observe(value: value, labelset: .empty)
+                measurement.record(value: value)
             }
 
             fps.reset()
