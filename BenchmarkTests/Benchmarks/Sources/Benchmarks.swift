@@ -4,17 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if OTEL_API
-#error("Benchmarks depends on opentelemetry-swift. Please open the project with 'make benchmark-tests-open'.")
-#endif
-
 import Foundation
-import OpenTelemetryApi
-import OpenTelemetrySdk
-import DatadogExporter
 
-/// Benchmark entrypoint to configure opentelemetry with metrics meters
-/// and tracer.
+/// Benchmark entrypoint to configure metrics collection.
 public enum Benchmarks {
     /// Configuration of the Benchmarks library.
     public struct Configuration {
@@ -75,7 +67,7 @@ public enum Benchmarks {
         }
     }
 
-    /// Configure an OpenTelemetry meter provider.
+    /// Configure a meter provider.
     ///
     /// - Parameter configuration: The Benchmark configuration.
     public static func meterProvider(with configuration: Configuration) -> MeterProvider {
@@ -86,44 +78,22 @@ public enum Benchmarks {
             )
         )
 
-        return MeterProviderBuilder()
-            .with(pushInterval: 10)
-            .with(processor: MetricProcessorSdk())
-            .with(exporter: metricExporter)
-            .with(resource: Resource(attributes: [
-                "device_model": .string(configuration.context.deviceModel),
-                "os": .string(configuration.context.osName),
-                "os_version": .string(configuration.context.osVersion),
-                "run": .string(configuration.context.run),
-                "scenario": .string(configuration.context.scenario),
-                "env": .string(configuration.context.env),
-                "application_id": .string(configuration.context.applicationIdentifier),
-                "sdk_version": .string(configuration.context.sdkVersion),
-                "branch": .string(configuration.context.branch),
-            ]))
-            .build()
-    }
+        let resource: [String: String] = [
+            "device_model": configuration.context.deviceModel,
+            "os": configuration.context.osName,
+            "os_version": configuration.context.osVersion,
+            "run": configuration.context.run,
+            "scenario": configuration.context.scenario,
+            "env": configuration.context.env,
+            "application_id": configuration.context.applicationIdentifier,
+            "sdk_version": configuration.context.sdkVersion,
+            "branch": configuration.context.branch,
+        ]
 
-    /// Configure an OpenTelemetry tracer provider.
-    ///
-    /// - Parameter configuration: The Benchmark configuration.
-    public static func tracerProvider(with configuration: Configuration) -> TracerProvider {
-        let exporterConfiguration = ExporterConfiguration(
-            serviceName: configuration.context.applicationIdentifier,
-            resource: "Benchmark Tracer",
-            applicationName: configuration.context.applicationName,
-            applicationVersion: configuration.context.applicationVersion,
-            environment: "benchmarks",
-            apiKey: configuration.apiKey,
-            endpoint: .us1,
-            uploadCondition: { true }
+        return MeterProvider(
+            exporter: metricExporter,
+            pushInterval: 10,
+            resource: resource
         )
-
-        let exporter = try! DatadogExporter(config: exporterConfiguration)
-        let processor = SimpleSpanProcessor(spanExporter: exporter)
-
-        return TracerProviderBuilder()
-            .add(spanProcessor: processor)
-            .build()
     }
 }

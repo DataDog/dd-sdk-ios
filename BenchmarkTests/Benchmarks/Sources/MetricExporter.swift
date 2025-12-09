@@ -5,24 +5,23 @@
  */
 
 import Foundation
-import OpenTelemetrySdk
 
-enum MetricExporterError: Error {
-    case unsupportedMetric(aggregation: AggregationType, dataType: Any.Type)
-}
-
-/// Replacement of otel `DatadogExporter` for metrics.
+/// Metric exporter that sends metrics directly to Datadog's intake API.
 ///
 /// This version does not store data to disk, it uploads to the intake directly.
-/// Additionally, it does not crash.
-final class MetricExporter: OpenTelemetrySdk.MetricExporter {
-    struct Configuration {
-        let apiKey: String
-        let version: String
+public final class MetricExporter {
+    public struct Configuration {
+        public let apiKey: String
+        public let version: String
+
+        public init(apiKey: String, version: String) {
+            self.apiKey = apiKey
+            self.version = version
+        }
     }
 
     /// The type of metric. The available types are 0 (unspecified), 1 (count), 2 (rate), and 3 (gauge). Allowed enum values: 0,1,2,3
-    enum MetricType: Int, Codable {
+    public enum MetricType: Int, Codable {
         case unspecified = 0
         case count = 1
         case rate = 2
@@ -30,24 +29,52 @@ final class MetricExporter: OpenTelemetrySdk.MetricExporter {
     }
 
     /// https://docs.datadoghq.com/api/latest/metrics/#submit-metrics
-    internal struct Serie: Codable {
-        struct Point: Codable {
-            let timestamp: Int64
-            let value: Double
+    public struct Serie: Codable {
+        public struct Point: Codable {
+            public let timestamp: Int64
+            public let value: Double
+
+            public init(timestamp: Int64, value: Double) {
+                self.timestamp = timestamp
+                self.value = value
+            }
         }
 
-        struct Resource: Codable {
-            let name: String
-            let type: String
+        public struct Resource: Codable {
+            public let name: String
+            public let type: String
+
+            public init(name: String, type: String) {
+                self.name = name
+                self.type = type
+            }
         }
 
-        let type: MetricType
-        let interval: Int64?
-        let metric: String
-        let unit: String?
-        let points: [Point]
-        let resources: [Resource]
-        let tags: [String]
+        public let type: MetricType
+        public let interval: Int64?
+        public let metric: String
+        public let unit: String?
+        public let points: [Point]
+        public let resources: [Resource]
+        public let tags: [String]
+
+        public init(
+            type: MetricType,
+            interval: Int64?,
+            metric: String,
+            unit: String?,
+            points: [Point],
+            resources: [Resource],
+            tags: [String]
+        ) {
+            self.type = type
+            self.interval = interval
+            self.metric = metric
+            self.unit = unit
+            self.points = points
+            self.resources = resources
+            self.tags = tags
+        }
     }
 
     let session: URLSession
@@ -61,102 +88,43 @@ final class MetricExporter: OpenTelemetrySdk.MetricExporter {
     let suffix = "]}".data(using: .utf8)!
     // swiftlint:enable force_unwrapping
 
-    required init(configuration: Configuration) {
+    public init(configuration: Configuration) {
         let sessionConfiguration: URLSessionConfiguration = .ephemeral
         sessionConfiguration.urlCache = nil
         self.session = URLSession(configuration: sessionConfiguration)
         self.configuration = configuration
     }
 
-    func export(metrics: [Metric], shouldCancel: (() -> Bool)?) -> MetricExporterResultCode {
-        do {
-            let series = try metrics.map(transform)
-            try submit(series: series)
-            return.success
-        } catch {
-            return .failureNotRetryable
-        }
-    }
-
-    /// Transforms otel `Metric` to Datadog `serie`.
-    ///
-    /// - Parameter metric: The otel metric
-    /// - Returns: The timeserie.
-    func transform(_ metric: Metric) throws -> Serie {
-        var tags = Set(metric.resource.attributes.map { "\($0):\($1)" })
-
-        let points: [Serie.Point] = try metric.data.map { data in
-            let timestamp = Int64(data.timestamp.timeIntervalSince1970)
-
-            data.labels.forEach { tags.insert("\($0):\($1)") }
-
-            switch data {
-            case let data as SumData<Double>:
-                return Serie.Point(timestamp: timestamp, value: data.sum)
-            case let data as SumData<Int>:
-                return Serie.Point(timestamp: timestamp, value: Double(data.sum))
-            case let data as SummaryData<Double>:
-                return Serie.Point(timestamp: timestamp, value: data.sum)
-            case let data as SummaryData<Int>:
-                return Serie.Point(timestamp: timestamp, value: Double(data.sum))
-//            case let data as HistogramData<Int>:
-//                return Serie.Point(timestamp: timestamp, value: Double(data.sum))
-//            case let data as HistogramData<Double>:
-//                return Serie.Point(timestamp: timestamp, value: data.sum)
-            default:
-                throw MetricExporterError.unsupportedMetric(
-                    aggregation: metric.aggregationType,
-                    dataType: type(of: data)
-                )
-            }
-        }
-
-        return Serie(
-            type: MetricType(metric.aggregationType),
-            interval: nil,
-            metric: metric.name,
-            unit: nil,
-            points: points,
-            resources: [],
-            tags: Array(tags)
-        )
-    }
-
     /// Submit timeseries to the Metrics intake.
     ///
     /// - Parameter series: The timeseries.
-    func submit(series: [Serie]) throws {
-        var data = try series.reduce(Data()) { data, serie in
-            try data + encoder.encode(serie) + separator
+    public func submit(series: [Serie]) {
+        guard !series.isEmpty else {
+            return
         }
 
-        // remove last separator
-        data.removeLast(separator.count)
+        do {
+            var data = try series.reduce(Data()) { data, serie in
+                try data + encoder.encode(serie) + separator
+            }
 
-        var request = URLRequest(url: intake)
-        request.httpMethod = "POST"
-        request.allHTTPHeaderFields = [
-            "Content-Type": "application/json",
-            "DD-API-KEY": configuration.apiKey,
-            "DD-EVP-ORIGIN": "ios",
-            "DD-EVP-ORIGIN-VERSION": configuration.version,
-            "DD-REQUEST-ID": UUID().uuidString,
-        ]
+            // remove last separator
+            data.removeLast(separator.count)
 
-        request.httpBody = prefix + data + suffix
-        session.dataTask(with: request).resume()
-    }
-}
+            var request = URLRequest(url: intake)
+            request.httpMethod = "POST"
+            request.allHTTPHeaderFields = [
+                "Content-Type": "application/json",
+                "DD-API-KEY": configuration.apiKey,
+                "DD-EVP-ORIGIN": "ios",
+                "DD-EVP-ORIGIN-VERSION": configuration.version,
+                "DD-REQUEST-ID": UUID().uuidString,
+            ]
 
-private extension MetricExporter.MetricType {
-    init(_ type: OpenTelemetrySdk.AggregationType) {
-        switch type {
-        case .doubleSum, .intSum:
-            self = .count
-        case .intGauge, .doubleGauge:
-            self = .gauge
-        case .doubleSummary, .intSummary, .doubleHistogram, .intHistogram:
-            self = .unspecified
+            request.httpBody = prefix + data + suffix
+            session.dataTask(with: request).resume()
+        } catch {
+            // Silently fail - this is a benchmark tool, not critical infrastructure
         }
     }
 }

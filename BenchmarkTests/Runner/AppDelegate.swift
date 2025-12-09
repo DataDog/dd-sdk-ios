@@ -125,16 +125,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         scenario: SyntheticScenario,
         run: SyntheticRun
     ) {
-        // Collect traces during profiling run
-        let profiler = Profiler(
-            provider: Benchmarks.tracerProvider(
-                with: Benchmarks.Configuration(
-                    info: applicationInfo,
-                    scenario: scenario,
-                    run: run
-                )
-            )
-        )
+        // Use simple profiler that prints span timing to console
+        let profiler = Profiler()
 
         let meter = Meter(
             provider: Benchmarks.meterProvider(

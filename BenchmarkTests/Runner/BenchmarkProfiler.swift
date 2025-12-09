@@ -6,51 +6,40 @@
 
 import Foundation
 import DatadogInternal
-import DatadogBenchmarks
-import OpenTelemetryApi
 
-internal final class Profiler: DatadogInternal.BenchmarkProfiler {
-    let provider: TracerProvider
-
-    init(provider: TracerProvider) {
-        self.provider = provider
-    }
-
-    func tracer(operation: @autoclosure () -> String) -> any DatadogInternal.BenchmarkTracer {
-        TracerWrapper(
-            tracer: provider.get(
-                instrumentationName: operation(),
-                instrumentationVersion: nil
-            )
-        )
+/// Lightweight profiler that prints span timing to console.
+/// Retains the profiling interface for future instrumentation without OTel dependency.
+internal final class Profiler: BenchmarkProfiler {
+    func tracer(operation: @autoclosure () -> String) -> any BenchmarkTracer {
+        Tracer(operationName: operation())
     }
 }
 
-private final class TracerWrapper: DatadogInternal.BenchmarkTracer {
-    let tracer: OpenTelemetryApi.Tracer
+private final class Tracer: BenchmarkTracer {
+    let operationName: String
 
-    init(tracer: OpenTelemetryApi.Tracer) {
-        self.tracer = tracer
+    init(operationName: String) {
+        self.operationName = operationName
     }
 
-    func startSpan(named: @autoclosure () -> String) -> any DatadogInternal.BenchmarkSpan {
-        SpanWrapper(
-            span: tracer
-                .spanBuilder(spanName: named())
-                .setActive(true)
-                .startSpan()
-        )
+    func startSpan(named: @autoclosure () -> String) -> any BenchmarkSpan {
+        Span(operation: operationName, name: named())
     }
 }
 
-private final class SpanWrapper: DatadogInternal.BenchmarkSpan {
-    let span: OpenTelemetryApi.Span
+private final class Span: BenchmarkSpan {
+    let operation: String
+    let name: String
+    let startTime: CFAbsoluteTime
 
-    init(span: OpenTelemetryApi.Span) {
-        self.span = span
+    init(operation: String, name: String) {
+        self.operation = operation
+        self.name = name
+        self.startTime = CFAbsoluteTimeGetCurrent()
     }
 
     func stop() {
-        span.end()
+        let durationMs = (CFAbsoluteTimeGetCurrent() - startTime) * 1_000
+        print("⏱ [\(operation)/\(name)] \(String(format: "%.2f", durationMs))ms")
     }
 }
