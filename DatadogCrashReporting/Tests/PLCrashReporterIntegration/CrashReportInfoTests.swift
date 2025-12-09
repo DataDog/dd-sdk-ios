@@ -9,7 +9,7 @@ import TestUtilities
 @testable import DatadogCrashReporting
 import CrashReporter
 
-class CrashReportTests: XCTestCase {
+class CrashReportInfoTests: XCTestCase {
     // MARK: - Consistency
 
     func testGivenPLCrashReportWithConsistentValues_whenInitializing_itReturnsValue() throws {
@@ -36,7 +36,7 @@ class CrashReportTests: XCTestCase {
         mock.mockImages = [mockImage]
 
         // When
-        let crashReport = try CrashReport(from: mock)
+        let crashReport = try CrashReportInfo(from: mock)
 
         // Then
         XCTAssertNotNil(crashReport.incidentIdentifier)
@@ -56,7 +56,7 @@ class CrashReportTests: XCTestCase {
         mock.mockImages = nil
 
         // When
-        XCTAssertThrowsError(try CrashReport(from: mock)) { error in
+        XCTAssertThrowsError(try CrashReportInfo(from: mock)) { error in
             // Then
             let exception = error as! CrashReportException
             XCTAssertEqual(exception.description, "Received inconsistent `PLCrashReport` # has threads = false, has images = false")
@@ -77,7 +77,7 @@ class CrashReportTests: XCTestCase {
         mock.mockImages = [.init()]
 
         // When
-        let crashReport = try CrashReport(from: mock)
+        let crashReport = try CrashReportInfo(from: mock)
 
         // Then
         XCTAssertNotNil(crashReport, "It should initialize as long as it  has threads and images")
@@ -95,7 +95,7 @@ class CrashReportTests: XCTestCase {
         mock.mockImages = [.init()]
 
         // When
-        let crashReport = try XCTUnwrap(CrashReport(from: mock))
+        let crashReport = try XCTUnwrap(CrashReportInfo(from: mock))
 
         // Then
         XCTAssertEqual(crashReport.incidentIdentifier, uuid)
@@ -110,7 +110,7 @@ class CrashReportTests: XCTestCase {
         mock.mockImages = [.init()]
 
         // When
-        let crashReport = try XCTUnwrap(CrashReport(from: mock))
+        let crashReport = try XCTUnwrap(CrashReportInfo(from: mock))
 
         // Then
         XCTAssertEqual(crashReport.systemInfo?.timestamp, mock.mockSystemInfo.mockTimestamp)
@@ -129,7 +129,7 @@ class CrashReportTests: XCTestCase {
         mock.mockImages = [.init()]
 
         // When
-        let crashReport = try XCTUnwrap(CrashReport(from: mock))
+        let crashReport = try XCTUnwrap(CrashReportInfo(from: mock))
 
         // Then
         XCTAssertEqual(crashReport.processInfo?.processName, mock.mockProcessInfo.mockProcessName)
@@ -149,7 +149,7 @@ class CrashReportTests: XCTestCase {
         mock.mockImages = [.init()]
 
         // When
-        let crashReport = try XCTUnwrap(CrashReport(from: mock))
+        let crashReport = try XCTUnwrap(CrashReportInfo(from: mock))
 
         // Then
         XCTAssertEqual(crashReport.signalInfo?.name, mock.mockSignalInfo.mockName)

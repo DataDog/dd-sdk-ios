@@ -11,7 +11,7 @@ import CrashReporter
 
 class DDCrashReportExporterTests: XCTestCase {
     private let exporter = DDCrashReportExporter()
-    private var crashReport: CrashReport = .mockAny()
+    private var crashReport: CrashReportInfo = .mockAny()
 
     // MARK: - Formatting `error.type`
 
@@ -436,7 +436,7 @@ class DDCrashReportExporterTests: XCTestCase {
 
         // When
         let exporter = DDCrashReportExporter()
-        let ddCrashReport = exporter.export(try CrashReport(from: plCrashReport))
+        let ddCrashReport = exporter.export(try CrashReportInfo(from: plCrashReport))
 
         // Then
         let plcrTextFormat = PLCrashReportTextFormatter.stringValue(for: plCrashReport, with: PLCrashReportTextFormatiOS)!
@@ -469,7 +469,7 @@ class DDCrashReportExporterTests: XCTestCase {
 
         // When
         let exporter = DDCrashReportExporter()
-        let ddCrashReport = exporter.export(try CrashReport(from: plCrashReport))
+        let ddCrashReport = exporter.export(try CrashReportInfo(from: plCrashReport))
 
         // Then
         let plcrTextFormat = PLCrashReportTextFormatter.stringValue(for: plCrashReport, with: PLCrashReportTextFormatiOS)!

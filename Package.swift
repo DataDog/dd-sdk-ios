@@ -71,6 +71,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/microsoft/plcrashreporter.git", from: "1.12.0"),
+        .package(url: "https://github.com/kstenerud/KSCrash.git", from: "2.5.0"),
         .package(url: opentelemetry.url, exact: opentelemetry.version),
     ],
     targets: [
@@ -167,6 +168,8 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogInternal"),
                 .product(name: "CrashReporter", package: "PLCrashReporter"),
+                .product(name: "Recording", package: "KSCrash"),
+                .product(name: "Filters", package: "KSCrash")
             ],
             path: "DatadogCrashReporting",
             sources: ["Sources"],

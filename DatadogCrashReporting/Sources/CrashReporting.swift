@@ -31,12 +31,12 @@ public final class CrashReporting {
     /// - Provide crash report
     /// - Store context data associated with crashes
     /// - Provide backtraces
-    public static func enable(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default) {
+    public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default) {
         do {
             // To ensure the correct registration order between Core and Features,
             // the entire initialization flow is synchronized on the main thread.
             try runOnMainThreadSync {
-                try enableOrThrow(with: plugin, in: core)
+                try enableOrThrow(with: plugin(), in: core)
             }
         } catch let error {
             consolePrint("\(error)", .error)
@@ -90,5 +90,13 @@ public final class objc_CrashReporting: NSObject {
     @objc
     public static func enable() {
         CrashReporting.enable()
+    }
+}
+
+extension CrashReporting: InternalExtended {}
+extension InternalExtension where ExtendedType: CrashReporting {
+    /// Initializes the Datadog Crash Reporter using the default `KSCrash` plugin.
+    public static func kscrash_enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
+        ExtendedType.enable(with: try KSCrashPlugin(telemetry: core.telemetry), in: core)
     }
 }

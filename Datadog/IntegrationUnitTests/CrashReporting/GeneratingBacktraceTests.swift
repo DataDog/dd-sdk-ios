@@ -18,7 +18,7 @@ class GeneratingBacktraceTests: XCTestCase {
         core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
     }
 
-        override func tearDownWithError() throws {
+    override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
         super.tearDown()
@@ -26,7 +26,7 @@ class GeneratingBacktraceTests: XCTestCase {
 
     func testGeneratingBacktraceOfTheCurrentThread() throws {
         // Given
-        CrashReporting.enable(in: core)
+        CrashReporting._internal.kscrash_enable(in: core)
         XCTAssertNotNil(core.get(feature: BacktraceReportingFeature.self), "`BacktraceReportingFeature` must be registered")
 
         // When
@@ -65,7 +65,7 @@ class GeneratingBacktraceTests: XCTestCase {
 
     func testGeneratingBacktraceOfTheMainThread() throws {
         // Given
-        CrashReporting.enable(in: core)
+        CrashReporting._internal.kscrash_enable(in: core)
 
         // When
         XCTAssertTrue(Thread.current.isMainThread)
@@ -79,7 +79,7 @@ class GeneratingBacktraceTests: XCTestCase {
 
     func testGeneratingBacktraceOfSecondaryThread() throws {
         // Given
-        CrashReporting.enable(in: core)
+        CrashReporting._internal.kscrash_enable(in: core)
 
         // When
         let semaphore = DispatchSemaphore(value: 0)
@@ -89,6 +89,7 @@ class GeneratingBacktraceTests: XCTestCase {
             XCTAssertFalse(Thread.current.isMainThread)
             threadID = Thread.currentThreadID
             semaphore.signal()
+            Thread.sleep(forTimeInterval: 1)
         }
 
         thread.start()
