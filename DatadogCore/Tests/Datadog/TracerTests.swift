@@ -905,7 +905,7 @@ class TracerTests: XCTestCase {
         let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
         XCTAssertEqual(
             try spanMatcher.startTime(),
-            deviceTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toNanoseconds,
+            deviceTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toNanoseconds,
             "The `startTime` should be using server time."
         )
         XCTAssertEqual(

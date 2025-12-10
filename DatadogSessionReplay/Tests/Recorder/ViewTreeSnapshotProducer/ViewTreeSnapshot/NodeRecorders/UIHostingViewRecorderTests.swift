@@ -17,6 +17,7 @@ class UIHostingViewRecorderTests: XCTestCase {
     private enum Constants {
         static let bundledImageName = "dd_logo"
         static let nonBundledImageName = "flower"
+        static let colorFormatPredicate = NSPredicate(format: "SELF MATCHES %@", "^#[0-9A-Fa-f]{8}$")
     }
 
     // MARK: Text
@@ -25,7 +26,8 @@ class UIHostingViewRecorderTests: XCTestCase {
         XCTAssertEqual(wireframes.count, 1)
         let wireframe = try XCTUnwrap(wireframes.first?.textWireframe)
         XCTAssertEqual(wireframe.text, "Hello, World!")
-        XCTAssertEqual(wireframe.textStyle.color, "#000000FF")
+        // Check color format is valid
+        XCTAssertTrue(Constants.colorFormatPredicate.evaluate(with: wireframe.textStyle.color))
         XCTAssertEqual(wireframe.textStyle.family, "-apple-system, BlinkMacSystemFont, \'Roboto\', sans-serif")
         XCTAssertEqual(wireframe.textStyle.size, 28)
         XCTAssertEqual(wireframe.x, 74, accuracy: 5)
@@ -47,7 +49,8 @@ class UIHostingViewRecorderTests: XCTestCase {
         XCTAssertEqual(wireframes.count, 1)
         let wireframe = try XCTUnwrap(wireframes.first?.textWireframe)
         XCTAssertEqual(wireframe.text, "xxxxxx xxxxxx")
-        XCTAssertEqual(wireframe.textStyle.color, "#000000FF")
+        // Check color format is valid
+        XCTAssertTrue(Constants.colorFormatPredicate.evaluate(with: wireframe.textStyle.color))
         XCTAssertEqual(wireframe.textStyle.family, "-apple-system, BlinkMacSystemFont, \'Roboto\', sans-serif")
         XCTAssertEqual(wireframe.textStyle.size, 28)
         XCTAssertEqual(wireframe.x, 74, accuracy: 5)

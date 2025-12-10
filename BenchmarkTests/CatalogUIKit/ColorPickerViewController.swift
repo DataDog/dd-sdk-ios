@@ -101,7 +101,7 @@ class ColorPickerViewController: UIViewController, UIColorPickerViewControllerDe
         colorView.backgroundColor = chosenColor
         
         // Dismiss the color picker if the conditions are right:
-        // 1) User is not doing a continous pick (tap and drag across multiple colors).
+        // 1) User is not doing a continuous pick (tap and drag across multiple colors).
         // 2) Picker is presented on a non-compact device.
         //
         // Use the following check to determine how the color picker was presented (modal or popover).

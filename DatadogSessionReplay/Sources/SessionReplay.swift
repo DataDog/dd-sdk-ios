@@ -95,7 +95,7 @@ public enum SessionReplay {
             textAndInputPrivacyLevel: configuration.textAndInputPrivacyLevel.rawValue,
             imagePrivacyLevel: configuration.imagePrivacyLevel.rawValue,
             touchPrivacyLevel: configuration.touchPrivacyLevel.rawValue,
-            sessionReplaySampleRate: Int64(withNoOverflow: configuration.replaySampleRate),
+            sessionReplaySampleRate: Int64.ddWithNoOverflow(configuration.replaySampleRate),
             startRecordingImmediately: configuration.startRecordingImmediately
         )
     }

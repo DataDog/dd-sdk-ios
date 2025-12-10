@@ -75,7 +75,7 @@ internal struct DiffError: Error {}
 /// An item in symbols table (`[DiffableID: Symbol]`) in Heckel's algorithm.
 ///
 /// Note: Unlike original algorithm, our implementation doesn't use `OC`, `NC` and `OLNO` counters. In our case, elements within each array are unique,
-/// so instead of repetition counters, we define basic `inNew` flag and optional `indexInOld` to track occurence of certain `id` in one or both files.
+/// so instead of repetition counters, we define basic `inNew` flag and optional `indexInOld` to track occurrence of certain `id` in one or both files.
 private struct Symbol {
     /// If element with certain `id` occurs in `newArray`.
     var inNew: Bool

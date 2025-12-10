@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// A Datadog  protocol that provides persistance related information.
+/// A Datadog  protocol that provides persistence related information.
 public protocol Storage {
     /// Returns the most recent modified file before a given date.
     /// - Parameter before: The date to compare the last modification date of files.

@@ -18,7 +18,7 @@ internal final class BenchmarkURLSessionTaskDelegate: NSObject, URLSessionTaskDe
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        bench.meter.gauge(metric: "ios.benchmark.reponse_latency")
+        bench.meter.gauge(metric: "ios.benchmark.response_latency")
             .record(metrics.taskInterval.duration, attributes: ["track": track])
     }
 }

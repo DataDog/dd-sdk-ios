@@ -358,7 +358,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Cache the view id at each view start
         dependencies.viewCache.insert(
             id: id,
-            timestamp: startTime.timeIntervalSince1970.toInt64Milliseconds,
+            timestamp: startTime.timeIntervalSince1970.dd.toInt64Milliseconds,
             hasReplay: hasReplay
         )
     }

@@ -208,7 +208,7 @@ extension DistributedTracing {
             payload: request.value(forHTTPHeaderField: GraphQLHeaders.payload)
         )
 
-        let sampler = sampler(sessionID: rumSessionId, traceID: traceID.idLo)
+        let sampler = sampler(sessionID: rumSessionId)
         let injectedSpanContext = TraceContext(
             traceID: traceID,
             spanID: spanID,
@@ -298,9 +298,8 @@ extension DistributedTracing {
     ///
     /// - Parameters:
     ///   - sessionID: The RUM session ID
-    ///   - traceID: The trace ID as a fallback
     /// - Returns: A `Sampling` instance that will consistently sample based on the provided seed
-    private func sampler(sessionID: String?, traceID: UInt64?) -> Sampling {
+    private func sampler(sessionID: String?) -> Sampling {
         if let sessionID,
            // For a UUID with value aaaaaaaa-bbbb-Mccc-Nddd-1234567890ab
            // we use as the base id the last part: 0x1234567890ab

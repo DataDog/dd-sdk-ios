@@ -153,7 +153,7 @@ internal final class DatadogCore {
     /// Add or override the extra info of the current user
     ///
     ///  - Parameters:
-    ///    - extraInfo: The user's custom attibutes to add or override
+    ///    - extraInfo: The user's custom attributes to add or override
     func addUserExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
         var extraInfo = userInfoPublisher.current.extraInfo
         newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
@@ -201,7 +201,7 @@ internal final class DatadogCore {
     /// Add or override the extra info of the current account
     ///
     ///  - Parameters:
-    ///    - extraInfo: The account's custom attibutes to add or override
+    ///    - extraInfo: The account's custom attributes to add or override
     func addAccountExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
         guard let accountInfo = accountInfoPublisher.current else {
             DD.logger.error(
@@ -289,7 +289,7 @@ internal final class DatadogCore {
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
     /// this instance of the SDK. It **blocks the caller thread**.
     ///
-    /// Upon return, it is safe to assume that all events were stored and got uploaded. The SDK was deinitialised so this instance of core is missfunctional.
+    /// Upon return, it is safe to assume that all events were stored and got uploaded. The SDK was deinitialised so this instance of core is non-functional.
     func flushAndTearDown() {
         flush()
 

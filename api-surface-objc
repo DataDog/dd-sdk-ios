@@ -50,6 +50,7 @@ public final class objc_Configuration: NSObject
     public var env: String
     public var site: objc_DatadogSite
     public var service: String?
+    public var version: String?
     public var batchSize: objc_BatchSize
     public var uploadFrequency: objc_UploadFrequency
     public var batchProcessingLevel: objc_BatchProcessingLevel
@@ -389,6 +390,7 @@ public class objc_RUMActionEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
 public class objc_RUMActionEventDDSession: NSObject
     public var plan: objc_RUMActionEventDDSessionPlan
     public var sessionPrecondition: objc_RUMActionEventDDSessionRUMSessionPrecondition
@@ -602,6 +604,7 @@ public class objc_RUMErrorEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
 public class objc_RUMErrorEventDDSession: NSObject
     public var plan: objc_RUMErrorEventDDSessionPlan
     public var sessionPrecondition: objc_RUMErrorEventDDSessionRUMSessionPrecondition
@@ -915,6 +918,7 @@ public class objc_RUMLongTaskEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
 public class objc_RUMLongTaskEventDDProfiling: NSObject
     public var errorReason: objc_RUMLongTaskEventDDProfilingErrorReason
     public var status: objc_RUMLongTaskEventDDProfilingStatus
@@ -1149,6 +1153,7 @@ public class objc_RUMResourceEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
 public class objc_RUMResourceEventDDSession: NSObject
     public var plan: objc_RUMResourceEventDDSessionPlan
     public var sessionPrecondition: objc_RUMResourceEventDDSessionRUMSessionPrecondition
@@ -1454,6 +1459,7 @@ public class objc_RUMViewEventDDConfiguration: NSObject
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var startSessionReplayRecordingManually: NSNumber?
+    public var traceSampleRate: NSNumber?
 public class objc_RUMViewEventDDPageStates: NSObject
     public var start: NSNumber
     public var state: objc_RUMViewEventDDPageStatesState
@@ -1836,6 +1842,7 @@ public class objc_RUMVitalAppLaunchEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
 public class objc_RUMVitalAppLaunchEventDDProfiling: NSObject
     public var errorReason: objc_RUMVitalAppLaunchEventDDProfilingErrorReason
     public var status: objc_RUMVitalAppLaunchEventDDProfilingStatus
@@ -2041,6 +2048,7 @@ public class objc_RUMVitalDurationEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
 public class objc_RUMVitalDurationEventDDSession: NSObject
     public var plan: objc_RUMVitalDurationEventDDSessionPlan
     public var sessionPrecondition: objc_RUMVitalDurationEventDDSessionRUMSessionPrecondition
@@ -2220,6 +2228,7 @@ public class objc_RUMVitalOperationStepEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
 public class objc_RUMVitalOperationStepEventDDSession: NSObject
     public var plan: objc_RUMVitalOperationStepEventDDSessionPlan
     public var sessionPrecondition: objc_RUMVitalOperationStepEventDDSessionRUMSessionPrecondition
@@ -2421,6 +2430,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var batchProcessingLevel: NSNumber?
     public var batchSize: NSNumber?
     public var batchUploadFrequency: NSNumber?
+    public var betaEncodeCookieOptions: NSNumber?
     public var compressIntakeRequests: NSNumber?
     public var dartVersion: String?
     public var defaultPrivacyLevel: String?

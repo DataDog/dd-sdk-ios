@@ -301,12 +301,12 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 SDKMetricFields.typeKey: BatchDeletedMetric.typeValue,
                 BatchMetric.trackKey: metricsData.trackName,
                 BatchDeletedMetric.uploaderDelayKey: [
-                    BatchDeletedMetric.uploaderDelayMinKey: metricsData.uploaderPerformance.minUploadDelay.toMilliseconds,
-                    BatchDeletedMetric.uploaderDelayMaxKey: metricsData.uploaderPerformance.maxUploadDelay.toMilliseconds,
+                    BatchDeletedMetric.uploaderDelayMinKey: metricsData.uploaderPerformance.minUploadDelay.dd.toMilliseconds,
+                    BatchDeletedMetric.uploaderDelayMaxKey: metricsData.uploaderPerformance.maxUploadDelay.dd.toMilliseconds,
                 ],
                 BatchMetric.consentKey: metricsData.consentLabel,
-                BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
-                BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
+                BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.dd.toMilliseconds,
+                BatchDeletedMetric.batchAgeKey: batchAge.dd.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
                 BatchDeletedMetric.inBackgroundKey: false,
                 BatchDeletedMetric.backgroundTasksEnabled: metricsData.backgroundTasksEnabled,
@@ -334,10 +334,10 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 SDKMetricFields.typeKey: BatchClosedMetric.typeValue,
                 BatchMetric.trackKey: metricsData.trackName,
                 BatchMetric.consentKey: metricsData.consentLabel,
-                BatchClosedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
+                BatchClosedMetric.uploaderWindowKey: performance.uploaderWindow.dd.toMilliseconds,
                 BatchClosedMetric.batchSizeKey: lastWritableFileApproximatedSize,
                 BatchClosedMetric.batchEventsCountKey: lastWritableFileObjectsCount,
-                BatchClosedMetric.batchDurationKey: batchDuration.toMilliseconds
+                BatchClosedMetric.batchDurationKey: batchDuration.dd.toMilliseconds
             ],
             sampleRate: BatchClosedMetric.sampleRate
         )
@@ -348,7 +348,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 /// This function converts file creation date into file name.
 internal func fileNameFrom(fileCreationDate: Date) -> String {
     let milliseconds = fileCreationDate.timeIntervalSinceReferenceDate / FilesOrchestrator.Constants.fileNamePrecision
-    let converted = (try? UInt64(withReportingOverflow: milliseconds)) ?? 0
+    let converted = (try? UInt64.ddWithReportingOverflow(milliseconds)) ?? 0
     return String(converted)
 }
 

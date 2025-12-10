@@ -328,7 +328,7 @@ public class RUMSessionMatcher {
 private func validate(rumViewEvents: [RUMViewEvent]) throws {
     // All view events must use `session.plan` "lite"
     try rumViewEvents.forEach { viewEvent in
-        if viewEvent.source == .ios { // validete only mobile events
+        if viewEvent.source == .ios { // validate only mobile events
             try validate(device: viewEvent.device)
             try validate(os: viewEvent.os)
         }
@@ -338,7 +338,7 @@ private func validate(rumViewEvents: [RUMViewEvent]) throws {
 private func validate(rumActionEvents: [RUMActionEvent]) throws {
     // All action events must use `session.plan` "lite"
     try rumActionEvents.forEach { actionEvent in
-        if actionEvent.source == .ios { // validete only mobile events
+        if actionEvent.source == .ios { // validate only mobile events
             try validate(device: actionEvent.device)
             try validate(os: actionEvent.os)
         }
@@ -356,7 +356,7 @@ private func validate(rumResourceEvents: [RUMResourceEvent]) throws {
 
     // All resource events must use `session.plan` "lite"
     try rumResourceEvents.forEach { resourceEvent in
-        if resourceEvent.source == .ios { // validete only mobile events
+        if resourceEvent.source == .ios { // validate only mobile events
             try validate(device: resourceEvent.device)
             try validate(os: resourceEvent.os)
         }
@@ -366,7 +366,7 @@ private func validate(rumResourceEvents: [RUMResourceEvent]) throws {
 private func validate(rumErrorEvents: [RUMErrorEvent]) throws {
     // All error events must use `session.plan` "lite"
     try rumErrorEvents.forEach { errorEvent in
-        if errorEvent.source == .ios { // validete only mobile events
+        if errorEvent.source == .ios { // validate only mobile events
             try validate(device: errorEvent.device)
             try validate(os: errorEvent.os)
         }
@@ -376,7 +376,7 @@ private func validate(rumErrorEvents: [RUMErrorEvent]) throws {
 private func validate(rumLongTaskEvents: [RUMLongTaskEvent]) throws {
     // All error events must use `session.plan` "lite"
     try rumLongTaskEvents.forEach { longTaskEvent in
-        if longTaskEvent.source == .ios { // validete only mobile events
+        if longTaskEvent.source == .ios { // validate only mobile events
             try validate(device: longTaskEvent.device)
             try validate(os: longTaskEvent.os)
         }
@@ -562,7 +562,7 @@ extension RUMSessionMatcher.View {
     public var durationNs: Int64? { viewEvents.last?.view.timeSpent }
 
     /// The duration of this view, in seconds.
-    public var duration: TimeInterval? { durationNs.map { TimeInterval(fromNanoseconds: $0) } }
+    public var duration: TimeInterval? { durationNs.map { TimeInterval.ddFromNanoseconds( $0) } }
 }
 
 extension RUMSessionMatcher: CustomStringConvertible {
@@ -588,7 +588,7 @@ extension RUMSessionMatcher: CustomStringConvertible {
     }
 
     /// The duration of this session, in seconds.
-    public var duration: TimeInterval? { durationNs.map { TimeInterval(fromNanoseconds: $0) } }
+    public var duration: TimeInterval? { durationNs.map { TimeInterval.ddFromNanoseconds( $0) } }
 
     /// The application start action.
     public var applicationStartAction: RUMActionEvent? {
@@ -599,7 +599,7 @@ extension RUMSessionMatcher: CustomStringConvertible {
 
     /// The application startup time (nanoseconds).
     public var applicationStartupTime: TimeInterval? {
-        return applicationStartAction?.action.loadingTime.map { TimeInterval(fromNanoseconds: $0) }
+        return applicationStartAction?.action.loadingTime.map { TimeInterval.ddFromNanoseconds( $0) }
     }
 
     private func renderSession() -> String {

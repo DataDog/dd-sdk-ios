@@ -483,7 +483,7 @@ internal class SessionEndedMetric {
                 let stateAtEnd = context.applicationStateHistory.state(at: sessionEnd) ?? context.applicationStateHistory.currentState
 
                 lifecycleInfo = .init(
-                    timeToSessionStart: firstView.startMs - context.launchInfo.processLaunchDate.timeIntervalSince1970.toInt64Milliseconds,
+                    timeToSessionStart: firstView.startMs - context.launchInfo.processLaunchDate.timeIntervalSince1970.dd.toInt64Milliseconds,
                     sessionsCount: validSessionCount,
                     appStateAtSessionStart: stateAtStart.toString,
                     appStateAtSessionEnd: stateAtEnd.toString,
@@ -539,8 +539,8 @@ internal class SessionEndedMetric {
                     byKind: top5SDKErrorsByKind
                 ),
                 ntpOffset: .init(
-                    atStart: ntpOffsetAtStart.toInt64Milliseconds,
-                    atEnd: context.serverTimeOffset.toInt64Milliseconds
+                    atStart: ntpOffsetAtStart.dd.toInt64Milliseconds,
+                    atEnd: context.serverTimeOffset.dd.toInt64Milliseconds
                 ),
                 noViewEventsCount: .init(
                     actions: missedEvents[.action] ?? 0,
@@ -560,8 +560,8 @@ internal class SessionEndedMetric {
                     }(),
                     taskRole: context.launchInfo.raw.taskPolicyRole,
                     prewarmed: context.launchInfo.raw.isPrewarmed,
-                    timeToSdkInit: context.sdkInitDate.timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Milliseconds,
-                    timeToDidBecomeActive: context.launchInfo.timeToDidBecomeActive?.toInt64Milliseconds,
+                    timeToSdkInit: context.sdkInitDate.timeIntervalSince(context.launchInfo.processLaunchDate).dd.toInt64Milliseconds,
+                    timeToDidBecomeActive: context.launchInfo.timeToDidBecomeActive?.dd.toInt64Milliseconds,
                     hasScenesLifecycle: isUsingSceneLifecycle,
                     appStateAtSdkInit: context.applicationStateHistory.initialState.toString
                 ),

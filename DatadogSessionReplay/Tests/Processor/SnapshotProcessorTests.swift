@@ -384,8 +384,8 @@ class SnapshotProcessorTests: XCTestCase {
                 "Touch information must be send in 'incremental snapshot'"
             )
             XCTAssertEqual(pointerInteractionData.pointerType, .touch)
-            XCTAssertGreaterThanOrEqual(record.timestamp, earliestTouchTime.timeIntervalSince1970.toInt64Milliseconds)
-            XCTAssertLessThanOrEqual(record.timestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
+            XCTAssertGreaterThanOrEqual(record.timestamp, earliestTouchTime.timeIntervalSince1970.dd.toInt64Milliseconds)
+            XCTAssertLessThanOrEqual(record.timestamp, snapshotTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         }
 
         XCTAssertEqual(core.recordsCountByViewID, ["abc": 13])

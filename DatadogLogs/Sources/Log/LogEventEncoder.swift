@@ -150,6 +150,8 @@ public struct LogEvent: Encodable {
     public let mobileCarrierInfo: CarrierInfo?
     /// The attributes associated with this log.
     public var attributes: LogEvent.Attributes
+    /// Datadog tags to send with logs, in addition to ``tags``.
+    public let ddTags: String
     /// Tags associated with this log.
     public var tags: [String]?
 
@@ -273,15 +275,15 @@ internal struct LogEventEncoder {
         try container.encode(log.os, forKey: .os)
 
         // Encode user info
-        try log.userInfo.id.ifNotNil { try container.encode($0, forKey: .userId) }
-        try log.userInfo.name.ifNotNil { try container.encode($0, forKey: .userName) }
-        try log.userInfo.email.ifNotNil { try container.encode($0, forKey: .userEmail) }
-        try log.userInfo.anonymousId.ifNotNil { try container.encode($0, forKey: .userAnonymousId) }
+        try log.userInfo.id.dd.ifNotNil { try container.encode($0, forKey: .userId) }
+        try log.userInfo.name.dd.ifNotNil { try container.encode($0, forKey: .userName) }
+        try log.userInfo.email.dd.ifNotNil { try container.encode($0, forKey: .userEmail) }
+        try log.userInfo.anonymousId.dd.ifNotNil { try container.encode($0, forKey: .userAnonymousId) }
 
         // Encode account info
         if let accountInfo = log.accountInfo {
             try container.encode(accountInfo.id, forKey: .accountId)
-            try accountInfo.name.ifNotNil { try container.encode($0, forKey: .accountName) }
+            try accountInfo.name.dd.ifNotNil { try container.encode($0, forKey: .accountName) }
         }
 
         // Encode network info
@@ -291,17 +293,17 @@ internal struct LogEventEncoder {
             try container.encode(networkConnectionInfo.supportsIPv4, forKey: .networkConnectionSupportsIPv4)
             try container.encode(networkConnectionInfo.supportsIPv6, forKey: .networkConnectionSupportsIPv6)
             try container.encode(networkConnectionInfo.isExpensive, forKey: .networkConnectionIsExpensive)
-            try networkConnectionInfo.isConstrained.ifNotNil {
+            try networkConnectionInfo.isConstrained.dd.ifNotNil {
                 try container.encode($0, forKey: .networkConnectionIsConstrained)
             }
         }
 
         // Encode mobile carrier info
         if let carrierInfo = log.mobileCarrierInfo {
-            try carrierInfo.carrierName.ifNotNil {
+            try carrierInfo.carrierName.dd.ifNotNil {
                 try container.encode($0, forKey: .mobileNetworkCarrierName)
             }
-            try carrierInfo.carrierISOCountryCode.ifNotNil {
+            try carrierInfo.carrierISOCountryCode.dd.ifNotNil {
                 try container.encode($0, forKey: .mobileNetworkCarrierISOCountryCode)
             }
             try container.encode(carrierInfo.radioAccessTechnology, forKey: .mobileNetworkCarrierRadioTechnology)
@@ -339,11 +341,11 @@ internal struct LogEventEncoder {
 
         // Encode tags
         var tags = log.tags ?? []
-        tags.append("env:\(log.environment)") // include default env tag
-        tags.append("version:\(log.applicationVersion)") // include default version tag
-        if let variant = log.variant {
-            tags.append("variant:\(variant)")
-        }
+        // Include dd tags
+        // log.ddTags is already a string with multiple tags
+        // joined by ",". That is OK, as it gets joined with
+        // the specific ones for this log.
+        tags.append(log.ddTags)
         let tagsString = tags.joined(separator: ",")
         try container.encode(tagsString, forKey: .tags)
     }

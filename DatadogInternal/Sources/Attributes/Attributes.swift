@@ -161,7 +161,7 @@ public struct CrossPlatformAttributes {
     public static let flutterFirstBuildComplete: String = "_dd.performance.first_build_complete"
 
     /// Custom value for Interaction To Next view.
-    /// For Flutter this is the amount of time between an action occurring and the First Build Complete ocurring on the next view.
+    /// For Flutter this is the amount of time between an action occurring and the First Build Complete occurring on the next view.
     public static let customINVValue: String = "_dd.view.custom_inv_value"
 }
 

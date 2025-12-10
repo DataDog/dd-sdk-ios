@@ -159,7 +159,7 @@ class RequestBuilderTests: XCTestCase {
 
     // MARK: - Request Method
 
-    func testItUsesPOSTMethodForProducedReqest() {
+    func testItUsesPOSTMethodForProducedRequest() {
         let builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: .mockRandom())
         let request = builder.uploadRequest(with: .mockRandom())
         XCTAssertEqual(request.httpMethod, "POST")

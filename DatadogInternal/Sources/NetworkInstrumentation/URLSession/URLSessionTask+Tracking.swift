@@ -10,7 +10,7 @@ extension URLSessionTask: DatadogExtended {}
 extension DatadogExtension where ExtendedType: URLSessionTask {
     /// Overrides the current request of the ``URLSessionTask``.
     ///
-    /// The current request must be overriden before the task resumes.
+    /// The current request must be overridden before the task resumes.
     ///
     /// - Parameter request: The new request.
     func override(currentRequest request: URLRequest) {

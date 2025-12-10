@@ -128,9 +128,9 @@ class LogsTests: XCTestCase {
 
     func testItSendsGlobalLogUpdates_whenAddAttribute() throws {
         // Given
-        let mockMessageReciever = FeatureMessageReceiverMock()
+        let mockMessageReceiver = FeatureMessageReceiverMock()
         let core = SingleFeatureCoreMock<LogsFeature>(
-            messageReceiver: mockMessageReciever
+            messageReceiver: mockMessageReceiver
         )
         let config = Logs.Configuration()
         Logs.enable(with: config, in: core)
@@ -141,7 +141,7 @@ class LogsTests: XCTestCase {
         Logs.addAttribute(forKey: attributeKey, value: attributeValue, in: core)
 
         // Then
-        let messages = mockMessageReciever.messages.compactMap { $0.asPayload as? LogEventAttributes }
+        let messages = mockMessageReceiver.messages.compactMap { $0.asPayload as? LogEventAttributes }
         XCTAssertEqual(messages.count, 1)
         let message = try XCTUnwrap(messages.first)
         XCTAssertEqual(message.attributes[attributeKey] as? String, attributeValue)
@@ -149,9 +149,9 @@ class LogsTests: XCTestCase {
 
     func testItSendsGlobalLogUpdates_whenRemoveAttribute() throws {
         // Given
-        let mockMessageReciever = FeatureMessageReceiverMock()
+        let mockMessageReceiver = FeatureMessageReceiverMock()
         let core = SingleFeatureCoreMock<LogsFeature>(
-            messageReceiver: mockMessageReciever
+            messageReceiver: mockMessageReceiver
         )
         let config = Logs.Configuration()
         Logs.enable(with: config, in: core)
@@ -163,7 +163,7 @@ class LogsTests: XCTestCase {
         Logs.removeAttribute(forKey: attributeKey, in: core)
 
         // Then
-        let messages = mockMessageReciever.messages.compactMap { $0.asPayload as? LogEventAttributes }
+        let messages = mockMessageReceiver.messages.compactMap { $0.asPayload as? LogEventAttributes }
         XCTAssertEqual(messages.count, 2)
         let message = try XCTUnwrap(messages.last)
         XCTAssertNil(message.attributes[attributeKey])
