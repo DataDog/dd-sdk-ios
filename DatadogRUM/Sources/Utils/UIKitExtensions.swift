@@ -59,7 +59,7 @@ internal extension UIView {
 
     /// `true` if this view is a text field in a `UIAlertController`, `false` otherwise.
     var isUIAlertTextField: Bool {
-        guard let alertTextFieldClass = NSClassFromString("_UIAlertControllerTextFieldView"),
+        guard let alertTextFieldClass = NSClassFromString("_UIAlertControllerTextField"),
               self.isKind(of: alertTextFieldClass) else {
             return false
         }
