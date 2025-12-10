@@ -25,7 +25,7 @@ extension FlagsClientInternal {
     }
 
     @_spi(Internal)
-    public func trackEvaluation(key: String, defaultValue: FlagValue) {
+    public func trackEvaluation(key: String) {
         // no-op
     }
 }
