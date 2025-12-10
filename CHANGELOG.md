@@ -2,9 +2,11 @@
 
 # 3.4.0 / 10-12-2025
 
-- [FEATURE] Add support for configuring a custom version parameter in DatadogConfiguration. See [#2585][] (Thanks [@blimmer][])
+- [FEATURE] Add support for configuring a custom version parameter in `DatadogConfiguration`. See [#2585][] (Thanks [@blimmer][])
+- [FEATURE] Add support for SwiftUI vector image assets in Session Replay. See [#2599][]
 - [IMPROVEMENT] Provide XCFramework without arm64e slice for Xcode 26+ compatibility. See [#2576][]
-- [FIX] Add service and sdk_version tags to log requests. See [#2598][]
+- [IMPROVEMENT] Refactor public extensions on common types in `DatadogInternal` to use the `.dd` namespace pattern, preventing namespace collisions with customer code. See [#2587][]
+- [FIX] Add service and `sdk_version` tags to log requests. See [#2598][]
 
 # 3.3.0 / 17-11-2025
 
@@ -997,6 +999,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2576]: https://github.com/DataDog/dd-sdk-ios/pull/2576
 [#2585]: https://github.com/DataDog/dd-sdk-ios/pull/2585
 [#2598]: https://github.com/DataDog/dd-sdk-ios/pull/2598
+[#2587]: https://github.com/DataDog/dd-sdk-ios/pull/2587
+[#2599]: https://github.com/DataDog/dd-sdk-ios/pull/2599
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
