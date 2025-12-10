@@ -8,11 +8,11 @@ import Foundation
 import DatadogInternal
 
 public protocol FlagsClientInternal: AnyObject {
-    /// Note: This is an internal method. Expect breaking changes in the future.
+    /// > Warning: This is an internal method and can break in the future.
     @_spi(Internal)
     func getAllFlagsDetails() -> [String: FlagDetails<AnyValue>]?
 
-    /// Note: This is an internal method. Expect breaking changes in the future.
+    /// > Warning: This is an internal method and can break in the future.
     @_spi(Internal)
     func trackEvaluation(key: String)
 }

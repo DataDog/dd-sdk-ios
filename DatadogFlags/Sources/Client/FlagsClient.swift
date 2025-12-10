@@ -220,7 +220,6 @@ extension FlagsClient: FlagsClientProtocol {
 // MARK: - Internal methods consumed by the React Native SDK
 
 extension FlagsClient: FlagsClientInternal {
-    @_spi(Internal)
     public func getAllFlagsDetails() -> [String: FlagDetails<AnyValue>]? {
         guard let flagAssignments = repository.flagAssignments() else {
             return nil
@@ -238,7 +237,6 @@ extension FlagsClient: FlagsClientInternal {
         return result
     }
 
-    @_spi(Internal)
     public func trackEvaluation(key: String) {
         guard let flagAssignment = repository.flagAssignment(for: key) else {
             return
