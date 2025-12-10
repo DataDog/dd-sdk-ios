@@ -15,6 +15,14 @@ This is the **Datadog SDK for iOS and tvOS** - Swift and Objective-C libraries t
 - **WebView Tracking**: Hybrid app monitoring
 - **Feature Flags**: Feature flag integration
 
+## Related Documentation
+
+Before starting work, familiarize yourself with these key documents:
+
+- **`docs/LLM_FEATURE_DOCS_GUIDELINES.md`** - Guidelines for creating and updating `*_FEATURE.md` files
+- **`ZEN.md`** - Core SDK philosophy and principles
+- **`CONTRIBUTING.md`** - General contribution guidelines
+- **Feature-specific docs** - Each module has a `*_FEATURE.md` file (e.g., `DatadogRUM/RUM_FEATURE.md`)
 
 ## Critical: Module Architecture
 
@@ -218,12 +226,6 @@ All source files must include the Apache License header:
  */
 ```
 
-## Documentation
-
-Feature might have available documentation in files with the naming structure `*_FEATURE.md`
-Documentation must be updated if necessary following changes.
-Follow @LLM_FEATURE_DOCS_GUIDELINES.md on how to update the feature documentation.
-
 ## Dependencies
 
 - **PLCrashReporter**: Crash reporting (via Carthage)
@@ -242,7 +244,7 @@ Avoid adding new dependencies unless absolutely necessary (small footprint princ
 
 - iOS 12.0+ (iOS 13.0+ with full OpenTelemetry)
 - tvOS 12.0+
-- macOS 12.0+ (limited modules)
+- macOS 12.6+ (limited modules)
 - watchOS 7.0+ (limited modules)
 
 Agents must not introduce APIs that require newer OS versions unless approved.
