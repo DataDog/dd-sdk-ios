@@ -112,7 +112,7 @@ static void safe_read_signal_handler(int sig, siginfo_t* info, void* context) {
  * Initialize the main thread pthread identifier
  * and install signal handlers for safe memory reading.
  *
- * This constructor runs early to capture the main thread's pthread_t.
+ * This constructor runs early to capture and setup the parameters.
  */
 __attribute__((constructor))
 static void init_main_thread_id_and_safe_read_handlers() {
@@ -373,26 +373,6 @@ bool stack_trace_get_thread_info(stack_trace_t* trace, thread_t thread) {
 }
 
 /**
- * Safely reads memory from a potentially invalid address.
- * Uses signal handling to validate memory access.
- * If memory is invalid, SIGBUS/SIGSEGV is caught and we return false.
- */
-bool safe_read_memory(void* addr, void* buffer, size_t size) {
-    g_is_safe_read = true;
-    
-    if (sigsetjmp(g_safe_read_handler, 1) == 0) {
-        // try direct memory copy
-        memcpy(buffer, addr, size);
-        g_is_safe_read = false;
-        return true;
-    }
-
-    // Memory access failed
-    g_is_safe_read = false;
-    return false;
-}
-
-/**
  * Samples a thread's stack to collect stack trace information.
  *
  * @param trace Pre-allocated stack trace to fill
@@ -406,6 +386,12 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
     void *fp, *pc = nullptr;
     if (!thread_get_frame_pointers(thread, &fp, &pc)) return;
 
+    // Set up crash recovery once for the whole trace.
+    if (sigsetjmp(g_safe_read_handler, 1) != 0) {
+        g_is_safe_read = false;
+        return;
+    }
+
     while (trace->frame_count < max_depth && pc != nullptr) {
         auto& frame = trace->frames[trace->frame_count];
         frame.instruction_ptr = (uint64_t)pc;
@@ -416,16 +402,21 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
         // Validate frame pointer before dereferencing
         if (!is_valid_frame_pointer((uintptr_t)fp)) break;
 
-        // Safely read the next frame pointer and return address
+        // Read the next frame pointer and return address
         void* next_frame[2];
-        if (!safe_read_memory(fp, next_frame, sizeof(next_frame))) break;
-        
+        // Unsafe memory access
+        g_is_safe_read = true;
+        memcpy(next_frame, fp, sizeof(next_frame));
+        g_is_safe_read = false;
+
         fp = next_frame[0];  // Next frame pointer
         pc = next_frame[1];  // Return address
 
         // Validate the new PC
         if (!is_valid_userspace_addr((uintptr_t)pc)) break;
     }
+
+    g_is_safe_read = false;
 }
 
 namespace dd::profiler {

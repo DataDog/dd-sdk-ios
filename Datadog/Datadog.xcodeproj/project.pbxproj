@@ -16,6 +16,12 @@
 		11030D772D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */; };
 		110B0ECB2DF0ABC6008ABA19 /* DeterministicSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */; };
 		110B0ECC2DF0ABC6008ABA19 /* DeterministicSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */; };
+		110DD1A22EEB01B0002F3B8B /* SafeRead.h in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1A12EEB01AB002F3B8B /* SafeRead.h */; };
+		110DD1A32EEB01B0002F3B8B /* SafeRead.h in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1A12EEB01AB002F3B8B /* SafeRead.h */; };
+		110DD1A52EEB0201002F3B8B /* SafeRead.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1A42EEB01F8002F3B8B /* SafeRead.cpp */; };
+		110DD1A62EEB0201002F3B8B /* SafeRead.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1A42EEB01F8002F3B8B /* SafeRead.cpp */; };
+		110DD1A92EEB0375002F3B8B /* SafeReadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1A82EEB0369002F3B8B /* SafeReadTests.swift */; };
+		110DD1AA2EEB0375002F3B8B /* SafeReadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1A82EEB0369002F3B8B /* SafeReadTests.swift */; };
 		111201C12E93C13000375DA3 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BF2E93C13000375DA3 /* AppStateManager.swift */; };
 		111201C22E93C13000375DA3 /* AppStateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BE2E93C13000375DA3 /* AppStateInfo.swift */; };
 		111201C32E93C13000375DA3 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BF2E93C13000375DA3 /* AppStateManager.swift */; };
@@ -2651,6 +2657,10 @@
 /* Begin PBXFileReference section */
 		11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesMetric.swift; sourceTree = "<group>"; };
 		110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSampler.swift; sourceTree = "<group>"; };
+		110DD1A12EEB01AB002F3B8B /* SafeRead.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SafeRead.h; sourceTree = "<group>"; };
+		110DD1A42EEB01F8002F3B8B /* SafeRead.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SafeRead.cpp; sourceTree = "<group>"; };
+		110DD1A72EEB0270002F3B8B /* DatadogProfilingTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DatadogProfilingTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		110DD1A82EEB0369002F3B8B /* SafeReadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeReadTests.swift; sourceTree = "<group>"; };
 		111201BE2E93C13000375DA3 /* AppStateInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateInfo.swift; sourceTree = "<group>"; };
 		111201BF2E93C13000375DA3 /* AppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManager.swift; sourceTree = "<group>"; };
 		1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAttributesIntegrationTests.swift; sourceTree = "<group>"; };
@@ -4214,6 +4224,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		110DD1A02EEB01A3002F3B8B /* SafeReads */ = {
+			isa = PBXGroup;
+			children = (
+				110DD1A42EEB01F8002F3B8B /* SafeRead.cpp */,
+				110DD1A72EEB0270002F3B8B /* DatadogProfilingTests-Bridging-Header.h */,
+				110DD1A12EEB01AB002F3B8B /* SafeRead.h */,
+				110DD1A82EEB0369002F3B8B /* SafeReadTests.swift */,
+			);
+			path = SafeReads;
+			sourceTree = "<group>";
+		};
 		111201C02E93C13000375DA3 /* AppState */ = {
 			isa = PBXGroup;
 			children = (
@@ -7402,6 +7423,7 @@
 		D2C9F2522E3B8A88008397FD /* DatadogProfilingTests */ = {
 			isa = PBXGroup;
 			children = (
+				110DD1A02EEB01A3002F3B8B /* SafeReads */,
 				D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */,
 				D27465772E796A1F00C47FE2 /* CTorProfilerTests.swift */,
 				D2D0E2012E3CEF1200BA4113 /* MachProfilerCAPITests.swift */,
@@ -10962,10 +10984,13 @@
 				D27465782E796A1F00C47FE2 /* CTorProfilerTests.swift in Sources */,
 				D262DA662E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,
 				D233E7DE2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
+				110DD1A22EEB01B0002F3B8B /* SafeRead.h in Sources */,
 				D2D0E2192E40E34A00BA4113 /* MockThread.swift in Sources */,
+				110DD1A62EEB0201002F3B8B /* SafeRead.cpp in Sources */,
 				D27465832E7BFEC600C47FE2 /* AppLaunchProfilerTests.swift in Sources */,
 				D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
 				D2D0E20E2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */,
+				110DD1AA2EEB0375002F3B8B /* SafeReadTests.swift in Sources */,
 				D2D0E2082E3CEF1200BA4113 /* MachProfilerCAPITests.swift in Sources */,
 				D2E937352E535B6400FECA76 /* ProfileMocks.swift in Sources */,
 				D2E937322E53368E00FECA76 /* ProfileCxxTests.swift in Sources */,
@@ -10980,10 +11005,13 @@
 				D27465792E796A1F00C47FE2 /* CTorProfilerTests.swift in Sources */,
 				D262DA652E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,
 				D233E7DF2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
+				110DD1A32EEB01B0002F3B8B /* SafeRead.h in Sources */,
 				D2D0E21A2E40E34A00BA4113 /* MockThread.swift in Sources */,
+				110DD1A52EEB0201002F3B8B /* SafeRead.cpp in Sources */,
 				D27465842E7BFEC600C47FE2 /* AppLaunchProfilerTests.swift in Sources */,
 				D2D0E2042E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
 				D2D0E20F2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */,
+				110DD1A92EEB0375002F3B8B /* SafeReadTests.swift in Sources */,
 				D2D0E2052E3CEF1200BA4113 /* MachProfilerCAPITests.swift in Sources */,
 				D2E937342E535B6400FECA76 /* ProfileMocks.swift in Sources */,
 				D2E937312E53368E00FECA76 /* ProfileCxxTests.swift in Sources */,
@@ -14655,6 +14683,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
+				SWIFT_OBJC_BRIDGING_HEADER = "../DatadogProfiling/Tests/SafeReads/DatadogProfilingTests-Bridging-Header.h";
 				SWIFT_OBJC_INTEROP_MODE = objcxx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -14679,6 +14708,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
+				SWIFT_OBJC_BRIDGING_HEADER = "../DatadogProfiling/Tests/SafeReads/DatadogProfilingTests-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -14701,6 +14731,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
+				SWIFT_OBJC_BRIDGING_HEADER = "../DatadogProfiling/Tests/SafeReads/DatadogProfilingTests-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Integration;
@@ -14724,6 +14755,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
+				SWIFT_OBJC_BRIDGING_HEADER = "../DatadogProfiling/Tests/SafeReads/DatadogProfilingTests-Bridging-Header.h";
 				SWIFT_OBJC_INTEROP_MODE = objcxx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = 3;
@@ -14749,6 +14781,7 @@
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
+				SWIFT_OBJC_BRIDGING_HEADER = "../DatadogProfiling/Tests/SafeReads/DatadogProfilingTests-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 16.6;
 			};
@@ -14772,6 +14805,7 @@
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach";
+				SWIFT_OBJC_BRIDGING_HEADER = "../DatadogProfiling/Tests/SafeReads/DatadogProfilingTests-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 16.6;
 			};

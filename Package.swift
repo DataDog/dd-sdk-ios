@@ -238,6 +238,9 @@ let package = Package(
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogProfiling/Tests",
+            exclude: [
+                "SafeReads"
+            ],
             swiftSettings: [.interoperabilityMode(.Cxx)] + internalSwiftSettings
         ),
 
