@@ -44,7 +44,7 @@ internal final class FallbackFlagsClient: FlagsClientProtocol {
 // MARK: - Internal methods consumed by the React Native SDK
 
 extension FallbackFlagsClient: FlagsClientInternal {
-    func getAllFlagsDetails() -> [String: FlagDetails<AnyValue>]? {
+    func getFlagAssignmentsSnapshot() -> [String: FlagAssignment]? {
         DD.logger.error(
             """
             Using fallback client to get all flag values. \
@@ -54,7 +54,7 @@ extension FallbackFlagsClient: FlagsClientInternal {
         return nil
     }
 
-    func trackEvaluation(key: String) {
+    func trackFlagSnapshotEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
         DD.logger.error(
             """
             Using fallback client to track '\(key)'. \

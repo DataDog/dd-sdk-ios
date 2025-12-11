@@ -211,54 +211,17 @@ extension FlagsClient: FlagsClientProtocol {
             reason: flagAssignment.reason
         )
 
-        trackEvaluation(key: key)
+        if let context = repository.context {
+            trackEvaluation(key: key, assignment: flagAssignment, value: value, context: context)
+        }
 
         return details
     }
-}
 
-// MARK: - Internal methods consumed by the React Native SDK
-
-extension FlagsClient: FlagsClientInternal {
-    public func getAllFlagsDetails() -> [String: FlagDetails<AnyValue>]? {
-        guard let flagAssignments = repository.flagAssignments() else {
-            return nil
-        }
-
-        let result: [String: FlagDetails<AnyValue>] = Dictionary(
-            uniqueKeysWithValues: flagAssignments.compactMap { key, value in
-                guard let details = FlagDetails(key: key, flagAssignment: value) else {
-                    return nil
-                }
-                return (key, details)
-            }
-        )
-
-        return result
-    }
-
-    public func trackEvaluation(key: String) {
-        guard let flagAssignment = repository.flagAssignment(for: key) else {
-            return
-        }
-
-        guard let context = repository.context else {
-            return
-        }
-
-        var value: FlagValue
-        switch flagAssignment.variation {
-        case .boolean(let v): value = v
-        case .string(let v): value = v
-        case .integer(let v): value = v
-        case .double(let v): value = v
-        case .object(let v): value = v
-        case .unknown: value = AnyValue.null
-        }
-
+    internal func trackEvaluation(key: String, assignment: FlagAssignment, value: FlagValue, context: FlagsEvaluationContext) {
         exposureLogger.logExposure(
             for: key,
-            assignment: flagAssignment,
+            assignment: assignment,
             evaluationContext: context
         )
 
@@ -269,21 +232,26 @@ extension FlagsClient: FlagsClientInternal {
     }
 }
 
-extension FlagDetails where T == AnyValue {
-    fileprivate init?(key: String, flagAssignment: FlagAssignment) {
-        switch flagAssignment.variation {
-        case .boolean(let value):
-            self.init(key: key, value: .bool(value), variant: flagAssignment.variationKey, reason: flagAssignment.reason)
-        case .string(let value):
-            self.init(key: key, value: .string(value), variant: flagAssignment.variationKey, reason: flagAssignment.reason)
-        case .integer(let value):
-            self.init(key: key, value: .int(value), variant: flagAssignment.variationKey, reason: flagAssignment.reason)
-        case .double(let value):
-            self.init(key: key, value: .double(value), variant: flagAssignment.variationKey, reason: flagAssignment.reason)
-        case .object(let value):
-            self.init(key: key, value: value, variant: flagAssignment.variationKey, reason: flagAssignment.reason)
-        case .unknown:
-            return nil
+// MARK: - Internal methods consumed by the React Native SDK
+
+extension FlagsClient: FlagsClientInternal {
+    @_spi(Internal)
+    public func getFlagAssignmentsSnapshot() -> [String: FlagAssignment]? {
+        return repository.flagAssignmentsSnapshot()
+    }
+
+    @_spi(Internal)
+    public func trackFlagSnapshotEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        var value: FlagValue
+        switch assignment.variation {
+        case .boolean(let v): value = v
+        case .string(let v): value = v
+        case .integer(let v): value = v
+        case .double(let v): value = v
+        case .object(let v): value = v
+        case .unknown: value = AnyValue.null
         }
+
+        trackEvaluation(key: key, assignment: assignment, value: value, context: context)
     }
 }
