@@ -8,6 +8,7 @@ import XCTest
 import DatadogInternal
 import TestUtilities
 
+@_spi(Internal)
 @testable import DatadogFlags
 
 extension ExposureEvent: AnyMockable, RandomMockable {

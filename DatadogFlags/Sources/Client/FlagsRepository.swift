@@ -19,6 +19,8 @@ internal protocol FlagsRepositoryProtocol {
 
     func flagAssignment(for key: String) -> FlagAssignment?
 
+    func flagAssignmentsSnapshot() -> [String: FlagAssignment]?
+
     func reset()
 }
 
@@ -94,6 +96,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     func flagAssignment(for key: String) -> FlagAssignment? {
         waitForFlagsDataRead()
         return state?.flags[key]
+    }
+
+    func flagAssignmentsSnapshot() -> [String: FlagAssignment]? {
+        waitForFlagsDataRead()
+        return state?.flags
     }
 
     func setEvaluationContext(

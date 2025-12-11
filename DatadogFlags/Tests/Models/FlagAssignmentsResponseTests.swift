@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 
+@_spi(Internal)
 @testable import DatadogFlags
 
 final class FlagAssignmentsResponseTests: XCTestCase {
