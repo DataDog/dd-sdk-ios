@@ -129,7 +129,10 @@ struct UIKitExtensionsTests {
                 Text("")
                     .alert(String.mockRandom(), isPresented: $isAlertVisible) {
                         ForEach(0..<numberOfTextFields, id: \.self) { _ in
-                            TextField(String.mockRandom(), text: .constant(.mockRandom()))
+                            // tvOS 18 has a bug that causes an extra button to be added to the alert if
+                            // either the text field name or its text are anything but an empty string.
+                            // So, keep this strings empty otherwise the tests will be invalid in tvOS 18.
+                            TextField("", text: .constant(""))
                         }
 
                         ForEach(0..<numberOfActionButtons, id: \.self) { i in
