@@ -186,4 +186,107 @@ struct UIKitExtensionsTests {
 
         #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertActionView }).count == numberOfActionButtons + buttonCountOffset)
     }
+
+    // MARK: Tests for old style alerts and action sheets (iOS/tvOS 13.0-14.*)
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Test SwiftUI deprecated Alert constructor.")
+    @MainActor
+    func expectedControlTypesInDeprecatedAlertsSwiftUI() throws {
+        struct AlertTestView: View {
+            @State private var isAlertVisible = true
+
+            var body: some View {
+                Text("")
+                    .alert(isPresented: $isAlertVisible) {
+                        Alert(
+                            title: Text(String.mockRandom()),
+                            message: Text(String.mockRandom()),
+                            primaryButton: .default(Text(String.mockRandom())),
+                            secondaryButton: .cancel(Text(String.mockRandom()))
+                        )
+                    }
+            }
+        }
+
+        let hostViewController = UIHostingController(rootView: AlertTestView())
+        mockAppWindow.rootViewController = hostViewController
+
+        mockAppWindow.makeKeyAndVisible()
+        mockAppWindow.layoutIfNeeded()
+
+        let alertController = try #require(hostViewController.presentedViewController)
+
+        // Alert needs to be laid out otherwise the content is just not there.
+        alertController.view.layoutIfNeeded()
+
+        #expect(alertController.isUIAlertController)
+
+        #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertActionView }).count == 2)
+
+        #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertTextField }).count == 0)
+    }
+
+    @available(iOS 15.0, tvOS 15.0, *)
+    @Test("Test SwiftUI deprecated ActionSheet constructor, all button roles.", arguments: 1...5)
+    @MainActor
+    func expectedControlTypesInDeprecatedActionSheetsSwiftUI(numberOfActionButtons: Int) throws {
+        struct ActionSheetTestView: View {
+            let numberOfActionButtons: Int
+
+            @State private var isAlertVisible = true
+
+            let buttonConstructors: [(Text, @escaping (() -> Void)) -> Alert.Button] = [Alert.Button.cancel, Alert.Button.default, Alert.Button.destructive]
+
+            var body: some View {
+                Text("")
+                    .actionSheet(isPresented: $isAlertVisible) {
+                        ActionSheet(
+                            title: Text(String.mockRandom()),
+                            message: Text(String.mockRandom()),
+                            buttons: (1...numberOfActionButtons).map { n in
+                                let constructor = buttonConstructors[min(n - 1, buttonConstructors.count - 1)]
+                                return constructor(Text(String.mockRandom()), { })
+                            }
+                        )
+                    }
+            }
+        }
+
+        let hostViewController = UIHostingController(rootView: ActionSheetTestView(numberOfActionButtons: numberOfActionButtons))
+        mockAppWindow.rootViewController = hostViewController
+
+        mockAppWindow.makeKeyAndVisible()
+        mockAppWindow.layoutIfNeeded()
+
+        let alertController = try #require(hostViewController.presentedViewController)
+
+        // Alert needs to be laid out otherwise the content is just not there.
+        alertController.view.layoutIfNeeded()
+
+        #expect(alertController.isUIAlertController)
+
+        // There are multiple rules around buttons using .cancel role on confirmation dialogs:
+        //   - iOS 26 will not show any .cancel button. The dialogs are displayed on a popover,
+        //   and it's assumed clicking outside of the popover is the cancel action.
+        //   - All previous versions of iOS, and all tvOS versions at the time of this writing
+        //   will show only one .cancel button, even if there are multiple in the dialog.
+        //
+        // To test this properly, we add one (and only one) .cancel button as the first item of
+        // the buttonRoles array above, guaranteeing all dialogs have one and only one .cancel
+        // button. We also add a special way of handling iOS 26 below, since on that specific
+        // iOS version, that button will be missing from the UI.
+        let buttonCountOffset: Int
+        #if os(iOS)
+        if #available(iOS 26.0, *) {
+            buttonCountOffset = -1
+        } else {
+            buttonCountOffset = 0
+        }
+        #else
+        buttonCountOffset = 0
+        #endif
+
+        #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertActionView }).count == numberOfActionButtons + buttonCountOffset)
+    }
 }
