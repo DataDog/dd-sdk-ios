@@ -73,6 +73,48 @@ struct UIKitExtensionsTests {
         }
     }
 
+    /// Obtains the available button roles, based on both the compile time and run time version checks.
+    @available(iOS 15.0, tvOS 15.0, *)
+    private static var buttonRoles: [ButtonRole?] {
+        // We need to use both compile time and runtime checks for this,
+        // to make sure we can build on Xcode <=16 (compile time check)
+        // and run on <26 systems when building on Xcode >=26.
+#if compiler(>=6.2)
+        if #available(iOS 26, tvOS 26, *) {
+            return [ButtonRole.cancel, nil, .confirm, .destructive, .close]
+        } else {
+            return [ButtonRole.cancel, nil, .destructive]
+        }
+#else
+        return [nil, ButtonRole.cancel, .destructive]
+#endif
+    }
+
+    /// Calculates the difference between expected buttons on most platforms and versions, and
+    /// the specific case of iOS 26.
+    ///
+    /// There are multiple rules around buttons using `.cancel` role on confirmation dialogs:
+    /// - iOS 26 will not show any `.cancel` button. The dialogs are displayed on a popover,
+    ///   and it's assumed clicking outside of the popover is the cancel action.
+    /// - All previous versions of iOS, and all tvOS versions at the time of this writing
+    ///   will show only one `.cancel` button, even if there are multiple in the dialog.
+    ///
+    /// To test this properly, we add one (and only one) `.cancel` button as the first item of
+    /// the buttonRoles array above, guaranteeing all dialogs have one and only one `.cancel`
+    /// button. We also add a special way of handling iOS 26 below, since on that specific
+    /// iOS version, that button will be missing from the UI.
+    private var buttonCountOffset: Int {
+        #if os(iOS)
+        if #available(iOS 26.0, *) {
+            return -1
+        } else {
+            return 0
+        }
+        #else
+        return 0
+        #endif
+    }
+
     @available(iOS 15.0, tvOS 15.0, *)
     @Test("Test SwiftUI alerts, all button roles.", arguments: 1...5, 0...2)
     @MainActor
@@ -83,14 +125,6 @@ struct UIKitExtensionsTests {
 
             @State private var isAlertVisible = true
 
-            let buttonRoles: [ButtonRole?] = {
-                if #available(iOS 26, tvOS 26, *) {
-                    return [nil, ButtonRole.cancel, .confirm, .destructive, .close]
-                } else {
-                    return [nil, ButtonRole.cancel, .destructive]
-                }
-            }()
-
             var body: some View {
                 Text("")
                     .alert(String.mockRandom(), isPresented: $isAlertVisible) {
@@ -99,7 +133,7 @@ struct UIKitExtensionsTests {
                         }
 
                         ForEach(0..<numberOfActionButtons, id: \.self) { i in
-                            Button(String.mockRandom(), role: buttonRoles[min(i, buttonRoles.count - 1)]) { }
+                            Button(String.mockRandom(), role: UIKitExtensionsTests.buttonRoles[min(i, UIKitExtensionsTests.buttonRoles.count - 1)]) { }
                         }
                     }
             }
@@ -132,19 +166,11 @@ struct UIKitExtensionsTests {
 
             @State private var isAlertVisible = true
 
-            let buttonRoles: [ButtonRole?] = {
-                if #available(iOS 26, tvOS 26, *) {
-                    return [ButtonRole.cancel, nil, .confirm, .destructive, .close]
-                } else {
-                    return [ButtonRole.cancel, nil, .destructive]
-                }
-            }()
-
             var body: some View {
                 Text("")
                     .confirmationDialog(String.mockRandom(), isPresented: $isAlertVisible) {
                         ForEach(0..<numberOfActionButtons, id: \.self) { i in
-                            Button(String.mockRandom(), role: buttonRoles[min(i, buttonRoles.count - 1)]) { }
+                            Button(String.mockRandom(), role: UIKitExtensionsTests.buttonRoles[min(i, UIKitExtensionsTests.buttonRoles.count - 1)]) { }
                         }
                     }
             }
@@ -162,27 +188,6 @@ struct UIKitExtensionsTests {
         alertController.view.layoutIfNeeded()
 
         #expect(alertController.isUIAlertController)
-
-        // There are multiple rules around buttons using .cancel role on confirmation dialogs:
-        //   - iOS 26 will not show any .cancel button. The dialogs are displayed on a popover,
-        //   and it's assumed clicking outside of the popover is the cancel action.
-        //   - All previous versions of iOS, and all tvOS versions at the time of this writing
-        //   will show only one .cancel button, even if there are multiple in the dialog.
-        //
-        // To test this properly, we add one (and only one) .cancel button as the first item of
-        // the buttonRoles array above, guaranteeing all dialogs have one and only one .cancel
-        // button. We also add a special way of handling iOS 26 below, since on that specific
-        // iOS version, that button will be missing from the UI.
-        let buttonCountOffset: Int
-        #if os(iOS)
-        if #available(iOS 26.0, *) {
-            buttonCountOffset = -1
-        } else {
-            buttonCountOffset = 0
-        }
-        #else
-        buttonCountOffset = 0
-        #endif
 
         #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertActionView }).count == numberOfActionButtons + buttonCountOffset)
     }
@@ -265,27 +270,6 @@ struct UIKitExtensionsTests {
         alertController.view.layoutIfNeeded()
 
         #expect(alertController.isUIAlertController)
-
-        // There are multiple rules around buttons using .cancel role on confirmation dialogs:
-        //   - iOS 26 will not show any .cancel button. The dialogs are displayed on a popover,
-        //   and it's assumed clicking outside of the popover is the cancel action.
-        //   - All previous versions of iOS, and all tvOS versions at the time of this writing
-        //   will show only one .cancel button, even if there are multiple in the dialog.
-        //
-        // To test this properly, we add one (and only one) .cancel button as the first item of
-        // the buttonRoles array above, guaranteeing all dialogs have one and only one .cancel
-        // button. We also add a special way of handling iOS 26 below, since on that specific
-        // iOS version, that button will be missing from the UI.
-        let buttonCountOffset: Int
-        #if os(iOS)
-        if #available(iOS 26.0, *) {
-            buttonCountOffset = -1
-        } else {
-            buttonCountOffset = 0
-        }
-        #else
-        buttonCountOffset = 0
-        #endif
 
         #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertActionView }).count == numberOfActionButtons + buttonCountOffset)
     }
