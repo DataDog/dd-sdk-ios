@@ -8,6 +8,7 @@ import XCTest
 import DatadogInternal
 import TestUtilities
 
+@_spi(Internal)
 @testable import DatadogFlags
 
 extension FlagsEvaluationContext: AnyMockable, RandomMockable {
@@ -169,7 +170,7 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
         state?.flags[key]
     }
 
-    func flagAssignments() -> [String: DatadogFlags.FlagAssignment]? {
+    func flagAssignmentsSnapshot() -> [String: DatadogFlags.FlagAssignment]? {
         state?.flags
     }
 
