@@ -86,7 +86,7 @@ struct UIKitExtensionsTests {
             return [ButtonRole.cancel, nil, .destructive]
         }
 #else
-        return [nil, ButtonRole.cancel, .destructive]
+        return [ButtonRole.cancel, nil, .destructive]
 #endif
     }
 
