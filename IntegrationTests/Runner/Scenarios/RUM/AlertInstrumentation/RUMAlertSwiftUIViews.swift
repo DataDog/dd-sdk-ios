@@ -36,10 +36,12 @@ struct RUMAlertSwiftUI: View {
                 Button("Cancel", role: .cancel) { }
                 Button("OK") { }
                 Button("Delete", role: .destructive) { }
+#if compiler(>=6.2)
                 if #available(iOS 26.0, tvOS 26.0, *) {
                     Button("More Info", role: .confirm) { }
                     Button("Close", role: .close) { }
                 }
+#endif
             }
             .alert("This is an alert title.", isPresented: $showingAlertWithTextField) {
                 TextField("Name", text: $textFieldContent)
@@ -54,10 +56,12 @@ struct RUMAlertSwiftUI: View {
                 Button("Cancel", role: .cancel) { }
                 Button("OK") { }
                 Button("Delete", role: .destructive) { }
+#if compiler(>=6.2)
                 if #available(iOS 26.0, tvOS 26.0, *) {
                     Button("More Info", role: .confirm) { }
                     Button("Close", role: .close) { }
                 }
+#endif
             }
         } else {
             VStack {
