@@ -35,6 +35,12 @@ public struct DeviceInfo: Equatable {
     /// Returns system boot time since epoch.
     public let systemBootTime: TimeInterval
 
+    /// Number of logical processors available to the system.
+    public let processorCount: Double?
+
+    /// Total physical memory (RAM) in megabytes.
+    public let totalRam: Double?
+
     public init(
         name: String,
         model: String,
@@ -43,7 +49,9 @@ public struct DeviceInfo: Equatable {
         isSimulator: Bool,
         vendorId: String?,
         isDebugging: Bool,
-        systemBootTime: TimeInterval
+        systemBootTime: TimeInterval,
+        processorCount: Double?,
+        totalRam: Double?
     ) {
         self.brand = "Apple"
         self.name = name
@@ -54,6 +62,8 @@ public struct DeviceInfo: Equatable {
         self.vendorId = vendorId
         self.isDebugging = isDebugging
         self.systemBootTime = systemBootTime
+        self.processorCount = processorCount
+        self.totalRam = totalRam
     }
 }
 
@@ -145,7 +155,9 @@ extension DeviceInfo {
             isSimulator: false,
             vendorId: device.identifierForVendor?.uuidString,
             isDebugging: isDebugging ?? false,
-            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate
+            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate,
+            processorCount: Double(processInfo.processorCount),
+            totalRam: Double(processInfo.physicalMemory / (1_024 * 1_024))
         )
         #else
         let model = processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? device.model
@@ -158,7 +170,9 @@ extension DeviceInfo {
             isSimulator: true,
             vendorId: device.identifierForVendor?.uuidString,
             isDebugging: isDebugging ?? false,
-            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate
+            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate,
+            processorCount: Double(processInfo.processorCount),
+            totalRam: Double(processInfo.physicalMemory / (1_024 * 1_024))
         )
         #endif
     }
@@ -196,7 +210,9 @@ extension DeviceInfo {
             isSimulator: isSimulator,
             vendorId: nil,
             isDebugging: isDebugging ?? false,
-            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate
+            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate,
+            processorCount: Double(processInfo.processorCount),
+            totalRam: Double(processInfo.physicalMemory / (1_024 * 1_024))
         )
     }
 }
@@ -258,7 +274,9 @@ extension DatadogContext {
             model: device.model,
             name: device.name,
             powerSavingMode: isLowPowerModeEnabled,
+            processorCount: device.processorCount,
             timeZone: localeInfo.timeZoneIdentifier,
+            totalRam: device.totalRam,
             type: device.type.normalizedDeviceType
         )
     }
