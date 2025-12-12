@@ -1,4 +1,5 @@
 #include "mach_sampling_profiler.h"
+#include "ctor_profiler.h"
 
 #ifdef __APPLE__
 
@@ -7,6 +8,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <signal.h>
+#include <setjmp.h>
 #include <mach/thread_act.h>
 #include <mach/thread_status.h>
 #include <mach/machine/thread_state.h>
@@ -62,6 +65,80 @@ static constexpr uint32_t MAX_LOAD_COMMAND_SIZE = 0x10000;  // 64KB max per load
 //   - Apple OSs do not expose the length limit of the name
 
 static constexpr size_t PTHREAD_THREAD_NAME_MAX = 64;
+
+// Main thread pthread identifier for comparison
+static pthread_t g_main_pthread = NULL;
+
+// Safe memory read using signal handling
+// Thread-local storage for signal-based safe memory reading
+static thread_local sigjmp_buf g_safe_read_handler;
+static thread_local volatile sig_atomic_t g_is_safe_read = false;
+
+// Previous signal handlers to restore if needed
+static struct sigaction g_prev_sigbus_handler;
+static struct sigaction g_prev_sigsegv_handler;
+
+/**
+ * Signal handler for catching memory access errors during stack unwinding.
+ * If safe_read is active, longjmp back to the safe point.
+ * Otherwise, call the previous handler or use default behavior.
+ */
+static void safe_read_signal_handler(int sig, siginfo_t* info, void* context) {
+    // If we're in a safe_read, recover via longjmp
+    if (g_is_safe_read) {
+        siglongjmp(g_safe_read_handler, 1);
+    }
+    
+    // Not in safe_read - forward to previous handler
+    struct sigaction* prev = (sig == SIGBUS) ? &g_prev_sigbus_handler : &g_prev_sigsegv_handler;
+    
+    if (prev->sa_flags & SA_SIGINFO) {
+        if (prev->sa_sigaction) {
+            prev->sa_sigaction(sig, info, context);
+        }
+    } else if (prev->sa_handler == SIG_DFL) {
+        // Restore default handler using sigaction (async-signal-safe)
+        struct sigaction dfl = {};
+        dfl.sa_handler = SIG_DFL;
+        sigemptyset(&dfl.sa_mask);
+        sigaction(sig, &dfl, nullptr);
+        raise(sig);
+    } else if (prev->sa_handler != SIG_IGN) {
+        prev->sa_handler(sig);
+    }
+}
+
+/**
+ * Install signal handlers for safe memory reading.
+ */
+static void init_safe_read_handlers() {
+    // Manually install the handler defined in this file
+    struct sigaction sa = {};
+    sa.sa_sigaction = safe_read_signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_SIGINFO;
+
+    // Install handlers and save previous ones
+    sigaction(SIGBUS, &sa, &g_prev_sigbus_handler);
+    sigaction(SIGSEGV, &sa, &g_prev_sigsegv_handler);
+}
+
+/**
+ * Initialize the main thread pthread identifier
+ * and install signal handlers for safe memory reading.
+ *
+ * This constructor runs early to capture and setup the parameters.
+ */
+__attribute__((constructor))
+static void init_main_thread_id_and_safe_read_handlers() {
+    if ((is_profiling_enabled() ||
+        ctor_profiler_get_status() != CTOR_PROFILER_STATUS_NOT_CREATED) == false) {
+        return;
+    }
+    
+    g_main_pthread = pthread_self();
+    init_safe_read_handlers();
+}
 
 /**
  * Validates if an address is within reasonable user-space bounds.
@@ -284,16 +361,42 @@ bool stack_trace_get_thread_info(stack_trace_t* trace, thread_t thread) {
     
     pthread_t pthread = pthread_from_mach_thread_np(thread);
     if (!pthread) return false;
-    
+
     // Allocate buffer and get thread name
     trace->thread_name = (char*)malloc(PTHREAD_THREAD_NAME_MAX);
     if (!trace->thread_name) return false;
     
     int result = pthread_getname_np(pthread, (char*)trace->thread_name, PTHREAD_THREAD_NAME_MAX);
+
+    if (pthread == g_main_pthread) {
+        strcpy((char*)trace->thread_name, "com.apple.main-thread");
+    }
+    
     if (result == KERN_SUCCESS) return true;
     
     free((void*)trace->thread_name);
     trace->thread_name = nullptr;
+    return false;
+}
+
+/**
+ * Safely reads memory from a potentially invalid address.
+ *
+ * If memory is invalid, SIGBUS/SIGSEGV is caught and we return false.
+*/
+bool safe_read_memory(void* addr, void* buffer, size_t size) {
+    // Set up the JUMP TARGET
+    if (sigsetjmp(g_safe_read_handler, 1) == 0) {
+        g_is_safe_read = true;
+        // try direct memory copy
+        memcpy(buffer, addr, size);
+        g_is_safe_read = false;
+        return true;
+    }
+
+    // Memory access failed
+    // We land here if safe_read_signal_handler() called siglongjmp()
+    g_is_safe_read = false;
     return false;
 }
 
@@ -320,12 +423,14 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
         if (fp == nullptr) break;
         // Validate frame pointer before dereferencing
         if (!is_valid_frame_pointer((uintptr_t)fp)) break;
-        
+
         // Read the next frame pointer and return address
-        void** frame_ptr = (void**)fp;
-        fp = frame_ptr[0];  // Next frame pointer
-        pc = frame_ptr[1];  // Return address
-        
+        void* next_frame[2];
+        if (!safe_read_memory(fp, next_frame, sizeof(next_frame))) break;
+
+        fp = next_frame[0];  // Next frame pointer
+        pc = next_frame[1];  // Return address
+
         // Validate the new PC
         if (!is_valid_userspace_addr((uintptr_t)pc)) break;
     }
@@ -370,15 +475,21 @@ void* mach_sampling_profiler::sampling_thread_entry(void* arg) {
 
 /**
  * Starts the sampling process.
+ * Thread-safe: protected by mutex.
  *
  * @return true if sampling was started successfully
  */
 bool mach_sampling_profiler::start_sampling() {
+    std::lock_guard<std::mutex> lock(state_mutex);
+    
     if (running) return false;
 
     if (config.profile_current_thread_only) {
         target_thread = pthread_self();
     }
+
+    // Clear any leftover data from previous runs
+    sample_buffer.clear();
 
     running = true;
 
@@ -394,10 +505,17 @@ bool mach_sampling_profiler::start_sampling() {
 
 /**
  * Stops the sampling process.
+ * Thread-safe: protected by mutex. Holds lock during join to prevent
+ * new sampling sessions from starting until cleanup is complete.
  */
 void mach_sampling_profiler::stop_sampling() {
+    std::lock_guard<std::mutex> lock(state_mutex);
+    
     if (!running) return;
     running = false;
+    
+    // Join while holding the lock to ensure the sampling thread
+    // completes its flush_buffer() before any new session can start
     pthread_join(sampling_thread, nullptr);
 }
 
@@ -511,5 +629,17 @@ void mach_sampling_profiler::flush_buffer() {
 }
 
 } // namespace dd:profiler
+
+extern "C" {
+
+void safe_read_memory_for_testing(void* addr, void* buffer, size_t size) {
+    safe_read_memory(addr, buffer, size);
+}
+
+void init_safe_read_handlers_for_testing(void) {
+    init_safe_read_handlers();
+}
+
+} // extern "C"
 
 #endif // __APPLE__ 

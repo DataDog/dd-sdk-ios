@@ -16,19 +16,28 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 internal final class AppLaunchProfiler: FeatureMessageReceiver {
+    /// Shared counter to track pending `AppLaunchProfiler`s from handling the `ProfilerStop` message
+    private static var pendingInstances: Int = 0
+    private static let lock = NSLock()
+
+    init() {
+        Self.registerInstance()
+    }
+
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         guard case let .payload(cmd as ProfilerStop) = message else {
             return false
         }
 
         guard ctor_profiler_get_status() == CTOR_PROFILER_STATUS_RUNNING
-                || ctor_profiler_get_status() == CTOR_PROFILER_STATUS_TIMEOUT else {
+                || ctor_profiler_get_status() == CTOR_PROFILER_STATUS_TIMEOUT
+                || ctor_profiler_get_status() == CTOR_PROFILER_STATUS_STOPPED else {
             return false
         }
 
         ctor_profiler_stop()
         core.set(context: ProfilingContext(status: .current))
-        defer { ctor_profiler_destroy() }
+        defer { Self.unregisterInstance() }
 
         guard let profile = ctor_profiler_get_profile() else {
             return false
@@ -72,6 +81,47 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
         }
 
         return true
+    }
+}
+
+// MARK: - Handle AppLaunchProfiler instances
+
+private extension AppLaunchProfiler {
+    /// Registers the `AppLaunchProfiler` to handle the `ProfilerStop` message.
+    static func registerInstance() {
+        lock.lock()
+        defer { lock.unlock() }
+
+        pendingInstances += 1
+    }
+
+    /// Decrements the pending instance counter and destroys the profiler when all instances are done.
+    static func unregisterInstance() {
+        lock.lock()
+        defer { lock.unlock() }
+
+        pendingInstances -= 1
+        if pendingInstances <= 0 {
+            ctor_profiler_destroy()
+        }
+    }
+}
+
+// MARK: - Testing funcs
+
+extension AppLaunchProfiler {
+    /// Returns the current pending instances count.
+    static var currentPendingInstances: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return pendingInstances
+    }
+
+    /// Resets the pending instances counter.
+    static func resetPendingInstances() {
+        lock.lock()
+        defer { lock.unlock() }
+        pendingInstances = 0
     }
 }
 

@@ -82,6 +82,10 @@
 
 #ifdef __APPLE__
 
+// UserDefaults constants centralized for Profiling
+#define DD_PROFILING_USER_DEFAULTS_SUITE_NAME "com.datadoghq.ios-sdk.profiling"
+#define DD_PROFILING_IS_ENABLED_KEY "is_profiling_enabled"
+
 #ifdef __cplusplus
 namespace dd::profiler {
 
@@ -93,17 +97,38 @@ extern "C" {
 #endif
 
 /**
+ * Checks if profiling is enabled in UserDefaults.
+ *
+ * Reads the profiling enabled state from UserDefaults suite to determine
+ * if the profiling feature was previously enabled via Profiling.enable().
+ *
+ * @return true if profiling is enabled, false otherwise
+ *
+ * @note Reads from suite "com.datadoghq.ios-sdk" with key "is_profiling_enabled"
+ * @note Returns false if the key doesn't exist or on read errors
+ */
+bool is_profiling_enabled();
+
+/**
+ * Deletes the profiling defaults from UserDefaults.
+ *
+ * Removes the profiling enabled state, allowing the session to start with a clean state.
+ */
+void delete_profiling_defaults();
+
+/**
  * Status codes for constructor profiler operations
  */
 typedef enum {
-    CTOR_PROFILER_STATUS_NOT_STARTED = 0,       ///< Profiler was never started
-    CTOR_PROFILER_STATUS_RUNNING = 1,           ///< Profiler is currently running
-    CTOR_PROFILER_STATUS_STOPPED = 2,           ///< Profiler was stopped manually
-    CTOR_PROFILER_STATUS_TIMEOUT = 3,           ///< Profiler was stopped due to timeout
-    CTOR_PROFILER_STATUS_PREWARMED = 4,         ///< Profiler was not started due to prewarming
-    CTOR_PROFILER_STATUS_SAMPLED_OUT = 5,       ///< Profiler was not started due to sample rate
-    CTOR_PROFILER_STATUS_ALLOCATION_FAILED = 6, ///< Memory allocation failed
-    CTOR_PROFILER_STATUS_ALREADY_STARTED = 7,   ///< Failed to start profiler because it is already started
+    CTOR_PROFILER_STATUS_NOT_CREATED = 0,       ///< Profiler was not created
+    CTOR_PROFILER_STATUS_NOT_STARTED = 1,       ///< Profiler was never started
+    CTOR_PROFILER_STATUS_RUNNING = 2,           ///< Profiler is currently running
+    CTOR_PROFILER_STATUS_STOPPED = 3,           ///< Profiler was stopped manually
+    CTOR_PROFILER_STATUS_TIMEOUT = 4,           ///< Profiler was stopped due to timeout
+    CTOR_PROFILER_STATUS_PREWARMED = 5,         ///< Profiler was not started due to prewarming
+    CTOR_PROFILER_STATUS_SAMPLED_OUT = 6,       ///< Profiler was not started due to sample rate
+    CTOR_PROFILER_STATUS_ALLOCATION_FAILED = 7, ///< Memory allocation failed
+    CTOR_PROFILER_STATUS_ALREADY_STARTED = 8,   ///< Failed to start profiler because it is already started
 } ctor_profiler_status_t;
 
 /**

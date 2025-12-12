@@ -16,14 +16,14 @@
 		11030D772D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */; };
 		110B0ECB2DF0ABC6008ABA19 /* DeterministicSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */; };
 		110B0ECC2DF0ABC6008ABA19 /* DeterministicSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */; };
+		110DD1B72EEC3E45002F3B8B /* SafeReadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */; };
+		110DD1B82EEC3E45002F3B8B /* SafeReadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */; };
+		110DD1BA2EEC3EE7002F3B8B /* safe_read_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */; };
+		110DD1BB2EEC3EE7002F3B8B /* safe_read_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */; };
 		111201C12E93C13000375DA3 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BF2E93C13000375DA3 /* AppStateManager.swift */; };
 		111201C22E93C13000375DA3 /* AppStateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BE2E93C13000375DA3 /* AppStateInfo.swift */; };
 		111201C32E93C13000375DA3 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BF2E93C13000375DA3 /* AppStateManager.swift */; };
 		111201C42E93C13000375DA3 /* AppStateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BE2E93C13000375DA3 /* AppStateInfo.swift */; };
-		11196A7C2EBACA2700B15BC1 /* UserDefaultsDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11196A7B2EBACA2700B15BC1 /* UserDefaultsDataStore.swift */; };
-		11196A7D2EBACA2700B15BC1 /* UserDefaultsDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11196A7B2EBACA2700B15BC1 /* UserDefaultsDataStore.swift */; };
-		11196A7F2EBACBE400B15BC1 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 11196A7E2EBACBE400B15BC1 /* PrivacyInfo.xcprivacy */; };
-		11196A802EBACBE400B15BC1 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 11196A7E2EBACBE400B15BC1 /* PrivacyInfo.xcprivacy */; };
 		1124D52F2EA6D23C0002E053 /* StartupTypeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */; };
 		1124D5302EA6D23C0002E053 /* StartupTypeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */; };
 		1124D5322EA6D4050002E053 /* RUMAppLaunchManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D5312EA6D4050002E053 /* RUMAppLaunchManagerTests.swift */; };
@@ -308,8 +308,6 @@
 		11BBF8E32DC1268800875558 /* DatadogConfiguration+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BBF8DF2DC1268800875558 /* DatadogConfiguration+objc.swift */; };
 		11BBF8EB2DC12A5B00875558 /* CoreLoggerLevel+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BBF8EA2DC12A5B00875558 /* CoreLoggerLevel+objc.swift */; };
 		11BBF8EC2DC12A5B00875558 /* CoreLoggerLevel+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BBF8EA2DC12A5B00875558 /* CoreLoggerLevel+objc.swift */; };
-		11E370942EBA63B2006F4F18 /* UserDefaultsDataStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E370922EBA63B2006F4F18 /* UserDefaultsDataStoreTests.swift */; };
-		11E370952EBA63B2006F4F18 /* UserDefaultsDataStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E370922EBA63B2006F4F18 /* UserDefaultsDataStoreTests.swift */; };
 		11E6D59F2E6B1468004D2F87 /* FirstFrameReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E6D59E2E6B1468004D2F87 /* FirstFrameReader.swift */; };
 		11E6D5A02E6B1468004D2F87 /* FirstFrameReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E6D59E2E6B1468004D2F87 /* FirstFrameReader.swift */; };
 		11E6D5A22E6B16A3004D2F87 /* FirstFrameReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E6D5A12E6B1696004D2F87 /* FirstFrameReaderTests.swift */; };
@@ -2657,11 +2655,11 @@
 /* Begin PBXFileReference section */
 		11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesMetric.swift; sourceTree = "<group>"; };
 		110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSampler.swift; sourceTree = "<group>"; };
+		110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeReadTests.swift; sourceTree = "<group>"; };
+		110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = safe_read_testing.h; sourceTree = "<group>"; };
 		111201BE2E93C13000375DA3 /* AppStateInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateInfo.swift; sourceTree = "<group>"; };
 		111201BF2E93C13000375DA3 /* AppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManager.swift; sourceTree = "<group>"; };
 		1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAttributesIntegrationTests.swift; sourceTree = "<group>"; };
-		11196A7B2EBACA2700B15BC1 /* UserDefaultsDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsDataStore.swift; sourceTree = "<group>"; };
-		11196A7E2EBACBE400B15BC1 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../DatadogInternal/Resources/PrivacyInfo.xcprivacy; sourceTree = SOURCE_ROOT; };
 		1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTypeHandler.swift; sourceTree = "<group>"; };
 		1124D5312EA6D4050002E053 /* RUMAppLaunchManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAppLaunchManagerTests.swift; sourceTree = "<group>"; };
 		1124D5342EA6D4390002E053 /* RUMAppLaunchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAppLaunchManager.swift; sourceTree = "<group>"; };
@@ -2776,7 +2774,6 @@
 		11BBF8DF2DC1268800875558 /* DatadogConfiguration+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DatadogConfiguration+objc.swift"; sourceTree = "<group>"; };
 		11BBF8E52DC1292700875558 /* URLSessionInstrumentation+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLSessionInstrumentation+objc.swift"; sourceTree = "<group>"; };
 		11BBF8EA2DC12A5B00875558 /* CoreLoggerLevel+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreLoggerLevel+objc.swift"; sourceTree = "<group>"; };
-		11E370922EBA63B2006F4F18 /* UserDefaultsDataStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsDataStoreTests.swift; sourceTree = "<group>"; };
 		11E6D59E2E6B1468004D2F87 /* FirstFrameReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstFrameReader.swift; sourceTree = "<group>"; };
 		11E6D5A12E6B1696004D2F87 /* FirstFrameReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstFrameReaderTests.swift; sourceTree = "<group>"; };
 		11EA5C1D2DC27F7600E8DFA2 /* Logs+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+objc.swift"; sourceTree = "<group>"; };
@@ -4489,14 +4486,6 @@
 			path = NetworkInstrumentation;
 			sourceTree = "<group>";
 		};
-		11E370932EBA63B2006F4F18 /* DataStore */ = {
-			isa = PBXGroup;
-			children = (
-				11E370922EBA63B2006F4F18 /* UserDefaultsDataStoreTests.swift */,
-			);
-			path = DataStore;
-			sourceTree = "<group>";
-		};
 		11F55FC22DCBA90100DE4944 /* NetworkInstrumentation */ = {
 			isa = PBXGroup;
 			children = (
@@ -5648,7 +5637,6 @@
 		6128F5682BA2237300D35B08 /* DataStore */ = {
 			isa = PBXGroup;
 			children = (
-				11196A7B2EBACA2700B15BC1 /* UserDefaultsDataStore.swift */,
 				6128F5692BA2237300D35B08 /* DataStore.swift */,
 			);
 			path = DataStore;
@@ -6859,6 +6847,7 @@
 				D2E937242E53324100FECA76 /* profile.h */,
 				D2E9372A2E53325200FECA76 /* profile.pb-c.h */,
 				D2E9372D2E53325900FECA76 /* protobuf-c.h */,
+				110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */,
 				D2355B262E4E05CE000DDF5F /* module.modulemap */,
 			);
 			path = include;
@@ -6897,7 +6886,6 @@
 				D23039BD298D5235001A1FA3 /* DatadogFeature.swift */,
 				D23039AD298D5234001A1FA3 /* DD.swift */,
 				3C08F9CF2C2D652D002B0FF2 /* Storage.swift */,
-				11196A7E2EBACBE400B15BC1 /* PrivacyInfo.xcprivacy */,
 				D23039CA298D5235001A1FA3 /* Attributes */,
 				6167E6FB2B81EBD100C3CA2D /* BacktraceReporting */,
 				D227A0A22C76229400C83324 /* Benchmarks */,
@@ -7421,17 +7409,18 @@
 		D2C9F2522E3B8A88008397FD /* DatadogProfilingTests */ = {
 			isa = PBXGroup;
 			children = (
+				D27465822E7BFEC600C47FE2 /* AppLaunchProfilerTests.swift */,
 				D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */,
 				D27465772E796A1F00C47FE2 /* CTorProfilerTests.swift */,
 				D2D0E2012E3CEF1200BA4113 /* MachProfilerCAPITests.swift */,
 				D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */,
-				D233E7DD2E4A109100E7CFDE /* ProfilingTest.swift */,
-				D262DA642E7D5D0F002A94C9 /* ProfileEventTests.swift */,
-				D27465822E7BFEC600C47FE2 /* AppLaunchProfilerTests.swift */,
-				D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */,
-				D2E937302E53368E00FECA76 /* ProfileCxxTests.swift */,
 				D2D0E2182E40E34A00BA4113 /* MockThread.swift */,
+				D2E937302E53368E00FECA76 /* ProfileCxxTests.swift */,
+				D262DA642E7D5D0F002A94C9 /* ProfileEventTests.swift */,
 				D2E937332E535B6400FECA76 /* ProfileMocks.swift */,
+				D233E7DD2E4A109100E7CFDE /* ProfilingTest.swift */,
+				D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */,
+				110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -7464,7 +7453,6 @@
 				D2DA2397298D58F300C6C7E6 /* Codable */,
 				D2A783D729A530CB003B03BB /* Concurrency */,
 				D2DA239C298D58F300C6C7E6 /* Context */,
-				11E370932EBA63B2006F4F18 /* DataStore */,
 				D263BCB129DB014900FA0E21 /* Extensions */,
 				D2A783D829A530DC003B03BB /* MessageBus */,
 				D2C5D5272B83FD3700B63F36 /* Models */,
@@ -7675,6 +7663,7 @@
 				D2E9371B2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
 				D229FFAC2E3BCAAE009CCD62 /* mach_profiler.h in Headers */,
 				D2883AB02E6AF01B00880363 /* ctor_profiler.h in Headers */,
+				110DD1BA2EEC3EE7002F3B8B /* safe_read_testing.h in Headers */,
 				118AAE092EBBB7F80018E745 /* ctor_profiler_testing.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -7691,6 +7680,7 @@
 				D229FFA92E3BCA9B009CCD62 /* mach_profiler.h in Headers */,
 				D233E8002E4B588B00E7CFDE /* dd_pprof.h in Headers */,
 				118AAE082EBBB7F10018E745 /* ctor_profiler_testing.h in Headers */,
+				110DD1BB2EEC3EE7002F3B8B /* safe_read_testing.h in Headers */,
 				D2883AAF2E6AF01B00880363 /* ctor_profiler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -8933,7 +8923,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11196A7F2EBACBE400B15BC1 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9072,7 +9061,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11196A802EBACBE400B15BC1 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10073,7 +10061,6 @@
 				D263BCAF29DAFFEB00FA0E21 /* PerformancePresetOverride.swift in Sources */,
 				D23039E7298D5236001A1FA3 /* NetworkConnectionInfo.swift in Sources */,
 				D23039E9298D5236001A1FA3 /* TrackingConsent.swift in Sources */,
-				11196A7C2EBACA2700B15BC1 /* UserDefaultsDataStore.swift in Sources */,
 				D2EBEE2629BA160F00B15732 /* B3HTTPHeaders.swift in Sources */,
 				D23354FC2A42E32000AFCAE2 /* InternalExtended.swift in Sources */,
 				D2D7483A2DC2306100C61353 /* TraceID.swift in Sources */,
@@ -10981,6 +10968,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				110DD1B72EEC3E45002F3B8B /* SafeReadTests.swift in Sources */,
 				D233E7E42E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
 				D27465782E796A1F00C47FE2 /* CTorProfilerTests.swift in Sources */,
 				D262DA662E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,
@@ -10999,6 +10987,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				110DD1B82EEC3E45002F3B8B /* SafeReadTests.swift in Sources */,
 				D233E7E52E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
 				D27465792E796A1F00C47FE2 /* CTorProfilerTests.swift in Sources */,
 				D262DA652E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,
@@ -11347,7 +11336,6 @@
 				D2EBEE3229BA161100B15732 /* W3CHTTPHeadersReader.swift in Sources */,
 				A7FA98CF2BA1A6930018D6B5 /* MethodCalledMetric.swift in Sources */,
 				D2DA2374298D57AA00C6C7E6 /* DatadogContext.swift in Sources */,
-				11196A7D2EBACA2700B15BC1 /* UserDefaultsDataStore.swift in Sources */,
 				D2DA2375298D57AA00C6C7E6 /* Foundation+Datadog.swift in Sources */,
 				D27465752E7867B700C47FE2 /* ProfilingContext.swift in Sources */,
 				D2F8235429915E12003C7E99 /* DatadogSite.swift in Sources */,
@@ -11416,7 +11404,6 @@
 				D2EBEE4329BA168200B15732 /* TraceIDGeneratorTests.swift in Sources */,
 				D2DA23A7298D58F400C6C7E6 /* AppStateHistoryTests.swift in Sources */,
 				D2EBEE3D29BA163E00B15732 /* W3CHTTPHeadersWriterTests.swift in Sources */,
-				11E370942EBA63B2006F4F18 /* UserDefaultsDataStoreTests.swift in Sources */,
 				D2DA23A4298D58F400C6C7E6 /* AnyCodableTests.swift in Sources */,
 				D2160CDE29C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift in Sources */,
 				960A0D422D6F88DE004BB999 /* ReflectionMirrorTests.swift in Sources */,
@@ -11455,7 +11442,6 @@
 				D26416B72A30E84F00BCD9F7 /* CoreRegistryTest.swift in Sources */,
 				61F3E3672BC595F600C7881E /* HTTPHeadersReaderTests.swift in Sources */,
 				D2EBEE4029BA163F00B15732 /* B3HTTPHeadersWriterTests.swift in Sources */,
-				11E370952EBA63B2006F4F18 /* UserDefaultsDataStoreTests.swift in Sources */,
 				D21AE6BD29E5EDAF0064BF29 /* TelemetryTests.swift in Sources */,
 				115F480B2E0BFE11006FAB07 /* DeterministicSamplerTests.swift in Sources */,
 				D2DA23B1298D59DC00C6C7E6 /* AnyEncodableTests.swift in Sources */,

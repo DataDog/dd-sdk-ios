@@ -7,13 +7,16 @@
 import Foundation
 import DatadogInternal
 
+// swiftlint:disable duplicate_imports
+#if swift(>=6.0)
+internal import DatadogMachProfiler
+#else
+@_implementationOnly import DatadogMachProfiler
+#endif
+// swiftlint:enable duplicate_imports
+
 internal final class ProfilerFeature: DatadogRemoteFeature {
     static let name = "profiler"
-
-    internal enum Constants {
-        /// The key to check if Profiling is enabled .
-        static let isProfilingEnabledKey = "is_profiling_enabled"
-    }
 
     let requestBuilder: FeatureRequestBuilder
 
@@ -26,15 +29,16 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
     init(
         requestBuilder: FeatureRequestBuilder,
         messageReceiver: FeatureMessageReceiver,
-        dataStore: DataStore
+        userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
+
     ) {
         self.requestBuilder = requestBuilder
         self.messageReceiver = messageReceiver
 
-        setProfilingEnabled(in: dataStore)
+        setProfilingEnabled(in: userDefaults)
     }
 
-    private func setProfilingEnabled(in dataStore: DataStore) {
-        dataStore.setValue(withUnsafeBytes(of: true) { Data($0) }, forKey: Constants.isProfilingEnabledKey)
+    private func setProfilingEnabled(in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
+        userDefaults.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
     }
 }
