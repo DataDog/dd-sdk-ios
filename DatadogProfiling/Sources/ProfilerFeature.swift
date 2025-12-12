@@ -29,6 +29,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
     init(
         requestBuilder: FeatureRequestBuilder,
         messageReceiver: FeatureMessageReceiver,
+        sampleRate: SampleRate,
         userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
 
     ) {
@@ -36,9 +37,20 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         self.messageReceiver = messageReceiver
 
         setProfilingEnabled(in: userDefaults)
+        set(sampleRate: sampleRate, in: userDefaults)
     }
 
     private func setProfilingEnabled(in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
         userDefaults.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
+    }
+
+    private func set(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
+        let previousSampleRate = userDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate
+
+        // Profiling will use the lowest sample rate
+        // if there is more than one SDK instance initialized.
+        if previousSampleRate == nil || previousSampleRate ?? .maxSampleRate > sampleRate {
+            userDefaults.setValue(sampleRate, forKey: DD_PROFILING_SAMPLE_RATE_KEY)
+        }
     }
 }

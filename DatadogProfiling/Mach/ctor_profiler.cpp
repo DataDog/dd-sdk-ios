@@ -19,8 +19,6 @@
 
 static constexpr int64_t CTOR_PROFILER_TIMEOUT_NS = 5000000000ULL; // 5 seconds
 
-static constexpr int64_t SAMPLING_RATE = 10; // 10%
-
 namespace dd::profiler { class ctor_profiler; }
 
 static dd::profiler::ctor_profiler* g_ctor_profiler = nullptr;
@@ -85,14 +83,42 @@ bool is_profiling_enabled() {
 }
 
 /**
+ * Reads the DatadogProfiling sample rate from the `UserDefaults`
+ *
+ * @return The sample rate as a double, or 0.0 if not found or invalid
+ */
+double read_profiling_sample_rate() {
+    CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
+    CFStringRef key = CFSTR(DD_PROFILING_SAMPLE_RATE_KEY);
+    CFPropertyListRef value = CFPreferencesCopyAppValue(key, suiteName);
+    
+    double sample_rate = 0.0;
+    
+    if (value) {
+        if (CFGetTypeID(value) == CFNumberGetTypeID()) {
+            CFNumberGetValue((CFNumberRef)value, kCFNumberDoubleType, &sample_rate);
+        }
+        CFRelease(value);
+    }
+    
+    // Validate sample rate is between 0 and 100
+    if (sample_rate < 0.0) return 0.0;
+    if (sample_rate > 100.0) return 100.0;
+    
+    return sample_rate;
+}
+
+/**
  * Deletes the DatadogProfiling defaults from the `UserDefaults`
  * to be re-evaluated during `Profiling.enable()`.
  */
 void delete_profiling_defaults() {
     CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
-    CFStringRef key = CFSTR(DD_PROFILING_IS_ENABLED_KEY);
+    CFStringRef isEnabledKey = CFSTR(DD_PROFILING_IS_ENABLED_KEY);
+    CFStringRef sampleRateKey = CFSTR(DD_PROFILING_SAMPLE_RATE_KEY);
 
-    CFPreferencesSetValue(key, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    CFPreferencesSetValue(isEnabledKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    CFPreferencesSetValue(sampleRateKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     CFPreferencesSynchronize(suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
 }
 
@@ -234,7 +260,7 @@ static void ctor_profiler_auto_start() {
     delete_profiling_defaults();
 
     // Create profiler and start with sample rate
-    g_ctor_profiler = new dd::profiler::ctor_profiler(SAMPLING_RATE, is_active_prewarm());
+    g_ctor_profiler = new dd::profiler::ctor_profiler(read_profiling_sample_rate(), is_active_prewarm());
     g_ctor_profiler->start();
 }
 
