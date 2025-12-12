@@ -48,6 +48,26 @@ public class OTelTracerProvider: OpenTelemetryApi.TracerProvider {
     ///     Note: This is ignored, as the Datadog SDK works on concept of core.
     ///   - instrumentationVersion:  The version of the instrumentation library (e.g., "semver:1.0.0"). Optional
     ///     Note: This is ignored, as the Datadog SDK works on concept of core.
+    ///   - schemaUrl: The schema url. Optional
+    ///     Note: This is ignored in Datadog SDK.
+    ///   - attributes: attributes to be associated with span created by this tracer. Optional
+    public func get(
+        instrumentationName: String,
+        instrumentationVersion: String?,
+        schemaUrl: String?,
+        attributes: [String: OpenTelemetryApi.AttributeValue]?
+    ) -> any OpenTelemetryApi.Tracer {
+        let tracer = get(instrumentationName: instrumentationName, instrumentationVersion: instrumentationVersion)
+        // TODO: RUM-12512 Set `attributes` on tracer
+        return tracer
+    }
+
+    /// Returns a tracer with the given instrumentation name and version.
+    /// - Parameters:
+    ///   - instrumentationName: the name of the instrumentation library, not the name of the instrumented library
+    ///     Note: This is ignored, as the Datadog SDK works on concept of core.
+    ///   - instrumentationVersion:  The version of the instrumentation library (e.g., "semver:1.0.0"). Optional
+    ///     Note: This is ignored, as the Datadog SDK works on concept of core.
     public func get(instrumentationName: String, instrumentationVersion: String?) -> OpenTelemetryApi.Tracer {
         do {
             guard !(core is NOPDatadogCore) else {

@@ -61,5 +61,6 @@ for target in "${targets_list[@]}"; do
     -skipPackagePluginValidation \
     docbuild \
     -scheme "$target" \
-    -destination "generic/platform=$platform" | xcbeautify
+    -destination "generic/platform=$platform" \
+    EXCLUDED_ARCHS=arm64e | xcbeautify
 done
