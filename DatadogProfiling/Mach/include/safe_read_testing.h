@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#ifndef DD_SAFE_READ_H
-#define DD_SAFE_READ_H
+#ifndef DD_PROFILER_SAFE_READ_TESTING_H_
+#define DD_PROFILER_SAFE_READ_TESTING_H_
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -14,14 +14,18 @@
 extern "C" {
 #endif
 
-void init_main_thread_id_and_safe_read_handlers(void);
+/**
+ * Helper to manually re-install handlers if needed by tests.
+ */
+void init_safe_read_handlers_for_testing(void);
 
-bool safe_read_memory(void* addr, void* buffer, size_t size);
-
-void* get_invalid_address(void);
+/**
+ * Validates the Safe Read mechanism.
+ */
+bool safe_read_memory_for_testing(void* addr, void* buffer, size_t size);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DD_SAFE_READ_H
+#endif // DD_PROFILER_SAFE_READ_TESTING_H_

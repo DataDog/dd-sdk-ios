@@ -5,13 +5,14 @@
  */
 
 import XCTest
+import DatadogMachProfiler.Testing
 
 // Warning: To run successfully these tests, the LLDB debugger should be detached in the target schema,
 // like when using xcodebuild where the tests run in a "headless" mode without the debugger.
 final class SafeReadTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        init_main_thread_id_and_safe_read_handlers()
+        init_safe_read_handlers_for_testing()
     }
 
     func testValidMemoryRead() {
@@ -20,7 +21,7 @@ final class SafeReadTests: XCTestCase {
         var result: UInt64 = 0
 
         // When
-        let success = safe_read_memory(&validValue, &result, MemoryLayout<UInt64>.size)
+        let success = safe_read_memory_for_testing(&validValue, &result, MemoryLayout<UInt64>.size)
 
         // Then
         XCTAssertTrue(success)
@@ -33,7 +34,7 @@ final class SafeReadTests: XCTestCase {
         var result: UInt64 = 0
 
         // When
-        let success = safe_read_memory(invalidPtr, &result, MemoryLayout<UInt64>.size)
+        let success = safe_read_memory_for_testing(invalidPtr, &result, MemoryLayout<UInt64>.size)
 
         // Then
         XCTAssertFalse(success)
@@ -46,16 +47,16 @@ final class SafeReadTests: XCTestCase {
         var validValue: UInt64 = 42
 
         // When read INVALID memory
-        let failedRead = safe_read_memory(invalidPtr, &result, MemoryLayout<UInt64>.size)
+        let failedRead = safe_read_memory_for_testing(invalidPtr, &result, MemoryLayout<UInt64>.size)
         XCTAssertFalse(failedRead, "First invalid read should fail")
 
         // When immediately try a VALID read
-        let success2 = safe_read_memory(&validValue, &result, MemoryLayout<UInt64>.size)
+        let success2 = safe_read_memory_for_testing(&validValue, &result, MemoryLayout<UInt64>.size)
         XCTAssertTrue(success2, "Subsequent valid read should succeed")
         XCTAssertEqual(result, 42)
 
         // When trigger crash again
-        let failedRead2 = safe_read_memory(invalidPtr, &result, MemoryLayout<UInt64>.size)
+        let failedRead2 = safe_read_memory_for_testing(invalidPtr, &result, MemoryLayout<UInt64>.size)
         XCTAssertFalse(failedRead2, "Second invalid read should fail safely")
     }
 
@@ -72,14 +73,14 @@ final class SafeReadTests: XCTestCase {
             if i % 2 == 0 {
                 //Read VALID memory
                 var valid = UInt64(i)
-                let success = safe_read_memory(&valid, &result, MemoryLayout<UInt64>.size)
+                let success = safe_read_memory_for_testing(&valid, &result, MemoryLayout<UInt64>.size)
                 XCTAssertTrue(success, "Thread \(i) valid read failed")
             }
             // Odd threads
             else {
                 // Read INVALID memory (Crash)
-                let invalidPtr = get_invalid_address()
-                let success = safe_read_memory(invalidPtr, &result, MemoryLayout<UInt64>.size)
+                let invalidPtr = self.get_invalid_address()
+                let success = safe_read_memory_for_testing(invalidPtr, &result, MemoryLayout<UInt64>.size)
                 XCTAssertFalse(success, "Thread \(i) invalid read should have failed safely")
             }
 
@@ -88,5 +89,9 @@ final class SafeReadTests: XCTestCase {
 
         // Then
         wait(for: [expectation], timeout: 0.1)
+    }
+
+    private func get_invalid_address() -> UnsafeMutableRawPointer {
+        UnsafeMutableRawPointer(bitPattern: 0xDEADBEEF)!
     }
 }

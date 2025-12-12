@@ -109,6 +109,21 @@ static void safe_read_signal_handler(int sig, siginfo_t* info, void* context) {
 }
 
 /**
+ * Install signal handlers for safe memory reading.
+ */
+static void init_safe_read_handlers() {
+    // Manually install the handler defined in this file
+    struct sigaction sa = {};
+    sa.sa_sigaction = safe_read_signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_SIGINFO;
+
+    // Install handlers and save previous ones
+    sigaction(SIGBUS, &sa, &g_prev_sigbus_handler);
+    sigaction(SIGSEGV, &sa, &g_prev_sigsegv_handler);
+}
+
+/**
  * Initialize the main thread pthread identifier
  * and install signal handlers for safe memory reading.
  *
@@ -122,15 +137,7 @@ static void init_main_thread_id_and_safe_read_handlers() {
     }
     
     g_main_pthread = pthread_self();
-
-    struct sigaction sa = {};
-    sa.sa_sigaction = safe_read_signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_SIGINFO;
-    
-    // Install handlers and save previous ones
-    sigaction(SIGBUS, &sa, &g_prev_sigbus_handler);
-    sigaction(SIGSEGV, &sa, &g_prev_sigsegv_handler);
+    init_safe_read_handlers();
 }
 
 /**
@@ -373,6 +380,27 @@ bool stack_trace_get_thread_info(stack_trace_t* trace, thread_t thread) {
 }
 
 /**
+ * Safely reads memory from a potentially invalid address.
+ *
+ * If memory is invalid, SIGBUS/SIGSEGV is caught and we return false.
+*/
+bool safe_read_memory(void* addr, void* buffer, size_t size) {
+    // Set up the JUMP TARGET
+    if (sigsetjmp(g_safe_read_handler, 1) == 0) {
+        g_is_safe_read = true;
+        // try direct memory copy
+        memcpy(buffer, addr, size);
+        g_is_safe_read = false;
+        return true;
+    }
+
+    // Memory access failed
+    // We land here if safe_read_signal_handler() called siglongjmp()
+    g_is_safe_read = false;
+    return false;
+}
+
+/**
  * Samples a thread's stack to collect stack trace information.
  *
  * @param trace Pre-allocated stack trace to fill
@@ -386,12 +414,6 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
     void *fp, *pc = nullptr;
     if (!thread_get_frame_pointers(thread, &fp, &pc)) return;
 
-    // Set up crash recovery once for the whole trace.
-    if (sigsetjmp(g_safe_read_handler, 1) != 0) {
-        g_is_safe_read = false;
-        return;
-    }
-
     while (trace->frame_count < max_depth && pc != nullptr) {
         auto& frame = trace->frames[trace->frame_count];
         frame.instruction_ptr = (uint64_t)pc;
@@ -404,10 +426,7 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
 
         // Read the next frame pointer and return address
         void* next_frame[2];
-        // Unsafe memory access
-        g_is_safe_read = true;
-        memcpy(next_frame, fp, sizeof(next_frame));
-        g_is_safe_read = false;
+        if (!safe_read_memory(fp, next_frame, sizeof(next_frame))) break;
 
         fp = next_frame[0];  // Next frame pointer
         pc = next_frame[1];  // Return address
@@ -415,8 +434,6 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
         // Validate the new PC
         if (!is_valid_userspace_addr((uintptr_t)pc)) break;
     }
-
-    g_is_safe_read = false;
 }
 
 namespace dd::profiler {
@@ -612,5 +629,17 @@ void mach_sampling_profiler::flush_buffer() {
 }
 
 } // namespace dd:profiler
+
+extern "C" {
+
+void safe_read_memory_for_testing(void* addr, void* buffer, size_t size) {
+    safe_read_memory(addr, buffer, size);
+}
+
+void init_safe_read_handlers_for_testing(void) {
+    init_safe_read_handlers();
+}
+
+} // extern "C"
 
 #endif // __APPLE__ 
