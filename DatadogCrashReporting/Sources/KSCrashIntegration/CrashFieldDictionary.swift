@@ -195,9 +195,6 @@ extension CrashField {
     /// The parent process name field.
     static var parentProcessName: Self { .key("parent_process_name") }
 
-    /// The Datadog-specific metadata field.
-    static var dd: Self { .key("dd") }
-
     /// Flag indicating whether a backtrace has been truncated.
     static var truncated: Self { .key("truncated") }
 }

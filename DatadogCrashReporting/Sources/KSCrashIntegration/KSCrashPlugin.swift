@@ -76,16 +76,17 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
                 }
             } catch {
                 _ = completion(nil)
+                store.deleteAllReports()
                 consolePrint("🔥 DatadogCrashReporting error: failed to load crash report: \(error)", .error)
             }
         }
     }
 
     func inject(context: Data) {
-        // Convert Data to base64 string for JSON serialization compatibility
-        // NSJSONSerialization doesn't support NSData directly
-        let contextBase64 = context.base64EncodedString()
-        kscrash.userInfo = [CrashField.dd.rawValue: contextBase64]
+        context.withUnsafeBytes {
+            let c_char = $0.bindMemory(to: CChar.self).baseAddress
+            kscrash_setUserInfoJSON(c_char)
+        }
     }
 
     var backtraceReporter: BacktraceReporting? { KSCrashBacktrace(telemetry: telemetry) }
