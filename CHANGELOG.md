@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] RUM events now support Alerts, Confirmation Dialogs and Action Sheets. See [#2612][] 
+
 # 3.4.0 / 10-12-2025
 
 - [FEATURE] Add support for configuring a custom version parameter in `DatadogConfiguration`. See [#2585][] (Thanks [@blimmer][])
