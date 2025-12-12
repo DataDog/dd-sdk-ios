@@ -41,9 +41,12 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
                     DatadogCrashReportFilter()
                 ]
             )
+            telemetry.debug("[KSCrash] Successfully installed")
         } catch KSCrashInstallError.alreadyInstalled {
             consolePrint("DatadogCrashReporting error: crash reporting is already installed", .warn)
+            telemetry.debug("[KSCrash] already installed")
         } catch {
+            telemetry.error("[KSCrash] Fails installation", error: error)
             throw error
         }
     }
@@ -53,6 +56,7 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
     func readPendingCrashReport(completion: @escaping (DDCrashReport?) -> Bool) {
         guard let store = kscrash.reportStore else {
             _ = completion(nil)
+            telemetry.error("[KSCrash] Unexpected missing report store")
             return
         }
 
@@ -64,6 +68,7 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
 
                 guard let report = reports?.first else {
                     _ = completion(nil)
+                    self.telemetry.debug("[KSCrash] No crash report to load")
                     return
                 }
 
@@ -74,9 +79,12 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
                 if completion(report) {
                     store.deleteAllReports()
                 }
+
+                self.telemetry.debug("[KSCrash] Successfully loaded crash report")
             } catch {
                 _ = completion(nil)
                 consolePrint("🔥 DatadogCrashReporting error: failed to load crash report: \(error)", .error)
+                self.telemetry.error("[KSCrash] Fails to load crash report", error: error)
             }
         }
     }
@@ -103,6 +111,7 @@ extension KSCrashConfiguration {
 
         let config = KSCrashConfiguration()
         config.installPath = directory.path
+        config.monitors = [.signal, .cppException, .nsException, .system]
         config.reportStoreConfiguration.maxReportCount = 1
         config.reportStoreConfiguration.reportCleanupPolicy = .never
         return config
