@@ -31,8 +31,9 @@ This SDK lives in our customer’s applications, and is run on end users devices
 
 ## Compatibility
 
-- Support old versions of the OS’s
-    - iOS: v11.0 (last 3 major iOS versions generally)
+- Support all iOS versions supported by current Xcode version that can publish to AppStoreConnect:
+    - Minimum accepted Xcode version: 16
+    - Minimum iOS accepted version: 12.0 
 - Support all main languages; especially the behavior should be the same for any language, but can be enhanced for modern languages.
     - iOS: ObjC/Swift
 - Support vanilla flavors of the OS first, and add possible extensions for derived flavors of the OSs (Watch, TV, …)
