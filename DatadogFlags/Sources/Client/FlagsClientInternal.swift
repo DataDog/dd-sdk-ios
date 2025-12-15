@@ -10,22 +10,22 @@ import DatadogInternal
 public protocol FlagsClientInternal: AnyObject {
     /// > Warning: This is an internal method and can break in the future.
     @_spi(Internal)
-    func getFlagAssignmentsSnapshot() -> [String: FlagAssignment]?
+    func getFlagAssignments() -> [String: FlagAssignment]?
 
     /// > Warning: This is an internal method and can break in the future.
     @_spi(Internal)
-    func trackFlagSnapshotEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+    func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
 }
 
 extension FlagsClientInternal {
     @_spi(Internal)
-    public func getFlagAssignmentsSnapshot() -> [String: FlagAssignment]? {
+    public func getFlagAssignments() -> [String: FlagAssignment]? {
         // no-op
         return nil
     }
 
     @_spi(Internal)
-    public func trackFlagSnapshotEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+    public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
         // no-op
     }
 }

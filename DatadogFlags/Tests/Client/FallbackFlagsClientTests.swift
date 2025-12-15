@@ -71,7 +71,7 @@ final class FallbackFlagsClientTests: XCTestCase {
         defer { dd.reset() }
 
         // When
-        let snapshot = client.getFlagAssignmentsSnapshot()
+        let snapshot = client.getFlagAssignments()
 
         // Then
         XCTAssertNil(snapshot)
@@ -94,7 +94,7 @@ final class FallbackFlagsClientTests: XCTestCase {
         defer { dd.reset() }
 
         // When
-        client.trackFlagSnapshotEvaluation(key: .mockAny(), assignment: .mockAny(), context: .mockAny())
+        client.sendFlagEvaluation(key: .mockAny(), assignment: .mockAny(), context: .mockAny())
 
         // Then
         XCTAssertEqual(dd.logger.errorMessages.count, 1)

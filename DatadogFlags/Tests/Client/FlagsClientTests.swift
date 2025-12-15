@@ -401,7 +401,7 @@ final class FlagsClientTests: XCTestCase {
         )
 
         // When
-        guard let flagAssignments = client.getFlagAssignmentsSnapshot() else {
+        guard let flagAssignments = client.getFlagAssignments() else {
             XCTFail("Failed to get flag assignments")
             return
         }
@@ -512,11 +512,11 @@ final class FlagsClientTests: XCTestCase {
         )
 
         // When
-        client.trackFlagSnapshotEvaluation(key: "bool-flag", assignment: booleanAssignment, context: context)
-        client.trackFlagSnapshotEvaluation(key: "string-flag", assignment: stringAssignment, context: context)
-        client.trackFlagSnapshotEvaluation(key: "int-flag", assignment: integerAssignment, context: context)
-        client.trackFlagSnapshotEvaluation(key: "double-flag", assignment: doubleAssignment, context: context)
-        client.trackFlagSnapshotEvaluation(key: "object-flag", assignment: objectAssignment, context: context)
+        client.sendFlagEvaluation(key: "bool-flag", assignment: booleanAssignment, context: context)
+        client.sendFlagEvaluation(key: "string-flag", assignment: stringAssignment, context: context)
+        client.sendFlagEvaluation(key: "int-flag", assignment: integerAssignment, context: context)
+        client.sendFlagEvaluation(key: "double-flag", assignment: doubleAssignment, context: context)
+        client.sendFlagEvaluation(key: "object-flag", assignment: objectAssignment, context: context)
 
         // Then
         XCTAssertEqual(exposureLogger.logExposureCalls.count, 5)

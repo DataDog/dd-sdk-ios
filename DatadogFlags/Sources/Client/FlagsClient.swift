@@ -236,12 +236,12 @@ extension FlagsClient: FlagsClientProtocol {
 
 extension FlagsClient: FlagsClientInternal {
     @_spi(Internal)
-    public func getFlagAssignmentsSnapshot() -> [String: FlagAssignment]? {
+    public func getFlagAssignments() -> [String: FlagAssignment]? {
         return repository.flagAssignmentsSnapshot()
     }
 
     @_spi(Internal)
-    public func trackFlagSnapshotEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+    public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
         var value: FlagValue
         switch assignment.variation {
         case .boolean(let v): value = v
