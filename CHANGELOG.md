@@ -1,6 +1,6 @@
 # Unreleased
 
-- [IMPROVEMENT] RUM events now support Alerts, Confirmation Dialogs and Action Sheets. See [#2612][] 
+- [IMPROVEMENT] RUM auto-instrumentation now supports Alerts, Confirmation Dialogs and Action Sheets. See [#2612][] 
 
 # 3.4.0 / 10-12-2025
 

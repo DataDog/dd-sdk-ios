@@ -315,7 +315,7 @@ final class RUMSwiftUIManualInstrumentationScenario: TestScenario {
 /// and a button that loads a similar SwiftUI based view with additional buttons for doing the same.
 ///
 /// The idea is testing tracking on alerts and action sheets, both in UIKit and SwiftUI.
-final class RUMAlertScenarioTests: TestScenario {
+final class RUMAlertScenario: TestScenario {
     static var storyboardName: String = "RUMAlertScenario"
 
     func configureFeatures() {

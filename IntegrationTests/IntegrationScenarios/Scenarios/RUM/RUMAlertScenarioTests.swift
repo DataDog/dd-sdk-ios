@@ -45,7 +45,7 @@ class RUMAlertScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenarioClassName: "RUMAlertScenarioTests",
+            testScenarioClassName: "RUMAlertScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 rumEndpoint: rumServerSession.recordingURL
             )
@@ -115,7 +115,7 @@ class RUMAlertScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let app = ExampleApplication()
         app.launchWith(
-            testScenarioClassName: "RUMAlertScenarioTests",
+            testScenarioClassName: "RUMAlertScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 rumEndpoint: rumServerSession.recordingURL
             )

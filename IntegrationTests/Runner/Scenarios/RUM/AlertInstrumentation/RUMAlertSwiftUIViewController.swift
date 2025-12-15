@@ -7,7 +7,7 @@
 import UIKit
 import SwiftUI
 
-/// Used to display a SwiftUI view (``RUMAlertSwiftUI``) in `RUMAlertScenario` storyboard..
+/// Used to display a SwiftUI view (``RUMAlertSwiftUI``) in `RUMAlertScenario` storyboard.
 class RUMAlertSwiftUIViewController: UIHostingController<RUMAlertSwiftUI> {
 
     required init?(coder aDecoder: NSCoder) {
