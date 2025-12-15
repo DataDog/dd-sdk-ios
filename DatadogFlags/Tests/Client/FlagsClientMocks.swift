@@ -170,7 +170,7 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
         state?.flags[key]
     }
 
-    func flagAssignmentsSnapshot() -> [String: DatadogFlags.FlagAssignment]? {
+    func flagAssignments() -> [String: DatadogFlags.FlagAssignment]? {
         state?.flags
     }
 

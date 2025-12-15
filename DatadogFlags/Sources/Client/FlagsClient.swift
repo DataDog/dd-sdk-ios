@@ -237,7 +237,7 @@ extension FlagsClient: FlagsClientProtocol {
 extension FlagsClient: FlagsClientInternal {
     @_spi(Internal)
     public func getFlagAssignments() -> [String: FlagAssignment]? {
-        return repository.flagAssignmentsSnapshot()
+        return repository.flagAssignments()
     }
 
     @_spi(Internal)

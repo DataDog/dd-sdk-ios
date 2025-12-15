@@ -346,7 +346,7 @@ final class FlagsClientTests: XCTestCase {
 
     // MARK: - Internal methods consumed by the React Native SDK
 
-    func testGetFlagAssignmentsSnapshot() {
+    func testGetFlagAssignments() {
         // Given
         let exposureLogger = ExposureLoggerMock()
         let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
@@ -464,7 +464,7 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertNil(flagAssignments["missing-flag"])
     }
 
-    func testTrackFlagSnapshotEvaluation() {
+    func testSendFlagEvaluation() {
         // Given
         let exposureLogger = ExposureLoggerMock()
         let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()

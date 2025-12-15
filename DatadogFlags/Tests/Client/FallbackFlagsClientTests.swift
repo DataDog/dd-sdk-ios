@@ -62,7 +62,7 @@ final class FallbackFlagsClientTests: XCTestCase {
         )
     }
 
-    func testGetFlagAssignmentsSnapshot() {
+    func testGetFlagAssignments() {
         // Given
         let core = SingleFeatureCoreMock<FlagsFeature>()
         Flags.enable(in: core)
@@ -71,10 +71,10 @@ final class FallbackFlagsClientTests: XCTestCase {
         defer { dd.reset() }
 
         // When
-        let snapshot = client.getFlagAssignments()
+        let flagAssignments = client.getFlagAssignments()
 
         // Then
-        XCTAssertNil(snapshot)
+        XCTAssertNil(flagAssignments)
         XCTAssertEqual(dd.logger.errorMessages.count, 1)
         XCTAssertEqual(
             dd.logger.errorMessages.first,
@@ -85,7 +85,7 @@ final class FallbackFlagsClientTests: XCTestCase {
         )
     }
 
-    func testTrackEvaluation() {
+    func testSendFlagEvaluation() {
         // Given
         let core = SingleFeatureCoreMock<FlagsFeature>()
         Flags.enable(in: core)
