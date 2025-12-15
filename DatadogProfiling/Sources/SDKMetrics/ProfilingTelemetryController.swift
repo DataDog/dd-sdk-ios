@@ -7,14 +7,6 @@
 import Foundation
 import DatadogInternal
 
-/// Interface for Telemetry metrics.
-internal protocol MetricAttributesConvertible {
-    /// Indicates the metric being tracked.
-    var metricName: String { get }
-    /// Transforms the telemetry data in an encodable dictionary.
-    func asMetricAttributes() -> [String: Encodable]?
-}
-
 internal final class ProfilingTelemetryController {
     /// The default sample rate for "Profiling App Launch" metric (20%),
     /// applied in addition to the Profiling feature sample rate (10% by default).
@@ -37,7 +29,7 @@ internal final class ProfilingTelemetryController {
     }
 
     /// Sends the telemetry metric.
-    func send(metric: MetricAttributesConvertible) {
+    func send(metric: AppLaunchMetric) {
         guard var metricAttributes = metric.asMetricAttributes() else {
             telemetry.debug("Failed to compute attributes for '\(metric.metricName)'")
             return

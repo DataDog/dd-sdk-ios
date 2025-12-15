@@ -13,6 +13,7 @@ import TestUtilities
 final class ProfilerFeatureTests: XCTestCase {
     private let requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     private let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    private let telemetryController = ProfilingTelemetryController()
 
     private var userDefaults: UserDefaults! //swiftlint:disable:this implicitly_unwrapped_optional
     private let suiteName = "ProfilerFeatureTests-\(UUID().uuidString)"
@@ -38,6 +39,7 @@ final class ProfilerFeatureTests: XCTestCase {
             requestBuilder: requestBuilder,
             messageReceiver: messageReceiver,
             sampleRate: .maxSampleRate,
+            telemetryController: telemetryController,
             userDefaults: userDefaults
         )
 
@@ -55,6 +57,7 @@ final class ProfilerFeatureTests: XCTestCase {
             requestBuilder: requestBuilder,
             messageReceiver: messageReceiver,
             sampleRate: newSampleRate,
+            telemetryController: telemetryController,
             userDefaults: userDefaults
         )
 
@@ -75,6 +78,7 @@ final class ProfilerFeatureTests: XCTestCase {
             requestBuilder: requestBuilder,
             messageReceiver: messageReceiver,
             sampleRate: lowerSampleRate,
+            telemetryController: telemetryController,
             userDefaults: userDefaults
         )
 
@@ -95,6 +99,7 @@ final class ProfilerFeatureTests: XCTestCase {
             requestBuilder: requestBuilder,
             messageReceiver: messageReceiver,
             sampleRate: higherSampleRate,
+            telemetryController: telemetryController,
             userDefaults: userDefaults
         )
 

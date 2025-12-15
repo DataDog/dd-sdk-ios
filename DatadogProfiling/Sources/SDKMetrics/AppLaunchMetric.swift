@@ -19,6 +19,8 @@ internal final class AppLaunchMetric {
         static let appLaunchKey = "profiling_app_launch"
     }
 
+    var metricName: String { Constants.name }
+
     /// Status of the profiler when the TTID was received.
     let status: ProfilingContext.Status
     /// Duration of the profile in nanoseconds.
@@ -39,20 +41,6 @@ internal final class AppLaunchMetric {
         self.fileSize = fileSize
         self.errorMessage = errorMessage
     }
-}
-
-// MARK: - AppLaunchMetric errors
-
-extension AppLaunchMetric {
-    static var statusNotHandled: AppLaunchMetric { .init(status: .current, errorMessage: "Profile not handled because of the current `ctor_profiler` status.") }
-    static var noProfile: AppLaunchMetric { .init(status: .current, errorMessage: "No profile was stored.") }
-    static var noData: AppLaunchMetric { .init(status: .current, errorMessage: "Error serializing the profile.") }
-}
-
-// MARK: - MetricAttributesConvertible
-
-extension AppLaunchMetric: MetricAttributesConvertible {
-    var metricName: String { Constants.name }
 
     func asMetricAttributes() -> [String: Encodable]? {
         var stoppedReason: String?
@@ -77,6 +65,14 @@ extension AppLaunchMetric: MetricAttributesConvertible {
             )
         ]
     }
+}
+
+// MARK: - AppLaunchMetric errors
+
+extension AppLaunchMetric {
+    static var statusNotHandled: AppLaunchMetric { .init(status: .current, errorMessage: "Profile not handled because of the current `ctor_profiler` status.") }
+    static var noProfile: AppLaunchMetric { .init(status: .current, errorMessage: "No profile was stored.") }
+    static var noData: AppLaunchMetric { .init(status: .current, errorMessage: "Error serializing the profile.") }
 }
 
 // MARK: - Exporting Attributes

@@ -44,6 +44,10 @@ internal final class ConfigurationMetric {
         self.threadCoverage = threadCoverage
         self.samplingInterval = samplingInterval
     }
+
+    func asMetricAttributes() -> [String: Encodable]? {
+        [Constants.configurationKey: self]
+    }
 }
 
 extension ConfigurationMetric: Encodable {
@@ -53,15 +57,5 @@ extension ConfigurationMetric: Encodable {
         case stackDepth = "stack_depth"
         case threadCoverage = "thread_coverage"
         case samplingInterval = "sampling_interval"
-    }
-}
-
-// MARK: - MetricAttributesConvertible
-
-extension ConfigurationMetric: MetricAttributesConvertible {
-    var metricName: String { Constants.configurationKey }
-
-    func asMetricAttributes() -> [String: Encodable]? {
-        [Constants.configurationKey: self]
     }
 }
