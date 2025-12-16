@@ -40,7 +40,7 @@ public struct ProfilingContext: AdditionalContext {
     /// from the constructor profiler implementation.
     public enum Status: Equatable {
         /// Reasons why profiling was stopped.
-        public enum StopReason: Equatable {
+        public enum StopReason: String, Equatable {
             /// Profiling was manually stopped by explicit API call.
             case manual
 
@@ -58,7 +58,7 @@ public struct ProfilingContext: AdditionalContext {
         }
 
         /// Errors that can occur during profiling operations.
-        public enum ErrorReason: Equatable {
+        public enum ErrorReason: String, Equatable {
             /// Failed to allocate required memory for profiling operations.
             case memoryAllocationFailed
 

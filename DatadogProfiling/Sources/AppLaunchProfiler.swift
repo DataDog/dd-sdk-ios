@@ -20,8 +20,11 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
     private static var pendingInstances: Int = 0
     private static let lock = NSLock()
 
-    init() {
+    private let telemetryController: ProfilingTelemetryController
+
+    init(telemetryController: ProfilingTelemetryController = .init()) {
         Self.registerInstance()
+        self.telemetryController = telemetryController
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
@@ -29,9 +32,11 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
             return false
         }
 
-        guard ctor_profiler_get_status() == CTOR_PROFILER_STATUS_RUNNING
-                || ctor_profiler_get_status() == CTOR_PROFILER_STATUS_TIMEOUT
-                || ctor_profiler_get_status() == CTOR_PROFILER_STATUS_STOPPED else {
+        let profileStatus = ctor_profiler_get_status()
+        guard profileStatus == CTOR_PROFILER_STATUS_RUNNING
+                || profileStatus == CTOR_PROFILER_STATUS_TIMEOUT
+                || profileStatus == CTOR_PROFILER_STATUS_STOPPED else {
+            telemetryController.send(metric: AppLaunchMetric.statusNotHandled)
             return false
         }
 
@@ -40,15 +45,18 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
         defer { Self.unregisterInstance() }
 
         guard let profile = ctor_profiler_get_profile() else {
+            telemetryController.send(metric: AppLaunchMetric.noProfile)
             return false
         }
 
         var data: UnsafeMutablePointer<UInt8>?
         let start = dd_pprof_get_start_timestamp_s(profile)
         let end = dd_pprof_get_end_timestamp_s(profile)
+        let duration = (end - start).dd.toInt64Nanoseconds
         let size = dd_pprof_serialize(profile, &data)
 
-        guard let data = data else {
+        guard let data else {
+            telemetryController.send(metric: AppLaunchMetric.noData)
             return false
         }
 
@@ -78,6 +86,7 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
             )
 
             writer.write(value: pprof, metadata: event)
+            self.telemetryController.send(metric: AppLaunchMetric(status: .init(profileStatus), durationNs: duration, fileSize: Int64(size)))
         }
 
         return true

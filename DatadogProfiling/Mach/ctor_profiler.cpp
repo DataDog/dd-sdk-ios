@@ -173,7 +173,6 @@ public:
         // Configure profiler
         sampling_config_t config = SAMPLING_CONFIG_DEFAULT;
         config.sampling_interval_nanos = sampling_interval_ns;
-        config.max_buffer_size = 10000; // Larger buffer to delay stack aggregation
 
         profiler = new mach_sampling_profiler(&config, callback, this);
         if (!profiler) {
