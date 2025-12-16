@@ -1,5 +1,6 @@
 # Unreleased
 
+- [IMPROVEMENT] Upgrade `DatadogTrace` to OpenTelemetryApi 2.3.0. See [#2614][]
 - [IMPROVEMENT] RUM auto-instrumentation now supports Alerts, Confirmation Dialogs and Action Sheets. See [#2612][] 
 
 # 3.4.0 / 10-12-2025
@@ -998,6 +999,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2514]: https://github.com/DataDog/dd-sdk-ios/pull/2514
 [#2552]: https://github.com/DataDog/dd-sdk-ios/pull/2552
 [#2566]: https://github.com/DataDog/dd-sdk-ios/pull/2566
+[#2614]: https://github.com/DataDog/dd-sdk-ios/pull/2614
 [#2576]: https://github.com/DataDog/dd-sdk-ios/pull/2576
 [#2585]: https://github.com/DataDog/dd-sdk-ios/pull/2585
 [#2598]: https://github.com/DataDog/dd-sdk-ios/pull/2598
