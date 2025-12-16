@@ -18,7 +18,7 @@ final class CTorProfilerTests: XCTestCase {
     // MARK: - State Management Tests
 
     func testCtorProfiler_initiallyNotStarted() {
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Constructor profiler should not be started initially")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Constructor profiler should not be started initially")
     }
 
     func testCtorProfiler_startTesting_withValidSampleRate_startsSuccessfully() {
@@ -60,11 +60,11 @@ final class CTorProfilerTests: XCTestCase {
 
     func testCtorProfiler_stop_whenNotRunning_doesNotCrash() {
         // Given
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Precondition: profiler should not be running")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Precondition: profiler should not be running")
 
         // When/Then - should not crash
         ctor_profiler_stop()
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Status should remain unchanged")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Status should remain unchanged")
     }
 
     func testCtorProfiler_multipleStops_doesNotCrash() {
@@ -83,7 +83,7 @@ final class CTorProfilerTests: XCTestCase {
 
     func testCtorProfiler_getProfile_whenNotStarted_returnsNil() {
         // Given
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Precondition: profiler should not be started")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Precondition: profiler should not be started")
 
         // When/Then
         XCTAssertNil(ctor_profiler_get_profile(), "Profile should be nil when profiler was never started")
@@ -138,7 +138,7 @@ final class CTorProfilerTests: XCTestCase {
 
         // Then
         XCTAssertNil(ctor_profiler_get_profile(), "Profile should be nil after destroying")
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Status should be reset to not started")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Status should be reset to not created")
     }
 
     func testCtorProfiler_destroy_whenNotStarted_doesNotCrash() {
@@ -148,7 +148,7 @@ final class CTorProfilerTests: XCTestCase {
         // When/Then - should not crash
         ctor_profiler_destroy()
         XCTAssertNil(ctor_profiler_get_profile(), "Profile should still be nil")
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Status should be not started")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Profiler Status should be not created")
     }
 
     func testCtorProfiler_multipleDestroy_doesNotCrash() {
@@ -167,11 +167,124 @@ final class CTorProfilerTests: XCTestCase {
         ctor_profiler_destroy()
         ctor_profiler_destroy()
         XCTAssertNil(ctor_profiler_get_profile(), "Profile should remain nil")
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Status should remain not started")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Status should be reset to not created")
     }
 
     func testCtorProfiler_statusCodes_prewarmed() {
         ctor_profiler_start_testing(100, true, 5.seconds.dd.toInt64Nanoseconds) // prewarming = true
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_PREWARMED, "Should return PREWARMED status when prewarming is true")
+    }
+
+    // MARK: - Concurrency Tests
+
+    func testConcurrentStop_doesNotCrash() {
+        // Given
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING)
+
+        let concurrentOperations = 10
+        let expectation = expectation(description: "All concurrent stops complete")
+        expectation.expectedFulfillmentCount = concurrentOperations
+
+        // When
+        DispatchQueue.concurrentPerform(iterations: concurrentOperations) { index in
+            ctor_profiler_stop()
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_STOPPED)
+    }
+
+    func testConcurrentGetStatus_doesNotCrash() {
+        // Given
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING)
+
+        let concurrentOperations = 100
+        let expectation = expectation(description: "All concurrent status checks complete")
+        expectation.expectedFulfillmentCount = concurrentOperations
+
+        // When
+        DispatchQueue.concurrentPerform(iterations: concurrentOperations) { index in
+            ctor_profiler_get_status()
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
+    }
+
+    func testConcurrentGetProfile_doesNotCrash() {
+        // Given
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING)
+        Thread.sleep(forTimeInterval: 0.1) // Allow some sampling
+
+        let concurrentOperations = 50
+        let expectation = expectation(description: "All concurrent profile fetches complete")
+        expectation.expectedFulfillmentCount = 50
+
+        // When
+        DispatchQueue.concurrentPerform(iterations: concurrentOperations) { index in
+            ctor_profiler_get_profile()
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
+    }
+
+    func testConcurrentDestroy_doesNotCrash() {
+        // Given
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING)
+        Thread.sleep(forTimeInterval: 0.1) // Allow some sampling
+        ctor_profiler_stop()
+
+        let concurrentOperations = 10
+        let expectation = expectation(description: "All concurrent destroys complete")
+        expectation.expectedFulfillmentCount = concurrentOperations
+
+        // When
+        DispatchQueue.concurrentPerform(iterations: concurrentOperations) { index in
+            ctor_profiler_destroy()
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
+        XCTAssertNil(ctor_profiler_get_profile())
+    }
+
+    func testConcurrentMixedOperations_doesNotCrash() {
+        // Given
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        Thread.sleep(forTimeInterval: 0.1) // Allow some sampling
+
+        let concurrentOperations = 50
+        let expectation = expectation(description: "All concurrent mixed operations complete")
+        expectation.expectedFulfillmentCount = concurrentOperations
+
+        // When
+        DispatchQueue.concurrentPerform(iterations: concurrentOperations) { index in
+            switch index % 4 {
+            case 0:
+                ctor_profiler_stop()
+            case 1:
+                ctor_profiler_get_status()
+            case 2:
+                ctor_profiler_get_profile()
+            case 3:
+                ctor_profiler_destroy()
+            default:
+                break
+            }
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
     }
 }

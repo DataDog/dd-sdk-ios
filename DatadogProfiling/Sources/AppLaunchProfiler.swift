@@ -16,30 +16,47 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 internal final class AppLaunchProfiler: FeatureMessageReceiver {
+    /// Shared counter to track pending `AppLaunchProfiler`s from handling the `ProfilerStop` message
+    private static var pendingInstances: Int = 0
+    private static let lock = NSLock()
+
+    private let telemetryController: ProfilingTelemetryController
+
+    init(telemetryController: ProfilingTelemetryController = .init()) {
+        Self.registerInstance()
+        self.telemetryController = telemetryController
+    }
+
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         guard case let .payload(cmd as ProfilerStop) = message else {
             return false
         }
 
-        guard ctor_profiler_get_status() == CTOR_PROFILER_STATUS_RUNNING
-                || ctor_profiler_get_status() == CTOR_PROFILER_STATUS_TIMEOUT else {
+        let profileStatus = ctor_profiler_get_status()
+        guard profileStatus == CTOR_PROFILER_STATUS_RUNNING
+                || profileStatus == CTOR_PROFILER_STATUS_TIMEOUT
+                || profileStatus == CTOR_PROFILER_STATUS_STOPPED else {
+            telemetryController.send(metric: AppLaunchMetric.statusNotHandled)
             return false
         }
 
         ctor_profiler_stop()
         core.set(context: ProfilingContext(status: .current))
-        defer { ctor_profiler_destroy() }
+        defer { Self.unregisterInstance() }
 
         guard let profile = ctor_profiler_get_profile() else {
+            telemetryController.send(metric: AppLaunchMetric.noProfile)
             return false
         }
 
         var data: UnsafeMutablePointer<UInt8>?
         let start = dd_pprof_get_start_timestamp_s(profile)
         let end = dd_pprof_get_end_timestamp_s(profile)
+        let duration = (end - start).dd.toInt64Nanoseconds
         let size = dd_pprof_serialize(profile, &data)
 
-        guard let data = data else {
+        guard let data else {
+            telemetryController.send(metric: AppLaunchMetric.noData)
             return false
         }
 
@@ -69,9 +86,51 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
             )
 
             writer.write(value: pprof, metadata: event)
+            self.telemetryController.send(metric: AppLaunchMetric(status: .init(profileStatus), durationNs: duration, fileSize: Int64(size)))
         }
 
         return true
+    }
+}
+
+// MARK: - Handle AppLaunchProfiler instances
+
+private extension AppLaunchProfiler {
+    /// Registers the `AppLaunchProfiler` to handle the `ProfilerStop` message.
+    static func registerInstance() {
+        lock.lock()
+        defer { lock.unlock() }
+
+        pendingInstances += 1
+    }
+
+    /// Decrements the pending instance counter and destroys the profiler when all instances are done.
+    static func unregisterInstance() {
+        lock.lock()
+        defer { lock.unlock() }
+
+        pendingInstances -= 1
+        if pendingInstances <= 0 {
+            ctor_profiler_destroy()
+        }
+    }
+}
+
+// MARK: - Testing funcs
+
+extension AppLaunchProfiler {
+    /// Returns the current pending instances count.
+    static var currentPendingInstances: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return pendingInstances
+    }
+
+    /// Resets the pending instances counter.
+    static func resetPendingInstances() {
+        lock.lock()
+        defer { lock.unlock() }
+        pendingInstances = 0
     }
 }
 

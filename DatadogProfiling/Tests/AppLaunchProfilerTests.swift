@@ -17,12 +17,14 @@ import DatadogMachProfiler.Testing
 final class AppLaunchProfilerTests: XCTestCase {
     override func setUp() {
         super.setUp()
+        AppLaunchProfiler.resetPendingInstances()
         ctor_profiler_stop()
         ctor_profiler_destroy()
     }
 
     override func tearDown() {
         super.tearDown()
+        AppLaunchProfiler.resetPendingInstances()
         ctor_profiler_stop()
         ctor_profiler_destroy()
         delete_profiling_defaults()
@@ -43,6 +45,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         )
         // Then
         XCTAssertTrue(result, "Should return true when processing ProfilerStop message")
+        XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
     }
 
     func testReceive_withNonProfilerStopMessage_returnsFalse() {
@@ -64,12 +67,15 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING, "Profiler should be running")
+        XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 1)
 
         // When
         XCTAssertTrue(profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core))
 
         // Then
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Profiler should be destroyed after processing message")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Profiler should be destroyed after processing message")
+        XCTAssertNil(ctor_profiler_get_profile(), "Profile should be nil after destroy")
+        XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
     }
 
     func testReceive_withProfilerStopMessage_whenNoProfileData_returnsFalse() {
@@ -77,7 +83,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler()
 
-        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_STARTED, "Profiler should not be started")
+        XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Profiler should not be created")
 
         // When
         let result = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core)
@@ -132,7 +138,8 @@ final class AppLaunchProfilerTests: XCTestCase {
             feature: ProfilerFeature(
                 requestBuilder: FeatureRequestBuilderMock(),
                 messageReceiver: profiler,
-                dataStore: DataStoreMock()
+                sampleRate: .maxSampleRate,
+                telemetryController: .init()
             )
         )
 
@@ -218,9 +225,8 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     func testIsProfilingEnabled_whenKeyIsTrue() {
         // Given
-        let dataStore = UserDefaultsDataStore()
-        let boolData = withUnsafeBytes(of: true) { Data($0) }
-        dataStore.setValue(boolData, forKey: ProfilerFeature.Constants.isProfilingEnabledKey)
+        let userDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME)
+        userDefaults?.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
 
         // When
         let result = is_profiling_enabled()
@@ -231,9 +237,8 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     func testIsProfilingDisabled_whenKeyIsFalse() {
         // Given
-        let dataStore = UserDefaultsDataStore()
-        let boolData = withUnsafeBytes(of: false) { Data($0) }
-        dataStore.setValue(boolData, forKey: ProfilerFeature.Constants.isProfilingEnabledKey)
+        let userDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME)
+        userDefaults?.setValue(false, forKey: DD_PROFILING_IS_ENABLED_KEY)
 
         // When
         let result = is_profiling_enabled()
@@ -244,9 +249,8 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     func testDeleteProfilingDefaults_removesKeyFromUserDefaults() {
         // Given
-        let dataStore = UserDefaultsDataStore()
-        let boolData = withUnsafeBytes(of: true) { Data($0) }
-        dataStore.setValue(boolData, forKey: ProfilerFeature.Constants.isProfilingEnabledKey)
+        let userDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME)
+        userDefaults?.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
 
         XCTAssertTrue(is_profiling_enabled())
 
@@ -259,9 +263,8 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     func testDeleteProfilingDefaults_multipleCallsAreSafe() {
         // Given
-        let dataStore = UserDefaultsDataStore()
-        let boolData = withUnsafeBytes(of: true) { Data($0) }
-        dataStore.setValue(boolData, forKey: ProfilerFeature.Constants.isProfilingEnabledKey)
+        let userDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME)
+        userDefaults?.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
 
         // When
         delete_profiling_defaults()
@@ -273,18 +276,60 @@ final class AppLaunchProfilerTests: XCTestCase {
     }
 
     func testProfilingDefaults_persistAcrossTestCases() {
-        // Given
-        let dataStore = UserDefaultsDataStore()
-        let boolData = withUnsafeBytes(of: true) { Data($0) }
-        dataStore.setValue(boolData, forKey: ProfilerFeature.Constants.isProfilingEnabledKey)
-
         // When
-        let newStore = UserDefaultsDataStore()
-        var result: DataStoreValueResult?
-        newStore.value(forKey: ProfilerFeature.Constants.isProfilingEnabledKey) { result = $0 }
+        let userDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME)
+        userDefaults?.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
+        let otherUserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME)
 
         // Then
-        XCTAssertNotNil(result?.data())
+        XCTAssertTrue(otherUserDefaults?.value(forKey: DD_PROFILING_IS_ENABLED_KEY) as? Bool ?? false)
         XCTAssertTrue(is_profiling_enabled())
+    }
+
+    // MARK: - Pending Instances Tests
+
+    func testMultipleInstances_destroysOnlyAfterAllReceiveMessage() {
+        // Given
+        let iterations = 10
+        XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
+        let cores = (0..<iterations).map { _ in PassthroughCoreMock() }
+        let profilers = (0..<iterations).map { _ in AppLaunchProfiler() }
+
+        ctor_profiler_start_testing(100.0, false, 5.seconds.dd.toInt64Nanoseconds)
+        Thread.sleep(forTimeInterval: 0.05)
+        XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, iterations)
+
+        // When
+        for (index, profiler) in profilers.enumerated() {
+            _ = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: cores[index])
+
+            let remainingInstances = iterations - index - 1
+            if remainingInstances > 0 {
+                // Then
+                XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, remainingInstances)
+                XCTAssertNotNil(ctor_profiler_get_profile(), "Profile should still exist after first receive")
+            }
+        }
+
+        // Then
+        XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
+        XCTAssertNil(ctor_profiler_get_profile(), "Profile should be nil after all instances received")
+    }
+
+    func testConcurrentRegistration_isThreadSafe() {
+        // Given
+        let iterations = 100
+        let expectation = expectation(description: "All concurrent registrations complete")
+        expectation.expectedFulfillmentCount = iterations
+
+        // When
+        DispatchQueue.concurrentPerform(iterations: iterations) { _ in
+            _ = AppLaunchProfiler()
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
+        XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, iterations)
     }
 }

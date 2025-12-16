@@ -15,18 +15,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <random>
-
-// UserDefaults configuration
-#define DD_USER_DEFAULTS_SUITE_NAME "com.datadoghq.ios-sdk"
-#define DD_IS_PROFILING_ENABLED_KEY "is_profiling_enabled"
+#include <mutex>
 
 static constexpr int64_t CTOR_PROFILER_TIMEOUT_NS = 5000000000ULL; // 5 seconds
-
-static constexpr int64_t SAMPLING_RATE = 10; // 10%
 
 namespace dd::profiler { class ctor_profiler; }
 
 static dd::profiler::ctor_profiler* g_ctor_profiler = nullptr;
+static std::mutex g_ctor_profiler_mutex;
 
 /**
  * Checks if the current process was launched via pre-warming by examining
@@ -70,31 +66,46 @@ extern "C" {
  * @return If Profiling was enabled, or false if the key is not found
  */
 bool is_profiling_enabled() {
-    CFStringRef suiteName = CFSTR(DD_USER_DEFAULTS_SUITE_NAME);
-    CFStringRef key = CFSTR(DD_IS_PROFILING_ENABLED_KEY);
+    CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
+    CFStringRef key = CFSTR(DD_PROFILING_IS_ENABLED_KEY);
     CFPropertyListRef value = CFPreferencesCopyAppValue(key, suiteName);
 
     bool result = false;
 
     if (value) {
-         if (CFGetTypeID(value) == CFDataGetTypeID()) {
-             CFDataRef data = (CFDataRef)value;
-             CFIndex length = CFDataGetLength(data);
-             const CFIndex versionLength = 2;
-
-             // Check we have bytes for version (2 bytes) and for the data (at least 1 byte for bool)
-             if (length >= versionLength + 1) {
-                 const UInt8* bytes = CFDataGetBytePtr(data);
-                 const UInt8* storedData = bytes + versionLength;
-
-                 // Read bool as a single byte
-                 result = (storedData[0] != 0);
-             }
-         }
-         CFRelease(value);
-     }
+        if (CFGetTypeID(value) == CFBooleanGetTypeID()) {
+            result = CFBooleanGetValue((CFBooleanRef)value);
+        }
+        CFRelease(value);
+    }
 
     return result;
+}
+
+/**
+ * Reads the DatadogProfiling sample rate from the `UserDefaults`
+ *
+ * @return The sample rate as a double, or 0.0 if not found or invalid
+ */
+double read_profiling_sample_rate() {
+    CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
+    CFStringRef key = CFSTR(DD_PROFILING_SAMPLE_RATE_KEY);
+    CFPropertyListRef value = CFPreferencesCopyAppValue(key, suiteName);
+    
+    double sample_rate = 0.0;
+    
+    if (value) {
+        if (CFGetTypeID(value) == CFNumberGetTypeID()) {
+            CFNumberGetValue((CFNumberRef)value, kCFNumberDoubleType, &sample_rate);
+        }
+        CFRelease(value);
+    }
+    
+    // Validate sample rate is between 0 and 100
+    if (sample_rate < 0.0) return 0.0;
+    if (sample_rate > 100.0) return 100.0;
+    
+    return sample_rate;
 }
 
 /**
@@ -102,10 +113,12 @@ bool is_profiling_enabled() {
  * to be re-evaluated during `Profiling.enable()`.
  */
 void delete_profiling_defaults() {
-    CFStringRef suiteName = CFSTR(DD_USER_DEFAULTS_SUITE_NAME);
-    CFStringRef key = CFSTR(DD_IS_PROFILING_ENABLED_KEY);
+    CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
+    CFStringRef isEnabledKey = CFSTR(DD_PROFILING_IS_ENABLED_KEY);
+    CFStringRef sampleRateKey = CFSTR(DD_PROFILING_SAMPLE_RATE_KEY);
 
-    CFPreferencesSetValue(key, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    CFPreferencesSetValue(isEnabledKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    CFPreferencesSetValue(sampleRateKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     CFPreferencesSynchronize(suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
 }
 
@@ -160,7 +173,6 @@ public:
         // Configure profiler
         sampling_config_t config = SAMPLING_CONFIG_DEFAULT;
         config.sampling_interval_nanos = sampling_interval_ns;
-        config.max_buffer_size = 10000; // Larger buffer to delay stack aggregation
 
         profiler = new mach_sampling_profiler(&config, callback, this);
         if (!profiler) {
@@ -247,25 +259,29 @@ static void ctor_profiler_auto_start() {
     delete_profiling_defaults();
 
     // Create profiler and start with sample rate
-    g_ctor_profiler = new dd::profiler::ctor_profiler(SAMPLING_RATE, is_active_prewarm());
+    g_ctor_profiler = new dd::profiler::ctor_profiler(read_profiling_sample_rate(), is_active_prewarm());
     g_ctor_profiler->start();
 }
 
 // C API implementations
 
 void ctor_profiler_stop(void) {
+    std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
     if (g_ctor_profiler) g_ctor_profiler->stop();
 }
 
 ctor_profiler_status_t ctor_profiler_get_status(void) {
-    return g_ctor_profiler ? g_ctor_profiler->status : CTOR_PROFILER_STATUS_NOT_STARTED;
+    std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
+    return g_ctor_profiler ? g_ctor_profiler->status : CTOR_PROFILER_STATUS_NOT_CREATED;
 }
 
 ctor_profile_t* ctor_profiler_get_profile(void) {
+    std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
     return g_ctor_profiler ? reinterpret_cast<ctor_profile_t*>(g_ctor_profiler->get_profile()) : nullptr;
 }
 
 void ctor_profiler_destroy(void) {
+    std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
     delete g_ctor_profiler;
     g_ctor_profiler = nullptr;
 }
@@ -275,6 +291,7 @@ extern "C" {
 #endif
 
 void ctor_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns) {
+    std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
     delete g_ctor_profiler;
     g_ctor_profiler = new dd::profiler::ctor_profiler(sample_rate, is_prewarming, timeout_ns);
     g_ctor_profiler->start();

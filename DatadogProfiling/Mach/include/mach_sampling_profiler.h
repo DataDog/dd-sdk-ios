@@ -12,6 +12,7 @@
 #ifdef __APPLE__
 
 #include <atomic>
+#include <mutex>
 #include <mach/mach.h>
 #include <mach/thread_act.h>
 #include <mach/thread_info.h>
@@ -116,6 +117,11 @@ private:
      * @brief Static entry point for the sampling thread
      */
     static void* sampling_thread_entry(void* arg);
+
+    /**
+     * @brief Mutex to protect start/stop operations from concurrent access
+     */
+    std::mutex state_mutex;
 };
 
 } // namespace dd::profiler

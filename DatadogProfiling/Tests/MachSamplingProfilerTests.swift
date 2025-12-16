@@ -173,32 +173,32 @@ final class MachSamplingProfilerTests: XCTestCase {
 
     // MARK: - Thread Safety Tests
 
-//    func testConcurrentStartStop_doesNotCrash() {
-//        // Given
-//        let profiler = profiler_create(nil, { _, _, _ in }, nil)
-//        XCTAssertNotNil(profiler)
-//
-//        let concurrentOperations = 10
-//        let expectation = XCTestExpectation(description: "Concurrent operations completed")
-//        expectation.expectedFulfillmentCount = concurrentOperations
-//
-//        // When
-//        DispatchQueue.concurrentPerform(iterations: concurrentOperations) { index in
-//            if index % 2 == 0 {
-//                _ = profiler_start(profiler)
-//            } else {
-//                profiler_stop(profiler)
-//            }
-//            expectation.fulfill()
-//        }
-//
-//        // Then
-//        wait(for: [expectation], timeout: 5.0)
-//
-//        // Cleanup
-//        profiler_stop(profiler) // Ensure stopped
-//        profiler_destroy(profiler)
-//    }
+    func testConcurrentStartStop_doesNotCrash() {
+        // Given
+        let profiler = profiler_create(nil, { _, _, _ in }, nil)
+        XCTAssertNotNil(profiler)
+
+        let concurrentOperations = 10
+        let expectation = XCTestExpectation(description: "Concurrent operations completed")
+        expectation.expectedFulfillmentCount = concurrentOperations
+
+        // When
+        DispatchQueue.concurrentPerform(iterations: concurrentOperations) { index in
+            if index % 2 == 0 {
+                _ = profiler_start(profiler)
+            } else {
+                profiler_stop(profiler)
+            }
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
+
+        // Cleanup
+        profiler_stop(profiler) // Ensure stopped
+        profiler_destroy(profiler)
+    }
 
     // MARK: - Error Handling Tests
 
@@ -383,7 +383,7 @@ final class MachSamplingProfilerTests: XCTestCase {
                     context.invalidTraceFound = trace.tid == 0 || // invalid thread ID
                         trace.timestamp == 0 || // invalid timestamp
                         trace.sampling_interval_nanos != 2_000_000 ||
-                        trace.frame_count >= 64 // exceed stack depth
+                        trace.frame_count > 64 // exceed stack depth
 
                     if trace.frame_count > 0 && trace.frames != nil {
                         let frames = UnsafeBufferPointer(start: trace.frames, count: Int(trace.frame_count))
