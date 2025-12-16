@@ -23,16 +23,12 @@ internal import KSCrashFilters
 /// Pass its instance as the crash reporting plugin for Datadog SDK to enable crash reporting feature.
 @objc
 internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
-    private let kscrash: KSCrash
+    private let store: CrashReportStore
     private let telemetry: Telemetry
 
     init(_ kscrash: KSCrash = .shared, telemetry: Telemetry = NOPTelemetry()) throws {
-        self.kscrash = kscrash
-        self.telemetry = telemetry
-
         do {
             try kscrash.install(with: .datadog())
-
             kscrash.reportStore?.sink = CrashReportFilterPipeline(
                 filters: [
                     DatadogTypeSafeFilter(),
@@ -43,20 +39,25 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
             )
         } catch KSCrashInstallError.alreadyInstalled {
             consolePrint("DatadogCrashReporting error: crash reporting is already installed", .warn)
+            telemetry.debug("[KSCrash] already installed")
         } catch {
+            telemetry.error("[KSCrash] Fails installation", error: error)
             throw error
         }
+
+        guard let store = kscrash.reportStore else {
+            throw CrashReportException(description: "[KSCrash] Report store should exist after installation")
+        }
+
+        self.telemetry = telemetry
+        self.store = store
+        super.init()
     }
 
     // MARK: - CrashReportingPlugin
 
     func readPendingCrashReport(completion: @escaping (DDCrashReport?) -> Bool) {
-        guard let store = kscrash.reportStore else {
-            _ = completion(nil)
-            return
-        }
-
-        store.sendAllReports { reports, error in
+        self.store.sendAllReports { reports, error in
             do {
                 if let error {
                     throw error
@@ -72,20 +73,22 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
                 }
 
                 if completion(report) {
-                    store.deleteAllReports()
+                    self.store.deleteAllReports()
                 }
             } catch {
                 _ = completion(nil)
+                self.store.deleteAllReports()
                 consolePrint("🔥 DatadogCrashReporting error: failed to load crash report: \(error)", .error)
+                self.telemetry.error("[KSCrash] Fails to load crash report", error: error)
             }
         }
     }
 
     func inject(context: Data) {
-        // Convert Data to base64 string for JSON serialization compatibility
-        // NSJSONSerialization doesn't support NSData directly
-        let contextBase64 = context.base64EncodedString()
-        kscrash.userInfo = [CrashField.dd.rawValue: contextBase64]
+        context.withUnsafeBytes {
+            let c_char = $0.bindMemory(to: CChar.self).baseAddress
+            kscrash_setUserInfoJSON(c_char)
+        }
     }
 
     var backtraceReporter: BacktraceReporting? { KSCrashBacktrace(telemetry: telemetry) }
@@ -103,6 +106,9 @@ extension KSCrashConfiguration {
 
         let config = KSCrashConfiguration()
         config.installPath = directory.path
+        // Disable `.mackException` monitor. The choice of `.BSD` (.signal) over `.mach` is well discussed here:
+        // https://github.com/microsoft/PLCrashReporter/blob/7f27b272d5ff0d6650fc41317127bb2378ed6e88/Source/CrashReporter.h#L238-L363
+        config.monitors = [.signal, .cppException, .nsException, .system]
         config.reportStoreConfiguration.maxReportCount = 1
         config.reportStoreConfiguration.reportCleanupPolicy = .never
         return config
