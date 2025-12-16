@@ -34,7 +34,6 @@ class DatadogCrashReportFilterTests: XCTestCase {
 
     func testFilterReports_ConvertsValidCrashReportToDDCrashReport() throws {
         // Given
-        let contextData = Data("test_context".utf8).base64EncodedString()
         let json = """
         {
             "report": {
@@ -82,7 +81,7 @@ class DatadogCrashReportFilterTests: XCTestCase {
                 }
             ],
             "user": {
-                "dd": "\(contextData)"
+                "dd": "🐶"
             }
         }
         """.data(using: .utf8)!
@@ -143,13 +142,12 @@ class DatadogCrashReportFilterTests: XCTestCase {
         XCTAssertFalse(binaryImage.isSystemLibrary, "MyApp should not be a system library")
 
         // Verify context
-        XCTAssertEqual(ddReport.context, Data("test_context".utf8), "Should decode context data")
+        XCTAssertEqual(ddReport.context, Data(#"{"dd":"🐶"}"#.utf8), "Should decode context data")
         XCTAssertFalse(ddReport.wasTruncated, "Should not be truncated by default")
     }
 
     func testFilterReports_HandlesMinimalCrashReport() throws {
         // Given
-        let contextData = Data("test".utf8).base64EncodedString()
         let json = """
         {
             "report": {
@@ -165,10 +163,7 @@ class DatadogCrashReportFilterTests: XCTestCase {
                 },
                 "threads": []
             },
-            "binary_images": [],
-            "user": {
-                "dd": "\(contextData)"
-            }
+            "binary_images": []
         }
         """.data(using: .utf8)!
 

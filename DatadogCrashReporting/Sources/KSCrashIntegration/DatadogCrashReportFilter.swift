@@ -171,11 +171,11 @@ internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
             ?? threads.first?.stack
             ?? "???"
 
-        // Extract Datadog-specific context data
-        // This was injected by the Datadog SDK and stored as base64 in the user data
-        let context = try Data(
-            base64Encoded: dict.value(String.self, forKey: .user, .dd)
-        )
+        // Extract injected context.
+        // Context is allowed to be missing but not malformed.
+        let context = try dict.valueIfPresent(CrashFieldDictionary.self, forKey: .user).map {
+            try JSONSerialization.data(withJSONObject: $0)
+        }
 
         return AnyCrashReport(
             DDCrashReport(
