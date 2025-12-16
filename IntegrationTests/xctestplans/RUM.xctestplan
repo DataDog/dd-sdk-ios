@@ -18,6 +18,8 @@
   "testTargets" : [
     {
       "selectedTests" : [
+        "RUMAlertScenarioTests\/testRUMAlertScenarioSwiftUI()",
+        "RUMAlertScenarioTests\/testRUMAlertScenarioUIKit()",
         "RUMFeatureOperationsScenarioTests\/testBasicFeatureOperation()",
         "RUMFeatureOperationsScenarioTests\/testConcurrentFeatureOperations()",
         "RUMFeatureOperationsScenarioTests\/testFeatureOperationAcrossMultipleViews()",
@@ -51,7 +53,7 @@
         "RUMSwiftUIManualInstrumentationScenarioTests\/testSwiftUIManualScenario()",
         "RUMSwiftUIScenarioTests\/testSwiftUIScenario()",
         "RUMTabBarControllerScenarioTests\/testRUMTabBarScenario()",
-        "RUMTapAcionScenarioTests\/testRUMTapActionScenario()"
+        "RUMTapActionScenarioTests\/testRUMTapActionScenario()"
       ],
       "target" : {
         "containerPath" : "container:IntegrationTests.xcodeproj",

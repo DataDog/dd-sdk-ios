@@ -311,6 +311,24 @@ final class RUMSwiftUIManualInstrumentationScenario: TestScenario {
     }
 }
 
+/// Scenario that presents a UIKit view controller with buttons to trigger several alerts and action sheets,
+/// and a button that loads a similar SwiftUI based view with additional buttons for doing the same.
+///
+/// The idea is testing tracking on alerts and action sheets, both in UIKit and SwiftUI.
+final class RUMAlertScenario: TestScenario {
+    static var storyboardName: String = "RUMAlertScenario"
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        config.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
+        config.swiftUIViewsPredicate = SwiftUIPredicate()
+        config.swiftUIActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: false)
+        RUM.enable(with: config)
+    }
+}
+
 // MARK: SwiftUI Auto-instrumentation
 /// Scenarios which presents `SwiftUI`-based hierarchies and navigate through its views.
 /// It uses the RUM Swift auto-instrumentation (or mixed instrumentations).

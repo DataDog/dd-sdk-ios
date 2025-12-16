@@ -12,6 +12,12 @@ internal extension UIViewController {
     var canonicalClassName: String {
         return NSStringFromClass(type(of: self))
     }
+
+    /// `true` if the view controller is an instance of `UIAlertController` or one of its subclasses,
+    /// `false` otherwise.
+    var isUIAlertController: Bool {
+        self is UIAlertController
+    }
 }
 
 internal extension UIView {
@@ -40,5 +46,23 @@ internal extension UIView {
 
     @objc var isSwiftUIView: Bool {
         return NSStringFromClass(type(of: self)).contains("SwiftUI")
+    }
+
+    /// `true` if this view is a button in a `UIAlertController`, `false` otherwise.
+    var isUIAlertActionView: Bool {
+        guard let actionViewClass = NSClassFromString("_UIAlertControllerActionView"),
+              self.isKind(of: actionViewClass) else {
+            return false
+        }
+        return true
+    }
+
+    /// `true` if this view is a text field in a `UIAlertController`, `false` otherwise.
+    var isUIAlertTextField: Bool {
+        guard let alertTextFieldClass = NSClassFromString("_UIAlertControllerTextField"),
+              self.isKind(of: alertTextFieldClass) else {
+            return false
+        }
+        return true
     }
 }
