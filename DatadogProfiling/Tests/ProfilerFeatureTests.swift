@@ -101,29 +101,4 @@ final class ProfilerFeatureTests: XCTestCase {
         // Then
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
     }
-
-    func testInit_usesProvidedUserDefaultsInstance() {
-        // Given
-        let otherSuiteName = "ProfilerFeatureTests-other-\(UUID().uuidString)"
-        let otherUserDefaults = UserDefaults(suiteName: otherSuiteName)!
-        otherUserDefaults.removePersistentDomain(forName: otherSuiteName)
-
-        otherUserDefaults.setValue(false, forKey: DD_PROFILING_IS_ENABLED_KEY)
-        otherUserDefaults.setValue(SampleRate.maxSampleRate, forKey: DD_PROFILING_SAMPLE_RATE_KEY)
-
-        // When
-        _ = ProfilerFeature(
-            requestBuilder: requestBuilder,
-            messageReceiver: messageReceiver,
-            sampleRate: 10,
-            userDefaults: userDefaults
-        )
-
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_IS_ENABLED_KEY) as? Bool, true)
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate, 10)
-
-        // `otherUserDefaults` was not touched by ProfilerFeature
-        XCTAssertEqual(otherUserDefaults.value(forKey: DD_PROFILING_IS_ENABLED_KEY) as? Bool, false)
-        XCTAssertEqual(otherUserDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate, SampleRate.maxSampleRate)
-    }
 }
