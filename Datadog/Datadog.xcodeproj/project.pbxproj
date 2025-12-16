@@ -16,10 +16,16 @@
 		11030D772D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */; };
 		110B0ECB2DF0ABC6008ABA19 /* DeterministicSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */; };
 		110B0ECC2DF0ABC6008ABA19 /* DeterministicSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */; };
+		110DD1B12EEB6BBD002F3B8B /* ProfilingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1B02EEB6BB5002F3B8B /* ProfilingConfiguration.swift */; };
+		110DD1B22EEB6BBD002F3B8B /* ProfilingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1B02EEB6BB5002F3B8B /* ProfilingConfiguration.swift */; };
+		110DD1B42EEB7090002F3B8B /* ProfilingConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1B32EEB7080002F3B8B /* ProfilingConfigurationTests.swift */; };
+		110DD1B52EEB7090002F3B8B /* ProfilingConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1B32EEB7080002F3B8B /* ProfilingConfigurationTests.swift */; };
 		110DD1B72EEC3E45002F3B8B /* SafeReadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */; };
 		110DD1B82EEC3E45002F3B8B /* SafeReadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */; };
 		110DD1BA2EEC3EE7002F3B8B /* safe_read_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */; };
 		110DD1BB2EEC3EE7002F3B8B /* safe_read_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */; };
+		110DD1BD2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1BC2EEC708E002F3B8B /* ProfilerFeatureTests.swift */; };
+		110DD1BE2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1BC2EEC708E002F3B8B /* ProfilerFeatureTests.swift */; };
 		111201C12E93C13000375DA3 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BF2E93C13000375DA3 /* AppStateManager.swift */; };
 		111201C22E93C13000375DA3 /* AppStateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BE2E93C13000375DA3 /* AppStateInfo.swift */; };
 		111201C32E93C13000375DA3 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BF2E93C13000375DA3 /* AppStateManager.swift */; };
@@ -1340,10 +1346,10 @@
 		D23354FD2A42E32000AFCAE2 /* InternalExtended.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */; };
 		D233E7C42E4625D400E7CFDE /* RequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7C32E4625D400E7CFDE /* RequestBuilder.swift */; };
 		D233E7C52E4625D400E7CFDE /* ProfileEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7C22E4625D400E7CFDE /* ProfileEvent.swift */; };
-		D233E7C62E4625D400E7CFDE /* DatadogProfiling.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7C12E4625D400E7CFDE /* DatadogProfiling.swift */; };
+		D233E7C62E4625D400E7CFDE /* Profiling.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7C12E4625D400E7CFDE /* Profiling.swift */; };
 		D233E7C72E4625D400E7CFDE /* RequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7C32E4625D400E7CFDE /* RequestBuilder.swift */; };
 		D233E7C82E4625D400E7CFDE /* ProfileEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7C22E4625D400E7CFDE /* ProfileEvent.swift */; };
-		D233E7C92E4625D400E7CFDE /* DatadogProfiling.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7C12E4625D400E7CFDE /* DatadogProfiling.swift */; };
+		D233E7C92E4625D400E7CFDE /* Profiling.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7C12E4625D400E7CFDE /* Profiling.swift */; };
 		D233E7CB2E46264600E7CFDE /* ProfilerFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7CA2E46264500E7CFDE /* ProfilerFeature.swift */; };
 		D233E7CC2E46264600E7CFDE /* ProfilerFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7CA2E46264500E7CFDE /* ProfilerFeature.swift */; };
 		D233E7CE2E4627B100E7CFDE /* MultipartFormData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D233E7CD2E4627B100E7CFDE /* MultipartFormData.swift */; };
@@ -2655,8 +2661,11 @@
 /* Begin PBXFileReference section */
 		11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesMetric.swift; sourceTree = "<group>"; };
 		110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSampler.swift; sourceTree = "<group>"; };
+		110DD1B02EEB6BB5002F3B8B /* ProfilingConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingConfiguration.swift; sourceTree = "<group>"; };
+		110DD1B32EEB7080002F3B8B /* ProfilingConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingConfigurationTests.swift; sourceTree = "<group>"; };
 		110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeReadTests.swift; sourceTree = "<group>"; };
 		110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = safe_read_testing.h; sourceTree = "<group>"; };
+		110DD1BC2EEC708E002F3B8B /* ProfilerFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilerFeatureTests.swift; sourceTree = "<group>"; };
 		111201BE2E93C13000375DA3 /* AppStateInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateInfo.swift; sourceTree = "<group>"; };
 		111201BF2E93C13000375DA3 /* AppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManager.swift; sourceTree = "<group>"; };
 		1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAttributesIntegrationTests.swift; sourceTree = "<group>"; };
@@ -3582,7 +3591,7 @@
 		D23039DC298D5235001A1FA3 /* DDError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDError.swift; sourceTree = "<group>"; };
 		D2303A09298D5412001A1FA3 /* AsyncWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncWriter.swift; sourceTree = "<group>"; };
 		D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalExtended.swift; sourceTree = "<group>"; };
-		D233E7C12E4625D400E7CFDE /* DatadogProfiling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogProfiling.swift; sourceTree = "<group>"; };
+		D233E7C12E4625D400E7CFDE /* Profiling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profiling.swift; sourceTree = "<group>"; };
 		D233E7C22E4625D400E7CFDE /* ProfileEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEvent.swift; sourceTree = "<group>"; };
 		D233E7C32E4625D400E7CFDE /* RequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestBuilder.swift; sourceTree = "<group>"; };
 		D233E7CA2E46264500E7CFDE /* ProfilerFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilerFeature.swift; sourceTree = "<group>"; };
@@ -6856,15 +6865,15 @@
 		D229FF5B2E3BA298009CCD62 /* Mach */ = {
 			isa = PBXGroup;
 			children = (
-				D229FF5A2E3BA298009CCD62 /* include */,
-				D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */,
-				D233E8012E4B653F00E7CFDE /* dd_pprof.cpp */,
-				D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */,
-				D2883AAB2E6AF01000880363 /* ctor_profiler.cpp */,
-				D233E7E72E4B588000E7CFDE /* profile.cpp */,
-				D233E7E92E4B588000E7CFDE /* profile_pprof_packer.cpp */,
 				D233E7EB2E4B588000E7CFDE /* profile.pb-c.c */,
 				D233E7ED2E4B588000E7CFDE /* protobuf-c.c */,
+				D2883AAB2E6AF01000880363 /* ctor_profiler.cpp */,
+				D233E8012E4B653F00E7CFDE /* dd_pprof.cpp */,
+				D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */,
+				D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */,
+				D233E7E92E4B588000E7CFDE /* profile_pprof_packer.cpp */,
+				D233E7E72E4B588000E7CFDE /* profile.cpp */,
+				D229FF5A2E3BA298009CCD62 /* include */,
 			);
 			name = Mach;
 			path = ../Mach;
@@ -7395,9 +7404,10 @@
 			isa = PBXGroup;
 			children = (
 				D274657A2E7B199A00C47FE2 /* AppLaunchProfiler.swift */,
-				D233E7C12E4625D400E7CFDE /* DatadogProfiling.swift */,
 				D233E7C22E4625D400E7CFDE /* ProfileEvent.swift */,
 				D233E7CA2E46264500E7CFDE /* ProfilerFeature.swift */,
+				D233E7C12E4625D400E7CFDE /* Profiling.swift */,
+				110DD1B02EEB6BB5002F3B8B /* ProfilingConfiguration.swift */,
 				D233E7C32E4625D400E7CFDE /* RequestBuilder.swift */,
 				1126B2512EBAB22600A74226 /* PrivacyInfo.xcprivacy */,
 				D229FF5B2E3BA298009CCD62 /* Mach */,
@@ -7418,6 +7428,8 @@
 				D2E937302E53368E00FECA76 /* ProfileCxxTests.swift */,
 				D262DA642E7D5D0F002A94C9 /* ProfileEventTests.swift */,
 				D2E937332E535B6400FECA76 /* ProfileMocks.swift */,
+				110DD1BC2EEC708E002F3B8B /* ProfilerFeatureTests.swift */,
+				110DD1B32EEB7080002F3B8B /* ProfilingConfigurationTests.swift */,
 				D233E7DD2E4A109100E7CFDE /* ProfilingTest.swift */,
 				D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */,
 				110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */,
@@ -10015,10 +10027,11 @@
 				D2D0E1FE2E3CE73700BA4113 /* mach_sampling_profiler.cpp in Sources */,
 				D2883AAD2E6AF01000880363 /* ctor_profiler.cpp in Sources */,
 				D233E7CB2E46264600E7CFDE /* ProfilerFeature.swift in Sources */,
+				110DD1B12EEB6BBD002F3B8B /* ProfilingConfiguration.swift in Sources */,
 				D233E7C72E4625D400E7CFDE /* RequestBuilder.swift in Sources */,
 				D233E7C82E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
 				D233E8032E4B653F00E7CFDE /* dd_pprof.cpp in Sources */,
-				D233E7C92E4625D400E7CFDE /* DatadogProfiling.swift in Sources */,
+				D233E7C92E4625D400E7CFDE /* Profiling.swift in Sources */,
 				D2D0E1F32E3CE59700BA4113 /* mach_profiler.cpp in Sources */,
 				D233E7F62E4B588000E7CFDE /* profile.pb-c.c in Sources */,
 				D233E7F72E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */,
@@ -10035,10 +10048,11 @@
 				D2D0E1F82E3CE73700BA4113 /* mach_sampling_profiler.cpp in Sources */,
 				D2883AAC2E6AF01000880363 /* ctor_profiler.cpp in Sources */,
 				D233E7CC2E46264600E7CFDE /* ProfilerFeature.swift in Sources */,
+				110DD1B22EEB6BBD002F3B8B /* ProfilingConfiguration.swift in Sources */,
 				D233E7C42E4625D400E7CFDE /* RequestBuilder.swift in Sources */,
 				D233E7C52E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
 				D233E8022E4B653F00E7CFDE /* dd_pprof.cpp in Sources */,
-				D233E7C62E4625D400E7CFDE /* DatadogProfiling.swift in Sources */,
+				D233E7C62E4625D400E7CFDE /* Profiling.swift in Sources */,
 				D2D0E1F22E3CE59700BA4113 /* mach_profiler.cpp in Sources */,
 				D233E7EE2E4B588000E7CFDE /* profile.pb-c.c in Sources */,
 				D233E7EF2E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */,
@@ -10974,6 +10988,9 @@
 				D262DA662E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,
 				D233E7DE2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
 				D2D0E2192E40E34A00BA4113 /* MockThread.swift in Sources */,
+				110DD1B52EEB7090002F3B8B /* ProfilingConfigurationTests.swift in Sources */,
+				D2D0E2192E40E34A00BA4113 /* MockThread.swift in Sources */,
+				110DD1BE2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */,
 				D27465832E7BFEC600C47FE2 /* AppLaunchProfilerTests.swift in Sources */,
 				D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
 				D2D0E20E2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */,
@@ -10993,6 +11010,9 @@
 				D262DA652E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,
 				D233E7DF2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
 				D2D0E21A2E40E34A00BA4113 /* MockThread.swift in Sources */,
+				110DD1B42EEB7090002F3B8B /* ProfilingConfigurationTests.swift in Sources */,
+				D2D0E21A2E40E34A00BA4113 /* MockThread.swift in Sources */,
+				110DD1BD2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */,
 				D27465842E7BFEC600C47FE2 /* AppLaunchProfilerTests.swift in Sources */,
 				D2D0E2042E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
 				D2D0E20F2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */,
