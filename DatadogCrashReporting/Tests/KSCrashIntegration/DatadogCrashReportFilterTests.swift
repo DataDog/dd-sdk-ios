@@ -64,7 +64,7 @@ class DatadogCrashReportFilterTests: XCTestCase {
                             "contents": [
                                 {
                                     "instruction_addr": 4096,
-                                    "symbol_addr": 4000,
+                                    "object_addr": 4000,
                                     "object_name": "MyApp"
                                 }
                             ]
@@ -77,7 +77,9 @@ class DatadogCrashReportFilterTests: XCTestCase {
                     "name": "/var/containers/Bundle/Application/MyApp/MyApp",
                     "uuid": "12345678-1234-1234-1234-123456789012",
                     "image_addr": 4096,
-                    "image_size": 8192
+                    "image_size": 8192,
+                    "cpu_type": 16777228,
+                    "cpu_subtype": 0
                 }
             ],
             "user": {
@@ -211,7 +213,7 @@ class DatadogCrashReportFilterTests: XCTestCase {
                             "contents": [
                                 {
                                     "instruction_addr": 1000,
-                                    "symbol_addr": 900,
+                                    "object_addr": 900,
                                     "object_name": "libsystem"
                                 }
                             ]
@@ -224,12 +226,12 @@ class DatadogCrashReportFilterTests: XCTestCase {
                             "contents": [
                                 {
                                     "instruction_addr": 5000,
-                                    "symbol_addr": 4900,
+                                    "object_addr": 4900,
                                     "object_name": "MyFramework"
                                 },
                                 {
                                     "instruction_addr": 5120,
-                                    "symbol_addr": 4900,
+                                    "object_addr": 4900,
                                     "object_name": "MyFramework"
                                 }
                             ]
@@ -311,13 +313,17 @@ class DatadogCrashReportFilterTests: XCTestCase {
                     "name": "/Contents/Developer/Platforms/Frameworks/Foundation.framework/Foundation",
                     "uuid": "12345678-1234-1234-1234-123456789ABC",
                     "image_addr": 4096,
-                    "image_size": 8192
+                    "image_size": 8192,
+                    "cpu_type": 16777228,
+                    "cpu_subtype": 0
                 },
                 {
                     "name": "/var/containers/Bundle/Application/MyApp/MyApp",
                     "uuid": "ABCDEF01-2345-6789-ABCD-EF0123456789",
                     "image_addr": 16384,
-                    "image_size": 32768
+                    "image_size": 32768,
+                    "cpu_type": 16777228,
+                    "cpu_subtype": 0
                 }
             ],
             "user": {
@@ -381,7 +387,7 @@ class DatadogCrashReportFilterTests: XCTestCase {
                             "contents": [
                                 {
                                     "instruction_addr": 1000,
-                                    "symbol_addr": 900,
+                                    "object_addr": 900,
                                     "object_name": "MyApp"
                                 }
                             ],

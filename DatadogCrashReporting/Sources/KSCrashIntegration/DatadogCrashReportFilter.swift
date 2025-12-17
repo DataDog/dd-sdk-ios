@@ -87,7 +87,6 @@ internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
         // Extract required crash and system information
         let system: CrashFieldDictionary = try dict.value(forKey: .system)
         let crash: CrashFieldDictionary = try dict.value(forKey: .crash)
-        let arch: String = try system.value(forKey: .cpuArch)
 
         // Build crash type string from signal information
         // Format: "SIGNAL_NAME (SIGNAL_CODE)" e.g., "SIGSEGV (SEGV_MAPERR)"
@@ -123,11 +122,14 @@ internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
 
             let imageAddress: UInt64 = try image.value(forKey: .imageAddress)
             let imageSize: UInt64 = try image.value(forKey: .imageSize)
+            let cpuType: cpu_type_t = try image.value(forKey: .cpuType)
+            let cpuSubType: cpu_subtype_t = try image.value(forKey: .cpuSubType)
+            let architecture = String(cString: kscpu_archForCPU(cpuType, cpuSubType))
 
             return try BinaryImage(
                 libraryName: path.lastPathComponent,
                 uuid: image.value(forKey: .uuid),
-                architecture: arch,
+                architecture: architecture,
                 path: path,
                 loadAddress: imageAddress,
                 maxAddress: imageAddress + imageSize
@@ -139,19 +141,19 @@ internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
         // Transform thread information with stack traces
         // Each thread contains a backtrace showing the call stack at crash time
         let threads: [DDThread] = try crash.value([CrashFieldDictionary].self, forKey: .threads).map { thread in
-            // Format each stack frame: "index objectName instructionAddr symbolAddr + offset"
+            // Format each stack frame: "index objectName instructionAddr objectAddr + offset"
             let backtrace: [String] = try thread.value([CrashFieldDictionary].self, forKey: .backtrace, .contents).enumerated().compactMap { index, frame in
                 let instructionAddr: Int64 = try frame.value(forKey: .instructionAddr)
 
                 guard
-                    let symbolAddr: Int64 = try frame.valueIfPresent(forKey: .symbolAddr),
+                    let objectAddr: Int64 = try frame.valueIfPresent(forKey: .objectAddr),
                     let objectName: NSString = try frame.valueIfPresent(forKey: .objectName)
                 else {
                     return String(format: "%-4ld ??? 0x%016llx 0x0 + 0", index, instructionAddr)
                 }
 
-                // Format: frame_index (4 chars left-aligned) + library_name (35 chars left-aligned) + addresses + offset
-                return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, objectName, instructionAddr, symbolAddr, instructionAddr - symbolAddr)
+                // Format: frame_index (4 chars left-aligned) + library_name (35 chars left-aligned) + instruction_addr + image_base_addr + offset
+                return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, objectName, instructionAddr, objectAddr, instructionAddr - objectAddr)
             }
 
             let index: Int64 = try thread.value(forKey: .index)
