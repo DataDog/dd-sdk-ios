@@ -53,32 +53,34 @@ internal struct KSCrashBacktrace: BacktraceReporting {
         let stack = (0..<count).compactMap { index in
             let address = addresses[index]
 
-            var symbolInfo = SymbolInformation()
             guard
-                symbolicate(address: address, result: &symbolInfo),
-                let imageName = symbolInfo.imageName,
+                let binaryImage = symbolicate(address: address),
+                let imageName = binaryImage.name,
                 let path = NSString(utf8String: imageName),
-                let imageUUID = symbolInfo.imageUUID
+                let imageUUID = binaryImage.uuid
             else {
                 return String(format: "%-4ld ??? 0x%016llx 0x0 + 0", index, address) // no binary image info
             }
 
             let libraryName = path.lastPathComponent
-            let loadAddress = UInt64(symbolInfo.imageAddress)
-
+            let loadAddress = binaryImage.address
             let uuid = UUID(uuid: imageUUID.withMemoryRebound(to: uuid_t.self, capacity: 1) { $0.pointee })
 
+            // Get architecture from binary image's CPU type
+            let architecture = String(cString: kscpu_archForCPU(
+                cpu_type_t(binaryImage.cpuType),
+                cpu_subtype_t(binaryImage.cpuSubType)
+            ))
+
             if binaryImages[loadAddress] == nil {
-                let binaryImage = BinaryImage(
+                binaryImages[loadAddress] = BinaryImage(
                     libraryName: libraryName,
                     uuid: uuid.uuidString,
-                    architecture: String(cString: kscpu_currentArch()),
+                    architecture: architecture,
                     path: path,
                     loadAddress: loadAddress,
-                    maxAddress: loadAddress + symbolInfo.imageSize
+                    maxAddress: loadAddress + binaryImage.size
                 )
-
-                binaryImages[loadAddress] = binaryImage
             }
 
             // Format: frame_index (4 chars left-aligned) + library_name (35 chars left-aligned) + addresses + offset
@@ -111,4 +113,38 @@ internal struct KSCrashBacktrace: BacktraceReporting {
         }
         return String(cString: buffer)
     }
+}
+
+/// Symbolicate an address and return full binary image information including CPU type.
+///
+/// This function bypasses KSCrash's `ksbt_symbolicateAddress()` because that function only
+/// returns a subset of binary image information via `KSSymbolInformation`, which lacks the
+/// CPU type and subtype fields. Instead, we directly call the underlying `ksdl_*` functions
+/// to get the complete `KSBinaryImage` struct, which includes `cpuType` and `cpuSubType`.
+/// This allows us to determine the correct architecture (arm64, arm64e, etc.) for each
+/// binary image, which is critical for accurate stacktrace symbolication.
+private func symbolicate(address: uintptr_t) -> KSBinaryImage? {
+    // initalize the binary image cache.
+    // this has an atomic check so isn't expensive
+    // except for the first call.
+    ksbic_init()
+
+    let untaggedAddress = kssymbolicator_callInstructionAddress(address)
+
+    var info = Dl_info()
+    guard
+        ksdl_dladdr(untaggedAddress, &info),
+        let baseAddress = info.dli_fbase,
+        let fileName = info.dli_fname
+    else {
+        return nil
+    }
+
+    // Get full binary image info including CPU type
+    var binaryImage = KSBinaryImage()
+    guard ksdl_binaryImageForHeader(baseAddress, fileName, &binaryImage) else {
+        return nil
+    }
+
+    return binaryImage
 }
