@@ -255,12 +255,12 @@ static void ctor_profiler_auto_start() {
         return;
     }
 
-    // Reset profiling defaults to be re-evaluated again
-    delete_profiling_defaults();
-
     // Create profiler and start with sample rate
     g_ctor_profiler = new dd::profiler::ctor_profiler(read_profiling_sample_rate(), is_active_prewarm());
     g_ctor_profiler->start();
+
+    // Reset profiling defaults to be re-evaluated again
+    delete_profiling_defaults();
 }
 
 // C API implementations
