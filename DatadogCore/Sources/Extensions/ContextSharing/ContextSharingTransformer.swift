@@ -7,9 +7,9 @@
 import DatadogInternal
 
 internal final class ContextSharingTransformer: FeatureMessageReceiver, ContextValuePublisher {
-    private let queue = DispatchQueue(label: "com.datadog.context-sharing-transformer")
-
+    @ReadWriteLock
     private var sharedContext: SharedContext? = nil
+    @ReadWriteLock
     private var receiver: ContextValueReceiver<SharedContext?>? = nil
 
     // MARK: - FeatureMessageReceiver
@@ -18,13 +18,8 @@ internal final class ContextSharingTransformer: FeatureMessageReceiver, ContextV
         switch message {
         case .context(let context):
             let newContext = SharedContext(datadogContext: context)
-            queue.sync {
-                sharedContext = newContext
-            }
-
-            // Call receiver outside of queue.sync to avoid potential deadlocks
-            let currentReceiver = queue.sync { receiver }
-            currentReceiver?(newContext)
+            sharedContext = newContext
+            receiver?(newContext)
             return true
         default:
             return false
@@ -36,16 +31,11 @@ internal final class ContextSharingTransformer: FeatureMessageReceiver, ContextV
     var initialValue: SharedContext? = nil
 
     func publish(to receiver: @escaping ContextValueReceiver<SharedContext?>) {
-        let currentContext = queue.sync { sharedContext }
-        queue.sync {
-            self.receiver = receiver
-            receiver(currentContext)
-        }
+        self.receiver = receiver
+        receiver(sharedContext)
     }
 
     func cancel() {
-        queue.sync {
-            receiver = nil
-        }
+        receiver = nil
     }
 }

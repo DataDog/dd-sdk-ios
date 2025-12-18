@@ -7,10 +7,10 @@
 import Foundation
 import DatadogInternal
 
-/// Objective-C extension for subscribing to Datadog context updates.
+///  for additional core capabilties only exposed Internally.
 ///
-/// This class provides cross-platform libraries with the ability to receive real-time updates
-/// to the Datadog shared context from Objective-C code.
+/// Extension provides cross-platform libraries with additional Internal-only capabilities.
+/// It's also expoed in Objective-C, mainly for KMP support.
 ///
 /// Note: It only works for single core setup, relying on `CoreRegistry.default` existence.
 @objc(DDCrossPlatformExtension)
@@ -22,7 +22,8 @@ public final class CrossPlatformExtension: NSObject {
     /// Subscribes to shared context updates.
     ///
     /// The provided closure will be called immediately with the current context (or `nil` if no context yet),
-    /// and subsequently whenever the context changes.
+    /// and subsequently whenever the context changes. It lazy loads static instance of `ContextSharingTransformer`
+    /// and registers `ContextSharingFeature`.
     ///
     /// - Parameter toSharedContext: A closure that receives `SharedContext` updates. Called on context changes.
     @objc
@@ -36,8 +37,12 @@ public final class CrossPlatformExtension: NSObject {
         contextSharingTransformer?.publish(to: toSharedContext)
     }
 
+    /// Drops the subscription to `SharedContext`, and removes the static refrence.
+    ///
+    /// Note: that it doesn't remove the registered feature.
     @objc
     public static func unsubscribeFromSharedContext() {
+        contextSharingTransformer?.cancel()
         contextSharingTransformer = nil
     }
 }

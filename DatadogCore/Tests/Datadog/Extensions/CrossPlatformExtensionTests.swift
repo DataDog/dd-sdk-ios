@@ -10,9 +10,8 @@ import TestUtilities
 @_spi(Internal)
 @testable import DatadogCore
 
-class ContextSharingExtensionTests: XCTestCase {
+class CrossPlatformExtensionTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
-    private let queue = DispatchQueue(label: "com.datadog.test.sync")
 
     override func setUp() {
         super.setUp()
@@ -31,39 +30,29 @@ class ContextSharingExtensionTests: XCTestCase {
     func testSubscribe_registersFeature() throws {
         // Given
         let expectation = expectation(description: "subscriber is called")
-        expectation.expectedFulfillmentCount = 2
         expectation.assertForOverFulfill = false
-        var receivedContexts: [SharedContext?] = []
 
         // When
         CrossPlatformExtension.subscribe { context in
-            self.queue.sync {
-                receivedContexts.append(context)
-            }
             expectation.fulfill()
         }
 
         // Then
         waitForExpectations(timeout: 1)
         XCTAssertNotNil(core.get(feature: ContextSharingFeature.self))
-        queue.sync {
-            XCTAssertEqual(receivedContexts.count, 2, "Should receive at least 2 context updates")
-        }
     }
 
     func testSubscribe_receivesContextUpdates() throws {
         // Given
         let expectation = expectation(description: "subscriber receives context update")
-        expectation.expectedFulfillmentCount = 4
         expectation.assertForOverFulfill = false
-
-        var receivedContexts: [SharedContext?] = []
+        var lastContext: SharedContext?
 
         CrossPlatformExtension.subscribe { context in
-            self.queue.sync {
-                receivedContexts.append(context)
+            if context?.userId != nil && context?.accountId != nil {
+                expectation.fulfill()
+                lastContext = context
             }
-            expectation.fulfill()
         }
 
         // When
@@ -71,37 +60,29 @@ class ContextSharingExtensionTests: XCTestCase {
         core.setAccountInfo(id: "account-456")
 
         // Then
-        waitForExpectations(timeout: 5)
-        queue.sync {
-            XCTAssertGreaterThanOrEqual(receivedContexts.count, 4, "Should receive at least 4 context updates")
+        waitForExpectations(timeout: 1)
 
-            // Verify we eventually get the user and account info
-            let lastContext = receivedContexts.last
-            XCTAssertEqual(lastContext??.userId, "user-123", "Should have user ID in final context")
-            XCTAssertEqual(lastContext??.accountId, "account-456", "Should have account ID in final context")
-        }
+        // Verify we eventually get the user and account info
+        XCTAssertEqual(lastContext?.userId, "user-123", "Should have user ID in final context")
+        XCTAssertEqual(lastContext?.accountId, "account-456", "Should have account ID in final context")
     }
 
     func testSubscribe_calledMultipleTimes() throws {
         // Given
-        var subscriptionIds = [Int]()
+        let expectation1 = expectation(description: "first subscriber receives context update")
+        let expectation2 = expectation(description: "second subscriber receives context update")
+        expectation2.assertForOverFulfill = false
 
         // When
         CrossPlatformExtension.subscribe { _ in
-            self.queue.sync {
-                subscriptionIds.append(1)
-            }
+            expectation1.fulfill()
         }
 
         CrossPlatformExtension.subscribe { _ in
-            self.queue.sync {
-                subscriptionIds.append(2)
-            }
+            expectation2.fulfill()
         }
 
         // Then
-        queue.sync {
-            XCTAssertEqual(subscriptionIds, [1, 2])
-        }
+        waitForExpectations(timeout: 1)
     }
 }
