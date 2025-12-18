@@ -9,7 +9,7 @@ import DatadogInternal
 
 internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     struct Constants {
-        /// If no activity is observed within this period in a discrete (discontinous) User Action, it is condiered ended.
+        /// If no activity is observed within this period in a discrete (discontinuous) User Action, it is considered ended.
         /// The activity may be i.e. due to Resource started loading.
         static let discreteActionTimeoutDuration: TimeInterval = 0.1 // 100 milliseconds
         /// Maximum duration of a continuous User Action. If it gets exceeded, a new session is started.
@@ -167,7 +167,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 error: .init(count: errorsCount.toInt64),
                 frustration: frustrations.map { .init(type: $0) },
                 id: actionUUID.toRUMDataFormat,
-                loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
+                loadingTime: completionTime.timeIntervalSince(actionStartTime).dd.toInt64Nanoseconds,
                 longTask: .init(count: longTasksCount),
                 resource: .init(count: resourcesCount.toInt64),
                 target: .init(name: name),
@@ -180,7 +180,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             connectivity: .init(context: context),
             container: nil,
             context: .init(contextInfo: command.globalAttributes.merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
-            date: actionStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            date: actionStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,

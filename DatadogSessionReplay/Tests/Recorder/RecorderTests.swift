@@ -12,7 +12,7 @@ import TestUtilities
 @testable import DatadogSessionReplay
 
 class RecorderTests: XCTestCase {
-    func testAfterCapturingSnapshot_itIsPassesToProcessor() throws {
+    func testAfterCapturingSnapshot_itIsPassedToProcessor() throws {
         let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom(count: 1)
         let mockTouchSnapshots: [TouchSnapshot] = .mockRandom(count: 1)
         let snapshotProcessor = SnapshotProcessorSpy()
@@ -88,7 +88,7 @@ class RecorderTests: XCTestCase {
     }
 
     // MARK: Touch Snapshot Recording
-    func testAfterCapturingSnapshot_withTouchPrivacyShow_itIsPassesToProcessor() throws {
+    func testAfterCapturingSnapshot_withTouchPrivacyShow_itIsPassedToProcessor() throws {
         let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom(count: 1)
         let mockTouchSnapshots: [TouchSnapshot] = .mockRandom(count: 1)
         let snapshotProcessor = SnapshotProcessorSpy()

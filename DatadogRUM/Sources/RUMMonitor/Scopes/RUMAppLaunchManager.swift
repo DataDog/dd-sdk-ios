@@ -21,7 +21,7 @@ internal class RUMAppLaunchManager {
 
     private var timeToInitialDisplay: Double?
     private var timeToFullDisplay: Double?
-    private var startupType: RUMVitalEvent.Vital.AppLaunchProperties.StartupType?
+    private var startupType: RUMVitalAppLaunchEvent.Vital.StartupType?
 
     private lazy var startupTypeHandler = StartupTypeHandler(appStateManager: dependencies.appStateManager)
 
@@ -56,6 +56,7 @@ private extension RUMAppLaunchManager {
         }
 
         self.timeToInitialDisplay = ttid
+        let ttidVitalId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
 
         dependencies.appStateManager.currentAppStateInfo { [weak self] currentAppStateInfo in
             guard let self else {
@@ -69,7 +70,8 @@ private extension RUMAppLaunchManager {
             self.startupType = startupType
 
             self.writeVitalEvent(
-                duration: Double(ttid.toInt64Nanoseconds),
+                vitalId: ttidVitalId,
+                duration: Double(ttid.dd.toInt64Nanoseconds),
                 appLaunchMetric: .ttid,
                 startupType: startupType,
                 attributes: attributes,
@@ -82,7 +84,8 @@ private extension RUMAppLaunchManager {
             if let timeToFullDisplay {
                 let ttfd = max(ttid, timeToFullDisplay)
                 self.writeVitalEvent(
-                    duration: Double(ttfd.toInt64Nanoseconds),
+                    vitalId: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                    duration: Double(ttfd.dd.toInt64Nanoseconds),
                     appLaunchMetric: .ttfd,
                     startupType: startupType,
                     attributes: attributes,
@@ -102,7 +105,7 @@ private extension RUMAppLaunchManager {
 
         // Ignore command if the time since the SDK load is too big
         guard let runtimeLoadDate = context.launchInfo.launchPhaseDates[.runtimeLoad],
-              command.time.timeIntervalSince(runtimeLoadDate) < Constants.maxTTIDDuration else {
+              (0..<Constants.maxTTIDDuration).contains(command.time.timeIntervalSince(runtimeLoadDate)) else {
             return false
         }
 
@@ -130,26 +133,25 @@ private extension RUMAppLaunchManager {
     }
 
     func writeVitalEvent(
+        vitalId: String,
         duration: TimeInterval,
-        appLaunchMetric: RUMVitalEvent.Vital.AppLaunchProperties.AppLaunchMetric,
-        startupType: RUMVitalEvent.Vital.AppLaunchProperties.StartupType,
+        appLaunchMetric: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric,
+        startupType: RUMVitalAppLaunchEvent.Vital.StartupType,
         attributes: [AttributeKey: AttributeValue],
         context: DatadogContext,
         writer: Writer,
         activeView: RUMViewScope?
     ) {
-        let vital = RUMVitalEvent.Vital.appLaunchProperties(
-            value: RUMVitalEvent.Vital.AppLaunchProperties(
+        let vital = RUMVitalAppLaunchEvent.Vital(
                 appLaunchMetric: appLaunchMetric,
                 duration: duration,
-                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                id: vitalId,
                 isPrewarmed: context.launchInfo.launchReason == .prewarming,
                 name: appLaunchMetric.name,
                 startupType: startupType
-            )
         )
 
-        let vitalEvent = RUMVitalEvent(
+        let vitalEvent = RUMVitalAppLaunchEvent(
             dd: .init(),
             account: .init(context: context),
             application: .init(id: parent.context.rumApplicationID),
@@ -158,7 +160,7 @@ private extension RUMAppLaunchManager {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: RUMEventAttributes(contextInfo: attributes),
-            date: context.launchInfo.processLaunchDate.timeIntervalSince1970.toInt64Milliseconds,
+            date: context.launchInfo.processLaunchDate.timeIntervalSince1970.dd.toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             os: context.os,
@@ -198,7 +200,8 @@ private extension RUMAppLaunchManager {
             let ttfd = max(timeToInitialDisplay, timeToFullDisplay)
 
             self.writeVitalEvent(
-                duration: Double(ttfd.toInt64Nanoseconds),
+                vitalId: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                duration: Double(ttfd.dd.toInt64Nanoseconds),
                 appLaunchMetric: .ttfd,
                 startupType: startupType,
                 attributes: attributes,
@@ -212,13 +215,12 @@ private extension RUMAppLaunchManager {
     func shouldProcess(command: RUMTimeToFullDisplayCommand, context: DatadogContext) -> Bool {
         // Ignore command if the time to full display was already written
         guard self.timeToFullDisplay == nil else {
-            DD.logger.warn("Time to Full Display was already processed. Make sure the `reportAppFullyDisplayed()` API is only called once.")
             return false
         }
 
         // Ignore command if the time since the SDK load is too big
         guard let runtimeLoadDate = context.launchInfo.launchPhaseDates[.runtimeLoad],
-              command.time.timeIntervalSince(runtimeLoadDate) < Constants.maxTTFDDuration else {
+              (0..<Constants.maxTTFDDuration).contains(command.time.timeIntervalSince(runtimeLoadDate)) else {
             return false
         }
 
@@ -226,7 +228,7 @@ private extension RUMAppLaunchManager {
     }
 }
 
-private extension RUMVitalEvent.Vital.AppLaunchProperties.AppLaunchMetric {
+private extension RUMVitalAppLaunchEvent.Vital.AppLaunchMetric {
     var name: String {
         switch self {
         case .ttid: return "time_to_initial_display"

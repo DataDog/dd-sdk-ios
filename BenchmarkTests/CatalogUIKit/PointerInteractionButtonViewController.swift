@@ -1,8 +1,8 @@
 /*
-See LICENSE folder for this sample’s licensing information.
+See LICENSE folder for this sample's licensing information.
 
 Abstract:
-A view controller that demonstrates how to intergrate pointer interactions to `UIButton`.
+A view controller that demonstrates how to integrate pointer interactions to `UIButton`.
 */
 
 import UIKit

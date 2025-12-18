@@ -50,6 +50,7 @@ public final class objc_Configuration: NSObject
     public var env: String
     public var site: objc_DatadogSite
     public var service: String?
+    public var version: String?
     public var batchSize: objc_BatchSize
     public var uploadFrequency: objc_UploadFrequency
     public var batchProcessingLevel: objc_BatchProcessingLevel
@@ -280,6 +281,7 @@ public protocol objc_OTTracer
     func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?) -> objc_OTSpan
     func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?, tags: NSDictionary?) -> objc_OTSpan
     func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?, tags: NSDictionary?, startTime: Date?) -> objc_OTSpan
+    func startRootSpan(_ operationName: String, tags: NSDictionary?, startTime: Date?, customSampleRate: NSNumber?) -> objc_OTSpan
     func inject(_ spanContext: objc_OTSpanContext, format: String, carrier: Any) throws
     func extractWithFormat(_ format: String, carrier: Any) throws
 public enum objc_InjectEncoding: Int
@@ -323,6 +325,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer
     public func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?) -> objc_OTSpan
     public func startSpan(_ operationName: String,childOf parent: objc_OTSpanContext?,tags: NSDictionary?) -> objc_OTSpan
     public func startSpan(_ operationName: String,childOf parent: objc_OTSpanContext?,tags: NSDictionary?,startTime: Date?) -> objc_OTSpan
+    public func startRootSpan(_ operationName: String,tags: NSDictionary?,startTime: Date?,customSampleRate: NSNumber?) -> any objc_OTSpan
     public func inject(_ spanContext: objc_OTSpanContext, format: String, carrier: Any) throws
     public func extractWithFormat(_ format: String, carrier: Any) throws
 
@@ -387,6 +390,7 @@ public class objc_RUMActionEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
 public class objc_RUMActionEventDDSession: NSObject
     public var plan: objc_RUMActionEventDDSessionPlan
     public var sessionPrecondition: objc_RUMActionEventDDSessionRUMSessionPrecondition
@@ -498,12 +502,15 @@ public class objc_RUMActionEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMActionEventDeviceDeviceType
 public enum objc_RUMActionEventDeviceDeviceType: Int
     case none
@@ -560,172 +567,6 @@ public class objc_RUMActionEventView: NSObject
     public var name: String?
     public var referrer: String?
     public var url: String
-public class objc_RUMTransitionEvent: NSObject
-    public internal(set) var swiftModel: RUMTransitionEvent
-    public init(swiftModel: RUMTransitionEvent)
-    public var dd: objc_RUMTransitionEventDD
-    public var account: objc_RUMTransitionEventRUMAccount?
-    public var application: objc_RUMTransitionEventApplication
-    public var buildId: String?
-    public var buildVersion: String?
-    public var ciTest: objc_RUMTransitionEventRUMCITest?
-    public var connectivity: objc_RUMTransitionEventRUMConnectivity?
-    public var context: objc_RUMTransitionEventRUMEventAttributes?
-    public var date: NSNumber
-    public var ddtags: String?
-    public var device: objc_RUMTransitionEventDevice?
-    public var display: objc_RUMTransitionEventDisplay?
-    public var os: objc_RUMTransitionEventOperatingSystem?
-    public var service: String?
-    public var session: objc_RUMTransitionEventSession
-    public var source: objc_RUMTransitionEventSource
-    public var stream: objc_RUMTransitionEventStream
-    public var synthetics: objc_RUMTransitionEventRUMSyntheticsTest?
-    public var transition: objc_RUMTransitionEventTransition
-    public var type: String
-    public var usr: objc_RUMTransitionEventRUMUser?
-    public var version: String?
-    public var view: objc_RUMTransitionEventView
-public class objc_RUMTransitionEventDD: NSObject
-    public var browserSdkVersion: String?
-    public var configuration: objc_RUMTransitionEventDDConfiguration?
-    public var formatVersion: NSNumber
-    public var sdkName: String?
-    public var session: objc_RUMTransitionEventDDSession?
-public class objc_RUMTransitionEventDDConfiguration: NSObject
-    public var profilingSampleRate: NSNumber?
-    public var sessionReplaySampleRate: NSNumber?
-    public var sessionSampleRate: NSNumber
-public class objc_RUMTransitionEventDDSession: NSObject
-    public var plan: objc_RUMTransitionEventDDSessionPlan
-    public var sessionPrecondition: objc_RUMTransitionEventDDSessionRUMSessionPrecondition
-public enum objc_RUMTransitionEventDDSessionPlan: Int
-    case none
-    case plan1
-    case plan2
-public enum objc_RUMTransitionEventDDSessionRUMSessionPrecondition: Int
-    case none
-    case userAppLaunch
-    case inactivityTimeout
-    case maxDuration
-    case backgroundLaunch
-    case prewarm
-    case fromNonInteractiveSession
-    case explicitStop
-public class objc_RUMTransitionEventRUMAccount: NSObject
-    public var id: String
-    public var name: String?
-    public var accountInfo: [String: Any]
-public class objc_RUMTransitionEventApplication: NSObject
-    public var currentLocale: String?
-    public var id: String
-public class objc_RUMTransitionEventRUMCITest: NSObject
-    public var testExecutionId: String
-public class objc_RUMTransitionEventRUMConnectivity: NSObject
-    public var cellular: objc_RUMTransitionEventRUMConnectivityCellular?
-    public var effectiveType: objc_RUMTransitionEventRUMConnectivityEffectiveType
-    public var interfaces: [Int]?
-    public var status: objc_RUMTransitionEventRUMConnectivityStatus
-public class objc_RUMTransitionEventRUMConnectivityCellular: NSObject
-    public var carrierName: String?
-    public var technology: String?
-public enum objc_RUMTransitionEventRUMConnectivityEffectiveType: Int
-    case none
-    case slow2g
-    case effectiveType2g
-    case effectiveType3g
-    case effectiveType4g
-public enum objc_RUMTransitionEventRUMConnectivityInterfaces: Int
-    case none
-    case bluetooth
-    case cellular
-    case ethernet
-    case wifi
-    case wimax
-    case mixed
-    case other
-    case unknown
-    case interfacesNone
-public enum objc_RUMTransitionEventRUMConnectivityStatus: Int
-    case connected
-    case notConnected
-    case maybe
-public class objc_RUMTransitionEventRUMEventAttributes: NSObject
-    public var contextInfo: [String: Any]
-public class objc_RUMTransitionEventDevice: NSObject
-    public var architecture: String?
-    public var batteryLevel: NSNumber?
-    public var brand: String?
-    public var brightnessLevel: NSNumber?
-    public var locale: String?
-    public var locales: [String]?
-    public var model: String?
-    public var name: String?
-    public var powerSavingMode: NSNumber?
-    public var timeZone: String?
-    public var type: objc_RUMTransitionEventDeviceDeviceType
-public enum objc_RUMTransitionEventDeviceDeviceType: Int
-    case none
-    case mobile
-    case desktop
-    case tablet
-    case tv
-    case gamingConsole
-    case bot
-    case other
-public class objc_RUMTransitionEventDisplay: NSObject
-    public var viewport: objc_RUMTransitionEventDisplayViewport?
-public class objc_RUMTransitionEventDisplayViewport: NSObject
-    public var height: NSNumber
-    public var width: NSNumber
-public class objc_RUMTransitionEventOperatingSystem: NSObject
-    public var build: String?
-    public var name: String
-    public var version: String
-    public var versionMajor: String
-public class objc_RUMTransitionEventSession: NSObject
-    public var hasReplay: NSNumber?
-    public var id: String
-    public var type: objc_RUMTransitionEventSessionRUMSessionType
-public enum objc_RUMTransitionEventSessionRUMSessionType: Int
-    case user
-    case synthetics
-    case ciTest
-public enum objc_RUMTransitionEventSource: Int
-    case none
-    case android
-    case ios
-    case browser
-    case flutter
-    case reactNative
-    case roku
-    case unity
-    case kotlinMultiplatform
-public class objc_RUMTransitionEventStream: NSObject
-    public var id: String
-public class objc_RUMTransitionEventRUMSyntheticsTest: NSObject
-    public var injected: NSNumber?
-    public var resultId: String
-    public var testId: String
-public class objc_RUMTransitionEventTransition: NSObject
-    public var bufferStarvationDuration: NSNumber?
-    public var duration: NSNumber?
-    public var errorCode: NSNumber?
-    public var id: String?
-    public var mediaStartDelay: NSNumber?
-    public var timestamp: NSNumber?
-    public var type: String
-public class objc_RUMTransitionEventRUMUser: NSObject
-    public var anonymousId: String?
-    public var email: String?
-    public var id: String?
-    public var name: String?
-    public var usrInfo: [String: Any]
-public class objc_RUMTransitionEventView: NSObject
-    public var id: String
-    public var name: String?
-    public var referrer: String?
-    public var url: String
 public class objc_RUMErrorEvent: NSObject
     public internal(set) var swiftModel: RUMErrorEvent
     public init(swiftModel: RUMErrorEvent)
@@ -766,6 +607,7 @@ public class objc_RUMErrorEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
 public class objc_RUMErrorEventDDSession: NSObject
     public var plan: objc_RUMErrorEventDDSessionPlan
     public var sessionPrecondition: objc_RUMErrorEventDDSessionRUMSessionPrecondition
@@ -846,12 +688,15 @@ public class objc_RUMErrorEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMErrorEventDeviceDeviceType
 public enum objc_RUMErrorEventDeviceDeviceType: Int
     case none
@@ -1079,6 +924,7 @@ public class objc_RUMLongTaskEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
 public class objc_RUMLongTaskEventDDProfiling: NSObject
     public var errorReason: objc_RUMLongTaskEventDDProfilingErrorReason
     public var status: objc_RUMLongTaskEventDDProfilingStatus
@@ -1174,12 +1020,15 @@ public class objc_RUMLongTaskEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMLongTaskEventDeviceDeviceType
 public enum objc_RUMLongTaskEventDeviceDeviceType: Int
     case none
@@ -1313,6 +1162,7 @@ public class objc_RUMResourceEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
 public class objc_RUMResourceEventDDSession: NSObject
     public var plan: objc_RUMResourceEventDDSessionPlan
     public var sessionPrecondition: objc_RUMResourceEventDDSessionRUMSessionPrecondition
@@ -1393,12 +1243,15 @@ public class objc_RUMResourceEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMResourceEventDeviceDeviceType
 public enum objc_RUMResourceEventDeviceDeviceType: Int
     case none
@@ -1460,11 +1313,25 @@ public class objc_RUMResourceEventResourceFirstByte: NSObject
     public var duration: NSNumber
     public var start: NSNumber
 public class objc_RUMResourceEventResourceGraphql: NSObject
+    public var errorCount: NSNumber?
+    public var errors: [objc_RUMResourceEventResourceGraphqlErrors]?
     public var operationName: String?
     public var operationType: objc_RUMResourceEventResourceGraphqlOperationType
     public var payload: String?
     public var variables: String?
+public class objc_RUMResourceEventResourceGraphqlErrors: NSObject
+    public var code: String?
+    public var locations: [objc_RUMResourceEventResourceGraphqlErrorsLocations]?
+    public var message: String
+    public var path: [objc_RUMResourceEventResourceGraphqlErrorsPath]?
+public class objc_RUMResourceEventResourceGraphqlErrorsLocations: NSObject
+    public var column: NSNumber
+    public var line: NSNumber
+public class objc_RUMResourceEventResourceGraphqlErrorsPath: NSObject
+    public var string: String?
+    public var integer: NSNumber?
 public enum objc_RUMResourceEventResourceGraphqlOperationType: Int
+    case none
     case query
     case mutation
     case subscription
@@ -1605,6 +1472,7 @@ public class objc_RUMViewEventDDConfiguration: NSObject
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var startSessionReplayRecordingManually: NSNumber?
+    public var traceSampleRate: NSNumber?
 public class objc_RUMViewEventDDPageStates: NSObject
     public var start: NSNumber
     public var state: objc_RUMViewEventDDPageStatesState
@@ -1708,12 +1576,15 @@ public class objc_RUMViewEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMViewEventDeviceDeviceType
 public enum objc_RUMViewEventDeviceDeviceType: Int
     case none
@@ -1770,6 +1641,7 @@ public enum objc_RUMViewEventSource: Int
     case kotlinMultiplatform
 public class objc_RUMViewEventStream: NSObject
     public var bitrate: NSNumber?
+    public var completionPercent: NSNumber?
     public var duration: NSNumber?
     public var format: String?
     public var fps: NSNumber?
@@ -1948,68 +1820,68 @@ public class objc_RUMViewEventViewResource: NSObject
 public class objc_RUMViewEventViewSlowFrames: NSObject
     public var duration: NSNumber
     public var start: NSNumber
-public class objc_RUMVitalEvent: NSObject
-    public internal(set) var swiftModel: RUMVitalEvent
-    public init(swiftModel: RUMVitalEvent)
-    public var dd: objc_RUMVitalEventDD
-    public var account: objc_RUMVitalEventRUMAccount?
-    public var application: objc_RUMVitalEventApplication
+public class objc_RUMVitalAppLaunchEvent: NSObject
+    public internal(set) var swiftModel: RUMVitalAppLaunchEvent
+    public init(swiftModel: RUMVitalAppLaunchEvent)
+    public var dd: objc_RUMVitalAppLaunchEventDD
+    public var account: objc_RUMVitalAppLaunchEventRUMAccount?
+    public var application: objc_RUMVitalAppLaunchEventApplication
     public var buildId: String?
     public var buildVersion: String?
-    public var ciTest: objc_RUMVitalEventRUMCITest?
-    public var connectivity: objc_RUMVitalEventRUMConnectivity?
-    public var container: objc_RUMVitalEventContainer?
-    public var context: objc_RUMVitalEventRUMEventAttributes?
+    public var ciTest: objc_RUMVitalAppLaunchEventRUMCITest?
+    public var connectivity: objc_RUMVitalAppLaunchEventRUMConnectivity?
+    public var container: objc_RUMVitalAppLaunchEventContainer?
+    public var context: objc_RUMVitalAppLaunchEventRUMEventAttributes?
     public var date: NSNumber
     public var ddtags: String?
-    public var device: objc_RUMVitalEventDevice?
-    public var display: objc_RUMVitalEventDisplay?
-    public var os: objc_RUMVitalEventOperatingSystem?
+    public var device: objc_RUMVitalAppLaunchEventDevice?
+    public var display: objc_RUMVitalAppLaunchEventDisplay?
+    public var os: objc_RUMVitalAppLaunchEventOperatingSystem?
     public var service: String?
-    public var session: objc_RUMVitalEventSession
-    public var source: objc_RUMVitalEventSource
-    public var stream: objc_RUMVitalEventStream?
-    public var synthetics: objc_RUMVitalEventRUMSyntheticsTest?
+    public var session: objc_RUMVitalAppLaunchEventSession
+    public var source: objc_RUMVitalAppLaunchEventSource
+    public var stream: objc_RUMVitalAppLaunchEventStream?
+    public var synthetics: objc_RUMVitalAppLaunchEventRUMSyntheticsTest?
     public var type: String
-    public var usr: objc_RUMVitalEventRUMUser?
+    public var usr: objc_RUMVitalAppLaunchEventRUMUser?
     public var version: String?
-    public var view: objc_RUMVitalEventView?
-    public var vital: objc_RUMVitalEventVital
-public class objc_RUMVitalEventDD: NSObject
+    public var view: objc_RUMVitalAppLaunchEventView
+    public var vital: objc_RUMVitalAppLaunchEventVital
+public class objc_RUMVitalAppLaunchEventDD: NSObject
     public var browserSdkVersion: String?
-    public var configuration: objc_RUMVitalEventDDConfiguration?
+    public var configuration: objc_RUMVitalAppLaunchEventDDConfiguration?
     public var formatVersion: NSNumber
-    public var profiling: objc_RUMVitalEventDDProfiling?
+    public var profiling: objc_RUMVitalAppLaunchEventDDProfiling?
     public var sdkName: String?
-    public var session: objc_RUMVitalEventDDSession?
-    public var vital: objc_RUMVitalEventDDVital?
-public class objc_RUMVitalEventDDConfiguration: NSObject
+    public var session: objc_RUMVitalAppLaunchEventDDSession?
+public class objc_RUMVitalAppLaunchEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
-public class objc_RUMVitalEventDDProfiling: NSObject
-    public var errorReason: objc_RUMVitalEventDDProfilingErrorReason
-    public var status: objc_RUMVitalEventDDProfilingStatus
-public enum objc_RUMVitalEventDDProfilingErrorReason: Int
+    public var traceSampleRate: NSNumber?
+public class objc_RUMVitalAppLaunchEventDDProfiling: NSObject
+    public var errorReason: objc_RUMVitalAppLaunchEventDDProfilingErrorReason
+    public var status: objc_RUMVitalAppLaunchEventDDProfilingStatus
+public enum objc_RUMVitalAppLaunchEventDDProfilingErrorReason: Int
     case none
     case notSupportedByBrowser
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
-public enum objc_RUMVitalEventDDProfilingStatus: Int
+public enum objc_RUMVitalAppLaunchEventDDProfilingStatus: Int
     case none
     case starting
     case running
     case stopped
     case error
-public class objc_RUMVitalEventDDSession: NSObject
-    public var plan: objc_RUMVitalEventDDSessionPlan
-    public var sessionPrecondition: objc_RUMVitalEventDDSessionRUMSessionPrecondition
-public enum objc_RUMVitalEventDDSessionPlan: Int
+public class objc_RUMVitalAppLaunchEventDDSession: NSObject
+    public var plan: objc_RUMVitalAppLaunchEventDDSessionPlan
+    public var sessionPrecondition: objc_RUMVitalAppLaunchEventDDSessionRUMSessionPrecondition
+public enum objc_RUMVitalAppLaunchEventDDSessionPlan: Int
     case none
     case plan1
     case plan2
-public enum objc_RUMVitalEventDDSessionRUMSessionPrecondition: Int
+public enum objc_RUMVitalAppLaunchEventDDSessionRUMSessionPrecondition: Int
     case none
     case userAppLaunch
     case inactivityTimeout
@@ -2018,32 +1890,30 @@ public enum objc_RUMVitalEventDDSessionRUMSessionPrecondition: Int
     case prewarm
     case fromNonInteractiveSession
     case explicitStop
-public class objc_RUMVitalEventDDVital: NSObject
-    public var computedValue: NSNumber?
-public class objc_RUMVitalEventRUMAccount: NSObject
+public class objc_RUMVitalAppLaunchEventRUMAccount: NSObject
     public var id: String
     public var name: String?
     public var accountInfo: [String: Any]
-public class objc_RUMVitalEventApplication: NSObject
+public class objc_RUMVitalAppLaunchEventApplication: NSObject
     public var currentLocale: String?
     public var id: String
-public class objc_RUMVitalEventRUMCITest: NSObject
+public class objc_RUMVitalAppLaunchEventRUMCITest: NSObject
     public var testExecutionId: String
-public class objc_RUMVitalEventRUMConnectivity: NSObject
-    public var cellular: objc_RUMVitalEventRUMConnectivityCellular?
-    public var effectiveType: objc_RUMVitalEventRUMConnectivityEffectiveType
+public class objc_RUMVitalAppLaunchEventRUMConnectivity: NSObject
+    public var cellular: objc_RUMVitalAppLaunchEventRUMConnectivityCellular?
+    public var effectiveType: objc_RUMVitalAppLaunchEventRUMConnectivityEffectiveType
     public var interfaces: [Int]?
-    public var status: objc_RUMVitalEventRUMConnectivityStatus
-public class objc_RUMVitalEventRUMConnectivityCellular: NSObject
+    public var status: objc_RUMVitalAppLaunchEventRUMConnectivityStatus
+public class objc_RUMVitalAppLaunchEventRUMConnectivityCellular: NSObject
     public var carrierName: String?
     public var technology: String?
-public enum objc_RUMVitalEventRUMConnectivityEffectiveType: Int
+public enum objc_RUMVitalAppLaunchEventRUMConnectivityEffectiveType: Int
     case none
     case slow2g
     case effectiveType2g
     case effectiveType3g
     case effectiveType4g
-public enum objc_RUMVitalEventRUMConnectivityInterfaces: Int
+public enum objc_RUMVitalAppLaunchEventRUMConnectivityInterfaces: Int
     case none
     case bluetooth
     case cellular
@@ -2054,14 +1924,14 @@ public enum objc_RUMVitalEventRUMConnectivityInterfaces: Int
     case other
     case unknown
     case interfacesNone
-public enum objc_RUMVitalEventRUMConnectivityStatus: Int
+public enum objc_RUMVitalAppLaunchEventRUMConnectivityStatus: Int
     case connected
     case notConnected
     case maybe
-public class objc_RUMVitalEventContainer: NSObject
-    public var source: objc_RUMVitalEventContainerSource
-    public var view: objc_RUMVitalEventContainerView
-public enum objc_RUMVitalEventContainerSource: Int
+public class objc_RUMVitalAppLaunchEventContainer: NSObject
+    public var source: objc_RUMVitalAppLaunchEventContainerSource
+    public var view: objc_RUMVitalAppLaunchEventContainerView
+public enum objc_RUMVitalAppLaunchEventContainerSource: Int
     case android
     case ios
     case browser
@@ -2070,23 +1940,26 @@ public enum objc_RUMVitalEventContainerSource: Int
     case roku
     case unity
     case kotlinMultiplatform
-public class objc_RUMVitalEventContainerView: NSObject
+public class objc_RUMVitalAppLaunchEventContainerView: NSObject
     public var id: String
-public class objc_RUMVitalEventRUMEventAttributes: NSObject
+public class objc_RUMVitalAppLaunchEventRUMEventAttributes: NSObject
     public var contextInfo: [String: Any]
-public class objc_RUMVitalEventDevice: NSObject
+public class objc_RUMVitalAppLaunchEventDevice: NSObject
     public var architecture: String?
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
-    public var type: objc_RUMVitalEventDeviceDeviceType
-public enum objc_RUMVitalEventDeviceDeviceType: Int
+    public var totalRam: NSNumber?
+    public var type: objc_RUMVitalAppLaunchEventDeviceDeviceType
+public enum objc_RUMVitalAppLaunchEventDeviceDeviceType: Int
     case none
     case mobile
     case desktop
@@ -2095,25 +1968,25 @@ public enum objc_RUMVitalEventDeviceDeviceType: Int
     case gamingConsole
     case bot
     case other
-public class objc_RUMVitalEventDisplay: NSObject
-    public var viewport: objc_RUMVitalEventDisplayViewport?
-public class objc_RUMVitalEventDisplayViewport: NSObject
+public class objc_RUMVitalAppLaunchEventDisplay: NSObject
+    public var viewport: objc_RUMVitalAppLaunchEventDisplayViewport?
+public class objc_RUMVitalAppLaunchEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
-public class objc_RUMVitalEventOperatingSystem: NSObject
+public class objc_RUMVitalAppLaunchEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
     public var version: String
     public var versionMajor: String
-public class objc_RUMVitalEventSession: NSObject
+public class objc_RUMVitalAppLaunchEventSession: NSObject
     public var hasReplay: NSNumber?
     public var id: String
-    public var type: objc_RUMVitalEventSessionRUMSessionType
-public enum objc_RUMVitalEventSessionRUMSessionType: Int
+    public var type: objc_RUMVitalAppLaunchEventSessionRUMSessionType
+public enum objc_RUMVitalAppLaunchEventSessionRUMSessionType: Int
     case user
     case synthetics
     case ciTest
-public enum objc_RUMVitalEventSource: Int
+public enum objc_RUMVitalAppLaunchEventSource: Int
     case none
     case android
     case ios
@@ -2123,171 +1996,418 @@ public enum objc_RUMVitalEventSource: Int
     case roku
     case unity
     case kotlinMultiplatform
-public class objc_RUMVitalEventStream: NSObject
+public class objc_RUMVitalAppLaunchEventStream: NSObject
     public var id: String
-public class objc_RUMVitalEventRUMSyntheticsTest: NSObject
+public class objc_RUMVitalAppLaunchEventRUMSyntheticsTest: NSObject
     public var injected: NSNumber?
     public var resultId: String
     public var testId: String
-public class objc_RUMVitalEventRUMUser: NSObject
+public class objc_RUMVitalAppLaunchEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
     public var id: String?
     public var name: String?
     public var usrInfo: [String: Any]
-public class objc_RUMVitalEventView: NSObject
+public class objc_RUMVitalAppLaunchEventView: NSObject
     public var id: String
     public var name: String?
     public var referrer: String?
     public var url: String
-public class objc_RUMVitalEventVital: NSObject
-    public var durationProperties: objc_RUMVitalEventVitalDurationProperties?
-    public var appLaunchProperties: objc_RUMVitalEventVitalAppLaunchProperties?
-    public var featureOperationProperties: objc_RUMVitalEventVitalFeatureOperationProperties?
-public class objc_RUMVitalEventVitalDurationProperties: NSObject
-    public var durationPropertiesDescription: String?
-    public var duration: NSNumber
-    public var id: String
-    public var name: String?
-    public var type: String
-public class objc_RUMVitalEventVitalAppLaunchProperties: NSObject
-    public var appLaunchMetric: objc_RUMVitalEventVitalAppLaunchPropertiesAppLaunchMetric
-    public var appLaunchPropertiesDescription: String?
+public class objc_RUMVitalAppLaunchEventVital: NSObject
+    public var appLaunchMetric: objc_RUMVitalAppLaunchEventVitalAppLaunchMetric
+    public var vitalDescription: String?
     public var duration: NSNumber
     public var hasSavedInstanceStateBundle: NSNumber?
     public var id: String
     public var isPrewarmed: NSNumber?
     public var name: String?
-    public var startupType: objc_RUMVitalEventVitalAppLaunchPropertiesStartupType
+    public var startupType: objc_RUMVitalAppLaunchEventVitalStartupType
     public var type: String
-public enum objc_RUMVitalEventVitalAppLaunchPropertiesAppLaunchMetric: Int
+public enum objc_RUMVitalAppLaunchEventVitalAppLaunchMetric: Int
     case ttid
     case ttfd
-public enum objc_RUMVitalEventVitalAppLaunchPropertiesStartupType: Int
+public enum objc_RUMVitalAppLaunchEventVitalStartupType: Int
     case none
     case coldStart
     case warmStart
-public class objc_RUMVitalEventVitalFeatureOperationProperties: NSObject
-    public var featureOperationPropertiesDescription: String?
-    public var failureReason: objc_RUMVitalEventVitalFeatureOperationPropertiesFailureReason
+public class objc_RUMVitalDurationEvent: NSObject
+    public internal(set) var swiftModel: RUMVitalDurationEvent
+    public init(swiftModel: RUMVitalDurationEvent)
+    public var dd: objc_RUMVitalDurationEventDD
+    public var account: objc_RUMVitalDurationEventRUMAccount?
+    public var application: objc_RUMVitalDurationEventApplication
+    public var buildId: String?
+    public var buildVersion: String?
+    public var ciTest: objc_RUMVitalDurationEventRUMCITest?
+    public var connectivity: objc_RUMVitalDurationEventRUMConnectivity?
+    public var container: objc_RUMVitalDurationEventContainer?
+    public var context: objc_RUMVitalDurationEventRUMEventAttributes?
+    public var date: NSNumber
+    public var ddtags: String?
+    public var device: objc_RUMVitalDurationEventDevice?
+    public var display: objc_RUMVitalDurationEventDisplay?
+    public var os: objc_RUMVitalDurationEventOperatingSystem?
+    public var service: String?
+    public var session: objc_RUMVitalDurationEventSession
+    public var source: objc_RUMVitalDurationEventSource
+    public var stream: objc_RUMVitalDurationEventStream?
+    public var synthetics: objc_RUMVitalDurationEventRUMSyntheticsTest?
+    public var type: String
+    public var usr: objc_RUMVitalDurationEventRUMUser?
+    public var version: String?
+    public var view: objc_RUMVitalDurationEventView
+    public var vital: objc_RUMVitalDurationEventVital
+public class objc_RUMVitalDurationEventDD: NSObject
+    public var browserSdkVersion: String?
+    public var configuration: objc_RUMVitalDurationEventDDConfiguration?
+    public var formatVersion: NSNumber
+    public var sdkName: String?
+    public var session: objc_RUMVitalDurationEventDDSession?
+public class objc_RUMVitalDurationEventDDConfiguration: NSObject
+    public var profilingSampleRate: NSNumber?
+    public var sessionReplaySampleRate: NSNumber?
+    public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
+public class objc_RUMVitalDurationEventDDSession: NSObject
+    public var plan: objc_RUMVitalDurationEventDDSessionPlan
+    public var sessionPrecondition: objc_RUMVitalDurationEventDDSessionRUMSessionPrecondition
+public enum objc_RUMVitalDurationEventDDSessionPlan: Int
+    case none
+    case plan1
+    case plan2
+public enum objc_RUMVitalDurationEventDDSessionRUMSessionPrecondition: Int
+    case none
+    case userAppLaunch
+    case inactivityTimeout
+    case maxDuration
+    case backgroundLaunch
+    case prewarm
+    case fromNonInteractiveSession
+    case explicitStop
+public class objc_RUMVitalDurationEventRUMAccount: NSObject
+    public var id: String
+    public var name: String?
+    public var accountInfo: [String: Any]
+public class objc_RUMVitalDurationEventApplication: NSObject
+    public var currentLocale: String?
+    public var id: String
+public class objc_RUMVitalDurationEventRUMCITest: NSObject
+    public var testExecutionId: String
+public class objc_RUMVitalDurationEventRUMConnectivity: NSObject
+    public var cellular: objc_RUMVitalDurationEventRUMConnectivityCellular?
+    public var effectiveType: objc_RUMVitalDurationEventRUMConnectivityEffectiveType
+    public var interfaces: [Int]?
+    public var status: objc_RUMVitalDurationEventRUMConnectivityStatus
+public class objc_RUMVitalDurationEventRUMConnectivityCellular: NSObject
+    public var carrierName: String?
+    public var technology: String?
+public enum objc_RUMVitalDurationEventRUMConnectivityEffectiveType: Int
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+public enum objc_RUMVitalDurationEventRUMConnectivityInterfaces: Int
+    case none
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case interfacesNone
+public enum objc_RUMVitalDurationEventRUMConnectivityStatus: Int
+    case connected
+    case notConnected
+    case maybe
+public class objc_RUMVitalDurationEventContainer: NSObject
+    public var source: objc_RUMVitalDurationEventContainerSource
+    public var view: objc_RUMVitalDurationEventContainerView
+public enum objc_RUMVitalDurationEventContainerSource: Int
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+public class objc_RUMVitalDurationEventContainerView: NSObject
+    public var id: String
+public class objc_RUMVitalDurationEventRUMEventAttributes: NSObject
+    public var contextInfo: [String: Any]
+public class objc_RUMVitalDurationEventDevice: NSObject
+    public var architecture: String?
+    public var batteryLevel: NSNumber?
+    public var brand: String?
+    public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
+    public var locale: String?
+    public var locales: [String]?
+    public var model: String?
+    public var name: String?
+    public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
+    public var timeZone: String?
+    public var totalRam: NSNumber?
+    public var type: objc_RUMVitalDurationEventDeviceDeviceType
+public enum objc_RUMVitalDurationEventDeviceDeviceType: Int
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
+public class objc_RUMVitalDurationEventDisplay: NSObject
+    public var viewport: objc_RUMVitalDurationEventDisplayViewport?
+public class objc_RUMVitalDurationEventDisplayViewport: NSObject
+    public var height: NSNumber
+    public var width: NSNumber
+public class objc_RUMVitalDurationEventOperatingSystem: NSObject
+    public var build: String?
+    public var name: String
+    public var version: String
+    public var versionMajor: String
+public class objc_RUMVitalDurationEventSession: NSObject
+    public var hasReplay: NSNumber?
+    public var id: String
+    public var type: objc_RUMVitalDurationEventSessionRUMSessionType
+public enum objc_RUMVitalDurationEventSessionRUMSessionType: Int
+    case user
+    case synthetics
+    case ciTest
+public enum objc_RUMVitalDurationEventSource: Int
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+public class objc_RUMVitalDurationEventStream: NSObject
+    public var id: String
+public class objc_RUMVitalDurationEventRUMSyntheticsTest: NSObject
+    public var injected: NSNumber?
+    public var resultId: String
+    public var testId: String
+public class objc_RUMVitalDurationEventRUMUser: NSObject
+    public var anonymousId: String?
+    public var email: String?
+    public var id: String?
+    public var name: String?
+    public var usrInfo: [String: Any]
+public class objc_RUMVitalDurationEventView: NSObject
+    public var id: String
+    public var name: String?
+    public var referrer: String?
+    public var url: String
+public class objc_RUMVitalDurationEventVital: NSObject
+    public var vitalDescription: String?
+    public var duration: NSNumber
+    public var id: String
+    public var name: String?
+    public var type: String
+public class objc_RUMVitalOperationStepEvent: NSObject
+    public internal(set) var swiftModel: RUMVitalOperationStepEvent
+    public init(swiftModel: RUMVitalOperationStepEvent)
+    public var dd: objc_RUMVitalOperationStepEventDD
+    public var account: objc_RUMVitalOperationStepEventRUMAccount?
+    public var application: objc_RUMVitalOperationStepEventApplication
+    public var buildId: String?
+    public var buildVersion: String?
+    public var ciTest: objc_RUMVitalOperationStepEventRUMCITest?
+    public var connectivity: objc_RUMVitalOperationStepEventRUMConnectivity?
+    public var container: objc_RUMVitalOperationStepEventContainer?
+    public var context: objc_RUMVitalOperationStepEventRUMEventAttributes?
+    public var date: NSNumber
+    public var ddtags: String?
+    public var device: objc_RUMVitalOperationStepEventDevice?
+    public var display: objc_RUMVitalOperationStepEventDisplay?
+    public var os: objc_RUMVitalOperationStepEventOperatingSystem?
+    public var service: String?
+    public var session: objc_RUMVitalOperationStepEventSession
+    public var source: objc_RUMVitalOperationStepEventSource
+    public var stream: objc_RUMVitalOperationStepEventStream?
+    public var synthetics: objc_RUMVitalOperationStepEventRUMSyntheticsTest?
+    public var type: String
+    public var usr: objc_RUMVitalOperationStepEventRUMUser?
+    public var version: String?
+    public var view: objc_RUMVitalOperationStepEventView
+    public var vital: objc_RUMVitalOperationStepEventVital
+public class objc_RUMVitalOperationStepEventDD: NSObject
+    public var browserSdkVersion: String?
+    public var configuration: objc_RUMVitalOperationStepEventDDConfiguration?
+    public var formatVersion: NSNumber
+    public var sdkName: String?
+    public var session: objc_RUMVitalOperationStepEventDDSession?
+public class objc_RUMVitalOperationStepEventDDConfiguration: NSObject
+    public var profilingSampleRate: NSNumber?
+    public var sessionReplaySampleRate: NSNumber?
+    public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
+public class objc_RUMVitalOperationStepEventDDSession: NSObject
+    public var plan: objc_RUMVitalOperationStepEventDDSessionPlan
+    public var sessionPrecondition: objc_RUMVitalOperationStepEventDDSessionRUMSessionPrecondition
+public enum objc_RUMVitalOperationStepEventDDSessionPlan: Int
+    case none
+    case plan1
+    case plan2
+public enum objc_RUMVitalOperationStepEventDDSessionRUMSessionPrecondition: Int
+    case none
+    case userAppLaunch
+    case inactivityTimeout
+    case maxDuration
+    case backgroundLaunch
+    case prewarm
+    case fromNonInteractiveSession
+    case explicitStop
+public class objc_RUMVitalOperationStepEventRUMAccount: NSObject
+    public var id: String
+    public var name: String?
+    public var accountInfo: [String: Any]
+public class objc_RUMVitalOperationStepEventApplication: NSObject
+    public var currentLocale: String?
+    public var id: String
+public class objc_RUMVitalOperationStepEventRUMCITest: NSObject
+    public var testExecutionId: String
+public class objc_RUMVitalOperationStepEventRUMConnectivity: NSObject
+    public var cellular: objc_RUMVitalOperationStepEventRUMConnectivityCellular?
+    public var effectiveType: objc_RUMVitalOperationStepEventRUMConnectivityEffectiveType
+    public var interfaces: [Int]?
+    public var status: objc_RUMVitalOperationStepEventRUMConnectivityStatus
+public class objc_RUMVitalOperationStepEventRUMConnectivityCellular: NSObject
+    public var carrierName: String?
+    public var technology: String?
+public enum objc_RUMVitalOperationStepEventRUMConnectivityEffectiveType: Int
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+public enum objc_RUMVitalOperationStepEventRUMConnectivityInterfaces: Int
+    case none
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case interfacesNone
+public enum objc_RUMVitalOperationStepEventRUMConnectivityStatus: Int
+    case connected
+    case notConnected
+    case maybe
+public class objc_RUMVitalOperationStepEventContainer: NSObject
+    public var source: objc_RUMVitalOperationStepEventContainerSource
+    public var view: objc_RUMVitalOperationStepEventContainerView
+public enum objc_RUMVitalOperationStepEventContainerSource: Int
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+public class objc_RUMVitalOperationStepEventContainerView: NSObject
+    public var id: String
+public class objc_RUMVitalOperationStepEventRUMEventAttributes: NSObject
+    public var contextInfo: [String: Any]
+public class objc_RUMVitalOperationStepEventDevice: NSObject
+    public var architecture: String?
+    public var batteryLevel: NSNumber?
+    public var brand: String?
+    public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
+    public var locale: String?
+    public var locales: [String]?
+    public var model: String?
+    public var name: String?
+    public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
+    public var timeZone: String?
+    public var totalRam: NSNumber?
+    public var type: objc_RUMVitalOperationStepEventDeviceDeviceType
+public enum objc_RUMVitalOperationStepEventDeviceDeviceType: Int
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
+public class objc_RUMVitalOperationStepEventDisplay: NSObject
+    public var viewport: objc_RUMVitalOperationStepEventDisplayViewport?
+public class objc_RUMVitalOperationStepEventDisplayViewport: NSObject
+    public var height: NSNumber
+    public var width: NSNumber
+public class objc_RUMVitalOperationStepEventOperatingSystem: NSObject
+    public var build: String?
+    public var name: String
+    public var version: String
+    public var versionMajor: String
+public class objc_RUMVitalOperationStepEventSession: NSObject
+    public var hasReplay: NSNumber?
+    public var id: String
+    public var type: objc_RUMVitalOperationStepEventSessionRUMSessionType
+public enum objc_RUMVitalOperationStepEventSessionRUMSessionType: Int
+    case user
+    case synthetics
+    case ciTest
+public enum objc_RUMVitalOperationStepEventSource: Int
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+public class objc_RUMVitalOperationStepEventStream: NSObject
+    public var id: String
+public class objc_RUMVitalOperationStepEventRUMSyntheticsTest: NSObject
+    public var injected: NSNumber?
+    public var resultId: String
+    public var testId: String
+public class objc_RUMVitalOperationStepEventRUMUser: NSObject
+    public var anonymousId: String?
+    public var email: String?
+    public var id: String?
+    public var name: String?
+    public var usrInfo: [String: Any]
+public class objc_RUMVitalOperationStepEventView: NSObject
+    public var id: String
+    public var name: String?
+    public var referrer: String?
+    public var url: String
+public class objc_RUMVitalOperationStepEventVital: NSObject
+    public var vitalDescription: String?
+    public var failureReason: objc_RUMVitalOperationStepEventVitalFailureReason
     public var id: String
     public var name: String?
     public var operationKey: String?
-    public var stepType: objc_RUMVitalEventVitalFeatureOperationPropertiesStepType
+    public var stepType: objc_RUMVitalOperationStepEventVitalStepType
     public var type: String
-public enum objc_RUMVitalEventVitalFeatureOperationPropertiesFailureReason: Int
+public enum objc_RUMVitalOperationStepEventVitalFailureReason: Int
     case none
     case error
     case abandoned
     case other
-public enum objc_RUMVitalEventVitalFeatureOperationPropertiesStepType: Int
-    case none
+public enum objc_RUMVitalOperationStepEventVitalStepType: Int
     case start
     case update
     case retry
     case end
-public class objc_TelemetryErrorEvent: NSObject
-    public internal(set) var swiftModel: TelemetryErrorEvent
-    public init(swiftModel: TelemetryErrorEvent)
-    public var dd: objc_TelemetryErrorEventDD
-    public var action: objc_TelemetryErrorEventAction?
-    public var application: objc_TelemetryErrorEventApplication?
-    public var date: NSNumber
-    public var effectiveSampleRate: NSNumber?
-    public var experimentalFeatures: [String]?
-    public var service: String
-    public var session: objc_TelemetryErrorEventSession?
-    public var source: objc_TelemetryErrorEventSource
-    public var telemetry: objc_TelemetryErrorEventTelemetry
-    public var type: String
-    public var version: String
-    public var view: objc_TelemetryErrorEventView?
-public class objc_TelemetryErrorEventDD: NSObject
-    public var formatVersion: NSNumber
-public class objc_TelemetryErrorEventAction: NSObject
-    public var id: String
-public class objc_TelemetryErrorEventApplication: NSObject
-    public var id: String
-public class objc_TelemetryErrorEventSession: NSObject
-    public var id: String
-public enum objc_TelemetryErrorEventSource: Int
-    case android
-    case ios
-    case browser
-    case flutter
-    case reactNative
-    case unity
-    case kotlinMultiplatform
-public class objc_TelemetryErrorEventTelemetry: NSObject
-    public var device: objc_TelemetryErrorEventTelemetryRUMTelemetryDevice?
-    public var error: objc_TelemetryErrorEventTelemetryError?
-    public var message: String
-    public var os: objc_TelemetryErrorEventTelemetryRUMTelemetryOperatingSystem?
-    public var status: String
-    public var type: String?
-    public var telemetryInfo: [String: Any]
-public class objc_TelemetryErrorEventTelemetryRUMTelemetryDevice: NSObject
-    public var architecture: String?
-    public var brand: String?
-    public var model: String?
-public class objc_TelemetryErrorEventTelemetryError: NSObject
-    public var kind: String?
-    public var stack: String?
-public class objc_TelemetryErrorEventTelemetryRUMTelemetryOperatingSystem: NSObject
-    public var build: String?
-    public var name: String?
-    public var version: String?
-public class objc_TelemetryErrorEventView: NSObject
-    public var id: String
-public class objc_TelemetryDebugEvent: NSObject
-    public internal(set) var swiftModel: TelemetryDebugEvent
-    public init(swiftModel: TelemetryDebugEvent)
-    public var dd: objc_TelemetryDebugEventDD
-    public var action: objc_TelemetryDebugEventAction?
-    public var application: objc_TelemetryDebugEventApplication?
-    public var date: NSNumber
-    public var effectiveSampleRate: NSNumber?
-    public var experimentalFeatures: [String]?
-    public var service: String
-    public var session: objc_TelemetryDebugEventSession?
-    public var source: objc_TelemetryDebugEventSource
-    public var telemetry: objc_TelemetryDebugEventTelemetry
-    public var type: String
-    public var version: String
-    public var view: objc_TelemetryDebugEventView?
-public class objc_TelemetryDebugEventDD: NSObject
-    public var formatVersion: NSNumber
-public class objc_TelemetryDebugEventAction: NSObject
-    public var id: String
-public class objc_TelemetryDebugEventApplication: NSObject
-    public var id: String
-public class objc_TelemetryDebugEventSession: NSObject
-    public var id: String
-public enum objc_TelemetryDebugEventSource: Int
-    case android
-    case ios
-    case browser
-    case flutter
-    case reactNative
-    case unity
-    case kotlinMultiplatform
-public class objc_TelemetryDebugEventTelemetry: NSObject
-    public var device: objc_TelemetryDebugEventTelemetryRUMTelemetryDevice?
-    public var message: String
-    public var os: objc_TelemetryDebugEventTelemetryRUMTelemetryOperatingSystem?
-    public var status: String
-    public var type: String?
-    public var telemetryInfo: [String: Any]
-public class objc_TelemetryDebugEventTelemetryRUMTelemetryDevice: NSObject
-    public var architecture: String?
-    public var brand: String?
-    public var model: String?
-public class objc_TelemetryDebugEventTelemetryRUMTelemetryOperatingSystem: NSObject
-    public var build: String?
-    public var name: String?
-    public var version: String?
-public class objc_TelemetryDebugEventView: NSObject
-    public var id: String
 public class objc_TelemetryConfigurationEvent: NSObject
     public internal(set) var swiftModel: TelemetryConfigurationEvent
     public init(swiftModel: TelemetryConfigurationEvent)
@@ -2335,6 +2455,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var batchProcessingLevel: NSNumber?
     public var batchSize: NSNumber?
     public var batchUploadFrequency: NSNumber?
+    public var betaEncodeCookieOptions: NSNumber?
     public var compressIntakeRequests: NSNumber?
     public var dartVersion: String?
     public var defaultPrivacyLevel: String?
@@ -2416,6 +2537,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var useSecureSessionCookie: NSNumber?
     public var useTracing: NSNumber?
     public var useTrackGraphQlPayload: NSNumber?
+    public var useTrackGraphQlResponseErrors: NSNumber?
     public var useWorkerUrl: NSNumber?
     public var variant: String?
     public var viewTrackingStrategy: objc_TelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy
@@ -2462,12 +2584,123 @@ public enum objc_TelemetryConfigurationEventTelemetryConfigurationViewTrackingSt
 public class objc_TelemetryConfigurationEventTelemetryRUMTelemetryDevice: NSObject
     public var architecture: String?
     public var brand: String?
+    public var isLowRamDevice: NSNumber?
     public var model: String?
+    public var processorCount: NSNumber?
+    public var totalRam: NSNumber?
 public class objc_TelemetryConfigurationEventTelemetryRUMTelemetryOperatingSystem: NSObject
     public var build: String?
     public var name: String?
     public var version: String?
 public class objc_TelemetryConfigurationEventView: NSObject
+    public var id: String
+public class objc_TelemetryDebugEvent: NSObject
+    public internal(set) var swiftModel: TelemetryDebugEvent
+    public init(swiftModel: TelemetryDebugEvent)
+    public var dd: objc_TelemetryDebugEventDD
+    public var action: objc_TelemetryDebugEventAction?
+    public var application: objc_TelemetryDebugEventApplication?
+    public var date: NSNumber
+    public var effectiveSampleRate: NSNumber?
+    public var experimentalFeatures: [String]?
+    public var service: String
+    public var session: objc_TelemetryDebugEventSession?
+    public var source: objc_TelemetryDebugEventSource
+    public var telemetry: objc_TelemetryDebugEventTelemetry
+    public var type: String
+    public var version: String
+    public var view: objc_TelemetryDebugEventView?
+public class objc_TelemetryDebugEventDD: NSObject
+    public var formatVersion: NSNumber
+public class objc_TelemetryDebugEventAction: NSObject
+    public var id: String
+public class objc_TelemetryDebugEventApplication: NSObject
+    public var id: String
+public class objc_TelemetryDebugEventSession: NSObject
+    public var id: String
+public enum objc_TelemetryDebugEventSource: Int
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case unity
+    case kotlinMultiplatform
+public class objc_TelemetryDebugEventTelemetry: NSObject
+    public var device: objc_TelemetryDebugEventTelemetryRUMTelemetryDevice?
+    public var message: String
+    public var os: objc_TelemetryDebugEventTelemetryRUMTelemetryOperatingSystem?
+    public var status: String
+    public var type: String?
+    public var telemetryInfo: [String: Any]
+public class objc_TelemetryDebugEventTelemetryRUMTelemetryDevice: NSObject
+    public var architecture: String?
+    public var brand: String?
+    public var isLowRamDevice: NSNumber?
+    public var model: String?
+    public var processorCount: NSNumber?
+    public var totalRam: NSNumber?
+public class objc_TelemetryDebugEventTelemetryRUMTelemetryOperatingSystem: NSObject
+    public var build: String?
+    public var name: String?
+    public var version: String?
+public class objc_TelemetryDebugEventView: NSObject
+    public var id: String
+public class objc_TelemetryErrorEvent: NSObject
+    public internal(set) var swiftModel: TelemetryErrorEvent
+    public init(swiftModel: TelemetryErrorEvent)
+    public var dd: objc_TelemetryErrorEventDD
+    public var action: objc_TelemetryErrorEventAction?
+    public var application: objc_TelemetryErrorEventApplication?
+    public var date: NSNumber
+    public var effectiveSampleRate: NSNumber?
+    public var experimentalFeatures: [String]?
+    public var service: String
+    public var session: objc_TelemetryErrorEventSession?
+    public var source: objc_TelemetryErrorEventSource
+    public var telemetry: objc_TelemetryErrorEventTelemetry
+    public var type: String
+    public var version: String
+    public var view: objc_TelemetryErrorEventView?
+public class objc_TelemetryErrorEventDD: NSObject
+    public var formatVersion: NSNumber
+public class objc_TelemetryErrorEventAction: NSObject
+    public var id: String
+public class objc_TelemetryErrorEventApplication: NSObject
+    public var id: String
+public class objc_TelemetryErrorEventSession: NSObject
+    public var id: String
+public enum objc_TelemetryErrorEventSource: Int
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case unity
+    case kotlinMultiplatform
+public class objc_TelemetryErrorEventTelemetry: NSObject
+    public var device: objc_TelemetryErrorEventTelemetryRUMTelemetryDevice?
+    public var error: objc_TelemetryErrorEventTelemetryError?
+    public var message: String
+    public var os: objc_TelemetryErrorEventTelemetryRUMTelemetryOperatingSystem?
+    public var status: String
+    public var type: String?
+    public var telemetryInfo: [String: Any]
+public class objc_TelemetryErrorEventTelemetryRUMTelemetryDevice: NSObject
+    public var architecture: String?
+    public var brand: String?
+    public var isLowRamDevice: NSNumber?
+    public var model: String?
+    public var processorCount: NSNumber?
+    public var totalRam: NSNumber?
+public class objc_TelemetryErrorEventTelemetryError: NSObject
+    public var kind: String?
+    public var stack: String?
+public class objc_TelemetryErrorEventTelemetryRUMTelemetryOperatingSystem: NSObject
+    public var build: String?
+    public var name: String?
+    public var version: String?
+public class objc_TelemetryErrorEventView: NSObject
     public var id: String
 public protocol objc_SwiftUIRUMViewsPredicate: AnyObject
     func rumView(for extractedViewName: String) -> objc_RUMView?
@@ -2680,3 +2913,9 @@ public final class objc_SessionReplayPrivacyOverrides: NSObject
     @objc public var imagePrivacy: objc_ImagePrivacyLevelOverride
     @objc public var touchPrivacy: objc_TouchPrivacyLevelOverride
     @objc public var hide: NSNumber?
+
+# ----------------------------------
+# API surface for DatadogFlags:
+# ----------------------------------
+
+

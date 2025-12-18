@@ -242,7 +242,7 @@ internal protocol RUMErrorCommand: RUMCommand {
     /// Indicates whether any stack trace information in `stack` or `threads` was truncated due to stack trace minimization.
     var isStackTraceTruncated: Bool? { get }
     /// A completion closure called when processing the command is completed.
-    /// Processing the command includes writting data.
+    /// Processing the command includes writing data.
     var completionHandler: CompletionHandler { get }
 }
 
@@ -741,9 +741,9 @@ internal struct RUMOperationStepVitalCommand: RUMCommand {
     /// The key of the operation for this operation step (when running several instances of the same operation)
     var operationKey: String?
     /// The step type (start, end, retry, etc.)
-    var stepType: RUMVitalEvent.Vital.FeatureOperationProperties.StepType
+    var stepType: RUMVitalOperationStepEvent.Vital.StepType
     /// The reason for failure, if applicable
-    var failureReason: RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason?
+    var failureReason: RUMVitalOperationStepEvent.Vital.FailureReason?
     // Common properties
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]

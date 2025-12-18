@@ -13,7 +13,11 @@ internal protocol ObjcInteropType: AnyObject {}
 
 /// Any `@objc class` which manages Swift `struct`.
 internal protocol ObjcInteropClass: ObjcInteropType {
+    /// The Swift struct that this Objective-C class wraps and provides interoperability for.
+    /// This class acts as a bridge, exposing the struct's properties to Objective-C code.
     var bridgedSwiftStruct: SwiftStruct { get }
+    /// Array of property wrappers that generate Objective-C accessors for each property in `bridgedSwiftStruct`.
+    /// One wrapper per Swift property - each knows how to generate getter/setter code and handle type conversion between Swift and Objective-C.
     var objcPropertyWrappers: [ObjcInteropPropertyWrapper] { set get }
 }
 
@@ -129,7 +133,7 @@ internal class ObjcInteropPropertyWrapper: ObjcInteropType {
     }
 }
 
-/// A property wrapper which uses another `ObjcInteropType` for managing acces to a property in nested `SwiftStruct`.
+/// A property wrapper which uses another `ObjcInteropType` for managing access to a property in nested `SwiftStruct`.
 internal protocol ObjcInteropPropertyWrapperForTransitiveType {
     var objcTransitiveType: ObjcInteropType { get }
 }
@@ -168,6 +172,12 @@ internal class ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnum: Objc
     var objcNestedClass: ObjcInteropTransitiveNestedClass?
     var objcNestedAssociatedTypeEnum: ObjcInteropAssociatedTypeEnum! // swiftlint:disable:this implicitly_unwrapped_optional
     var objcTransitiveType: ObjcInteropType { objcNestedAssociatedTypeEnum }
+}
+
+/// Schema of an `@objc` property managing access to the array of `SwiftAssociatedTypeEnums`.
+internal class ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnumsArray: ObjcInteropPropertyWrapper, ObjcInteropPropertyWrapperForTransitiveType {
+    var objcNestedClass: ObjcInteropNestedClass! // swiftlint:disable:this implicitly_unwrapped_optional
+    var objcTransitiveType: ObjcInteropType { objcNestedClass }
 }
 
 // MARK: - Plain type schemas

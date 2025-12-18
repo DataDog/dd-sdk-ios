@@ -94,7 +94,7 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         sendCIAppLog(rumSession)
         
         // Validate if RUM session links to SR replay through `has_replay` flag in RUM events.
-        // - We can't (yet) reliably sync the begining of the replay with the begining of RUM session, hence some initial
+        // - We can't (yet) reliably sync the beginning of the replay with the beginning of RUM session, hence some initial
         // RUM events will not have `has_replay: true`. For that reason, we only do broad assertion on "most" events.
         let rumEventsWithReplay = try rumSession.allEvents.filter { try $0.sessionHasReplay() == true }
         XCTAssertGreaterThan(Double(rumEventsWithReplay.count) / Double(rumSession.allEvents.count), 0.5, "Most RUM events must have `has_replay` flag set to `true`")

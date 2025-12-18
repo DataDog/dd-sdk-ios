@@ -87,9 +87,14 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         )
     }
 
-    func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
-        startSpan(
-            spanContext: createSpanContext(parentSpanContext: nil, using: localTraceSampler),
+    func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil, customSampleRate: SampleRate? = nil) -> OTSpan {
+        let sampler: Sampling = if let customSampleRate {
+            Sampler(samplingRate: customSampleRate)
+        } else {
+            localTraceSampler
+        }
+        return startSpan(
+            spanContext: createSpanContext(parentSpanContext: nil, using: sampler),
             operationName: operationName,
             tags: tags,
             startTime: startTime
@@ -160,8 +165,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         updateCoreAttributes()
     }
 
-    internal func removeSpan(activityReference: ActivityReference) {
-        activeSpansPool.removeSpan(activityReference: activityReference)
+    internal func removeSpan(span: DDSpan) {
+        activeSpansPool.removeSpan(span: span)
         updateCoreAttributes()
     }
 

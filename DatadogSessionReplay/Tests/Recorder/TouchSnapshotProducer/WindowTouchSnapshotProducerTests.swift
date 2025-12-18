@@ -101,7 +101,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
 
         // Then
         let snapshot = try XCTUnwrap(producer.takeSnapshot(context: .mockAny()))
-        XCTAssertEqual(snapshot.touches.count, 9, "It should capture 9 touch informations")
+        XCTAssertEqual(snapshot.touches.count, 9, "It should capture 9 touch information")
         XCTAssertEqual(Set(snapshot.touches.map { $0.id }).count, 3, "There should be 3 distinct touch identifiers among touch information")
     }
 

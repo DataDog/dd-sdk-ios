@@ -1,5 +1,5 @@
 //
-//  AccesibilityView.swift
+//  AccessibilityView.swift
 //  SwiftUICatalog
 //
 // MIT License
@@ -28,7 +28,7 @@
 
 import SwiftUI
 
-struct AccesibilityView: View {
+struct AccessibilityView: View {
 
     /// accessing the selected content size (user an select it in Settings in the iPhone)
     @Environment(\.dynamicTypeSize) var sizeCategory
@@ -41,7 +41,7 @@ struct AccesibilityView: View {
     @State var likePressed = false
     @State var buyPressed = false
     
-    let id: String = "AccesibilityView"
+    let id: String = "AccessibilityView"
     
     var body: some View {
         NavigationStack{
@@ -157,6 +157,6 @@ struct AccesibilityView: View {
 
 #Preview {
     
-        AccesibilityView()
+        AccessibilityView()
     
 }

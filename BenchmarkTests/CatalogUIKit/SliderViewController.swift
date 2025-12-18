@@ -94,7 +94,7 @@ class SliderViewController: BaseTableViewController {
 
         // Set the sliding thumb image (normal and highlighted).
         //
-        // For fun, choose a different image symbol configuraton for the thumb's image between macOS and iOS.
+        // For fun, choose a different image symbol configuration for the thumb's image between macOS and iOS.
         var thumbImageConfig: UIImage.SymbolConfiguration
         if slider.traitCollection.userInterfaceIdiom == .mac {
             thumbImageConfig = UIImage.SymbolConfiguration(scale: .large)

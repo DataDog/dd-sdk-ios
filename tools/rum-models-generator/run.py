@@ -18,8 +18,8 @@ from dataclasses import dataclass
 SCHEMAS_REPO = 'https://github.com/DataDog/rum-events-format.git'
 
 # JSON Schema paths (relative to cwd)
-RUM_SCHEMA_PATH = '/rum-events-format/rum-events-format.json'
-SR_SCHEMA_PATH = '/rum-events-format/session-replay-mobile-format.json'
+RUM_SCHEMA_PATH = '/rum-events-format/schemas/rum-events-mobile-schema.json'
+SR_SCHEMA_PATH = '/rum-events-format/schemas/session-replay-mobile-schema.json'
 
 # Generated file paths (relative to repository root)
 RUM_SWIFT_GENERATED_FILE_PATH = '/DatadogInternal/Sources/Models/RUM/RUMDataModels.swift'

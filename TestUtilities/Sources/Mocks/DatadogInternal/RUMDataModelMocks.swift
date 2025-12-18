@@ -45,7 +45,7 @@ public func randomRUMEvent() -> RUMDataModel {
         { RUMResourceEvent.mockRandom() },
         { RUMErrorEvent.mockRandom() },
         { RUMLongTaskEvent.mockRandom() },
-        { RUMVitalEvent.mockRandom() }
+        { RUMVitalOperationStepEvent.mockRandom() }
     ])
     // swiftlint:enable opening_brace
 }
@@ -746,9 +746,9 @@ extension RUMTelemetryOperatingSystem: RandomMockable {
     }
 }
 
-extension RUMVitalEvent: RandomMockable {
-    public static func mockRandom() -> RUMVitalEvent {
-        RUMVitalEvent(
+extension RUMVitalOperationStepEvent: RandomMockable {
+    public static func mockRandom() -> RUMVitalOperationStepEvent {
+        return RUMVitalOperationStepEvent(
             dd: .init(),
             application: .init(id: .mockRandom()),
             date: .mockRandom(),
@@ -759,18 +759,7 @@ extension RUMVitalEvent: RandomMockable {
     }
 }
 
-extension RUMVitalEvent.Vital: RandomMockable {
-    public static func mockRandom() -> Self {
-        let vitals = [
-            RUMVitalEvent.Vital.durationProperties(value: .mockRandom()),
-            .appLaunchProperties(value: .mockRandom()),
-            .featureOperationProperties(value: .mockRandom())
-        ]
-        return vitals.randomElement()!
-    }
-}
-
-extension RUMVitalEvent.Vital.DurationProperties: RandomMockable {
+extension RUMVitalDurationEvent.Vital: RandomMockable {
     public static func mockRandom() -> Self {
         .init(
             duration: .mockRandom(),
@@ -780,7 +769,7 @@ extension RUMVitalEvent.Vital.DurationProperties: RandomMockable {
     }
 }
 
-extension RUMVitalEvent.Vital.AppLaunchProperties: RandomMockable {
+extension RUMVitalAppLaunchEvent.Vital: RandomMockable {
     public static func mockRandom() -> Self {
         .init(
             appLaunchMetric: .mockRandom(),
@@ -793,29 +782,29 @@ extension RUMVitalEvent.Vital.AppLaunchProperties: RandomMockable {
     }
 }
 
-extension RUMVitalEvent.Vital.AppLaunchProperties.AppLaunchMetric: RandomMockable {
+extension RUMVitalAppLaunchEvent.Vital.AppLaunchMetric: RandomMockable {
     public static func mockRandom() -> Self {
         [Self.ttid, .ttfd].randomElement()!
     }
 }
 
-extension RUMVitalEvent.Vital.AppLaunchProperties.StartupType: RandomMockable {
+extension RUMVitalAppLaunchEvent.Vital.StartupType: RandomMockable {
     public static func mockRandom() -> Self {
         [Self.coldStart, .warmStart].randomElement()!
     }
 }
 
-extension RUMVitalEvent.Vital.FeatureOperationProperties: RandomMockable {
-    public static func mockRandom() -> RUMVitalEvent.Vital.FeatureOperationProperties {
-        .init(
+extension RUMVitalOperationStepEvent.Vital: RandomMockable {
+    public static func mockRandom() -> RUMVitalOperationStepEvent.Vital {
+        return RUMVitalOperationStepEvent.Vital(
             id: .mockRandom(),
             stepType: .mockRandom()
         )
     }
 }
 
-extension RUMVitalEvent.Vital.FeatureOperationProperties.StepType: AnyMockable, RandomMockable, CaseIterable {
-    public static var allCases: [RUMVitalEvent.Vital.FeatureOperationProperties.StepType]
+extension RUMVitalOperationStepEvent.Vital.StepType: AnyMockable, RandomMockable {
+    public static var allCases: [RUMVitalOperationStepEvent.Vital.StepType]
     = [.start, .end, .retry, .update]
 
     public static func mockAny() -> Self {
@@ -823,6 +812,6 @@ extension RUMVitalEvent.Vital.FeatureOperationProperties.StepType: AnyMockable, 
     }
 
     public static func mockRandom() -> Self {
-        return RUMVitalEvent.Vital.FeatureOperationProperties.StepType.allCases.randomElement()!
+        return RUMVitalOperationStepEvent.Vital.StepType.allCases.randomElement()!
     }
 }

@@ -35,9 +35,55 @@ class DatadogTracer_SamplingTests: XCTestCase {
 
         // Then
         let events = try XCTUnwrap(featureScope.spanEventsWritten())
-        XCTAssertEqual(events.filter({ $0.samplingRate == 0.42 }).count, 100, "All spans must encode sample rate")
+        XCTAssertTrue(events.allSatisfy({ $0.samplingRate == 0.42 }), "All kept spans must encode sample rate")
         XCTAssertGreaterThan(events.filter({ $0.isKept }).count, 1, "Some spans should be kept")
-        XCTAssertGreaterThan(events.filter({ !$0.isKept }).count, 1, "Some spans should be dropped")
+        XCTAssertEqual(events.filter({ !$0.isKept }).count, 0, "Not kept spans should be dropped")
+    }
+
+    func testRecordingCustomSampleRateInRootSpanEvent() throws {
+        // When
+        let tracer = createTracer(sampleRate: 0)
+        (0..<10).forEach { _ in
+            let span = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 100)
+            span.finish()
+        }
+
+        // Then
+        let events = try XCTUnwrap(featureScope.spanEventsWritten())
+        XCTAssertEqual(events.filter({ $0.samplingRate == 1 }).count, 10)
+        XCTAssertEqual(events.filter({ $0.isKept }).count, 10)
+    }
+
+    func testRootSampleInOverridesTracerAndPropagatesToChildSpans() throws {
+        // When
+        let tracer = createTracer(sampleRate: 0)
+        let root = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 100)
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: root.context)
+        let grandChild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+        grandChild.finish()
+        child.finish()
+        root.finish()
+
+        // Then
+        let events = try XCTUnwrap(featureScope.spanEventsWritten())
+        XCTAssertEqual(events.count, 3)
+        XCTAssertEqual(events.filter({ $0.samplingRate == 1 }).count, 3)
+        XCTAssertEqual(events.filter({ $0.isKept }).count, 3)
+    }
+
+    func testRootSampleOutOverridesTracerAndPropagatesToChildSpans() throws {
+        // When
+        let tracer = createTracer(sampleRate: 100)
+        let root = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 0)
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: root.context)
+        let grandChild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+        grandChild.finish()
+        child.finish()
+        root.finish()
+
+        // Then
+        let events = try XCTUnwrap(featureScope.spanEventsWritten())
+        XCTAssertEqual(events.count, 0)
     }
 
     func testRecordingSampledSpan() throws {
@@ -59,27 +105,11 @@ class DatadogTracer_SamplingTests: XCTestCase {
         span.finish()
 
         // Then
-        let event = try XCTUnwrap(featureScope.spanEventsWritten().first)
-        XCTAssertEqual(event.samplingRate, 0)
-        XCTAssertFalse(event.isKept)
+        let event = try featureScope.spanEventsWritten().first
+        XCTAssertNil(event)
     }
 
     // MARK: - Head-based Sampling
-
-    func testRecordingSampleRateInChildSpanEvents() throws {
-        // When
-        let tracer = createTracer(sampleRate: 42)
-        let root = tracer.startSpan(operationName: .mockAny())
-        let child = tracer.startSpan(operationName: .mockAny(), childOf: root.context)
-        let grandChild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
-        grandChild.finish()
-        child.finish()
-        root.finish()
-
-        // Then
-        let events = try XCTUnwrap(featureScope.spanEventsWritten())
-        XCTAssertEqual(events.filter({ $0.samplingRate == 0.42 }).count, 3, "All spans must encode the same sample rate")
-    }
 
     func testWhenRootSpanIsSampled_thenAllChildSpansMustBeSampledTheSameWay() throws {
         // When
@@ -93,10 +123,13 @@ class DatadogTracer_SamplingTests: XCTestCase {
 
         // Then
         let events = try XCTUnwrap(featureScope.spanEventsWritten())
-        XCTAssertEqual(events.count, 3)
-        let allKept = events.filter({ $0.isKept }).count == 3
-        let allDropped = events.filter({ !$0.isKept }).count == 3
-        XCTAssertTrue(allKept || allDropped, "All spans must be either kept or dropped")
+
+        if events.isEmpty {
+            XCTAssert(true, "No spans were collected")
+        } else {
+            XCTAssertEqual(events.filter({ $0.samplingRate == 0.5 }).count, 3, "All spans must encode the same sample rate")
+            XCTAssertEqual(events.filter({ $0.isKept }).count, 3, "All spans must be kept")
+        }
     }
 }
 

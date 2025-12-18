@@ -334,7 +334,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // RUM attributes if available. There is a chance of having them as global RUM attributes can be updated more often than RUM view.
             // See https://github.com/DataDog/dd-sdk-ios/pull/1834 for more context.
             context: context.lastRUMAttributes,
-            date: startDate.timeIntervalSince1970.toInt64Milliseconds,
+            date: startDate.timeIntervalSince1970.dd.toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.device,
             display: nil,

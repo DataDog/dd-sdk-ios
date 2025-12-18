@@ -16,7 +16,7 @@ import DatadogInternal
 public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
 
 /// The type of RUM feature operation failure reason.
-public typealias RUMFeatureOperationFailureReason = RUMVitalEvent.Vital.FeatureOperationProperties.FailureReason
+public typealias RUMFeatureOperationFailureReason = RUMVitalOperationStepEvent.Vital.FailureReason
 
 /// The type of a RUM action.
 public enum RUMActionType {
@@ -74,7 +74,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     /// This method uses an asynchronous callback to ensure all pending RUM events have been processed
     /// up to the moment of the call.
     /// - Parameters:
-    ///   - completion: the callback that will recieve the current session ID. This will be called from a
+    ///   - completion: the callback that will receive the current session ID. This will be called from a
     ///   background thread
     func currentSessionID(completion: @escaping (String?) -> Void)
 

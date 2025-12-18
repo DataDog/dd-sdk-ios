@@ -138,10 +138,17 @@ internal class RUMResourceScope: RUMScope {
         let graphqlOperationName: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationName)?.dd.decode()
         let graphqlPayload: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlPayload)?.dd.decode()
         let graphqlVariables: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlVariables)?.dd.decode()
+        let graphqlErrorsData: Data? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlErrors)?.dd.decode()
+
+        // Parse GraphQL errors if present
+        let graphqlErrors = parseGraphQLErrors(from: graphqlErrorsData)
+
         if
             let rawGraphqlOperationType: String = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationType)?.dd.decode(),
             let graphqlOperationType = RUMResourceEvent.Resource.Graphql.OperationType(rawValue: rawGraphqlOperationType) {
             graphql = .init(
+                errorCount: graphqlErrors?.count.toInt64,
+                errors: graphqlErrors,
                 operationName: graphqlOperationName,
                 operationType: graphqlOperationType,
                 payload: graphqlPayload,
@@ -188,7 +195,7 @@ internal class RUMResourceScope: RUMScope {
             connectivity: .init(context: context),
             container: nil,
             context: .init(contextInfo: command.globalAttributes.merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
-            date: resourceStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            date: resourceStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
@@ -196,30 +203,30 @@ internal class RUMResourceScope: RUMScope {
             resource: .init(
                 connect: resourceMetrics?.connect.map { metric in
                     .init(
-                        duration: metric.duration.toInt64Nanoseconds,
-                        start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
+                        duration: metric.duration.dd.toInt64Nanoseconds,
+                        start: metric.start.timeIntervalSince(resourceStartTime).dd.toInt64Nanoseconds
                     )
                 },
                 decodedBodySize: nil,
                 deliveryType: nil,
                 dns: resourceMetrics?.dns.map { metric in
                     .init(
-                        duration: metric.duration.toInt64Nanoseconds,
-                        start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
+                        duration: metric.duration.dd.toInt64Nanoseconds,
+                        start: metric.start.timeIntervalSince(resourceStartTime).dd.toInt64Nanoseconds
                     )
                 },
                 download: resourceMetrics?.download.map { metric in
                     .init(
-                        duration: metric.duration.toInt64Nanoseconds,
-                        start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
+                        duration: metric.duration.dd.toInt64Nanoseconds,
+                        start: metric.start.timeIntervalSince(resourceStartTime).dd.toInt64Nanoseconds
                     )
                 },
                 duration: resolveResourceDuration(resourceDuration),
                 encodedBodySize: nil,
                 firstByte: resourceMetrics?.firstByte.map { metric in
                     .init(
-                        duration: metric.duration.toInt64Nanoseconds,
-                        start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
+                        duration: metric.duration.dd.toInt64Nanoseconds,
+                        start: metric.start.timeIntervalSince(resourceStartTime).dd.toInt64Nanoseconds
                     )
                 },
                 graphql: graphql,
@@ -229,16 +236,16 @@ internal class RUMResourceScope: RUMScope {
                 provider: resourceEventProvider,
                 redirect: resourceMetrics?.redirection.map { metric in
                     .init(
-                        duration: metric.duration.toInt64Nanoseconds,
-                        start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
+                        duration: metric.duration.dd.toInt64Nanoseconds,
+                        start: metric.start.timeIntervalSince(resourceStartTime).dd.toInt64Nanoseconds
                     )
                 },
                 renderBlockingStatus: nil,
                 size: size ?? 0,
                 ssl: resourceMetrics?.ssl.map { metric in
                     .init(
-                        duration: metric.duration.toInt64Nanoseconds,
-                        start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
+                        duration: metric.duration.dd.toInt64Nanoseconds,
+                        start: metric.start.timeIntervalSince(resourceStartTime).dd.toInt64Nanoseconds
                     )
                 },
                 statusCode: command.httpStatusCode?.toInt64 ?? 0,
@@ -281,7 +288,7 @@ internal class RUMResourceScope: RUMScope {
 
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand, context: DatadogContext, writer: Writer) {
         let errorFingerprint: String? = attributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
-        let timeSinceAppStart = command.time.timeIntervalSince(context.launchInfo.processLaunchDate).toInt64Milliseconds
+        let timeSinceAppStart = command.time.timeIntervalSince(context.launchInfo.processLaunchDate).dd.toInt64Milliseconds
 
         // Write error event
         let errorEvent = RUMErrorEvent(
@@ -304,7 +311,7 @@ internal class RUMResourceScope: RUMScope {
             connectivity: .init(context: context),
             container: nil,
             context: .init(contextInfo: command.globalAttributes.merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
-            date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
@@ -408,6 +415,46 @@ internal class RUMResourceScope: RUMScope {
             return 1 // 1ns
         }
 
-        return duration.toInt64Nanoseconds
+        return duration.dd.toInt64Nanoseconds
+    }
+
+    /// Decodes GraphQL errors from JSON data and returns them as RUM event errors
+    private func parseGraphQLErrors(from data: Data?) -> [RUMResourceEvent.Resource.Graphql.Errors]? {
+        guard let data else {
+            return nil
+        }
+
+        do {
+            let response = try JSONDecoder().decode(GraphQLResponse.self, from: data)
+
+            guard let responseErrors = response.errors, !responseErrors.isEmpty else {
+                return nil
+            }
+            let parsedErrors = responseErrors.map { error in
+                RUMResourceEvent.Resource.Graphql.Errors(
+                    code: error.code,
+                    locations: error.locations?.map { location in
+                        RUMResourceEvent.Resource.Graphql.Errors.Locations(
+                            column: Int64(location.column),
+                            line: Int64(location.line)
+                        )
+                    },
+                    message: error.message,
+                    path: error.path?.map { pathElement in
+                        switch pathElement {
+                        case .string(let value):
+                            return .string(value: value)
+                        case .int(let value):
+                            return .integer(value: Int64(value))
+                        }
+                    }
+                )
+            }
+
+            return parsedErrors
+        } catch {
+            DD.logger.debug("Failed to decode GraphQL errors: \(error)")
+            return nil
+        }
     }
 }

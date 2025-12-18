@@ -71,6 +71,41 @@ internal class SwiftToObjcInteropTypeTransformer {
                         bridgedSwiftEnum: swiftArray.element as! SwiftEnum // swiftlint:disable:this force_cast
                     )
                     return propertyWrapper
+
+                case let swiftArray as SwiftArray where swiftArray.element is SwiftAssociatedTypeEnum:
+                    let associatedTypeEnum = swiftArray.element as! SwiftAssociatedTypeEnum // swiftlint:disable:this force_cast
+                    let propertyWrapper = ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnumsArray(
+                        owner: objcClass,
+                        swiftProperty: swiftProperty
+                    )
+
+                    // Create a nested class to wrap the associated type enum
+                    let objcNestedClass = ObjcInteropNestedClass(
+                        owner: propertyWrapper,
+                        bridgedSwiftStruct: SwiftStruct(name: associatedTypeEnum.name, properties: [], conformance: [])
+                    )
+
+                    // Store the associated type enum info directly on the nested class
+                    // This will be used by the printer to generate the enum case properties
+                    let objcAssociatedTypeEnumWrapper = ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnum(
+                        owner: objcNestedClass,
+                        swiftProperty: swiftProperty
+                    )
+
+                    objcAssociatedTypeEnumWrapper.objcNestedAssociatedTypeEnum = ObjcInteropAssociatedTypeEnum(
+                        owner: objcAssociatedTypeEnumWrapper,
+                        bridgedSwiftAssociatedTypeEnum: associatedTypeEnum,
+                        associatedObjcInteropTypes: try associatedTypeEnum.cases.map { swiftEnumCase in
+                            try objcInteropType(for: swiftEnumCase.associatedType)
+                        }
+                    )
+
+                    // Set the property wrappers manually - this prevents generateTransitiveObjcInteropTypes
+                    // from being called recursively for this nested class
+                    objcNestedClass.objcPropertyWrappers = [objcAssociatedTypeEnumWrapper]
+                    propertyWrapper.objcNestedClass = objcNestedClass
+                    return propertyWrapper
+
                 case let swiftArray as SwiftArray where swiftArray.element is SwiftPrimitiveType:
                     let propertyWrapper = ObjcInteropPropertyWrapperManagingSwiftStructProperty(
                         owner: objcClass,
@@ -199,8 +234,11 @@ internal class SwiftToObjcInteropTypeTransformer {
                         throw Exception.illegal("Illegal reference type: \(swifTypeReference)")
                     }
                 default:
-                    throw Exception.unimplemented(
-                        "Cannot generate @objc property wrapper for: \(type(of: swiftProperty.type))"
+                    throw Exception.moreContext(
+                        "In struct '\(objcClass.bridgedSwiftStruct.name)', property '\(swiftProperty.name)'",
+                        for: Exception.unimplemented(
+                            "Cannot generate @objc property wrapper for: \(type(of: swiftProperty.type))"
+                        )
                     )
                 }
             }
@@ -210,6 +248,13 @@ internal class SwiftToObjcInteropTypeTransformer {
             .forEach { propertyWrapper in
                 // Store `ObjcInteropTypes` created for property wrappers
                 outputObjcInteropTypes.append(propertyWrapper.objcTransitiveType)
+
+                // Skip recursive processing for array of associated type enums
+                // Their property wrappers are manually set and shouldn't be regenerated
+                guard !(propertyWrapper is ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnumsArray) else {
+                    return
+                }
+
                 if let transitiveClass = propertyWrapper.objcTransitiveType as? ObjcInteropClass {
                     // Recursively generate property wrappers for each transitive `ObjcInteropClass`
                     try generateTransitiveObjcInteropTypes(in: transitiveClass)
@@ -242,8 +287,11 @@ internal class SwiftToObjcInteropTypeTransformer {
         case let swiftEnum as SwiftEnum:
             return ObjcInteropEnum(bridgedSwiftEnum: swiftEnum)
         default:
-            throw Exception.unimplemented(
-                "Cannot create `ObjcInteropType` type for \(type(of: swiftType))."
+            throw Exception.moreContext(
+                "In swiftType named: '\(swiftType.typeName)'",
+                for: Exception.unimplemented(
+                    "Cannot create `ObjcInteropType` type for \(type(of: swiftType))."
+                )
             )
         }
     }

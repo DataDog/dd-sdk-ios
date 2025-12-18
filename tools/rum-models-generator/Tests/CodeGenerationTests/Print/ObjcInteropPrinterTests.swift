@@ -2483,6 +2483,159 @@ final class ObjcInteropPrinterTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
+    func testPrintingObjcInteropForSwiftStructWithAssociatedTypeEnumArrayProperties() throws {
+        let associatedTypeEnum1 = SwiftAssociatedTypeEnum(
+            name: "Status1",
+            comment: nil,
+            cases: [
+                SwiftAssociatedTypeEnum.Case(label: "success", associatedType: SwiftPrimitive<String>()),
+                SwiftAssociatedTypeEnum.Case(label: "error", associatedType: SwiftPrimitive<Int>()),
+            ],
+            conformance: []
+        )
+
+        let associatedTypeEnum2 = SwiftAssociatedTypeEnum(
+            name: "Status2",
+            comment: nil,
+            cases: [
+                SwiftAssociatedTypeEnum.Case(label: "pending", associatedType: SwiftPrimitive<Bool>()),
+                SwiftAssociatedTypeEnum.Case(label: "complete", associatedType: SwiftPrimitive<Double>()),
+            ],
+            conformance: []
+        )
+
+        let fooStruct = SwiftStruct(
+            name: "Foo",
+            comment: nil,
+            properties: [
+                .mock(
+                    propertyName: "statuses",
+                    type: SwiftArray(element: associatedTypeEnum1),
+                    isOptional: false,
+                    mutability: .immutable
+                ),
+                .mock(
+                    propertyName: "optionalStatuses",
+                    type: SwiftArray(element: associatedTypeEnum2),
+                    isOptional: true,
+                    mutability: .immutable
+                ),
+            ],
+            conformance: []
+        )
+
+        let expected = """
+        // MARK: - Swift
+
+        public struct Foo {
+            public let statuses: [Status1]
+
+            public let optionalStatuses: [Status2]?
+
+            ///
+            /// - Parameters:
+            ///   - statuses:
+            ///   - optionalStatuses:
+            public init(
+                statuses: [Status1],
+                optionalStatuses: [Status2]? = nil
+            ) {
+                self.statuses = statuses
+                self.optionalStatuses = optionalStatuses
+            }
+
+            public enum Status1 {
+                case success(value: String)
+                case error(value: Int)
+            }
+
+            public enum Status2 {
+                case pending(value: Bool)
+                case complete(value: Double)
+            }
+        }
+
+        // MARK: - ObjcInterop
+
+        @objc(DDFoo)
+        @objcMembers
+        @_spi(objc)
+        public class objc_Foo: NSObject {
+            public internal(set) var swiftModel: Foo
+            internal var root: objc_Foo { self }
+
+            public init(swiftModel: Foo) {
+                self.swiftModel = swiftModel
+            }
+
+            public var statuses: [objc_FooStatus1] {
+                root.swiftModel.statuses.map { objc_FooStatus1(swiftModel: $0) }
+            }
+
+            public var optionalStatuses: [objc_FooStatus2]? {
+                root.swiftModel.optionalStatuses?.map { objc_FooStatus2(swiftModel: $0) }
+            }
+        }
+
+        @objc(DDFooStatus1)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooStatus1: NSObject {
+            internal var swiftModel: Foo.Status1
+            internal var root: objc_FooStatus1 { self }
+
+            internal init(swiftModel: Foo.Status1) {
+                self.swiftModel = swiftModel
+            }
+
+            public var success: String? {
+                guard case .success(let value) = root.swiftModel else {
+                    return nil
+                }
+                return value
+            }
+
+            public var error: NSNumber? {
+                guard case .error(let value) = root.swiftModel else {
+                    return nil
+                }
+                return value as NSNumber
+            }
+        }
+
+        @objc(DDFooStatus2)
+        @objcMembers
+        @_spi(objc)
+        public class objc_FooStatus2: NSObject {
+            internal var swiftModel: Foo.Status2
+            internal var root: objc_FooStatus2 { self }
+
+            internal init(swiftModel: Foo.Status2) {
+                self.swiftModel = swiftModel
+            }
+
+            public var pending: NSNumber? {
+                guard case .pending(let value) = root.swiftModel else {
+                    return nil
+                }
+                return value as NSNumber
+            }
+
+            public var complete: NSNumber? {
+                guard case .complete(let value) = root.swiftModel else {
+                    return nil
+                }
+                return value as NSNumber
+            }
+        }
+
+        """
+
+        let actual = try printSwiftWithObjcInterop(for: [fooStruct])
+
+        XCTAssertEqual(expected, actual)
+    }
+
     // MARK: - Nested Swift Enums with associated types
 
     func testPrintingObjcInteropForSwiftStructsWithSwiftAssociatedTypeEnum() throws {

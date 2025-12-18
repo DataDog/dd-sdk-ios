@@ -27,7 +27,7 @@ struct MyOwnAnimation: CustomAnimation {
     func animate<V>(value: V, time: TimeInterval, context: inout AnimationContext<V>) -> V? where V : VectorArithmetic {
         if time > duration { return nil }
         
-        // this creates a psychodelics crazy animation that makes the view grow randomly at the start and beggining
+        // this creates a psychodelics crazy animation that makes the view grow randomly at the start and beginning
         // of the animation
         if time < duration / 4 {
             return value.scaled(by: Double.random(in: 0...0.5))
