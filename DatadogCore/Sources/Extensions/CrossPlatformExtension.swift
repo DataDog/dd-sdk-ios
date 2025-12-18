@@ -7,10 +7,8 @@
 import Foundation
 import DatadogInternal
 
-///  for additional core capabilties only exposed Internally.
-///
-/// Extension provides cross-platform libraries with additional Internal-only capabilities.
-/// It's also expoed in Objective-C, mainly for KMP support.
+/// Extension that provides cross-platform libraries with additional Internal-only capabilities.
+/// It's Objective-C compatible, mainly for KMP support.
 ///
 /// Note: It only works for single core setup, relying on `CoreRegistry.default` existence.
 @objc(DDCrossPlatformExtension)

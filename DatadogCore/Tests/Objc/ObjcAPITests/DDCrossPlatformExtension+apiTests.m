@@ -23,6 +23,8 @@
     [DDCrossPlatformExtension subscribeToSharedContext:^(DDSharedContext * _Nullable context) {
         // Just check API availability in Objective-C
     }];
+
+    [DDCrossPlatformExtension unsubscribeFromSharedContext];
 }
 
 #pragma clang diagnostic pop
