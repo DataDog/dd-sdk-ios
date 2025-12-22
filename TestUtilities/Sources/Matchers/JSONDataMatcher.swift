@@ -30,6 +30,48 @@ public class JSONDataMatcher {
 
     // MARK: - Generic matches
 
+    /// Compares two values for a given key.
+    ///
+    /// Used by ``assertItMatches(jsonString:usingCustomKeyComparators:file:line:)``.
+    public typealias CustomKeyComparator = (Any, Any, StaticString, UInt) throws -> Void
+
+    /// Asserts a match between two JSON objects, using optional comparators
+    /// for a specific set of keys.
+    ///
+    /// This is useful when two JSON objects need to be compared, but the
+    /// values of one of the keys need to be compared in a more complex way
+    /// than just the basic equality. For example, the tags field may have the
+    /// same tags in a different order, causing a failure even if they are semantically
+    /// equivalent.
+    ///
+    /// - parameters:
+    ///   - jsonString: The JSON string to compare with the JSON object held by
+    ///   this matcher.
+    ///   - customKeyComparators: Dictionary of keys and comparators. Any
+    ///   key present in this dictionary will be tested using its comparator. Otherwise,
+    ///   the regular equality comparison is used.
+    ///   - file: The file where the assertion is made. Defaults to `#file`.
+    ///   - line: The line where the assertion is made in `file`. Defaults to `#line`.
+    public func assertItMatches(jsonString: String, usingCustomKeyComparators customKeyComparators: [String: CustomKeyComparator], file: StaticString = #file, line: UInt = #line) throws {
+        var thisJSON = json
+        var theirJSON = try jsonString.data(using: .utf8)!
+            .toJSONObject(file: file, line: line) // swiftlint:disable:this force_unwrapping
+
+        try customKeyComparators.forEach { key, comparator in
+            defer {
+                thisJSON.removeValue(forKey: key)
+                theirJSON.removeValue(forKey: key)
+            }
+
+            let thisValue = thisJSON[key]
+            let theirValue = thisJSON[key]
+
+            try comparator(thisValue as Any, theirValue as Any, file, line)
+        }
+
+        DDAssertDictionariesEqual(thisJSON, theirJSON, file: file, line: line)
+    }
+
     public func assertValue<T: Equatable>(forKey key: String, equals value: T, file: StaticString = #file, line: UInt = #line) {
         XCTAssertEqual(json[key] as? T, value, file: file, line: line)
     }
