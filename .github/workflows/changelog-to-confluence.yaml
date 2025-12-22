@@ -1,10 +1,11 @@
-name: Publish Changelog to Confluence
+name: Publish Changelog and RUM Feature Docs to Confluence
 on:
     push:
         branches:
             - develop
         paths:
             - 'CHANGELOG.md'
+            - '/DatadogRUM/RUM_FEATURE.md'
 permissions:
     contents: read
 jobs:
@@ -14,11 +15,13 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
-            - name: Prepare Only Changelog
+            - name: Prepare Only Changelog and RUM Feature Docs
               run: |
                   mkdir -p publish_folder
                   cp CHANGELOG.md publish_folder/dd-ios-sdk-changelog.md
+                  cp DatadogRUM/RUM_FEATURE.md publish_folder/dd-sdk-ios-RUM_FEATURE.md
                   echo "Publishing only CHANGELOG.md"
+                  echo "Publishing RUM_FEATURE.md"
 
             - name: Publish Markdown to Confluence
               uses: markdown-confluence/publish-action@7767a0a7f438bb1497ee7ffd7d3d685b81dfe700 # v5
