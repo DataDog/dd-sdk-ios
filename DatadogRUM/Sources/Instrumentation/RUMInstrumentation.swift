@@ -60,7 +60,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         notificationCenter: NotificationCenter,
         bundleType: BundleType,
         watchdogTermination: WatchdogTerminationMonitor?,
-        memoryWarningMonitor: MemoryWarningMonitor?
+        memoryWarningMonitor: MemoryWarningMonitor?,
+        uuidGenerator: RUMUUIDGenerator
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI manual instrumentation)
         // and only activate `UIViewControllerSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured:
@@ -145,6 +146,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
                 backtraceReporter: backtraceReporter,
                 fatalErrorContext: fatalErrorContext,
                 dateProvider: dateProvider,
+                uuidGenerator: uuidGenerator,
                 processID: processID
             )
         }
