@@ -17,6 +17,8 @@
 		11030D712D95A51100732D5F /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; };
 		11030D762D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */; };
 		11030D772D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */; };
+		110311762EF96F6700750DD4 /* DDLogs+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 110311752EF96ED000750DD4 /* DDLogs+apiTests.m */; };
+		110311772EF96F6700750DD4 /* DDLogs+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 110311752EF96ED000750DD4 /* DDLogs+apiTests.m */; };
 		110B0ECB2DF0ABC6008ABA19 /* DeterministicSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */; };
 		110B0ECC2DF0ABC6008ABA19 /* DeterministicSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */; };
 		112877992D708D300082D11B /* VitalRefreshRateReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112877972D708D300082D11B /* VitalRefreshRateReader.swift */; };
@@ -2496,6 +2498,7 @@
 /* Begin PBXFileReference section */
 		0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensionsTests.swift; sourceTree = "<group>"; };
 		11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesMetric.swift; sourceTree = "<group>"; };
+		110311752EF96ED000750DD4 /* DDLogs+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDLogs+apiTests.m"; sourceTree = "<group>"; };
 		110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSampler.swift; sourceTree = "<group>"; };
 		1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAttributesIntegrationTests.swift; sourceTree = "<group>"; };
 		112877942D708D300082D11B /* FrameInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameInfoProvider.swift; sourceTree = "<group>"; };
@@ -5989,19 +5992,20 @@
 		61B5E41F26DF857E000B0A5F /* ObjcAPITests */ = {
 			isa = PBXGroup;
 			children = (
-				61B5E42626DFB145000B0A5F /* DDDatadog+apiTests.m */,
+				A79B0F63292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m */,
 				61B5E42826DFB60A000B0A5F /* DDConfiguration+apiTests.m */,
 				A731B7E72EE094B4003D1E4F /* DDCrossPlatformExtension+apiTests.m */,
-				61B5E42026DF85C7000B0A5F /* DDRUMMonitor+apiTests.m */,
-				61112F8D2A4417D6006FFCA6 /* DDRUM+apiTests.m */,
-				6147989B2A459E2B0095CB02 /* DDTrace+apiTests.m */,
+				61B5E42626DFB145000B0A5F /* DDDatadog+apiTests.m */,
 				D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */,
-				A79B0F63292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m */,
-				A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */,
-				3C1890132ABDE99200CE9E73 /* DDURLSessionInstrumentationTests+apiTests.m */,
-				A795069D2B974CAA00AC4814 /* DDSessionReplay+apiTests.m */,
-				6174D6052BFB9D5500EC7469 /* DDWebViewTracking+apiTests.m */,
 				F603F12D2CAEA7590088E6B7 /* DDInternalLogger+apiTests.m */,
+				110311752EF96ED000750DD4 /* DDLogs+apiTests.m */,
+				61112F8D2A4417D6006FFCA6 /* DDRUM+apiTests.m */,
+				61B5E42026DF85C7000B0A5F /* DDRUMMonitor+apiTests.m */,
+				A795069D2B974CAA00AC4814 /* DDSessionReplay+apiTests.m */,
+				6147989B2A459E2B0095CB02 /* DDTrace+apiTests.m */,
+				3C1890132ABDE99200CE9E73 /* DDURLSessionInstrumentationTests+apiTests.m */,
+				A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */,
+				6174D6052BFB9D5500EC7469 /* DDWebViewTracking+apiTests.m */,
 			);
 			path = ObjcAPITests;
 			sourceTree = "<group>";
@@ -9126,6 +9130,7 @@
 				D2EFA875286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */,
 				61363D9F24D99BAA0084CD6F /* DDErrorTests.swift in Sources */,
 				A727C4BB2BADB3AB00707DFD /* DDSessionReplay+apiTests.m in Sources */,
+				110311762EF96F6700750DD4 /* DDLogs+apiTests.m in Sources */,
 				613F9C182BAC3527007C7606 /* DatadogCore+FeatureDataStoreTests.swift in Sources */,
 				6128F5842BA8CAAB00D35B08 /* DataStoreFileWriterTests.swift in Sources */,
 				D22743DA29DEB8B4001A7EF9 /* VitalMemoryReaderTests.swift in Sources */,
@@ -10644,6 +10649,7 @@
 				D2B3F053282E827B00C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */,
 				D22743E729DEB953001A7EF9 /* UIApplicationSwizzlerTests.swift in Sources */,
 				3CF673372B4807490016CE17 /* OTelSpanTests.swift in Sources */,
+				110311772EF96F6700750DD4 /* DDLogs+apiTests.m in Sources */,
 				6128F58B2BA9860B00D35B08 /* DataStoreFileReaderTests.swift in Sources */,
 				D224430E29E95D6700274EC7 /* CrashReportReceiverTests.swift in Sources */,
 				11F55FD72DCBBAD700DE4944 /* DDURLSessionInstrumentationTests+apiTests.m in Sources */,
