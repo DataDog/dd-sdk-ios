@@ -150,6 +150,8 @@ public struct LogEvent: Encodable {
     public let mobileCarrierInfo: CarrierInfo?
     /// The attributes associated with this log.
     public var attributes: LogEvent.Attributes
+    /// Datadog tags to send with logs, in addition to ``tags``.
+    public let ddTags: String
     /// Tags associated with this log.
     public var tags: [String]?
 
@@ -339,11 +341,11 @@ internal struct LogEventEncoder {
 
         // Encode tags
         var tags = log.tags ?? []
-        tags.append("env:\(log.environment)") // include default env tag
-        tags.append("version:\(log.applicationVersion)") // include default version tag
-        if let variant = log.variant {
-            tags.append("variant:\(variant)")
-        }
+        // Include dd tags
+        // log.ddTags is already a string with multiple tags
+        // joined by ",". That is OK, as it gets joined with
+        // the specific ones for this log.
+        tags.append(log.ddTags)
         let tagsString = tags.joined(separator: ",")
         try container.encode(tagsString, forKey: .tags)
     }

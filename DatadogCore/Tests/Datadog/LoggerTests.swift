@@ -62,7 +62,7 @@ class LoggerTests: XCTestCase {
 
         let logMatcher = try core.waitAndReturnLogMatchers()[0]
 
-        try logMatcher.assertItFullyMatches(jsonString: """
+        try logMatcher.assertItMatches(jsonString: """
         {
           "status": "debug",
           "message": "message",
@@ -91,7 +91,7 @@ class LoggerTests: XCTestCase {
           "date" : "2019-12-15T10:00:00.000Z",
           "version": "1.0.0",
           "build_version": "1",
-          "ddtags": "env:tests,version:1.0.0",
+          "ddtags": "sdk_version:1.2.3,service:default-service-name,version:1.0.0,env:tests",
           "os": {
             "build": "FFFFFF",
             "name": "testOS",
@@ -99,7 +99,21 @@ class LoggerTests: XCTestCase {
             "version_major": "1"
           }
         }
-        """)
+        """, usingCustomKeyComparators: [
+            "ddtags": { lhs, rhs, file, line in
+                guard let lhs = lhs as? String,
+                      let rhs = rhs as? String
+                else {
+                    XCTFail("ddTags values are not strings.", file: file, line: line)
+                    return
+                }
+
+                let lTags = Set(lhs.components(separatedBy: ","))
+                let rTags = Set(rhs.components(separatedBy: ","))
+
+                XCTAssertEqual(lTags, rTags, file: file, line: line)
+            }
+        ])
     }
 
     func testSendingLogWithCustomizedLogger() throws {
@@ -611,8 +625,10 @@ class LoggerTests: XCTestCase {
 
     func testSendingTags() throws {
         core.context = .mockWith(
+            service: "default-service-name",
             env: "tests",
-            version: "1.2.3"
+            version: "1.2.3",
+            sdkVersion: "3.2.1"
         )
 
         let feature: LogsFeature = .mockAny()
@@ -642,16 +658,18 @@ class LoggerTests: XCTestCase {
         logger.info("info message 3")
 
         let logMatchers = try core.waitAndReturnLogMatchers()
-        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3"])
-        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3"])
-        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3"])
+        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3", "service:default-service-name", "sdk_version:3.2.1"])
+        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3", "service:default-service-name", "sdk_version:3.2.1"])
+        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3", "service:default-service-name", "sdk_version:3.2.1"])
     }
 
     func testSendingTagsWithVariant() throws {
         core.context = .mockWith(
+            service: "default-service-name",
             env: "tests",
             version: "1.2.3",
-            variant: "integration"
+            variant: "integration",
+            sdkVersion: "3.2.1"
         )
 
         let feature: LogsFeature = .mockAny()
@@ -681,9 +699,9 @@ class LoggerTests: XCTestCase {
         logger.info("info message 3")
 
         let logMatchers = try core.waitAndReturnLogMatchers()
-        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3", "variant:integration"])
-        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3", "variant:integration"])
-        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3", "variant:integration"])
+        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3", "variant:integration", "service:default-service-name", "sdk_version:3.2.1"])
+        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3", "variant:integration", "service:default-service-name", "sdk_version:3.2.1"])
+        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3", "variant:integration", "service:default-service-name", "sdk_version:3.2.1"])
     }
 
     // MARK: - Integration With RUM Feature

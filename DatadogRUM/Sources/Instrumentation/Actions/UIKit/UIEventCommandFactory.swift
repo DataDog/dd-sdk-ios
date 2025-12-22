@@ -107,6 +107,8 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
                 return parent is UITableViewCell
                 || parent is UICollectionViewCell
                 || parent is UIControl
+                || parent.isUIAlertActionView
+                || parent.isUIAlertTextField
             }
             return bestParent // best parent or `nil`
         }

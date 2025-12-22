@@ -112,6 +112,7 @@ extension LogEvent: AnyMockable, RandomMockable {
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
         attributes: LogEvent.Attributes = .mockAny(),
+        ddTags: String = .mockRandomDDTags(),
         tags: [String]? = nil
     ) -> LogEvent {
         return LogEvent(
@@ -128,7 +129,9 @@ extension LogEvent: AnyMockable, RandomMockable {
             applicationBuildNumber: applicationBuildNumber,
             buildId: nil,
             variant: variant,
-            dd: .init(device: .init(architecture: device.architecture ?? "")),
+            dd: .init(
+                device: .init(architecture: device.architecture ?? "")
+            ),
             device: device,
             os: os,
             userInfo: userInfo,
@@ -136,6 +139,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             networkConnectionInfo: networkConnectionInfo,
             mobileCarrierInfo: mobileCarrierInfo,
             attributes: attributes,
+            ddTags: ddTags,
             tags: tags
         )
     }
@@ -155,7 +159,9 @@ extension LogEvent: AnyMockable, RandomMockable {
             applicationBuildNumber: .mockRandom(),
             buildId: .mockRandom(),
             variant: .mockRandom(),
-            dd: .init(device: .init(architecture: .mockRandom())),
+            dd: .init(
+                device: .init(architecture: .mockRandom())
+            ),
             device: .mockRandom(),
             os: .mockRandom(),
             userInfo: .mockRandom(),
@@ -163,6 +169,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             networkConnectionInfo: .mockRandom(),
             mobileCarrierInfo: .mockRandom(),
             attributes: .mockRandom(),
+            ddTags: .mockRandomDDTags(),
             tags: .mockRandom()
         )
     }

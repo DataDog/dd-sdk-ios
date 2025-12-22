@@ -31,7 +31,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
         device: DeviceInfo = .mockAny(),
         os: OperatingSystem = .mockAny(),
         localeInfo: LocaleInfo = .mockAny(),
-        userInfo: UserInfo = .mockAny(),
+        userInfo: UserInfo? = .mockAny(),
         accountInfo: AccountInfo? = nil,
         trackingConsent: TrackingConsent = .pending,
         launchInfo: LaunchInfo = .mockAny(),

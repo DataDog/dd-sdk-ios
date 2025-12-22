@@ -17,8 +17,8 @@ GITHUB_TOKEN=
 # OpenAI API token
 OPENAI_TOKEN=
 
-# OpenAI system prompt
-OPENAI_SYSTEM_PROMPT=You are an assistant that analyzes GitHub issues. Respond in JSON: {"summary": "brief summary", "suggested_response": "helpful response", "confidence_level": "high|medium|low"}
+# OpenAI system prompt (must return JSON with required structure)
+OPENAI_SYSTEM_PROMPT=You are an assistant that analyzes GitHub issues. Respond in JSON: {"summary": "brief summary", "problem": "core problem", "scope": "sdk|custom|unclear", "category": "question|bug|crash|compilation|configuration|feature_request|docs|performance|other", "confidence_level": "high|medium|low", "next_steps": ["step1", "step2"], "clarifying_questions": ["q1", "q2"], "suggested_response": "helpful response"}
 
 # Slack webhook URL (for posting notifications)
 SLACK_WEBHOOK_URL=
@@ -26,8 +26,13 @@ SLACK_WEBHOOK_URL=
 # Slack channel ID (starts with C)
 SLACK_CHANNEL_ID=
 
-# Optional: Override the default repository
+# Repository in format owner/repo
 GITHUB_REPOSITORY=DataDog/dd-sdk-ios
+
+# Optional: Override OpenAI defaults
+# OPENAI_MODEL=chatgpt-4o-latest
+# OPENAI_TEMPERATURE=0.4
+# OPENAI_MAX_RESPONSE_TOKENS=500
 EOL
 
 echo "✨ Created .env file"
