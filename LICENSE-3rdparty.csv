@@ -1,7 +1,6 @@
 Component,Origin,License,Copyright
 import,io.opentracing,MIT,Copyright 2018 LightStep
 import,com.Lyft.Kronos,Apache-2.0,Copyright (C) 2016 Lyft Inc. and MobileNativeFoundation
-import,PLCrashReporter,MIT,Copyright Microsoft Corporation
 import,KSCrash,MIT,Copyright (c) 2012 Karl Stenerud
 import,https://github.com/mattgallagher/CwlUtils,ISC,Copyright (c) Matt Gallagher
 import,AnyCodable,MIT,Copyright 2018 Read Evaluate Press LLC

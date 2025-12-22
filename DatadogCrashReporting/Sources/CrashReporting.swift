@@ -20,9 +20,9 @@ import DatadogInternal
 /// Your crash reports appear in [Error Tracking](https://app.datadoghq.com/rum/error-tracking).
 public final class CrashReporting {
     /// Initializes the Datadog Crash Reporter using the default
-    /// `PLCrashReporter` plugin.
+    /// `KSCrash` plugin.
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
-        enable(with: PLCrashReporterPlugin(), in: core)
+        enable(with: try KSCrashPlugin(telemetry: core.telemetry), in: core)
     }
 
     /// Initializes the Datadog Crash Reporter with a custom Crash Reporting Plugin.
@@ -90,13 +90,5 @@ public final class objc_CrashReporting: NSObject {
     @objc
     public static func enable() {
         CrashReporting.enable()
-    }
-}
-
-extension CrashReporting: InternalExtended {}
-extension InternalExtension where ExtendedType: CrashReporting {
-    /// Initializes the Datadog Crash Reporter using the default `KSCrash` plugin.
-    public static func kscrash_enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
-        ExtendedType.enable(with: try KSCrashPlugin(telemetry: core.telemetry), in: core)
     }
 }

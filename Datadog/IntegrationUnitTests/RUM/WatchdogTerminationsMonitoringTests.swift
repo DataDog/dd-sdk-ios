@@ -49,10 +49,10 @@ class WatchdogTerminationsMonitoringTests: XCTestCase {
             [ // no matter of RUM or CR initialization order
                 {
                     RUM.enable(with: self.rumConfig, in: self.core)
-                    CrashReporting._internal.kscrash_enable(in: self.core)
+                    CrashReporting.enable(in: self.core)
                 },
                 {
-                    CrashReporting._internal.kscrash_enable(in: self.core)
+                    CrashReporting.enable(in: self.core)
                     RUM.enable(with: self.rumConfig, in: self.core)
                 },
             ]
@@ -81,10 +81,10 @@ class WatchdogTerminationsMonitoringTests: XCTestCase {
             [ // no matter of RUM or CR initialization order
                 {
                     RUM.enable(with: self.rumConfig, in: self.core)
-                    CrashReporting._internal.kscrash_enable(in: self.core)
+                    CrashReporting.enable(in: self.core)
                 },
                 {
-                    CrashReporting._internal.kscrash_enable(in: self.core)
+                    CrashReporting.enable(in: self.core)
                     RUM.enable(with: self.rumConfig, in: self.core)
                 },
             ]

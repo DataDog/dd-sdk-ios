@@ -26,7 +26,7 @@ class GeneratingBacktraceTests: XCTestCase {
 
     func testGeneratingBacktraceOfTheCurrentThread() throws {
         // Given
-        CrashReporting._internal.kscrash_enable(in: core)
+        CrashReporting.enable(in: core)
         XCTAssertNotNil(core.get(feature: BacktraceReportingFeature.self), "`BacktraceReportingFeature` must be registered")
 
         // When
@@ -65,7 +65,7 @@ class GeneratingBacktraceTests: XCTestCase {
 
     func testGeneratingBacktraceOfTheMainThread() throws {
         // Given
-        CrashReporting._internal.kscrash_enable(in: core)
+        CrashReporting.enable(in: core)
 
         // When
         XCTAssertTrue(Thread.current.isMainThread)
@@ -79,7 +79,7 @@ class GeneratingBacktraceTests: XCTestCase {
 
     func testGeneratingBacktraceOfSecondaryThread() throws {
         // Given
-        CrashReporting._internal.kscrash_enable(in: core)
+        CrashReporting.enable(in: core)
 
         // When
         let semaphore = DispatchSemaphore(value: 0)
