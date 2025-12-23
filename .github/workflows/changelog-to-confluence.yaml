@@ -20,10 +20,12 @@ jobs:
               run: |
                   mkdir -p publish_folder
                   cp CHANGELOG.md publish_folder/dd-ios-sdk-changelog.md
-                  cp DatadogRUM/RUM_FEATURE.md publish_folder/dd-sdk-ios-RUM_FEATURE.md
-                  cp DatadogSessionReplay/SESSION_REPLAY_FEATURE.md publish_folder/dd-sdk-ios-SESSION_REPLAY_FEATURE.md
                   echo "Publishing CHANGELOG.md"
+                  
+                  cp DatadogRUM/RUM_FEATURE.md publish_folder/dd-sdk-ios-rum-feature.md
                   echo "Publishing RUM_FEATURE.md"
+                  
+                  cp DatadogSessionReplay/SESSION_REPLAY_FEATURE.md publish_folder/dd-sdk-ios-session-replay-feature.md
                   echo "Publishing SESSION_REPLAY_FEATURE.md"
 
             - name: Publish Markdown to Confluence
