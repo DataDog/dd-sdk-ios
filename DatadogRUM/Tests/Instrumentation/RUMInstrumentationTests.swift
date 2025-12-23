@@ -30,7 +30,8 @@ class RUMInstrumentationTests: XCTestCase {
             notificationCenter: .default,
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
-            memoryWarningMonitor: .mockRandom()
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
 
         // Then
@@ -61,7 +62,8 @@ class RUMInstrumentationTests: XCTestCase {
             notificationCenter: .default,
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
-            memoryWarningMonitor: .mockRandom()
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
 
         // Then
@@ -89,7 +91,8 @@ class RUMInstrumentationTests: XCTestCase {
             notificationCenter: .default,
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
-            memoryWarningMonitor: .mockRandom()
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
 
         // Then
@@ -120,7 +123,8 @@ class RUMInstrumentationTests: XCTestCase {
             notificationCenter: .default,
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
-            memoryWarningMonitor: .mockRandom()
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
 
         // Then
@@ -148,7 +152,8 @@ class RUMInstrumentationTests: XCTestCase {
             notificationCenter: .default,
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
-            memoryWarningMonitor: .mockRandom()
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
 
         // Then
@@ -179,7 +184,8 @@ class RUMInstrumentationTests: XCTestCase {
             notificationCenter: .default,
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
-            memoryWarningMonitor: .mockRandom()
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
 
         // Then
@@ -206,7 +212,8 @@ class RUMInstrumentationTests: XCTestCase {
             notificationCenter: .default,
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
-            memoryWarningMonitor: .mockRandom()
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
 
         // Then
@@ -233,7 +240,8 @@ class RUMInstrumentationTests: XCTestCase {
             notificationCenter: .default,
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
-            memoryWarningMonitor: .mockRandom()
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
 
         // Then
@@ -260,7 +268,8 @@ class RUMInstrumentationTests: XCTestCase {
             notificationCenter: .default,
             bundleType: .iOSAppExtension,
             watchdogTermination: .mockRandom(),
-            memoryWarningMonitor: .mockRandom()
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
 
         // Then
@@ -287,7 +296,8 @@ class RUMInstrumentationTests: XCTestCase {
             notificationCenter: .default,
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
-            memoryWarningMonitor: .mockRandom()
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         let subscriber = RUMCommandSubscriberMock()
 

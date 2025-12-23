@@ -27,6 +27,7 @@ class AppHangsMonitorTests: XCTestCase {
     private let fatalErrorContext = FatalErrorContextNotifier(messageBus: NOPFeatureScope())
     private let currentProcessID = UUID()
     private let dateProvider = DateProviderMock()
+    private let uuidGenerator = RUMUUIDGeneratorMock()
     private var dd: DDMock<CoreLoggerMock>! // swiftlint:disable:this implicitly_unwrapped_optional
     private var monitor: AppHangsMonitor! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -37,7 +38,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: currentProcessID,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            uuidGenerator: uuidGenerator
         )
     }
 
@@ -179,7 +181,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: UUID(), // different process
-            dateProvider: DateProviderMock(now: currentDate)
+            dateProvider: DateProviderMock(now: currentDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         monitor.start()
         defer { monitor.stop() }
@@ -220,7 +223,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: UUID(), // different process
-            dateProvider: DateProviderMock(now: currentDate)
+            dateProvider: DateProviderMock(now: currentDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         monitor.start()
         defer { monitor.stop() }
@@ -259,7 +263,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: UUID(), // different process
-            dateProvider: DateProviderMock()
+            dateProvider: DateProviderMock(),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         monitor.start()
         defer { monitor.stop() }
@@ -302,7 +307,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: UUID(), // different process
-            dateProvider: DateProviderMock(now: currentDate)
+            dateProvider: DateProviderMock(now: currentDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         monitor.start()
         defer { monitor.stop() }
@@ -377,7 +383,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: UUID(), // different process
-            dateProvider: DateProviderMock(now: currentDate)
+            dateProvider: DateProviderMock(now: currentDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         monitor.start()
         defer { monitor.stop() }
@@ -387,6 +394,7 @@ class AppHangsMonitorTests: XCTestCase {
         XCTAssertEqual(errorEvent.application.id, lastView.application.id)
         XCTAssertEqual(errorEvent.session.id, lastView.session.id)
         XCTAssertEqual(errorEvent.view.id, lastView.view.id)
+        DDTAssertValidRUMUUID(errorEvent.error.id)
         XCTAssertEqual(errorEvent.error.category, .appHang)
         XCTAssertEqual(errorEvent.error.isCrash, true, "Fatal hang must be marked as crash")
         XCTAssertEqual(errorEvent.view.name, lastView.view.name, "It must include view attributes")
@@ -441,7 +449,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: UUID(), // different process
-            dateProvider: DateProviderMock(now: appRestartDate)
+            dateProvider: DateProviderMock(now: appRestartDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         monitor.start()
         defer { monitor.stop() }

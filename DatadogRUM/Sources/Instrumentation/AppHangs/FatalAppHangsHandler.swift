@@ -16,17 +16,20 @@ internal final class FatalAppHangsHandler {
     private let processID: UUID
     /// Device date provider.
     private let dateProvider: DateProvider
+    private let uuidGenerator: RUMUUIDGenerator
 
     init(
         featureScope: FeatureScope,
         fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        uuidGenerator: RUMUUIDGenerator
     ) {
         self.featureScope = featureScope
         self.fatalErrorContext = fatalErrorContext
         self.processID = processID
         self.dateProvider = dateProvider
+        self.uuidGenerator = uuidGenerator
     }
 
     func startHang(hang: AppHang) {
@@ -102,6 +105,7 @@ internal final class FatalAppHangsHandler {
             let builder = FatalErrorBuilder(
                 context: context,
                 error: .hang,
+                errorUUID: self.uuidGenerator.generateUnique(),
                 errorDate: realErrorDate,
                 errorType: AppHangsMonitor.Constants.appHangErrorType,
                 errorMessage: AppHangsMonitor.Constants.appHangErrorMessage,
