@@ -18,18 +18,24 @@ internal class RUMAppLaunchManager {
 
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
+    private let telemetryController: AppLaunchMetricController
 
     private var timeToInitialDisplay: Double?
     private var timeToFullDisplay: Double?
     private var startupType: RUMVitalAppLaunchEvent.Vital.StartupType?
 
-    private lazy var startupTypeHandler = StartupTypeHandler(appStateManager: dependencies.appStateManager)
+    private lazy var startupTypeHandler = StartupTypeHandler(appStateManager: dependencies.appStateManager, telemetryController: telemetryController)
 
     // MARK: - Initialization
 
-    init(parent: RUMContextProvider, dependencies: RUMScopeDependencies) {
+    init(
+        parent: RUMContextProvider,
+        dependencies: RUMScopeDependencies,
+        telemetryController: AppLaunchMetricController
+    ) {
         self.parent = parent
         self.dependencies = dependencies
+        self.telemetryController = telemetryController
     }
 
     // MARK: - Internal Interface
@@ -93,24 +99,37 @@ private extension RUMAppLaunchManager {
                     writer: writer,
                     activeView: activeView
                 )
+
+                telemetryController.trackTTFD(duration: timeToFullDisplay.dd.toInt64Nanoseconds)
             }
+
+            telemetryController.sendMetric()
         }
     }
 
     func shouldProcess(command: RUMTimeToInitialDisplayCommand, context: DatadogContext) -> Bool {
         // Ignore command if the time to initial display was already written
         guard self.timeToInitialDisplay == nil else {
+            telemetryController.incrementTTIDCounter()
             return false
         }
 
-        // Ignore command if the time since the SDK load is too big
+        // Ignore command if the time since the SDK load exceeds the limit
         guard let runtimeLoadDate = context.launchInfo.launchPhaseDates[.runtimeLoad],
               (0..<Constants.maxTTIDDuration).contains(command.time.timeIntervalSince(runtimeLoadDate)) else {
+            telemetryController.send(metric: .largeTTID(
+                context: context,
+                duration: command.time.timeIntervalSince(context.launchInfo.processLaunchDate)
+            ))
             return false
         }
 
         // Ignore app launched in the background by the system or uncertain launch reason
         guard context.launchInfo.launchReason == .userLaunch || context.launchInfo.launchReason == .prewarming else {
+            telemetryController.send(metric: .launchNotSupported(
+                context: context,
+                duration: command.time.timeIntervalSince(context.launchInfo.processLaunchDate)
+            ))
             return false
         }
 
@@ -123,7 +142,7 @@ private extension RUMAppLaunchManager {
             return command.time.timeIntervalSince(context.launchInfo.processLaunchDate)
         case .prewarming:
             guard let runtimeLoadDate = context.launchInfo.launchPhaseDates[.runtimeLoad] else {
-                dependencies.telemetry.error("Prewarming app launch without runtime load date.")
+                telemetryController.telemetry.error("Prewarming app launch without runtime load date.")
                 return nil
             }
             return command.time.timeIntervalSince(runtimeLoadDate)
@@ -143,12 +162,12 @@ private extension RUMAppLaunchManager {
         activeView: RUMViewScope?
     ) {
         let vital = RUMVitalAppLaunchEvent.Vital(
-                appLaunchMetric: appLaunchMetric,
-                duration: duration,
-                id: vitalId,
-                isPrewarmed: context.launchInfo.launchReason == .prewarming,
-                name: appLaunchMetric.name,
-                startupType: startupType
+            appLaunchMetric: appLaunchMetric,
+            duration: duration,
+            id: vitalId,
+            isPrewarmed: context.launchInfo.launchReason == .prewarming,
+            name: appLaunchMetric.name,
+            startupType: startupType
         )
 
         let vitalEvent = RUMVitalAppLaunchEvent(
@@ -182,6 +201,7 @@ private extension RUMAppLaunchManager {
         )
 
         writer.write(value: vitalEvent)
+        telemetryController.track(ttidEvent: vitalEvent, context: context)
     }
 }
 

@@ -276,6 +276,12 @@
 		1182FAC52DA2F827007FE71A /* RUMSessionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9CB2DA2F827007FE71A /* RUMSessionMatcher.swift */; };
 		1182FAC62DA2F827007FE71A /* BacktraceReportMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9D12DA2F827007FE71A /* BacktraceReportMocks.swift */; };
 		1182FAC72DA2F827007FE71A /* DatadogRemoteFeatureMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9E12DA2F827007FE71A /* DatadogRemoteFeatureMock.swift */; };
+		118ACA3C2EEED247004E7F20 /* AppLaunchMetricController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA3A2EEED247004E7F20 /* AppLaunchMetricController.swift */; };
+		118ACA3D2EEED247004E7F20 /* AppLaunchMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA392EEED247004E7F20 /* AppLaunchMetric.swift */; };
+		118ACA3E2EEED247004E7F20 /* AppLaunchMetricController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA3A2EEED247004E7F20 /* AppLaunchMetricController.swift */; };
+		118ACA3F2EEED247004E7F20 /* AppLaunchMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA392EEED247004E7F20 /* AppLaunchMetric.swift */; };
+		118ACA442EEEED24004E7F20 /* AppLaunchMetricControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA432EEEED1F004E7F20 /* AppLaunchMetricControllerTests.swift */; };
+		118ACA452EEEED24004E7F20 /* AppLaunchMetricControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA432EEEED1F004E7F20 /* AppLaunchMetricControllerTests.swift */; };
 		11A2F24A2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */; };
 		11A2F24B2E70CC08006EDC52 /* MediaTimeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2492E70CC08006EDC52 /* MediaTimeProvider.swift */; };
 		11A2F24C2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */; };
@@ -2598,6 +2604,9 @@
 		1182FA1A2DA2F827007FE71A /* DatadogCoreProxy+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DatadogCoreProxy+Utils.swift"; sourceTree = "<group>"; };
 		1182FA1B2DA2F827007FE71A /* ServerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerMock.swift; sourceTree = "<group>"; };
 		1182FA1D2DA2F827007FE71A /* PrintFunctionSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintFunctionSpy.swift; sourceTree = "<group>"; };
+		118ACA392EEED247004E7F20 /* AppLaunchMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchMetric.swift; sourceTree = "<group>"; };
+		118ACA3A2EEED247004E7F20 /* AppLaunchMetricController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchMetricController.swift; sourceTree = "<group>"; };
+		118ACA432EEEED1F004E7F20 /* AppLaunchMetricControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchMetricControllerTests.swift; sourceTree = "<group>"; };
 		11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameInfoProvider.swift; sourceTree = "<group>"; };
 		11A2F2492E70CC08006EDC52 /* MediaTimeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTimeProvider.swift; sourceTree = "<group>"; };
 		11A2F2512E71B730006EDC52 /* MediaTimeProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTimeProviderMock.swift; sourceTree = "<group>"; };
@@ -4218,6 +4227,15 @@
 			path = ../TestUtilities/Sources;
 			sourceTree = SOURCE_ROOT;
 		};
+		118ACA3B2EEED247004E7F20 /* AppLaunch */ = {
+			isa = PBXGroup;
+			children = (
+				118ACA392EEED247004E7F20 /* AppLaunchMetric.swift */,
+				118ACA3A2EEED247004E7F20 /* AppLaunchMetricController.swift */,
+			);
+			path = AppLaunch;
+			sourceTree = "<group>";
+		};
 		11A2F2472E70CBCC006EDC52 /* Providers */ = {
 			isa = PBXGroup;
 			children = (
@@ -5832,6 +5850,7 @@
 		6174D60E2BFDEA1F00EC7469 /* SDKMetrics */ = {
 			isa = PBXGroup;
 			children = (
+				118ACA3B2EEED247004E7F20 /* AppLaunch */,
 				6174D60F2BFDEA4600EC7469 /* SessionEndedMetric.swift */,
 				6174D61F2C009C6300EC7469 /* SessionEndedMetricController.swift */,
 				615E2B8D2D39444300D85243 /* ViewEndedController.swift */,
@@ -5844,6 +5863,7 @@
 		6174D6182BFE447600EC7469 /* SDKMetrics */ = {
 			isa = PBXGroup;
 			children = (
+				118ACA432EEEED1F004E7F20 /* AppLaunchMetricControllerTests.swift */,
 				6174D6192BFE449300EC7469 /* SessionEndedMetricTests.swift */,
 				61DCC8462C05CD0000CB59E5 /* SessionEndedMetricControllerTests.swift */,
 			);
@@ -9735,6 +9755,8 @@
 				965497062D761FCB006428EE /* SwiftUIViewNameExtractor.swift in Sources */,
 				11F55FDA2DCE183500DE4944 /* RUMDataModels+objc.swift in Sources */,
 				D23F8E7129DDCD28001CFAE8 /* RUMEventBuilder.swift in Sources */,
+				118ACA3E2EEED247004E7F20 /* AppLaunchMetricController.swift in Sources */,
+				118ACA3F2EEED247004E7F20 /* AppLaunchMetric.swift in Sources */,
 				D23F8E7229DDCD28001CFAE8 /* ErrorMessageReceiver.swift in Sources */,
 				96F70D462DD793C400D3736B /* RUMAction.swift in Sources */,
 				D23F8E7329DDCD28001CFAE8 /* SwiftUIActionModifier.swift in Sources */,
@@ -9855,6 +9877,7 @@
 				6167E6DB2B8004A500C3CA2D /* AppHangsWatchdogThreadTests.swift in Sources */,
 				3C0D5DEA2A543EA300446CF9 /* RUMViewEventsFilterTests.swift in Sources */,
 				1124D5332EA6D4050002E053 /* RUMAppLaunchManagerTests.swift in Sources */,
+				118ACA452EEEED24004E7F20 /* AppLaunchMetricControllerTests.swift in Sources */,
 				D23F8EC429DDCD38001CFAE8 /* RUMCommandTests.swift in Sources */,
 				9678E2762E55CD200094B106 /* RUMFeatureOperationManagerTests.swift in Sources */,
 			);
@@ -10223,6 +10246,8 @@
 				965497052D761FCB006428EE /* SwiftUIViewNameExtractor.swift in Sources */,
 				11F55FD92DCE183500DE4944 /* RUMDataModels+objc.swift in Sources */,
 				D29A9F7C29DD85BB005C54A4 /* RUMEventBuilder.swift in Sources */,
+				118ACA3C2EEED247004E7F20 /* AppLaunchMetricController.swift in Sources */,
+				118ACA3D2EEED247004E7F20 /* AppLaunchMetric.swift in Sources */,
 				D29A9F8829DD85BB005C54A4 /* ErrorMessageReceiver.swift in Sources */,
 				96F70D452DD793C400D3736B /* RUMAction.swift in Sources */,
 				D29A9F8729DD85BB005C54A4 /* SwiftUIActionModifier.swift in Sources */,
@@ -10343,6 +10368,7 @@
 				6167E6DA2B8004A500C3CA2D /* AppHangsWatchdogThreadTests.swift in Sources */,
 				3C0D5DE92A543EA200446CF9 /* RUMViewEventsFilterTests.swift in Sources */,
 				1124D5322EA6D4050002E053 /* RUMAppLaunchManagerTests.swift in Sources */,
+				118ACA442EEEED24004E7F20 /* AppLaunchMetricControllerTests.swift in Sources */,
 				D29A9FA729DDB483005C54A4 /* RUMCommandTests.swift in Sources */,
 				9678E2772E55CD200094B106 /* RUMFeatureOperationManagerTests.swift in Sources */,
 			);
