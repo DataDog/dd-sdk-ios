@@ -28,13 +28,16 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
     private let featureScope: FeatureScope
 
     private let dateProvider: DateProvider
+    private let uuidGenerator: RUMUUIDGenerator
 
     init(
         featureScope: FeatureScope,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        uuidGenerator: RUMUUIDGenerator
     ) {
         self.featureScope = featureScope
         self.dateProvider = dateProvider
+        self.uuidGenerator = uuidGenerator
     }
 
     /// Sends the Watchdog Termination event to Datadog.
@@ -53,6 +56,7 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
             let builder = FatalErrorBuilder(
                 context: context,
                 error: .watchdogTermination,
+                errorUUID: self.uuidGenerator.generateUnique(),
                 errorDate: errorDate,
                 errorType: Constants.errorType,
                 errorMessage: Constants.errorMessage,

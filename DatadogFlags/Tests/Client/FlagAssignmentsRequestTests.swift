@@ -61,6 +61,7 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         XCTAssertEqual(request.url, testURL)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/vnd.api+json")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Accept-Encoding"), "gzip, deflate, br")
         XCTAssertEqual(request.value(forHTTPHeaderField: "dd-client-token"), "test-token")
         XCTAssertEqual(request.value(forHTTPHeaderField: "dd-application-id"), "test-app-id")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Custom-Header"), "custom-value")

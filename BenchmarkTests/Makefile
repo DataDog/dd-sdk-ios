@@ -70,4 +70,4 @@ upload:
 
 open:
 	@$(ECHO_SUBTITLE2) "make open"
-	@open --env DD_BENCHMARK --env OTEL_SWIFT --new BenchmarkTests.xcodeproj
+	@open --env DD_BENCHMARK --new BenchmarkTests.xcodeproj

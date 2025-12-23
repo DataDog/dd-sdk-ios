@@ -981,7 +981,7 @@ public class RUMUUIDGeneratorMock: RUMUUIDGenerator {
     public var uuid: RUMUUID
     public func generateUnique() -> RUMUUID { uuid }
 
-    public init(uuid: RUMUUID) {
+    public init(uuid: RUMUUID = .mockAny()) {
         self.uuid = uuid
     }
 }

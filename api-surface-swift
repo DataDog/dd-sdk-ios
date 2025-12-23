@@ -113,6 +113,7 @@ public struct LogEvent: Encodable
     public let networkConnectionInfo: NetworkConnectionInfo?
     public let mobileCarrierInfo: CarrierInfo?
     public var attributes: LogEvent.Attributes
+    public let ddTags: String
     public var tags: [String]?
     public func encode(to encoder: Encoder) throws
 public struct Logger

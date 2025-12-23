@@ -71,7 +71,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 feature: featureScope,
                 reporter: WatchdogTerminationReporter(
                     featureScope: featureScope,
-                    dateProvider: configuration.dateProvider
+                    dateProvider: configuration.dateProvider,
+                    uuidGenerator: configuration.uuidGenerator
                 )
             )
             watchdogTermination = monitor
@@ -213,7 +214,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             notificationCenter: configuration.notificationCenter,
             bundleType: bundleType,
             watchdogTermination: watchdogTermination,
-            memoryWarningMonitor: memoryWarningMonitor
+            memoryWarningMonitor: memoryWarningMonitor,
+            uuidGenerator: configuration.uuidGenerator
         )
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
