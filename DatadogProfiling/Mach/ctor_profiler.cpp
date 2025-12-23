@@ -25,6 +25,24 @@ static dd::profiler::ctor_profiler* g_ctor_profiler = nullptr;
 static std::mutex g_ctor_profiler_mutex;
 
 /**
+ * Checks if ThreadSanitizer is enabled
+ * and without options to avoid halts.
+ *
+ * @return true if ThreadSanitizer is enabled, false otherwise
+ */
+bool is_thread_sanitizer_enabled() {
+#if __has_feature(thread_sanitizer)
+    const char* tsanOptions = getenv("TSAN_OPTIONS");
+    if (tsanOptions != nullptr) {
+        return (strstr(tsanOptions, "halt_on_error=0") == nullptr)
+        || (strstr(tsanOptions, "report_bugs=0") == nullptr);
+    }
+    return true;
+#endif
+    return false;
+}
+
+/**
  * Checks if the current process was launched via pre-warming by examining
  * the ActivePrewarm environment variable.
  *
@@ -150,6 +168,12 @@ public:
      * Start the profiler using constructor configuration
      */
     void start() {
+        if (is_thread_sanitizer_enabled()) {
+            printf("[DATADOG SDK] 🐶 → Profiling is disabled because ThreadSanitizer is active. Please disable ThreadSanitizer to enable profiling.\n");
+            status = CTOR_PROFILER_STATUS_NOT_STARTED;
+            return;
+        }
+
         if (is_prewarming) {
             status = CTOR_PROFILER_STATUS_PREWARMED;
             return;
