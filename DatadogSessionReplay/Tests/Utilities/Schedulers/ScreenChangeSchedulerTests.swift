@@ -44,7 +44,7 @@ final class ScreenChangeSchedulerTests: XCTestCase {
         testTimeProvider.advance(by: 0.1)
 
         // then
-        wait(for: [operationExecuted])
+        wait(for: [operationExecuted], timeout: 0.5)
     }
 
     func testMultipleOperationsExecute() {
@@ -63,7 +63,7 @@ final class ScreenChangeSchedulerTests: XCTestCase {
         testTimeProvider.advance(by: 0.1)
 
         // then
-        wait(for: [operationExecuted])
+        wait(for: [operationExecuted], timeout: 0.5)
     }
 }
 #endif
