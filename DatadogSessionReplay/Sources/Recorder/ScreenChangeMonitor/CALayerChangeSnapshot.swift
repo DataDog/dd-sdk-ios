@@ -62,7 +62,7 @@ extension CALayerChangeSnapshot: CustomStringConvertible {
             if aspects.contains(.layout) { layoutCount += 1 }
         }
 
-        return "(layers:\(layerCount),displays:\(displayCount),draws:\(drawCount),layouts:\(layoutCount))"
+        return "(layers: \(layerCount),displays: \(displayCount),draws: \(drawCount),layouts: \(layoutCount))"
     }
 }
 #endif
