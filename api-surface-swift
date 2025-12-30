@@ -58,6 +58,12 @@ public enum Datadog
         public var batchProcessingLevel: BatchProcessingLevel
         public var backgroundTasksEnabled: Bool
         public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,version: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil,batchProcessingLevel: BatchProcessingLevel = .medium,backgroundTasksEnabled: Bool = false)
+public class SharedContext: NSObject
+    public let userId: String?
+    public let accountId: String?
+public final class CrossPlatformExtension: NSObject
+    public static func subscribe(toSharedContext: @escaping (SharedContext?) -> Void)
+    public static func unsubscribeFromSharedContext()
 
 # ----------------------------------
 # API surface for DatadogLogs:
@@ -191,6 +197,7 @@ public protocol LogEventMapper
     public func w3c() -> String
 public class OTelTracerProvider: OpenTelemetryApi.TracerProvider
     public init(in core: DatadogCoreProtocol = CoreRegistry.default)
+    public func get(instrumentationName: String,instrumentationVersion: String?,schemaUrl: String?,attributes: [String: OpenTelemetryApi.AttributeValue]?) -> any OpenTelemetryApi.Tracer
     public func get(instrumentationName: String, instrumentationVersion: String?) -> OpenTelemetryApi.Tracer
 public struct OTTags
     public static let component = "component"
@@ -1325,7 +1332,9 @@ public struct FlagsEvaluationContext: Equatable, Codable
 # ----------------------------------
 
 public enum Profiling
-    public struct Configuration
-        public var customEndpoint: URL?
-        public init(customEndpoint: URL? = nil)
     public static func enable(with configuration: Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default)
+[?] extension Profiling
+    public struct Configuration: SampledTelemetry
+        public var customEndpoint: URL?
+        public var sampleRate: SampleRate
+        public init(customEndpoint: URL? = nil,sampleRate: SampleRate = 10)
