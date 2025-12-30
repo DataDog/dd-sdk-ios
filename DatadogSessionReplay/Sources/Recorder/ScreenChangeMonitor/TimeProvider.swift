@@ -26,6 +26,11 @@ internal protocol TimeProvider {
 }
 
 internal struct LiveTimeProvider: TimeProvider {
+    private struct Constants {
+        // The tolerance applied to dispatch timers for reducing power usage.
+        static let timerTolerance: Double = 0.1
+    }
+
     final class Task: TimeProviderTask {
         private var timer: DispatchSourceTimer?
 
@@ -55,7 +60,9 @@ internal struct LiveTimeProvider: TimeProvider {
 
     func schedule(after interval: TimeInterval, _ action: @escaping () -> Void) -> Task {
         let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.schedule(deadline: .now() + interval)
+        let leeway = DispatchTimeInterval.milliseconds(Int(interval * Constants.timerTolerance * 1_000))
+
+        timer.schedule(deadline: .now() + interval, leeway: leeway)
         timer.setEventHandler(handler: action)
         timer.resume()
 
