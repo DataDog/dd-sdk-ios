@@ -33,6 +33,7 @@ internal final class AppHangsMonitor {
         backtraceReporter: BacktraceReporting,
         fatalErrorContext: FatalErrorContextNotifying,
         dateProvider: DateProvider,
+        uuidGenerator: RUMUUIDGenerator,
         processID: UUID
     ) {
         self.init(
@@ -46,7 +47,8 @@ internal final class AppHangsMonitor {
             ),
             fatalErrorContext: fatalErrorContext,
             processID: processID,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            uuidGenerator: uuidGenerator
         )
     }
 
@@ -55,7 +57,8 @@ internal final class AppHangsMonitor {
         watchdogThread: AppHangsObservingThread,
         fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        uuidGenerator: RUMUUIDGenerator
     ) {
         self.watchdogThread = watchdogThread
         self.nonFatalHangsHandler = NonFatalAppHangsHandler()
@@ -63,7 +66,8 @@ internal final class AppHangsMonitor {
             featureScope: featureScope,
             fatalErrorContext: fatalErrorContext,
             processID: processID,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            uuidGenerator: uuidGenerator
         )
     }
 

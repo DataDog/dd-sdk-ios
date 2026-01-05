@@ -278,6 +278,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return FatalErrorBuilder(
             context: context,
             error: .crash,
+            errorUUID: uuidGenerator.generateUnique(),
             errorDate: crashDate,
             errorType: crash.type,
             errorMessage: crash.message,
