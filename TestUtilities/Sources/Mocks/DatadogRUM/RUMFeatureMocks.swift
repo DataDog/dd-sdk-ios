@@ -48,8 +48,8 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
         customEndpoint: URL? = .mockAny(),
         trackAnonymousUser: Bool = .mockAny(),
         trackMemoryWarnings: Bool = .mockAny(),
-        telemetrySampleRate: SampleRate = 0,
-        featureFlags: FeatureFlags = .defaults
+        trackSlowFrames: Bool = .mockAny(),
+        telemetrySampleRate: SampleRate = 0
     ) -> RUM.Configuration {
         .init(
             applicationID: applicationID,
@@ -75,8 +75,8 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             customEndpoint: customEndpoint,
             trackAnonymousUser: trackAnonymousUser,
             trackMemoryWarnings: trackMemoryWarnings,
-            telemetrySampleRate: telemetrySampleRate,
-            featureFlags: featureFlags
+            trackSlowFrames: trackSlowFrames,
+            telemetrySampleRate: telemetrySampleRate
         )
     }
 
@@ -93,6 +93,7 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             customEndpoint: .mockRandom(),
             trackAnonymousUser: .mockRandom(),
             trackMemoryWarnings: .mockRandom(),
+            trackSlowFrames: .mockRandom(),
             telemetrySampleRate: .mockRandom(min: 0, max: 100)
         )
     }
