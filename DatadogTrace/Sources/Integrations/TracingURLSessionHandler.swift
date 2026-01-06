@@ -19,6 +19,15 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
     weak var tracer: DatadogTracer?
 
+    private struct NewSpanElements {
+        let spanID: SpanID
+        let parentSpanID: SpanID?
+        let sampleRate: SampleRate
+        let traceID: TraceID
+        let samplingPriority: SamplingPriority
+        let baggage: BaggageItems
+    }
+
     init(
         tracer: DatadogTracer,
         contextReceiver: ContextMessageReceiver,
@@ -39,16 +48,14 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         // Use the current active span as parent if the propagation headers support it.
-        let parentSpanContext = tracer.activeSpan?.context as? DDSpanContext
-        let traceID = parentSpanContext?.traceID ?? tracer.traceIDGenerator.generate()
-        let sampler = sampler(sessionID: contextReceiver.context.rumContext?.sessionID, traceID: traceID.idLo)
+        let newSpanElements = makeElementsForNewSpanContext(tracer: tracer, parentSpanContext: tracer.activeSpan?.context as? DDSpanContext)
 
         let injectedSpanContext = TraceContext(
-            traceID: traceID,
-            spanID: tracer.spanIDGenerator.generate(),
-            parentSpanID: parentSpanContext?.spanID,
-            sampleRate: parentSpanContext?.sampleRate ?? samplingRate,
-            isKept: parentSpanContext?.isKept ?? sampler.sample(),
+            traceID: newSpanElements.traceID,
+            spanID: newSpanElements.spanID,
+            parentSpanID: newSpanElements.parentSpanID,
+            sampleRate: newSpanElements.sampleRate,
+            samplingPriority: newSpanElements.samplingPriority,
             rumSessionId: contextReceiver.context.rumContext?.sessionID,
             userId: contextReceiver.context.userInfo?.id,
             accountId: contextReceiver.context.accountInfo?.id
@@ -93,7 +100,9 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
-        // no-op
+        tracer?.activeSpan.map {
+            interception.register(activeSpanContext: $0.context)
+        }
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
@@ -116,7 +125,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 parentSpanID: trace.parentSpanID,
                 baggageItems: .init(),
                 sampleRate: trace.sampleRate,
-                isKept: trace.isKept
+                // TODO: RUM-12403 Fix the mechanism type
+                samplingDecision: SamplingDecision(temporaryPriority: trace.samplingPriority)
             )
 
             span = tracer.startSpan(
@@ -127,7 +137,20 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         } else if Sampler(samplingRate: samplingRate).sample() {
             // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
             // was used to create the session task.
+            let newSpanElements = makeElementsForNewSpanContext(tracer: tracer, parentSpanContext: interception.activeSpanContext as? DDSpanContext)
+
+            let context = DDSpanContext(
+                traceID: newSpanElements.traceID,
+                spanID: newSpanElements.spanID,
+                parentSpanID: newSpanElements.parentSpanID,
+                baggageItems: newSpanElements.baggage,
+                sampleRate: newSpanElements.sampleRate,
+                // TODO: RUM-12403 Fix the mechanism type
+                samplingDecision: SamplingDecision(temporaryPriority: newSpanElements.samplingPriority)
+            )
+
             span = tracer.startSpan(
+                spanContext: context,
                 operationName: "urlsession.request",
                 startTime: resourceMetrics.fetch.start
             )
@@ -175,6 +198,19 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         span.finish(at: resourceMetrics.fetch.end)
+    }
+
+    private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?) -> NewSpanElements {
+        let traceID = parentSpanContext?.traceID ?? tracer.traceIDGenerator.generate()
+        let sampler = sampler(sessionID: contextReceiver.context.rumContext?.sessionID, traceID: traceID.idLo)
+        let samplingDecision = parentSpanContext.map { $0.samplingDecision.samplingPriority } ?? (sampler.sample() ? .autoKeep : .autoDrop)
+
+        return NewSpanElements(spanID: tracer.spanIDGenerator.generate(),
+                               parentSpanID: parentSpanContext?.spanID,
+                               sampleRate: parentSpanContext?.sampleRate ?? samplingRate,
+                               traceID: traceID,
+                               samplingPriority: samplingDecision,
+                               baggage: parentSpanContext?.baggageItems ?? .init())
     }
 
     private func sampler(sessionID: String?, traceID: UInt64?) -> Sampling {

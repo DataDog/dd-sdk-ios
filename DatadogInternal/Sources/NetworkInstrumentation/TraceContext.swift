@@ -18,8 +18,8 @@ public struct TraceContext: Equatable {
     ///
     /// It is a value between `0.0` (drop) and `100.0` (keep), determined by the local or distributed trace sampler.
     public let sampleRate: Float
-    /// Indicates whether this span was sampled or rejected by the sampler.
-    public let isKept: Bool
+    
+    public let samplingPriority: SamplingPriority
 
     /// The unique identifier for the current RUM Session, if any.
     public let rumSessionId: String?
@@ -40,7 +40,7 @@ public struct TraceContext: Equatable {
     ///   - spanID: The unique identifier for the span.
     ///   - parentSpanID: The unique identifier for the parent span, if any.
     ///   - sampleRate: The sample rate used for injecting the span into a request.
-    ///   - isKept: A boolean indicating whether this span was sampled or rejected by the sampler.
+    ///   - samplingPriority: The sampling priority for the span.
     ///   - rumSessionId: The unique identifier for the current RUM Session, if any.
     ///   - userId: The unique identifier for the current user, if any.
     ///   - accountId: The unique identifier for the current account, if any.
@@ -50,7 +50,7 @@ public struct TraceContext: Equatable {
         spanID: SpanID,
         parentSpanID: SpanID?,
         sampleRate: Float,
-        isKept: Bool,
+        samplingPriority: SamplingPriority,
         rumSessionId: String?,
         userId: String? = nil,
         accountId: String? = nil,
@@ -60,7 +60,7 @@ public struct TraceContext: Equatable {
         self.spanID = spanID
         self.parentSpanID = parentSpanID
         self.sampleRate = sampleRate
-        self.isKept = isKept
+        self.samplingPriority = samplingPriority
         self.rumSessionId = rumSessionId
         self.userId = userId
         self.accountId = accountId

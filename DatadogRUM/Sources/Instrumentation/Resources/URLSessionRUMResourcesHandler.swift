@@ -36,7 +36,7 @@ internal struct DistributedTracing {
 internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RUMCommandPublisher {
     /// The date provider
     let dateProvider: DateProvider
-    /// DistributinTracing
+    /// DistributedTracing
     let distributedTracing: DistributedTracing?
     /// Attributes-providing callback.
     /// It is configured by the user and should be used to associate additional RUM attributes with intercepted RUM Resource.
@@ -214,7 +214,7 @@ extension DistributedTracing {
             spanID: spanID,
             parentSpanID: nil,
             sampleRate: samplingRate,
-            isKept: sampler.sample(),
+            samplingPriority: sampler.sample() ? .autoKeep : .autoDrop,
             rumSessionId: rumSessionId,
             userId: userId,
             accountId: accountId,
@@ -271,7 +271,7 @@ extension DistributedTracing {
             }
         }
 
-        return (request, (hasSetAnyHeader && injectedSpanContext.isKept) ? injectedSpanContext : nil)
+        return (request, (hasSetAnyHeader && injectedSpanContext.samplingPriority.isKept) ? injectedSpanContext : nil)
     }
 
     func trace(from interception: DatadogInternal.URLSessionTaskInterception) -> RUMSpanContext? {

@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Interface that defines shared responibilities of HTTP header readers.
+/// Interface that defines shared responsibilities of HTTP header readers.
 public protocol TracePropagationHeadersReader {
     func read() -> (
         traceID: TraceID,

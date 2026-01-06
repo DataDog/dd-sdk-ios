@@ -28,6 +28,8 @@ public class URLSessionTaskInterception {
     /// Setting the value to 'rum' will indicate that the span is reported as a RUM Resource.
     public private(set) var origin: String?
 
+    public private(set) var activeSpanContext: SpanContext?
+
     init(request: ImmutableRequest, isFirstParty: Bool) {
         self.identifier = UUID()
         self.request = request
@@ -63,6 +65,10 @@ public class URLSessionTaskInterception {
 
     public func register(origin: String) {
         self.origin = origin
+    }
+
+    public func register(activeSpanContext: SpanContext) {
+        self.activeSpanContext = activeSpanContext
     }
 
     /// Tells if the interception is done (mean: both metrics and completion were collected).

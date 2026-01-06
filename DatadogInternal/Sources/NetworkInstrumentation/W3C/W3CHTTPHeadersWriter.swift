@@ -60,7 +60,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     public func write(traceContext: TraceContext) {
         typealias Constants = W3CHTTPHeaders.Constants
 
-        let sampled = traceContext.isKept
+        let sampled = traceContext.samplingPriority.isKept
         let shouldInject: Bool = {
             switch traceContextInjection {
             case .all:      return true

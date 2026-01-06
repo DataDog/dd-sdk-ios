@@ -59,7 +59,7 @@ public struct SpanEvent: Encodable {
     /// The sampling rate for the span (between 0 and 1)
     internal let samplingRate: Float
     /// If the span is kept according to sampling rules
-    internal let isKept: Bool
+    internal let samplingPriority: SamplingPriority
 
     // MARK: - Meta
 
@@ -207,7 +207,7 @@ internal struct SpanEventEncoder {
         if span.parentID == nil {
             try container.encode(1, forKey: .isRootSpan)
             try container.encode(span.samplingRate, forKey: .samplingRate)
-            try container.encode((span.isKept ? 1 : 0), forKey: .samplingPriority)
+            try container.encode(span.samplingPriority.rawValue, forKey: .samplingPriority)
         }
     }
 
