@@ -25,6 +25,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         let sampleRate: SampleRate
         let traceID: TraceID
         let samplingPriority: SamplingPriority
+        let samplingDecisionMaker: SamplingMechanismType
         let baggage: BaggageItems
     }
 
@@ -56,6 +57,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             parentSpanID: newSpanElements.parentSpanID,
             sampleRate: newSpanElements.sampleRate,
             samplingPriority: newSpanElements.samplingPriority,
+            samplingDecisionMaker: newSpanElements.samplingDecisionMaker,
             rumSessionId: contextReceiver.context.rumContext?.sessionID,
             userId: contextReceiver.context.userInfo?.id,
             accountId: contextReceiver.context.accountInfo?.id
@@ -203,13 +205,14 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?) -> NewSpanElements {
         let traceID = parentSpanContext?.traceID ?? tracer.traceIDGenerator.generate()
         let sampler = sampler(sessionID: contextReceiver.context.rumContext?.sessionID, traceID: traceID.idLo)
-        let samplingDecision = parentSpanContext.map { $0.samplingDecision.samplingPriority } ?? (sampler.sample() ? .autoKeep : .autoDrop)
+        let samplingDecision = parentSpanContext.map { $0.samplingDecision } ?? SamplingDecision(sampling: sampler)
 
         return NewSpanElements(spanID: tracer.spanIDGenerator.generate(),
                                parentSpanID: parentSpanContext?.spanID,
                                sampleRate: parentSpanContext?.sampleRate ?? samplingRate,
                                traceID: traceID,
-                               samplingPriority: samplingDecision,
+                               samplingPriority: samplingDecision.samplingPriority,
+                               samplingDecisionMaker: samplingDecision.decisionMaker,
                                baggage: parentSpanContext?.baggageItems ?? .init())
     }
 

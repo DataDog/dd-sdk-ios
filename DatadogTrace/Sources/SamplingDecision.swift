@@ -45,4 +45,10 @@ internal struct SamplingDecision {
             .max { $0.0.precedence < $1.0.precedence }
             .map { $0.1.samplingPriority } ?? .autoKeep
     }
+
+    internal var decisionMaker: SamplingMechanismType {
+        mechanisms
+            .max { $0.0.precedence < $1.0.precedence }
+            .map { $0.0 } ?? .fallback
+    }
 }

@@ -9,14 +9,12 @@
 import Foundation
 import DatadogInternal
 
-internal enum SamplingMechanismType {
-    case manual
-    case customSamplingRules
-
+extension SamplingMechanismType {
     var precedence: SamplingMechanismPrecedence {
         switch self {
-        case .manual: .manual
+        case .fallback:            .fallback
         case .customSamplingRules: .customSamplingRules
+        case .manual:              .manual
         }
     }
 }
@@ -28,9 +26,11 @@ internal struct SamplingMechanismPrecedence: Comparable {
 
     let precedence: Int
 
-    static let manual =              SamplingMechanismPrecedence(precedence: 1000)
+    static let fallback =            SamplingMechanismPrecedence(precedence: 0)
 
-    static let customSamplingRules = SamplingMechanismPrecedence(precedence: 1)
+    static let customSamplingRules = SamplingMechanismPrecedence(precedence: 50)
+
+    static let manual =              SamplingMechanismPrecedence(precedence: 80)
 }
 
 internal protocol SamplingMechanism {

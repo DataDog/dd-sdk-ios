@@ -21,6 +21,8 @@ public struct TraceContext: Equatable {
     
     public let samplingPriority: SamplingPriority
 
+    public let samplingDecisionMaker: SamplingMechanismType
+
     /// The unique identifier for the current RUM Session, if any.
     public let rumSessionId: String?
 
@@ -51,6 +53,7 @@ public struct TraceContext: Equatable {
         parentSpanID: SpanID?,
         sampleRate: Float,
         samplingPriority: SamplingPriority,
+        samplingDecisionMaker: SamplingMechanismType,
         rumSessionId: String?,
         userId: String? = nil,
         accountId: String? = nil,
@@ -61,6 +64,7 @@ public struct TraceContext: Equatable {
         self.parentSpanID = parentSpanID
         self.sampleRate = sampleRate
         self.samplingPriority = samplingPriority
+        self.samplingDecisionMaker = samplingDecisionMaker
         self.rumSessionId = rumSessionId
         self.userId = userId
         self.accountId = accountId

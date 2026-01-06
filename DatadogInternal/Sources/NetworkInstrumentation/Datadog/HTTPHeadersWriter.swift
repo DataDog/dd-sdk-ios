@@ -67,7 +67,11 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
         ]
         traceHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceContext.traceID.idLo)
         traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(traceContext.spanID, representation: .decimal)
-        traceHeaderFields[TracingHTTPHeaders.tagsField] = "_dd.p.tid=\(traceContext.traceID.idHiHex)"
+        var tags = ["_dd.p.tid=\(traceContext.traceID.idHiHex)"]
+        if traceContext.samplingPriority.isKept {
+            tags.append("_dd.p.dm=-\(traceContext.samplingDecisionMaker.tagValue)")
+        }
+        traceHeaderFields[TracingHTTPHeaders.tagsField] = tags.joined(separator: ",")
         var baggageItems: [String] = []
         if let sessionId = traceContext.rumSessionId {
             baggageItems.append("\(W3CHTTPHeaders.Constants.rumSessionBaggageKey)=\(sessionId)")

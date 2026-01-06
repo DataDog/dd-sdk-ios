@@ -150,6 +150,7 @@ internal final class DDSpan: OTSpan {
                 finishTime: finishTime,
                 samplingRate: self.ddContext.sampleRate / 100.0,
                 samplingPriority: self.ddContext.samplingDecision.samplingPriority,
+                samplingDecisionMaker: self.ddContext.samplingDecision.decisionMaker,
                 tags: self.tags,
                 baggageItems: self.ddContext.baggageItems.all,
                 logFields: self.logFields

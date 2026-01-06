@@ -34,6 +34,7 @@ internal struct SpanEventBuilder {
         finishTime: Date,
         samplingRate: Float,
         samplingPriority: SamplingPriority,
+        samplingDecisionMaker: SamplingMechanismType,
         tags: [String: Encodable],
         baggageItems: [String: String],
         logFields: [[String: Encodable]]
@@ -93,6 +94,7 @@ internal struct SpanEventBuilder {
             origin: context.ciAppOrigin,
             samplingRate: samplingRate,
             samplingPriority: samplingPriority,
+            samplingDecisionMaker: samplingDecisionMaker,
             tracerVersion: context.sdkVersion,
             applicationVersion: context.version,
             networkConnectionInfo: networkInfoEnabled ? context.networkConnectionInfo : nil,

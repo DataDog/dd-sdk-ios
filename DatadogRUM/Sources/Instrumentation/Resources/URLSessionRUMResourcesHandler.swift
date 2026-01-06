@@ -215,6 +215,7 @@ extension DistributedTracing {
             parentSpanID: nil,
             sampleRate: samplingRate,
             samplingPriority: sampler.sample() ? .autoKeep : .autoDrop,
+            samplingDecisionMaker: .customSamplingRules,
             rumSessionId: rumSessionId,
             userId: userId,
             accountId: accountId,
