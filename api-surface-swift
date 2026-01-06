@@ -499,7 +499,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject
     func removeAttributes(forKeys keys: [AttributeKey])
     func currentSessionID(completion: @escaping (String?) -> Void)
     func stopSession()
-    func addTiming(name: String)
+    func reportAppFullyDisplayed()
     func addError(message: String,type: String?,stack: String?,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
     func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue])
     func startResource(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue])
@@ -528,11 +528,17 @@ public protocol RUMMonitorViewProtocol: AnyObject
     func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
     func startView(key: String,name: String?,attributes: [AttributeKey: AttributeValue])
     func stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    func addTiming(name: String)
     func addViewLoadingTime(overwrite: Bool)
 public enum PerformanceMetric
     case flutterBuildTime
     case flutterRasterTime
     case jsFrameTimeSeconds
+public protocol CACurrentMediaTimeProvider: Sendable
+    var current: CFTimeInterval
+public struct MediaTimeProvider: CACurrentMediaTimeProvider
+    public init()
+    public var current: CFTimeInterval
 
 # ----------------------------------
 # API surface for DatadogCrashReporting:

@@ -12,7 +12,7 @@ import DatadogInternal
 class LaunchInfoPublisherTests: XCTestCase {
     func testInitialValue() {
         // Given
-        let handler = AppLaunchHandlerMock(timeToDidBecomeActive: nil)
+        let handler = AppLaunchHandlerMock(didBecomeActiveDate: nil)
         let initialValue: LaunchInfo = .mockRandom()
 
         // When
@@ -25,13 +25,13 @@ class LaunchInfoPublisherTests: XCTestCase {
     func testUpdatingValue() {
         let taskPolicyRole = Int(TASK_FOREGROUND_APPLICATION.rawValue)
         let processLaunchDate: Date = .mockRandom()
-        let timeToDidBecomeActive: TimeInterval = .mockRandom(min: 1, max: 10)
+        let didBecomeActiveDate: Date = processLaunchDate.addingTimeInterval(TimeInterval.mockRandom(min: 1, max: 10))
 
         // Given
         let handler = AppLaunchHandlerMock(
             taskPolicyRole: taskPolicyRole,
             processLaunchDate: processLaunchDate,
-            timeToDidBecomeActive: nil // it will be lazy updated
+            didBecomeActiveDate: nil // it will be lazy updated
         )
         let initialValue = handler.resolveLaunchInfo(using: ProcessInfoMock())
         let contextUpdated = expectation(description: "Update context receiver")
@@ -40,12 +40,12 @@ class LaunchInfoPublisherTests: XCTestCase {
         publisher.publish { launchInfo in
             XCTAssertEqual(launchInfo.launchReason, .userLaunch)
             XCTAssertEqual(launchInfo.processLaunchDate, processLaunchDate)
-            XCTAssertEqual(launchInfo.timeToDidBecomeActive, timeToDidBecomeActive)
+            XCTAssertEqual(launchInfo.launchPhaseDates[.didBecomeActive], didBecomeActiveDate)
             contextUpdated.fulfill()
         }
 
         // When
-        handler.simulateDidBecomeActive(timeInterval: timeToDidBecomeActive)
+        handler.simulateDidBecomeActive(date: didBecomeActiveDate)
 
         // Then
         waitForExpectations(timeout: 1)
@@ -98,24 +98,27 @@ class AppLaunchHandlerLaunchInfoTests: XCTestCase {
         }
     }
 
-    func testProcessLaunchDateForwarding() {
-        let expectedDate = Date()
-        let handler = AppLaunchHandlerMock(processLaunchDate: expectedDate)
-        let info = handler.resolveLaunchInfo(using: ProcessInfoMock())
-        XCTAssertEqual(info.processLaunchDate, expectedDate)
-    }
-
-    func testTimeToDidBecomeActiveForwarding() {
+    func testAppLaunchDatesForwarding() {
+        let processLaunchDate = Date()
         let expectedInterval: TimeInterval = 4.56
-        let handler = AppLaunchHandlerMock(timeToDidBecomeActive: expectedInterval)
+        let runtimeLoadDate = processLaunchDate.addingTimeInterval(expectedInterval)
+        let runtimePreMainDate = runtimeLoadDate.addingTimeInterval(expectedInterval)
+        let handler = AppLaunchHandlerMock(
+            processLaunchDate: processLaunchDate,
+            runtimeLoadDate: runtimeLoadDate,
+            runtimePreMainDate: runtimePreMainDate
+        )
         let info = handler.resolveLaunchInfo(using: ProcessInfoMock())
-        XCTAssertEqual(info.timeToDidBecomeActive, expectedInterval)
+        XCTAssertEqual(info.processLaunchDate, processLaunchDate)
+        XCTAssertEqual(info.launchPhaseDates[.processLaunch], processLaunchDate)
+        XCTAssertEqual(info.launchPhaseDates[.runtimeLoad], runtimeLoadDate)
+        XCTAssertEqual(info.launchPhaseDates[.runtimePreMain], runtimePreMainDate)
     }
 
     func testTimeToDidBecomeActiveForwardingNil() {
-        let handler = AppLaunchHandlerMock(timeToDidBecomeActive: nil)
+        let handler = AppLaunchHandlerMock(didBecomeActiveDate: nil)
         let info = handler.resolveLaunchInfo(using: ProcessInfoMock())
-        XCTAssertNil(info.timeToDidBecomeActive)
+        XCTAssertNil(info.launchPhaseDates[.didBecomeActive])
     }
 }
 
@@ -146,24 +149,25 @@ class AppLaunchHandlerTests: XCTestCase {
         XCTAssertLessThan(uptime, 3_600, "Process uptime should be less than 1 hour — test process likely launched recently.")
     }
 
-    func testTimeToDidBecomeActive() {
+    func testDidFinishLaunchingNotification() {
         // Given
         let handler = AppLaunchHandler()
-        XCTAssertNil(handler.timeToDidBecomeActive)
+        let callbackNotified = expectation(description: "Notify setApplicationNotificationCallback()")
+        handler.setApplicationNotificationCallback { _, _ in callbackNotified.fulfill() }
 
         // When
         handler.observe(notificationCenter)
-        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        notificationCenter.post(name: ApplicationNotifications.didFinishLaunching, object: nil)
 
         // Then
-        XCTAssertNotNil(handler.timeToDidBecomeActive)
+        waitForExpectations(timeout: 1)
     }
 
-    func testSetApplicationDidBecomeActiveCallback() {
+    func testDidBecomeActiveNotification() {
         // Given
         let handler = AppLaunchHandler()
-        let callbackNotified = expectation(description: "Notify setApplicationDidBecomeActiveCallback()")
-        handler.setApplicationDidBecomeActiveCallback { _ in callbackNotified.fulfill() }
+        let callbackNotified = expectation(description: "Notify setApplicationNotificationCallback()")
+        handler.setApplicationNotificationCallback { _, _ in callbackNotified.fulfill() }
 
         // When
         handler.observe(notificationCenter)
@@ -173,11 +177,11 @@ class AppLaunchHandlerTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
-    func testApplicationDidBecomeActiveCallbackIsOnlyCalledOnce() {
+    func testApplicationNotificationCallbackIsOnlyCalledOnce() {
         // Given
         let handler = AppLaunchHandler()
-        let callbackNotified = expectation(description: "Notify setApplicationDidBecomeActiveCallback()")
-        handler.setApplicationDidBecomeActiveCallback { _ in callbackNotified.fulfill() }
+        let callbackNotified = expectation(description: "Notify setApplicationNotificationCallback()")
+        handler.setApplicationNotificationCallback { _, _ in callbackNotified.fulfill() }
 
         // When
         handler.observe(notificationCenter)
@@ -189,7 +193,7 @@ class AppLaunchHandlerTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
-    func testSetApplicationDidBecomeActiveCallbackByMultipleEntities() {
+    func testSetApplicationNotificationCallbackByMultipleEntities() {
         // Given
         let handler = AppLaunchHandler()
         let callbacksCount = 10
@@ -197,7 +201,7 @@ class AppLaunchHandlerTests: XCTestCase {
         notified.expectedFulfillmentCount = callbacksCount
 
         (0..<callbacksCount).forEach { _ in
-            handler.setApplicationDidBecomeActiveCallback { _ in notified.fulfill() }
+            handler.setApplicationNotificationCallback { _, _ in notified.fulfill() }
         }
 
         // When
@@ -208,7 +212,7 @@ class AppLaunchHandlerTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
-    func testApplicationDidBecomeActiveMultipleTimesInMultipleEntities() {
+    func testApplicationNotificationsMultipleTimesInMultipleEntities() {
         // Given
         let handler = AppLaunchHandler()
         let callbacksCount: Int = .mockRandom(min: 3, max: 10)
@@ -217,7 +221,7 @@ class AppLaunchHandlerTests: XCTestCase {
         notified.expectedFulfillmentCount = callbacksCount
 
         (0..<callbacksCount).forEach { _ in
-            handler.setApplicationDidBecomeActiveCallback { _ in notified.fulfill() }
+            handler.setApplicationNotificationCallback { _, _ in notified.fulfill() }
         }
 
         // When
@@ -238,8 +242,9 @@ class AppLaunchHandlerTests: XCTestCase {
             closures: [
                 { _ = handler.taskPolicyRole },
                 { _ = handler.processLaunchDate },
-                { _ = handler.timeToDidBecomeActive },
-                { handler.setApplicationDidBecomeActiveCallback { _ in } }
+                { _ = handler.runtimeLoadDate },
+                { _ = handler.runtimePreMainDate },
+                { handler.setApplicationNotificationCallback { _, _ in } }
             ],
             iterations: 1_000
         )

@@ -49,6 +49,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private lazy var featureOperationManager: RUMFeatureOperationManager = {
         RUMFeatureOperationManager(parent: self, dependencies: dependencies)
     }()
+    /// App launch manager to process TTID and TTFD commands.
+    private lazy var appLaunchManager: RUMAppLaunchManager = {
+        RUMAppLaunchManager(
+            parent: self,
+            dependencies: dependencies,
+            telemetryController: AppLaunchMetricController(telemetry: dependencies.telemetry)
+        )
+    }()
 
     /// Information about this session state, shared with `CrashContext`.
     private var state: RUMSessionState {
@@ -243,10 +251,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             case let startViewCommand as RUMStartViewCommand:
                 // Start view scope explicitly on receiving "start view" command
                 startView(on: startViewCommand, context: context)
-
+                appLaunchManager.process(command, context: context, writer: writer)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeViewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
-
+                appLaunchManager.process(command, context: context, writer: writer)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
                     startApplicationLaunchView(on: appLifecycleCommand, context: context, writer: writer)
@@ -262,6 +270,15 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     writer: writer,
                     activeView: activeView
                 )
+            case let command as RUMTimeToInitialDisplayCommand:
+                appLaunchManager.process(command, context: context, writer: writer, activeView: viewScopes.first { $0.isActiveView })
+                dependencies.renderLoopObserver?.unregister(dependencies.firstFrameReader)
+                // command doesn't need to be propagated to other scopes
+                return true
+            case let command as RUMTimeToFullDisplayCommand:
+                appLaunchManager.process(command, context: context, writer: writer, activeView: viewScopes.first { $0.isActiveView })
+                // command doesn't need to be propagated to other scopes
+                return true
             default:
                 if !hasActiveView {
                     handleOffViewCommand(command: command, context: context, writer: writer)

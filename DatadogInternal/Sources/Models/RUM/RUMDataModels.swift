@@ -24,6 +24,9 @@ public struct Device: Codable {
     /// Current screen brightness level (0.0 to 1.0).
     public let brightnessLevel: Double?
 
+    /// Whether the device is considered a low RAM device (Android)
+    public let isLowRamDevice: Bool?
+
     /// The user’s locale as a language tag combining language and region, e.g. 'en-US'.
     public let locale: String?
 
@@ -39,8 +42,14 @@ public struct Device: Codable {
     /// Whether the device is in power saving mode.
     public let powerSavingMode: Bool?
 
+    /// Number of device processors
+    public let processorCount: Double?
+
     /// The device’s current time zone identifier, e.g. 'Europe/Berlin'.
     public let timeZone: String?
+
+    /// Total RAM in megabytes
+    public let totalRam: Double?
 
     /// Device type info
     public let type: DeviceType?
@@ -50,12 +59,15 @@ public struct Device: Codable {
         case batteryLevel = "battery_level"
         case brand = "brand"
         case brightnessLevel = "brightness_level"
+        case isLowRamDevice = "is_low_ram_device"
         case locale = "locale"
         case locales = "locales"
         case model = "model"
         case name = "name"
         case powerSavingMode = "power_saving_mode"
+        case processorCount = "processor_count"
         case timeZone = "time_zone"
+        case totalRam = "total_ram"
         case type = "type"
     }
 
@@ -66,36 +78,45 @@ public struct Device: Codable {
     ///   - batteryLevel: Current battery level of the device (0.0 to 1.0).
     ///   - brand: Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
     ///   - brightnessLevel: Current screen brightness level (0.0 to 1.0).
+    ///   - isLowRamDevice: Whether the device is considered a low RAM device (Android)
     ///   - locale: The user’s locale as a language tag combining language and region, e.g. 'en-US'.
     ///   - locales: Ordered list of the user’s preferred system languages as IETF language tags.
     ///   - model: Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
     ///   - name: Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
     ///   - powerSavingMode: Whether the device is in power saving mode.
+    ///   - processorCount: Number of device processors
     ///   - timeZone: The device’s current time zone identifier, e.g. 'Europe/Berlin'.
+    ///   - totalRam: Total RAM in megabytes
     ///   - type: Device type info
     public init(
         architecture: String? = nil,
         batteryLevel: Double? = nil,
         brand: String? = nil,
         brightnessLevel: Double? = nil,
+        isLowRamDevice: Bool? = nil,
         locale: String? = nil,
         locales: [String]? = nil,
         model: String? = nil,
         name: String? = nil,
         powerSavingMode: Bool? = nil,
+        processorCount: Double? = nil,
         timeZone: String? = nil,
+        totalRam: Double? = nil,
         type: DeviceType? = nil
     ) {
         self.architecture = architecture
         self.batteryLevel = batteryLevel
         self.brand = brand
         self.brightnessLevel = brightnessLevel
+        self.isLowRamDevice = isLowRamDevice
         self.locale = locale
         self.locales = locales
         self.model = model
         self.name = name
         self.powerSavingMode = powerSavingMode
+        self.processorCount = processorCount
         self.timeZone = timeZone
+        self.totalRam = totalRam
         self.type = type
     }
 
@@ -4079,7 +4100,7 @@ public struct RUMResourceEvent: RUMDataModel {
             public let operationName: String?
 
             /// Type of the GraphQL operation
-            public let operationType: OperationType
+            public let operationType: OperationType?
 
             /// Content of the GraphQL operation
             public var payload: String?
@@ -4109,7 +4130,7 @@ public struct RUMResourceEvent: RUMDataModel {
                 errorCount: Int64? = nil,
                 errors: [Errors]? = nil,
                 operationName: String? = nil,
-                operationType: OperationType,
+                operationType: OperationType? = nil,
                 payload: String? = nil,
                 variables: String? = nil
             ) {
@@ -4561,13 +4582,25 @@ public struct RUMTelemetryDevice: Codable {
     /// Brand of the device
     public let brand: String?
 
+    /// Whether the device is considered a low RAM device (Android)
+    public let isLowRamDevice: Bool?
+
     /// Model of the device
     public let model: String?
+
+    /// Number of device processors
+    public let processorCount: Double?
+
+    /// Total RAM in megabytes
+    public let totalRam: Double?
 
     public enum CodingKeys: String, CodingKey {
         case architecture = "architecture"
         case brand = "brand"
+        case isLowRamDevice = "is_low_ram_device"
         case model = "model"
+        case processorCount = "processor_count"
+        case totalRam = "total_ram"
     }
 
     /// Device properties
@@ -4575,15 +4608,24 @@ public struct RUMTelemetryDevice: Codable {
     /// - Parameters:
     ///   - architecture: Architecture of the device
     ///   - brand: Brand of the device
+    ///   - isLowRamDevice: Whether the device is considered a low RAM device (Android)
     ///   - model: Model of the device
+    ///   - processorCount: Number of device processors
+    ///   - totalRam: Total RAM in megabytes
     public init(
         architecture: String? = nil,
         brand: String? = nil,
-        model: String? = nil
+        isLowRamDevice: Bool? = nil,
+        model: String? = nil,
+        processorCount: Double? = nil,
+        totalRam: Double? = nil
     ) {
         self.architecture = architecture
         self.brand = brand
+        self.isLowRamDevice = isLowRamDevice
         self.model = model
+        self.processorCount = processorCount
+        self.totalRam = totalRam
     }
 }
 
@@ -6896,7 +6938,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
     public let version: String?
 
     /// View properties
-    public var view: View?
+    public var view: View
 
     /// Vital properties
     public let vital: Vital
@@ -6976,7 +7018,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
         synthetics: RUMSyntheticsTest? = nil,
         usr: RUMUser? = nil,
         version: String? = nil,
-        view: View? = nil,
+        view: View,
         vital: Vital
     ) {
         self.dd = dd
@@ -11396,4 +11438,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/834392ddf77531ed3f383e0808192879490c221d
+// Generated from https://github.com/DataDog/rum-events-format/tree/9095192ef42663e455f26376202b447649e0acd6

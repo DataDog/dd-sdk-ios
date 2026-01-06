@@ -152,7 +152,7 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
     private func assertInitialRUMSessionWasCollected(by serverSession: ServerSession) throws {
         // Get RUM Sessions with expected number of Action events:
         let recordedRequests = try serverSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.singleSession(from: requests)?.actionEventMatchers.count == 8
+            try RUMSessionMatcher.singleSession(from: requests)?.actionEventMatchers.count == 7
         }
 
         assertRUM(requests: recordedRequests)
@@ -161,8 +161,9 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
         sendCIAppLog(session)
 
         XCTAssertTrue(session.views[0].isApplicationLaunchView())
-        XCTAssertEqual(session.views[0].actionEvents.count, 2)
-        XCTAssertEqual(session.views[0].actionEvents[0].action.type, .applicationStart)
+        XCTAssertEqual(session.views[0].actionEvents.count, 1)
+        XCTAssertNotNil(session.ttidEvent)
+        XCTAssertGreaterThan(session.timeToInitialDisplay!, 0)
 
         XCTAssertEqual(session.views[1].name, "Home")
         XCTAssertEqual(session.views[1].actionEvents.count, 3)
