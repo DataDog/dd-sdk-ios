@@ -61,4 +61,49 @@ final class FallbackFlagsClientTests: XCTestCase {
             """
         )
     }
+
+    func testGetFlagAssignments() {
+        // Given
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        Flags.enable(in: core)
+        let client = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        // When
+        let flagAssignments = client.getFlagAssignments()
+
+        // Then
+        XCTAssertNil(flagAssignments)
+        XCTAssertEqual(dd.logger.errorMessages.count, 1)
+        XCTAssertEqual(
+            dd.logger.errorMessages.first,
+            """
+            Using fallback client to get all flag values. \
+            Ensure that a client named 'default' is created before using it.
+            """
+        )
+    }
+
+    func testSendFlagEvaluation() {
+        // Given
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        Flags.enable(in: core)
+        let client = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        // When
+        client.sendFlagEvaluation(key: .mockAny(), assignment: .mockAny(), context: .mockAny())
+
+        // Then
+        XCTAssertEqual(dd.logger.errorMessages.count, 1)
+        XCTAssertEqual(
+            dd.logger.errorMessages.first,
+            """
+            Using fallback client to track '\(String.mockAny())'. \
+            Ensure that a client named 'default' is created before using it.
+            """
+        )
+    }
 }
