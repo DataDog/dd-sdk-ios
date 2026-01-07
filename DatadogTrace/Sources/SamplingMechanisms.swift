@@ -12,9 +12,9 @@ import DatadogInternal
 extension SamplingMechanismType {
     var precedence: SamplingMechanismPrecedence {
         switch self {
-        case .fallback:            .fallback
-        case .customSamplingRules: .customSamplingRules
-        case .manual:              .manual
+        case .fallback:  .fallback
+        case .agentRate: .agentRate
+        case .manual:    .manual
         }
     }
 }
@@ -26,11 +26,11 @@ internal struct SamplingMechanismPrecedence: Comparable {
 
     let precedence: Int
 
-    static let fallback =            SamplingMechanismPrecedence(precedence: 0)
+    static let fallback =  SamplingMechanismPrecedence(precedence: 0)
 
-    static let customSamplingRules = SamplingMechanismPrecedence(precedence: 50)
+    static let agentRate = SamplingMechanismPrecedence(precedence: 50)
 
-    static let manual =              SamplingMechanismPrecedence(precedence: 80)
+    static let manual =    SamplingMechanismPrecedence(precedence: 80)
 }
 
 internal protocol SamplingMechanism {

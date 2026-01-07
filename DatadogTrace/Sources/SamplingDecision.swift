@@ -16,7 +16,7 @@ internal struct SamplingDecision {
 
     internal init(sampling: Sampling) {
         let priority = sampling.sample() ? SamplingPriority.autoKeep : .autoDrop
-        self.init(mechanisms: [.customSamplingRules: FixedValueMechanism(samplingPriority: priority)])
+        self.init(mechanisms: [.agentRate: FixedValueMechanism(samplingPriority: priority)])
     }
 
     private init(mechanisms: [SamplingMechanismType: SamplingMechanism]) {
@@ -25,7 +25,7 @@ internal struct SamplingDecision {
 
     // TODO: Remove this API
     internal init(temporaryPriority: SamplingPriority) {
-        self.init(mechanisms: [.customSamplingRules: FixedValueMechanism(samplingPriority: temporaryPriority)])
+        self.init(mechanisms: [.agentRate: FixedValueMechanism(samplingPriority: temporaryPriority)])
     }
 
     mutating func addManualDropOverride() {

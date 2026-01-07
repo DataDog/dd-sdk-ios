@@ -6,14 +6,14 @@
 
 public enum SamplingMechanismType {
     case fallback
-    case customSamplingRules
+    case agentRate
     case manual
 
     public var tagValue: String {
         switch self {
-        case .fallback:             "0"
-        case .customSamplingRules:  "3"
-        case .manual:               "4"
+        case .fallback:  "0"
+        case .agentRate: "1"
+        case .manual:    "4"
         }
     }
 }
