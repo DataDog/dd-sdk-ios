@@ -122,7 +122,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             ),
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
-                configuration.featureFlags[.viewHitches]
+                configuration.trackSlowFrames
                 ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
                 : nil
             },
@@ -144,7 +144,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
                 viewEndedController.add(metric: ViewEndedMetric(tnsConfigPredicate: tnsPredicateType, invConfigPredicate: invPredicateType))
 
-                if configuration.featureFlags[.viewHitches] {
+                if configuration.trackSlowFrames {
                     viewEndedController.add(
                         metric: ViewHitchesMetric(
                             maxCount: ViewHitchesReader.Constants.maxCollectedHitches,

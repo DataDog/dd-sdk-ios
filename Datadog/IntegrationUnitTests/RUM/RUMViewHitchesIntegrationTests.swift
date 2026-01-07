@@ -26,7 +26,7 @@ final class RUMViewHitchesIntegrationTests: XCTestCase {
     func testViewHitchesNotCollected_whenFeatureFlagIsDisabled() throws {
         // Given
         let viewName = "MyView"
-        let rumConfig = RUM.Configuration(applicationID: .mockAny(), featureFlags: [.viewHitches: false])
+        let rumConfig = RUM.Configuration(applicationID: .mockAny(), trackSlowFrames: false)
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -48,7 +48,7 @@ final class RUMViewHitchesIntegrationTests: XCTestCase {
     func testViewHitchesCollected_whenFeatureFlagIsEnabled() throws {
         // Given
         let viewName = "MyView"
-        let rumConfig = RUM.Configuration(applicationID: .mockAny(), featureFlags: [.viewHitches: true])
+        let rumConfig = RUM.Configuration(applicationID: .mockAny())
         RUM.enable(with: rumConfig, in: core)
 
         let monitor = RUMMonitor.shared(in: core)

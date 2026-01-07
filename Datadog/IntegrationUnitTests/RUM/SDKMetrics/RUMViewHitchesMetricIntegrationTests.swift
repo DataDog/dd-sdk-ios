@@ -25,7 +25,6 @@ final class RUMViewHitchesMetricIntegrationTests: XCTestCase {
         rumConfig.telemetrySampleRate = .maxSampleRate
         rumConfig.viewEndedSampleRate = .maxSampleRate
         rumConfig.dateProvider = dateProvider
-        rumConfig.featureFlags = [.viewHitches: true]
     }
 
     override func tearDownWithError() throws {
