@@ -18,9 +18,11 @@ public struct TraceContext: Equatable {
     ///
     /// It is a value between `0.0` (drop) and `100.0` (keep), determined by the local or distributed trace sampler.
     public let sampleRate: Float
-    
+
+    /// The sampling priority for the span.
     public let samplingPriority: SamplingPriority
 
+    /// The sampling mechanism used to make the sampling priority decision.
     public let samplingDecisionMaker: SamplingMechanismType
 
     /// The unique identifier for the current RUM Session, if any.
@@ -43,6 +45,7 @@ public struct TraceContext: Equatable {
     ///   - parentSpanID: The unique identifier for the parent span, if any.
     ///   - sampleRate: The sample rate used for injecting the span into a request.
     ///   - samplingPriority: The sampling priority for the span.
+    ///   - samplingDecisionMaker: The sampling mechanism used to make the sampling priority decision.
     ///   - rumSessionId: The unique identifier for the current RUM Session, if any.
     ///   - userId: The unique identifier for the current user, if any.
     ///   - accountId: The unique identifier for the current account, if any.

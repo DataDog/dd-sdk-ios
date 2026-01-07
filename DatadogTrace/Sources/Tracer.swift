@@ -45,9 +45,9 @@ public enum SpanTags {
     /// Internal tag used to encode the span kind. This can be either "client" or "server" for RPC spans,
     /// and "producer" or "consumer" for messaging spans.
     internal static let kind = "span.kind"
-
+    /// Tag used to mark a span as manually dropped.
     public static let manualDrop = "manual.drop"
-
+    /// Tag used to mark a span as manually kept.
     public static let manualKeep = "manual.keep"
 
 }

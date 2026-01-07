@@ -27,7 +27,7 @@ public class URLSessionTaskInterception {
     ///
     /// Setting the value to 'rum' will indicate that the span is reported as a RUM Resource.
     public private(set) var origin: String?
-
+    /// Keeps the active span context that may exist when this interception is created.
     public private(set) var activeSpanContext: SpanContext?
 
     init(request: ImmutableRequest, isFirstParty: Bool) {
@@ -67,6 +67,11 @@ public class URLSessionTaskInterception {
         self.origin = origin
     }
 
+    /// If an active span exists when this inception is created, use this function to register it.
+    /// This guarantees the request span is a child of the active span.
+    ///
+    /// - parameters:
+    ///    - activeSpanContext: The active span context at the time of the creation of this interception.
     public func register(activeSpanContext: SpanContext) {
         self.activeSpanContext = activeSpanContext
     }
