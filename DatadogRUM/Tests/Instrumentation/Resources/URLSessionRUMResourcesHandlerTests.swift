@@ -589,6 +589,48 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize)
     }
 
+    func testGivenTaskInterceptionWithZeroMetricsSize_whenInterceptionCompletes_itFallsBackToResponseSize() throws {
+        let receiveCommands = expectation(description: "Receive 2 RUM commands")
+        receiveCommands.expectedFulfillmentCount = 2
+        var commandsReceived: [RUMCommand] = []
+        commandSubscriber.onCommandReceived = { command in
+            commandsReceived.append(command)
+            receiveCommands.fulfill()
+        }
+
+        // Given
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .metrics)
+
+        // Create metrics with responseSize = 0
+        let resourceMetrics = ResourceMetrics.mockWith(responseSize: 0)
+        taskInterception.register(metrics: resourceMetrics)
+
+        // Set responseSize from countOfBytesReceived
+        taskInterception.register(responseSize: 10)
+
+        let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
+        taskInterception.register(response: response, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let resourceMetricsCommand = try XCTUnwrap(commandsReceived[0] as? RUMAddResourceMetricsCommand)
+        XCTAssertEqual(resourceMetricsCommand.resourceKey, taskInterception.identifier.uuidString)
+        DDAssertReflectionEqual(resourceMetricsCommand.metrics, taskInterception.metrics)
+
+        let resourceStopCommand = try XCTUnwrap(commandsReceived[1] as? RUMStopResourceCommand)
+        XCTAssertEqual(resourceStopCommand.resourceKey, taskInterception.identifier.uuidString)
+        XCTAssertEqual(resourceStopCommand.kind, RUMResourceType(response: response))
+        XCTAssertEqual(resourceStopCommand.httpStatusCode, 200)
+
+        // Verify fallback to responseSize when metrics.responseSize is 0
+        XCTAssertEqual(resourceStopCommand.size, 10, "Should fallback to interception.responseSize when metrics.responseSize is 0")
+        XCTAssertNotEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize, "Should not use metrics.responseSize when it is 0")
+    }
+
     func testGivenTaskInterceptionWithMetricsAndError_whenInterceptionCompletes_itStopsRUMResourceWithErrorAndMetrics() throws {
         let receiveCommands = expectation(description: "Receive 2 RUM commands")
         receiveCommands.expectedFulfillmentCount = 2
