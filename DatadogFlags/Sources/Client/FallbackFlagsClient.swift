@@ -40,3 +40,26 @@ internal final class FallbackFlagsClient: FlagsClientProtocol {
         return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
     }
 }
+
+// MARK: - Internal methods consumed by the React Native SDK
+
+extension FallbackFlagsClient: FlagsClientInternal {
+    func getFlagAssignments() -> [String: FlagAssignment]? {
+        DD.logger.error(
+            """
+            Using fallback client to get all flag values. \
+            Ensure that a client named '\(name)' is created before using it.
+            """
+        )
+        return nil
+    }
+
+    func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+        DD.logger.error(
+            """
+            Using fallback client to track '\(key)'. \
+            Ensure that a client named '\(name)' is created before using it.
+            """
+        )
+    }
+}

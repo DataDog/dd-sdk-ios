@@ -14,6 +14,14 @@ import WatchKit
 
 /// Convenient wrapper to get system notifications independent from platform
 public enum ApplicationNotifications {
+    public static var didFinishLaunching: Notification.Name {
+        #if canImport(WatchKit)
+        WKExtension.applicationDidFinishLaunchingNotification
+        #else
+        UIApplication.didFinishLaunchingNotification
+        #endif
+    }
+
     public static var didBecomeActive: Notification.Name {
         #if canImport(WatchKit)
         WKExtension.applicationDidBecomeActiveNotification

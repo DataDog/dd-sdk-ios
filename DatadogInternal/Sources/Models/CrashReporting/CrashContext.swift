@@ -157,7 +157,7 @@ public struct CrashContext: Codable, Equatable {
         self.lastRUMAttributes = lastRUMAttributes
         self.lastLogAttributes = lastLogAttributes
 
-        self.appLaunchDate = context.launchInfo.processLaunchDate
+        self.appLaunchDate = context.launchInfo.launchPhaseDates[.processLaunch]
     }
 
     public static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {

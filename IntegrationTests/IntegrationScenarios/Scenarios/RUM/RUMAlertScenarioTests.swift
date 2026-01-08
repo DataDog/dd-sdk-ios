@@ -78,7 +78,6 @@ class RUMAlertScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let initialView = session.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
-        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
 
         XCTAssertEqual(session.views[1].path, "Runner.RUMAlertRootViewController")
         XCTAssertEqual(session.views[1].actionEvents.count, 1)
@@ -151,7 +150,6 @@ class RUMAlertScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let initialView = session.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
-        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
 
         XCTAssertEqual(session.views[1].path, "Runner.RUMAlertRootViewController")
         XCTAssertEqual(session.views[1].actionEvents.count, 1)

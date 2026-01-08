@@ -674,4 +674,30 @@ class RUMSessionScopeTests: XCTestCase {
         // Then
         XCTAssertTrue(result)
     }
+
+    // MARK: - App launch metrics
+
+    func testWhenSessionScopeReceivesTTIDCommand_itIsProcessedAccordingly() {
+        // Given
+        let command: RUMTimeToInitialDisplayCommand = .mockAny()
+        let scope: RUMSessionScope = .mockWith(parent: parent)
+
+        // When
+        let result = scope.process(command: command, context: context, writer: writer)
+
+        // Then
+        XCTAssertTrue(result)
+    }
+
+    func testWhenSessionScopeReceivesTTFDCommand_itIsProcessedAccordingly() {
+        // Given
+        let command: RUMTimeToFullDisplayCommand = .mockAny()
+        let scope: RUMSessionScope = .mockWith(parent: parent)
+
+        // When
+        let result = scope.process(command: command, context: context, writer: writer)
+
+        // Then
+        XCTAssertTrue(result)
+    }
 }

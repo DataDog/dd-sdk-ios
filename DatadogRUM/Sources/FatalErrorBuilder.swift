@@ -34,6 +34,8 @@ internal struct FatalErrorBuilder {
 
     let error: FatalError
 
+    let errorUUID: RUMUUID
+
     let errorDate: Date
     let errorType: String
     let errorMessage: String
@@ -98,7 +100,7 @@ internal struct FatalErrorBuilder {
                 csp: nil,
                 handling: nil,
                 handlingStack: nil,
-                id: nil,
+                id: errorUUID.toRUMDataFormat,
                 isCrash: {
                     switch error {
                     case .crash: return true

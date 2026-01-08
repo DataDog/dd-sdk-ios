@@ -48,8 +48,8 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
         customEndpoint: URL? = .mockAny(),
         trackAnonymousUser: Bool = .mockAny(),
         trackMemoryWarnings: Bool = .mockAny(),
-        telemetrySampleRate: SampleRate = 0,
-        featureFlags: FeatureFlags = .defaults
+        trackSlowFrames: Bool = .mockAny(),
+        telemetrySampleRate: SampleRate = 0
     ) -> RUM.Configuration {
         .init(
             applicationID: applicationID,
@@ -75,8 +75,8 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             customEndpoint: customEndpoint,
             trackAnonymousUser: trackAnonymousUser,
             trackMemoryWarnings: trackMemoryWarnings,
-            telemetrySampleRate: telemetrySampleRate,
-            featureFlags: featureFlags
+            trackSlowFrames: trackSlowFrames,
+            telemetrySampleRate: telemetrySampleRate
         )
     }
 
@@ -93,6 +93,7 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             customEndpoint: .mockRandom(),
             trackAnonymousUser: .mockRandom(),
             trackMemoryWarnings: .mockRandom(),
+            trackSlowFrames: .mockRandom(),
             telemetrySampleRate: .mockRandom(min: 0, max: 100)
         )
     }
@@ -882,6 +883,81 @@ extension RUMOperationStepVitalCommand: AnyMockable, RandomMockable {
     }
 }
 
+extension RUMAddViewLoadingTime: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self { mockWith() }
+
+    public static func mockRandom() -> Self {
+        mockWith(
+            time: .mockRandom(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes(),
+            overwrite: .mockRandom()
+        )
+    }
+
+    public static func mockWith(
+        time: Date = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:],
+        overwrite: Bool = .mockAny()
+    ) -> Self {
+        .init(
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            overwrite: overwrite
+        )
+    }
+}
+
+extension RUMTimeToInitialDisplayCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self { mockWith() }
+
+    public static func mockRandom() -> Self {
+        mockWith(
+            time: .mockRandom(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes()
+        )
+    }
+
+    public static func mockWith(
+        time: Date = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) -> Self {
+        .init(
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes
+        )
+    }
+}
+
+extension RUMTimeToFullDisplayCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self { mockWith() }
+
+    public static func mockRandom() -> Self {
+        mockWith(
+            time: .mockRandom(),
+            globalAttributes: mockRandomAttributes(),
+            attributes: mockRandomAttributes()
+        )
+    }
+
+    public static func mockWith(
+        time: Date = .mockAny(),
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) -> Self {
+        .init(
+            time: time,
+            globalAttributes: globalAttributes,
+            attributes: attributes
+        )
+    }
+}
+
 // MARK: - RUMCommand Property Mocks
 
 extension RUMInternalErrorSource: RandomMockable {
@@ -906,7 +982,7 @@ public class RUMUUIDGeneratorMock: RUMUUIDGenerator {
     public var uuid: RUMUUID
     public func generateUnique() -> RUMUUID { uuid }
 
-    public init(uuid: RUMUUID) {
+    public init(uuid: RUMUUID = .mockAny()) {
         self.uuid = uuid
     }
 }
@@ -976,6 +1052,7 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         renderLoopObserver: RenderLoopObserver? = nil,
+        firstFrameReader: RenderLoopReader = FirstFrameReader(dateProvider: DateProviderMock(), mediaTimeProvider: MediaTimeProviderMock()),
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)? = { ViewHitchesMock.mockAny() },
         vitalsReaders: VitalsReaders? = nil,
         accessibilityReader: AccessibilityReading? = nil,
@@ -986,6 +1063,7 @@ extension RUMScopeDependencies {
         viewEndedMetricFactory: @escaping () -> ViewEndedController = {
             ViewEndedController(telemetry: NOPTelemetry(), sampleRate: 0)
         },
+        appStateManager: AppStateManaging = AppStateManagerMock(),
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking = {
             TNSMetric(viewName: $1, viewStartDate: $0, resourcePredicate: TimeBasedTNSResourcePredicate())
@@ -1009,6 +1087,7 @@ extension RUMScopeDependencies {
             ciTest: ciTest,
             syntheticsTest: syntheticsTest,
             renderLoopObserver: renderLoopObserver,
+            firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: viewHitchesReaderFactory,
             vitalsReaders: vitalsReaders,
             accessibilityReader: accessibilityReader,
@@ -1017,6 +1096,7 @@ extension RUMScopeDependencies {
             fatalErrorContext: fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric,
             viewEndedMetricFactory: viewEndedMetricFactory,
+            appStateManager: appStateManager,
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
@@ -1038,6 +1118,7 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         renderLoopObserver: RenderLoopObserver? = nil,
+        firstFrameReader: RenderLoopReader? = nil,
         viewHitchesReaderFactory: (() -> RenderLoopReader & ViewHitchesModel)? = nil,
         vitalsReaders: VitalsReaders? = nil,
         accessibilityReader: AccessibilityReading? = nil,
@@ -1046,6 +1127,7 @@ extension RUMScopeDependencies {
         fatalErrorContext: FatalErrorContextNotifying? = nil,
         sessionEndedMetric: SessionEndedMetricController? = nil,
         viewEndedMetricFactory: (() -> ViewEndedController)? = nil,
+        appStateManager: AppStateManager? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
@@ -1065,6 +1147,7 @@ extension RUMScopeDependencies {
             ciTest: ciTest ?? self.ciTest,
             syntheticsTest: syntheticsTest ?? self.syntheticsTest,
             renderLoopObserver: renderLoopObserver ?? self.renderLoopObserver,
+            firstFrameReader: firstFrameReader ?? self.firstFrameReader,
             viewHitchesReaderFactory: viewHitchesReaderFactory ?? self.viewHitchesReaderFactory,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
             accessibilityReader: accessibilityReader,
@@ -1073,6 +1156,7 @@ extension RUMScopeDependencies {
             fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric ?? self.sessionEndedMetric,
             viewEndedMetricFactory: viewEndedMetricFactory ?? self.viewEndedMetricFactory,
+            appStateManager: appStateManager ?? self.appStateManager,
             watchdogTermination: watchdogTermination ?? self.watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,

@@ -272,7 +272,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
             launchInfo: .mockWith(
                 launchReason: .prewarming,
                 processLaunchDate: launchDate,
-                timeToDidBecomeActive: 1.2,
+                didBecomeActiveDate: launchDate.addingTimeInterval(1.2),
                 raw: .init(taskPolicyRole: "mock_task_policy", isPrewarmed: true)
             ),
             applicationStateHistory: .mockWith(initialState: .background, date: sdkInitDate)

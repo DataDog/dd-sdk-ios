@@ -56,8 +56,8 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let initialView = session.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
-        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
-        XCTAssertGreaterThan(initialView.actionEvents[0].action.loadingTime!, 0)
+        XCTAssertNotNil(session.ttidEvent)
+        XCTAssertGreaterThan(session.timeToInitialDisplay!, 0)
 
         XCTAssertEqual(session.views[1].name, "Screen")
         XCTAssertEqual(session.views[1].path, "Runner.RUMMVSViewController")
@@ -134,8 +134,8 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let initialView = session.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
-        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
-        XCTAssertGreaterThan(initialView.actionEvents[0].action.loadingTime!, 0)
+        XCTAssertNotNil(session.ttidEvent)
+        XCTAssertGreaterThan(session.timeToInitialDisplay!, 0)
 
         XCTAssertEqual(session.views[1].name, "Screen")
         XCTAssertEqual(session.views[1].path, "Runner.RUMMVSViewController")

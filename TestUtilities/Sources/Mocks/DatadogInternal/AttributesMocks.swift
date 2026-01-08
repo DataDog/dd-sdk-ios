@@ -5,9 +5,10 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Creates randomized `[String: Codable]` attributes
-public func mockRandomAttributes() -> [String: Codable] {
+public func mockRandomAttributes() -> [AttributeKey: AttributeValue] {
     struct Foo: Codable {
         var bar: String = .mockRandom()
         var bizz = Bizz()

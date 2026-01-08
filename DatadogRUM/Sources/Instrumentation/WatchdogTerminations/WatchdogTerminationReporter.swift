@@ -10,7 +10,7 @@ import DatadogInternal
 /// Reports Watchdog Termination events to Datadog.
 internal protocol WatchdogTerminationReporting {
     /// Sends the Watchdog Termination event to Datadog.
-    func send(date: Date?, state: WatchdogTerminationAppState, viewEvent: RUMViewEvent)
+    func send(date: Date?, state: AppStateInfo, viewEvent: RUMViewEvent)
 }
 
 /// Default implementation of `WatchdogTerminationReporting`.
@@ -28,17 +28,20 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
     private let featureScope: FeatureScope
 
     private let dateProvider: DateProvider
+    private let uuidGenerator: RUMUUIDGenerator
 
     init(
         featureScope: FeatureScope,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        uuidGenerator: RUMUUIDGenerator
     ) {
         self.featureScope = featureScope
         self.dateProvider = dateProvider
+        self.uuidGenerator = uuidGenerator
     }
 
     /// Sends the Watchdog Termination event to Datadog.
-    func send(date: Date?, state: WatchdogTerminationAppState, viewEvent: RUMViewEvent) {
+    func send(date: Date?, state: AppStateInfo, viewEvent: RUMViewEvent) {
         guard state.trackingConsent == .granted else { // consider the user consent from previous session
             DD.logger.debug("Skipped sending Watchdog Termination as it was recorded with \(state.trackingConsent) consent")
             return
@@ -53,6 +56,7 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
             let builder = FatalErrorBuilder(
                 context: context,
                 error: .watchdogTermination,
+                errorUUID: self.uuidGenerator.generateUnique(),
                 errorDate: errorDate,
                 errorType: Constants.errorType,
                 errorMessage: Constants.errorMessage,
