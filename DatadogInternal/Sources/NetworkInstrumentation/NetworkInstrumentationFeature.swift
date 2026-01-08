@@ -553,9 +553,9 @@ extension NetworkInstrumentationFeature {
             // Register the state change
             interception.register(state: state)
 
-            // When task completes (state >= 2), also register the response/error if not already done
+            // When task completes (state == 3), also register the response/error if not already done
             // This ensures completion is recorded even for async/await or delegate-less tasks without completion handlers
-            if state >= 2 && interception.completion == nil {
+            if state == 3 && interception.completion == nil {
                 interception.register(
                     response: task.response,
                     error: task.error
