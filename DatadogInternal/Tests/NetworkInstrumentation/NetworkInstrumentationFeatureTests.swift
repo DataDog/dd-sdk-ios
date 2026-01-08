@@ -1429,7 +1429,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.trackingMode, .automatic, "Task should be in automatic mode")
         XCTAssertNil(interception.metrics, "Automatic mode should not capture URLSessionTaskMetrics")
 
-        // CRITICAL: Verify that the error is captured for cancelled tasks
         let completion = try XCTUnwrap(interception.completion, "Should capture completion")
         let error = try XCTUnwrap(completion.error, "Should capture cancellation error") as NSError
         XCTAssertEqual(error.domain, NSURLErrorDomain, "Error should be NSURLError")
