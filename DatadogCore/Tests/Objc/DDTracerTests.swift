@@ -213,7 +213,7 @@ class DDTracerTests: XCTestCase {
             "x-datadog-trace-id": "100",
             "x-datadog-parent-id": "200",
             "x-datadog-sampling-priority": "1",
-            "x-datadog-tags": "_dd.p.tid=a"
+            "x-datadog-tags": "_dd.p.tid=a,_dd.p.dm=-1"
         ]
         XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }

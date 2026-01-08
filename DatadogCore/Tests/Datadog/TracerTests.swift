@@ -105,7 +105,8 @@ class TracerTests: XCTestCase {
               "metrics._top_level": 1,
               "metrics._sampling_priority_v1": 1,
               "metrics._dd.agent_psr": 1,
-              "meta._dd.p.tid": "a"
+              "meta._dd.p.tid": "a",
+              "meta._dd.p.dm": "-1"
             }
           ],
           "env": "custom"

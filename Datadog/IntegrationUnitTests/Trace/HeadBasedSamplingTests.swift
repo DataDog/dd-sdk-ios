@@ -55,7 +55,7 @@ class HeadBasedSamplingTests: XCTestCase {
         let spans = core.waitAndReturnSpanEvents()
 
         guard spans.isEmpty else {
-            XCTAssertEqual(spans.filter({ $0.isKept }).count, 3, "All spans must be either kept or dropped")
+            XCTAssertEqual(spans.filter({ $0.samplingPriority.isKept }).count, 3, "All spans must be either kept or dropped")
             return
         }
     }
@@ -84,7 +84,7 @@ class HeadBasedSamplingTests: XCTestCase {
         let spans = core.waitAndReturnSpanEvents()
 
         guard spans.isEmpty else {
-            XCTAssertEqual(spans.filter({ $0.isKept }).count, 3, "All spans must be either kept or dropped")
+            XCTAssertEqual(spans.filter({ $0.samplingPriority.isKept }).count, 3, "All spans must be either kept or dropped")
             return
         }
     }
@@ -118,12 +118,12 @@ class HeadBasedSamplingTests: XCTestCase {
         let span = try XCTUnwrap(core.waitAndReturnSpanEvents().first, "It should send span event")
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertEqual(span.samplingRate, 1, "Span must use distributed trace sample rate")
-        XCTAssertTrue(span.isKept, "Span must be sampled")
+        XCTAssertTrue(span.samplingPriority.isKept, "Span must be sampled")
 
         // Then
         let expectedTraceIDField = String(span.traceID.idLo)
         let expectedSpanIDField = String(span.spanID, representation: .decimal)
-        let expectedTagsField = "_dd.p.tid=\(span.traceID.idHiHex)"
+        let expectedTagsField = "_dd.p.tid=\(span.traceID.idHiHex),_dd.p.dm=-1"
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
@@ -193,16 +193,16 @@ class HeadBasedSamplingTests: XCTestCase {
         let urlsessionSpan = try XCTUnwrap(spanEvents.first(where: { $0.operationName == "urlsession.request" }))
 
         XCTAssertEqual(activeSpan.samplingRate, 1, "Span must use local trace sample rate")
-        XCTAssertTrue(activeSpan.isKept, "Span must be sampled")
+        XCTAssertTrue(activeSpan.samplingPriority.isKept, "Span must be sampled")
         XCTAssertEqual(urlsessionSpan.samplingRate, 1, "Span must use local trace sample rate")
-        XCTAssertTrue(urlsessionSpan.isKept, "Span must be sampled")
+        XCTAssertTrue(urlsessionSpan.samplingPriority.isKept, "Span must be sampled")
         XCTAssertEqual(urlsessionSpan.traceID, activeSpan.traceID)
         XCTAssertEqual(urlsessionSpan.parentID, activeSpan.spanID)
 
         // Then
         let expectedTraceIDField = String(activeSpan.traceID.idLo)
         let expectedSpanIDField = String(urlsessionSpan.spanID, representation: .decimal)
-        let expectedTagsField = "_dd.p.tid=\(activeSpan.traceID.idHiHex)"
+        let expectedTagsField = "_dd.p.tid=\(activeSpan.traceID.idHiHex),_dd.p.dm=-1"
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
@@ -275,17 +275,16 @@ class HeadBasedSamplingTests: XCTestCase {
         let networkSpan = try XCTUnwrap(core.waitAndReturnSpanEvents().first, "It should send span event")
         XCTAssertEqual(networkSpan.operationName, "network.span")
         XCTAssertEqual(networkSpan.samplingRate, 1, "Span must use local trace sample rate")
-        XCTAssertTrue(networkSpan.isKept, "Span must be sampled")
+        XCTAssertTrue(networkSpan.samplingPriority.isKept, "Span must be sampled")
 
         // Then
         let expectedTraceIDField = String(networkSpan.traceID.idLo)
         let expectedSpanIDField = String(networkSpan.spanID, representation: .decimal)
-        let expectedTagsField = "_dd.p.tid=\(networkSpan.traceID.idHiHex)"
+        let expectedTagsField = "_dd.p.tid=\(networkSpan.traceID.idHiHex),_dd.p.dm=-1"
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
     }
 
     func testSendingDroppedDistributedTraceWithNoParent_throughTracerAPI() throws {
@@ -352,16 +351,16 @@ class HeadBasedSamplingTests: XCTestCase {
         let networkSpan = try XCTUnwrap(spanEvents.first(where: { $0.operationName == "network.span" }))
 
         XCTAssertEqual(activeSpan.samplingRate, 1, "Span must use local trace sample rate")
-        XCTAssertTrue(activeSpan.isKept, "Span must be sampled")
+        XCTAssertTrue(activeSpan.samplingPriority.isKept, "Span must be sampled")
         XCTAssertEqual(networkSpan.samplingRate, 1, "Span must use local trace sample rate")
-        XCTAssertTrue(networkSpan.isKept, "Span must be sampled")
+        XCTAssertTrue(networkSpan.samplingPriority.isKept, "Span must be sampled")
         XCTAssertEqual(networkSpan.traceID, activeSpan.traceID)
         XCTAssertEqual(networkSpan.parentID, activeSpan.spanID)
 
         // Then
         let expectedTraceIDField = String(activeSpan.traceID.idLo)
         let expectedSpanIDField = String(networkSpan.spanID, representation: .decimal)
-        let expectedTagsField = "_dd.p.tid=\(activeSpan.traceID.idHiHex)"
+        let expectedTagsField = "_dd.p.tid=\(activeSpan.traceID.idHiHex),_dd.p.dm=-1"
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)

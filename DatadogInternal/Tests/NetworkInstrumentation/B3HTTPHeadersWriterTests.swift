@@ -20,7 +20,8 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: true
+                samplingPriority: .autoKeep,
+                samplingDecisionMaker: .agentRate
             )
         )
 
@@ -39,7 +40,8 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: false
+                samplingPriority: .autoDrop,
+                samplingDecisionMaker: .agentRate
             )
         )
 
@@ -58,7 +60,8 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: true
+                samplingPriority: .autoKeep,
+                samplingDecisionMaker: .agentRate
             )
         )
 
@@ -77,7 +80,8 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: false
+                samplingPriority: .autoDrop,
+                samplingDecisionMaker: .agentRate
             )
         )
 
@@ -95,7 +99,8 @@ class B3HTTPHeadersWriterTests: XCTestCase {
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: true
+                samplingPriority: .autoKeep,
+                samplingDecisionMaker: .agentRate
             )
         )
 
@@ -114,7 +119,8 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: true
+                samplingPriority: .autoKeep,
+                samplingDecisionMaker: .agentRate
             )
         )
 
@@ -136,7 +142,8 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: false
+                samplingPriority: .autoDrop,
+                samplingDecisionMaker: .agentRate
             )
         )
 
@@ -158,7 +165,8 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: true
+                samplingPriority: .autoKeep,
+                samplingDecisionMaker: .agentRate
             )
         )
 
@@ -180,7 +188,8 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 parentSpanID: 5_678,
-                isKept: false
+                samplingPriority: .autoDrop,
+                samplingDecisionMaker: .agentRate
             )
         )
 
@@ -201,7 +210,8 @@ class B3HTTPHeadersWriterTests: XCTestCase {
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: true
+                samplingPriority: .autoKeep,
+                samplingDecisionMaker: .agentRate
             )
         )
 
@@ -220,7 +230,8 @@ class B3HTTPHeadersWriterTests: XCTestCase {
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: true,
+                samplingPriority: .autoKeep,
+                samplingDecisionMaker: .agentRate,
                 rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )
@@ -238,7 +249,8 @@ class B3HTTPHeadersWriterTests: XCTestCase {
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: false,
+                samplingPriority: .autoDrop,
+                samplingDecisionMaker: .agentRate,
                 rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )

@@ -11,28 +11,40 @@ import TestUtilities
 class HTTPHeadersReaderTests: XCTestCase {
     func testReadingSampledTraceContext() {
         let writer = HTTPHeadersWriter(traceContextInjection: .all)
-        writer.write(traceContext: .mockWith(isKept: true))
+        writer.write(traceContext: .mockWith(
+            samplingPriority: .autoKeep,
+            samplingDecisionMaker: .agentRate
+        ))
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNotNil(reader.read(), "When sampled, it should return trace context")
-        XCTAssertEqual(reader.sampled, true)
+        XCTAssertEqual(reader.samplingPriority, .autoKeep)
+        XCTAssertEqual(reader.samplingDecisionMaker, .agentRate)
     }
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsAll() {
         let writer = HTTPHeadersWriter(traceContextInjection: .all)
-        writer.write(traceContext: .mockWith(isKept: false))
+        writer.write(traceContext: .mockWith(
+            samplingPriority: .autoDrop,
+            samplingDecisionMaker: .agentRate
+        ))
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNotNil(reader.read(), "When not sampled, it should return no trace context")
-        XCTAssertEqual(reader.sampled, false)
+        XCTAssertEqual(reader.samplingPriority, .autoDrop)
+        XCTAssertNil(reader.samplingDecisionMaker)
     }
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsSampled() {
         let writer = HTTPHeadersWriter(traceContextInjection: .sampled)
-        writer.write(traceContext: .mockWith(isKept: false))
+        writer.write(traceContext: .mockWith(
+            samplingPriority: .autoDrop,
+            samplingDecisionMaker: .agentRate
+        ))
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
-        XCTAssertNil(reader.sampled)
+        XCTAssertNil(reader.samplingPriority)
+        XCTAssertNil(reader.samplingDecisionMaker)
     }
 }

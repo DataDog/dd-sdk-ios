@@ -733,9 +733,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testWhenInterceptingTaskWithMultipleTraceContexts_itTakesTheFirstContext() throws {
         let traceContexts = [
-            TraceContext(traceID: .mock(1, 1), spanID: .mock(2), parentSpanID: nil, sampleRate: .mockRandom(), isKept: .mockRandom(), rumSessionId: .mockAny()),
-            TraceContext(traceID: .mock(2, 2), spanID: .mock(3), parentSpanID: nil, sampleRate: .mockRandom(), isKept: .mockRandom(), rumSessionId: .mockAny()),
-            TraceContext(traceID: .mock(3, 3), spanID: .mock(4), parentSpanID: nil, sampleRate: .mockRandom(), isKept: .mockRandom(), rumSessionId: .mockAny()),
+            TraceContext(traceID: .mock(1, 1), spanID: .mock(2), parentSpanID: nil, sampleRate: .mockRandom(), samplingPriority: .mockRandom(), samplingDecisionMaker: .mockRandom(), rumSessionId: .mockAny()),
+            TraceContext(traceID: .mock(2, 2), spanID: .mock(3), parentSpanID: nil, sampleRate: .mockRandom(), samplingPriority: .mockRandom(), samplingDecisionMaker: .mockRandom(), rumSessionId: .mockAny()),
+            TraceContext(traceID: .mock(3, 3), spanID: .mock(4), parentSpanID: nil, sampleRate: .mockRandom(), samplingPriority: .mockRandom(), samplingDecisionMaker: .mockRandom(), rumSessionId: .mockAny()),
         ]
 
         // When

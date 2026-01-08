@@ -326,7 +326,7 @@ extension SamplingDecision: AnyMockable, RandomMockable {
     }
 
     public static func mockAny() -> SamplingDecision {
-        SamplingDecision(sampling: MockSampler(decision: true))
+        SamplingDecision(sampling: MockSampler(decision: false))
     }
 
     public static func mockRandom() -> DatadogTrace.SamplingDecision {

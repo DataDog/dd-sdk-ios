@@ -72,7 +72,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         )
 
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "100")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a,_dd.p.dm=-1")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "100")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
@@ -88,7 +88,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(injectedTraceContext.spanID, 100)
         XCTAssertNil(injectedTraceContext.parentSpanID)
         XCTAssertEqual(injectedTraceContext.sampleRate, 100)
-        XCTAssertTrue(injectedTraceContext.isKept)
+        XCTAssertTrue(injectedTraceContext.samplingPriority.isKept)
     }
 
     func testGivenFirstPartyInterception_withSampledTrace_itDoesNotOverwriteTraceHeaders() throws {
@@ -219,7 +219,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         span.finish()
 
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "100")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a,_dd.p.dm=-1")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "101")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
@@ -234,14 +234,14 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(injectedTraceContext.spanID, 101)
         XCTAssertEqual(injectedTraceContext.parentSpanID, span.context.dd.spanID)
         XCTAssertEqual(injectedTraceContext.sampleRate, span.context.dd.sampleRate)
-        XCTAssertEqual(injectedTraceContext.isKept, span.context.dd.isKept)
+        XCTAssertEqual(injectedTraceContext.samplingPriority.isKept, span.context.dd.samplingDecision.samplingPriority.isKept)
     }
 
     func testGivenFirstPartyInterceptionWithSpanContext_whenInterceptionCompletes_itUsesInjectedSpanContext() throws {
         let expectation = expectation(description: "Send span")
         core.onEventWriteContext = { _ in expectation.fulfill() }
         let sampleRate: Float = .mockRandom(min: 1, max: 100)
-        let isKept: Bool = true
+        let samplingDecision = SamplingDecision.autoKept()
 
         // Given
         let interception = URLSessionTaskInterception(
@@ -262,7 +262,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             spanID: 200,
             parentSpanID: nil,
             sampleRate: sampleRate,
-            isKept: isKept,
+            samplingPriority: samplingDecision.samplingPriority,
+            samplingDecisionMaker: samplingDecision.decisionMaker,
             rumSessionId: nil
         ))
 
@@ -281,7 +282,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertFalse(span.isError)
         XCTAssertEqual(span.duration, 1)
         XCTAssertEqual(span.samplingRate, sampleRate / 100)
-        XCTAssertEqual(span.isKept, isKept)
+        XCTAssertEqual(span.samplingPriority, samplingDecision.samplingPriority)
+        XCTAssertEqual(span.samplingDecisionMaker, samplingDecision.decisionMaker)
     }
 
     func testGivenFirstPartyInterceptionWithNoError_whenInterceptionCompletes_itEncodesRequestInfoInSpan() throws {

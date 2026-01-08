@@ -16,7 +16,8 @@ class HTTPHeadersWriterTests: XCTestCase {
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: true,
+                samplingPriority: .autoKeep,
+                samplingDecisionMaker: .agentRate,
                 rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )
@@ -25,7 +26,7 @@ class HTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[TracingHTTPHeaders.samplingPriorityField], "1")
         XCTAssertEqual(headers[TracingHTTPHeaders.traceIDField], "1234")
         XCTAssertEqual(headers[TracingHTTPHeaders.parentSpanIDField], "2345")
-        XCTAssertEqual(headers[TracingHTTPHeaders.tagsField], "_dd.p.tid=4d2")
+        XCTAssertEqual(headers[TracingHTTPHeaders.tagsField], "_dd.p.tid=4d2,_dd.p.dm=-1")
         XCTAssertEqual(headers[W3CHTTPHeaders.baggage], "session.id=abcdef01-2345-6789-abcd-ef0123456789")
     }
 
@@ -36,7 +37,8 @@ class HTTPHeadersWriterTests: XCTestCase {
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: false
+                samplingPriority: .autoDrop,
+                samplingDecisionMaker: .agentRate,
             )
         )
 
@@ -54,7 +56,8 @@ class HTTPHeadersWriterTests: XCTestCase {
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: true,
+                samplingPriority: .autoKeep,
+                samplingDecisionMaker: .agentRate,
                 rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )
@@ -63,7 +66,7 @@ class HTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[TracingHTTPHeaders.samplingPriorityField], "1")
         XCTAssertEqual(headers[TracingHTTPHeaders.traceIDField], "1234")
         XCTAssertEqual(headers[TracingHTTPHeaders.parentSpanIDField], "2345")
-        XCTAssertEqual(headers[TracingHTTPHeaders.tagsField], "_dd.p.tid=4d2")
+        XCTAssertEqual(headers[TracingHTTPHeaders.tagsField], "_dd.p.tid=4d2,_dd.p.dm=-1")
         XCTAssertEqual(headers[W3CHTTPHeaders.baggage], "session.id=abcdef01-2345-6789-abcd-ef0123456789")
     }
 
@@ -75,7 +78,8 @@ class HTTPHeadersWriterTests: XCTestCase {
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: true,
+                samplingPriority: .autoKeep,
+                samplingDecisionMaker: .agentRate,
                 rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )
@@ -84,7 +88,7 @@ class HTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[TracingHTTPHeaders.samplingPriorityField], "1")
         XCTAssertEqual(headers[TracingHTTPHeaders.traceIDField], "1234")
         XCTAssertEqual(headers[TracingHTTPHeaders.parentSpanIDField], "2345")
-        XCTAssertEqual(headers[TracingHTTPHeaders.tagsField], "_dd.p.tid=4d2")
+        XCTAssertEqual(headers[TracingHTTPHeaders.tagsField], "_dd.p.tid=4d2,_dd.p.dm=-1")
         XCTAssertEqual(headers[W3CHTTPHeaders.baggage], "session.id=abcdef01-2345-6789-abcd-ef0123456789")
     }
 
@@ -95,7 +99,8 @@ class HTTPHeadersWriterTests: XCTestCase {
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: false,
+                samplingPriority: .autoDrop,
+                samplingDecisionMaker: .agentRate,
                 rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789"
             )
         )
@@ -115,7 +120,8 @@ class HTTPHeadersWriterTests: XCTestCase {
             traceContext: .mockWith(
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
-                isKept: false
+                samplingPriority: .autoDrop,
+                samplingDecisionMaker: .agentRate,
             )
         )
 

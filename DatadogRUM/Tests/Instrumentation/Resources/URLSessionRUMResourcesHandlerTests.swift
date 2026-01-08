@@ -54,7 +54,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "100")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a,_dd.p.dm=-1")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "100")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "session.id=abcdef01-2345-6789-abcd-ef0123456789")
@@ -64,7 +64,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(injectedTraceContext.spanID, 100)
         XCTAssertNil(injectedTraceContext.parentSpanID)
         XCTAssertEqual(injectedTraceContext.sampleRate, 100)
-        XCTAssertTrue(injectedTraceContext.isKept)
+        XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+        XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
         XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
     }
 
@@ -100,7 +101,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(injectedTraceContext.spanID, 100)
         XCTAssertNil(injectedTraceContext.parentSpanID)
         XCTAssertEqual(injectedTraceContext.sampleRate, 100)
-        XCTAssertTrue(injectedTraceContext.isKept)
+        XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+        XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
         XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
     }
 
@@ -139,7 +141,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(injectedTraceContext.spanID, 100)
         XCTAssertNil(injectedTraceContext.parentSpanID)
         XCTAssertEqual(injectedTraceContext.sampleRate, 100)
-        XCTAssertTrue(injectedTraceContext.isKept)
+        XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+        XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
         XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
     }
 
@@ -175,7 +178,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(injectedTraceContext.spanID, 100)
         XCTAssertNil(injectedTraceContext.parentSpanID)
         XCTAssertEqual(injectedTraceContext.sampleRate, 100)
-        XCTAssertTrue(injectedTraceContext.isKept)
+        XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+        XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
         XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
     }
 
@@ -529,7 +533,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             spanID: 200,
             parentSpanID: nil,
             sampleRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             rumSessionId: .mockAny()
         ))
         XCTAssertNotNil(taskInterception.trace)
@@ -732,7 +737,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 "x-datadog-parent-id": "100",
                 "x-datadog-sampling-priority": "1",
                 "x-datadog-origin": "rum",
-                "x-datadog-tags": "_dd.p.tid=a",
+                "x-datadog-tags": "_dd.p.tid=a,_dd.p.dm=-1",
                 "baggage": "session.id=abcdef01-2345-6789-abcd-ef0123456789",
             ]
         )
@@ -1001,7 +1006,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             spanID: 100,
             parentSpanID: nil,
             sampleRate: 100,
-            isKept: true,
+            samplingPriority: .autoKeep,
+            samplingDecisionMaker: .agentRate,
             rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789",
             graphql: GraphQLRequestAttributes(
                 operationName: "GetUser",
@@ -1049,7 +1055,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             spanID: 100,
             parentSpanID: nil,
             sampleRate: 100,
-            isKept: true,
+            samplingPriority: .autoKeep,
+            samplingDecisionMaker: .agentRate,
             rumSessionId: "abcdef01-2345-6789-abcd-ef0123456789",
             graphql: GraphQLRequestAttributes(
                 operationName: "FailedMutation",
@@ -1088,7 +1095,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When - Make multiple requests with the same session ID
-        var samplingDecisions: [Bool] = []
+        var samplingDecisions: [SamplingPriority] = []
         for _ in 1...10 {
             let (_, traceContext) = handler.modify(
                 request: .mockWith(url: "https://www.example.com"),
@@ -1100,7 +1107,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                     )
                 )
             )
-            samplingDecisions.append(traceContext?.isKept ?? false)
+            samplingDecisions.append(traceContext?.samplingPriority ?? .autoDrop)
         }
 
         // Then - All sampling decisions should be the same
