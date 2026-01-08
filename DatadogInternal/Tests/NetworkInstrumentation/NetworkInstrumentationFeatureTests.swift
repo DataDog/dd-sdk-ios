@@ -1394,6 +1394,48 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     // MARK: - Content Validation
 
+    func testAutomaticMode_whenTaskIsCancelled_itCapturesError() throws {
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
+
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        // Given - Enable automatic mode
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        // Use real URLSession (not mock) to test actual cancellation behavior
+        let session = URLSession(configuration: .ephemeral)
+
+        // When - Create task to an unreachable IP address (TEST-NET-1, guaranteed to not respond quickly)
+        // This ensures the task will still be running when we cancel it
+        let url = URL(string: "https://192.0.2.1:9999")! // TEST-NET-1: Reserved for documentation, never responds
+        let task = session.dataTask(with: url)
+        task.resume()
+        Thread.sleep(forTimeInterval: 0.05) // Brief delay to ensure task has started
+        task.cancel() // Cancel the task while it's still running
+
+        // Then
+        wait(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
+        let interception = try XCTUnwrap(handler.interceptions.first).value
+        XCTAssertEqual(interception.trackingMode, .automatic, "Task should be in automatic mode")
+        XCTAssertNil(interception.metrics, "Automatic mode should not capture URLSessionTaskMetrics")
+
+        // CRITICAL: Verify that the error is captured for cancelled tasks
+        let completion = try XCTUnwrap(interception.completion, "Should capture completion")
+        let error = try XCTUnwrap(completion.error, "Should capture cancellation error") as NSError
+        XCTAssertEqual(error.domain, NSURLErrorDomain, "Error should be NSURLError")
+        XCTAssertEqual(error.code, NSURLErrorCancelled, "Error should be NSURLErrorCancelled")
+    }
+
     func testGivenMetricsMode_whenTaskCompletesWithFailure_itCapturesError() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
@@ -1486,13 +1528,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testGivenAutomaticMode_whenTaskWithoutCompletionHandler_itCapturesBasicValues() throws {
-        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
-
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mockRandom()))
-
-        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
-        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
         // Given - Enable only automatic mode
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)

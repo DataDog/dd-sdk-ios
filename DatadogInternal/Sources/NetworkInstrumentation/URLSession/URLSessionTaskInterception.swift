@@ -131,8 +131,8 @@ public class URLSessionTaskInterception {
         switch trackingMode {
         case .automatic:
             // In automatic mode, complete as soon as we have completion or state completion
-            // Task state >= 2 means Canceling (2) or Completed (3)
-            let isStateComplete = (taskState ?? 0) >= 2
+            // Task state == 3 means Completed
+            let isStateComplete = (taskState ?? 0) == 3
             return completion != nil || isStateComplete
         case .metrics:
             // In metrics mode, wait for both metrics AND completion
