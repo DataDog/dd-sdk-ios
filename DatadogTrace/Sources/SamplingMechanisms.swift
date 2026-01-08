@@ -7,9 +7,8 @@
 import Foundation
 import DatadogInternal
 
-
 /// Mechanism used for sampling in ``SamplingDecision``.
-internal protocol SamplingMechanism {
+internal protocol SamplingMechanism: Equatable {
     /// The sampling priority provided by this mechanism.
     var samplingPriority: SamplingPriority { get }
 }

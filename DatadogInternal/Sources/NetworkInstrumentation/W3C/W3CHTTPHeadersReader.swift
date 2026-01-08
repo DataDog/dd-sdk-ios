@@ -34,14 +34,19 @@ public class W3CHTTPHeadersReader: TracePropagationHeadersReader {
         )
     }
 
-    public var sampled: Bool? {
+    public var samplingPriority: SamplingPriority? {
         if let traceparent = httpHeaderFields[W3CHTTPHeaders.traceparent] {
-            guard let sampled = traceparent.components(separatedBy: W3CHTTPHeaders.Constants.separator).last else {
+            guard let sampledHeaderValue = traceparent.components(separatedBy: W3CHTTPHeaders.Constants.separator).last else {
                 return nil
             }
-            return sampled == W3CHTTPHeaders.Constants.sampledValue
+            let sampled = sampledHeaderValue == W3CHTTPHeaders.Constants.sampledValue
+            return sampled ? .autoKeep : .autoDrop
         }
 
         return nil
+    }
+
+    public var samplingDecisionMaker: SamplingMechanismType? {
+        nil
     }
 }

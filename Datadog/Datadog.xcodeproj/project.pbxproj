@@ -10,8 +10,14 @@
 		0904F9F42EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F52EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
-		09B905A12EFC2AA100118B40 /* SamplingPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B905A02EFC2AA100118B40 /* SamplingPriority.swift */; };
-		09B905A22EFC2AA100118B40 /* SamplingPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B905A02EFC2AA100118B40 /* SamplingPriority.swift */; };
+		09A9369D2F0EB989000B6379 /* SamplingMechanismType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */; };
+		09A9369E2F0EB989000B6379 /* SamplingPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369B2F0EB989000B6379 /* SamplingPriority.swift */; };
+		09A9369F2F0EB989000B6379 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369C2F0EB989000B6379 /* SpanContext.swift */; };
+		09A936A02F0EB989000B6379 /* SamplingMechanismType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */; };
+		09A936A12F0EB989000B6379 /* SamplingPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369B2F0EB989000B6379 /* SamplingPriority.swift */; };
+		09A936A22F0EB989000B6379 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369C2F0EB989000B6379 /* SpanContext.swift */; };
+		09A936A42F0EB9E2000B6379 /* SamplingMechanismPrecedence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A936A32F0EB9E2000B6379 /* SamplingMechanismPrecedence.swift */; };
+		09A936A52F0EB9E2000B6379 /* SamplingMechanismPrecedence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A936A32F0EB9E2000B6379 /* SamplingMechanismPrecedence.swift */; };
 		09D2B7EB2EF4258D0089F05B /* SamplingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */; };
 		09D2B7EC2EF4258D0089F05B /* SamplingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */; };
 		09D2B7EE2EF425A70089F05B /* SamplingMechanisms.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2B7ED2EF425A70089F05B /* SamplingMechanisms.swift */; };
@@ -2545,7 +2551,10 @@
 
 /* Begin PBXFileReference section */
 		0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensionsTests.swift; sourceTree = "<group>"; };
-		09B905A02EFC2AA100118B40 /* SamplingPriority.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingPriority.swift; sourceTree = "<group>"; };
+		09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingMechanismType.swift; sourceTree = "<group>"; };
+		09A9369B2F0EB989000B6379 /* SamplingPriority.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingPriority.swift; sourceTree = "<group>"; };
+		09A9369C2F0EB989000B6379 /* SpanContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanContext.swift; sourceTree = "<group>"; };
+		09A936A32F0EB9E2000B6379 /* SamplingMechanismPrecedence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingMechanismPrecedence.swift; sourceTree = "<group>"; };
 		09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingDecision.swift; sourceTree = "<group>"; };
 		09D2B7ED2EF425A70089F05B /* SamplingMechanisms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingMechanisms.swift; sourceTree = "<group>"; };
 		11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesMetric.swift; sourceTree = "<group>"; };
@@ -6988,6 +6997,7 @@
 				61A2CC352A44B0A20000FF25 /* TraceConfiguration.swift */,
 				61A2CC3B2A44BED30000FF25 /* Tracer.swift */,
 				09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */,
+				09A936A32F0EB9E2000B6379 /* SamplingMechanismPrecedence.swift */,
 				09D2B7ED2EF425A70089F05B /* SamplingMechanisms.swift */,
 				D2546C0629AF55CE0054E00B /* Feature */,
 				D21C26E928AF9D22005DD405 /* Integrations */,
@@ -7267,7 +7277,12 @@
 			children = (
 				D2C179E02DD2388800556F68 /* TraceCoreContext.swift */,
 				D2D748382DC2306100C61353 /* TraceID.swift */,
+				09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */,
+				09A9369B2F0EB989000B6379 /* SamplingPriority.swift */,
+				09A9369C2F0EB989000B6379 /* SpanContext.swift */,
+				D2C179E02DD2388800556F68 /* SpanCoreContext.swift */,
 				D2D748392DC2306100C61353 /* SpanID.swift */,
+				D2D748382DC2306100C61353 /* TraceID.swift */,
 			);
 			path = Trace;
 			sourceTree = "<group>";
@@ -7333,7 +7348,6 @@
 				3CA8525E2BF2073800B52CBA /* TraceContextInjection.swift */,
 				D2160C9429C0DE5600FAA9A5 /* FirstPartyHosts.swift */,
 				D2160C9729C0DE5700FAA9A5 /* HostsSanitizer.swift */,
-				09B905A02EFC2AA100118B40 /* SamplingPriority.swift */,
 				D2EBEDD229B8A58E00B15732 /* TracePropagationHeadersReader.swift */,
 				D2EBEDCF29B8A02100B15732 /* TracePropagationHeadersWriter.swift */,
 				D2160C9629C0DE5600FAA9A5 /* TracingHeaderType.swift */,
@@ -9753,8 +9767,10 @@
 				D23039DE298D5235001A1FA3 /* Writer.swift in Sources */,
 				D23039FA298D5236001A1FA3 /* Telemetry.swift in Sources */,
 				D23039FC298D5236001A1FA3 /* DataFormat.swift in Sources */,
-				09B905A22EFC2AA100118B40 /* SamplingPriority.swift in Sources */,
 				D2160CED29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift in Sources */,
+				09A936A02F0EB989000B6379 /* SamplingMechanismType.swift in Sources */,
+				09A936A12F0EB989000B6379 /* SamplingPriority.swift in Sources */,
+				09A936A22F0EB989000B6379 /* SpanContext.swift in Sources */,
 				D2160C9E29C0DE5700FAA9A5 /* TracingHeaderType.swift in Sources */,
 				D23039F5298D5236001A1FA3 /* AnyEncodable.swift in Sources */,
 				D2303A00298D5236001A1FA3 /* DatadogExtended.swift in Sources */,
@@ -10253,6 +10269,7 @@
 				D2C1A51829C4C53F00946C31 /* OTSpan.swift in Sources */,
 				11F55FEB2DCE501A00DE4944 /* HTTPHeadersWriter+objc.swift in Sources */,
 				11F55FEC2DCE501A00DE4944 /* Casting+Tracing.swift in Sources */,
+				09A936A42F0EB9E2000B6379 /* SamplingMechanismPrecedence.swift in Sources */,
 				11F55FED2DCE501A00DE4944 /* OTSpan+objc.swift in Sources */,
 				11F55FEE2DCE501A00DE4944 /* W3CHTTPHeadersWriter+objc.swift in Sources */,
 				11F55FEF2DCE501A00DE4944 /* TraceContextInjection+objc.swift in Sources */,
@@ -10553,6 +10570,7 @@
 				D2C1A53D29C4F2DF00946C31 /* OTSpan.swift in Sources */,
 				11F55FF62DCE501A00DE4944 /* HTTPHeadersWriter+objc.swift in Sources */,
 				11F55FF72DCE501A00DE4944 /* Casting+Tracing.swift in Sources */,
+				09A936A52F0EB9E2000B6379 /* SamplingMechanismPrecedence.swift in Sources */,
 				11F55FF82DCE501A00DE4944 /* OTSpan+objc.swift in Sources */,
 				11F55FF92DCE501A00DE4944 /* W3CHTTPHeadersWriter+objc.swift in Sources */,
 				11F55FFA2DCE501A00DE4944 /* TraceContextInjection+objc.swift in Sources */,
@@ -10975,6 +10993,9 @@
 				D2D3199B29E98D970004F169 /* DefaultJSONEncoder.swift in Sources */,
 				D2D748322DC220B100C61353 /* LogMessage.swift in Sources */,
 				6128F56B2BA2237300D35B08 /* DataStore.swift in Sources */,
+				09A9369D2F0EB989000B6379 /* SamplingMechanismType.swift in Sources */,
+				09A9369E2F0EB989000B6379 /* SamplingPriority.swift in Sources */,
+				09A9369F2F0EB989000B6379 /* SpanContext.swift in Sources */,
 				3C3EF2B12C1AEBAB009E9E57 /* LaunchReport.swift in Sources */,
 				6167E7012B81EF7500C3CA2D /* BacktraceReportingFeature.swift in Sources */,
 				D2EBEE3529BA161100B15732 /* B3HTTPHeadersWriter.swift in Sources */,
@@ -11002,7 +11023,6 @@
 				B3E46CAF2D91B40000BABF66 /* NetworkContext.swift in Sources */,
 				6167E6FA2B81E95900C3CA2D /* BinaryImage.swift in Sources */,
 				618031F92D6DC430007027E3 /* Threading.swift in Sources */,
-				09B905A12EFC2AA100118B40 /* SamplingPriority.swift in Sources */,
 				6174D60D2BFDDEDF00EC7469 /* SDKMetricFields.swift in Sources */,
 				864975722EBB4B4300A087B6 /* GraphQLRequestAttributes.swift in Sources */,
 				D2A783D529A530A0003B03BB /* SwiftExtensions.swift in Sources */,

@@ -20,7 +20,7 @@ internal struct SamplingDecision {
     /// - Remark: A `.fallback` mechanism always exists implicitly. However, as an optimization, it's not
     /// actually instantiated nor included in this dictionary. Getters like ``samplingPriority`` and
     /// ``decisionMaker`` should simulate its existence when necessary.
-    private var mechanisms: [SamplingMechanismType: SamplingMechanism]
+    private var mechanisms: [SamplingMechanismType: any SamplingMechanism]
 
     /// Creates a sampling decision from the given sampling.
     ///
@@ -31,13 +31,27 @@ internal struct SamplingDecision {
         self.init(mechanisms: [.agentRate: FixedValueMechanism(samplingPriority: priority)])
     }
 
-    private init(mechanisms: [SamplingMechanismType: SamplingMechanism]) {
-        self.mechanisms = mechanisms
+    /// Creates a sampling decision based on a given sampling priority and decision maker.
+    ///
+    /// Use this method to create a sampling decision from possibly incomplete data, like values extracted from request headers.
+    /// If `decisionMaker` is available, the sampling decision will use it. Otherwise, it uses the most appropriate mechanism
+    /// for the given priority.
+    ///
+    /// - parameters:
+    ///    - samplingPriority: The sampling priority for this decision.
+    ///    - decisionMaker: The sampling decision maker if known, `nil` otherwise.
+    init(from samplingPriority: SamplingPriority, decisionMaker: SamplingMechanismType?) {
+        if let decisionMaker {
+            self.init(mechanisms: [decisionMaker: FixedValueMechanism(samplingPriority: samplingPriority)])
+        } else if samplingPriority == .manualDrop || samplingPriority == .manualKeep {
+            self.init(mechanisms: [.manual: FixedValueMechanism(samplingPriority: samplingPriority)])
+        } else {
+            self.init(mechanisms: [.agentRate: FixedValueMechanism(samplingPriority: samplingPriority)])
+        }
     }
 
-    // TODO: RUM-12403 Remove this API
-    init(temporaryPriority: SamplingPriority) {
-        self.init(mechanisms: [.agentRate: FixedValueMechanism(samplingPriority: temporaryPriority)])
+    private init(mechanisms: [SamplingMechanismType: any SamplingMechanism]) {
+        self.mechanisms = mechanisms
     }
 
     /// Marks this sampling decision as manually dropped.

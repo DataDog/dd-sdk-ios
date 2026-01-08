@@ -44,10 +44,35 @@ public class HTTPHeadersReader: TracePropagationHeadersReader {
         )
     }
 
-    public var sampled: Bool? {
-        if let sampling = httpHeaderFields[TracingHTTPHeaders.samplingPriorityField] {
-            return sampling == "1"
+    public var samplingPriority: SamplingPriority? {
+        if let sampling = httpHeaderFields[TracingHTTPHeaders.samplingPriorityField],
+           let samplingInteger = Int(sampling),
+           let samplingPriority = SamplingPriority(rawValue: samplingInteger)
+        {
+            return samplingPriority
         }
         return nil
+    }
+
+    public var samplingDecisionMaker: SamplingMechanismType? {
+        guard let tagsField = httpHeaderFields[TracingHTTPHeaders.tagsField] else { return nil }
+
+        let tags = tagsField.split(separator: ",")
+
+        return tags.lazy
+            .compactMap {
+                guard
+                    case let tagElements = $0.split(separator: "="),
+                    tagElements.count == 2,
+                    let key = tagElements.first,
+                    key == "_dd.p.dm",
+                    case let value = tagElements[1],
+                    case let valueSegments = value.split(separator: "-", omittingEmptySubsequences: true),
+                    let tagValue = valueSegments.last,
+                    let mechanismType = SamplingMechanismType(tagValue: String(tagValue))
+                else { return nil }
+                return mechanismType
+            }
+            .first
     }
 }

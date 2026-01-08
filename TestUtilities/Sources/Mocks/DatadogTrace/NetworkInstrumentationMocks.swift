@@ -54,7 +54,8 @@ extension TraceContext: AnyMockable, RandomMockable {
             spanID: .mockRandom(),
             parentSpanID: .mockRandom(),
             sampleRate: .mockRandom(min: 0, max: 100),
-            isKept: .random()
+            samplingPriority: .mockRandom(),
+            samplingDecisionMaker: .mockRandom()
         )
     }
 
@@ -63,7 +64,8 @@ extension TraceContext: AnyMockable, RandomMockable {
         spanID: SpanID = .mockAny(),
         parentSpanID: SpanID? = nil,
         sampleRate: Float = .mockAny(),
-        isKept: Bool = .mockAny(),
+        samplingPriority: SamplingPriority = .mockAny(),
+        samplingDecisionMaker: SamplingMechanismType = .mockAny(),
         rumSessionId: String? = .mockAny()
     ) -> TraceContext {
         return TraceContext(
@@ -71,7 +73,8 @@ extension TraceContext: AnyMockable, RandomMockable {
             spanID: spanID,
             parentSpanID: parentSpanID,
             sampleRate: sampleRate,
-            isKept: isKept,
+            samplingPriority: samplingPriority,
+            samplingDecisionMaker: samplingDecisionMaker,
             rumSessionId: rumSessionId
         )
     }

@@ -14,6 +14,9 @@ public protocol TracePropagationHeadersReader {
         parentSpanID: SpanID?
     )?
 
-    /// Indicates whether the trace was sampled based on the provided headers.
-    var sampled: Bool? { get }
+    /// This trace sampling priority based on the provided headers.
+    var samplingPriority: SamplingPriority? { get }
+
+    /// The sampling decision maker mechanism based on the provided headers.
+    var samplingDecisionMaker: SamplingMechanismType? { get }
 }

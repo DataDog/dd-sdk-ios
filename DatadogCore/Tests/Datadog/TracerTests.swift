@@ -820,7 +820,8 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(injectedContext.dd.spanID, extractedContext.dd.spanID)
         XCTAssertEqual(injectedContext.dd.parentSpanID, extractedContext.dd.parentSpanID)
         XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
-        XCTAssertEqual(injectedContext.dd.isKept, extractedContext.dd.isKept)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.samplingPriority, extractedContext.dd.samplingDecision.samplingPriority)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.decisionMaker, extractedContext.dd.samplingDecision.decisionMaker)
     }
 
     func testInjectingAndExtractingSpanContextUsingB3SingleCarrier() {
@@ -841,7 +842,8 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(injectedContext.dd.spanID, extractedContext.dd.spanID)
         XCTAssertEqual(injectedContext.dd.parentSpanID, extractedContext.dd.parentSpanID)
         XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
-        XCTAssertEqual(injectedContext.dd.isKept, extractedContext.dd.isKept)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.samplingPriority, extractedContext.dd.samplingDecision.samplingPriority)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.decisionMaker, extractedContext.dd.samplingDecision.decisionMaker)
     }
 
     func testInjectingAndExtractingSpanContextUsingB3MultipleCarrier() {
@@ -862,7 +864,8 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(injectedContext.dd.spanID, extractedContext.dd.spanID)
         XCTAssertEqual(injectedContext.dd.parentSpanID, extractedContext.dd.parentSpanID)
         XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
-        XCTAssertEqual(injectedContext.dd.isKept, extractedContext.dd.isKept)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.samplingPriority, extractedContext.dd.samplingDecision.samplingPriority)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.decisionMaker, extractedContext.dd.samplingDecision.decisionMaker)
     }
 
     func testInjectingAndExtractingSpanContextUsingW3CCarrier() {
@@ -883,7 +886,8 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(injectedContext.dd.spanID, extractedContext.dd.spanID)
         XCTAssertEqual(injectedContext.dd.parentSpanID, extractedContext.dd.parentSpanID)
         XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
-        XCTAssertEqual(injectedContext.dd.isKept, extractedContext.dd.isKept)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.samplingPriority, extractedContext.dd.samplingDecision.samplingPriority)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.decisionMaker, extractedContext.dd.samplingDecision.decisionMaker)
     }
 
     // MARK: - Span Dates Correction

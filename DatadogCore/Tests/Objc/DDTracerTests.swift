@@ -201,7 +201,7 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = objc_Tracer.shared()
         let objcSpanContext = objc_SpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, isKept: true)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, samplingDecision: .autoKept())
         )
 
         let objcWriter = objc_HTTPHeadersWriter(
@@ -257,7 +257,7 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = objc_Tracer.shared()
         let objcSpanContext = objc_SpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, isKept: true)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, samplingDecision: .autoKept())
         )
 
         let objcWriter = objc_B3HTTPHeadersWriter(
@@ -313,7 +313,7 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = objc_Tracer.shared()
         let objcSpanContext = objc_SpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, isKept: true)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, samplingDecision: .autoKept())
         )
 
         let objcWriter = objc_W3CHTTPHeadersWriter(

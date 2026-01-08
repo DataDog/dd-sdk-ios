@@ -73,7 +73,7 @@ extension DDSpanContext {
         parentSpanID: SpanID? = .mockAny(),
         baggageItems: BaggageItems = .mockAny(),
         sampleRate: Float = .mockAny(),
-        isKept: Bool = .mockAny()
+        samplingDecision: SamplingDecision = .mockAny()
     ) -> DDSpanContext {
         return DDSpanContext(
             traceID: traceID,
@@ -81,7 +81,7 @@ extension DDSpanContext {
             parentSpanID: parentSpanID,
             baggageItems: baggageItems,
             sampleRate: sampleRate,
-            isKept: isKept
+            samplingDecision: samplingDecision
         )
     }
 }
@@ -198,7 +198,8 @@ extension SpanEvent: AnyMockable, RandomMockable {
         source: String = .mockAny(),
         origin: String? = nil,
         samplingRate: SampleRate = .maxSampleRate,
-        isKept: Bool = true,
+        samplingPriority: SamplingPriority = .mockAny(),
+        samplingDecisionMaker: SamplingMechanismType = .mockAny(),
         tracerVersion: String = .mockAny(),
         applicationVersion: String = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
@@ -221,7 +222,8 @@ extension SpanEvent: AnyMockable, RandomMockable {
             source: source,
             origin: origin,
             samplingRate: samplingRate,
-            isKept: isKept,
+            samplingPriority: samplingPriority,
+            samplingDecisionMaker: samplingDecisionMaker,
             tracerVersion: tracerVersion,
             applicationVersion: applicationVersion,
             networkConnectionInfo: networkConnectionInfo,
@@ -249,7 +251,8 @@ extension SpanEvent: AnyMockable, RandomMockable {
             source: .mockRandom(),
             origin: .mockRandom(),
             samplingRate: .mockRandom(),
-            isKept: .mockRandom(),
+            samplingPriority: .mockRandom(),
+            samplingDecisionMaker: .mockRandom(),
             tracerVersion: .mockRandom(),
             applicationVersion: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
@@ -310,5 +313,64 @@ extension SpanEvent.AccountInfo: AnyMockable, RandomMockable {
             name: .mockRandom(),
             extraInfo: .mockRandom()
         )
+    }
+}
+
+extension SamplingDecision: AnyMockable, RandomMockable {
+    struct MockSampler: Sampling {
+        let decision: Bool
+
+        var samplingRate: SampleRate { 50 }
+
+        func sample() -> Bool { decision }
+    }
+
+    public static func mockAny() -> SamplingDecision {
+        SamplingDecision(sampling: MockSampler(decision: true))
+    }
+
+    public static func mockRandom() -> DatadogTrace.SamplingDecision {
+        let randomPriority = (-1...2).randomElement()
+
+        switch randomPriority {
+        case -1:
+            var decision = SamplingDecision(sampling: MockSampler(decision: true))
+            decision.addManualDropOverride()
+            return decision
+        case 0:
+            return SamplingDecision(sampling: MockSampler(decision: false))
+        case 1:
+            return SamplingDecision(sampling: MockSampler(decision: true))
+        case 2:
+            var decision = SamplingDecision(sampling: MockSampler(decision: true))
+            decision.addManualKeepOverride()
+            return decision
+        default:
+            fatalError()
+        }
+    }
+
+    public static func autoKept() -> SamplingDecision {
+        SamplingDecision(sampling: MockSampler(decision: true))
+    }
+}
+
+extension SamplingPriority: AnyMockable, RandomMockable {
+    public static func mockAny() -> SamplingPriority {
+        .autoKeep
+    }
+
+    public static func mockRandom() -> SamplingPriority {
+        [SamplingPriority.manualDrop, .autoDrop, .autoKeep, .manualKeep].randomElement()!
+    }
+}
+
+extension SamplingMechanismType: AnyMockable, RandomMockable {
+    public static func mockAny() -> SamplingMechanismType {
+        .agentRate
+    }
+
+    public static func mockRandom() -> SamplingMechanismType {
+        [SamplingMechanismType.fallback, .agentRate, .manual].randomElement()!
     }
 }
