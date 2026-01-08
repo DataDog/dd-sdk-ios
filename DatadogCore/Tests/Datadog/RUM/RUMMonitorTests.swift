@@ -1199,7 +1199,7 @@ class RUMMonitorTests: XCTestCase {
         )
 
         // Given
-        CrashReporting._internal.kscrash_enable(in: core)
+        CrashReporting.enable(in: core)
         let crashReporter = try XCTUnwrap(core.get(feature: CrashReportingFeature.self))
 
         try core.register(feature: crashReporter)

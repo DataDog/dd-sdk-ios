@@ -60,6 +60,6 @@ final class CrashReportingCollectOrSendWithRUMScenario: CrashReportingBaseScenar
 
         RUM.enable(with: rumConfig)
 
-        CrashReporting._internal.kscrash_enable()
+        CrashReporting.enable()
     }
 }
