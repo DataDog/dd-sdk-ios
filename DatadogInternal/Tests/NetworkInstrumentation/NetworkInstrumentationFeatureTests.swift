@@ -1763,8 +1763,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         defer { dd.reset() }
 
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        URLSessionInstrumentation.enable(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
-        URLSessionInstrumentation.enable(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
         // Then
         XCTAssertEqual(
@@ -1781,7 +1781,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         defer { dd.reset() }
 
         // When - Try to enable metrics mode without enabling automatic mode first
-        URLSessionInstrumentation.enable(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
         // Then
         XCTAssertEqual(

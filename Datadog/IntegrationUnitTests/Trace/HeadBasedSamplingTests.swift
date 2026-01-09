@@ -231,7 +231,7 @@ class HeadBasedSamplingTests: XCTestCase {
             firstPartyHostsTracing: .trace(hosts: ["foo.com"], sampleRate: distributedTraceSampling)
         )
         Trace.enable(with: traceConfig, in: core)
-        URLSessionInstrumentation.enable(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
+        URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
 
         // When
         let request = try sendURLSessionRequest(to: "https://foo.com/request", using: InstrumentedSessionDelegate())
@@ -270,7 +270,7 @@ class HeadBasedSamplingTests: XCTestCase {
             firstPartyHostsTracing: .trace(hosts: ["foo.com"], sampleRate: distributedTraceSampling, traceControlInjection: .all)
         )
         Trace.enable(with: traceConfig, in: core)
-        URLSessionInstrumentation.enable(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
+        URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
 
         // When
         let request = try sendURLSessionRequest(to: "https://foo.com/request", using: InstrumentedSessionDelegate())
@@ -302,7 +302,7 @@ class HeadBasedSamplingTests: XCTestCase {
             firstPartyHostsTracing: .trace(hosts: ["foo.com"], sampleRate: distributedTraceSampling)
         )
         Trace.enable(with: traceConfig, in: core)
-        URLSessionInstrumentation.enable(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
+        URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
 
         // When
         let span = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
@@ -351,7 +351,7 @@ class HeadBasedSamplingTests: XCTestCase {
             firstPartyHostsTracing: .trace(hosts: ["foo.com"], sampleRate: distributedTraceSampling, traceControlInjection: .all)
         )
         Trace.enable(with: traceConfig, in: core)
-        URLSessionInstrumentation.enable(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
+        URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
 
         // When
         let span = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()

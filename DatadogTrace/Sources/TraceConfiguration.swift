@@ -40,11 +40,10 @@ extension Trace {
 
         /// The configuration for automatic network requests tracing.
         ///
-        /// RUM resources tracking requires enabling `URLSessionInstrumentation`. See
-        /// `URLSessionInstrumentation.enable(with:)`.
+        /// For capturing additional detailed timing breakdowns (DNS, SSL, TTFB, etc.), see
+        /// `URLSessionInstrumentation.trackMetrics(with:in:)`.
         ///
-        /// Note: Automatic RUM resources tracking involves swizzling the `URLSession`, `URLSessionTask` and
-        /// `URLSessionDataDelegate` methods.
+        /// Note: Automatic tracing involves swizzling `URLSession` and `URLSessionTask` methods.
         ///
         /// Default: `nil` - which means automatic tracing is not enabled by default.
         public var urlSessionTracking: URLSessionTracking?
