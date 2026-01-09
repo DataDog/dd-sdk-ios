@@ -154,7 +154,7 @@ RUM.enable(
 
 // 3. Enable network instrumentation
 // This must be called AFTER RUM.enable()
-URLSessionInstrumentation.enable(
+URLSessionInstrumentation.trackMetrics(
     with: .init(delegateClass: CustomURLSessionDelegate.self)
 )
 
@@ -201,7 +201,7 @@ monitor.stopView(key: "ProductList")
 Requires configuration to be set, otherwise disabled by default:
 - **View tracking**: `uiKitViewsPredicate`, `swiftUIViewsPredicate`
 - **Action tracking**: `uiKitActionsPredicate`, `swiftUIActionsPredicate`
-- **Resource tracking**: `urlSessionTracking` and call `URLSessionInstrumentation.enable(with: .init(delegateClass: YourSessionDelegate.self))`
+- **Resource tracking**: `urlSessionTracking` and call `URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: YourSessionDelegate.self))`
 
 ### Performance Monitoring
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
@@ -235,7 +235,7 @@ Event mappers allow modifying or dropping events before upload:
 
 ### "Network requests not tracked"
 1. Verify `urlSessionTracking` is configured in RUMConfiguration (RUM.enable() handles URLSessionInstrumentation internally)
-2. Ensure `URLSessionInstrumentation.enable(with: .init(delegateClass: YourSessionDelegate.self))` is called after RUM has been enabled
+2. Ensure `URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: YourSessionDelegate.self))` is called after RUM has been enabled
 3. Ensure network requests use instrumented URLSession
 
 ### "Some events missing"

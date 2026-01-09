@@ -52,7 +52,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
     func testParentSpanPropagation() throws {
         let expectation = expectation(description: "request completes")
         // Given
-        URLSessionInstrumentation.enable(
+        URLSessionInstrumentation.trackMetrics(
             with: URLSessionInstrumentation.Configuration(delegateClass: SessionDataDelegateMock.self),
             in: core
         )
@@ -114,7 +114,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
             in: core
         )
 
-        URLSessionInstrumentation.enable(
+        URLSessionInstrumentation.trackMetrics(
             with: .init(
                 delegateClass: InstrumentedSessionDelegate.self
             ),
@@ -162,7 +162,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
             in: core
         )
 
-        URLSessionInstrumentation.enable(
+        URLSessionInstrumentation.trackMetrics(
             with: .init(
                 delegateClass: InstrumentedSessionDelegate.self
             ),

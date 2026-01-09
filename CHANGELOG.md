@@ -9,6 +9,7 @@
 - [IMPROVEMENT] Remove `application_start` action from `ApplicationLaunch`. See [#2533][]
 - [FEATURE] Track Slow Frames (view hitches) by default. See [#2631][]
 - [FEATURE] Automatic network instrumentation now tracks `URLSession` requests without requiring delegate registration. See [#2620][]
+- [FEATURE] Deprecate `URLSessionInstrumentation.enable(with:in:)` API in favor of `URLSessionInstrumentation.trackMetrics(with:in:)`. See [#2634][]
 - [IMPROVEMENT] Upgrade `DatadogTrace` to OpenTelemetryApi 2.3.0. See [#2614][]
 - [IMPROVEMENT] RUM auto-instrumentation now supports Alerts, Confirmation Dialogs and Action Sheets. See [#2612][]
 - [IMPROVEMENT] Replace `PLCrashReporter` by `KSCrash` as `DatadogCrashReporting plugin. See [#2633][]
@@ -1024,6 +1025,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2633]: https://github.com/DataDog/dd-sdk-ios/pull/2633
 [#2640]: https://github.com/DataDog/dd-sdk-ios/pull/2640
 [#2620]: https://github.com/DataDog/dd-sdk-ios/pull/2620
+[#2634]: https://github.com/DataDog/dd-sdk-ios/pull/2634
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

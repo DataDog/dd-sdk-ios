@@ -112,10 +112,10 @@ class URLSessionBaseScenario: NSObject {
 
         switch setup.instrumentationMethod {
         case .delegateUsingFeatureFirstPartyHosts:
-            URLSessionInstrumentation.enable(with: .init(delegateClass: CustomURLSessionDelegate.self))
+            URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: CustomURLSessionDelegate.self))
             delegate = CustomURLSessionDelegate()
         case .delegateWithAdditionalFirstPartyHosts:
-            URLSessionInstrumentation.enable(
+            URLSessionInstrumentation.trackMetrics(
                 with: .init(
                     delegateClass: CustomURLSessionDelegate.self,
                     firstPartyHostsTracing: .trace(hosts: [
