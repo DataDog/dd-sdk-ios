@@ -1795,52 +1795,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     // MARK: - Filtering Out Intake Requests
 
-    func testAutomaticMode_doesNotTrackDatadogIntakeRequests() throws {
-        // Given - Enable automatic mode
-        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-
-        // Create a real URLSession (not using server mock since we're testing filtering)
-        let session = URLSession(configuration: .ephemeral)
-
-        // Track if any Datadog intake requests are intercepted
-        var interceptedDatadogRequests: [URLSessionTaskInterception] = []
-        handler.onInterceptionDidStart = { interception in
-            guard let urlString = interception.request.url?.absoluteString else {
-                return
-            }
-            // If this is a Datadog intake request, track it (should not happen)
-            if urlString.contains("datadoghq.com") ||
-                urlString.contains("datad0g.com") {
-                interceptedDatadogRequests.append(interception)
-            }
-        }
-
-        // When - Make requests to Datadog intake domains
-        let datadogURLs = [
-            URL(string: "https://browser-intake-datadoghq.com/api/v2/rum")!,
-            URL(string: "https://logs.browser-intake-datadoghq.com/api/v2/logs")!,
-            URL(string: "https://session-replay.browser-intake-datadoghq.com/api/v2/replay")!,
-            URL(string: "https://instrumentation.datadoghq.com/api/v2/apmtelemetry")!,
-        ]
-
-        let tasksCompleted = expectation(description: "All tasks completed")
-        tasksCompleted.expectedFulfillmentCount = datadogURLs.count
-
-        for url in datadogURLs {
-            let task = session.dataTask(with: url) { _, _, _ in
-                tasksCompleted.fulfill()
-            }
-            task.resume()
-        }
-
-        // Wait for all tasks to complete
-        wait(for: [tasksCompleted], timeout: 10)
-
-        // Then - Verify no Datadog intake requests were intercepted
-        XCTAssertEqual(interceptedDatadogRequests.count, 0, "Should not intercept Datadog intake requests")
-    }
-
-    func testAutomaticMode_doesNotTrackSDKRequestsWithCustomEndpoints() throws {
+    func testAutomaticMode_doesNotTrackSDKRequests() throws {
         // Given - Enable automatic mode
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
 
