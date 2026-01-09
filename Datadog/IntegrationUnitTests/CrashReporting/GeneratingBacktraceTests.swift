@@ -18,7 +18,7 @@ class GeneratingBacktraceTests: XCTestCase {
         core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
     }
 
-        override func tearDownWithError() throws {
+    override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
         super.tearDown()
@@ -89,6 +89,7 @@ class GeneratingBacktraceTests: XCTestCase {
             XCTAssertFalse(Thread.current.isMainThread)
             threadID = Thread.currentThreadID
             semaphore.signal()
+            Thread.sleep(forTimeInterval: 1)
         }
 
         thread.start()

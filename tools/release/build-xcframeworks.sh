@@ -106,7 +106,6 @@ echo_info "▸ PLATFORMS = '$PLATFORMS'"
 echo_subtitle2 "Run 'carthage bootstrap --platform $PLATFORMS --use-xcframeworks'"
 export REPO_ROOT=$(realpath "$SCRIPT_DIR/../..") 
 $REPO_ROOT/tools/carthage-shim.sh bootstrap --platform $PLATFORMS --use-xcframeworks
-cp -r "Carthage/Build/CrashReporter.xcframework" "$XCFRAMEWORKS_OUTPUT"
 cp -r "Carthage/Build/OpenTelemetryApi.xcframework" "$XCFRAMEWORKS_OUTPUT"
 
 # Build Datadog XCFrameworks
