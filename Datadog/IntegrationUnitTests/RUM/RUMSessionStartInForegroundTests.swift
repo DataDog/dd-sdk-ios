@@ -19,6 +19,11 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             .and(.appBecomesActive(after: timeToAppBecomeActive))
     }
 
+    private func enableRUMBeforeFirstFrame(_ launchType: AppRunner.ProcessLaunchType, rumSetup: AppRunner.RUMSetup? = nil) -> AppRun {
+        return self.enableRUMBeforeAppBecomesActive(launchType, rumSetup: rumSetup)
+            .and(.appDisplaysFirstFrame())
+    }
+
     private func enableRUMAfterAppBecomesActive(_ launchType: AppRunner.ProcessLaunchType, rumSetup: AppRunner.RUMSetup? = nil) -> AppRun {
         return .given(.appLaunch(type: launchType))
             .and(.appBecomesActive(after: timeToAppBecomeActive))
@@ -35,24 +40,25 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     func testGivenUserLaunch_whenNoEventIsTracked() throws {
         // Given
         let givens1 = [
-            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate),
-            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate),
+            enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate) { rumConfig in
                 rumConfig.trackBackgroundEvents = true
             },
-            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate),
-            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithAppDelegate),
+            enableRUMBeforeFirstFrame(userLaunchWithAppDelegate) { rumConfig in
                 rumConfig.trackBackgroundEvents = true
             }
         ]
 
         for given in givens1 {
             // When
-            let when = given.when(.appEntersBackground(after: dt1))
+            let when = given
+                .when(.appEntersBackground(after: dt1))
 
             // When
             let session = try when.then().takeSingle()
-            XCTAssertNotNil(session.applicationStartAction)
-            DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+            XCTAssertNotNil(session.ttidEvent)
+            DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
             DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
             DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -79,8 +85,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             // When
             let session = try when.then().takeSingle()
-            XCTAssertNil(session.applicationStartAction)
-            XCTAssertNil(session.applicationStartupTime)
+            XCTAssertNil(session.ttidEvent)
+            XCTAssertNil(session.timeToInitialDisplay)
             DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
             DDAssertEqual(session.duration, dt1, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -93,12 +99,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     func testGivenUserLaunch_whenManualViewIsTracked() throws {
         // Given
         let givens1 = [
-            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate),
-            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate),
+            enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate) { rumConfig in
                 rumConfig.trackBackgroundEvents = true
             },
-            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate),
-            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithAppDelegate),
+            enableRUMBeforeFirstFrame(userLaunchWithAppDelegate) { rumConfig in
                 rumConfig.trackBackgroundEvents = true
             }
         ]
@@ -116,8 +122,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNotNil(session.applicationStartAction)
-                DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+                XCTAssertNotNil(session.ttidEvent)
+                DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
                 DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -154,8 +160,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -171,17 +177,17 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     func testGivenUserLaunch_whenAutomaticViewIsTracked() throws {
         // Given
         let givens1 = [
-            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate) { rumConfig in
                 rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
             },
-            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate) { rumConfig in
                 rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
                 rumConfig.trackBackgroundEvents = true
             },
-            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithAppDelegate) { rumConfig in
                 rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
             },
-            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithAppDelegate) { rumConfig in
                 rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
                 rumConfig.trackBackgroundEvents = true
             }
@@ -199,8 +205,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNotNil(session.applicationStartAction)
-                DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+                XCTAssertNotNil(session.ttidEvent)
+                DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
                 DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -241,8 +247,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -258,12 +264,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     func testGivenUserLaunch_whenActionsAreTracked() throws {
         // Given
         let givens1 = [
-            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate),
-            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate),
+            enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate) { rumConfig in
                 rumConfig.trackBackgroundEvents = true
             },
-            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate),
-            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithAppDelegate),
+            enableRUMBeforeFirstFrame(userLaunchWithAppDelegate) { rumConfig in
                 rumConfig.trackBackgroundEvents = true
             }
         ]
@@ -279,8 +285,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNotNil(session.applicationStartAction)
-                DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+                XCTAssertNotNil(session.ttidEvent)
+                DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
                 DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -314,8 +320,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -331,12 +337,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     func testGivenUserLaunch_whenResourceIsTracked() throws {
         // Given
         let givens1 = [
-            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate),
-            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate),
+            enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate) { rumConfig in
                 rumConfig.trackBackgroundEvents = true
             },
-            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate),
-            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithAppDelegate),
+            enableRUMBeforeFirstFrame(userLaunchWithAppDelegate) { rumConfig in
                 rumConfig.trackBackgroundEvents = true
             }
         ]
@@ -352,8 +358,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNotNil(session.applicationStartAction)
-                DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+                XCTAssertNotNil(session.ttidEvent)
+                DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
                 DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -387,8 +393,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -403,12 +409,12 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     func testGivenUserLaunch_whenLongTasksAreTracked() throws {
         // Given
         let givens1 = [
-            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate),
-            enableRUMBeforeAppBecomesActive(userLaunchWithSceneDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate),
+            enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate) { rumConfig in
                 rumConfig.trackBackgroundEvents = true
             },
-            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate),
-            enableRUMBeforeAppBecomesActive(userLaunchWithAppDelegate) { rumConfig in
+            enableRUMBeforeFirstFrame(userLaunchWithAppDelegate),
+            enableRUMBeforeFirstFrame(userLaunchWithAppDelegate) { rumConfig in
                 rumConfig.trackBackgroundEvents = true
             }
         ]
@@ -424,8 +430,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNotNil(session.applicationStartAction)
-                DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+                XCTAssertNotNil(session.ttidEvent)
+                DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
                 DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -459,8 +465,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -474,7 +480,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     // MARK: - OS Prewarm Launch
 
-    private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate) }
+    private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate) }
 
     func testGivenOSPrewarmLaunch_whenNoEventIsTracked() throws {
         // Given
@@ -504,8 +510,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             // When
             let session = try when.then().takeSingle()
-            XCTAssertNil(session.applicationStartAction)
-            XCTAssertNil(session.applicationStartupTime)
+            XCTAssertNil(session.ttidEvent)
+            XCTAssertNil(session.timeToInitialDisplay)
             DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
             DDAssertEqual(session.duration, dt1, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -517,8 +523,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenOSPrewarmLaunch_whenManualViewIsTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch) { rumConfig in
+        let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
+        let given2 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
             rumConfig.trackBackgroundEvents = true
         }
 
@@ -535,8 +541,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNotNil(session.ttidEvent)
+                DDAssertEqual(session.timeToInitialDisplay, preWarmedTimeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .prewarm)
@@ -565,8 +571,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -581,10 +587,10 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenOSPrewarmLaunch_whenAutomaticViewIsTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch) { rumConfig in
+        let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
             rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
         }
-        let given2 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch) { rumConfig in
+        let given2 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
             rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
             rumConfig.trackBackgroundEvents = true
         }
@@ -600,8 +606,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartupTime)
-                XCTAssertNil(session.applicationStartAction)
+                XCTAssertNotNil(session.ttidEvent)
+                DDAssertEqual(session.timeToInitialDisplay, preWarmedTimeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .prewarm)
@@ -631,8 +637,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -647,8 +653,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenOSPrewarmLaunch_whenActionsAreTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch) { rumConfig in
+        let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
+        let given2 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
             rumConfig.trackBackgroundEvents = true
         }
 
@@ -662,8 +668,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartupTime)
-                XCTAssertNil(session.applicationStartAction)
+                XCTAssertNotNil(session.ttidEvent)
+                DDAssertEqual(session.timeToInitialDisplay, preWarmedTimeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .prewarm)
@@ -691,8 +697,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -707,8 +713,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenOSPrewarmLaunch_whenResourceIsTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch) { rumConfig in
+        let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
+        let given2 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
             rumConfig.trackBackgroundEvents = true
         }
 
@@ -722,8 +728,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartupTime)
-                XCTAssertNil(session.applicationStartAction)
+                XCTAssertNotNil(session.ttidEvent)
+                DDAssertEqual(session.timeToInitialDisplay, preWarmedTimeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .prewarm)
@@ -750,8 +756,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -765,8 +771,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenOSPrewarmLaunch_whenLongTasksAreTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch) { rumConfig in
+        let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
+        let given2 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
             rumConfig.trackBackgroundEvents = true
         }
 
@@ -781,8 +787,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartupTime)
-                XCTAssertNil(session.applicationStartAction)
+                XCTAssertNotNil(session.ttidEvent)
+                DDAssertEqual(session.timeToInitialDisplay, preWarmedTimeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .prewarm)
@@ -810,8 +816,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -828,8 +834,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenBackgroundLaunch_whenNoEventIsTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(backgroundLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(backgroundLaunch) { rumConfig in
+        let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
+        let given2 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
             rumConfig.trackBackgroundEvents = true
         }
 
@@ -854,8 +860,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             // When
             let session = try when.then().takeSingle()
-            XCTAssertNil(session.applicationStartAction)
-            XCTAssertNil(session.applicationStartupTime)
+            XCTAssertNil(session.ttidEvent)
+            XCTAssertNil(session.timeToInitialDisplay)
             DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
             DDAssertEqual(session.duration, dt1, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -867,8 +873,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenBackgroundLaunch_whenManualViewIsTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(backgroundLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(backgroundLaunch) { rumConfig in
+        let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
+        let given2 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
             rumConfig.trackBackgroundEvents = true
         }
 
@@ -885,8 +891,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .backgroundLaunch)
@@ -915,7 +921,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -930,10 +936,10 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenBackgroundLaunch_whenAutomaticViewIsTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(backgroundLaunch) { rumConfig in
+        let given1 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
             rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
         }
-        let given2 = enableRUMBeforeAppBecomesActive(backgroundLaunch) { rumConfig in
+        let given2 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
             rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
             rumConfig.trackBackgroundEvents = true
         }
@@ -949,8 +955,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartupTime)
-                XCTAssertNil(session.applicationStartAction)
+                XCTAssertNil(session.timeToInitialDisplay)
+                XCTAssertNil(session.ttidEvent)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .backgroundLaunch)
@@ -980,8 +986,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -996,8 +1002,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenBackgroundLaunch_whenActionsAreTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(backgroundLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(backgroundLaunch) { rumConfig in
+        let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
+        let given2 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
             rumConfig.trackBackgroundEvents = true
         }
 
@@ -1011,8 +1017,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartupTime)
-                XCTAssertNil(session.applicationStartAction)
+                XCTAssertNil(session.timeToInitialDisplay)
+                XCTAssertNil(session.ttidEvent)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .backgroundLaunch)
@@ -1040,8 +1046,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -1056,8 +1062,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenBackgroundLaunch_whenResourceIsTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(backgroundLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(backgroundLaunch) { rumConfig in
+        let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
+        let given2 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
             rumConfig.trackBackgroundEvents = true
         }
 
@@ -1071,8 +1077,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartupTime)
-                XCTAssertNil(session.applicationStartAction)
+                XCTAssertNil(session.timeToInitialDisplay)
+                XCTAssertNil(session.ttidEvent)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .backgroundLaunch)
@@ -1099,8 +1105,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -1114,8 +1120,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     func testGivenBackgroundLaunch_whenLongTasksAreTracked() throws {
         // Given
-        let given1 = enableRUMBeforeAppBecomesActive(backgroundLaunch)
-        let given2 = enableRUMBeforeAppBecomesActive(backgroundLaunch) { rumConfig in
+        let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
+        let given2 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
             rumConfig.trackBackgroundEvents = true
         }
 
@@ -1130,8 +1136,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartupTime)
-                XCTAssertNil(session.applicationStartAction)
+                XCTAssertNil(session.timeToInitialDisplay)
+                XCTAssertNil(session.ttidEvent)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .backgroundLaunch)
@@ -1159,8 +1165,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
-                XCTAssertNil(session.applicationStartAction)
-                XCTAssertNil(session.applicationStartupTime)
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)

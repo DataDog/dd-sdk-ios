@@ -20,6 +20,9 @@ internal protocol FrameInfoProvider {
     /// Maximum number of frames per second supported by the device
     var maximumDeviceFramesPerSecond: Int { get }
 
+    /// Initializer of the frame info provider. It has the same signature as the `CADisplayLink` init.
+    init(target: Any, selector: Selector)
+
     /// Adds the receiver to the given run-loop and mode. Unless paused, it will fire every vsync until removed.
     func add(to runloop: RunLoop, forMode mode: RunLoop.Mode)
 

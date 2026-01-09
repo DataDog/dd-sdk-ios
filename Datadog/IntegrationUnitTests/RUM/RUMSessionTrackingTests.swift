@@ -34,6 +34,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         // Move to foreground, start "FirstView" and track events:
         run = run
             .and(.appBecomesActive(after: timeToAppBecomeActive))
+            .and(.appDisplaysFirstFrame())
             .and(.startAutomaticView(after: 0, viewController: createMockView(viewControllerClassName: "FirstView")))
             .and(.trackResource(after: dt, duration: dt))
             .and(.trackTwoLongTasks(after1: dt, after2: dt))
@@ -65,8 +66,8 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         session: RUMSessionMatcher,
         expectBackgroundView: Bool
     ) {
-        XCTAssertNotNil(session.applicationStartAction)
-        DDAssertEqual(session.applicationStartupTime, timeToSDKInit, accuracy: accuracy)
+        XCTAssertNotNil(session.ttidEvent)
+        DDAssertEqual(session.timeToInitialDisplay, timeToSDKInit + 4 + timeToAppBecomeActive, accuracy: accuracy)
         DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
         DDAssertEqual(session.duration, timeToSDKInit + 4 * dt + timeToAppBecomeActive + 18 * dt, accuracy: accuracy)
         XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -75,7 +76,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         var nextView = views.removeFirst()
         XCTAssertEqual(nextView.name, applicationLaunchViewName)
         DDAssertEqual(nextView.duration, timeToSDKInit + 4 * dt + timeToAppBecomeActive, accuracy: accuracy)
-        XCTAssertEqual(nextView.actionEvents.count, 3)
+        XCTAssertEqual(nextView.actionEvents.count, 2)
         XCTAssertEqual(nextView.resourceEvents.count, 0)
         XCTAssertEqual(nextView.longTaskEvents.count, 2)
 
@@ -167,8 +168,8 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         session: RUMSessionMatcher,
         expectedSessionPrecondition: RUMSessionPrecondition
     ) {
-        XCTAssertNil(session.applicationStartAction)
-        XCTAssertNil(session.applicationStartupTime)
+        XCTAssertNil(session.ttidEvent)
+        XCTAssertNil(session.timeToInitialDisplay)
         DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt, accuracy: accuracy)
         DDAssertEqual(session.duration, 5 * dt + LaunchReasonResolver.Constants.launchWindowThreshold + 6 * dt, accuracy: accuracy)
         XCTAssertEqual(session.sessionPrecondition, expectedSessionPrecondition)
@@ -183,7 +184,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
     }
 
     @available(tvOS, unavailable)
-    private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate) }
+    private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate) }
 
     @available(tvOS, unavailable)
     func testGivenPrewarmedLaunch_whenTrackingBackgroundSession() throws {
@@ -267,8 +268,8 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         session: RUMSessionMatcher,
         expectedSessionPrecondition: RUMSessionPrecondition
     ) {
-        XCTAssertNil(session.applicationStartAction)
-        XCTAssertNil(session.applicationStartupTime)
+        XCTAssertNil(session.ttidEvent)
+        XCTAssertNil(session.timeToInitialDisplay)
         DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt, accuracy: accuracy)
         DDAssertEqual(session.duration, 3 * dt + LaunchReasonResolver.Constants.launchWindowThreshold + 2 * dt, accuracy: accuracy)
         XCTAssertEqual(session.sessionPrecondition, expectedSessionPrecondition)
@@ -286,8 +287,8 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         session: RUMSessionMatcher,
         expectedSessionPrecondition: RUMSessionPrecondition
     ) {
-        XCTAssertNil(session.applicationStartAction)
-        XCTAssertNil(session.applicationStartupTime)
+        XCTAssertNil(session.ttidEvent)
+        XCTAssertNil(session.timeToInitialDisplay)
         DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + 6 * dt + LaunchReasonResolver.Constants.launchWindowThreshold + 2.hours, accuracy: accuracy)
         DDAssertEqual(session.duration, 4 * dt, accuracy: accuracy)
         XCTAssertEqual(session.sessionPrecondition, expectedSessionPrecondition)

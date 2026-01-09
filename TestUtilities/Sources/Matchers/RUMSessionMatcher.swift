@@ -92,8 +92,11 @@ public class RUMSessionMatcher {
         /// `RUMLongTask` events tracked during this visit.
         public fileprivate(set) var longTaskEvents: [RUMLongTaskEvent] = []
 
-        /// `RUMVital` events tracked during this visit.
-        public fileprivate(set) var vitalEvents: [RUMVitalOperationStepEvent] = []
+        /// `RUMVitalOperationStep` events tracked during this visit.
+        public fileprivate(set) var operationStepEvents: [RUMVitalOperationStepEvent] = []
+
+        /// `RUMVitalAppLaunch` events tracked during this visit.
+        public fileprivate(set) var appLaunchEvents: [RUMVitalAppLaunchEvent] = []
     }
 
     /// RUM application ID for this session.
@@ -114,6 +117,7 @@ public class RUMSessionMatcher {
     public let errorEventMatchers: [RUMEventMatcher]
     public let longTaskEventMatchers: [RUMEventMatcher]
     public let operationStepEventMatchers: [RUMEventMatcher]
+    public let appLaunchEventMatchers: [RUMEventMatcher]
 
     /// `RUMView` events tracked in this session.
     public let viewEvents: [RUMViewEvent]
@@ -132,6 +136,9 @@ public class RUMSessionMatcher {
 
     /// `RUMVitalOperationStep` events tracked in this session.
     public let operationStepEvents: [RUMVitalOperationStepEvent]
+
+    /// `RUMVitalAppLaunch` events tracked in this session.
+    public let appLaunchEvents: [RUMVitalAppLaunchEvent]
 
     private init(applicationID: String, sessionID: String, sessionEventMatchers: [RUMEventMatcher]) throws {
         // Sort events so they follow increasing time order
@@ -159,6 +166,10 @@ public class RUMSessionMatcher {
             let vitalType: String = try vitalMatcher.attribute(forKeyPath: "vital.type")
             return vitalType == "operation_step"
         }
+        self.appLaunchEventMatchers = try (eventsMatchersByType["vital"] ?? []).filter { vitalMatcher in
+            let vitalType: String = try vitalMatcher.attribute(forKeyPath: "vital.type")
+            return vitalType == "app_launch"
+        }
 
         let viewEvents: [RUMViewEvent] = try viewEventMatchers.map { matcher in try matcher.model() }
 
@@ -175,6 +186,9 @@ public class RUMSessionMatcher {
             .map { matcher in try matcher.model() }
 
         let operationStepVitalEvents: [RUMVitalOperationStepEvent] = try operationStepEventMatchers
+            .map { matcher in try matcher.model() }
+
+        let appLaunchVitalEvents: [RUMVitalAppLaunchEvent] = try appLaunchEventMatchers
             .map { matcher in try matcher.model() }
 
         // Validate each group of events individually
@@ -260,7 +274,7 @@ public class RUMSessionMatcher {
 
         try operationStepVitalEvents.forEach { rumEvent in
             if let visit = visitsByViewID[rumEvent.view.id] {
-                visit.vitalEvents.append(rumEvent)
+                visit.operationStepEvents.append(rumEvent)
             } else {
                 throw RUMSessionConsistencyException(
                     description: "Cannot link RUM Event: \(rumEvent) to `RUMSessionMatcher.ViewVisit` by `view.id` (no visit found for `view.id`: \(rumEvent.view.id))."
@@ -314,6 +328,7 @@ public class RUMSessionMatcher {
         self.errorEvents = errorEvents
         self.longTaskEvents = longTaskEvents
         self.operationStepEvents = operationStepVitalEvents
+        self.appLaunchEvents = appLaunchVitalEvents
     }
 
     /// Checks if this session contains a view with a specific ID.
@@ -328,7 +343,7 @@ public class RUMSessionMatcher {
 private func validate(rumViewEvents: [RUMViewEvent]) throws {
     // All view events must use `session.plan` "lite"
     try rumViewEvents.forEach { viewEvent in
-        if viewEvent.source == .ios { // validete only mobile events
+        if viewEvent.source == .ios { // validate only mobile events
             try validate(device: viewEvent.device)
             try validate(os: viewEvent.os)
         }
@@ -338,7 +353,7 @@ private func validate(rumViewEvents: [RUMViewEvent]) throws {
 private func validate(rumActionEvents: [RUMActionEvent]) throws {
     // All action events must use `session.plan` "lite"
     try rumActionEvents.forEach { actionEvent in
-        if actionEvent.source == .ios { // validete only mobile events
+        if actionEvent.source == .ios { // validate only mobile events
             try validate(device: actionEvent.device)
             try validate(os: actionEvent.os)
         }
@@ -356,7 +371,7 @@ private func validate(rumResourceEvents: [RUMResourceEvent]) throws {
 
     // All resource events must use `session.plan` "lite"
     try rumResourceEvents.forEach { resourceEvent in
-        if resourceEvent.source == .ios { // validete only mobile events
+        if resourceEvent.source == .ios { // validate only mobile events
             try validate(device: resourceEvent.device)
             try validate(os: resourceEvent.os)
         }
@@ -366,7 +381,7 @@ private func validate(rumResourceEvents: [RUMResourceEvent]) throws {
 private func validate(rumErrorEvents: [RUMErrorEvent]) throws {
     // All error events must use `session.plan` "lite"
     try rumErrorEvents.forEach { errorEvent in
-        if errorEvent.source == .ios { // validete only mobile events
+        if errorEvent.source == .ios { // validate only mobile events
             try validate(device: errorEvent.device)
             try validate(os: errorEvent.os)
         }
@@ -376,7 +391,7 @@ private func validate(rumErrorEvents: [RUMErrorEvent]) throws {
 private func validate(rumLongTaskEvents: [RUMLongTaskEvent]) throws {
     // All error events must use `session.plan` "lite"
     try rumLongTaskEvents.forEach { longTaskEvent in
-        if longTaskEvent.source == .ios { // validete only mobile events
+        if longTaskEvent.source == .ios { // validate only mobile events
             try validate(device: longTaskEvent.device)
             try validate(os: longTaskEvent.os)
         }
@@ -591,15 +606,18 @@ extension RUMSessionMatcher: CustomStringConvertible {
     public var duration: TimeInterval? { durationNs.map { TimeInterval.ddFromNanoseconds( $0) } }
 
     /// The application start action.
-    public var applicationStartAction: RUMActionEvent? {
-        let appStartActions = actionEvents.filter { $0.action.type == .applicationStart }
-        precondition(appStartActions.count <= 1, "Session cannot have more than one `.applicationStart` action")
-        return appStartActions.first
+    public var ttidEvent: RUMVitalAppLaunchEvent? {
+        let appStartEvents = appLaunchEvents.filter { $0.vital.name == "time_to_initial_display" }
+        precondition(appStartEvents.count <= 1, "Session has only one TTID or none.")
+        return appStartEvents.first
     }
 
     /// The application startup time (nanoseconds).
-    public var applicationStartupTime: TimeInterval? {
-        return applicationStartAction?.action.loadingTime.map { TimeInterval.ddFromNanoseconds( $0) }
+    public var timeToInitialDisplay: TimeInterval? {
+        if let ttidEvent {
+            return TimeInterval.ddFromNanoseconds(Int64(ttidEvent.vital.duration))
+        }
+        return nil
     }
 
     private func renderSession() -> String {
@@ -634,7 +652,10 @@ extension RUMSessionMatcher: CustomStringConvertible {
                 ("date", prettyDate(timestampMs: lastViewEvent.date)),
                 ("date (relative in session)", pretty(milliseconds: sessionStartTimestampMs.map { lastViewEvent.date - $0 })),
                 ("duration", pretty(nanoseconds: lastViewEvent.view.timeSpent)),
-                ("event counts", "view (\(view.viewEvents.count)), action (\(view.actionEvents.count)), resource (\(view.resourceEvents.count)), error (\(view.errorEvents.count)), long task (\(view.longTaskEvents.count)), vital (\(view.vitalEvents.count))"),
+                (
+                    "event counts",
+                    "view (\(view.viewEvents.count)), action (\(view.actionEvents.count)), resource (\(view.resourceEvents.count)), error (\(view.errorEvents.count)), long task (\(view.longTaskEvents.count)), operation step (\(view.operationStepEvents.count)) , app launch (\(view.appLaunchEvents.count))"
+                ),
             ]
         )
 
@@ -658,7 +679,12 @@ extension RUMSessionMatcher: CustomStringConvertible {
             output += render(event: longTask, in: view)
         }
 
-        for vital in view.vitalEvents {
+        for vital in view.operationStepEvents {
+            output += renderEmptyLine()
+            output += render(event: vital, in: view)
+        }
+
+        for vital in view.appLaunchEvents {
             output += renderEmptyLine()
             output += render(event: vital, in: view)
         }
@@ -735,6 +761,24 @@ extension RUMSessionMatcher: CustomStringConvertible {
                 ("type", "\(vital.type)"),
                 ("step.type", "\(vital.stepType.rawValue)"),
                 ("failure.reason", vital.failureReason?.rawValue ?? "nil"),
+            ],
+            prefix: "→",
+            indentationLevel: 3
+        )
+        return output
+    }
+
+    private func render(event: RUMVitalAppLaunchEvent, in view: View) -> String {
+        let vital = event.vital
+        var output = renderAttributesBox(attributes: [("⚡ RUM Vital", "")], indentationLevel: 2)
+        output += renderAttributesBox(
+            attributes: [
+                ("date (relative in view)", pretty(milliseconds: event.date - view.startTimestampMs)),
+                ("name", vital.name ?? ""),
+                ("appLaunchMetric", vital.appLaunchMetric.rawValue),
+                ("startupType", vital.startupType?.rawValue ?? "nil"),
+                ("duration", "\(vital.duration)"),
+                ("isPrewarmed", vital.isPrewarmed ?? false ? "true" : "false"),
             ],
             prefix: "→",
             indentationLevel: 3

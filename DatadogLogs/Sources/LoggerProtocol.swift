@@ -262,7 +262,7 @@ extension CombinedLogger: InternalLoggerProtocol {
 
         // Sync on a global queue for simplicity.
         // In practice, users of the internal logger are cross-platform
-        // SDKs which don't use console logger and therefor don't use
+        // SDKs which don't use console logger and therefore don't use
         // the combined-logger.
         group.notify(queue: .global()) {
             completionHandler()

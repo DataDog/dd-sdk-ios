@@ -227,8 +227,10 @@ class DDLogsTests: XCTestCase {
 
     func testSettingTagsAndAttributes() throws {
         core.context = .mockWith(
+            service: "the-service",
             env: "test",
-            version: "1.2.3"
+            version: "1.2.3",
+            sdkVersion: "3.2.1"
         )
 
         let feature: LogsFeature = .mockAny()
@@ -253,7 +255,14 @@ class DDLogsTests: XCTestCase {
         let logMatcher = try core.waitAndReturnLogMatchers()[0]
         logMatcher.assertValue(forKeyPath: "foo", equals: "bar")
         logMatcher.assertNoValue(forKey: "bizz")
-        logMatcher.assertTags(equal: ["foo:bar", "foobar", "env:test", "version:1.2.3"])
+        logMatcher.assertTags(equal: [
+            "foo:bar",
+            "foobar",
+            "env:test",
+            "version:1.2.3",
+            "sdk_version:3.2.1",
+            "service:the-service"
+        ])
     }
 
     func testItForwardsLoggerConfigurationToSwift() {

@@ -54,15 +54,15 @@ class CrashReportingWithRUMScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let sessions = try RUMSessionMatcher.sessions(maxCount: 2, from: recordedRequests)
             .sorted { session1, session2 in
-                // Sort sessions by their "application_start" action date
-                return session1.views[0].actionEvents[0].date < session2.views[0].actionEvents[0].date
+                // Sort sessions by their startTimestamp
+                return session1.views[0].startTimestampMs < session2.views[0].startTimestampMs
             }
         let crashedSession = try XCTUnwrap(sessions.first)
         sendCIAppLog("Crashed session: \n\(crashedSession)")
 
         let initialView = crashedSession.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
-        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertNotNil(crashedSession.ttidEvent)
 
         XCTAssertEqual(crashedSession.views[1].name, "Runner.CrashReportingViewController")
         XCTAssertEqual(

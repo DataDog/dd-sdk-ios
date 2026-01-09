@@ -1,0 +1,73 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+#if os(iOS)
+import QuartzCore
+import XCTest
+
+@testable import DatadogSessionReplay
+
+@MainActor
+final class ScreenChangeMonitorTests: XCTestCase {
+    private let testTimeProvider = TestTimeProvider(now: 0)
+    // swiftlint:disable:next implicitly_unwrapped_optional
+    private var screenChangeMonitor: ScreenChangeMonitor<TestTimeProvider>!
+    private var snapshots: [CALayerChangeSnapshot] = []
+
+    override func setUp() async throws {
+        try await super.setUp()
+
+        screenChangeMonitor = try ScreenChangeMonitor(
+            minimumDeliveryInterval: 0.1,
+            timeProvider: testTimeProvider
+        ) { [weak self] snapshot in
+            self?.snapshots.append(snapshot)
+        }
+    }
+
+    override func tearDown() {
+        snapshots.removeAll()
+        super.tearDown()
+    }
+
+    func testStartAndStop() {
+        // given
+        let layer = CALayer()
+
+        // when
+        testTimeProvider.advance(to: 0.01)
+        layer.display() // ignored
+        testTimeProvider.advance(to: 1.00)
+
+        // then
+        XCTAssertEqual(snapshots.count, 0, "Should ignore layer changes before calling start()")
+
+        // when
+        screenChangeMonitor.start()
+
+        testTimeProvider.advance(to: 1.01)
+        layer.display()
+        testTimeProvider.advance(to: 1.20)
+
+        // then
+        XCTAssertEqual(snapshots.count, 1)
+        XCTAssertEqual(snapshots[0].aspects(for: layer), .display)
+
+        // given
+        snapshots.removeAll()
+
+        // when
+        screenChangeMonitor.stop()
+
+        testTimeProvider.advance(to: 2.00)
+        layer.display()
+        testTimeProvider.advance(to: 3.00)
+
+        // then
+        XCTAssertEqual(snapshots.count, 0, "Should ignore layer changes after calling stop()")
+    }
+}
+#endif

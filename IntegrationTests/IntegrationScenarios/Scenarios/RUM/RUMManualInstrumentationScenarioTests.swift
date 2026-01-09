@@ -59,7 +59,8 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
 
         let initialView = session.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
-        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertNotNil(session.ttidEvent)
+        XCTAssertGreaterThan(session.timeToInitialDisplay!, 0)
 
         let view1 = session.views[1]
         XCTAssertEqual(view1.name, "SendRUMFixture1View")

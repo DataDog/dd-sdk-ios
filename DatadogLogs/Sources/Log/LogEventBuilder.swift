@@ -88,6 +88,7 @@ internal struct LogEventBuilder {
             networkConnectionInfo: networkInfoEnabled ? context.networkConnectionInfo : nil,
             mobileCarrierInfo: networkInfoEnabled ? context.carrierInfo : nil,
             attributes: attributes,
+            ddTags: context.ddTags,
             tags: !tags.isEmpty ? Array(tags) : nil
         )
 

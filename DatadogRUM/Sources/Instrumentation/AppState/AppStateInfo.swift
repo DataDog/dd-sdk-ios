@@ -13,7 +13,7 @@ import UIKit
 
 /// Represents the app state observed during application lifecycle events such as application start, resume and termination.
 /// This state is used to detect Watchdog Terminations.
-internal struct WatchdogTerminationAppState: Codable {
+internal struct AppStateInfo: Codable {
     /// The Application version provided by the `Bundle`.
     let appVersion: String
 
@@ -22,6 +22,9 @@ internal struct WatchdogTerminationAppState: Codable {
 
     /// Last time the system was booted.
     let systemBootTime: TimeInterval
+
+    /// Last time the app was launched.
+    let appLaunchTime: TimeInterval
 
     /// Returns true, if the app is running with a debug configuration.
     let isDebugging: Bool
@@ -46,10 +49,10 @@ internal struct WatchdogTerminationAppState: Codable {
     let syntheticsEnvironment: Bool
 }
 
-extension WatchdogTerminationAppState: CustomDebugStringConvertible {
+extension AppStateInfo: CustomDebugStringConvertible {
     var debugDescription: String {
         return """
-        WatchdogTerminationAppState
+        AppStateInfo
         - appVersion: \(appVersion)
         - osVersion: \(osVersion)
         - systemBootTime: \(systemBootTime)

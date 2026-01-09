@@ -14,7 +14,7 @@ source ./tools/utils/echo-color.sh
 source ./tools/utils/current-git.sh
 source ./tools/secrets/get-secret.sh
 
-set_description "Updates 'dd-sdk-ios' version in dependant project and opens dogfooding PR to its repo."
+set_description "Updates 'dd-sdk-ios' version in dependent project and opens dogfooding PR to its repo."
 define_arg "shopist" "false" "Dogfood in Shopist iOS." "store_true"
 define_arg "datadog-app" "false" "Dogfood in Datadog iOS app." "store_true"
 
@@ -24,14 +24,14 @@ parse_args "$@"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 echo_info "cd '$SCRIPT_DIR'" && cd "$SCRIPT_DIR"
 
-DEPENDANT_REPO_CLONE_DIR="repos"
+DEPENDENT_REPO_CLONE_DIR="repos"
 
 SDK_PACKAGE_PATH=$(realpath "../..")
 SDK_VERSION_FILE_PATH=$(realpath "../../DatadogCore/Sources/Versioning.swift")
 DOGFOODED_BRANCH="$(current_git_branch)"
 DOGFOODED_COMMIT="$(current_git_commit)"
 DOGFOODED_COMMIT_SHORT="$(current_git_commit_short)"
-DOGFOODING_BRANCH_NAME="dogfooding-$DOGFOODED_COMMIT_SHORT" # the name of the branch to create in dependant repo
+DOGFOODING_BRANCH_NAME="dogfooding-$DOGFOODED_COMMIT_SHORT" # the name of the branch to create in dependent repo
 
 if [[ "$DOGFOODED_BRANCH" != "develop" ]]; then
     DRY_RUN=1
@@ -50,8 +50,8 @@ echo_info "▸ DOGFOODING_BRANCH_NAME = '$DOGFOODING_BRANCH_NAME'"
 # Prepares dogfooding package.
 prepare() {
     echo_subtitle "Prepare dogfooding package"
-    rm -rf "$DEPENDANT_REPO_CLONE_DIR"
-    mkdir -p "$DEPENDANT_REPO_CLONE_DIR"
+    rm -rf "$DEPENDENT_REPO_CLONE_DIR"
+    mkdir -p "$DEPENDENT_REPO_CLONE_DIR"
     make clean install
 }
 
@@ -59,10 +59,10 @@ prepare() {
 cleanup() {
     echo_subtitle "Clean dogfooding package"
     make clean
-    rm -rf "$DEPENDANT_REPO_CLONE_DIR"
+    rm -rf "$DEPENDENT_REPO_CLONE_DIR"
 }
 
-# Clones dependant repo.
+# Clones dependent repo.
 clone_repo() {
     local ssh="$1"
     local branch="$2"
@@ -71,7 +71,7 @@ clone_repo() {
     git clone --branch $branch --single-branch $1 $clone_path
 }
 
-# Creates dogfooding commit in dependant repo.
+# Creates dogfooding commit in dependent repo.
 commit_repo() {
     local repo_path="$1"
     echo_subtitle "Commit '$REPO_NAME' repo"
@@ -82,7 +82,7 @@ commit_repo() {
     cd -
 }
 
-# Pushes dogfooding branch to dependant repo.
+# Pushes dogfooding branch to dependent repo.
 push_repo() {
     local repo_path="$1"
     echo_subtitle "Push '$DOGFOODING_BRANCH_NAME' to '$REPO_NAME' repo"
@@ -95,7 +95,7 @@ push_repo() {
     cd -
 }
 
-# Creates dogfooding PR in dependant repo.
+# Creates dogfooding PR in dependent repo.
 create_pr() {
     local repo_path="$1"
     local changelog="$2"
@@ -143,7 +143,7 @@ read_dogfooded_version() {
     echo_succ "▸ Using '$DOGFOODED_SDK_VERSION' for dogfooding"
 }
 
-# Reads the hash of dogfooded commit from sdk version file in dependant project.
+# Reads the hash of dogfooded commit from sdk version file in dependent project.
 read_dogfooded_commit() {
     local version_file="$1"
     echo_subtitle "Read dogfooded commit from '$version_file'" >&2
@@ -192,8 +192,8 @@ print_changelog() {
     echo "$CHANGELOG"
 }
 
-# Updates dd-sdk-ios version in dependant project to DOGFOODED_COMMIT.
-update_dependant_package_resolved() {
+# Updates dd-sdk-ios version in dependent project to DOGFOODED_COMMIT.
+update_dependent_package_resolved() {
     local package_resolved_path="$1"
     echo_subtitle "Update dd-sdk-ios version in '$package_resolved_path'"
     make run PARAMS="update-dependency.py \
@@ -203,8 +203,8 @@ update_dependant_package_resolved() {
         --dogfooded-commit '$DOGFOODED_COMMIT'"
 }
 
-# Updates 'sdk_version' in dependant project to DOGFOODED_SDK_VERSION.
-update_dependant_sdk_version() {
+# Updates 'sdk_version' in dependent project to DOGFOODED_SDK_VERSION.
+update_dependent_sdk_version() {
     local version_file="$1"
     echo_subtitle "Update 'sdk_version' in '$version_file'"
 
@@ -233,7 +233,7 @@ resolve_dd_sdk_ios_package
 
 if [ "$shopist" = "true" ]; then
     REPO_NAME="shopist-ios"
-    CLONE_PATH="$DEPENDANT_REPO_CLONE_DIR/$REPO_NAME"
+    CLONE_PATH="$DEPENDENT_REPO_CLONE_DIR/$REPO_NAME"
     DEFAULT_BRANCH="main"
 
     clone_repo "git@github.com:DataDog/shopist-ios.git" $DEFAULT_BRANCH $CLONE_PATH
@@ -243,8 +243,8 @@ if [ "$shopist" = "true" ]; then
     CHANGELOG=$(print_changelog "$LAST_DOGFOODED_COMMIT")
     
     # Update dd-sdk-ios version:
-    update_dependant_package_resolved "$CLONE_PATH/Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-    update_dependant_sdk_version "$CLONE_PATH/Shopist/Shopist/DogfoodingConfig.swift"
+    update_dependent_package_resolved "$CLONE_PATH/Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+    update_dependent_sdk_version "$CLONE_PATH/Shopist/Shopist/DogfoodingConfig.swift"
 
     echo_info "▸ Exporting 'GITHUB_TOKEN' for CI"
     export GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/shopist-ios --policy dd-sdk-ios.gitlab.pr)
@@ -260,7 +260,7 @@ fi
 
 if [ "$datadog_app" = "true" ]; then
     REPO_NAME="datadog-ios"
-    CLONE_PATH="$DEPENDANT_REPO_CLONE_DIR/$REPO_NAME"
+    CLONE_PATH="$DEPENDENT_REPO_CLONE_DIR/$REPO_NAME"
     DEFAULT_BRANCH="develop"
 
     clone_repo "git@github.com:DataDog/datadog-ios.git" $DEFAULT_BRANCH $CLONE_PATH
@@ -270,8 +270,8 @@ if [ "$datadog_app" = "true" ]; then
     CHANGELOG=$(print_changelog "$LAST_DOGFOODED_COMMIT")
     
     # Update dd-sdk-ios version:
-    update_dependant_package_resolved "$CLONE_PATH/Tuist/Package.resolved"
-    update_dependant_sdk_version "$CLONE_PATH/Targets/Platform/DatadogObservability/DogfoodingConfig.swift"
+    update_dependent_package_resolved "$CLONE_PATH/Tuist/Package.resolved"
+    update_dependent_sdk_version "$CLONE_PATH/Targets/Platform/DatadogObservability/DogfoodingConfig.swift"
 
     echo_info "▸ Exporting 'GITHUB_TOKEN' for CI"
     export GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/datadog-ios --policy dd-sdk-ios.gitlab.pr)

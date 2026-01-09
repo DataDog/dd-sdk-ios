@@ -20,7 +20,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
 
     // MARK: - OS Prewarm Launch
 
-    private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate) }
+    private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate) }
 
     func testGivenOSPrewarmLaunch_whenNoEventIsTracked() throws {
         // Given
@@ -67,8 +67,8 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
         for when in [when3, when4] {
             // Then
             let session = try when.then().takeSingle()
-            XCTAssertNil(session.applicationStartAction)
-            XCTAssertNil(session.applicationStartupTime)
+            XCTAssertNil(session.ttidEvent)
+            XCTAssertNil(session.timeToInitialDisplay)
             DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
             DDAssertEqual(session.duration, dt2, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .prewarm)
@@ -143,8 +143,8 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
 
         for when in [when3, when4] {
             let session = try when.then().takeSingle()
-            XCTAssertNil(session.applicationStartAction)
-            XCTAssertNil(session.applicationStartupTime)
+            XCTAssertNil(session.ttidEvent)
+            XCTAssertNil(session.timeToInitialDisplay)
             DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
             DDAssertEqual(session.duration, dt2, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .backgroundLaunch)

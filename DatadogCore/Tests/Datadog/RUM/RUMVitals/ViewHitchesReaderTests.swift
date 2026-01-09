@@ -18,7 +18,7 @@ final class ViewHitchesReaderTests: XCTestCase {
     */
     func testViewHitches_givenRenderLoopAt60FPS() {
         let reader = ViewHitchesReader()
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 60)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
 
         // 1st frame
         frameInfoProvider.currentFrameTimestamp = 0
@@ -50,7 +50,7 @@ final class ViewHitchesReaderTests: XCTestCase {
     */
     func testViewHitches_givenRenderLoopAt60FPS_and2VSyncsOfAcceptableLatency() {
         let reader = ViewHitchesReader(acceptableLatency: 0.032)
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 60)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
 
         // 1st frame
         frameInfoProvider.currentFrameTimestamp = 0
@@ -89,7 +89,8 @@ final class ViewHitchesReaderTests: XCTestCase {
     */
     func testViewHitches_givenRenderLoopAt60FPS_andHangThreshold() {
         let reader = ViewHitchesReader(hangThreshold: 0.1)
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 20)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.maximumDeviceFramesPerSecond = 20
 
         // 1st frame
         frameInfoProvider.currentFrameTimestamp = 0
@@ -129,7 +130,8 @@ final class ViewHitchesReaderTests: XCTestCase {
     */
     func testViewHitches_givenRenderLoopAt120FPS() {
         let reader = ViewHitchesReader()
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 120)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.maximumDeviceFramesPerSecond = 120
 
         // 1st frame
         frameInfoProvider.currentFrameTimestamp = 0
@@ -167,7 +169,8 @@ final class ViewHitchesReaderTests: XCTestCase {
     */
     func testViewHitches_givenAdaptiveSyncDisplay() {
         let reader = ViewHitchesReader()
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 120)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.maximumDeviceFramesPerSecond = 120
 
         // 1st frame
         frameInfoProvider.currentFrameTimestamp = 0
@@ -206,7 +209,8 @@ final class ViewHitchesReaderTests: XCTestCase {
     */
     func testViewHitches_givenAdaptiveSyncDisplayWithViewHitches() {
         let reader = ViewHitchesReader()
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 120)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.maximumDeviceFramesPerSecond = 120
 
         // 1st frame
         frameInfoProvider.currentFrameTimestamp = 0
@@ -238,7 +242,8 @@ final class ViewHitchesReaderTests: XCTestCase {
     */
     func testViewHitches_givenAdaptiveSyncDisplayWithQuickerThanExpectedFrames() {
         let reader = ViewHitchesReader()
-        var frameInfoProvider = FrameInfoProviderMock(maximumDeviceFramesPerSecond: 120)
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.maximumDeviceFramesPerSecond = 120
 
         // 1st frame
         frameInfoProvider.currentFrameTimestamp = 0

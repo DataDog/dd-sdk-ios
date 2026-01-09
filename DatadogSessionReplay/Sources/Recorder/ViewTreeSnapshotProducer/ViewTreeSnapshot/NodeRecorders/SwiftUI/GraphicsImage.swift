@@ -16,8 +16,26 @@ internal struct GraphicsImage {
     let orientation: SwiftUI.Image.Orientation
     let maskColor: SwiftUI.Color._Resolved?
 
+    enum Location {
+        case bundle(Bundle)
+        case unknown
+    }
+
+    struct VectorImage {
+        let location: Location
+        let name: String
+
+        var bundle: Bundle? {
+            guard case let .bundle(bundle) = location else {
+                return nil
+            }
+            return bundle
+        }
+    }
+
     enum Contents {
         case cgImage(CGImage)
+        case vectorImage(VectorImage)
         case unknown
     }
 }

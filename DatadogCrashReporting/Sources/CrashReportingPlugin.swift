@@ -14,7 +14,7 @@ public protocol CrashReportingPlugin: AnyObject {
     /// Reads unprocessed crash report if available.
     /// - Parameter completion: the completion block called with the value of `DDCrashReport` if a crash report is available
     /// or with `nil` otherwise. The value returned by the receiver should indicate if the crash report was processed correctly (`true`)
-    /// or something went wrong (`false)`. Depending on the returned value, the crash report will be purged or perserved for future read.
+    /// or something went wrong (`false)`. Depending on the returned value, the crash report will be purged or preserved for future read.
     ///
     /// The SDK calls this method on a background thread. The implementation is free to choice any thread
     /// for executing the  `completion`.

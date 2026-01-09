@@ -164,7 +164,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let initialView = session.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
-        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertNotNil(session.ttidEvent)
+        XCTAssertGreaterThan(session.timeToInitialDisplay!, 0)
 
         // Asserts in `SendFirstPartyRequestsVC` RUM View
         XCTAssertEqual(session.views[1].name, expectations.expectedFirstPartyRequestsViewControllerName)

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
+<dict>
+	<key>distributionBundleIdentifier</key>
+	<string>com.datadoghq.e2e.Runner</string>
+	<key>method</key>
+	<string>development</string>
+	<key>provisioningProfiles</key>
 	<dict>
-		<key>distributionBundleIdentifier</key>
-		<string>com.datadoghq.e2e.Runner</string>
-		<key>method</key>
-		<string>development</string>
-		<key>provisioningProfiles</key>
-		<dict>
-			<key>com.datadoghq.e2e.Runner</key>
-			<string>Datadog E2E Runner</string>
-		</dict>
-		<key>signingCertificate</key>
-		<string>Apple Development: Robot Bitrise (9HKDHCMCGH)</string>
-		<key>teamID</key>
-		<string>JKFCB4CN7C</string>
+		<key>com.datadoghq.e2e.Runner</key>
+		<string>Datadog E2E Runner</string>
 	</dict>
+	<key>signingCertificate</key>
+	<string>Apple Development: Simao Seica (35XV3565V6)</string>
+	<key>teamID</key>
+	<string>JKFCB4CN7C</string>
+</dict>
 </plist>
