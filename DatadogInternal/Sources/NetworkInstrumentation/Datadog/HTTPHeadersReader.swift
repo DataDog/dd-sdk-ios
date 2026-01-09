@@ -47,15 +47,16 @@ public class HTTPHeadersReader: TracePropagationHeadersReader {
     public var samplingPriority: SamplingPriority? {
         if let sampling = httpHeaderFields[TracingHTTPHeaders.samplingPriorityField],
            let samplingInteger = Int(sampling),
-           let samplingPriority = SamplingPriority(rawValue: samplingInteger)
-        {
+           let samplingPriority = SamplingPriority(rawValue: samplingInteger) {
             return samplingPriority
         }
         return nil
     }
 
     public var samplingDecisionMaker: SamplingMechanismType? {
-        guard let tagsField = httpHeaderFields[TracingHTTPHeaders.tagsField] else { return nil }
+        guard let tagsField = httpHeaderFields[TracingHTTPHeaders.tagsField] else {
+            return nil
+        }
 
         let tags = tagsField.split(separator: ",")
 

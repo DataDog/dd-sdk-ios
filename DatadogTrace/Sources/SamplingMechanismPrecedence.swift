@@ -15,11 +15,11 @@ internal struct SamplingMechanismPrecedence: Comparable {
 
     let precedence: Int
 
-    static let fallback =  SamplingMechanismPrecedence(precedence: 0)
+    static let fallback = SamplingMechanismPrecedence(precedence: 0)
 
     static let agentRate = SamplingMechanismPrecedence(precedence: 50)
 
-    static let manual =    SamplingMechanismPrecedence(precedence: 80)
+    static let manual = SamplingMechanismPrecedence(precedence: 80)
 }
 
 extension SamplingMechanismType {
@@ -32,4 +32,3 @@ extension SamplingMechanismType {
         }
     }
 }
-

@@ -49,7 +49,6 @@ public enum SpanTags {
     public static let manualDrop = "manual.drop"
     /// Tag used to mark a span as manually kept.
     public static let manualKeep = "manual.keep"
-
 }
 
 /// A class for manual interaction with the Trace feature. It records spans that are sent to Datadog APM.
