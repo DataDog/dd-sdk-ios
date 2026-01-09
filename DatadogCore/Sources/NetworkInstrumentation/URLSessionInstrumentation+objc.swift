@@ -56,10 +56,24 @@ public final class objc_URLSessionInstrumentationFirstPartyHostsTracing: NSObjec
 @objcMembers
 @_spi(objc)
 public final class objc_URLSessionInstrumentation: NSObject {
+    /// Enables metrics mode to capture detailed timing breakdowns for URLSession tasks.
+    ///
+    /// This method is optional. Automatic network tracking is already enabled by default when RUM or Trace is initialized with URL session tracking configuration.
+    /// Metrics mode provides additional detailed timing information captured from `URLSessionTaskMetrics` (including DNS, Connection, SSL, First Byte, Download).
+    ///
+    /// Note: Metrics mode involves swizzling `URLSessionDataDelegate` methods to capture `URLSessionTaskMetrics`.
+    ///
+    /// - Parameters:
+    ///   - configuration: Configuration of the feature.
+    public static func trackMetrics(configuration: objc_URLSessionInstrumentationConfiguration) {
+        URLSessionInstrumentation.trackMetrics(with: configuration.swiftConfig)
+    }
+
     /// Enables URLSession instrumentation.
     ///
     /// - Parameters:
     ///   - configuration: Configuration of the feature.
+    @available(*, deprecated, renamed: "trackMetrics(configuration:)", message: "Use trackMetrics(configuration:) instead.")
     public static func enable(configuration: objc_URLSessionInstrumentationConfiguration) {
         URLSessionInstrumentation.enable(with: configuration.swiftConfig)
     }
