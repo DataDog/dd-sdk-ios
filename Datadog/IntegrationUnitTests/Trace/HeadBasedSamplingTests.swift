@@ -21,7 +21,7 @@ class HeadBasedSamplingTests: XCTestCase {
         traceConfig = Trace.Configuration()
     }
 
-        override func tearDownWithError() throws {
+    override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
         traceConfig = nil
@@ -47,7 +47,7 @@ class HeadBasedSamplingTests: XCTestCase {
         // When
         let parent = Tracer.shared(in: core).startSpan(operationName: "parent")
         let child = Tracer.shared(in: core).startSpan(operationName: "child", childOf: parent.context)
-        let grandchild = Tracer.shared(in: core).startSpan(operationName: "grandchild", childOf: parent.context)
+        let grandchild = Tracer.shared(in: core).startSpan(operationName: "grandchild", childOf: child.context)
         grandchild.finish()
         child.finish()
         parent.finish()
@@ -86,6 +86,130 @@ class HeadBasedSamplingTests: XCTestCase {
         guard spans.isEmpty else {
             XCTAssertEqual(spans.filter({ $0.samplingPriority.isKept }).count, 3, "All spans must be either kept or dropped")
             return
+        }
+    }
+
+    func testManuallyKeepLocalTrace() throws {
+        /*
+         This is the basic situation of local trace with 3 spans:
+
+         client-ios-app:     [-------- parent -----------]   |
+         client-ios-app:        [----- child --------]       | all 3: manual keep
+         client-ios-app:           [-- grandchild --]        |
+         */
+        let localTraceSampling: SampleRate = 0 // Drop
+
+        // Given
+        traceConfig.sampleRate = localTraceSampling
+        Trace.enable(with: traceConfig, in: core)
+
+        // When
+        let parent = Tracer.shared(in: core).startSpan(operationName: "parent")
+        parent.setTag(key: SpanTags.manualKeep, value: true)
+        let child = Tracer.shared(in: core).startSpan(operationName: "child", childOf: parent.context)
+        let grandchild = Tracer.shared(in: core).startSpan(operationName: "grandchild", childOf: child.context)
+        grandchild.finish()
+        child.finish()
+        parent.finish()
+
+        let spans = core.waitAndReturnSpanEvents()
+
+        XCTAssertEqual(spans.count, 3)
+        spans.forEach { span in
+            XCTAssertEqual(span.samplingPriority, .manualKeep)
+            XCTAssertEqual(span.samplingDecisionMaker, .manual)
+        }
+    }
+
+    func testManuallyDropLocalTrace() throws {
+        /*
+         This is the basic situation of local trace with 3 spans:
+
+         client-ios-app:     [-------- parent -----------]   |
+         client-ios-app:        [----- child --------]       | all 3: manual drop
+         client-ios-app:           [-- grandchild --]        |
+         */
+        let localTraceSampling: SampleRate = 100 // Keep
+
+        // Given
+        traceConfig.sampleRate = localTraceSampling
+        Trace.enable(with: traceConfig, in: core)
+
+        // When
+        let parent = Tracer.shared(in: core).startSpan(operationName: "parent")
+        parent.setTag(key: SpanTags.manualDrop, value: true)
+        let child = Tracer.shared(in: core).startSpan(operationName: "child", childOf: parent.context)
+        let grandchild = Tracer.shared(in: core).startSpan(operationName: "grandchild", childOf: child.context)
+        grandchild.finish()
+        child.finish()
+        parent.finish()
+
+        let spans = core.waitAndReturnSpanEvents()
+
+        XCTAssertEqual(spans.count, 0)
+    }
+
+    func testManuallyDropChildLocalTrace() throws {
+        /*
+         This is the basic situation of local trace with 3 spans:
+
+         client-ios-app:     [-------- parent -----------]   | keep
+         client-ios-app:        [----- child --------]       | manual drop
+         client-ios-app:           [-- grandchild --]        | manual drop
+         */
+        let localTraceSampling: SampleRate = 100 // Keep
+
+        // Given
+        traceConfig.sampleRate = localTraceSampling
+        Trace.enable(with: traceConfig, in: core)
+
+        // When
+        let parent = Tracer.shared(in: core).startSpan(operationName: "parent")
+        let child = Tracer.shared(in: core).startSpan(operationName: "child", childOf: parent.context)
+        child.setTag(key: SpanTags.manualDrop, value: true)
+        let grandchild = Tracer.shared(in: core).startSpan(operationName: "grandchild", childOf: child.context)
+        grandchild.finish()
+        child.finish()
+        parent.finish()
+
+        let spans = core.waitAndReturnSpanEvents()
+
+        XCTAssertEqual(spans.count, 1)
+        spans.forEach { span in
+            XCTAssertEqual(span.samplingPriority, .autoKeep)
+            XCTAssertEqual(span.samplingDecisionMaker, .agentRate)
+        }
+    }
+
+    func testManuallyKeepChildLocalTrace() throws {
+        /*
+         This is the basic situation of local trace with 3 spans:
+
+         client-ios-app:     [-------- parent -----------]   | drop
+         client-ios-app:        [----- child --------]       | manual keep
+         client-ios-app:           [-- grandchild --]        | manual keep
+         */
+        let localTraceSampling: SampleRate = 0 // Drop
+
+        // Given
+        traceConfig.sampleRate = localTraceSampling
+        Trace.enable(with: traceConfig, in: core)
+
+        // When
+        let parent = Tracer.shared(in: core).startSpan(operationName: "parent")
+        let child = Tracer.shared(in: core).startSpan(operationName: "child", childOf: parent.context)
+        child.setTag(key: SpanTags.manualKeep, value: true)
+        let grandchild = Tracer.shared(in: core).startSpan(operationName: "grandchild", childOf: child.context)
+        grandchild.finish()
+        child.finish()
+        parent.finish()
+
+        let spans = core.waitAndReturnSpanEvents()
+
+        XCTAssertEqual(spans.count, 2)
+        spans.forEach { span in
+            XCTAssertEqual(span.samplingPriority, .manualKeep)
+            XCTAssertEqual(span.samplingDecisionMaker, .manual)
         }
     }
 
@@ -184,8 +308,9 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         let span = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
-        let request = try sendURLSessionRequest(to: "https://foo.com/request", using: InstrumentedSessionDelegate())
-        span.finish()
+        let request = try sendURLSessionRequest(to: "https://foo.com/request", using: InstrumentedSessionDelegate()) {
+            span.finish()
+        }
 
         // Then
         let spanEvents = core.waitAndReturnSpanEvents()
@@ -232,8 +357,9 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         let span = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
-        let request = try sendURLSessionRequest(to: "https://foo.com/request", using: InstrumentedSessionDelegate())
-        span.finish()
+        let request = try sendURLSessionRequest(to: "https://foo.com/request", using: InstrumentedSessionDelegate()) {
+            span.finish()
+        }
 
         // Then
         let spanEvents = core.waitAndReturnSpanEvents()
@@ -245,6 +371,45 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertNotNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
         XCTAssertNotNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField))
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
+    }
+
+    func testSendingDroppedDistributedTraceWithParent_throughURLSessionInstrumentationAPI_noInjection() throws {
+        /*
+         This is the situation where distributed trace starts with an active local span and is continued with the span
+         created with DatadogTrace network instrumentation:
+
+         client-ios-app:     [-------- active.span -----------]   manual drop
+         dd-sdk-ios:            [--- urlsession.request ---]      manual drop
+         client backend:           [--- backend span ---]         server decision
+         */
+
+        let localTraceSampling: SampleRate = .maxSampleRate // keep all
+        let distributedTraceSampling: SampleRate = .maxSampleRate // keep all
+
+        // Given
+        traceConfig.sampleRate = localTraceSampling
+        traceConfig.urlSessionTracking = .init(
+            firstPartyHostsTracing: .trace(hosts: ["foo.com"], sampleRate: distributedTraceSampling, traceControlInjection: .sampled)
+        )
+        Trace.enable(with: traceConfig, in: core)
+        URLSessionInstrumentation.enable(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
+
+        // When
+        let span = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
+        span.setTag(key: SpanTags.manualDrop, value: true)
+        let request = try sendURLSessionRequest(to: "https://foo.com/request", using: InstrumentedSessionDelegate()) {
+            span.finish()
+        }
+
+        // Then
+        let spanEvents = core.waitAndReturnSpanEvents()
+        XCTAssertEqual(spanEvents.count, 0)
+
+        // Then
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField))
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField))
     }
 
     // MARK: - Distributed Tracing (through Tracer API)
@@ -409,11 +574,27 @@ class HeadBasedSamplingTests: XCTestCase {
 
     /// Sends request to `url` using real `URLSession` instrumented with provided `delegate`.
     /// It returns the actual request that was sent to the server which can include additional headers set by the SDK.
-    private func sendURLSessionRequest(to url: String, using delegate: URLSessionDelegate) throws -> URLRequest {
+    ///
+    /// - Important: `completionHandler` runs as part of `session.dataTask`'s completion handler.
+    /// This is useful to finish active (or parent) spans in a more realistic way (see usages of this function). Here's the
+    /// problem this solves: if the call to `span.finish()` is done after calling this function, it will only run after the
+    /// entire request completes, since `waitForExpectations(timeout: 5)` blocks the execution of the main thread.
+    /// This does not happen on real applications, where a span would be closed either immediately after the request begins
+    /// (but before the response arrives) or in the completion handler. Either of them runs *before* our interception
+    /// completion (`DatadogURLSessionHandler.interceptionDidComplete(interception:)`).
+    /// Why is this important? Because a span is (maybe) created on that method. In real applications, a possible
+    /// active or parent span would have already been gone when that method runs. But in these tests, the opposite
+    /// would occur if the call to finish the span comes after `waitForExpectations`. This changes the context
+    /// used for the creation of spans by default. By passing a call to finish a span as a completion handler, we better
+    /// mimic how this APIs are used.
+    private func sendURLSessionRequest(to url: String, using delegate: URLSessionDelegate, completionHandler: (() -> Void)? = nil) throws -> URLRequest {
         let server = ServerMock(delivery: .success(response: .mockAny(), data: .mockAny()))
         let session = server.getInterceptedURLSession(delegate: delegate)
         let taskCompleted = expectation(description: "wait for task completion")
-        let task = session.dataTask(with: .mockWith(url: URL(string: url)!)) { _, _, _ in taskCompleted.fulfill() }
+        let task = session.dataTask(with: .mockWith(url: URL(string: url)!)) { _, _, _ in
+            completionHandler?()
+            taskCompleted.fulfill()
+        }
         task.resume()
         waitForExpectations(timeout: 5)
 

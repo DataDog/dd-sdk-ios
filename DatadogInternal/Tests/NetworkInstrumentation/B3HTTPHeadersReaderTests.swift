@@ -17,6 +17,8 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertEqual(ids?.traceID, 1_234)
         XCTAssertEqual(ids?.spanID, 2_345)
         XCTAssertEqual(ids?.parentSpanID, 5_678)
+        XCTAssertEqual(reader.samplingPriority, .autoKeep)
+        XCTAssertNil(reader.samplingDecisionMaker)
     }
 
     func testItReadsSingleHeaderWithSampling() {
@@ -27,6 +29,8 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(ids?.traceID)
         XCTAssertNil(ids?.spanID)
         XCTAssertNil(ids?.parentSpanID)
+        XCTAssertEqual(reader.samplingPriority, .autoDrop)
+        XCTAssertNil(reader.samplingDecisionMaker)
     }
 
     func testItReadsSingleHeaderWithoutOptionalValues() {
@@ -37,6 +41,8 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertEqual(ids?.traceID, 1_234)
         XCTAssertEqual(ids?.spanID, 2_345)
         XCTAssertNil(ids?.parentSpanID)
+        XCTAssertEqual(reader.samplingPriority, .autoKeep)
+        XCTAssertNil(reader.samplingDecisionMaker)
     }
 
     func testItReadsMultipleHeader() {
@@ -52,6 +58,8 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertEqual(ids?.traceID, 1_234)
         XCTAssertEqual(ids?.spanID, 2_345)
         XCTAssertEqual(ids?.parentSpanID, 5_678)
+        XCTAssertEqual(reader.samplingPriority, .autoKeep)
+        XCTAssertNil(reader.samplingDecisionMaker)
     }
 
     func testItReadsMultipleHeaderWithSampling() {
@@ -64,6 +72,8 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(ids?.traceID)
         XCTAssertNil(ids?.spanID)
         XCTAssertNil(ids?.parentSpanID)
+        XCTAssertEqual(reader.samplingPriority, .autoDrop)
+        XCTAssertNil(reader.samplingDecisionMaker)
     }
 
     func testItReadsMultipleHeaderWithoutOptionalValues() {
@@ -77,6 +87,8 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertEqual(ids?.traceID, 1_234)
         XCTAssertEqual(ids?.spanID, 2_345)
         XCTAssertNil(ids?.parentSpanID)
+        XCTAssertNil(reader.samplingPriority)
+        XCTAssertNil(reader.samplingDecisionMaker)
     }
 
     func testReadingSampledTraceContext() {

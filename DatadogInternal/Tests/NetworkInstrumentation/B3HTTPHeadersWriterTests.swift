@@ -49,6 +49,46 @@ class B3HTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[B3HTTPHeaders.Single.b3Field], "00000000000004d200000000000004d2-0000000000000929-0-000000000000162e")
     }
 
+    func testWritingManuallyKeptTraceContext_withSingleEncoding_andAutoSamplingStrategy() {
+        let writer = B3HTTPHeadersWriter(
+            injectEncoding: .single,
+            traceContextInjection: .all
+        )
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                parentSpanID: 5_678,
+                samplingPriority: .manualKeep,
+                samplingDecisionMaker: .manual
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertEqual(headers[B3HTTPHeaders.Single.b3Field], "00000000000004d200000000000004d2-0000000000000929-1-000000000000162e")
+    }
+
+    func testWritingManuallyDroppedTraceContext_withSingleEncoding_andAutoSamplingStrategy() {
+        let writer = B3HTTPHeadersWriter(
+            injectEncoding: .single,
+            traceContextInjection: .all
+        )
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                parentSpanID: 5_678,
+                samplingPriority: .manualDrop,
+                samplingDecisionMaker: .manual
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertEqual(headers[B3HTTPHeaders.Single.b3Field], "00000000000004d200000000000004d2-0000000000000929-0-000000000000162e")
+    }
+
     func testWritingSampledTraceContext_withSingleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
             injectEncoding: .single,
@@ -82,6 +122,46 @@ class B3HTTPHeadersWriterTests: XCTestCase {
                 parentSpanID: 5_678,
                 samplingPriority: .autoDrop,
                 samplingDecisionMaker: .agentRate
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertNil(headers[B3HTTPHeaders.Single.b3Field])
+    }
+
+    func testWritingManuallyKeptTraceContext_withSingleEncoding_andCustomSamplingStrategy() {
+        let writer = B3HTTPHeadersWriter(
+            injectEncoding: .single,
+            traceContextInjection: .sampled
+        )
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                parentSpanID: 5_678,
+                samplingPriority: .manualKeep,
+                samplingDecisionMaker: .manual
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertEqual(headers[B3HTTPHeaders.Single.b3Field], "00000000000004d200000000000004d2-0000000000000929-1-000000000000162e")
+    }
+
+    func testWritingManuallyDroppedTraceContext_withSingleEncoding_andCustomSamplingStrategy() {
+        let writer = B3HTTPHeadersWriter(
+            injectEncoding: .single,
+            traceContextInjection: .sampled
+        )
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                parentSpanID: 5_678,
+                samplingPriority: .manualDrop,
+                samplingDecisionMaker: .manual
             )
         )
 
@@ -154,10 +234,56 @@ class B3HTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.parentSpanIDField], "000000000000162e")
     }
 
-    func testWritingSampledTraceContext_withMultipleEncoding_andCustomSamplingStrategy() {
+    func testWritingManuallyKeptTraceContext_withMultipleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
             injectEncoding: .multiple,
             traceContextInjection: .all
+        )
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                parentSpanID: 5_678,
+                samplingPriority: .manualKeep,
+                samplingDecisionMaker: .manual
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.traceIDField], "00000000000004d200000000000004d2")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.spanIDField], "0000000000000929")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.sampledField], "1")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.parentSpanIDField], "000000000000162e")
+    }
+
+    func testWritingManuallyDroppedTraceContext_withMultipleEncoding_andAutoSamplingStrategy() {
+        let writer = B3HTTPHeadersWriter(
+            injectEncoding: .multiple,
+            traceContextInjection: .all
+        )
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                parentSpanID: 5_678,
+                samplingPriority: .manualDrop,
+                samplingDecisionMaker: .manual
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.traceIDField], "00000000000004d200000000000004d2")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.spanIDField], "0000000000000929")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.sampledField], "0")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.parentSpanIDField], "000000000000162e")
+    }
+
+    func testWritingSampledTraceContext_withMultipleEncoding_andCustomSamplingStrategy() {
+        let writer = B3HTTPHeadersWriter(
+            injectEncoding: .multiple,
+            traceContextInjection: .sampled
         )
 
         writer.write(
@@ -180,7 +306,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
     func testWritingDroppedTraceContext_withMultipleEncoding_andCustomSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
             injectEncoding: .multiple,
-            traceContextInjection: .all
+            traceContextInjection: .sampled
         )
 
         writer.write(
@@ -194,10 +320,56 @@ class B3HTTPHeadersWriterTests: XCTestCase {
         )
 
         let headers = writer.traceHeaderFields
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.traceIDField])
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.spanIDField])
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.sampledField])
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.parentSpanIDField])
+    }
+
+    func testWritingManuallyKeptTraceContext_withMultipleEncoding_andCustomSamplingStrategy() {
+        let writer = B3HTTPHeadersWriter(
+            injectEncoding: .multiple,
+            traceContextInjection: .sampled
+        )
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                parentSpanID: 5_678,
+                samplingPriority: .manualKeep,
+                samplingDecisionMaker: .manual
+            )
+        )
+
+        let headers = writer.traceHeaderFields
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.traceIDField], "00000000000004d200000000000004d2")
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.spanIDField], "0000000000000929")
-        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.sampledField], "0")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.sampledField], "1")
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.parentSpanIDField], "000000000000162e")
+    }
+
+    func testWritingManuallyDroppedTraceContext_withMultipleEncoding_andCustomSamplingStrategy() {
+        let writer = B3HTTPHeadersWriter(
+            injectEncoding: .multiple,
+            traceContextInjection: .sampled
+        )
+
+        writer.write(
+            traceContext: .mockWith(
+                traceID: .init(idHi: 1_234, idLo: 1_234),
+                spanID: 2_345,
+                parentSpanID: 5_678,
+                samplingPriority: .manualDrop,
+                samplingDecisionMaker: .manual
+            )
+        )
+
+        let headers = writer.traceHeaderFields
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.traceIDField])
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.spanIDField])
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.sampledField])
+        XCTAssertNil(headers[B3HTTPHeaders.Multiple.parentSpanIDField])
     }
 
     func testItWritesMultipleHeaderWithoutOptionalValues() {

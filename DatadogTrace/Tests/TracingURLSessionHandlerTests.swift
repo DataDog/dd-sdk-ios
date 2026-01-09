@@ -237,6 +237,154 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(injectedTraceContext.samplingPriority.isKept, span.context.dd.samplingDecision.samplingPriority.isKept)
     }
 
+    func testGivenFirstPartyInterception_withActiveManuallyKeptSpan_itInjectExpectedHeaders() throws {
+        // Given
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init(),
+            traceContextInjection: .all
+        )
+
+        let span = tracer.startRootSpan(operationName: "root")
+        span.setActive()
+        span.setTag(key: SpanTags.manualKeep, value: true)
+
+        // When
+        let (request, traceContext) = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [
+                .datadog,
+                .b3,
+                .b3multi,
+                .tracecontext
+            ],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        span.finish()
+
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "100")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a,_dd.p.dm=-4")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "101")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "2")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000065")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField), "0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000065-1-0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000065-01")
+
+        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+        XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
+        XCTAssertEqual(injectedTraceContext.spanID, 101)
+        XCTAssertEqual(injectedTraceContext.parentSpanID, span.context.dd.spanID)
+        XCTAssertEqual(injectedTraceContext.sampleRate, span.context.dd.sampleRate)
+        XCTAssertEqual(injectedTraceContext.samplingPriority.isKept, span.context.dd.samplingDecision.samplingPriority.isKept)
+    }
+
+    func testGivenFirstPartyInterception_withActiveManuallyDroppedSpanAndInjectingAll_itInjectExpectedHeaders() throws {
+        // Given
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init(),
+            traceContextInjection: .all
+        )
+
+        let span = tracer.startRootSpan(operationName: "root")
+        span.setActive()
+        span.setTag(key: SpanTags.manualDrop, value: true)
+
+        // When
+        let (request, traceContext) = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [
+                .datadog,
+                .b3,
+                .b3multi,
+                .tracecontext
+            ],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        span.finish()
+
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "100")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "101")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "-1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000065")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField), "0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "0")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000065-0-0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000065-00")
+
+        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+        XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
+        XCTAssertEqual(injectedTraceContext.spanID, 101)
+        XCTAssertEqual(injectedTraceContext.parentSpanID, span.context.dd.spanID)
+        XCTAssertEqual(injectedTraceContext.sampleRate, span.context.dd.sampleRate)
+        XCTAssertEqual(injectedTraceContext.samplingPriority.isKept, span.context.dd.samplingDecision.samplingPriority.isKept)
+    }
+
+    func testGivenFirstPartyInterception_withActiveManuallyDroppedSpanAndInjectingSampled_itDoesNotInjectTraceHeaders() throws {
+        // Given
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: 0,
+            firstPartyHosts: .init(),
+            traceContextInjection: .sampled
+        )
+
+        let span = tracer.startRootSpan(operationName: "root")
+        span.setActive()
+        span.setTag(key: SpanTags.manualDrop, value: true)
+
+        // When
+        let (request, traceContext) = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [
+                .datadog,
+                .b3,
+                .b3multi,
+                .tracecontext
+            ],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField))
+        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField))
+        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field))
+        XCTAssertNil(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent))
+
+        XCTAssertNil(traceContext, "It must return no trace context")
+    }
+
     func testGivenFirstPartyInterceptionWithSpanContext_whenInterceptionCompletes_itUsesInjectedSpanContext() throws {
         let expectation = expectation(description: "Send span")
         core.onEventWriteContext = { _ in expectation.fulfill() }
