@@ -324,54 +324,13 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 }
 
 extension NetworkInstrumentationFeature {
-    /// Checks if a URLRequest is an SDK internal request that should not be tracked.
-    ///
-    /// Uses two filtering mechanisms:
-    /// 1. **Domain-based filtering**: Checks for production Datadog intake domains (datadoghq.com, datad0g.com)
-    /// 2. **Header-based filtering**: Checks for DD-REQUEST-ID header present in all SDK upload requests
-    ///
-    /// The header-based check is necessary for custom endpoints used in tests (e.g., in `RUMResourcesScenarioTests` in our UI Integration tests),
-    /// where SDK upload requests would otherwise be tracked as RUM resources.
+    /// Checks if a URLRequest is an SDK internal request that should not be tracked
     ///
     /// - Parameter request: The URLRequest to check.
     /// - Returns: `true` if the request is an SDK internal request, `false` otherwise.
-    ///
-    ///   Will be filtered (SDK domains):
-    ///     - browser-intake-datadoghq.com
-    ///     - instrumentation.datadoghq.com
-    ///     - logs.browser-intake-datadoghq.com
-    ///
-    ///   Will NOT be filtered (public domains):
-    ///     - imgix.datadoghq.com (CDN - no "intake" or "instrumentation")
-    ///     - www.datadoghq.com (website)
     private func isDatadogIntakeRequest(_ request: URLRequest?) -> Bool {
-        // Check domain
-        if isDatadogIntakeRequest(request?.url) {
-            return true
-        }
-
         // Check for DD-REQUEST-ID header (present in all SDK upload requests, including custom endpoints)
         return request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddRequestIDHeaderField) != nil
-    }
-
-    /// Checks if the given URL is a Datadog intake request to prevent infinite recursion.
-    ///
-    /// - Parameter url: The URL to check.
-    /// - Returns: `true` if the URL is a Datadog intake request, `false` otherwise.
-    private func isDatadogIntakeRequest(_ url: URL?) -> Bool {
-        guard let host = url?.host else {
-            return false
-        }
-
-        // Filter Datadog intake domains
-        // Must contain "intake" or "instrumentation" to avoid false positives (e.g., imgix.datadoghq.com)
-        let isDatadogDomain = host.hasSuffix("datadoghq.com")
-                           || host.hasSuffix("datadoghq.eu")
-                           || host.hasSuffix("ddog-gov.com")
-                           || host.hasSuffix("datad0g.com")
-        let isIntakeOrInstrumentation = host.contains("intake") || host.contains("instrumentation")
-
-        return isDatadogDomain && isIntakeOrInstrumentation
     }
 
     /// Intercepts the provided request by injecting trace headers based on first-party hosts configuration.
@@ -543,7 +502,7 @@ extension NetworkInstrumentationFeature {
     ///
     /// - Parameters:
     ///   - task: The task whose state has changed.
-    ///   - state: The new state of the task (0=Suspended, 1=Running, 2=Canceling, 3=Completed).
+    ///   - state: The new state of the task (maps to URLSessionTask.State).
     internal func task(_ task: URLSessionTask, didChangeToState state: Int) {
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
