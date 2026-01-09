@@ -82,7 +82,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
         // while merging, the tracestate values from the tracestate property take precedence
         // over the ones from the trace context
         let tracestate: [String: String] = [
-            Constants.sampling: "\(sampled ? 1 : 0)",
+            Constants.sampling: "\(traceContext.samplingPriority.rawValue)",
             Constants.parentId: String(traceContext.spanID, representation: .hexadecimal16Chars)
         ].merging(tracestate) { old, new in
             return new
