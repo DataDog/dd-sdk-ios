@@ -15,10 +15,19 @@ protocol Scenario {
     /// The initial view-controller of the scenario
     var initialViewController: UIViewController { get }
 
+    /// Prewarm the application before an instrumented run.
+    ///
+    /// - Parameter info: The application information to use during prewarming.
+    func prewarm(with info: AppInfo)
+
     /// Start instrumenting the application by enabling the Datadog SDK and
     /// its Features.
     ///
     /// - Parameter info: The application information to use during SDK
     /// initialisation.
     func instrument(with info: AppInfo)
+}
+
+extension Scenario {
+    func prewarm(with info: AppInfo) {}
 }

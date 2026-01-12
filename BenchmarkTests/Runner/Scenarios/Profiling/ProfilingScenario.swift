@@ -16,6 +16,15 @@ struct ProfilingScenario: Scenario {
         UIHostingController(rootView: ProfilingAppLaunchView())
     }
 
+    func prewarm(with info: AppInfo) {
+        Datadog.initialize(
+            with: .benchmark(info: info),
+            trackingConsent: .granted
+        )
+
+        Profiling.enable(with: .init(sampleRate: 100))
+    }
+
     func instrument(with info: AppInfo) {
         Datadog.initialize(
             with: .benchmark(info: info),

@@ -62,18 +62,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         run: SyntheticRun
     ) {
         switch run {
-        case .baseline, .instrumented:
+        case .baseline:
             collectApplicationVitals(scenario: scenario, run: run)
+        case .instrumented:
+            collectApplicationVitals(scenario: scenario, run: run)
+            scenario.instrument(with: applicationInfo)
+        case .prewarming:
+            scenario.prewarm(with: applicationInfo)
         case .profiling:
             profileSDK(scenario: scenario, run: run)
         case .none:
             break
-        }
-
-        if run != .baseline {
-            // instrument the application with Datadog SDK
-            // when not in baseline run
-            scenario.instrument(with: applicationInfo)
         }
 
         window?.rootViewController = scenario.initialViewController
