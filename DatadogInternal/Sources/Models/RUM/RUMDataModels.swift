@@ -4100,7 +4100,7 @@ public struct RUMResourceEvent: RUMDataModel {
             public let operationName: String?
 
             /// Type of the GraphQL operation
-            public let operationType: OperationType
+            public let operationType: OperationType?
 
             /// Content of the GraphQL operation
             public var payload: String?
@@ -4130,7 +4130,7 @@ public struct RUMResourceEvent: RUMDataModel {
                 errorCount: Int64? = nil,
                 errors: [Errors]? = nil,
                 operationName: String? = nil,
-                operationType: OperationType,
+                operationType: OperationType? = nil,
                 payload: String? = nil,
                 variables: String? = nil
             ) {
@@ -6938,7 +6938,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
     public let version: String?
 
     /// View properties
-    public var view: View?
+    public var view: View
 
     /// Vital properties
     public let vital: Vital
@@ -7018,7 +7018,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
         synthetics: RUMSyntheticsTest? = nil,
         usr: RUMUser? = nil,
         version: String? = nil,
-        view: View? = nil,
+        view: View,
         vital: Vital
     ) {
         self.dd = dd
@@ -11313,6 +11313,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
             /// Schema of mobile specific features usage
             public enum TelemetryMobileFeaturesUsage: Codable {
                 case addViewLoadingTime(value: AddViewLoadingTime)
+                case trackWebView(value: TrackWebView)
 
                 // MARK: - Codable
 
@@ -11323,6 +11324,8 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     switch self {
                     case .addViewLoadingTime(let value):
                         try container.encode(value)
+                    case .trackWebView(let value):
+                        try container.encode(value)
                     }
                 }
 
@@ -11332,6 +11335,10 @@ public struct TelemetryUsageEvent: RUMDataModel {
 
                     if let value = try? container.decode(AddViewLoadingTime.self) {
                         self = .addViewLoadingTime(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(TrackWebView.self) {
+                        self = .trackWebView(value: value)
                         return
                     }
                     let error = DecodingError.Context(
@@ -11378,6 +11385,17 @@ public struct TelemetryUsageEvent: RUMDataModel {
                         self.noView = noView
                         self.overwritten = overwritten
                     }
+                }
+
+                public struct TrackWebView: Codable {
+                    /// trackWebView API
+                    public let feature: String = "trackWebView"
+
+                    public enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+
+                    public init() { }
                 }
             }
         }
@@ -11438,4 +11456,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/660240b89bc832be7d7de9f7b880498357359e51
+// Generated from https://github.com/DataDog/rum-events-format/tree/814fb65f8c4ccaa01c3ddd40a594faaaf28be43d

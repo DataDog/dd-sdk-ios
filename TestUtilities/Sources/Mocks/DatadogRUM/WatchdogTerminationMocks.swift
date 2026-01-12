@@ -92,7 +92,11 @@ public final class WatchdogTerminationReporterMock: WatchdogTerminationReporting
 
 extension WatchdogTerminationReporter: RandomMockable {
     public static func mockRandom() -> Self {
-        return .init(featureScope: FeatureScopeMock(), dateProvider: DateProviderMock())
+        .init(
+            featureScope: FeatureScopeMock(),
+            dateProvider: DateProviderMock(),
+            uuidGenerator: RUMUUIDGeneratorMock()
+        )
     }
 }
 

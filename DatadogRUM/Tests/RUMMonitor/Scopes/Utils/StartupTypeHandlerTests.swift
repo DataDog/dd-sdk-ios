@@ -15,7 +15,7 @@ final class StartupTypeHandlerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         appStateManager = AppStateManagerMock()
-        handler = StartupTypeHandler(appStateManager: appStateManager)
+        handler = StartupTypeHandler(appStateManager: appStateManager, telemetryController: .init())
     }
 
     override func tearDown() {

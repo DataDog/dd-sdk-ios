@@ -5085,22 +5085,25 @@ public class objc_RUMResourceEventResourceGraphqlErrorsPath: NSObject {
 @objc(DDRUMResourceEventResourceGraphqlOperationType)
 @_spi(objc)
 public enum objc_RUMResourceEventResourceGraphqlOperationType: Int {
-    internal init(swift: RUMResourceEvent.Resource.Graphql.OperationType) {
+    internal init(swift: RUMResourceEvent.Resource.Graphql.OperationType?) {
         switch swift {
-        case .query: self = .query
-        case .mutation: self = .mutation
-        case .subscription: self = .subscription
+        case nil: self = .none
+        case .query?: self = .query
+        case .mutation?: self = .mutation
+        case .subscription?: self = .subscription
         }
     }
 
-    internal var toSwift: RUMResourceEvent.Resource.Graphql.OperationType {
+    internal var toSwift: RUMResourceEvent.Resource.Graphql.OperationType? {
         switch self {
+        case .none: return nil
         case .query: return .query
         case .mutation: return .mutation
         case .subscription: return .subscription
         }
     }
 
+    case none
     case query
     case mutation
     case subscription
@@ -7659,8 +7662,8 @@ public class objc_RUMVitalAppLaunchEvent: NSObject {
         root.swiftModel.version
     }
 
-    public var view: objc_RUMVitalAppLaunchEventView? {
-        root.swiftModel.view != nil ? objc_RUMVitalAppLaunchEventView(root: root) : nil
+    public var view: objc_RUMVitalAppLaunchEventView {
+        objc_RUMVitalAppLaunchEventView(root: root)
     }
 
     public var vital: objc_RUMVitalAppLaunchEventVital {
@@ -8520,22 +8523,22 @@ public class objc_RUMVitalAppLaunchEventView: NSObject {
     }
 
     public var id: String {
-        root.swiftModel.view!.id
+        root.swiftModel.view.id
     }
 
     public var name: String? {
-        set { root.swiftModel.view!.name = newValue }
-        get { root.swiftModel.view!.name }
+        set { root.swiftModel.view.name = newValue }
+        get { root.swiftModel.view.name }
     }
 
     public var referrer: String? {
-        set { root.swiftModel.view!.referrer = newValue }
-        get { root.swiftModel.view!.referrer }
+        set { root.swiftModel.view.referrer = newValue }
+        get { root.swiftModel.view.referrer }
     }
 
     public var url: String {
-        set { root.swiftModel.view!.url = newValue }
-        get { root.swiftModel.view!.url }
+        set { root.swiftModel.view.url = newValue }
+        get { root.swiftModel.view.url }
     }
 }
 
@@ -12048,4 +12051,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/660240b89bc832be7d7de9f7b880498357359e51
+// Generated from https://github.com/DataDog/rum-events-format/tree/814fb65f8c4ccaa01c3ddd40a594faaaf28be43d

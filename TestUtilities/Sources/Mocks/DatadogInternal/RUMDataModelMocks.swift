@@ -759,6 +759,52 @@ extension RUMVitalOperationStepEvent: RandomMockable {
     }
 }
 
+extension RUMVitalDurationEvent: RandomMockable {
+    public static func mockRandom() -> Self {
+        return RUMVitalDurationEvent(
+            dd: .init(),
+            application: .init(id: .mockRandom()),
+            date: .mockRandom(),
+            session: .init(id: .mockRandom(), type: .user),
+            view: .init(id: .mockRandom(), url: .mockRandom()),
+            vital: .mockRandom()
+        )
+    }
+}
+
+extension RUMVitalAppLaunchEvent: RandomMockable, AnyMockable {
+    public static func mockRandom() -> Self {
+        return RUMVitalAppLaunchEvent(
+            dd: .init(),
+            application: .init(id: .mockRandom()),
+            date: .mockRandom(),
+            session: .init(id: .mockRandom(), type: .user),
+            view: .init(id: .mockRandom(), url: .mockRandom()),
+            vital: .mockRandom()
+        )
+    }
+
+    public static func mockAny() -> Self { .mockWith() }
+
+    public static func mockWith(
+        dd: DD = .init(),
+        application: Application = .init(id: .mockAny()),
+        date: Int64 = .mockAny(),
+        session: Session = .init(id: .mockAny(), type: .user),
+        view: View = .init(id: .mockAny(), url: .mockAny()),
+        vital: Vital = .mockAny()
+    ) -> Self {
+        .init(
+            dd: dd,
+            application: application,
+            date: date,
+            session: session,
+            view: view,
+            vital: vital
+        )
+    }
+}
+
 extension RUMVitalDurationEvent.Vital: RandomMockable {
     public static func mockRandom() -> Self {
         .init(
@@ -769,7 +815,7 @@ extension RUMVitalDurationEvent.Vital: RandomMockable {
     }
 }
 
-extension RUMVitalAppLaunchEvent.Vital: RandomMockable {
+extension RUMVitalAppLaunchEvent.Vital: RandomMockable, AnyMockable {
     public static func mockRandom() -> Self {
         .init(
             appLaunchMetric: .mockRandom(),
@@ -778,6 +824,26 @@ extension RUMVitalAppLaunchEvent.Vital: RandomMockable {
             isPrewarmed: .mockRandom(),
             name: .mockRandom(),
             startupType: .mockRandom()
+        )
+    }
+
+    public static func mockAny() -> Self { .mockWith() }
+
+    public static func mockWith(
+        appLaunchMetric: AppLaunchMetric = .ttid,
+        duration: Double = .mockAny(),
+        id: String = .mockAny(),
+        isPrewarmed: Bool? = .mockAny(),
+        name: String? = .mockAny(),
+        startupType: StartupType? = .coldStart
+    ) -> Self {
+        .init(
+            appLaunchMetric: appLaunchMetric,
+            duration: duration,
+            id: id,
+            isPrewarmed: isPrewarmed,
+            name: name,
+            startupType: startupType
         )
     }
 }

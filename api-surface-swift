@@ -408,6 +408,7 @@ public enum RUM
         public var customEndpoint: URL?
         public var trackAnonymousUser: Bool
         public var trackMemoryWarnings: Bool
+        public var trackSlowFrames: Bool
         public var telemetrySampleRate: SampleRate
         public var collectAccessibility: Bool
         public var featureFlags: FeatureFlags
@@ -424,13 +425,13 @@ public enum RUM
         case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,featureFlags: FeatureFlags = .defaults)
+    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,trackSlowFrames: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
 [?] extension RUM.Configuration
     public typealias FeatureFlags = [FeatureFlag: Bool]
     public enum FeatureFlag: String
-        case viewHitches
+        case none
 [?] extension RUM.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -553,7 +554,7 @@ public struct MediaTimeProvider: CACurrentMediaTimeProvider
 
 public final class CrashReporting
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func enable(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default)
 public static func enable()
 public protocol CrashReportingPlugin: AnyObject
     func readPendingCrashReport(completion: @escaping (DDCrashReport?) -> Bool)
@@ -1238,6 +1239,7 @@ public enum SessionReplay
     public typealias FeatureFlags = [FeatureFlag: Bool]
     public enum FeatureFlag: String
         case swiftui
+        case screenChangeScheduling
 [?] extension SessionReplay.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -1265,6 +1267,15 @@ public final class FlagsClient
 [?] extension FlagsClient: FlagsClientProtocol
     public func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
+[?] extension FlagsClient: FlagsClientInternal
+    public func getFlagAssignments() -> [String: FlagAssignment]?
+    public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+public protocol FlagsClientInternal: AnyObject
+    func getFlagAssignments() -> [String: FlagAssignment]?
+    func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+[?] extension FlagsClientInternal
+    public func getFlagAssignments() -> [String: FlagAssignment]?
+    public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
 public protocol FlagsClientProtocol: AnyObject
     func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)
     func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
@@ -1305,6 +1316,22 @@ public enum AnyValue: Equatable
 [?] extension AnyValue: Codable
     public init(from decoder: Decoder) throws
     public func encode(to encoder: Encoder) throws
+public struct FlagAssignment: Equatable
+    public enum Variation: Equatable
+        case boolean(Bool)
+        case string(String)
+        case integer(Int)
+        case double(Double)
+        case object(AnyValue)
+        case unknown(String)
+    public var allocationKey: String
+    public var variationKey: String
+    public var variation: Variation
+    public var reason: String
+    public var doLog: Bool
+    public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool)
+    public init(from decoder: any Decoder) throws
+    public func encode(to encoder: any Encoder) throws
 public enum FlagEvaluationError: Error
     case providerNotReady
     case flagNotFound

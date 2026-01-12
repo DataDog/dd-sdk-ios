@@ -285,6 +285,13 @@ extension RUM {
         /// Default: `true`.
         public var trackMemoryWarnings: Bool
 
+        /// Enables the collection of slow frames (view hitches).
+        ///
+        /// When enabled, captured view hitches are attached to the corresponding RUM view.
+        ///
+        /// Default: `true`.
+        public var trackSlowFrames: Bool
+
         /// The sampling rate for SDK internal telemetry utilized by Datadog.
         /// This telemetry is used to monitor the internal workings of the entire Datadog iOS SDK.
         ///
@@ -455,6 +462,7 @@ extension RUM.Configuration {
     ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
     ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
     ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`.
+    ///   - trackSlowFrames: Enables the collection of slow frames (view hitches). Default: `true`.
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
     ///   - featureFlags: Experimental feature flags.
@@ -483,6 +491,7 @@ extension RUM.Configuration {
         customEndpoint: URL? = nil,
         trackAnonymousUser: Bool = true,
         trackMemoryWarnings: Bool = true,
+        trackSlowFrames: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
         featureFlags: FeatureFlags = .defaults
@@ -509,10 +518,11 @@ extension RUM.Configuration {
         self.onSessionStart = onSessionStart
         self.customEndpoint = customEndpoint
         self.trackAnonymousUser = trackAnonymousUser
-        self.telemetrySampleRate = telemetrySampleRate
-        self.collectAccessibility = collectAccessibility
         self.trackWatchdogTerminations = trackWatchdogTerminations
         self.trackMemoryWarnings = trackMemoryWarnings
+        self.trackSlowFrames = trackSlowFrames
+        self.telemetrySampleRate = telemetrySampleRate
+        self.collectAccessibility = collectAccessibility
         self.featureFlags = featureFlags
     }
 }
@@ -535,18 +545,13 @@ extension RUM.Configuration {
 
     /// Feature Flag available in RUM
     public enum FeatureFlag: String {
-        /// View Hitches
-        case viewHitches
+        case none
     }
 }
 
 extension RUM.Configuration.FeatureFlags {
     /// The defaults Feature Flags applied to RUM Configuration
-    public static var defaults: Self {
-        [
-            .viewHitches: false
-        ]
-    }
+    public static var defaults: Self { [:] }
 
     /// Accesses the feature flag value.
     ///

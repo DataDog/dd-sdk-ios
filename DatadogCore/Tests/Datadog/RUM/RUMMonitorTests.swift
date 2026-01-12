@@ -316,7 +316,7 @@ class RUMMonitorTests: XCTestCase {
         let views = try session.views.dropApplicationLaunchView()
         let resourceEvent = views[0].resourceEvents[0]
         XCTAssertEqual(resourceEvent.resource.graphql?.operationName, "GetCountry")
-        XCTAssertEqual(resourceEvent.resource.graphql?.operationType.rawValue, "query")
+        XCTAssertEqual(resourceEvent.resource.graphql?.operationType?.rawValue, "query")
         XCTAssertEqual(resourceEvent.resource.graphql?.payload, "{country(code:$code){name}}")
         XCTAssertEqual(resourceEvent.resource.graphql?.variables, "{\"code\":\"BE\"}")
     }

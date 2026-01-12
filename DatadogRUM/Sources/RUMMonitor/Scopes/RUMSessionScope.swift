@@ -51,7 +51,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }()
     /// App launch manager to process TTID and TTFD commands.
     private lazy var appLaunchManager: RUMAppLaunchManager = {
-        RUMAppLaunchManager(parent: self, dependencies: dependencies)
+        RUMAppLaunchManager(
+            parent: self,
+            dependencies: dependencies,
+            telemetryController: AppLaunchMetricController(telemetry: dependencies.telemetry)
+        )
     }()
 
     /// Information about this session state, shared with `CrashContext`.
@@ -247,10 +251,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             case let startViewCommand as RUMStartViewCommand:
                 // Start view scope explicitly on receiving "start view" command
                 startView(on: startViewCommand, context: context)
-
+                appLaunchManager.process(command, context: context, writer: writer)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeViewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
-
+                appLaunchManager.process(command, context: context, writer: writer)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
                     startApplicationLaunchView(on: appLifecycleCommand, context: context, writer: writer)

@@ -71,7 +71,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 feature: featureScope,
                 reporter: WatchdogTerminationReporter(
                     featureScope: featureScope,
-                    dateProvider: configuration.dateProvider
+                    dateProvider: configuration.dateProvider,
+                    uuidGenerator: configuration.uuidGenerator
                 )
             )
             watchdogTermination = monitor
@@ -121,7 +122,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             ),
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
-                configuration.featureFlags[.viewHitches]
+                configuration.trackSlowFrames
                 ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
                 : nil
             },
@@ -143,7 +144,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
                 viewEndedController.add(metric: ViewEndedMetric(tnsConfigPredicate: tnsPredicateType, invConfigPredicate: invPredicateType))
 
-                if configuration.featureFlags[.viewHitches] {
+                if configuration.trackSlowFrames {
                     viewEndedController.add(
                         metric: ViewHitchesMetric(
                             maxCount: ViewHitchesReader.Constants.maxCollectedHitches,
@@ -213,7 +214,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             notificationCenter: configuration.notificationCenter,
             bundleType: bundleType,
             watchdogTermination: watchdogTermination,
-            memoryWarningMonitor: memoryWarningMonitor
+            memoryWarningMonitor: memoryWarningMonitor,
+            uuidGenerator: configuration.uuidGenerator
         )
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,

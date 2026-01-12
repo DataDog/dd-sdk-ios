@@ -1,10 +1,12 @@
-name: Publish Changelog to Confluence
+name: Publish Changelog and Feature Docs to Confluence
 on:
     push:
         branches:
             - develop
         paths:
             - 'CHANGELOG.md'
+            - '/DatadogRUM/RUM_FEATURE.md'
+            - '/DatadogSessionReplay/SESSION_REPLAY_FEATURE.md'
 permissions:
     contents: read
 jobs:
@@ -12,13 +14,19 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
-              uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+              uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-            - name: Prepare Only Changelog
+            - name: Prepare Changelog and Feature Docs
               run: |
                   mkdir -p publish_folder
                   cp CHANGELOG.md publish_folder/dd-ios-sdk-changelog.md
-                  echo "Publishing only CHANGELOG.md"
+                  echo "Publishing CHANGELOG.md"
+                  
+                  cp DatadogRUM/RUM_FEATURE.md publish_folder/dd-sdk-ios-rum-feature.md
+                  echo "Publishing RUM_FEATURE.md"
+                  
+                  cp DatadogSessionReplay/SESSION_REPLAY_FEATURE.md publish_folder/dd-sdk-ios-session-replay-feature.md
+                  echo "Publishing SESSION_REPLAY_FEATURE.md"
 
             - name: Publish Markdown to Confluence
               uses: markdown-confluence/publish-action@7767a0a7f438bb1497ee7ffd7d3d685b81dfe700 # v5

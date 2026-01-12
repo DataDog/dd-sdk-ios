@@ -85,6 +85,7 @@ public enum objc_LogLevel: Int
     case critical
 public final class objc_LogsConfiguration: NSObject
     public var customEndpoint: URL?
+    override public init()
     public init(customEndpoint: URL? = nil)
     public func setEventMapper(_ mapper: @escaping (objc_LogEvent) -> objc_LogEvent?)
 public final class objc_Logs: NSObject
@@ -100,6 +101,7 @@ public final class objc_LoggerConfiguration: NSObject
     public var remoteSampleRate: Float
     public var printLogsToConsole: Bool
     public var remoteLogThreshold: objc_LogLevel
+    override public init()
     public init(service: String? = nil,name: String? = nil,networkInfoEnabled: Bool = false,bundleWithRumEnabled: Bool = true,bundleWithTraceEnabled: Bool = true,remoteSampleRate: SampleRate = .maxSampleRate,remoteLogThreshold: objc_LogLevel = .debug,printLogsToConsole: Bool = false)
 public final class objc_Logger: NSObject
     public func debug(_ message: String)
@@ -1331,6 +1333,7 @@ public class objc_RUMResourceEventResourceGraphqlErrorsPath: NSObject
     public var string: String?
     public var integer: NSNumber?
 public enum objc_RUMResourceEventResourceGraphqlOperationType: Int
+    case none
     case query
     case mutation
     case subscription
@@ -1844,7 +1847,7 @@ public class objc_RUMVitalAppLaunchEvent: NSObject
     public var type: String
     public var usr: objc_RUMVitalAppLaunchEventRUMUser?
     public var version: String?
-    public var view: objc_RUMVitalAppLaunchEventView?
+    public var view: objc_RUMVitalAppLaunchEventView
     public var vital: objc_RUMVitalAppLaunchEventVital
 public class objc_RUMVitalAppLaunchEventDD: NSObject
     public var browserSdkVersion: String?

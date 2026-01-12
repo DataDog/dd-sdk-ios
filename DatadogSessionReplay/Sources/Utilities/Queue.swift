@@ -36,4 +36,14 @@ internal final class BackgroundAsyncQueue: AsyncQueue {
         )
     }
 }
+
+internal final class MainQueue: Queue {
+    func run(_ block: @escaping () -> Void) {
+        if Thread.isMainThread {
+            block()
+        } else {
+            DispatchQueue.main.async(execute: block)
+        }
+    }
+}
 #endif

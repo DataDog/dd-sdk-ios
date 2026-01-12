@@ -20,7 +20,7 @@ public enum LaunchReason: Codable {
 }
 
 /// The phase for app startup.
-public enum LaunchPhase: Codable {
+public enum LaunchPhase: String, Codable {
     case processLaunch
     case runtimeLoad
     case runtimePreMain
