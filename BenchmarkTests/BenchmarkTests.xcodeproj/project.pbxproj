@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		111BAB552F12E89F00B4B492 /* ProfilingScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111BAB542F12E89200B4B492 /* ProfilingScenario.swift */; };
+		111BAB582F12E95200B4B492 /* ProfilingAppLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111BAB572F12E94D00B4B492 /* ProfilingAppLaunchView.swift */; };
+		111BAB5A2F12EAA500B4B492 /* DatadogProfiling in Frameworks */ = {isa = PBXBuildFile; productRef = 111BAB592F12EAA500B4B492 /* DatadogProfiling */; };
 		86252B1B2D818E360098FAEF /* TraceScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86252B1A2D818E360098FAEF /* TraceScenario.swift */; };
 		86252B1D2D8190DA0098FAEF /* TraceContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86252B1C2D8190DA0098FAEF /* TraceContentView.swift */; };
 		8649177D2D8875C300761363 /* RUMManualContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8649177C2D8875C300761363 /* RUMManualContentView.swift */; };
@@ -268,6 +271,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		111BAB542F12E89200B4B492 /* ProfilingScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingScenario.swift; sourceTree = "<group>"; };
+		111BAB572F12E94D00B4B492 /* ProfilingAppLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingAppLaunchView.swift; sourceTree = "<group>"; };
 		86252B1A2D818E360098FAEF /* TraceScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceScenario.swift; sourceTree = "<group>"; };
 		86252B1C2D8190DA0098FAEF /* TraceContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceContentView.swift; sourceTree = "<group>"; };
 		8649177C2D8875C300761363 /* RUMManualContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMManualContentView.swift; sourceTree = "<group>"; };
@@ -517,6 +522,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				111BAB5A2F12EAA500B4B492 /* DatadogProfiling in Frameworks */,
 				D27606A92C514F77002D2A14 /* DatadogLogs in Frameworks */,
 				D27606AF2C514F77002D2A14 /* DatadogTrace in Frameworks */,
 				D294E9402D0880EB009582F3 /* CatalogSwiftUI.framework in Frameworks */,
@@ -531,6 +537,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		111BAB532F12E85900B4B492 /* Profiling */ = {
+			isa = PBXGroup;
+			children = (
+				111BAB562F12E92B00B4B492 /* UI */,
+				111BAB542F12E89200B4B492 /* ProfilingScenario.swift */,
+			);
+			path = Profiling;
+			sourceTree = "<group>";
+		};
+		111BAB562F12E92B00B4B492 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				111BAB572F12E94D00B4B492 /* ProfilingAppLaunchView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
 		86252B182D818DFB0098FAEF /* Trace */ = {
 			isa = PBXGroup;
 			children = (
@@ -828,10 +851,11 @@
 			children = (
 				D276069B2C514F37002D2A14 /* Scenario.swift */,
 				D24BFD462C6B916B00AB9604 /* SyntheticScenario.swift */,
-				D27606992C514F37002D2A14 /* SessionReplay */,
 				86FBEDB72D8C24A9005CFCC4 /* Logs */,
-				86252B182D818DFB0098FAEF /* Trace */,
+				111BAB532F12E85900B4B492 /* Profiling */,
 				86FBEDB32D8C248A005CFCC4 /* RUM */,
+				D27606992C514F37002D2A14 /* SessionReplay */,
+				86252B182D818DFB0098FAEF /* Trace */,
 			);
 			path = Scenarios;
 			sourceTree = "<group>";
@@ -1254,6 +1278,7 @@
 				D27606AC2C514F77002D2A14 /* DatadogSessionReplay */,
 				D27606AE2C514F77002D2A14 /* DatadogTrace */,
 				D23DD32C2C58D80C00B90C4C /* DatadogBenchmarks */,
+				111BAB592F12EAA500B4B492 /* DatadogProfiling */,
 			);
 			productName = Runner;
 			productReference = D29F754D2C4AA07E00288638 /* Runner.app */;
@@ -1528,6 +1553,7 @@
 				86FBEDDD2D8C491E005CFCC4 /* EpisodeDetailViewController.swift in Sources */,
 				86252B1D2D8190DA0098FAEF /* TraceContentView.swift in Sources */,
 				86FBEDD12D8C2B04005CFCC4 /* LocationCollectionViewCell.swift in Sources */,
+				111BAB552F12E89F00B4B492 /* ProfilingScenario.swift in Sources */,
 				86FA743B2D8AC3C900F69130 /* Utils.swift in Sources */,
 				86FA74332D89CC1500F69130 /* EpisodesView.swift in Sources */,
 				868DA2F72D71DD8A007D20D5 /* LogsHeavyTrafficContentView.swift in Sources */,
@@ -1553,6 +1579,7 @@
 				86FBEDCE2D8C29C3005CFCC4 /* CharacterDetailView.swift in Sources */,
 				86FBEDCF2D8C29C3005CFCC4 /* InfoRow.swift in Sources */,
 				86FA743F2D8AE85B00F69130 /* LocationsViewController.swift in Sources */,
+				111BAB582F12E95200B4B492 /* ProfilingAppLaunchView.swift in Sources */,
 				86FA74312D89CC0400F69130 /* LocationsView.swift in Sources */,
 				D24E15F32C776956005AE4E8 /* BenchmarkProfiler.swift in Sources */,
 				D24BFD472C6B916B00AB9604 /* SyntheticScenario.swift in Sources */,
@@ -2332,6 +2359,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		111BAB592F12EAA500B4B492 /* DatadogProfiling */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogProfiling;
+		};
 		D23DD32C2C58D80C00B90C4C /* DatadogBenchmarks */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DatadogBenchmarks;
