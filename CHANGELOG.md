@@ -1,5 +1,7 @@
 # Unreleased
 
+# 3.5.0 / 12-01-2025
+
 - [FEATURE] Report time to initial display (TTID). See [#2517][] [#2464][] 
 - [FEATURE] Add public API to report time to full display (TTFD). See [#2522][]
 - [IMPROVEMENT] Remove `application_start` action from `ApplicationLaunch`. See [#2533][]
