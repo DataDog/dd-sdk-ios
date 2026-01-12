@@ -8,23 +8,29 @@ import Foundation
 
 @testable import DatadogRUM
 
-public struct FrameInfoProviderMock: FrameInfoProvider {
-    public var maximumDeviceFramesPerSecond: Int
-    public var currentFrameTimestamp: CFTimeInterval
-    public var nextFrameTimestamp: CFTimeInterval
+public class FrameInfoProviderMock: FrameInfoProvider {
+    public var maximumDeviceFramesPerSecond: Int = 60
+    public var currentFrameTimestamp: CFTimeInterval = 0
+    public var nextFrameTimestamp: CFTimeInterval = 0
 
-    public init(
-        maximumDeviceFramesPerSecond: Int = 60,
-        currentFrameTimestamp: CFTimeInterval = 0,
-        nextFrameTimestamp: CFTimeInterval = 0
-    ) {
-        self.maximumDeviceFramesPerSecond = maximumDeviceFramesPerSecond
-        self.currentFrameTimestamp = currentFrameTimestamp
-        self.nextFrameTimestamp = nextFrameTimestamp
+    private let target: Any
+    private let selector: Selector
+
+    public required init(target: Any, selector: Selector) {
+        self.target = target
+        self.selector = selector
     }
 
     public func add(to runloop: RunLoop, forMode mode: RunLoop.Mode) { }
     public func invalidate() { }
+    public func triggerCallback(interval: TimeInterval) {
+        currentFrameTimestamp = interval
+        _ = (target as AnyObject).perform(selector, with: self)
+    }
+}
+
+public extension Selector {
+    static let noOp = #selector(NSObject.description)
 }
 
 public final class ViewHitchesMock: ViewHitchesModel {

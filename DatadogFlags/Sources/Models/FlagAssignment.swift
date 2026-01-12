@@ -6,8 +6,9 @@
 
 import Foundation
 
-internal struct FlagAssignment: Equatable {
-    enum Variation: Equatable {
+@_spi(Internal)
+public struct FlagAssignment: Equatable {
+    public enum Variation: Equatable {
         case boolean(Bool)
         case string(String)
         case integer(Int)
@@ -15,12 +16,11 @@ internal struct FlagAssignment: Equatable {
         case object(AnyValue)
         case unknown(String)
     }
-
-    var allocationKey: String
-    var variationKey: String
-    var variation: Variation
-    var reason: String
-    var doLog: Bool
+    public var allocationKey: String
+    public var variationKey: String
+    public var variation: Variation
+    public var reason: String
+    public var doLog: Bool
 
     func variation<T: FlagValue>(as type: T.Type) -> T? {
         switch self.variation {
@@ -38,6 +38,14 @@ internal struct FlagAssignment: Equatable {
             return nil
         }
     }
+
+    public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool) {
+        self.allocationKey = allocationKey
+        self.variationKey = variationKey
+        self.variation = variation
+        self.reason = reason
+        self.doLog = doLog
+    }
 }
 
 extension FlagAssignment: Codable {
@@ -50,7 +58,7 @@ extension FlagAssignment: Codable {
         case doLog
     }
 
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         self.allocationKey = try container.decode(String.self, forKey: .allocationKey)
@@ -84,7 +92,7 @@ extension FlagAssignment: Codable {
         }
     }
 
-    func encode(to encoder: any Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         try container.encode(allocationKey, forKey: .allocationKey)

@@ -100,6 +100,34 @@ internal struct RUMHandleAppLifecycleEventCommand: RUMCommand {
     let event: LifecycleEvent
 }
 
+// MARK: - App Launch commands
+
+internal struct RUMTimeToInitialDisplayCommand: RUMCommand {
+    var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var attributes: [AttributeKey: AttributeValue] = [:]
+    var canStartApplicationLaunchView = false
+    var canStartBackgroundView = false
+    let shouldRestartLastViewAfterSessionExpiration = false
+    let shouldRestartLastViewAfterSessionStop = false
+    let canStartBackgroundViewAfterSessionStop = false
+    let isUserInteraction = false
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
+}
+
+internal struct RUMTimeToFullDisplayCommand: RUMCommand {
+    var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var attributes: [AttributeKey: AttributeValue] = [:]
+    var canStartApplicationLaunchView = false
+    var canStartBackgroundView = false
+    let shouldRestartLastViewAfterSessionExpiration = false
+    let shouldRestartLastViewAfterSessionStop = false
+    let canStartBackgroundViewAfterSessionStop = false
+    let isUserInteraction = false
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
+}
+
 // MARK: - RUM View related commands
 
 internal struct RUMAddViewAttributesCommand: RUMCommand {

@@ -55,7 +55,9 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             featureFlags: configuration.featureFlags
         )
 
-        let scheduler = MainThreadScheduler(interval: 0.1)
+        let scheduler: any Scheduler = configuration.featureFlags[.screenChangeScheduling]
+            ? ScreenChangeScheduler(minimumInterval: 0.1, telemetry: telemetry)
+            : MainThreadScheduler(interval: 0.1)
         let contextReceiver = RUMContextReceiver()
 
         self.messageReceiver = CombinedFeatureMessageReceiver([

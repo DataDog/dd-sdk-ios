@@ -20,6 +20,7 @@ internal class AppRunner {
         let taskPolicyRole: Int
         let processInfoEnvironment: [String: String]
         let processLaunchDate: Date
+        let runtimeLoadDate: Date
         let initialAppState: AppState
         let description: String
 
@@ -39,6 +40,7 @@ internal class AppRunner {
                 taskPolicyRole: taskPolicyRole,
                 processInfoEnvironment: [:],
                 processLaunchDate: processLaunchDate,
+                runtimeLoadDate: processLaunchDate,
                 initialAppState: .background,
                 description: "user launch (with scene-delegate)"
             )
@@ -59,6 +61,7 @@ internal class AppRunner {
                 taskPolicyRole: taskPolicyRole,
                 processInfoEnvironment: [:],
                 processLaunchDate: processLaunchDate,
+                runtimeLoadDate: processLaunchDate,
                 initialAppState: .inactive,
                 description: "user launch (with app-delegate)"
             )
@@ -70,11 +73,12 @@ internal class AppRunner {
         /// in prewarming scenarios. This uncertainty is acceptable, as the `"ActivePrewarm"` flag in
         /// `ProcessInfo.environment` takes precedence when classifying prewarming.
         @available(tvOS, unavailable)
-        static func osPrewarm(processLaunchDate: Date) -> ProcessLaunchType {
+        static func osPrewarm(processLaunchDate: Date, runtimeLoadDate: Date) -> ProcessLaunchType {
             return .init(
                 taskPolicyRole: Int(TASK_DARWINBG_APPLICATION.rawValue),
                 processInfoEnvironment: ["ActivePrewarm": "1"],
                 processLaunchDate: processLaunchDate,
+                runtimeLoadDate: runtimeLoadDate,
                 initialAppState: .background,
                 description: "os prewarm"
             )
@@ -96,6 +100,7 @@ internal class AppRunner {
                 taskPolicyRole: taskPolicyRole,
                 processInfoEnvironment: [:],
                 processLaunchDate: processLaunchDate,
+                runtimeLoadDate: processLaunchDate,
                 initialAppState: .background,
                 description: "background launch"
             )
@@ -130,6 +135,7 @@ internal class AppRunner {
     private var dateProvider: DateProviderMock!
     private var appStateProvider: AppStateProviderMock!
     private var appLaunchHandler: AppLaunchHandlerMock!
+    private var frameInfoProvider: FrameInfoProviderMock!
     private var core: DatadogCoreProxy!
     // swiftlint:enable implicitly_unwrapped_optional
     private var appStateObservers: [NSObjectProtocol] = []
@@ -146,7 +152,8 @@ internal class AppRunner {
         appLaunchHandler = AppLaunchHandlerMock(
             taskPolicyRole: launchType.taskPolicyRole,
             processLaunchDate: launchType.processLaunchDate,
-            timeToDidBecomeActive: nil // will wait for SimulationStep.changeAppState(_:)
+            runtimeLoadDate: launchType.runtimeLoadDate,
+            didBecomeActiveDate: nil // will wait for SimulationStep.changeAppState(_:)
         )
 
         appStateObservers = [
@@ -158,8 +165,7 @@ internal class AppRunner {
                 appStateProvider.current = .active
 
                 // Simulate the application becoming active in `appLaunchHandler`:
-                let launchTime = dateProvider.now.timeIntervalSince(appLaunchHandler.processLaunchDate)
-                appLaunchHandler.simulateDidBecomeActive(timeInterval: launchTime)
+                appLaunchHandler.simulateDidBecomeActive(date: dateProvider.now)
             },
             notificationCenter.addObserver(forName: ApplicationNotifications.willResignActive, object: nil, queue: nil) { [weak self] _ in
                 self?.appStateProvider.current = .inactive
@@ -203,6 +209,11 @@ internal class AppRunner {
     var currentTime: Date { dateProvider.now }
 
     private var lastAppearedViewController: UIViewController?
+
+    /// Simulates the first frame of an app launch.
+    func displayFirstFrame(after interval: TimeInterval) {
+        self.frameInfoProvider.triggerCallback(interval: interval)
+    }
 
     /// Simulates `viewDidAppear()` for a given view controller.
     /// If another view controller had previously appeared, it will automatically simulate `viewDidDisappear()` for it.
@@ -256,7 +267,13 @@ internal class AppRunner {
     func enableRUM(_ rumSetup: RUMSetup = { _ in }) {
         var config = RUM.Configuration(applicationID: "mock-application-id")
         config.dateProvider = dateProvider
+        config.mediaTimeProvider = MediaTimeProviderMock(current: 0)
         config.notificationCenter = notificationCenter
+        config.frameInfoProviderFactory = { [weak self] in
+            let frameInfoProvider = FrameInfoProviderMock(target: $0, selector: $1)
+            self?.frameInfoProvider = frameInfoProvider
+            return frameInfoProvider
+        }
         rumSetup(&config)
         RUM.enable(with: config, in: core)
     }

@@ -21,7 +21,6 @@ internal final class WatchdogTerminationMonitor {
 
     enum ErrorMessages {
         static let failedToCheckWatchdogTermination = "Failed to check if Watchdog Termination occurred"
-        static let failedToStartAppState = "Failed to start Watchdog Termination App State Manager"
         static let detectedWatchdogTermination = "Based on heuristics, previous app session was terminated by Watchdog"
         static let failedToReadViewEvent = "Failed to read the view event from the data store"
         static let rumViewEventUpdated = "RUM View event updated"
@@ -29,7 +28,7 @@ internal final class WatchdogTerminationMonitor {
     }
 
     let checker: WatchdogTerminationChecker
-    let appStateManager: WatchdogTerminationAppStateManager
+    let appStateManager: AppStateManager
     let feature: FeatureScope
     let reporter: WatchdogTerminationReporting
     let storage: Storage?
@@ -40,7 +39,7 @@ internal final class WatchdogTerminationMonitor {
     internal var currentState: State
 
     init(
-        appStateManager: WatchdogTerminationAppStateManager,
+        appStateManager: AppStateManager,
         checker: WatchdogTerminationChecker,
         storage: Storage?,
         feature: FeatureScope,
@@ -63,12 +62,6 @@ internal final class WatchdogTerminationMonitor {
 
         currentState = .starting
         sendWatchTerminationIfFound(launch: launchReport) { [weak self] in
-            do {
-                try self?.appStateManager.storeCurrentAppState()
-            } catch {
-                DD.logger.error(ErrorMessages.failedToStartAppState, error: error)
-                self?.feature.telemetry.error(ErrorMessages.failedToStartAppState, error: error)
-            }
             self?.currentState = .started
         }
     }
@@ -95,19 +88,13 @@ internal final class WatchdogTerminationMonitor {
     /// Checks if the app was terminated by Watchdog and sends the Watchdog Termination event to Datadog.
     /// - Parameter launch: The launch report containing information about the app launch.
     private func sendWatchTerminationIfFound(launch: LaunchReport, completion: @escaping () -> Void) {
-        do {
-            try checker.isWatchdogTermination(launch: launch) { [weak self] isWatchdogTermination, state  in
-                if isWatchdogTermination, let state = state {
-                    DD.logger.debug(ErrorMessages.detectedWatchdogTermination)
-                    self?.sendWatchTermination(state: state, completion: completion)
-                } else {
-                    completion()
-                }
+        checker.isWatchdogTermination(launch: launch) { [weak self] isWatchdogTermination, state  in
+            if isWatchdogTermination, let state = state {
+                DD.logger.debug(ErrorMessages.detectedWatchdogTermination)
+                self?.sendWatchTermination(state: state, completion: completion)
+            } else {
+                completion()
             }
-        } catch {
-            DD.logger.error(ErrorMessages.failedToCheckWatchdogTermination, error: error)
-            feature.telemetry.error(ErrorMessages.failedToCheckWatchdogTermination, error: error)
-            completion()
         }
     }
 
@@ -115,7 +102,7 @@ internal final class WatchdogTerminationMonitor {
     /// Because Watchdog Termination are reported in the next app session, it uses the saved `RUMViewEvent`
     /// to report the event.
     /// - Parameter state: The app state when the Watchdog Termination occurred.
-    private func sendWatchTermination(state: WatchdogTerminationAppState, completion: @escaping () -> Void) {
+    private func sendWatchTermination(state: AppStateInfo, completion: @escaping () -> Void) {
         feature.context { [weak self] context in
             do {
                 let likelyCrashedAt = try self?.storage?.mostRecentModifiedFileAt(before: context.launchInfo.processLaunchDate)

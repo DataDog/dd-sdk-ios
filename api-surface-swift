@@ -58,6 +58,12 @@ public enum Datadog
         public var batchProcessingLevel: BatchProcessingLevel
         public var backgroundTasksEnabled: Bool
         public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,version: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil,batchProcessingLevel: BatchProcessingLevel = .medium,backgroundTasksEnabled: Bool = false)
+public class SharedContext: NSObject
+    public let userId: String?
+    public let accountId: String?
+public final class CrossPlatformExtension: NSObject
+    public static func subscribe(toSharedContext: @escaping (SharedContext?) -> Void)
+    public static func unsubscribeFromSharedContext()
 
 # ----------------------------------
 # API surface for DatadogLogs:
@@ -191,6 +197,7 @@ public protocol LogEventMapper
     public func w3c() -> String
 public class OTelTracerProvider: OpenTelemetryApi.TracerProvider
     public init(in core: DatadogCoreProtocol = CoreRegistry.default)
+    public func get(instrumentationName: String,instrumentationVersion: String?,schemaUrl: String?,attributes: [String: OpenTelemetryApi.AttributeValue]?) -> any OpenTelemetryApi.Tracer
     public func get(instrumentationName: String, instrumentationVersion: String?) -> OpenTelemetryApi.Tracer
 public struct OTTags
     public static let component = "component"
@@ -401,6 +408,7 @@ public enum RUM
         public var customEndpoint: URL?
         public var trackAnonymousUser: Bool
         public var trackMemoryWarnings: Bool
+        public var trackSlowFrames: Bool
         public var telemetrySampleRate: SampleRate
         public var collectAccessibility: Bool
         public var featureFlags: FeatureFlags
@@ -417,13 +425,13 @@ public enum RUM
         case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,featureFlags: FeatureFlags = .defaults)
+    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,trackSlowFrames: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
 [?] extension RUM.Configuration
     public typealias FeatureFlags = [FeatureFlag: Bool]
     public enum FeatureFlag: String
-        case viewHitches
+        case none
 [?] extension RUM.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -499,7 +507,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject
     func removeAttributes(forKeys keys: [AttributeKey])
     func currentSessionID(completion: @escaping (String?) -> Void)
     func stopSession()
-    func addTiming(name: String)
+    func reportAppFullyDisplayed()
     func addError(message: String,type: String?,stack: String?,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
     func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue])
     func startResource(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue])
@@ -528,11 +536,17 @@ public protocol RUMMonitorViewProtocol: AnyObject
     func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
     func startView(key: String,name: String?,attributes: [AttributeKey: AttributeValue])
     func stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    func addTiming(name: String)
     func addViewLoadingTime(overwrite: Bool)
 public enum PerformanceMetric
     case flutterBuildTime
     case flutterRasterTime
     case jsFrameTimeSeconds
+public protocol CACurrentMediaTimeProvider: Sendable
+    var current: CFTimeInterval
+public struct MediaTimeProvider: CACurrentMediaTimeProvider
+    public init()
+    public var current: CFTimeInterval
 
 # ----------------------------------
 # API surface for DatadogCrashReporting:
@@ -540,7 +554,7 @@ public enum PerformanceMetric
 
 public final class CrashReporting
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func enable(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default)
 public static func enable()
 public protocol CrashReportingPlugin: AnyObject
     func readPendingCrashReport(completion: @escaping (DDCrashReport?) -> Bool)
@@ -1225,6 +1239,7 @@ public enum SessionReplay
     public typealias FeatureFlags = [FeatureFlag: Bool]
     public enum FeatureFlag: String
         case swiftui
+        case screenChangeScheduling
 [?] extension SessionReplay.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -1252,6 +1267,15 @@ public final class FlagsClient
 [?] extension FlagsClient: FlagsClientProtocol
     public func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
+[?] extension FlagsClient: FlagsClientInternal
+    public func getFlagAssignments() -> [String: FlagAssignment]?
+    public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+public protocol FlagsClientInternal: AnyObject
+    func getFlagAssignments() -> [String: FlagAssignment]?
+    func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
+[?] extension FlagsClientInternal
+    public func getFlagAssignments() -> [String: FlagAssignment]?
+    public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
 public protocol FlagsClientProtocol: AnyObject
     func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)
     func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
@@ -1292,6 +1316,22 @@ public enum AnyValue: Equatable
 [?] extension AnyValue: Codable
     public init(from decoder: Decoder) throws
     public func encode(to encoder: Encoder) throws
+public struct FlagAssignment: Equatable
+    public enum Variation: Equatable
+        case boolean(Bool)
+        case string(String)
+        case integer(Int)
+        case double(Double)
+        case object(AnyValue)
+        case unknown(String)
+    public var allocationKey: String
+    public var variationKey: String
+    public var variation: Variation
+    public var reason: String
+    public var doLog: Bool
+    public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool)
+    public init(from decoder: any Decoder) throws
+    public func encode(to encoder: any Encoder) throws
 public enum FlagEvaluationError: Error
     case providerNotReady
     case flagNotFound

@@ -28,7 +28,7 @@ public struct DatadogInternalInterface {
     let monitor: RUMCommandSubscriber
 
     /// Adds a RUM error to the current view, allowing the addition of BinaryImages
-    /// which can be used to symbolicate stack traces that are not provided by PLCrashReporter
+    /// which can be used to symbolicate stack traces that are not provided by native Crash Reporting.
     internal func addError(
         at time: Date,
         message: String,

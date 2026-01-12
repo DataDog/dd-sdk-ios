@@ -85,6 +85,7 @@ public enum objc_LogLevel: Int
     case critical
 public final class objc_LogsConfiguration: NSObject
     public var customEndpoint: URL?
+    override public init()
     public init(customEndpoint: URL? = nil)
     public func setEventMapper(_ mapper: @escaping (objc_LogEvent) -> objc_LogEvent?)
 public final class objc_Logs: NSObject
@@ -100,6 +101,7 @@ public final class objc_LoggerConfiguration: NSObject
     public var remoteSampleRate: Float
     public var printLogsToConsole: Bool
     public var remoteLogThreshold: objc_LogLevel
+    override public init()
     public init(service: String? = nil,name: String? = nil,networkInfoEnabled: Bool = false,bundleWithRumEnabled: Bool = true,bundleWithTraceEnabled: Bool = true,remoteSampleRate: SampleRate = .maxSampleRate,remoteLogThreshold: objc_LogLevel = .debug,printLogsToConsole: Bool = false)
 public final class objc_Logger: NSObject
     public func debug(_ message: String)
@@ -502,12 +504,15 @@ public class objc_RUMActionEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMActionEventDeviceDeviceType
 public enum objc_RUMActionEventDeviceDeviceType: Int
     case none
@@ -685,12 +690,15 @@ public class objc_RUMErrorEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMErrorEventDeviceDeviceType
 public enum objc_RUMErrorEventDeviceDeviceType: Int
     case none
@@ -1014,12 +1022,15 @@ public class objc_RUMLongTaskEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMLongTaskEventDeviceDeviceType
 public enum objc_RUMLongTaskEventDeviceDeviceType: Int
     case none
@@ -1234,12 +1245,15 @@ public class objc_RUMResourceEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMResourceEventDeviceDeviceType
 public enum objc_RUMResourceEventDeviceDeviceType: Int
     case none
@@ -1319,6 +1333,7 @@ public class objc_RUMResourceEventResourceGraphqlErrorsPath: NSObject
     public var string: String?
     public var integer: NSNumber?
 public enum objc_RUMResourceEventResourceGraphqlOperationType: Int
+    case none
     case query
     case mutation
     case subscription
@@ -1563,12 +1578,15 @@ public class objc_RUMViewEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMViewEventDeviceDeviceType
 public enum objc_RUMViewEventDeviceDeviceType: Int
     case none
@@ -1829,7 +1847,7 @@ public class objc_RUMVitalAppLaunchEvent: NSObject
     public var type: String
     public var usr: objc_RUMVitalAppLaunchEventRUMUser?
     public var version: String?
-    public var view: objc_RUMVitalAppLaunchEventView?
+    public var view: objc_RUMVitalAppLaunchEventView
     public var vital: objc_RUMVitalAppLaunchEventVital
 public class objc_RUMVitalAppLaunchEventDD: NSObject
     public var browserSdkVersion: String?
@@ -1933,12 +1951,15 @@ public class objc_RUMVitalAppLaunchEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMVitalAppLaunchEventDeviceDeviceType
 public enum objc_RUMVitalAppLaunchEventDeviceDeviceType: Int
     case none
@@ -2124,12 +2145,15 @@ public class objc_RUMVitalDurationEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMVitalDurationEventDeviceDeviceType
 public enum objc_RUMVitalDurationEventDeviceDeviceType: Int
     case none
@@ -2304,12 +2328,15 @@ public class objc_RUMVitalOperationStepEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
+    public var isLowRamDevice: NSNumber?
     public var locale: String?
     public var locales: [String]?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
+    public var processorCount: NSNumber?
     public var timeZone: String?
+    public var totalRam: NSNumber?
     public var type: objc_RUMVitalOperationStepEventDeviceDeviceType
 public enum objc_RUMVitalOperationStepEventDeviceDeviceType: Int
     case none
@@ -2559,7 +2586,10 @@ public enum objc_TelemetryConfigurationEventTelemetryConfigurationViewTrackingSt
 public class objc_TelemetryConfigurationEventTelemetryRUMTelemetryDevice: NSObject
     public var architecture: String?
     public var brand: String?
+    public var isLowRamDevice: NSNumber?
     public var model: String?
+    public var processorCount: NSNumber?
+    public var totalRam: NSNumber?
 public class objc_TelemetryConfigurationEventTelemetryRUMTelemetryOperatingSystem: NSObject
     public var build: String?
     public var name: String?
@@ -2608,7 +2638,10 @@ public class objc_TelemetryDebugEventTelemetry: NSObject
 public class objc_TelemetryDebugEventTelemetryRUMTelemetryDevice: NSObject
     public var architecture: String?
     public var brand: String?
+    public var isLowRamDevice: NSNumber?
     public var model: String?
+    public var processorCount: NSNumber?
+    public var totalRam: NSNumber?
 public class objc_TelemetryDebugEventTelemetryRUMTelemetryOperatingSystem: NSObject
     public var build: String?
     public var name: String?
@@ -2658,7 +2691,10 @@ public class objc_TelemetryErrorEventTelemetry: NSObject
 public class objc_TelemetryErrorEventTelemetryRUMTelemetryDevice: NSObject
     public var architecture: String?
     public var brand: String?
+    public var isLowRamDevice: NSNumber?
     public var model: String?
+    public var processorCount: NSNumber?
+    public var totalRam: NSNumber?
 public class objc_TelemetryErrorEventTelemetryError: NSObject
     public var kind: String?
     public var stack: String?
@@ -2778,6 +2814,7 @@ public class objc_RUMMonitor: NSObject
     public static func shared() -> objc_RUMMonitor
     public func currentSessionID(completion: @escaping (String?) -> Void)
     public func stopSession()
+    public func reportAppFullyDisplayed()
     public func addViewAttribute(forKey key: String, value: Any)
     public func addViewAttributes(_ attributes: [String: Any])
     public func removeViewAttribute(forKey key: String)

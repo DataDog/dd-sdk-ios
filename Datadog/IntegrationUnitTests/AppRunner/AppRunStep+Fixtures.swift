@@ -37,6 +37,13 @@ extension AppRunStep {
         })
     }
 
+    static func appDisplaysFirstFrame(after dt: TimeInterval = 0) -> AppRunStep {
+        return AppRunStep({ app in
+            app.advanceTime(by: dt)
+            app.displayFirstFrame(after: dt)
+        })
+    }
+
     // MARK: - RUM Use Cases
 
     static func enableRUM(
@@ -135,5 +142,15 @@ extension AppRunStep {
             app.advanceTime(by: dt)
             app.rum.stopResource(resourceKey: key, response: .mockAny())
         })
+    }
+}
+
+// MARK: - Test Utils
+
+extension AppRunStep {
+    static func flushDatadogContext() -> AppRunStep {
+        AppRunStep { app in
+            DatadogContextProvider.defaultQueue.sync {}
+        }
     }
 }

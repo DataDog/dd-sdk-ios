@@ -57,7 +57,7 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
             )
         }
 
-        return false
+        return true
     }
 }
 

@@ -54,6 +54,12 @@ public final class objc_LogsConfiguration: NSObject {
 
     /// Creates a Logs configuration object.
     ///
+    override public init() {
+        configuration = .init()
+    }
+
+    /// Creates a Logs configuration object.
+    ///
     /// - Parameters:
     ///   - customEndpoint: Overrides the custom server endpoint where Logs are sent.
     public init(
@@ -175,6 +181,12 @@ public final class objc_LoggerConfiguration: NSObject {
     public var remoteLogThreshold: objc_LogLevel {
         get { objc_LogLevel(configuration.remoteLogThreshold) }
         set { configuration.remoteLogThreshold = newValue.swift }
+    }
+
+    /// Creates a Logger Configuration with default values.
+    ///
+    override public init() {
+        configuration = .init()
     }
 
     /// Creates a Logger Configuration.

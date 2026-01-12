@@ -3,3 +3,8 @@
 
 // Include base config
 #include "../xcconfigs/Base.xcconfig"
+
+// RUM-12594 workaround:
+// SPM dependencies don't automatically build for arm64e, so we need to exclude it
+// to avoid linker errors when using KSCrash from SPM
+ARCHS[sdk=iphoneos*]=$(ARCHS_STANDARD)

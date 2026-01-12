@@ -241,17 +241,8 @@ extension Monitor: RUMMonitorProtocol {
         process(command: RUMStopSessionCommand(time: dateProvider.now))
     }
 
-    // MARK: - custom timings
-
-    func addTiming(name: String) {
-        process(
-            command: RUMAddViewTimingCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: [:],
-                timingName: name
-            )
-        )
+    func reportAppFullyDisplayed() {
+        process(command: RUMTimeToFullDisplayCommand(time: dateProvider.now))
     }
 
     // MARK: - errors
@@ -660,6 +651,17 @@ extension Monitor: RUMMonitorViewProtocol {
                 globalAttributes: self.attributes,
                 attributes: attributes,
                 identity: ViewIdentifier(key)
+            )
+        )
+    }
+
+    func addTiming(name: String) {
+        process(
+            command: RUMAddViewTimingCommand(
+                time: dateProvider.now,
+                globalAttributes: self.attributes,
+                attributes: [:],
+                timingName: name
             )
         )
     }

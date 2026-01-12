@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+import QuartzCore
 
 // swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.URLSessionInstrumentation
@@ -284,6 +285,13 @@ extension RUM {
         /// Default: `true`.
         public var trackMemoryWarnings: Bool
 
+        /// Enables the collection of slow frames (view hitches).
+        ///
+        /// When enabled, captured view hitches are attached to the corresponding RUM view.
+        ///
+        /// Default: `true`.
+        public var trackSlowFrames: Bool
+
         /// The sampling rate for SDK internal telemetry utilized by Datadog.
         /// This telemetry is used to monitor the internal workings of the entire Datadog iOS SDK.
         ///
@@ -360,13 +368,18 @@ extension RUM {
         internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
         internal var spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator()
 
+        /// The provider of the current date.
         internal var dateProvider: DateProvider = SystemDateProvider()
+        /// The provider of the current media uptime.
+        internal var mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider()
         /// The main queue, subject to App Hangs monitoring.
         internal var mainQueue: DispatchQueue = .main
         /// Identifier of the current process, used to check if fatal App Hang originated in a previous process instance.
         internal var processID: UUID = currentProcessID
         /// The default notification center used for subscribing to app lifecycle events and system notifications.
         internal var notificationCenter: NotificationCenter = .default
+        /// The factory to create the frame info provider. Defaults to the `CADisplayLink`.
+        internal var frameInfoProviderFactory: (Any, Selector) -> FrameInfoProvider = { CADisplayLink(target: $0, selector: $1) }
         /// The bundle object that contains the current executable.
         internal var bundle: Bundle = .main
 
@@ -449,6 +462,7 @@ extension RUM.Configuration {
     ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
     ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
     ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`.
+    ///   - trackSlowFrames: Enables the collection of slow frames (view hitches). Default: `true`.
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
     ///   - featureFlags: Experimental feature flags.
@@ -477,6 +491,7 @@ extension RUM.Configuration {
         customEndpoint: URL? = nil,
         trackAnonymousUser: Bool = true,
         trackMemoryWarnings: Bool = true,
+        trackSlowFrames: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
         featureFlags: FeatureFlags = .defaults
@@ -503,10 +518,11 @@ extension RUM.Configuration {
         self.onSessionStart = onSessionStart
         self.customEndpoint = customEndpoint
         self.trackAnonymousUser = trackAnonymousUser
-        self.telemetrySampleRate = telemetrySampleRate
-        self.collectAccessibility = collectAccessibility
         self.trackWatchdogTerminations = trackWatchdogTerminations
         self.trackMemoryWarnings = trackMemoryWarnings
+        self.trackSlowFrames = trackSlowFrames
+        self.telemetrySampleRate = telemetrySampleRate
+        self.collectAccessibility = collectAccessibility
         self.featureFlags = featureFlags
     }
 }
@@ -529,18 +545,13 @@ extension RUM.Configuration {
 
     /// Feature Flag available in RUM
     public enum FeatureFlag: String {
-        /// View Hitches
-        case viewHitches
+        case none
     }
 }
 
 extension RUM.Configuration.FeatureFlags {
     /// The defaults Feature Flags applied to RUM Configuration
-    public static var defaults: Self {
-        [
-            .viewHitches: false
-        ]
-    }
+    public static var defaults: Self { [:] }
 
     /// Accesses the feature flag value.
     ///

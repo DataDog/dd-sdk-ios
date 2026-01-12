@@ -18,6 +18,7 @@ extension URLRequest {
         request.httpMethod = "POST"
 
         request.setValue("application/vnd.api+json", forHTTPHeaderField: "Content-Type")
+        request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
         request.setValue(context.clientToken, forHTTPHeaderField: "dd-client-token")
 
         if let applicationId = context.additionalContext(ofType: RUMCoreContext.self)?.applicationID {

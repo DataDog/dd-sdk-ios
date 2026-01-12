@@ -60,7 +60,8 @@ class RUMSwiftUIManualInstrumentationScenarioTests: IntegrationTests, RUMCommonA
 
         let initialView = session.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
-        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertNotNil(session.ttidEvent)
+        XCTAssertGreaterThan(session.timeToInitialDisplay!, 0)
 
         XCTAssertEqual(session.views[1].name, "SwiftUI View 1")
         XCTAssertTrue(session.views[1].path.matches(regex: "SwiftUI View 1\\/[0-9]*"))

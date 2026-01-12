@@ -37,16 +37,17 @@ import DatadogInternal
 ///
 /// All subscriptions will be cancelled when the provider is deallocated.
 internal final class DatadogContextProvider {
+    static let defaultQueue = DispatchQueue(
+        label: "com.datadoghq.core-context",
+        qos: .utility
+    )
     /// The current `context`.
     ///
     /// The value must be accessed from the `queue` only.
     private var context: DatadogContext
 
     /// The queue used to synchronize the access to the `DatadogContext`.
-    internal let queue = DispatchQueue(
-        label: "com.datadoghq.core-context",
-        qos: .utility
-    )
+    internal let queue: DispatchQueue
 
     /// List of receivers to invoke when the context changes.
     private var receivers: [ContextValueReceiver<DatadogContext>]
@@ -57,9 +58,12 @@ internal final class DatadogContextProvider {
     /// Creates a context provider to perform reads and writes on the
     /// shared Datadog context.
     ///
-    /// - Parameter context: The initial context value.
-    init(context: DatadogContext) {
+    /// - Parameters:
+    ///   - context: The initial context value.
+    ///   - queue: The queue to synchronize the access to the `DatadogContext`.
+    init(context: DatadogContext, queue: DispatchQueue = DatadogContextProvider.defaultQueue) {
         self.context = context
+        self.queue = queue
         self.receivers = []
         self.subscriptions = []
     }

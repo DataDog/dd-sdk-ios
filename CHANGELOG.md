@@ -1,5 +1,15 @@
 # Unreleased
 
+# 3.5.0 / 12-01-2025
+
+- [FEATURE] Report time to initial display (TTID). See [#2517][] [#2464][] 
+- [FEATURE] Add public API to report time to full display (TTFD). See [#2522][]
+- [IMPROVEMENT] Remove `application_start` action from `ApplicationLaunch`. See [#2533][]
+- [FEATURE] Track Slow Frames (view hitches) by default. See [#2631][]
+- [IMPROVEMENT] Upgrade `DatadogTrace` to OpenTelemetryApi 2.3.0. See [#2614][]
+- [IMPROVEMENT] RUM auto-instrumentation now supports Alerts, Confirmation Dialogs and Action Sheets. See [#2612][]
+- [IMPROVEMENT] Replace `PLCrashReporter` by `KSCrash` as `DatadogCrashReporting plugin. See [#2633][]
+
 # 3.4.0 / 10-12-2025
 
 - [FEATURE] Add support for configuring a custom version parameter in `DatadogConfiguration`. See [#2585][] (Thanks [@blimmer][])
@@ -986,21 +996,29 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2463]: https://github.com/DataDog/dd-sdk-ios/pull/2463
 [#2410]: https://github.com/DataDog/dd-sdk-ios/pull/2410
 [#2436]: https://github.com/DataDog/dd-sdk-ios/pull/2436
+[#2464]: https://github.com/DataDog/dd-sdk-ios/pull/2464
 [#2469]: https://github.com/DataDog/dd-sdk-ios/pull/2469
 [#2473]: https://github.com/DataDog/dd-sdk-ios/pull/2473
 [#2474]: https://github.com/DataDog/dd-sdk-ios/pull/2474
 [#2501]: https://github.com/DataDog/dd-sdk-ios/pull/2501
-[#2530]: https://github.com/DataDog/dd-sdk-ios/pull/2530
-[#2538]: https://github.com/DataDog/dd-sdk-ios/pull/2538
-[#2532]: https://github.com/DataDog/dd-sdk-ios/pull/2532
 [#2514]: https://github.com/DataDog/dd-sdk-ios/pull/2514
+[#2517]: https://github.com/DataDog/dd-sdk-ios/pull/2517
+[#2522]: https://github.com/DataDog/dd-sdk-ios/pull/2522
+[#2530]: https://github.com/DataDog/dd-sdk-ios/pull/2530
+[#2532]: https://github.com/DataDog/dd-sdk-ios/pull/2532
+[#2533]: https://github.com/DataDog/dd-sdk-ios/pull/2533
+[#2538]: https://github.com/DataDog/dd-sdk-ios/pull/2538
 [#2552]: https://github.com/DataDog/dd-sdk-ios/pull/2552
 [#2566]: https://github.com/DataDog/dd-sdk-ios/pull/2566
 [#2576]: https://github.com/DataDog/dd-sdk-ios/pull/2576
 [#2585]: https://github.com/DataDog/dd-sdk-ios/pull/2585
-[#2598]: https://github.com/DataDog/dd-sdk-ios/pull/2598
 [#2587]: https://github.com/DataDog/dd-sdk-ios/pull/2587
+[#2598]: https://github.com/DataDog/dd-sdk-ios/pull/2598
 [#2599]: https://github.com/DataDog/dd-sdk-ios/pull/2599
+[#2612]: https://github.com/DataDog/dd-sdk-ios/pull/2612
+[#2614]: https://github.com/DataDog/dd-sdk-ios/pull/2614
+[#2631]: https://github.com/DataDog/dd-sdk-ios/pull/2631
+[#2633]: https://github.com/DataDog/dd-sdk-ios/pull/2633
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

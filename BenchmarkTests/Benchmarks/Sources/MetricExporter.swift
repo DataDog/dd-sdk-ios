@@ -8,7 +8,7 @@ import Foundation
 import OpenTelemetrySdk
 
 enum MetricExporterError: Error {
-    case unsupportedMetric(aggregation: AggregationType, dataType: Any.Type)
+    case unsupportedMetric(type: MetricDataType, dataType: Any.Type)
 }
 
 /// Replacement of otel `DatadogExporter` for metrics.
@@ -68,51 +68,57 @@ final class MetricExporter: OpenTelemetrySdk.MetricExporter {
         self.configuration = configuration
     }
 
-    func export(metrics: [Metric], shouldCancel: (() -> Bool)?) -> MetricExporterResultCode {
+    func export(metrics: [MetricData]) -> ExportResult {
         do {
             let series = try metrics.map(transform)
             try submit(series: series)
-            return.success
+            return .success
         } catch {
-            return .failureNotRetryable
+            return .failure
         }
     }
 
-    /// Transforms otel `Metric` to Datadog `serie`.
+    func flush() -> ExportResult {
+        return .success
+    }
+
+    func shutdown() -> ExportResult {
+        return .success
+    }
+
+    func getAggregationTemporality(for instrument: InstrumentType) -> AggregationTemporality {
+        return .cumulative
+    }
+
+    /// Transforms otel `MetricData` to Datadog `serie`.
     ///
-    /// - Parameter metric: The otel metric
+    /// - Parameter metric: The otel metric data
     /// - Returns: The timeserie.
-    func transform(_ metric: Metric) throws -> Serie {
+    func transform(_ metric: MetricData) throws -> Serie {
         var tags = Set(metric.resource.attributes.map { "\($0):\($1)" })
 
-        let points: [Serie.Point] = try metric.data.map { data in
-            let timestamp = Int64(data.timestamp.timeIntervalSince1970)
+        let points: [Serie.Point] = try metric.data.points.map { point in
+            let timestamp = Int64(point.endEpochNanos / 1_000_000_000) // Convert nanos to seconds
 
-            data.labels.forEach { tags.insert("\($0):\($1)") }
+            point.attributes.forEach { tags.insert("\($0):\($1)") }
 
-            switch data {
-            case let data as SumData<Double>:
+            switch point {
+            case let data as DoublePointData:
+                return Serie.Point(timestamp: timestamp, value: data.value)
+            case let data as LongPointData:
+                return Serie.Point(timestamp: timestamp, value: Double(data.value))
+            case let data as SummaryPointData:
                 return Serie.Point(timestamp: timestamp, value: data.sum)
-            case let data as SumData<Int>:
-                return Serie.Point(timestamp: timestamp, value: Double(data.sum))
-            case let data as SummaryData<Double>:
-                return Serie.Point(timestamp: timestamp, value: data.sum)
-            case let data as SummaryData<Int>:
-                return Serie.Point(timestamp: timestamp, value: Double(data.sum))
-//            case let data as HistogramData<Int>:
-//                return Serie.Point(timestamp: timestamp, value: Double(data.sum))
-//            case let data as HistogramData<Double>:
-//                return Serie.Point(timestamp: timestamp, value: data.sum)
             default:
                 throw MetricExporterError.unsupportedMetric(
-                    aggregation: metric.aggregationType,
-                    dataType: type(of: data)
+                    type: metric.type,
+                    dataType: type(of: point)
                 )
             }
         }
 
         return Serie(
-            type: MetricType(metric.aggregationType),
+            type: MetricType(metric.type),
             interval: nil,
             metric: metric.name,
             unit: nil,
@@ -149,13 +155,13 @@ final class MetricExporter: OpenTelemetrySdk.MetricExporter {
 }
 
 private extension MetricExporter.MetricType {
-    init(_ type: OpenTelemetrySdk.AggregationType) {
+    init(_ type: MetricDataType) {
         switch type {
-        case .doubleSum, .intSum:
+        case .DoubleSum, .LongSum:
             self = .count
-        case .intGauge, .doubleGauge:
+        case .LongGauge, .DoubleGauge:
             self = .gauge
-        case .doubleSummary, .intSummary, .doubleHistogram, .intHistogram:
+        case .Summary, .Histogram, .ExponentialHistogram:
             self = .unspecified
         }
     }

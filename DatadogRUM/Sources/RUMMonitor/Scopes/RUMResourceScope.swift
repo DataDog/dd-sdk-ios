@@ -322,7 +322,7 @@ internal class RUMResourceScope: RUMScope {
                 fingerprint: errorFingerprint,
                 handling: nil,
                 handlingStack: nil,
-                id: nil,
+                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 isCrash: false,
                 message: command.errorMessage,
                 meta: nil,

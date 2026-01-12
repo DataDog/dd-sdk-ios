@@ -81,7 +81,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
 
             let initialView = appStartSession.views[0]
             XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
-            XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+            XCTAssertNotNil(appStartSession.ttidEvent)
             XCTAssertTrue(initialView.viewEvents.allSatisfy { $0.dd.session?.sessionPrecondition == .userAppLaunch })
 
             let view1 = appStartSession.views[1]

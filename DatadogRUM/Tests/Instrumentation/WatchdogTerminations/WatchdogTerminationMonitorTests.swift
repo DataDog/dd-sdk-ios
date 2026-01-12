@@ -92,7 +92,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         featureScope.contextMock.device = deviceInfo
         featureScope.contextMock.set(additionalContext: LaunchReport(didCrash: didCrash))
 
-        let appStateManager = WatchdogTerminationAppStateManager(
+        let appStateManager = AppStateManager(
             featureScope: featureScope,
             processId: processId,
             syntheticsEnvironment: false

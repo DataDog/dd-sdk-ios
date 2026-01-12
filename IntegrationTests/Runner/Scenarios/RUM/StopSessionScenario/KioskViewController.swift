@@ -12,7 +12,9 @@ internal class KioskViewController: UIViewController {
         rumMonitor.startView(viewController: self, name: "KioskViewController")
 
         // Stop session
-        rumMonitor.stopSession()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            rumMonitor.stopSession()
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {

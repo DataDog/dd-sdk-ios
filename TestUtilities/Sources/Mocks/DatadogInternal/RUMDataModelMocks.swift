@@ -759,6 +759,107 @@ extension RUMVitalOperationStepEvent: RandomMockable {
     }
 }
 
+extension RUMVitalDurationEvent: RandomMockable {
+    public static func mockRandom() -> Self {
+        return RUMVitalDurationEvent(
+            dd: .init(),
+            application: .init(id: .mockRandom()),
+            date: .mockRandom(),
+            session: .init(id: .mockRandom(), type: .user),
+            view: .init(id: .mockRandom(), url: .mockRandom()),
+            vital: .mockRandom()
+        )
+    }
+}
+
+extension RUMVitalAppLaunchEvent: RandomMockable, AnyMockable {
+    public static func mockRandom() -> Self {
+        return RUMVitalAppLaunchEvent(
+            dd: .init(),
+            application: .init(id: .mockRandom()),
+            date: .mockRandom(),
+            session: .init(id: .mockRandom(), type: .user),
+            view: .init(id: .mockRandom(), url: .mockRandom()),
+            vital: .mockRandom()
+        )
+    }
+
+    public static func mockAny() -> Self { .mockWith() }
+
+    public static func mockWith(
+        dd: DD = .init(),
+        application: Application = .init(id: .mockAny()),
+        date: Int64 = .mockAny(),
+        session: Session = .init(id: .mockAny(), type: .user),
+        view: View = .init(id: .mockAny(), url: .mockAny()),
+        vital: Vital = .mockAny()
+    ) -> Self {
+        .init(
+            dd: dd,
+            application: application,
+            date: date,
+            session: session,
+            view: view,
+            vital: vital
+        )
+    }
+}
+
+extension RUMVitalDurationEvent.Vital: RandomMockable {
+    public static func mockRandom() -> Self {
+        .init(
+            duration: .mockRandom(),
+            id: .mockRandom(),
+            name: .mockRandom()
+        )
+    }
+}
+
+extension RUMVitalAppLaunchEvent.Vital: RandomMockable, AnyMockable {
+    public static func mockRandom() -> Self {
+        .init(
+            appLaunchMetric: .mockRandom(),
+            duration: .mockRandom(),
+            id: .mockRandom(),
+            isPrewarmed: .mockRandom(),
+            name: .mockRandom(),
+            startupType: .mockRandom()
+        )
+    }
+
+    public static func mockAny() -> Self { .mockWith() }
+
+    public static func mockWith(
+        appLaunchMetric: AppLaunchMetric = .ttid,
+        duration: Double = .mockAny(),
+        id: String = .mockAny(),
+        isPrewarmed: Bool? = .mockAny(),
+        name: String? = .mockAny(),
+        startupType: StartupType? = .coldStart
+    ) -> Self {
+        .init(
+            appLaunchMetric: appLaunchMetric,
+            duration: duration,
+            id: id,
+            isPrewarmed: isPrewarmed,
+            name: name,
+            startupType: startupType
+        )
+    }
+}
+
+extension RUMVitalAppLaunchEvent.Vital.AppLaunchMetric: RandomMockable {
+    public static func mockRandom() -> Self {
+        [Self.ttid, .ttfd].randomElement()!
+    }
+}
+
+extension RUMVitalAppLaunchEvent.Vital.StartupType: RandomMockable {
+    public static func mockRandom() -> Self {
+        [Self.coldStart, .warmStart].randomElement()!
+    }
+}
+
 extension RUMVitalOperationStepEvent.Vital: RandomMockable {
     public static func mockRandom() -> RUMVitalOperationStepEvent.Vital {
         return RUMVitalOperationStepEvent.Vital(

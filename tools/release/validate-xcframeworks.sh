@@ -146,7 +146,6 @@ validate_xcframework "DatadogFlags.xcframework"             "${DATADOG_IOS[@]}" 
 validate_xcframework "DatadogSessionReplay.xcframework"     "${DATADOG_IOS[@]}"
 validate_xcframework "DatadogWebViewTracking.xcframework"   "${DATADOG_IOS[@]}"
 validate_xcframework "OpenTelemetryApi.xcframework"         "${DATADOG_IOS[@]}" "${DATADOG_TVOS[@]}"
-validate_xcframework "CrashReporter.xcframework"            "${IOS[@]}" "${TVOS[@]}"
 
 # Check if archive has any remaining files
 check_remaining_files "$XCF_PATH"
