@@ -138,7 +138,7 @@ validate_xcframework() {
     # List any remaining unexpected files
     list_remaining_files "$framework_path" "$framework_name"
 
-    # Step 65: Clean up
+    # Clean up
     rm -rf "$framework_path"
 }
 
