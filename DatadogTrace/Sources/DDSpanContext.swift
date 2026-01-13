@@ -34,7 +34,7 @@ internal struct DDSpanContext: OTSpanContext {
     ///    - value: The tag value.
     /// - returns: `true` if the tag should be kept by the span as it would normally be, `false` if the tag should be ignored
     /// and not kept by the span.
-    mutating func span(_ span: DDSpan, willSetTagWithKey key: String, value: Encodable) -> Bool {
+    func span(_ span: DDSpan, willSetTagWithKey key: String, value: Encodable) -> Bool {
         if key == SpanTags.manualDrop && value as? Bool == true {
             samplingDecision.addManualDropOverride()
             return false

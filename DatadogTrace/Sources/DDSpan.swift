@@ -11,8 +11,7 @@ internal final class DDSpan: OTSpan {
     /// The `Tracer` which created this span.
     private let ddTracer: DatadogTracer
     /// Span context.
-    @ReadWriteLock
-    private(set) var ddContext: DDSpanContext
+    internal let ddContext: DDSpanContext
     /// Span creation date
     internal let startTime: Date
     /// Writes span logs to Logging Feature. `nil` if Logging feature is disabled.
