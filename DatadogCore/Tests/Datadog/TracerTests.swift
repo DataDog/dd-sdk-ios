@@ -24,7 +24,7 @@ class TracerTests: XCTestCase {
         config = Trace.Configuration()
     }
 
-        override func tearDownWithError() throws {
+    override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
         config = nil
@@ -889,6 +889,110 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
         XCTAssertEqual(injectedContext.dd.samplingDecision.samplingPriority, extractedContext.dd.samplingDecision.samplingPriority)
         XCTAssertEqual(injectedContext.dd.samplingDecision.decisionMaker, extractedContext.dd.samplingDecision.decisionMaker)
+    }
+
+    // MARK: - Manually keeping/dropping spans
+
+    func testSendingManuallyKeptSpan() throws {
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
+
+        let span = tracer.startRootSpan(operationName: .mockAny())
+        span.setTag(key: SpanTags.manualKeep, value: true)
+        span.finish()
+
+        let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try spanMatcher.metrics.samplingPriority(), 2)
+        XCTAssertEqual(try spanMatcher.meta.samplingDecisionMechanism(), "-4")
+    }
+
+    func testManuallyDroppingSpan() throws {
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
+
+        let span = tracer.startRootSpan(operationName: .mockAny())
+        span.setTag(key: SpanTags.manualDrop, value: true)
+        span.finish()
+
+        XCTAssertTrue(try core.waitAndReturnSpanMatchers().isEmpty)
+    }
+
+    func testMarkingManuallyKeptRootSpanWithChildren() throws {
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
+
+        let span = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 0)
+        span.setTag(key: SpanTags.manualKeep, value: true)
+
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: span.context)
+        let grandchild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+
+        grandchild.finish()
+        child.finish()
+        span.finish()
+
+        let spanMatcher = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spanMatcher.count, 3)
+        XCTAssertEqual(try spanMatcher.filter { try $0.parentSpanID() != 0 }.count, 2)
+        XCTAssertEqual(spanMatcher.filter { (try? $0.metrics.samplingPriority()) == 2 }.count, 1)
+        XCTAssertEqual(spanMatcher.filter { (try? $0.meta.samplingDecisionMechanism()) == "-4" }.count, 1)
+    }
+
+    func testMarkingManuallyKeptChildSpanWithChildren() throws {
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
+
+        let span = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 0)
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: span.context)
+        let grandchild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+
+        span.setTag(key: SpanTags.manualKeep, value: true)
+
+        grandchild.finish()
+        child.finish()
+        span.finish()
+
+        let spanMatcher = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spanMatcher.count, 3)
+        XCTAssertEqual(try spanMatcher.filter { try $0.parentSpanID() != 0 }.count, 2)
+        XCTAssertEqual(spanMatcher.filter { (try? $0.metrics.samplingPriority()) == 2 }.count, 1)
+        XCTAssertEqual(spanMatcher.filter { (try? $0.meta.samplingDecisionMechanism()) == "-4" }.count, 1)
+    }
+
+    func testMarkingManuallyDroppedRootSpanWithChildren() throws {
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
+
+        let span = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 100)
+        span.setTag(key: SpanTags.manualDrop, value: true)
+
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: span.context)
+        let grandchild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+
+        grandchild.finish()
+        child.finish()
+        span.finish()
+
+        let spanMatcher = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spanMatcher.count, 0)
+    }
+
+    func testMarkingManuallyDroppedChildSpanWithChildren() throws {
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
+
+        let span = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 100)
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: span.context)
+        let grandchild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+
+        span.setTag(key: SpanTags.manualDrop, value: true)
+
+        grandchild.finish()
+        child.finish()
+        span.finish()
+
+        let spanMatcher = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spanMatcher.count, 0)
     }
 
     // MARK: - Span Dates Correction
