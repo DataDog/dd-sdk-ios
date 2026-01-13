@@ -8,7 +8,14 @@ import Foundation
 import DatadogInternal
 
 /// Represents a span sampling decision, including the multiple mechanisms used to make a decision.
-internal struct SamplingDecision {
+///
+/// - Note: A few words on the rationale of why this is a class instead of a struct: although we keep the
+/// sampling decision on a span context, the decision conceptually belongs to the trace. All the local spans
+/// in a trace must have the same sampling decision. By using a class, we get this behavior for free: the
+/// user may call `DDSpan.setTag(key: SpanTags.manualDrop, value: true)` on any of
+/// the spans that are part of a trace to mark the entire trace as manually dropped, since all the span contexts
+/// are pointing to the same instance of `SamplingDecision`.
+internal final class SamplingDecision {
     /// The decision mechanisms used in this decision.
     ///
     /// This dictionary should contain only the relevant mechanisms. For example, most `SamplingDecision`
@@ -20,13 +27,14 @@ internal struct SamplingDecision {
     /// - Remark: A `.fallback` mechanism always exists implicitly. However, as an optimization, it's not
     /// actually instantiated nor included in this dictionary. Getters like ``samplingPriority`` and
     /// ``decisionMaker`` should simulate its existence when necessary.
+    @ReadWriteLock
     private var mechanisms: [SamplingMechanismType: any SamplingMechanism]
 
     /// Creates a sampling decision from the given sampling.
     ///
     /// - parameters:
     ///    - sampling: A `Sampling` used to obtain the initial sampling decision.
-    init(sampling: Sampling) {
+    convenience init(sampling: Sampling) {
         let priority = sampling.sample() ? SamplingPriority.autoKeep : .autoDrop
         self.init(mechanisms: [.agentRate: FixedValueMechanism(samplingPriority: priority)])
     }
@@ -40,7 +48,7 @@ internal struct SamplingDecision {
     /// - parameters:
     ///    - samplingPriority: The sampling priority for this decision.
     ///    - decisionMaker: The sampling decision maker if known, `nil` otherwise.
-    init(from samplingPriority: SamplingPriority, decisionMaker: SamplingMechanismType?) {
+    convenience init(from samplingPriority: SamplingPriority, decisionMaker: SamplingMechanismType?) {
         if let decisionMaker {
             self.init(mechanisms: [decisionMaker: FixedValueMechanism(samplingPriority: samplingPriority)])
         } else if samplingPriority == .manualDrop || samplingPriority == .manualKeep {
@@ -55,18 +63,24 @@ internal struct SamplingDecision {
     }
 
     /// Marks this sampling decision as manually dropped.
-    mutating func addManualDropOverride() {
-        mechanisms[.manual] = FixedValueMechanism(samplingPriority: .manualDrop)
+    func addManualDropOverride() {
+        _mechanisms.mutate {
+            $0[.manual] = FixedValueMechanism(samplingPriority: .manualDrop)
+        }
     }
 
     /// Marks this sampling decision as manually kept.
-    mutating func addManualKeepOverride() {
-        mechanisms[.manual] = FixedValueMechanism(samplingPriority: .manualKeep)
+    func addManualKeepOverride() {
+        _mechanisms.mutate {
+            $0[.manual] = FixedValueMechanism(samplingPriority: .manualKeep)
+        }
     }
 
     /// Removes any existing manual override, restoring the original sampling decision.
-    mutating func removeManualOverride() {
-        mechanisms[.manual] = nil
+    func removeManualOverride() {
+        _mechanisms.mutate {
+            $0[.manual] = nil
+        }
     }
 
     /// Obtains the sampling priority from this sampling decision.

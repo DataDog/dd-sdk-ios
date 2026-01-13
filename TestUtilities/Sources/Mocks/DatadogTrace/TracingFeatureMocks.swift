@@ -334,7 +334,7 @@ extension SamplingDecision: AnyMockable, RandomMockable {
 
         switch randomPriority {
         case -1:
-            var decision = SamplingDecision(sampling: MockSampler(decision: true))
+            let decision = SamplingDecision(sampling: MockSampler(decision: true))
             decision.addManualDropOverride()
             return decision
         case 0:
@@ -342,7 +342,7 @@ extension SamplingDecision: AnyMockable, RandomMockable {
         case 1:
             return SamplingDecision(sampling: MockSampler(decision: true))
         case 2:
-            var decision = SamplingDecision(sampling: MockSampler(decision: true))
+            let decision = SamplingDecision(sampling: MockSampler(decision: true))
             decision.addManualKeepOverride()
             return decision
         default:

@@ -91,7 +91,8 @@ class HeadBasedSamplingTests: XCTestCase {
 
     func testManuallyKeepLocalTrace() throws {
         /*
-         This is the basic situation of local trace with 3 spans:
+         Situation where the local trace is marked as manual keep on the root span before any
+         child is created:
 
          client-ios-app:     [-------- parent -----------]   |
          client-ios-app:        [----- child --------]       | all 3: manual keep
@@ -123,7 +124,8 @@ class HeadBasedSamplingTests: XCTestCase {
 
     func testManuallyDropLocalTrace() throws {
         /*
-         This is the basic situation of local trace with 3 spans:
+         Situation where the local trace is marked as manual drop on the root span before any
+         child is created:
 
          client-ios-app:     [-------- parent -----------]   |
          client-ios-app:        [----- child --------]       | all 3: manual drop
@@ -151,11 +153,11 @@ class HeadBasedSamplingTests: XCTestCase {
 
     func testManuallyDropChildLocalTrace() throws {
         /*
-         This is the basic situation of local trace with 3 spans:
+         Situation where the local trace is marked as manual drop on a child span:
 
-         client-ios-app:     [-------- parent -----------]   | keep
-         client-ios-app:        [----- child --------]       | manual drop
-         client-ios-app:           [-- grandchild --]        | manual drop
+         client-ios-app:     [-------- parent -----------]   |
+         client-ios-app:        [----- child --------]       | all 3: manual drop
+         client-ios-app:           [-- grandchild --]        |
          */
         let localTraceSampling: SampleRate = 100 // Keep
 
@@ -173,21 +175,16 @@ class HeadBasedSamplingTests: XCTestCase {
         parent.finish()
 
         let spans = core.waitAndReturnSpanEvents()
-
-        XCTAssertEqual(spans.count, 1)
-        spans.forEach { span in
-            XCTAssertEqual(span.samplingPriority, .autoKeep)
-            XCTAssertEqual(span.samplingDecisionMaker, .agentRate)
-        }
+        XCTAssertEqual(spans.count, 0)
     }
 
     func testManuallyKeepChildLocalTrace() throws {
         /*
-         This is the basic situation of local trace with 3 spans:
+         Situation where the local trace is marked as manual keep on a child span:
 
-         client-ios-app:     [-------- parent -----------]   | drop
-         client-ios-app:        [----- child --------]       | manual keep
-         client-ios-app:           [-- grandchild --]        | manual keep
+         client-ios-app:     [-------- parent -----------]   |
+         client-ios-app:        [----- child --------]       | all 3: manual keep
+         client-ios-app:           [-- grandchild --]        |
          */
         let localTraceSampling: SampleRate = 0 // Drop
 
@@ -206,7 +203,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         let spans = core.waitAndReturnSpanEvents()
 
-        XCTAssertEqual(spans.count, 2)
+        XCTAssertEqual(spans.count, 3)
         spans.forEach { span in
             XCTAssertEqual(span.samplingPriority, .manualKeep)
             XCTAssertEqual(span.samplingDecisionMaker, .manual)

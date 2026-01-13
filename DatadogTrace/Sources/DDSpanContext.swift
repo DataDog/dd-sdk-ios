@@ -21,8 +21,7 @@ internal struct DDSpanContext: OTSpanContext {
     /// It is a value between `0.0` (drop) and `100.0` (keep), determined by the local or distributed trace sampler.
     let sampleRate: Float
     /// The sampling decision for the span.
-    @ReadWriteLock
-    private(set) var samplingDecision: SamplingDecision
+    let samplingDecision: SamplingDecision
 
     /// Delegate method called by ``DDSpan.setTag(key:value:)`` that filters and runs custom actions for specific tags.
     ///
@@ -37,14 +36,10 @@ internal struct DDSpanContext: OTSpanContext {
     /// and not kept by the span.
     mutating func span(_ span: DDSpan, willSetTagWithKey key: String, value: Encodable) -> Bool {
         if key == SpanTags.manualDrop && value as? Bool == true {
-            _samplingDecision.mutate {
-                $0.addManualDropOverride()
-            }
+            samplingDecision.addManualDropOverride()
             return false
         } else if key == SpanTags.manualKeep && value as? Bool == true {
-            _samplingDecision.mutate {
-                $0.addManualKeepOverride()
-            }
+            samplingDecision.addManualKeepOverride()
             return false
         }
         return true
