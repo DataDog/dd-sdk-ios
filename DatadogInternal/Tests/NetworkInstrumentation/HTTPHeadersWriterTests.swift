@@ -38,7 +38,7 @@ class HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 samplingPriority: .autoDrop,
-                samplingDecisionMaker: .agentRate,
+                samplingDecisionMaker: .agentRate
             )
         )
 
@@ -78,7 +78,7 @@ class HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 samplingPriority: .manualDrop,
-                samplingDecisionMaker: .manual,
+                samplingDecisionMaker: .manual
             )
         )
 
@@ -161,7 +161,7 @@ class HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 samplingPriority: .autoDrop,
-                samplingDecisionMaker: .agentRate,
+                samplingDecisionMaker: .agentRate
             )
         )
 
@@ -202,7 +202,7 @@ class HTTPHeadersWriterTests: XCTestCase {
                 traceID: .init(idHi: 1_234, idLo: 1_234),
                 spanID: 2_345,
                 samplingPriority: .manualDrop,
-                samplingDecisionMaker: .manual,
+                samplingDecisionMaker: .manual
             )
         )
 
