@@ -74,6 +74,14 @@ internal class objc_SpanObjc: NSObject, objc_OTSpan {
         swiftSpan.setError(kind: kind, message: message, stack: stack ?? "")
     }
 
+    func keepTrace() {
+        swiftSpan.keepTrace()
+    }
+
+    func dropTrace() {
+        swiftSpan.dropTrace()
+    }
+
     func finish() {
         swiftSpan.finish()
     }
