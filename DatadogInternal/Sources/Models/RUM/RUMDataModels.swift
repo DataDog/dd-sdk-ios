@@ -25,13 +25,16 @@ public struct Device: Codable {
     public let brightnessLevel: Double?
 
     /// Whether the device is considered a low RAM device (Android)
-    public let isLowRamDevice: Bool?
+    public let isLowRam: Bool?
 
     /// The user’s locale as a language tag combining language and region, e.g. 'en-US'.
     public let locale: String?
 
     /// Ordered list of the user’s preferred system languages as IETF language tags.
     public let locales: [String]?
+
+    /// Number of logical CPU cores available for scheduling on the device at runtime, as reported by the operating system.
+    public let logicalCpuCount: Double?
 
     /// Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
     public let model: String?
@@ -41,9 +44,6 @@ public struct Device: Codable {
 
     /// Whether the device is in power saving mode.
     public let powerSavingMode: Bool?
-
-    /// Number of device processors
-    public let processorCount: Double?
 
     /// The device’s current time zone identifier, e.g. 'Europe/Berlin'.
     public let timeZone: String?
@@ -59,13 +59,13 @@ public struct Device: Codable {
         case batteryLevel = "battery_level"
         case brand = "brand"
         case brightnessLevel = "brightness_level"
-        case isLowRamDevice = "is_low_ram_device"
+        case isLowRam = "is_low_ram"
         case locale = "locale"
         case locales = "locales"
+        case logicalCpuCount = "logical_cpu_count"
         case model = "model"
         case name = "name"
         case powerSavingMode = "power_saving_mode"
-        case processorCount = "processor_count"
         case timeZone = "time_zone"
         case totalRam = "total_ram"
         case type = "type"
@@ -78,13 +78,13 @@ public struct Device: Codable {
     ///   - batteryLevel: Current battery level of the device (0.0 to 1.0).
     ///   - brand: Device marketing brand, e.g. Apple, OPPO, Xiaomi, etc.
     ///   - brightnessLevel: Current screen brightness level (0.0 to 1.0).
-    ///   - isLowRamDevice: Whether the device is considered a low RAM device (Android)
+    ///   - isLowRam: Whether the device is considered a low RAM device (Android)
     ///   - locale: The user’s locale as a language tag combining language and region, e.g. 'en-US'.
     ///   - locales: Ordered list of the user’s preferred system languages as IETF language tags.
+    ///   - logicalCpuCount: Number of logical CPU cores available for scheduling on the device at runtime, as reported by the operating system.
     ///   - model: Device SKU model, e.g. Samsung SM-988GN, etc. Quite often name and model can be the same.
     ///   - name: Device marketing name, e.g. Xiaomi Redmi Note 8 Pro, Pixel 5, etc.
     ///   - powerSavingMode: Whether the device is in power saving mode.
-    ///   - processorCount: Number of device processors
     ///   - timeZone: The device’s current time zone identifier, e.g. 'Europe/Berlin'.
     ///   - totalRam: Total RAM in megabytes
     ///   - type: Device type info
@@ -93,13 +93,13 @@ public struct Device: Codable {
         batteryLevel: Double? = nil,
         brand: String? = nil,
         brightnessLevel: Double? = nil,
-        isLowRamDevice: Bool? = nil,
+        isLowRam: Bool? = nil,
         locale: String? = nil,
         locales: [String]? = nil,
+        logicalCpuCount: Double? = nil,
         model: String? = nil,
         name: String? = nil,
         powerSavingMode: Bool? = nil,
-        processorCount: Double? = nil,
         timeZone: String? = nil,
         totalRam: Double? = nil,
         type: DeviceType? = nil
@@ -108,13 +108,13 @@ public struct Device: Codable {
         self.batteryLevel = batteryLevel
         self.brand = brand
         self.brightnessLevel = brightnessLevel
-        self.isLowRamDevice = isLowRamDevice
+        self.isLowRam = isLowRam
         self.locale = locale
         self.locales = locales
+        self.logicalCpuCount = logicalCpuCount
         self.model = model
         self.name = name
         self.powerSavingMode = powerSavingMode
-        self.processorCount = processorCount
         self.timeZone = timeZone
         self.totalRam = totalRam
         self.type = type
@@ -4583,13 +4583,13 @@ public struct RUMTelemetryDevice: Codable {
     public let brand: String?
 
     /// Whether the device is considered a low RAM device (Android)
-    public let isLowRamDevice: Bool?
+    public let isLowRam: Bool?
+
+    /// Number of logical CPU cores available for scheduling on the device at runtime, as reported by the operating system.
+    public let logicalCpuCount: Double?
 
     /// Model of the device
     public let model: String?
-
-    /// Number of device processors
-    public let processorCount: Double?
 
     /// Total RAM in megabytes
     public let totalRam: Double?
@@ -4597,9 +4597,9 @@ public struct RUMTelemetryDevice: Codable {
     public enum CodingKeys: String, CodingKey {
         case architecture = "architecture"
         case brand = "brand"
-        case isLowRamDevice = "is_low_ram_device"
+        case isLowRam = "is_low_ram"
+        case logicalCpuCount = "logical_cpu_count"
         case model = "model"
-        case processorCount = "processor_count"
         case totalRam = "total_ram"
     }
 
@@ -4608,23 +4608,23 @@ public struct RUMTelemetryDevice: Codable {
     /// - Parameters:
     ///   - architecture: Architecture of the device
     ///   - brand: Brand of the device
-    ///   - isLowRamDevice: Whether the device is considered a low RAM device (Android)
+    ///   - isLowRam: Whether the device is considered a low RAM device (Android)
+    ///   - logicalCpuCount: Number of logical CPU cores available for scheduling on the device at runtime, as reported by the operating system.
     ///   - model: Model of the device
-    ///   - processorCount: Number of device processors
     ///   - totalRam: Total RAM in megabytes
     public init(
         architecture: String? = nil,
         brand: String? = nil,
-        isLowRamDevice: Bool? = nil,
+        isLowRam: Bool? = nil,
+        logicalCpuCount: Double? = nil,
         model: String? = nil,
-        processorCount: Double? = nil,
         totalRam: Double? = nil
     ) {
         self.architecture = architecture
         self.brand = brand
-        self.isLowRamDevice = isLowRamDevice
+        self.isLowRam = isLowRam
+        self.logicalCpuCount = logicalCpuCount
         self.model = model
-        self.processorCount = processorCount
         self.totalRam = totalRam
     }
 }
@@ -11313,6 +11313,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
             /// Schema of mobile specific features usage
             public enum TelemetryMobileFeaturesUsage: Codable {
                 case addViewLoadingTime(value: AddViewLoadingTime)
+                case trackWebView(value: TrackWebView)
 
                 // MARK: - Codable
 
@@ -11323,6 +11324,8 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     switch self {
                     case .addViewLoadingTime(let value):
                         try container.encode(value)
+                    case .trackWebView(let value):
+                        try container.encode(value)
                     }
                 }
 
@@ -11332,6 +11335,10 @@ public struct TelemetryUsageEvent: RUMDataModel {
 
                     if let value = try? container.decode(AddViewLoadingTime.self) {
                         self = .addViewLoadingTime(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(TrackWebView.self) {
+                        self = .trackWebView(value: value)
                         return
                     }
                     let error = DecodingError.Context(
@@ -11378,6 +11385,17 @@ public struct TelemetryUsageEvent: RUMDataModel {
                         self.noView = noView
                         self.overwritten = overwritten
                     }
+                }
+
+                public struct TrackWebView: Codable {
+                    /// trackWebView API
+                    public let feature: String = "trackWebView"
+
+                    public enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+
+                    public init() { }
                 }
             }
         }
@@ -11438,4 +11456,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/9095192ef42663e455f26376202b447649e0acd6
+// Generated from https://github.com/DataDog/rum-events-format/tree/32918d999701fb7bfd876369e27ced77d6de1809

@@ -45,7 +45,9 @@ class TracerTests: XCTestCase {
             device: .mockWith(
                 name: "iPhone",
                 model: "iPhone10,1",
-                architecture: "arm64"
+                architecture: "arm64",
+                logicalCpuCount: 4,
+                totalRam: 2_048
             ),
             os: .mockWith(
                 version: "15.4.1",
@@ -85,10 +87,12 @@ class TracerTests: XCTestCase {
                 "brand": "Apple",
                 "brightness_level": 0,
                 "locale": "en-US",
+                "logical_cpu_count": 4,
                 "model": "iPhone10,1",
                 "name": "iPhone",
                 "power_saving_mode": 0,
                 "time_zone": "Europe/Paris",
+                "total_ram": 2048,
                 "type": "mobile"
               },
               "meta.os": {

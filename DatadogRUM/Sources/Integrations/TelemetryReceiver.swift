@@ -478,7 +478,9 @@ fileprivate extension RUMTelemetryDevice {
         self.init(
             architecture: device.architecture,
             brand: device.brand,
-            model: device.model
+            logicalCpuCount: device.logicalCpuCount,
+            model: device.model,
+            totalRam: device.totalRam
         )
     }
 }
