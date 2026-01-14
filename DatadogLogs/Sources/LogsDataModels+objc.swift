@@ -198,6 +198,10 @@ public class objc_LogEventUserInfo: NSObject {
         root.swiftModel.userInfo.email
     }
 
+    public var anonymousId: String? {
+        root.swiftModel.userInfo.anonymousId
+    }
+
     public var extraInfo: [String: Any] {
         set { root.swiftModel.userInfo.extraInfo = newValue.dd.swiftAttributes }
         get { root.swiftModel.userInfo.extraInfo.dd.objCAttributes }
