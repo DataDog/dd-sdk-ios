@@ -169,4 +169,42 @@ class DDSpanTests: XCTestCase {
             XCTAssertEqual(dd.logger.warnLog?.message, expectedConsoleWarning)
         }
     }
+
+    // MARK: Sampling convenience methods
+
+    func testKeepTraceFunctionSetsExpectedSamplingDecision() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        let core = PassthroughCoreMock(messageReceiver: FeatureMessageReceiverMock())
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.startSpan(operationName: "the span") as! DDSpan
+        let context = span.context as! DDSpanContext
+
+        XCTAssertTrue(context.samplingDecision.samplingPriority == .autoKeep || context.samplingDecision.samplingPriority == .autoDrop)
+        XCTAssertEqual(context.samplingDecision.decisionMaker, .agentRate)
+
+        span.keepTrace()
+
+        XCTAssertEqual(context.samplingDecision.samplingPriority, .manualKeep)
+        XCTAssertEqual(context.samplingDecision.decisionMaker, .manual)
+    }
+
+    func testDropTraceFunctionSetsExpectedSamplingDecision() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        let core = PassthroughCoreMock(messageReceiver: FeatureMessageReceiverMock())
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.startSpan(operationName: "the span") as! DDSpan
+        let context = span.context as! DDSpanContext
+
+        XCTAssertTrue(context.samplingDecision.samplingPriority == .autoKeep || context.samplingDecision.samplingPriority == .autoDrop)
+        XCTAssertEqual(context.samplingDecision.decisionMaker, .agentRate)
+
+        span.dropTrace()
+
+        XCTAssertEqual(context.samplingDecision.samplingPriority, .manualDrop)
+        XCTAssertEqual(context.samplingDecision.decisionMaker, .manual)
+    }
 }
