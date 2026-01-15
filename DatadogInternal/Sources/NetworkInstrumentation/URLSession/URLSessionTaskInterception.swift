@@ -60,8 +60,7 @@ public class URLSessionTaskInterception {
     /// Setting the value to 'rum' will indicate that the span is reported as a RUM Resource.
     public private(set) var origin: String?
     /// Task state tracked via `setState:` swizzling.
-    /// State values: 0=Suspended, 1=Running, 2=Canceling, 3=Completed
-    private var taskState: Int?
+    internal var taskState: URLSessionTask.State?
 
     init(request: ImmutableRequest, isFirstParty: Bool, trackingMode: TrackingMode) {
         self.identifier = UUID()
@@ -102,7 +101,7 @@ public class URLSessionTaskInterception {
     }
 
     func register(state: Int) {
-        self.taskState = state
+        self.taskState = URLSessionTask.State(rawValue: state)
     }
 
     func register(responseSize: Int64) {
@@ -119,8 +118,7 @@ public class URLSessionTaskInterception {
         switch trackingMode {
         case .automatic:
             // In automatic mode, complete as soon as we have completion or state completion
-            // Task state == 3 means Completed
-            let isStateComplete = (taskState ?? 0) == 3
+            let isStateComplete = taskState == .completed
             return completion != nil || isStateComplete
         case .metrics:
             // In metrics mode, wait for both metrics AND completion

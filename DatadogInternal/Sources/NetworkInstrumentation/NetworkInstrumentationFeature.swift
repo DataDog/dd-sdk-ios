@@ -502,7 +502,7 @@ extension NetworkInstrumentationFeature {
     ///
     /// - Parameters:
     ///   - task: The task whose state has changed.
-    ///   - state: The new state of the task (maps to URLSessionTask.State).
+    ///   - state: The new state of the task (maps to URLSessionTask.State: 0=running, 1=suspended, 2=canceling, 3=completed).
     internal func task(_ task: URLSessionTask, didChangeToState state: Int) {
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
@@ -512,9 +512,11 @@ extension NetworkInstrumentationFeature {
             // Register the state change
             interception.register(state: state)
 
-            // When task completes (state == 3), also register the response/error if not already done
+            // When task completes, also register the response/error if not already done
             // This ensures completion is recorded even for async/await or delegate-less tasks without completion handlers
-            if state == 3 && interception.completion == nil {
+            // Note: We wait for .completed rather than .canceling because task.error is only populated
+            // after the task fully transitions to completed state
+            if state == URLSessionTask.State.completed.rawValue && interception.completion == nil {
                 interception.register(
                     response: task.response,
                     error: task.error
