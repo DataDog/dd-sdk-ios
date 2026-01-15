@@ -168,6 +168,7 @@ public class objc_LogEventUserInfo: NSObject
     public var id: String?
     public var name: String?
     public var email: String?
+    public var anonymousId: String?
     public var extraInfo: [String: Any]
 public class objc_LogEventAccountInfo: NSObject
     public var id: String
