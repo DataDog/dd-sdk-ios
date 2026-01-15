@@ -89,6 +89,12 @@ public enum SessionReplay {
 
         let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)
         try core.register(feature: sessionReplay)
+        core.set(
+            context: SessionReplayCoreContext.Configuration(
+                sampleRate: Double(configuration.replaySampleRate),
+                startRecordingManually: !configuration.startRecordingImmediately
+            )
+        )
 
         core.telemetry.configuration(
             defaultPrivacyLevel: nil,
