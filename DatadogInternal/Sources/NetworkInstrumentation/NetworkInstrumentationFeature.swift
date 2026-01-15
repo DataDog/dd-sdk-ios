@@ -313,8 +313,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 }
 
 extension NetworkInstrumentationFeature {
-
-    /// Determines whether this swizzler should intercept a given task based on the configuration mode.
+    /// Determines whether a task should be intercepted based on the tracking mode.
     ///
     /// - Metrics mode (delegate class configured): Only intercepts tasks with the registered delegate
     /// - Automatic mode (no delegate class): Intercepts all tasks except those with delegates registered in metrics mode
