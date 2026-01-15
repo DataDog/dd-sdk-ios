@@ -28,8 +28,8 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         try swizzler.swizzle(
             interceptSetState: { _, state in
                 interceptedStates.append(state)
-                // Only fulfill when we see Completed state
-                if state == 3 {
+                // Only fulfill when we see completed state
+                if state == URLSessionTask.State.completed.rawValue {
                     completionExpectation.fulfill()
                 }
             }
@@ -44,9 +44,9 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         // Then - Wait for completion state
         wait(for: [completionExpectation], timeout: 3)
 
-        // Verify we intercepted state changes (Running and Completed)
-        XCTAssertTrue(interceptedStates.contains(where: { $0 == 1 }), "Should intercept Running state")
-        XCTAssertTrue(interceptedStates.contains(where: { $0 == 3 }), "Should intercept Completed state")
+        // Verify we intercepted state changes
+        XCTAssertTrue(interceptedStates.contains(where: { $0 == URLSessionTask.State.running.rawValue }), "Should intercept running state")
+        XCTAssertTrue(interceptedStates.contains(where: { $0 == URLSessionTask.State.completed.rawValue }), "Should intercept completed state")
 
         swizzler.unswizzle()
     }
@@ -62,8 +62,8 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         try swizzler.swizzle(
             interceptSetState: { _, state in
                 interceptedStates.append(state)
-                // Only fulfill when we see Completed state
-                if state == 3 {
+                // Only fulfill when we see completed state
+                if state == URLSessionTask.State.completed.rawValue {
                     completionExpectation.fulfill()
                 }
             }
@@ -78,9 +78,9 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         // Then - Wait for completion state
         wait(for: [completionExpectation], timeout: 3)
 
-        // Verify we intercepted state changes (Running and Completed)
-        XCTAssertTrue(interceptedStates.contains(where: { $0 == 1 }), "Should intercept Running state")
-        XCTAssertTrue(interceptedStates.contains(where: { $0 == 3 }), "Should intercept Completed state")
+        // Verify we intercepted state changes
+        XCTAssertTrue(interceptedStates.contains(where: { $0 == URLSessionTask.State.running.rawValue }), "Should intercept running state")
+        XCTAssertTrue(interceptedStates.contains(where: { $0 == URLSessionTask.State.completed.rawValue }), "Should intercept completed state")
 
         swizzler.unswizzle()
     }
@@ -96,8 +96,8 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         try swizzler.swizzle(
             interceptSetState: { _, state in
                 interceptedStates.append(state)
-                // Only fulfill when we see a completion state (Canceling or Completed)
-                if state >= 2 {
+                // Only fulfill when we see canceling or completed state
+                if state >= URLSessionTask.State.canceling.rawValue {
                     completionExpectation.fulfill()
                 }
             }
@@ -109,14 +109,17 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         let task = session.dataTask(with: url) { _, _, _ in }
         task.resume()
         Thread.sleep(forTimeInterval: 0.1) // Let task start
-        task.cancel() // Triggers Running → Canceling → Completed (Canceling state may be very brief)
+        task.cancel() // Triggers running → canceling → completed (canceling state may be very brief)
 
         // Then - Wait for completion state
         wait(for: [completionExpectation], timeout: 3)
 
         // Verify we intercepted cancellation state
-        // Note: Canceling (2) is very brief and may be missed due to timing - we may only see Completed (3)
-        XCTAssertTrue(interceptedStates.contains(where: { $0 >= 2 }), "Should intercept Canceling or Completed state")
+        // Note: Canceling state is very brief and may be missed due to timing - we may only see completed
+        XCTAssertTrue(
+            interceptedStates.contains(where: { $0 >= URLSessionTask.State.canceling.rawValue }),
+            "Should intercept canceling or completed state"
+        )
 
         swizzler.unswizzle()
     }
@@ -174,8 +177,8 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         try swizzler.swizzle(
             interceptSetState: { _, state in
                 interceptedStates.append(state)
-                // Only fulfill when we see Completed state
-                if state == 3 {
+                // Only fulfill when we see completed state
+                if state == URLSessionTask.State.completed.rawValue {
                     completionExpectation.fulfill()
                 }
             }
@@ -192,8 +195,8 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         // Then
         await fulfillment(of: [completionExpectation], timeout: 5)
 
-        // Verify we intercepted Completed state
-        XCTAssertTrue(interceptedStates.contains(where: { $0 == 3 }), "Should intercept Completed state")
+        // Verify we intercepted completed state
+        XCTAssertTrue(interceptedStates.contains(where: { $0 == URLSessionTask.State.completed.rawValue }), "Should intercept completed state")
 
         swizzler.unswizzle()
     }
@@ -209,8 +212,8 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         try swizzler.swizzle(
             interceptSetState: { _, state in
                 interceptedStates.append(state)
-                // Only fulfill when we see Completed state
-                if state == 3 {
+                // Only fulfill when we see completed state
+                if state == URLSessionTask.State.completed.rawValue {
                     completionExpectation.fulfill()
                 }
             }
@@ -225,8 +228,8 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         // Then - Wait for completion state
         wait(for: [completionExpectation], timeout: 5)
 
-        // Verify we intercepted Completed state
-        XCTAssertTrue(interceptedStates.contains(where: { $0 == 3 }), "Should intercept Completed state")
+        // Verify we intercepted completed state
+        XCTAssertTrue(interceptedStates.contains(where: { $0 == URLSessionTask.State.completed.rawValue }), "Should intercept completed state")
 
         swizzler.unswizzle()
     }
