@@ -30,7 +30,6 @@
  * - **Buffer Size**: 10,000 samples to capture entire launch phase
  * - **Stack Depth**: 64 frames maximum per trace
  * - **Thread Coverage**: All threads in the process
- * - **Profiling Sample Rate**: 10% sampled sessions.
  *
  * # Usage Example
  * 
@@ -86,10 +85,6 @@
 #define DD_PROFILING_USER_DEFAULTS_SUITE_NAME "com.datadoghq.ios-sdk.profiling"
 #define DD_PROFILING_IS_ENABLED_KEY "is_profiling_enabled"
 #define DD_PROFILING_SAMPLE_RATE_KEY "profiling_sample_rate"
-
-// Profiling configuration constants
-/// Profiling sample rate percentage (0-100).
-#define DD_PROFILING_SAMPLE_RATE 10 // 10%
 
 #ifdef __cplusplus
 namespace dd::profiler {

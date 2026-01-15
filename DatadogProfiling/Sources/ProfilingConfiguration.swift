@@ -18,7 +18,7 @@ extension Profiling {
         ///
         /// It must be a number between 0.0 and 100.0, where 0 means no profiles will be collected.
         ///
-        /// Default: `10.0`.
+        /// Default: `5.0`.
         public var applicationLaunchSampleRate: SampleRate
 
         // MARK: - Internal
@@ -31,7 +31,7 @@ extension Profiling {
         ///   - sampleRate: The sampling rate for Profiling.
         public init(
             customEndpoint: URL? = nil,
-            applicationLaunchSampleRate: SampleRate = 10
+            applicationLaunchSampleRate: SampleRate = 5
         ) {
             self.customEndpoint = customEndpoint
             self.applicationLaunchSampleRate = applicationLaunchSampleRate
