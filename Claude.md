@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Guidelines
+
+**ALWAYS adhere to AGENTS.md at all times.** This file contains comprehensive development patterns, conventions, and best practices for the Datadog iOS SDK project.
+
 ## Overview
 
 This is the Datadog SDK for iOS and tvOS - a modular Swift/Objective-C library for observability (Logs, Traces, RUM, Session Replay, Crash Reporting, WebView Tracking, and Feature Flags).
@@ -89,8 +93,7 @@ The SDK is organized into independent, modular targets:
 
 - **DatadogInternal**: Internal shared utilities, protocols, and models used across all modules. Contains core infrastructure like context providers, message bus, network instrumentation base, telemetry, and storage protocols.
 
-- **DatadogCore**: The main SDK module providing initialization, configuration, context management, data storage/upload, and the message bus for inter-module communication. Required by all other modules.
-
+- **DatadogCore**: The main SDK module providing initialization, configuration, context management, data storage/upload, and the message bus for inter-module communication.
 - **DatadogLogs**: Logs collection feature
 - **DatadogTrace**: APM trace collection with OpenTelemetry API support
 - **DatadogRUM**: Real User Monitoring (RUM) events collection

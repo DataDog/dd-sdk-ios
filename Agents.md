@@ -8,7 +8,7 @@ The SDK is responsible for reliably collecting, batching, and transmitting telem
 
 This is the **Datadog SDK for iOS and tvOS** - Swift and Objective-C libraries to interact with Datadog. The SDK enables:
 - **Logs**: Send logs to Datadog
-- **Traces**: Distributed tracing
+- **Traces**: OpenTelemetry-compatible tracer for sending traces (including distributed tracing)
 - **RUM**: Real User Monitoring events collection
 - **Session Replay**: Visual session recording
 - **Crash Reporting**: Crash detection and reporting
@@ -32,14 +32,13 @@ The SDK is organized as a **modular monorepo**. Understanding module dependencie
 DatadogInternal (shared protocols, types, utilities)
        ↑
        ├── DatadogCore (SDK initialization, data pipeline, networking)
-       │        ↑
-       │        ├── DatadogLogs
-       │        ├── DatadogTrace
-       │        ├── DatadogRUM
-       │        ├── DatadogSessionReplay
-       │        ├── DatadogCrashReporting
-       │        ├── DatadogWebViewTracking
-       │        └── DatadogFlags
+       ├── DatadogLogs
+       ├── DatadogTrace
+       ├── DatadogRUM
+       ├── DatadogSessionReplay
+       ├── DatadogCrashReporting
+       ├── DatadogWebViewTracking
+       └── DatadogFlags
 ```
 
 - Feature modules MUST NOT import each other
@@ -48,14 +47,15 @@ DatadogInternal (shared protocols, types, utilities)
 
 ### IMPORTANT: Call Site Synchronization
 
-**When modifying code in feature modules (Logs, Trace, RUM, etc.), you MUST check and update corresponding call sites in `DatadogCore` and `DatadogInternal`.**
+**When modifying code in feature modules (Logs, Trace, RUM, etc.), you MUST check if any corresponding call sites in `DatadogCore` and `DatadogInternal` needs to be updated.**
 
 Common oversight:
 Agents modify a module's interface or behavior but forget to:
-- Update how `DatadogCore` initializes or registers the feature
-- Update extraction/encoding logic in `DatadogInternal`
+- Update how `DatadogCore` registers the feature
+- Update the shared types present in `DatadogInternal`
+- Update the manual data encoders (`SpanEventEncoder`, `LogEventEncoder`, ...) which leads to new attributes to not be reported
 - Update integration points in other modules that depend on the changed code
-- update ObjC bridges when needed
+- update ObjC bridges
 Agents add, remove, move files but forget to:
 - Update the corresponding pbxproj files accordingly.
 
@@ -65,17 +65,17 @@ Agents add, remove, move files but forget to:
 
 ### Commit Requirements
 - **All commits MUST be signed** (GPG or SSH signature)
-- **Prefix**: `[RUM-XXXX]` where XXXX is the JIRA ticket number. It applies only for internal development. Third party contributions do not need it.
-- Example: `[RUM-1234] Add baggage header merging support`
+- **Prefix**: `[PROJECT-XXXX]` where PROJECT is the JIRA Project shortname (RUM, FFL, ...) and XXXX is the JIRA ticket number. It applies only for internal development. Third party contributions do not need it.
+- Example: `[RUM-1234] Add baggage header merging support`, `[FFL-213] Add Feature Flags support`
 
 ### PR Requirements
-- **Title prefix**: `[RUM-XXXX]` matching the JIRA ticket
+- **Title prefix**: `[PROJECT-XXXX]` matching the JIRA ticket
 - Include thorough test coverage
 - Pass all CI checks (lint, tests, API surface verification)
 
 ## RFC Process for Major Changes
 
-**Major behavioral changes require a Request for Comment (RFC) process.**
+**Major behavioral changes require a Request for Comments (RFC) process.**
 
 If you're about to make a change that:
 - Modifies SDK public API significantly
@@ -86,7 +86,7 @@ If you're about to make a change that:
 
 **→ STOP and inform the engineer.** Such changes:
 1. Require internal RFC approval
-2. May need cross-platform alignment (Android, Browser, React Native SDKs)
+2. May need cross-platform alignment with other SDKs (Android, Browser, React Native, Flutter, ...)
 3. Must consider backwards compatibility
 
 ## SDK Philosophy
@@ -163,12 +163,6 @@ The project uses SwiftLint with custom rules:
 ./tools/lint/run-linter.sh --fix
 ```
 
-### Key Lint Rules
-- **TODO comments must include JIRA reference**: `// TODO: RUM-123 description`
-- **No `UIApplication.shared`**: Use `UIApplication.managedShared` instead
-- **No `URLRequest.allHTTPHeaderFields`**: Use `URLRequest.value(forHTTPHeaderField:)` 
-- **Avoid Required Reason API conflicts**: Don't use names that conflict with Apple's privacy APIs
-
 Do not disable lint rules except where the rule is incorrect and a Jira ticket exists to track reinstating it.
 
 ## Building
@@ -233,12 +227,17 @@ All source files must include the Apache License header:
 
 Avoid adding new dependencies unless absolutely necessary (small footprint principle).
 
+## Extension Libraries
+
+- **Datadog Integration for Apollo iOS**: https://github.com/DataDog/dd-sdk-ios-apollo-interceptor, extracts GraphQL Operation information automatically from GraphQL Requests to let DatadogRUM enrich GraphQL RUM Resources
+
 ## Forbidden Actions for Agents
 - Do NOT modify generated files (RUM and Session Replay models)
 - Do NOT add new dependencies without explicit approval
 - Do NOT change networking formats or endpoints
 - Do NOT introduce new public API without RFC review
 - Do NOT edit build scripts unless instructed
+- NEVER mention AI assistant names (Claude, ChatGPT, Cursor, Copilot, etc.) in: Commit messages, PR descriptions, Code comments, Co-author tags
 
 ## Platform Support
 
@@ -248,6 +247,11 @@ Avoid adding new dependencies unless absolutely necessary (small footprint princ
 - watchOS 7.0+ (limited modules)
 
 Agents must not introduce APIs that require newer OS versions unless approved.
+
+## Continuous learning
+
+When discovering new patterns or common mistakes during tasks,
+update this file to help future agents avoid the same pitfalls.
 
 ## Quick Reference
 
