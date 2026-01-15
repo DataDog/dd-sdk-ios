@@ -96,34 +96,23 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 }
 
-                // Determine if this swizzler should intercept this task
-                let shouldIntercept: Bool
-                if let delegateClass = configuration?.delegateClass {
-                    // Metrics mode: only intercept tasks with the registered delegate
-                    shouldIntercept = task.dd.delegate?.isKind(of: delegateClass) == true
-                } else {
-                    // Automatic mode: skip if task has a delegate registered in metrics mode
-                    if let delegate = task.dd.delegate, self.isRegisteredDelegate(delegate) {
-                        shouldIntercept = false
-                    } else {
-                        shouldIntercept = true
-                    }
+                // Determine if this swizzler should intercept this task based on the configuration
+                guard shouldInterceptTask(task, for: configuration) else {
+                    return
                 }
 
                 // Only perform interception if this swizzler should handle this task
                 // This allows the swizzler chain to continue for tasks we don't handle
-                if shouldIntercept {
-                    var injectedTraceContexts: [TraceContext]?
+                var injectedTraceContexts: [TraceContext]?
 
-                    let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration?.firstPartyHostsTracing) ?? .init()
-                    if let currentRequest = task.currentRequest {
-                        let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
-                        task.dd.override(currentRequest: request)
-                        injectedTraceContexts = traceContexts
-                    }
-
-                    self.intercept(task: task, with: injectedTraceContexts ?? [], additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode)
+                let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration?.firstPartyHostsTracing) ?? .init()
+                if let currentRequest = task.currentRequest {
+                    let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
+                    task.dd.override(currentRequest: request)
+                    injectedTraceContexts = traceContexts
                 }
+
+                self.intercept(task: task, with: injectedTraceContexts ?? [], additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode)
             }
         )
 
@@ -324,6 +313,31 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 }
 
 extension NetworkInstrumentationFeature {
+
+    /// Determines whether this swizzler should intercept a given task based on the configuration mode.
+    ///
+    /// - Metrics mode (delegate class configured): Only intercepts tasks with the registered delegate
+    /// - Automatic mode (no delegate class): Intercepts all tasks except those with delegates registered in metrics mode
+    ///
+    /// This coordination prevents double-processing when both automatic and metrics modes are enabled.
+    ///
+    /// - Parameters:
+    ///   - task: The URLSessionTask to check
+    ///   - configuration: The instrumentation configuration
+    /// - Returns: `true` if this swizzler should intercept the task, `false` otherwise
+    private func shouldInterceptTask( _ task: URLSessionTask, for configuration: URLSessionInstrumentation.Configuration?) -> Bool {
+        if let delegateClass = configuration?.delegateClass {
+            // Metrics mode: only intercept tasks with our registered delegate
+            return task.dd.delegate?.isKind(of: delegateClass) == true
+        } else {
+            // Automatic mode: skip tasks with delegates registered in metrics mode
+            if let delegate = task.dd.delegate, isRegisteredDelegate(delegate) {
+                return false
+            }
+            return true
+        }
+    }
+
     /// Checks if a URLRequest is an SDK internal request that should not be tracked
     ///
     /// - Parameter request: The URLRequest to check.
