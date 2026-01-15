@@ -55,8 +55,8 @@ class URLSessionTaskInterceptionTests: XCTestCase {
     func testInAutomaticMode_whenInterceptionReceivesCompletionState_itIsConsideredDone() {
         let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .automatic)
 
-        // When - Register state >= 2 (Canceling or Completed)
-        interception.register(state: 3) // Completed
+        // When - Register completed state
+        interception.register(state: URLSessionTask.State.completed.rawValue) // Completed
 
         // Then - In automatic mode, state-based completion is sufficient
         XCTAssertTrue(interception.isDone)
@@ -65,10 +65,20 @@ class URLSessionTaskInterceptionTests: XCTestCase {
     func testInAutomaticMode_whenInterceptionReceivesOnlyRunningState_itIsNotDone() {
         let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .automatic)
 
-        // When - Register state = 1 (Running)
-        interception.register(state: 1)
+        // When - Register running state
+        interception.register(state: URLSessionTask.State.running.rawValue)
 
-        // Then - In automatic mode, running state alone is not sufficient for completion (state must be >= 2)
+        // Then - In automatic mode, running state alone is not sufficient for completion
+        XCTAssertFalse(interception.isDone)
+    }
+
+    func testInAutomaticMode_whenInterceptionReceivesOnlySuspendedState_itIsNotDone() {
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .automatic)
+
+        // When - Register suspended state
+        interception.register(state: URLSessionTask.State.suspended.rawValue)
+
+        // Then - In automatic mode, suspended state alone is not sufficient for completion
         XCTAssertFalse(interception.isDone)
     }
 
