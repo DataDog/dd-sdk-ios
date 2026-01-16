@@ -509,6 +509,12 @@ bool mach_sampling_profiler::start_sampling() {
  * new sampling sessions from starting until cleanup is complete.
  */
 void mach_sampling_profiler::stop_sampling() {
+    // Avoid deadlock if the sampling thread triggers the stop when it reaches the timeout.
+    if (pthread_equal(pthread_self(), sampling_thread)) {
+        running = false;
+        return;
+    }
+
     std::lock_guard<std::mutex> lock(state_mutex);
     
     if (!running) return;
