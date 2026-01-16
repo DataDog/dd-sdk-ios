@@ -1,6 +1,8 @@
 # Unreleased
 
 - [FEATURE] Add `DatadogProfiling` module to profile app launches. See [#2654][]
+- [FEATURE] Automatic network instrumentation now tracks `URLSession` requests without requiring delegate registration. See [#2620][]
+- [FEATURE] Deprecate `URLSessionInstrumentation.enable(with:in:)` API in favor of `URLSessionInstrumentation.trackMetrics(with:in:)`. See [#2634][]
 - [IMPROVEMENT] Add `DDLogEventUserInfo.anonymousId` property in ObjC API. See [#2640][]
 - [FEATURE] Support manually keeping or dropping a trace. See [#2639][]
 
@@ -14,8 +16,6 @@
 - [FEATURE] Add public API to report time to full display (TTFD). See [#2522][]
 - [IMPROVEMENT] Remove `application_start` action from `ApplicationLaunch`. See [#2533][]
 - [FEATURE] Track Slow Frames (view hitches) by default. See [#2631][]
-- [FEATURE] Automatic network instrumentation now tracks `URLSession` requests without requiring delegate registration. See [#2620][]
-- [FEATURE] Deprecate `URLSessionInstrumentation.enable(with:in:)` API in favor of `URLSessionInstrumentation.trackMetrics(with:in:)`. See [#2634][]
 - [IMPROVEMENT] Upgrade `DatadogTrace` to OpenTelemetryApi 2.3.0. See [#2614][]
 - [IMPROVEMENT] RUM auto-instrumentation now supports Alerts, Confirmation Dialogs and Action Sheets. See [#2612][]
 - [IMPROVEMENT] Replace `PLCrashReporter` by `KSCrash` as `DatadogCrashReporting plugin. See [#2633][]
