@@ -323,7 +323,7 @@ class DDTracerTests: XCTestCase {
 
         let expectedHTTPHeaders = [
             "traceparent": "00-000000000000000a0000000000000064-00000000000000c8-01",
-            "tracestate": "dd=p:00000000000000c8;s:1"
+            "tracestate": "dd=p:00000000000000c8;s:1;t.dm:-1"
         ]
         XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }

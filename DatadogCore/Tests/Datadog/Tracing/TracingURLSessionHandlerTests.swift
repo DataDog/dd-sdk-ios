@@ -248,7 +248,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "x-datadog-trace-id": "100",
                 "x-datadog-tags": "_dd.p.tid=a,_dd.p.dm=-1",
                 "baggage": "session.id=\(fakeSessionId)",
-                "tracestate": "dd=p:0000000000000064;s:1",
+                "tracestate": "dd=p:0000000000000064;s:1;t.dm:-1",
                 "x-datadog-parent-id": "100",
                 "x-datadog-sampling-priority": "1"
             ]
