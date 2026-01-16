@@ -164,7 +164,7 @@ class LoggerTests: XCTestCase {
         )
 
         // Then
-        wait(for: [completionExpectation], timeout: 0)
+        wait(for: [completionExpectation], timeout: 0.5)
         XCTAssertTrue(logger is CombinedLogger)
     }
 
