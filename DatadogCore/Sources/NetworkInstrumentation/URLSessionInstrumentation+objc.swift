@@ -65,7 +65,7 @@ public final class objc_URLSessionInstrumentation: NSObject {
     ///
     /// - Parameters:
     ///   - configuration: Configuration of the feature.
-    public static func trackMetrics(configuration: objc_URLSessionInstrumentationConfiguration) {
+    public static func trackMetrics(with configuration: objc_URLSessionInstrumentationConfiguration) {
         URLSessionInstrumentation.trackMetrics(with: configuration.swiftConfig)
     }
 
