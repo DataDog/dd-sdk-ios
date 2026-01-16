@@ -143,8 +143,8 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
                 internalAttributes[LogEvent.Attributes.RUM.actionID] = rum.userActionID
             }
 
-            // When bundle with Trace is enabled, link RUM context (if available):
-            if self.activeSpanIntegration, let spanContext = context.additionalContext(ofType: SpanCoreContext.self) {
+            // When bundle with Trace is enabled, link Trace context (if available):
+            if self.activeSpanIntegration, let spanContext = context.additionalContext(ofType: TraceCoreContext.Span.self) {
                 internalAttributes[LogEvent.Attributes.Trace.traceID] = spanContext.traceID
                 internalAttributes[LogEvent.Attributes.Trace.spanID] = spanContext.spanID
             }
