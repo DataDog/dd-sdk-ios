@@ -128,7 +128,7 @@ class SessionReplayTests: XCTestCase {
 
     func testWhenEnabled_itUpdateCoreContext() throws {
         let core = PassthroughCoreMock()
-        let random: Float = .mockRandom(min: 0, max: 100)
+        let random: SampleRate = .mockRandom(min: 0, max: 100)
         let startRecordingImmediately: Bool = .mockRandom()
         config.replaySampleRate = random
         config.startRecordingImmediately = startRecordingImmediately
@@ -138,7 +138,7 @@ class SessionReplayTests: XCTestCase {
 
         // Then
         let config = try XCTUnwrap(core.context.additionalContext(ofType: SessionReplayCoreContext.Configuration.self))
-        XCTAssertEqual(config.sampleRate, Double(random), accuracy: 0.001)
+        XCTAssertEqual(config.sampleRate, random)
         XCTAssertEqual(config.startRecordingManually, !startRecordingImmediately)
     }
 

@@ -90,15 +90,15 @@ class TraceTests: XCTestCase {
 
     func testWhenEnabled_itUpdateCoreContext() throws {
         let core = PassthroughCoreMock()
-        let random: Float = .mockRandom(min: 0, max: 100)
+        let random: SampleRate = .mockRandom(min: 0, max: 100)
         config.sampleRate = random
 
         // When
         Trace.enable(with: config, in: core)
 
         // Then
-        let config = try XCTUnwrap(core.context.additionalContext(ofType: TraceConfiguration.self))
-        XCTAssertEqual(config.sampleRate, Double(random))
+        let config = try XCTUnwrap(core.context.additionalContext(ofType: TraceCoreContext.Configuration.self))
+        XCTAssertEqual(config.sampleRate, random)
     }
 
     func testWhenEnabledWithService() {

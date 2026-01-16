@@ -175,7 +175,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
 
         featureScope.set(
             context: context.map {
-                SpanCoreContext(
+                TraceCoreContext.Span(
                     traceID: String($0.traceID, representation: .hexadecimal),
                     spanID: String($0.spanID, representation: .decimal)
                 )

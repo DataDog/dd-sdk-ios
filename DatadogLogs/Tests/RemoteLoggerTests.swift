@@ -539,7 +539,7 @@ class RemoteLoggerTests: XCTestCase {
         // When
         featureScope.contextMock = .mockWith(
             additionalContext: [
-                SpanCoreContext(
+                TraceCoreContext.Span(
                     traceID: traceID.toString(representation: .hexadecimal),
                     spanID: spanID.toString(representation: .decimal)
                 )
