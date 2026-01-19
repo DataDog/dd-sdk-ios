@@ -109,9 +109,26 @@ static void safe_read_signal_handler(int sig, siginfo_t* info, void* context) {
 }
 
 /**
+ * Sets the main thread pthread identifier.
+ *
+ * This function should be called from the main thread early in the process lifecycle.
+ *
+ * @param thread The pthread identifier for the main thread
+ */
+void set_main_thread(pthread_t thread) {
+    g_main_pthread = thread;
+}
+
+/**
  * Install signal handlers for safe memory reading.
  */
 static void init_safe_read_handlers() {
+    static bool initialized = false;
+    if (initialized) {
+        return;
+    }
+    initialized = true;
+
     // Manually install the handler defined in this file
     struct sigaction sa = {};
     sa.sa_sigaction = safe_read_signal_handler;
@@ -121,23 +138,6 @@ static void init_safe_read_handlers() {
     // Install handlers and save previous ones
     sigaction(SIGBUS, &sa, &g_prev_sigbus_handler);
     sigaction(SIGSEGV, &sa, &g_prev_sigsegv_handler);
-}
-
-/**
- * Initialize the main thread pthread identifier
- * and install signal handlers for safe memory reading.
- *
- * This constructor runs early to capture and setup the parameters.
- */
-__attribute__((constructor))
-static void init_main_thread_id_and_safe_read_handlers() {
-    if ((is_profiling_enabled() ||
-        ctor_profiler_get_status() != CTOR_PROFILER_STATUS_NOT_CREATED) == false) {
-        return;
-    }
-    
-    g_main_pthread = pthread_self();
-    init_safe_read_handlers();
 }
 
 /**
@@ -491,6 +491,8 @@ bool mach_sampling_profiler::start_sampling() {
     // Clear any leftover data from previous runs
     sample_buffer.clear();
 
+    init_safe_read_handlers();
+
     running = true;
 
     pthread_attr_t attr;
@@ -505,15 +507,20 @@ bool mach_sampling_profiler::start_sampling() {
 
 /**
  * Stops the sampling process.
- * Thread-safe: protected by mutex. Holds lock during join to prevent
- * new sampling sessions from starting until cleanup is complete.
+ *
  */
 void mach_sampling_profiler::stop_sampling() {
+    // Avoid deadlock if the sampling thread triggers the stop when it reaches the timeout.
+    if (pthread_equal(pthread_self(), sampling_thread)) {
+        running = false;
+        return;
+    }
+
     std::lock_guard<std::mutex> lock(state_mutex);
     
     if (!running) return;
     running = false;
-    
+
     // Join while holding the lock to ensure the sampling thread
     // completes its flush_buffer() before any new session can start
     pthread_join(sampling_thread, nullptr);

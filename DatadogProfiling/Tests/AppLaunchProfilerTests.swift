@@ -133,7 +133,8 @@ final class AppLaunchProfilerTests: XCTestCase {
                 env: "staging",
                 version: "1.2.3",
                 source: "ios",
-                sdkVersion: "4.5.6"
+                sdkVersion: "4.5.6",
+                os: .mockWith(version: "26.1")
             ),
             feature: ProfilerFeature(
                 requestBuilder: FeatureRequestBuilderMock(),
@@ -169,6 +170,8 @@ final class AppLaunchProfilerTests: XCTestCase {
             "service:test-service",
             "version:1.2.3",
             "sdk_version:4.5.6",
+            "profiler_version:4.5.6",
+            "runtime_version:26.1",
             "env:staging",
             "source:ios",
             "language:swift",

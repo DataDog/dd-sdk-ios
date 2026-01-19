@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <mach/mach.h>
+#include <pthread.h>
 #include <pthread/qos.h>
 
 #ifdef __cplusplus
@@ -124,6 +125,15 @@ typedef struct profiler profiler_t;
  * @param ctx Context pointer passed during profiler creation
  */
 typedef void (*stack_trace_callback_t)(const stack_trace_t* traces, size_t count, void* ctx);
+
+/**
+ * Sets the main thread pthread identifier.
+ *
+ * This function should be called from the main thread early in the process lifecycle.
+ *
+ * @param thread The pthread identifier for the main thread
+ */
+void set_main_thread(pthread_t thread);
 
 /**
  * Creates a profiler instance.

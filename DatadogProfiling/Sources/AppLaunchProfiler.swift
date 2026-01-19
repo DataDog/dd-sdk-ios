@@ -75,6 +75,8 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                     "service:\(context.service)",
                     "version:\(context.version)",
                     "sdk_version:\(context.sdkVersion)",
+                    "profiler_version:\(context.sdkVersion)",
+                    "runtime_version:\(context.os.version)",
                     "env:\(context.env)",
                     "source:\(context.source)",
                     "language:swift",

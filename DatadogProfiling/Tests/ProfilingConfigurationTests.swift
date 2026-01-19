@@ -15,6 +15,6 @@ final class ProfilingConfigurationTests: XCTestCase {
 
         // Then
         XCTAssertEqual(config.customEndpoint, endpoint)
-        XCTAssertEqual(config.sampleRate, 10)
+        XCTAssertEqual(config.applicationLaunchSampleRate, 5)
     }
 }

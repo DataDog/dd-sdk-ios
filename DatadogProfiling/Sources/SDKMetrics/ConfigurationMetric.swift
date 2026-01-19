@@ -20,8 +20,6 @@ internal final class ConfigurationMetric {
         static let configurationKey = "profiling_config"
     }
 
-    /// Sample rate for profiling from 0% to 100%.
-    let sampleRate: Int
     /// Max number of samples of the profile.
     let bufferSize: Int
     /// Max number of frames per trace.
@@ -32,13 +30,11 @@ internal final class ConfigurationMetric {
     let samplingInterval: Int
 
     init(
-        sampleRate: Int = Int(DD_PROFILING_SAMPLE_RATE),
         bufferSize: Int = Int(SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE),
         stackDepth: Int = Int(SAMPLING_CONFIG_DEFAULT_STACK_DEPTH),
         threadCoverage: Int = Int(SAMPLING_CONFIG_DEFAULT_THREAD_COUNT),
         samplingInterval: Int = Int(SAMPLING_CONFIG_DEFAULT_INTERVAL_HZ)
     ) {
-        self.sampleRate = sampleRate
         self.bufferSize = bufferSize
         self.stackDepth = stackDepth
         self.threadCoverage = threadCoverage
@@ -52,7 +48,6 @@ internal final class ConfigurationMetric {
 
 extension ConfigurationMetric: Encodable {
     enum CodingKeys: String, CodingKey {
-        case sampleRate = "sample_rate"
         case bufferSize = "buffer_size"
         case stackDepth = "stack_depth"
         case threadCoverage = "thread_coverage"

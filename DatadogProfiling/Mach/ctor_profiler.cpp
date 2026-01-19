@@ -165,7 +165,8 @@ public:
     }
 
     /**
-     * Start the profiler using constructor configuration
+     * Start the profiler using constructor configuration.
+     * 
      */
     void start() {
         if (is_thread_sanitizer_enabled()) {
@@ -226,8 +227,6 @@ public:
         if (!profiler) return;
         status = CTOR_PROFILER_STATUS_STOPPED;
         profiler->stop_sampling();
-        delete profiler;
-        profiler = nullptr;
     }
 
     profile* get_profile() const { return profile; }
@@ -278,6 +277,8 @@ static void ctor_profiler_auto_start() {
     if (!is_profiling_enabled()) {
         return;
     }
+
+    set_main_thread(pthread_self());
 
     // Create profiler and start with sample rate
     g_ctor_profiler = new dd::profiler::ctor_profiler(read_profiling_sample_rate(), is_active_prewarm());

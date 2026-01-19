@@ -40,7 +40,7 @@ public enum Profiling {
                     telemetry: core.telemetry
                 ),
                 messageReceiver: AppLaunchProfiler(telemetryController: telemetryController),
-                sampleRate: configuration.debugSDK ? .maxSampleRate : configuration.sampleRate,
+                sampleRate: configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate,
                 telemetryController: telemetryController
             )
         )
