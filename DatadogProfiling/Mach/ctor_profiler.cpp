@@ -227,8 +227,6 @@ public:
         if (!profiler) return;
         status = CTOR_PROFILER_STATUS_STOPPED;
         profiler->stop_sampling();
-        delete profiler;
-        profiler = nullptr;
     }
 
     profile* get_profile() const { return profile; }
