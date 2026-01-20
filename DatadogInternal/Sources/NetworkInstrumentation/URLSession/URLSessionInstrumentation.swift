@@ -24,7 +24,7 @@ public enum URLSessionInstrumentation {
 
             core.telemetry.debug(
                 id: "URLSessionInstrumentation:trackMetrics",
-                message: "URLSession metrics mode enabled"
+                message: "URLSession metrics mode enabled " + isFirstPartyHostsTracing(for: configuration)
             )
         } catch let error {
             consolePrint("\(error)", .error)
@@ -47,7 +47,7 @@ public enum URLSessionInstrumentation {
 
             core.telemetry.debug(
                 id: "URLSessionInstrumentation:enable",
-                message: "URLSession metrics mode enabled (deprecated API)"
+                message: "URLSession metrics mode enabled " + isFirstPartyHostsTracing(for: configuration) + " (deprecated API)"
             )
         } catch let error {
             consolePrint("\(error)", .error)
@@ -89,6 +89,11 @@ public enum URLSessionInstrumentation {
         }
 
         feature.unbind(delegateClass: delegateClass)
+    }
+
+    /* Helper */
+    private static func isFirstPartyHostsTracing(for configuration: URLSessionInstrumentation.Configuration) -> String {
+        return configuration.firstPartyHostsTracing != nil ? "(with FPH Tracing configured)" : "(without FPH Tracing configured)"
     }
 }
 
