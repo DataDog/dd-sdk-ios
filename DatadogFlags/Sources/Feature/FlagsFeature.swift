@@ -15,13 +15,15 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     let messageReceiver: any FeatureMessageReceiver
     let clientRegistry: FlagsClientRegistry
     let makeExposureLogger: (any FeatureScope) -> any ExposureLogging
+    let makeEvaluationLogger: (any FeatureScope) -> any EvaluationLogging
     let makeRUMFlagEvaluationReporter: (any FeatureScope) -> any RUMFlagEvaluationReporting
     let performanceOverride: PerformancePresetOverride
     let issueReporter: IssueReporter
 
     init(
         configuration: Flags.Configuration,
-        featureScope: FeatureScope
+        featureScope: FeatureScope,
+        core: DatadogCoreProtocol
     ) {
         flagAssignmentsFetcher = FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
@@ -43,6 +45,22 @@ internal struct FlagsFeature: DatadogRemoteFeature {
                 featureScope: featureScope
             )
         }
+
+        let evaluationAggregator: EvaluationAggregator? = configuration.trackEvaluations ? {
+            let evaluationFeatureScope = core.scope(for: FlagsEvaluationFeature.self)
+            return EvaluationAggregator(
+                dateProvider: SystemDateProvider(),
+                featureScope: evaluationFeatureScope
+            )
+        }() : nil
+
+        makeEvaluationLogger = { [aggregator = evaluationAggregator] _ in
+            guard let aggregator = aggregator else {
+                return NOPEvaluationLogger()
+            }
+            return EvaluationLogger(aggregator: aggregator)
+        }
+
         makeRUMFlagEvaluationReporter = { featureScope in
             guard configuration.rumIntegrationEnabled else {
                 return NOPRUMFlagEvaluationReporter()
