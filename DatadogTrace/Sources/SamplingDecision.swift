@@ -50,7 +50,16 @@ internal final class SamplingDecision {
     ///    - decisionMaker: The sampling decision maker if known, `nil` otherwise.
     convenience init(from samplingPriority: SamplingPriority, decisionMaker: SamplingMechanismType?) {
         if let decisionMaker {
-            self.init(mechanisms: [decisionMaker: FixedValueMechanism(samplingPriority: samplingPriority)])
+            if decisionMaker == .fallback && samplingPriority == .autoKeep {
+                // This is the regular fallback mechanism. Since fallback is represented implicitly,
+                // we can leave the mechanisms dictionary empty.
+                // Note that if the decision maker is .fallback but sampling priority is any other
+                // value than .autoKeep, we still represent it explicitly. This is OK since any
+                // explicit fallback mechanism overrides the implicit one.
+                self.init(mechanisms: [:])
+            } else {
+                self.init(mechanisms: [decisionMaker: FixedValueMechanism(samplingPriority: samplingPriority)])
+            }
         } else if samplingPriority == .manualDrop || samplingPriority == .manualKeep {
             self.init(mechanisms: [.manual: FixedValueMechanism(samplingPriority: samplingPriority)])
         } else {
