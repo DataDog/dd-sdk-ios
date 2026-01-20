@@ -43,15 +43,18 @@ public final class FlagsClient {
 
     private let repository: any FlagsRepositoryProtocol
     private let exposureLogger: any ExposureLogging
+    private let evaluationLogger: any EvaluationLogging
     private let rumFlagEvaluationReporter: any RUMFlagEvaluationReporting
 
     internal init(
         repository: any FlagsRepositoryProtocol,
         exposureLogger: any ExposureLogging,
+        evaluationLogger: any EvaluationLogging,
         rumFlagEvaluationReporter: any RUMFlagEvaluationReporting
     ) {
         self.repository = repository
         self.exposureLogger = exposureLogger
+        self.evaluationLogger = evaluationLogger
         self.rumFlagEvaluationReporter = rumFlagEvaluationReporter
     }
 
@@ -179,6 +182,7 @@ public final class FlagsClient {
                 featureScope: featureScope
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),
+            evaluationLogger: feature.makeEvaluationLogger(featureScope),
             rumFlagEvaluationReporter: feature.makeRUMFlagEvaluationReporter(featureScope)
         )
 
@@ -223,6 +227,13 @@ extension FlagsClient: FlagsClientProtocol {
             for: key,
             assignment: assignment,
             evaluationContext: context
+        )
+
+        evaluationLogger.logEvaluation(
+            for: key,
+            assignment: assignment,
+            evaluationContext: context,
+            flagError: nil
         )
 
         rumFlagEvaluationReporter.sendFlagEvaluation(
