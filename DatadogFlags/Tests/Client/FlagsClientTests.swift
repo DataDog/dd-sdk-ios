@@ -124,6 +124,7 @@ final class FlagsClientTests: XCTestCase {
                 completion(.success(()))
             },
             exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLoggerMock(),
             rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
         )
 
@@ -195,6 +196,7 @@ final class FlagsClientTests: XCTestCase {
                 )
             ),
             exposureLogger: exposureLogger,
+            evaluationLogger: EvaluationLoggerMock(),
             rumFlagEvaluationReporter: rumFlagEvaluationReporter
         )
 
@@ -275,6 +277,7 @@ final class FlagsClientTests: XCTestCase {
                 )
             ),
             exposureLogger: exposureLogger,
+            evaluationLogger: EvaluationLoggerMock(),
             rumFlagEvaluationReporter: rumFlagEvaluationReporter
         )
 
@@ -397,6 +400,7 @@ final class FlagsClientTests: XCTestCase {
                 )
             ),
             exposureLogger: exposureLogger,
+            evaluationLogger: EvaluationLoggerMock(),
             rumFlagEvaluationReporter: rumFlagEvaluationReporter
         )
 
@@ -471,6 +475,7 @@ final class FlagsClientTests: XCTestCase {
         let client = FlagsClient(
             repository: FlagsRepositoryMock(),
             exposureLogger: exposureLogger,
+            evaluationLogger: EvaluationLoggerMock(),
             rumFlagEvaluationReporter: rumFlagEvaluationReporter
         )
 
