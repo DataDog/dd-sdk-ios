@@ -148,6 +148,7 @@ final class FlagsClientTests: XCTestCase {
     func testFlagEvaluation() {
         // Given
         let exposureLogger = ExposureLoggerMock()
+        let evaluationLogger = EvaluationLoggerMock()
         let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
@@ -196,7 +197,7 @@ final class FlagsClientTests: XCTestCase {
                 )
             ),
             exposureLogger: exposureLogger,
-            evaluationLogger: EvaluationLoggerMock(),
+            evaluationLogger: evaluationLogger,
             rumFlagEvaluationReporter: rumFlagEvaluationReporter
         )
 
@@ -254,11 +255,16 @@ final class FlagsClientTests: XCTestCase {
         // Test exposure logging and RUM reporting
         XCTAssertEqual(exposureLogger.logExposureCalls.count, 6)
         XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls.count, 6)
+
+        // Test evaluation logging
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 6)
+        XCTAssertNil(evaluationLogger.logEvaluationCalls[0].error) // No error on successful evaluation
     }
 
     func testFlagEvaluationTracking() {
         // Given
         let exposureLogger = ExposureLoggerMock()
+        let evaluationLogger = EvaluationLoggerMock()
         let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
@@ -277,7 +283,7 @@ final class FlagsClientTests: XCTestCase {
                 )
             ),
             exposureLogger: exposureLogger,
-            evaluationLogger: EvaluationLoggerMock(),
+            evaluationLogger: evaluationLogger,
             rumFlagEvaluationReporter: rumFlagEvaluationReporter
         )
 
@@ -286,6 +292,7 @@ final class FlagsClientTests: XCTestCase {
 
         // Then
         XCTAssertEqual(exposureLogger.logExposureCalls.count, 1)
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 1)
         XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls.count, 1)
     }
 
@@ -471,11 +478,12 @@ final class FlagsClientTests: XCTestCase {
     func testSendFlagEvaluation() {
         // Given
         let exposureLogger = ExposureLoggerMock()
+        let evaluationLogger = EvaluationLoggerMock()
         let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(),
             exposureLogger: exposureLogger,
-            evaluationLogger: EvaluationLoggerMock(),
+            evaluationLogger: evaluationLogger,
             rumFlagEvaluationReporter: rumFlagEvaluationReporter
         )
 
@@ -560,6 +568,13 @@ final class FlagsClientTests: XCTestCase {
             rumFlagEvaluationReporter.sendFlagEvaluationCalls[4].1 as? AnyValue,
             .dictionary(["key": .string("value")])
         )
+
+        // Test evaluation logging
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 5)
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls[0].flagKey, "bool-flag")
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls[0].assignment, booleanAssignment)
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls[0].context.targetingKey, "user-123")
+        XCTAssertNil(evaluationLogger.logEvaluationCalls[0].error)
     }
 }
 
