@@ -19,6 +19,7 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertEqual(ids?.parentSpanID, 5_678)
         XCTAssertEqual(reader.samplingPriority, .autoKeep)
         XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, true)
     }
 
     func testItReadsSingleHeaderWithSampling() {
@@ -31,6 +32,7 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(ids?.parentSpanID)
         XCTAssertEqual(reader.samplingPriority, .autoDrop)
         XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, false)
     }
 
     func testItReadsSingleHeaderWithoutOptionalValues() {
@@ -43,6 +45,7 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(ids?.parentSpanID)
         XCTAssertEqual(reader.samplingPriority, .autoKeep)
         XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, true)
     }
 
     func testItReadsMultipleHeader() {
@@ -60,6 +63,7 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertEqual(ids?.parentSpanID, 5_678)
         XCTAssertEqual(reader.samplingPriority, .autoKeep)
         XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, true)
     }
 
     func testItReadsMultipleHeaderWithSampling() {
@@ -74,6 +78,7 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(ids?.parentSpanID)
         XCTAssertEqual(reader.samplingPriority, .autoDrop)
         XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, false)
     }
 
     func testItReadsMultipleHeaderWithoutOptionalValues() {
@@ -89,6 +94,7 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(ids?.parentSpanID)
         XCTAssertNil(reader.samplingPriority)
         XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertNil(reader.sampled)
     }
 
     func testReadingSampledTraceContext() {
@@ -103,6 +109,7 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNotNil(reader.read(), "When sampled, it should return trace context")
         XCTAssertEqual(reader.samplingPriority, .autoKeep)
         XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, true)
     }
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsAll() {
@@ -120,6 +127,7 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(ids?.parentSpanID)
         XCTAssertEqual(reader.samplingPriority, .autoDrop)
         XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, false)
     }
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsSampled() {
@@ -134,5 +142,6 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
         XCTAssertNil(reader.samplingPriority)
         XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertNil(reader.sampled)
     }
 }

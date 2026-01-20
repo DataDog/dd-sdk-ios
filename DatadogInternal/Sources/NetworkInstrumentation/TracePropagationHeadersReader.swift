@@ -19,4 +19,13 @@ public protocol TracePropagationHeadersReader {
 
     /// The sampling decision maker mechanism based on the provided headers.
     var samplingDecisionMaker: SamplingMechanismType? { get }
+
+    /// Indicates whether the trace was sampled based on the provided headers.
+    var sampled: Bool? { get }
+}
+
+public extension TracePropagationHeadersReader {
+    var sampled: Bool? {
+        samplingPriority?.isKept
+    }
 }

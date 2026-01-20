@@ -20,6 +20,7 @@ class HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNotNil(reader.read(), "When sampled, it should return trace context")
         XCTAssertEqual(reader.samplingPriority, .autoKeep)
         XCTAssertEqual(reader.samplingDecisionMaker, .agentRate)
+        XCTAssertEqual(reader.sampled, true)
     }
 
     func testReadingManuallyKeptTraceContext() {
@@ -33,6 +34,7 @@ class HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNotNil(reader.read(), "When sampled, it should return trace context")
         XCTAssertEqual(reader.samplingPriority, .manualKeep)
         XCTAssertEqual(reader.samplingDecisionMaker, .manual)
+        XCTAssertEqual(reader.sampled, true)
     }
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsAll() {
@@ -46,6 +48,7 @@ class HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNotNil(reader.read(), "When not sampled, it should return no trace context")
         XCTAssertEqual(reader.samplingPriority, .autoDrop)
         XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, false)
     }
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsSampled() {
@@ -59,6 +62,7 @@ class HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
         XCTAssertNil(reader.samplingPriority)
         XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertNil(reader.sampled)
     }
 
     func testReadingManuallyDroppedTraceContext_givenTraceContextInjectionIsAll() {
@@ -72,6 +76,7 @@ class HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNotNil(reader.read(), "When not sampled, it should return no trace context")
         XCTAssertEqual(reader.samplingPriority, .manualDrop)
         XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, false)
     }
 
     func testReadingManuallyDroppedTraceContext_givenTraceContextInjectionIsSampled() {
