@@ -28,7 +28,7 @@ internal final class SamplingDecision {
     /// actually instantiated nor included in this dictionary. Getters like ``samplingPriority`` and
     /// ``decisionMaker`` should simulate its existence when necessary.
     @ReadWriteLock
-    private var mechanisms: [SamplingMechanismType: any SamplingMechanism]
+    private var mechanisms: [SamplingMechanismType: SamplingPriority]
 
     /// Creates a sampling decision from the given sampling.
     ///
@@ -36,7 +36,7 @@ internal final class SamplingDecision {
     ///    - sampling: A `Sampling` used to obtain the initial sampling decision.
     convenience init(sampling: Sampling) {
         let priority = sampling.sample() ? SamplingPriority.autoKeep : .autoDrop
-        self.init(mechanisms: [.agentRate: FixedValueMechanism(samplingPriority: priority)])
+        self.init(mechanisms: [.agentRate: priority])
     }
 
     /// Creates a sampling decision based on a given sampling priority and decision maker.
@@ -58,30 +58,30 @@ internal final class SamplingDecision {
                 // explicit fallback mechanism overrides the implicit one.
                 self.init(mechanisms: [:])
             } else {
-                self.init(mechanisms: [decisionMaker: FixedValueMechanism(samplingPriority: samplingPriority)])
+                self.init(mechanisms: [decisionMaker: samplingPriority])
             }
         } else if samplingPriority == .manualDrop || samplingPriority == .manualKeep {
-            self.init(mechanisms: [.manual: FixedValueMechanism(samplingPriority: samplingPriority)])
+            self.init(mechanisms: [.manual: samplingPriority])
         } else {
-            self.init(mechanisms: [.agentRate: FixedValueMechanism(samplingPriority: samplingPriority)])
+            self.init(mechanisms: [.agentRate: samplingPriority])
         }
     }
 
-    private init(mechanisms: [SamplingMechanismType: any SamplingMechanism]) {
+    private init(mechanisms: [SamplingMechanismType: SamplingPriority]) {
         self.mechanisms = mechanisms
     }
 
     /// Marks this sampling decision as manually dropped.
     func addManualDropOverride() {
         _mechanisms.mutate {
-            $0[.manual] = FixedValueMechanism(samplingPriority: .manualDrop)
+            $0[.manual] = .manualDrop
         }
     }
 
     /// Marks this sampling decision as manually kept.
     func addManualKeepOverride() {
         _mechanisms.mutate {
-            $0[.manual] = FixedValueMechanism(samplingPriority: .manualKeep)
+            $0[.manual] = .manualKeep
         }
     }
 
@@ -98,7 +98,7 @@ internal final class SamplingDecision {
     var samplingPriority: SamplingPriority {
         mechanisms
             .max { $0.0.precedence < $1.0.precedence }
-            .map { $0.1.samplingPriority } ?? .autoKeep
+            .map { $0.1 } ?? .autoKeep
     }
 
     /// Obtains the sampling mechanism used to obtain ``samplingPriority``.

@@ -20,8 +20,6 @@
 		09A936A52F0EB9E2000B6379 /* SamplingMechanismPrecedence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A936A32F0EB9E2000B6379 /* SamplingMechanismPrecedence.swift */; };
 		09D2B7EB2EF4258D0089F05B /* SamplingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */; };
 		09D2B7EC2EF4258D0089F05B /* SamplingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */; };
-		09D2B7EE2EF425A70089F05B /* SamplingMechanisms.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2B7ED2EF425A70089F05B /* SamplingMechanisms.swift */; };
-		09D2B7EF2EF425A70089F05B /* SamplingMechanisms.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2B7ED2EF425A70089F05B /* SamplingMechanisms.swift */; };
 		11030D5F2D959EAD00732D5F /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; };
 		11030D642D959EC300732D5F /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D20731B429A5279D00ECBF94 /* DatadogLogs.framework */; };
 		11030D692D959F1700732D5F /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
@@ -2556,7 +2554,6 @@
 		09A9369C2F0EB989000B6379 /* SpanContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanContext.swift; sourceTree = "<group>"; };
 		09A936A32F0EB9E2000B6379 /* SamplingMechanismPrecedence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingMechanismPrecedence.swift; sourceTree = "<group>"; };
 		09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingDecision.swift; sourceTree = "<group>"; };
-		09D2B7ED2EF425A70089F05B /* SamplingMechanisms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingMechanisms.swift; sourceTree = "<group>"; };
 		11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesMetric.swift; sourceTree = "<group>"; };
 		110311752EF96ED000750DD4 /* DDLogs+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDLogs+apiTests.m"; sourceTree = "<group>"; };
 		110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSampler.swift; sourceTree = "<group>"; };
@@ -6998,7 +6995,6 @@
 				61A2CC3B2A44BED30000FF25 /* Tracer.swift */,
 				09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */,
 				09A936A32F0EB9E2000B6379 /* SamplingMechanismPrecedence.swift */,
-				09D2B7ED2EF425A70089F05B /* SamplingMechanisms.swift */,
 				D2546C0629AF55CE0054E00B /* Feature */,
 				D21C26E928AF9D22005DD405 /* Integrations */,
 				11F55FEA2DCE501A00DE4944 /* Objc */,
@@ -10292,7 +10288,6 @@
 				D2C1A50029C4C4CB00946C31 /* ActiveSpansPool.swift in Sources */,
 				3CB012DF2B482E0400557951 /* NOPOTelSpanBuilder.swift in Sources */,
 				D2C1A50929C4C4CB00946C31 /* SpanEventEncoder.swift in Sources */,
-				09D2B7EE2EF425A70089F05B /* SamplingMechanisms.swift in Sources */,
 				3C6C7FE72B459AAA006F5CBC /* OTelSpan.swift in Sources */,
 				D2C1A4FE29C4C4CB00946C31 /* SpanEventMapper.swift in Sources */,
 				D2C1A50329C4C4CB00946C31 /* DDFormat.swift in Sources */,
@@ -10593,7 +10588,6 @@
 				D2C1A54229C4F2DF00946C31 /* ActiveSpansPool.swift in Sources */,
 				3CB012E02B482E0400557951 /* NOPOTelSpanBuilder.swift in Sources */,
 				D2C1A54329C4F2DF00946C31 /* SpanEventEncoder.swift in Sources */,
-				09D2B7EF2EF425A70089F05B /* SamplingMechanisms.swift in Sources */,
 				3C6C7FE82B459AAA006F5CBC /* OTelSpan.swift in Sources */,
 				D2C1A54429C4F2DF00946C31 /* SpanEventMapper.swift in Sources */,
 				D2C1A54529C4F2DF00946C31 /* DDFormat.swift in Sources */,
