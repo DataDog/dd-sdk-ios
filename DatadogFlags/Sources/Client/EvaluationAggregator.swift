@@ -12,7 +12,7 @@ internal final class EvaluationAggregator {
     private let maxAggregations: Int
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
-    private let queue: DispatchQueue = DispatchQueue(label: "com.datadoghq.flags.evaluation-aggregator")
+    private let queue = DispatchQueue(label: "com.datadoghq.flags.evaluation-aggregator")
     private var aggregations: [AggregationKey: AggregatedEvaluation] = [:]
     private var flushTimer: Timer?
 
@@ -20,11 +20,11 @@ internal final class EvaluationAggregator {
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
         flushInterval: TimeInterval = 10.0,
-        maxAggregations: Int = 1000
+        maxAggregations: Int = 1_000
     ) {
         self.dateProvider = dateProvider
         self.featureScope = featureScope
-        self.flushInterval = flushInterval
+        self.flushInterval = min(max(flushInterval, 1.0), 60.0)
         self.maxAggregations = maxAggregations
 
         startFlushTimer()
@@ -89,14 +89,8 @@ internal final class EvaluationAggregator {
         flush(completion: nil)
     }
 
-    /// Internal flush method with completion handler for testing
-    internal func flush(completion: (() -> Void)?) {
-        queue.async { [weak self] in
-            guard let self = self else {
-                completion?()
-                return
-            }
-
+    internal func flush(completion: (() -> Void)?) { // completion handler is for testing
+        queue.async { // strong capture ensures flush completes even if called from deinit
             let evaluationsToSend = Array(self.aggregations.values)
             self.aggregations.removeAll()
 
@@ -117,9 +111,7 @@ internal final class EvaluationAggregator {
     }
 
     private func startFlushTimer() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-
+        DispatchQueue.main.async {
             self.flushTimer = Timer.scheduledTimer(
                 withTimeInterval: self.flushInterval,
                 repeats: true
@@ -130,9 +122,9 @@ internal final class EvaluationAggregator {
     }
 
     private func stopFlushTimer() {
-        DispatchQueue.main.async { [weak self] in
-            self?.flushTimer?.invalidate()
-            self?.flushTimer = nil
+        DispatchQueue.main.async {
+            self.flushTimer?.invalidate()
+            self.flushTimer = nil
         }
     }
 }
@@ -177,19 +169,24 @@ private struct AggregatedEvaluation {
     let runtimeDefaultUsed: Bool?
 
     func toFlagEvaluationEvent() -> FlagEvaluationEvent {
+        let eventContext: FlagEvaluationEvent.EvaluationEventContext? = context.isEmpty ? nil : .init(
+            evaluation: context,
+            dd: nil
+        )
+
         return FlagEvaluationEvent(
             timestamp: firstEvaluation,
             flag: .init(key: flagKey),
             firstEvaluation: firstEvaluation,
             lastEvaluation: lastEvaluation,
             evaluationCount: evaluationCount,
-            variant: .init(key: variantKey),
-            allocation: .init(key: allocationKey),
+            variant: runtimeDefaultUsed == true ? nil : .init(key: variantKey),
+            allocation: runtimeDefaultUsed == true ? nil : .init(key: allocationKey),
             targetingRule: targetingRuleKey.map { .init(key: $0) },
-            targetingKey: targetingKey.isEmpty ? nil : targetingKey,
+            targetingKey: targetingKey,
             runtimeDefaultUsed: runtimeDefaultUsed,
             error: errorMessage.map { .init(message: $0) },
-            context: nil
+            context: eventContext
         )
     }
 }
