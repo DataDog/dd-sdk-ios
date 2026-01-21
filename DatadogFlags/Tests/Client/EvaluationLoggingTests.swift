@@ -85,8 +85,7 @@ class EvaluationLoggingTests: XCTestCase {
         let aggregator = EvaluationAggregator(
             dateProvider: DateProviderMock(now: .mockAny()),
             featureScope: featureScope,
-            flushInterval: 100.0,
-            maxAggregations: 1_000
+            flushInterval: 60.0
         )
 
         // When - Record evaluations with doLog = true and doLog = false
@@ -124,8 +123,7 @@ class EvaluationLoggingTests: XCTestCase {
         let aggregator = EvaluationAggregator(
             dateProvider: DateProviderMock(now: .mockAny()),
             featureScope: featureScope,
-            flushInterval: 100.0,
-            maxAggregations: 1_000
+            flushInterval: 60.0
         )
 
         // When - Record evaluations varying each part of composite key
@@ -182,8 +180,7 @@ class EvaluationLoggingTests: XCTestCase {
         let aggregator = EvaluationAggregator(
             dateProvider: dateProvider,
             featureScope: featureScope,
-            flushInterval: 100.0,
-            maxAggregations: 1_000
+            flushInterval: 60.0
         )
 
         let assignment = FlagAssignment(
@@ -256,7 +253,7 @@ class EvaluationLoggingTests: XCTestCase {
         let aggregator = EvaluationAggregator(
             dateProvider: DateProviderMock(now: .mockAny()),
             featureScope: featureScope,
-            flushInterval: 100.0,
+            flushInterval: 60.0,
             maxAggregations: 3
         )
 
@@ -276,18 +273,41 @@ class EvaluationLoggingTests: XCTestCase {
             for: "flag-3", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: nil
         )
 
-        // Then - Wait for auto-flush to complete
+        // Then
         Thread.sleep(forTimeInterval: 0.1)
 
         XCTAssertEqual(featureScope.eventsWritten.count, 3, "Should auto-flush when maxAggregations reached")
     }
 
-    // EVALLOG.4: Shutdown flush when SDK stops or page unloads
+    // EVALLOG.4: Shutdown flush when SDK stops
     func testFlushesOnShutdown() throws {
-        // NOTE: Current implementation has a bug - deinit flush uses [weak self] so flush
-        // work is enqueued but never executes because self is deallocated before queue processes
-        // This needs to be fixed to use DispatchQueue.sync or remove [weak self] in deinit path
-        try skipTest()
+        // Given
+        let featureScope = FeatureScopeMock()
+        var aggregator: EvaluationAggregator? = EvaluationAggregator(
+            dateProvider: DateProviderMock(now: .mockAny()),
+            featureScope: featureScope,
+            flushInterval: 60.0
+        )
+
+        // When - Record evaluation (won't auto-flush with these parameters)
+        aggregator?.recordEvaluation(
+            for: "test-flag",
+            assignment: .mockAnyBoolean(),
+            evaluationContext: .mockAny(),
+            flagError: nil
+        )
+
+        // Deallocate aggregator (deinit calls flush)
+        aggregator = nil
+
+        // Then
+        Thread.sleep(forTimeInterval: 0.1)
+
+        XCTAssertEqual(featureScope.eventsWritten.count, 1, "Deinit should flush pending evaluations")
+
+        let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        let decoded = try XCTUnwrap(events.first)
+        XCTAssertEqual(decoded.flag.key, "test-flag")
     }
 
     // MARK: - EVALLOG.5: Error Logging
@@ -299,8 +319,7 @@ class EvaluationLoggingTests: XCTestCase {
         let aggregator = EvaluationAggregator(
             dateProvider: DateProviderMock(now: .mockAny()),
             featureScope: featureScope,
-            flushInterval: 100.0,
-            maxAggregations: 1_000
+            flushInterval: 60.0
         )
 
         // When - Record same flag with different errors
@@ -335,44 +354,173 @@ class EvaluationLoggingTests: XCTestCase {
 
     // EVALLOG.6: Omit context.evaluation if targeting context contains only targetingKey
     func testOmitsContextWhenOnlyTargetingKey() throws {
-        // NOTE: Current implementation always sets context to nil
-        // Need to verify if context should be included with evaluation attributes
-        try skipTest()
+        // Given
+        let featureScope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(
+            dateProvider: DateProviderMock(now: .mockAny()),
+            featureScope: featureScope,
+            flushInterval: 60.0
+        )
+        let contextWithoutAttributes = FlagsEvaluationContext(targetingKey: "user-123", attributes: [:])
+
+        // When
+        aggregator.recordEvaluation(
+            for: "test-flag",
+            assignment: .mockAnyBoolean(),
+            evaluationContext: contextWithoutAttributes,
+            flagError: nil
+        )
+
+        let flushExpectation = expectation(description: "Flush completes")
+        aggregator.flush {
+            flushExpectation.fulfill()
+        }
+        wait(for: [flushExpectation], timeout: 0.1)
+
+        // Then
+        let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        let event = try XCTUnwrap(events.first)
+
+        XCTAssertNil(event.context, "Context should be omitted when no attributes present")
     }
 
     // EVALLOG.6: Include context.evaluation when targeting context has additional attributes
     func testIncludesContextWhenAdditionalAttributes() throws {
-        // NOTE: Current implementation always sets context to nil
-        // Need to verify if context should be included with evaluation attributes
-        try skipTest()
+        // Given
+        let featureScope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(
+            dateProvider: DateProviderMock(now: .mockAny()),
+            featureScope: featureScope,
+            flushInterval: 60.0
+        )
+        let contextWithAttributes = FlagsEvaluationContext(
+            targetingKey: "user-123",
+            attributes: [
+                "email": .string("user@example.com"),
+                "plan": .string("premium"),
+                "age": .int(25)
+            ]
+        )
+
+        // When
+        aggregator.recordEvaluation(
+            for: "test-flag",
+            assignment: .mockAnyBoolean(),
+            evaluationContext: contextWithAttributes,
+            flagError: nil
+        )
+
+        let flushExpectation = expectation(description: "Flush completes")
+        aggregator.flush {
+            flushExpectation.fulfill()
+        }
+        wait(for: [flushExpectation], timeout: 0.1)
+
+        // Then
+        let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        let event = try XCTUnwrap(events.first)
+
+        XCTAssertNotNil(event.context, "Context should be included when attributes present")
+        XCTAssertNotNil(event.context?.evaluation, "Context evaluation should be included")
+        XCTAssertEqual(event.context?.evaluation?["email"], .string("user@example.com"))
+        XCTAssertEqual(event.context?.evaluation?["plan"], .string("premium"))
+        XCTAssertEqual(event.context?.evaluation?["age"], .int(25))
     }
 
     // MARK: - EVALLOG.7: Targeting Key Presence
 
     // EVALLOG.7: Empty string "" is valid targeting key and must be included as targeting_key: ""
+    // Note: Swift's String type is non-optional, so null/undefined targeting key doesn't apply.
     func testKeepsEmptyStringTargetingKey() throws {
-        // NOTE: Bug in EvaluationAggregator line 189: targetingKey.isEmpty ? nil : targetingKey
-        // Empty string should be kept as "" but is incorrectly omitted (set to nil)
-        // This needs to be fixed to: targetingKey (no conditional)
-        try skipTest()
-    }
+        // Given
+        let featureScope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(
+            dateProvider: DateProviderMock(now: .mockAny()),
+            featureScope: featureScope,
+            flushInterval: 60.0
+        )
+        let emptyContext = FlagsEvaluationContext(targetingKey: "", attributes: [:])
 
-    // EVALLOG.7: Omit targeting_key field when null or undefined
-    func testOmitsNullTargetingKey() throws {
-        // NOTE: In Swift/iOS, there's no concept of null/undefined for strings
-        // An empty targeting key is represented as "" and should be kept per EVALLOG.7
-        // This test is not applicable to Swift implementation
-        try skipTest()
+        // When
+        aggregator.recordEvaluation(
+            for: "test-flag",
+            assignment: .mockAnyBoolean(),
+            evaluationContext: emptyContext,
+            flagError: nil
+        )
+
+        let flushExpectation = expectation(description: "Flush completes")
+        aggregator.flush {
+            flushExpectation.fulfill()
+        }
+        wait(for: [flushExpectation], timeout: 0.1)
+
+        // Then
+        let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        let decoded = try XCTUnwrap(events.first)
+
+        XCTAssertEqual(decoded.targetingKey, "", "Empty string targeting key should be preserved as empty string")
     }
 
     // MARK: - EVALLOG.8: Omit Undefined Optional Keys
 
     // EVALLOG.8: Omit variant.key, allocation.key when undefined (DEFAULT/ERROR reasons)
     func testOmitsVariantAndAllocationForRuntimeDefaults() throws {
-        // NOTE: Current implementation always includes variant and allocation
-        // For DEFAULT/ERROR reasons, these should be nil if not provided by backend
-        // This depends on how FlagAssignment is constructed for runtime defaults
-        try skipTest()
+        // Given
+        let featureScope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(
+            dateProvider: DateProviderMock(now: .mockAny()),
+            featureScope: featureScope,
+            flushInterval: 60.0
+        )
+
+        // When - Record evaluations with DEFAULT reason
+        aggregator.recordEvaluation(
+            for: "default-flag",
+            assignment: FlagAssignment(
+                allocationKey: "alloc-1",
+                variationKey: "var-1",
+                variation: .boolean(false),
+                reason: "DEFAULT",
+                doLog: true
+            ),
+            evaluationContext: .mockAny(),
+            flagError: nil
+        )
+
+        // When - Record evaluation with ERROR
+        aggregator.recordEvaluation(
+            for: "error-flag",
+            assignment: FlagAssignment(
+                allocationKey: "alloc-2",
+                variationKey: "var-2",
+                variation: .boolean(false),
+                reason: "ERROR",
+                doLog: true
+            ),
+            evaluationContext: .mockAny(),
+            flagError: "Some error occurred"
+        )
+
+        let flushExpectation = expectation(description: "Flush completes")
+        aggregator.flush {
+            flushExpectation.fulfill()
+        }
+        wait(for: [flushExpectation], timeout: 0.1)
+
+        // Then
+        let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        XCTAssertEqual(events.count, 2)
+
+        let defaultEvent = try XCTUnwrap(events.first { $0.flag.key == "default-flag" })
+        XCTAssertNil(defaultEvent.variant, "Should omit variant for DEFAULT reason")
+        XCTAssertNil(defaultEvent.allocation, "Should omit allocation for DEFAULT reason")
+        XCTAssertEqual(defaultEvent.runtimeDefaultUsed, true)
+
+        let errorEvent = try XCTUnwrap(events.first { $0.flag.key == "error-flag" })
+        XCTAssertNil(errorEvent.variant, "Should omit variant for ERROR with error message")
+        XCTAssertNil(errorEvent.allocation, "Should omit allocation for ERROR with error message")
+        XCTAssertEqual(errorEvent.runtimeDefaultUsed, true)
     }
 
     // EVALLOG.8: Include variant.key, allocation.key when defined (normal evaluations)
@@ -382,8 +530,7 @@ class EvaluationLoggingTests: XCTestCase {
         let aggregator = EvaluationAggregator(
             dateProvider: DateProviderMock(now: .mockAny()),
             featureScope: featureScope,
-            flushInterval: 100.0,
-            maxAggregations: 1_000
+            flushInterval: 60.0
         )
 
         // When
@@ -450,13 +597,13 @@ class EvaluationLoggingTests: XCTestCase {
 
     // EVALLOG.12: Evaluation logging must be enabled by default but may be disabled
     func testEvaluationLoggingEnabledByDefaultAndCanBeDisabled() throws {
-        // Given - Check default configuration
+        // Given
         let defaultConfig = Flags.Configuration()
 
         // Then
         XCTAssertTrue(defaultConfig.trackEvaluations, "Evaluation logging should be enabled by default")
 
-        // When - Create configuration with evaluation logging disabled
+        // When
         let disabledConfig = Flags.Configuration(trackEvaluations: false)
 
         // Then
@@ -472,8 +619,7 @@ class EvaluationLoggingTests: XCTestCase {
         let aggregator = EvaluationAggregator(
             dateProvider: DateProviderMock(now: .mockAny()),
             featureScope: featureScope,
-            flushInterval: 100.0,
-            maxAggregations: 1_000
+            flushInterval: 60.0
         )
 
         // When
@@ -506,8 +652,7 @@ class EvaluationLoggingTests: XCTestCase {
         let aggregator = EvaluationAggregator(
             dateProvider: DateProviderMock(now: .mockAny()),
             featureScope: featureScope,
-            flushInterval: 100.0,
-            maxAggregations: 1_000
+            flushInterval: 60.0
         )
 
         // When
