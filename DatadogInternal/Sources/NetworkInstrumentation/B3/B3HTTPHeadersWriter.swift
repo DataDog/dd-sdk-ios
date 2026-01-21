@@ -80,7 +80,7 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
     public func write(traceContext: TraceContext) {
         typealias Constants = B3HTTPHeaders.Constants
 
-        let sampled = traceContext.isKept
+        let sampled = traceContext.samplingPriority.isKept
         let shouldInject: Bool = {
             switch traceContextInjection {
             case .all:      return true

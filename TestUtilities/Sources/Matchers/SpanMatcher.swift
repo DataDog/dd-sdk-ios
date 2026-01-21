@@ -150,6 +150,8 @@ public class SpanMatcher {
         public func mobileNetworkCarrierRadioTechnology() throws -> String { try matcher.meta(forKeyPath: "meta.network.client.sim_carrier.technology") }
         public func mobileNetworkCarrierAllowsVoIP()      throws -> String { try matcher.meta(forKeyPath: "meta.network.client.sim_carrier.allows_voip") }
 
+        public func samplingDecisionMechanism() throws -> String { try matcher.meta(forKeyPath: "meta._dd.p.dm") }
+
         public func custom(keyPath: String) throws -> String { try matcher.meta(forKeyPath: keyPath) }
     }
 

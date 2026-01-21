@@ -19,6 +19,19 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
     weak var tracer: DatadogTracer?
 
+    /// Helper structure, used to collect elements for creating new contexts.
+    /// See ``TracingURLSessionHandler.makeElementsForNewSpanContext(tracer:parentSpanContext:)``
+    /// for more details.
+    private struct NewSpanElements {
+        let spanID: SpanID
+        let parentSpanID: SpanID?
+        let sampleRate: SampleRate
+        let traceID: TraceID
+        let samplingPriority: SamplingPriority
+        let samplingDecisionMaker: SamplingMechanismType
+        let baggage: BaggageItems
+    }
+
     init(
         tracer: DatadogTracer,
         contextReceiver: ContextMessageReceiver,
@@ -39,16 +52,15 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         // Use the current active span as parent if the propagation headers support it.
-        let parentSpanContext = tracer.activeSpan?.context as? DDSpanContext
-        let traceID = parentSpanContext?.traceID ?? tracer.traceIDGenerator.generate()
-        let sampler = sampler(sessionID: contextReceiver.context.rumContext?.sessionID, traceID: traceID.idLo)
+        let newSpanElements = makeElementsForNewSpanContext(tracer: tracer, parentSpanContext: tracer.activeSpan?.context as? DDSpanContext)
 
         let injectedSpanContext = TraceContext(
-            traceID: traceID,
-            spanID: tracer.spanIDGenerator.generate(),
-            parentSpanID: parentSpanContext?.spanID,
-            sampleRate: parentSpanContext?.sampleRate ?? samplingRate,
-            isKept: parentSpanContext?.isKept ?? sampler.sample(),
+            traceID: newSpanElements.traceID,
+            spanID: newSpanElements.spanID,
+            parentSpanID: newSpanElements.parentSpanID,
+            sampleRate: newSpanElements.sampleRate,
+            samplingPriority: newSpanElements.samplingPriority,
+            samplingDecisionMaker: newSpanElements.samplingDecisionMaker,
             rumSessionId: contextReceiver.context.rumContext?.sessionID,
             userId: contextReceiver.context.userInfo?.id,
             accountId: contextReceiver.context.accountInfo?.id
@@ -93,7 +105,27 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
-        // no-op
+        /*
+         A note about how the active span context is registered: the order these three methods
+         is called is modify(…), immediately followed by interceptionDidStart(…) (synchronously) and
+         later interceptionDidComplete(…), asynchronously, after the session task completes.
+
+         Modify(…) is where the TraceContext is created and may be returned from. However, if the
+         span is not sampled, and TraceContextInjection is configured for .sampled (the default
+         config at the time of writing), there is no propagation through headers not injected
+         context, so modify returns nil.
+
+         Therefore, there is the need to keep track of the active span, if any, in a different
+         way, so we can associate the child span created in this session handler, and treat
+         it properly (usually that means setting the same sampling priority as the parent and
+         in the case the parent is dropped, drop the new span as well).
+
+         To do that, we register a possible active span context in the interception from here.
+         The comment inside the interceptionDidComplete(…) method explains how this is used.
+         */
+        tracer?.activeSpan.map {
+            interception.register(activeSpanContext: $0.context)
+        }
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
@@ -109,6 +141,27 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
         let span: OTSpan
 
+        /*
+         We need to create a new span here. Some of the span specifics depends on what
+         happen before, in the modify and interceptionDidStart(…) methods. Read the comment
+         in interceptionDidStart(…) for an introduction.
+
+         The first case is when we have a trace context in the interception. This means
+         we propagated information through the headers of the request. In that case, we
+         use the data in that trace context to create the span that tracks this request.
+         Given the implementation in the modify method, if there is an active span at
+         the time the requests starts, its information is stored in the context and will
+         be used to relate the span created here.
+
+         The second case is when we do not have a trace context, which means we did not
+         propagate the trace. This also implicitly means we decided to drop the span,
+         either because we have an active dropped span, or the sampler decided this
+         request should not be sampled. We still need to relate the newly created span
+         to it so we can propagate the decision and drop both. Otherwise, we could be
+         creating a new span here that is effectively the child of an active dropped span.
+
+         The following is/else block implements both cases.
+         */
         if let trace = interception.trace {
             let context = DDSpanContext(
                 traceID: trace.traceID,
@@ -116,7 +169,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 parentSpanID: trace.parentSpanID,
                 baggageItems: .init(),
                 sampleRate: trace.sampleRate,
-                isKept: trace.isKept
+                samplingDecision: SamplingDecision(
+                    from: trace.samplingPriority,
+                    decisionMaker: trace.samplingDecisionMaker
+                )
             )
 
             span = tracer.startSpan(
@@ -127,7 +183,22 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         } else if Sampler(samplingRate: samplingRate).sample() {
             // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
             // was used to create the session task.
+            let newSpanElements = makeElementsForNewSpanContext(tracer: tracer, parentSpanContext: interception.activeSpanContext as? DDSpanContext)
+
+            let context = DDSpanContext(
+                traceID: newSpanElements.traceID,
+                spanID: newSpanElements.spanID,
+                parentSpanID: newSpanElements.parentSpanID,
+                baggageItems: newSpanElements.baggage,
+                sampleRate: newSpanElements.sampleRate,
+                samplingDecision: SamplingDecision(
+                    from: newSpanElements.samplingPriority,
+                    decisionMaker: newSpanElements.samplingDecisionMaker
+                )
+            )
+
             span = tracer.startSpan(
+                spanContext: context,
                 operationName: "urlsession.request",
                 startTime: resourceMetrics.fetch.start
             )
@@ -175,6 +246,31 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         span.finish(at: resourceMetrics.fetch.end)
+    }
+
+    /// Creates a helper struct with collected elements from a possible parent span context.
+    ///
+    /// The purpose of this method is to aggregate the same logic used in two different places in a common implementation.
+    ///
+    /// - parameters:
+    ///    - tracer: The used tracer.
+    ///    - parentSpanContext: If the span created by the session handler should be related to a parent span, pass
+    ///    the parent span context here, otherwise, pass `nil`.
+    /// - returns: A ``TracingURLSessionHandler.NewSpanElements`` helper struct.
+    private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?) -> NewSpanElements {
+        let traceID = parentSpanContext?.traceID ?? tracer.traceIDGenerator.generate()
+        let sampler = sampler(sessionID: contextReceiver.context.rumContext?.sessionID, traceID: traceID.idLo)
+        let samplingDecision = parentSpanContext.map { $0.samplingDecision } ?? SamplingDecision(sampling: sampler)
+
+        return NewSpanElements(
+            spanID: tracer.spanIDGenerator.generate(),
+            parentSpanID: parentSpanContext?.spanID,
+            sampleRate: parentSpanContext?.sampleRate ?? samplingRate,
+            traceID: traceID,
+            samplingPriority: samplingDecision.samplingPriority,
+            samplingDecisionMaker: samplingDecision.decisionMaker,
+            baggage: parentSpanContext?.baggageItems ?? .init()
+        )
     }
 
     private func sampler(sessionID: String?, traceID: UInt64?) -> Sampling {

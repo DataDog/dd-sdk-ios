@@ -117,7 +117,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
             parentSpanID: context.parentSpanID,
             baggageItems: context.baggageItems,
             sampleRate: localTraceSampler.samplingRate,
-            isKept: context.isKept
+            samplingDecision: context.samplingDecision
         )
     }
 
@@ -134,7 +134,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
             parentSpanID: parentSpanContext?.spanID,
             baggageItems: BaggageItems(parent: parentSpanContext?.baggageItems),
             sampleRate: parentSpanContext?.sampleRate ?? sampler.samplingRate,
-            isKept: parentSpanContext?.isKept ?? sampler.sample()
+            samplingDecision: parentSpanContext?.samplingDecision ?? SamplingDecision(sampling: sampler)
         )
     }
 

@@ -51,7 +51,7 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     public func write(traceContext: TraceContext) {
         typealias Constants = W3CHTTPHeaders.Constants
 
-        let sampled = traceContext.isKept
+        let sampled = traceContext.samplingPriority.isKept
         let shouldInject: Bool = {
             switch traceContextInjection {
             case .all:      return true
@@ -63,11 +63,15 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
         }
 
         traceHeaderFields = [
-            TracingHTTPHeaders.samplingPriorityField: traceContext.isKept ? "1" : "0"
+            TracingHTTPHeaders.samplingPriorityField: "\(traceContext.samplingPriority.rawValue)"
         ]
         traceHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceContext.traceID.idLo)
         traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(traceContext.spanID, representation: .decimal)
-        traceHeaderFields[TracingHTTPHeaders.tagsField] = "_dd.p.tid=\(traceContext.traceID.idHiHex)"
+        var tags = ["_dd.p.tid=\(traceContext.traceID.idHiHex)"]
+        if traceContext.samplingPriority.isKept {
+            tags.append("_dd.p.dm=-\(traceContext.samplingDecisionMaker.rawValue)")
+        }
+        traceHeaderFields[TracingHTTPHeaders.tagsField] = tags.joined(separator: ",")
         var baggageItems: [String] = []
         if let sessionId = traceContext.rumSessionId {
             baggageItems.append("\(W3CHTTPHeaders.Constants.rumSessionBaggageKey)=\(sessionId)")

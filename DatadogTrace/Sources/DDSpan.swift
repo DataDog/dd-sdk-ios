@@ -78,7 +78,10 @@ internal final class DDSpan: OTSpan {
         if warnIfFinished("setTag(key:value:)") {
             return
         }
-        _tags.mutate { $0[key] = value }
+
+        if ddContext.span(self, willSetTagWithKey: key, value: value) {
+            _tags.mutate { $0[key] = value }
+        }
     }
 
     func setBaggageItem(key: String, value: String) {
@@ -126,7 +129,7 @@ internal final class DDSpan: OTSpan {
             ddTracer.removeSpan(span: self)
             activity.leave()
         }
-        if self.ddContext.isKept {
+        if self.ddContext.samplingDecision.samplingPriority.isKept {
             sendSpan(finishTime: time, sampler: ddTracer.localTraceSampler)
         }
     }
@@ -145,7 +148,8 @@ internal final class DDSpan: OTSpan {
                 startTime: self.startTime,
                 finishTime: finishTime,
                 samplingRate: self.ddContext.sampleRate / 100.0,
-                isKept: self.ddContext.isKept,
+                samplingPriority: self.ddContext.samplingDecision.samplingPriority,
+                samplingDecisionMaker: self.ddContext.samplingDecision.decisionMaker,
                 tags: self.tags,
                 baggageItems: self.ddContext.baggageItems.all,
                 logFields: self.logFields

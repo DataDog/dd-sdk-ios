@@ -28,6 +28,9 @@ public protocol objc_OTSpan {
     func setError(_ error: Error)
     func setError(kind: String, message: String, stack: String?)
 
+    func keepTrace()
+    func dropTrace()
+
     func finish()
     func finishWithTime(_ finishTime: Date?)
 
