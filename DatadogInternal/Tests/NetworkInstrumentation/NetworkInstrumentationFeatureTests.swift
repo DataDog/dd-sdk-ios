@@ -86,6 +86,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.data?.count, 10, "Metrics mode should capture data")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     func testMetricsMode_capturesMetricsForDataTaskWithURLRequest() throws {
@@ -168,6 +170,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.data?.count, 10, "Metrics mode should capture data")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     func testMetricsMode_capturesMetricsForDownloadTask() throws {
@@ -203,6 +207,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.data, "Data not captured for download tasks (saved to file)")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -589,10 +595,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     // MARK: - Automatic Mode
 
-    // TODO: RUM-12429 Add missing automatic mode tests to match metrics mode coverage:
-    // - Session with unregistered delegate
-    // - First-party hosts with request mutation (trace header injection without delegate)
-
     func testAutomaticMode_tracksTasksWithoutDelegateRegistration() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -622,6 +624,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.data?.count, 10, "Data should be captured by completion handler")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     @available(iOS 13.0, *)
@@ -660,6 +664,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.data, "Data should not be captured in automatic mode")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     func testAutomaticMode_tracksTaskWithURL() throws {
@@ -691,6 +697,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.data, "Data should not be captured in automatic mode")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     func testAutomaticMode_tracksTaskWithURLRequest() throws {
@@ -721,6 +729,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.data, "Data should not be captured in automatic mode")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -761,6 +771,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.data?.count, 10, "Data should be captured via completion handler")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     func testAutomaticMode_tracksUploadTaskWithCompletionHandler() throws {
@@ -799,6 +811,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.data, "Upload tasks don't capture response data in automatic mode")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     func testAutomaticMode_tracksUploadTaskWithoutCompletionHandler() throws {
@@ -834,6 +848,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.data, "Data should not be captured in automatic mode")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     @available(iOS 13.0, *)
@@ -869,6 +885,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.data, "Data is not captured when using Async API")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     func testAutomaticMode_tracksDownloadTask() throws {
@@ -899,6 +917,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.data, "Data not captured in automatic mode for download tasks")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     func testAutomaticMode_doesNotCaptureMetricsEvenWithDelegate() throws {
@@ -932,6 +952,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.data, "Data is not captured in automatic mode")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     // MARK: - Both Modes Enabled
@@ -973,6 +995,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // But should capture response size and completion
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     func testGivenBothModesEnabled_whenPerTaskDelegate_itUsesCorrectTrackingMode() throws {
@@ -1033,6 +1058,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception2.data, "Should not capture data in automatic mode")
         XCTAssertEqual(interception2.responseSize, 10, "Should capture response size in automatic mode")
         XCTAssertNotNil(interception2.completion, "Should capture completion")
+        XCTAssertNotNil(interception2.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception2.endDate, "Should capture approximate end date")
     }
 
     func testGivenBothModesEnabled_whenSessionWithDelegateAndCompletionHandler_itCapturesMetrics() throws {
@@ -1174,6 +1201,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.data?.count, 10, "Should capture data via completion handler without double-counting")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     @available(iOS 15, tvOS 15, *)
@@ -1210,6 +1239,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.data, "Should not capture data without completion handler in automatic mode")
         XCTAssertNotNil(interception.responseSize, "Should capture response size via setState")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     @available(iOS 15, tvOS 15, *)
@@ -1243,6 +1274,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.data?.count, 10, "Should capture data via completion handler without double-counting")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     @available(iOS 15, tvOS 15, *)
@@ -1276,6 +1309,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.data, "Should not capture data without completion handler in automatic mode")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     func testGivenBothModesEnabled_whenUsingAsyncAPI_itCapturesAllValues() async throws {
@@ -1336,6 +1371,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception2.data, "Data should not be recorded for tasks with no completion handler")
         XCTAssertEqual(interception2.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception2.completion, "Should capture completion")
+        XCTAssertNotNil(interception2.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception2.endDate, "Should capture approximate end date")
     }
 
     func testGivenBothModesEnabled_whenUsingDownloadTask_itUsesCorrectTrackingMode() throws {
@@ -1390,6 +1427,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception2.data, "Data not captured for download tasks")
         XCTAssertEqual(interception2.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception2.completion, "Should capture completion")
+        XCTAssertNotNil(interception2.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception2.endDate, "Should capture approximate end date")
     }
 
     // MARK: - Content Validation
@@ -1665,6 +1704,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.metrics, "Automatic mode should not capture metrics")
         XCTAssertNil(interception.data, "Data not captured when task fails")
         XCTAssertEqual(interception.responseSize, 0, "Response size should be 0 for failed tasks")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
         let completion = try XCTUnwrap(interception.completion, "Should capture completion")
         XCTAssertNotNil(completion.error, "Should capture error")
         XCTAssertEqual((completion.error as? NSError)?.code, 123, "Should capture correct error code")
@@ -1851,7 +1892,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
-        // Given - Configure first-party hosts without delegate registration
+        // Given - Configure first-party hosts
         let url = URL(string: "https://api.example.com")!
         handler.firstPartyHosts = .init(
             hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
@@ -1863,6 +1904,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             notifyInterceptionDidStart.fulfill()
         }
 
+        // Enable automatic mode only
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
         let session = server.getInterceptedURLSession(delegate: nil)
 
@@ -1872,6 +1914,73 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 5, handler: nil)
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    func testAutomaticMode_injectsTraceHeadersForFirstPartyHosts() throws {
+        let notifyRequestMutation = expectation(description: "Notify request mutation")
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+
+        // Given - Configure first-party hosts
+        let url = URL(string: "https://api.example.com")!
+        handler.firstPartyHosts = .init(
+            hostsWithTracingHeaderTypes: [url.host!: [.datadog, .tracecontext]]
+        )
+
+        var capturedHeaderTypes: Set<TracingHeaderType>?
+        handler.onRequestMutation = { _, headerTypes, _ in
+            capturedHeaderTypes = headerTypes
+            notifyRequestMutation.fulfill()
+        }
+        handler.onInterceptionDidStart = { interception in
+            XCTAssertTrue(interception.isFirstPartyRequest, "Should be detected as first-party request")
+            notifyInterceptionDidStart.fulfill()
+        }
+
+        // Enable automatic mode only
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession(delegate: nil)
+
+        // When
+        let request = URLRequest(url: url)
+        session.dataTask(with: request).resume()
+
+        // Then - Verify request mutation (header injection) was called with correct header types
+        waitForExpectations(timeout: 5, handler: nil)
+        XCTAssertEqual(capturedHeaderTypes, [.datadog, .tracecontext], "Should pass configured header types for injection")
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    func testAutomaticMode_doesNotInjectHeadersForThirdPartyHosts() throws {
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+
+        // Given - Configure first-party hosts that don't match the request URL
+        handler.firstPartyHosts = .init(
+            hostsWithTracingHeaderTypes: ["api.first-party.com": [.datadog]]
+        )
+
+        var requestMutationCalled = false
+        handler.onRequestMutation = { _, _, _ in
+            requestMutationCalled = true
+        }
+        handler.onInterceptionDidStart = { interception in
+            XCTAssertFalse(interception.isFirstPartyRequest, "Should NOT be detected as first-party request")
+            notifyInterceptionDidStart.fulfill()
+        }
+
+        // Enable automatic mode
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession(delegate: nil)
+
+        // When - Request to third-party URL
+        let thirdPartyURL = URL(string: "https://api.third-party.com/endpoint")!
+        session.dataTask(with: URLRequest(url: thirdPartyURL)).resume()
+
+        // Then - Verify request mutation was NOT called for third-party hosts
+        waitForExpectations(timeout: 5, handler: nil)
+        XCTAssertFalse(requestMutationCalled, "Should NOT inject headers for third-party hosts")
         _ = server.waitAndReturnRequests(count: 1)
     }
 

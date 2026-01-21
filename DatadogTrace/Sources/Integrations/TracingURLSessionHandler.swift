@@ -97,15 +97,16 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
-        // TODO: RUM-13455 - Add support for automatic mode in tracing
-        // Currently, tracing requires metrics mode because spans need accurate timing (fetch start/end).
-        // Automatic mode doesn't capture timing without URLSessionTaskMetrics.
-        // Investigate if we want to support automatic mode for Tracing.
+        // Priority: metrics timing (most accurate) > approximate timing (fallback for automatic mode)
+        let fetchStart = interception.metrics?.fetch.start ?? interception.startDate
+        let fetchEnd = interception.metrics?.fetch.end ?? interception.endDate
+
         guard
             interception.isFirstPartyRequest, // `Span` should be only send for 1st party requests
             interception.origin != "rum", // if that request was tracked as RUM resource, the RUM backend will create the span on our behalf
             let tracer = tracer,
-            let resourceMetrics = interception.metrics, // Currently requires metrics mode for accurate timing
+            let startTime = fetchStart,
+            let endTime = fetchEnd,
             let resourceCompletion = interception.completion
         else {
             return
@@ -126,14 +127,14 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             span = tracer.startSpan(
                 spanContext: context,
                 operationName: "urlsession.request",
-                startTime: resourceMetrics.fetch.start
+                startTime: startTime
             )
         } else if Sampler(samplingRate: samplingRate).sample() {
             // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
             // was used to create the session task.
             span = tracer.startSpan(
                 operationName: "urlsession.request",
-                startTime: resourceMetrics.fetch.start
+                startTime: startTime
             )
         } else {
             return
@@ -169,16 +170,16 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         if let history = contextReceiver.context.applicationStateHistory {
-            let fetchDuration = resourceMetrics.fetch.start...resourceMetrics.fetch.end
+            let fetchDuration = startTime...endTime
             let foregroundDuration = history.foregroundDuration(during: fetchDuration)
             span.setTag(key: SpanTags.foregroundDuration, value: foregroundDuration.dd.toNanoseconds)
 
-            let didStartInBackground = history.state(at: resourceMetrics.fetch.start) == .background
-            let doesEndInBackground = history.state(at: resourceMetrics.fetch.end) == .background
+            let didStartInBackground = history.state(at: startTime) == .background
+            let doesEndInBackground = history.state(at: endTime) == .background
             span.setTag(key: SpanTags.isBackground, value: didStartInBackground || doesEndInBackground)
         }
 
-        span.finish(at: resourceMetrics.fetch.end)
+        span.finish(at: endTime)
     }
 
     private func sampler(sessionID: String?, traceID: UInt64?) -> Sampling {

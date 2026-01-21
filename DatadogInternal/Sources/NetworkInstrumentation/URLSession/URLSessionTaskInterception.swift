@@ -62,6 +62,16 @@ public class URLSessionTaskInterception {
     /// Task state tracked via `setState:` swizzling.
     internal var taskState: URLSessionTask.State?
 
+    /// Approximate start time captured when interception begins.
+    /// Available in both automatic and metrics modes.
+    /// Use `metrics?.fetch.start` when available for more accurate timing.
+    public private(set) var startDate: Date?
+
+    /// Approximate end time captured when interception completes.
+    /// Available in both automatic and metrics modes.
+    /// Use `metrics?.fetch.end` when available for more accurate timing.
+    public private(set) var endDate: Date?
+
     init(request: ImmutableRequest, isFirstParty: Bool, trackingMode: TrackingMode) {
         self.identifier = UUID()
         self.request = request
@@ -106,6 +116,14 @@ public class URLSessionTaskInterception {
 
     func register(responseSize: Int64) {
         self.responseSize = responseSize
+    }
+
+    func register(startDate: Date) {
+        self.startDate = startDate
+    }
+
+    func register(endDate: Date) {
+        self.endDate = endDate
     }
 
     /// Tells if the interception is done.

@@ -422,6 +422,12 @@ extension NetworkInstrumentationFeature {
 
             interception.register(request: request)
 
+            // Capture approximate start time for all modes
+            // This enables Trace to work in automatic mode (where `URLSessionTaskMetrics` are unavailable)
+            if interception.startDate == nil {
+                interception.register(startDate: Date())
+            }
+
             if let traceContext = injectedTraceContexts.first {
                 // ^ If multiple trace contexts were injected (one per each handler) take the first one. This mimics the implicit
                 // behaviour from before RUM-3470.
@@ -507,6 +513,10 @@ extension NetworkInstrumentationFeature {
     }
 
     private func finish(task: URLSessionTask, interception: URLSessionTaskInterception) {
+        // Capture approximate end time for all modes
+        // This enables Trace to work in automatic mode (where `URLSessionTaskMetrics` are unavailable)
+        interception.register(endDate: Date())
+
         handlers.forEach { $0.interceptionDidComplete(interception: interception) }
         interceptions[task] = nil
     }
