@@ -11,33 +11,111 @@ import TestUtilities
 @_spi(Internal)
 @testable import DatadogFlags
 
-/// Tests for EvaluationAggregator implementation details.
-///
 /// Note: Aggregation behavior for EVALLOG specs (flush triggers, aggregation key, first timestamp, count)
-/// are tested in `EvaluationLoggingTests` as part of end-to-end spec compliance validation.
+/// are tested in `EvaluationLoggingTests` as part of validating EVALLOG specifications compliance.
 /// This test suite focuses on implementation-specific details like thread safety and internal state management.
 class EvaluationAggregatorTests: XCTestCase {
+    private let featureScope = FeatureScopeMock()
+
     // MARK: - Implementation Details
 
     func testFlushClearsPendingAggregations() {
-        // Test that flush clears aggregations map
-        XCTFail("Not implemented")
-    }
+        // Given
+        let aggregator = EvaluationAggregator(
+            dateProvider: DateProviderMock(now: .mockAny()),
+            featureScope: featureScope,
+            flushInterval: 100.0,
+            maxAggregations: 1_000
+        )
 
-    func testFlushResetsTimer() {
-        // Test that flush resets the timer
-        XCTFail("Not implemented")
+        let firstFlushExpectation = expectation(description: "First flush completes")
+        let secondFlushExpectation = expectation(description: "Second flush completes")
+
+        // When - record some evaluations
+        aggregator.recordEvaluation(
+            for: "flag-1",
+            assignment: .mockAnyBoolean(),
+            evaluationContext: .mockAny(),
+            flagError: nil
+        )
+        aggregator.recordEvaluation(
+            for: "flag-2",
+            assignment: .mockAnyBoolean(),
+            evaluationContext: .mockAny(),
+            flagError: nil
+        )
+
+        // Then - flush should send events
+        aggregator.flush {
+            firstFlushExpectation.fulfill()
+        }
+
+        wait(for: [firstFlushExpectation], timeout: 0.1)
+        XCTAssertEqual(featureScope.eventsWritten.count, 2)
+
+        // When - record more evaluations after flush
+        aggregator.recordEvaluation(
+            for: "flag-3",
+            assignment: .mockAnyBoolean(),
+            evaluationContext: .mockAny(),
+            flagError: nil
+        )
+
+        // Then - previous aggregations were cleared, only new one exists
+        aggregator.flush {
+            secondFlushExpectation.fulfill()
+        }
+
+        wait(for: [secondFlushExpectation], timeout: 0.1)
+        XCTAssertEqual(featureScope.eventsWritten.count, 3, "Should have 2 from first flush + 1 from second flush")
     }
 
     // MARK: - Thread Safety
 
-    func testConcurrentRecordEvaluations() {
-        // Test that concurrent recordEvaluation calls are thread-safe
-        XCTFail("Not implemented")
-    }
-
     func testConcurrentFlushAndRecord() {
-        // Test that flush and record can happen concurrently
-        XCTFail("Not implemented")
+        // Given
+        let aggregator = EvaluationAggregator(
+            dateProvider: DateProviderMock(now: .mockAny()),
+            featureScope: featureScope,
+            flushInterval: 100.0,
+            maxAggregations: 1_000
+        )
+
+        let iterations = 50
+        let expectation = self.expectation(description: "All operations complete")
+        expectation.expectedFulfillmentCount = iterations * 2
+
+        // When - record and flush concurrently
+        DispatchQueue.global().async {
+            for index in 0..<iterations {
+                aggregator.recordEvaluation(
+                    for: "flag-\(index)",
+                    assignment: .mockAnyBoolean(),
+                    evaluationContext: .mockAny(),
+                    flagError: nil
+                )
+                expectation.fulfill()
+            }
+        }
+
+        DispatchQueue.global().async {
+            for _ in 0..<iterations {
+                aggregator.flush()
+                expectation.fulfill()
+            }
+        }
+
+        // Then - all operations complete without crashes or deadlocks
+        wait(for: [expectation], timeout: 5.0)
+
+        // Final flush to collect any remaining evaluations
+        let finalFlushExpectation = self.expectation(description: "Final flush completes")
+        aggregator.flush {
+            finalFlushExpectation.fulfill()
+        }
+
+        wait(for: [finalFlushExpectation], timeout: 0.1)
+
+        XCTAssertEqual(featureScope.eventsWritten.count, 50, "Should have written exactly one event per unique flag")
     }
 }

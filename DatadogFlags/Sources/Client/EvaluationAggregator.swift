@@ -86,22 +86,33 @@ internal final class EvaluationAggregator {
     }
 
     func flush() {
+        flush(completion: nil)
+    }
+
+    /// Internal flush method with completion handler for testing
+    internal func flush(completion: (() -> Void)?) {
         queue.async { [weak self] in
-            guard let self = self else { return }
+            guard let self = self else {
+                completion?()
+                return
+            }
 
             let evaluationsToSend = Array(self.aggregations.values)
             self.aggregations.removeAll()
 
             guard !evaluationsToSend.isEmpty else {
+                completion?()
                 return
             }
 
-            self.featureScope.eventWriteContext { context, writer in
+            self.featureScope.eventWriteContext { _, writer in
                 for aggregated in evaluationsToSend {
                     let event = aggregated.toFlagEvaluationEvent()
                     writer.write(value: event)
                 }
             }
+
+            completion?()
         }
     }
 

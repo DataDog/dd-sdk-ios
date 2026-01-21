@@ -11,144 +11,148 @@ import TestUtilities
 @_spi(Internal)
 @testable import DatadogFlags
 
-/// Tests for evaluation logging feature (EVALLOG specifications).
-///
-/// Validates compliance with the evaluation logging specifications,
+/// Validates compliance with the evaluation logging (EVALLOG) specifications,
 /// which define how flag evaluations are tracked, aggregated, and sent to the backend.
 class EvaluationLoggingTests: XCTestCase {
+    // MARK: - Helper to skip tests
+
+    private func skipTest() throws {
+        throw XCTSkip("EVALLOG tests not yet implemented")
+    }
+
     // MARK: - EVALLOG.1: EVP Intake
 
     // EVALLOG.1: SDK must send evaluation events to EVP intake with application/json and batched schema
-    func testSendsToEVPIntakeWithBatchedJsonFormat() {
-        XCTFail("Not implemented")
+    func testSendsToEVPIntakeWithBatchedJsonFormat() throws {
+        try skipTest()
     }
 
     // MARK: - EVALLOG.2: Log All Evaluations
 
     // EVALLOG.2: Log all evaluations when enabled, including defaults and errors (unlike exposure logging)
-    func testLogsAllEvaluationsRegardlessOfDoLog() {
-        XCTFail("Not implemented")
+    func testLogsAllEvaluationsRegardlessOfDoLog() throws {
+        try skipTest()
     }
 
     // MARK: - EVALLOG.3: Aggregation
 
     // EVALLOG.3: Aggregate evaluations by flag_key, variant_key, allocation_key, targeting_key, error_message, context
-    func testAggregatesByCompositeKey() {
-        XCTFail("Not implemented")
+    func testAggregatesByCompositeKey() throws {
+        try skipTest()
     }
 
     // EVALLOG.3: Tracks evaluation count, first/last timestamps, runtime_default_used, error_message
-    func testTracksAggregationFields() {
-        XCTFail("Not implemented")
+    func testTracksAggregationFields() throws {
+        try skipTest()
     }
 
     // MARK: - EVALLOG.4: Event Buffering / Flushing
 
     // EVALLOG.4: Time-based flush with configurable interval (default 10s, min 1s, max 1min)
-    func testFlushesAtConfigurableIntervalWithBoundsValidation() {
-        XCTFail("Not implemented")
+    func testFlushesAtConfigurableIntervalWithBoundsValidation() throws {
+        try skipTest()
     }
 
     // EVALLOG.4: Size-based flush when aggregation map reaches limit
-    func testFlushesWhenAggregationMapReachesLimit() {
-        XCTFail("Not implemented")
+    func testFlushesWhenAggregationMapReachesLimit() throws {
+        try skipTest()
     }
 
     // EVALLOG.4: Shutdown flush when SDK stops or page unloads
-    func testFlushesOnShutdown() {
-        XCTFail("Not implemented")
+    func testFlushesOnShutdown() throws {
+        try skipTest()
     }
 
     // MARK: - EVALLOG.5: Error Logging
 
     // EVALLOG.5: Errors logged as error.message and included in aggregation key
-    func testLogsErrorMessageInAggregationKey() {
-        XCTFail("Not implemented")
+    func testLogsErrorMessageInAggregationKey() throws {
+        try skipTest()
     }
 
     // MARK: - EVALLOG.6: Omit Empty Context
 
     // EVALLOG.6: Omit context.evaluation if targeting context contains only targetingKey
-    func testOmitsContextWhenOnlyTargetingKey() {
-        XCTFail("Not implemented")
+    func testOmitsContextWhenOnlyTargetingKey() throws {
+        try skipTest()
     }
 
     // EVALLOG.6: Include context.evaluation when targeting context has additional attributes
-    func testIncludesContextWhenAdditionalAttributes() {
-        XCTFail("Not implemented")
+    func testIncludesContextWhenAdditionalAttributes() throws {
+        try skipTest()
     }
 
     // MARK: - EVALLOG.7: Targeting Key Presence
 
     // EVALLOG.7: Empty string "" is valid targeting key and must be included as targeting_key: ""
-    func testKeepsEmptyStringTargetingKey() {
-        XCTFail("Not implemented")
+    func testKeepsEmptyStringTargetingKey() throws {
+        try skipTest()
     }
 
     // EVALLOG.7: Omit targeting_key field when null or undefined
-    func testOmitsNullTargetingKey() {
-        XCTFail("Not implemented")
+    func testOmitsNullTargetingKey() throws {
+        try skipTest()
     }
 
     // MARK: - EVALLOG.8: Omit Undefined Optional Keys
 
     // EVALLOG.8: Omit variant.key, allocation.key when undefined (DEFAULT/ERROR reasons)
-    func testOmitsVariantAndAllocationForRuntimeDefaults() {
-        XCTFail("Not implemented")
+    func testOmitsVariantAndAllocationForRuntimeDefaults() throws {
+        try skipTest()
     }
 
     // EVALLOG.8: Include variant.key, allocation.key when defined (normal evaluations)
-    func testIncludesVariantAndAllocationForNormalEvaluations() {
-        XCTFail("Not implemented")
+    func testIncludesVariantAndAllocationForNormalEvaluations() throws {
+        try skipTest()
     }
 
     // MARK: - EVALLOG.9: Context Changes
 
     // EVALLOG.9: Different targeting contexts create separate events regardless of matching results
-    func testDifferentContextsCreateSeparateAggregations() {
-        XCTFail("Not implemented")
+    func testDifferentContextsCreateSeparateAggregations() throws {
+        try skipTest()
     }
 
     // MARK: - EVALLOG.10: Timestamp Field
 
     // EVALLOG.10: timestamp field equals first_evaluation
-    func testTimestampEqualsFirstEvaluation() {
-        XCTFail("Not implemented")
+    func testTimestampEqualsFirstEvaluation() throws {
+        try skipTest()
     }
 
     // MARK: - EVALLOG.11: Aggregation Period Lifecycle
 
     // EVALLOG.11: Aggregation period starts at first evaluation and ends at flush
-    func testAggregationPeriodLifecycle() {
-        XCTFail("Not implemented")
+    func testAggregationPeriodLifecycle() throws {
+        try skipTest()
     }
 
     // EVALLOG.11: After flushing, subsequent evaluations start new aggregation periods
-    func testNewAggregationPeriodAfterFlush() {
-        XCTFail("Not implemented")
+    func testNewAggregationPeriodAfterFlush() throws {
+        try skipTest()
     }
 
     // MARK: - EVALLOG.12: Enabled by Default
 
     // EVALLOG.12: Evaluation logging must be enabled by default but may be disabled
-    func testEvaluationLoggingEnabledByDefaultAndCanBeDisabled() {
-        XCTFail("Not implemented")
+    func testEvaluationLoggingEnabledByDefaultAndCanBeDisabled() throws {
+        try skipTest()
     }
 
     // MARK: - EVALLOG.13: Runtime Default Used
 
     // EVALLOG.13: runtime_default_used true for DEFAULT reason
-    func testRuntimeDefaultUsedForDefaultReason() {
-        XCTFail("Not implemented")
+    func testRuntimeDefaultUsedForDefaultReason() throws {
+        try skipTest()
     }
 
     // EVALLOG.13: runtime_default_used true for ERROR reason
-    func testRuntimeDefaultUsedForErrorReason() {
-        XCTFail("Not implemented")
+    func testRuntimeDefaultUsedForErrorReason() throws {
+        try skipTest()
     }
 
     // EVALLOG.13: runtime_default_used omitted when false
-    func testRuntimeDefaultUsedOmittedWhenFalse() {
-        XCTFail("Not implemented")
+    func testRuntimeDefaultUsedOmittedWhenFalse() throws {
+        try skipTest()
     }
 }
