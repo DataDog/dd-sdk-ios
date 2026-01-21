@@ -395,6 +395,7 @@
 		1434A4642B7F73170072E3BB /* OpenTelemetryApi.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1434A4662B7F8D880072E3BB /* DebugOTelTracingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */; };
 		1434A4672B7F8D880072E3BB /* DebugOTelTracingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */; };
+		144CDB9AFBDFF0B7EB10B4A3 /* EvaluationAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA681535D980BA99B12659B /* EvaluationAggregatorTests.swift */; };
 		261255872E2167E40015042B /* BaggageHeaderMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255862E2167E40015042B /* BaggageHeaderMerger.swift */; };
 		261255882E2167E40015042B /* BaggageHeaderMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255862E2167E40015042B /* BaggageHeaderMerger.swift */; };
 		2612558A2E2167F10015042B /* BaggageHeaderMergerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255892E2167F10015042B /* BaggageHeaderMergerTests.swift */; };
@@ -1070,6 +1071,7 @@
 		61FC5F3525CC1898006BB4DE /* CrashContextProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F3425CC1898006BB4DE /* CrashContextProviderTests.swift */; };
 		6482FB0E2EE885C60042234B /* FlagsClientInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482FB0D2EE885C20042234B /* FlagsClientInternal.swift */; };
 		6482FB0F2EE885C60042234B /* FlagsClientInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482FB0D2EE885C20042234B /* FlagsClientInternal.swift */; };
+		770E0BF093842AF7D350E888 /* EvaluationLoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC44AD2847746ED69201F65 /* EvaluationLoggingTests.swift */; };
 		86092FDD2DEDC6830075D63B /* AccessibilityValuesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */; };
 		86092FDE2DEDC6830075D63B /* AccessibilityValuesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */; };
 		861FD6852DF2EAED00F59823 /* LocaleInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861FD6842DF2EAED00F59823 /* LocaleInfoPublisherTests.swift */; };
@@ -2953,6 +2955,7 @@
 		49274908288048F400ECD49B /* RUMInternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMInternalProxyTests.swift; sourceTree = "<group>"; };
 		49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUM+Internal.swift"; sourceTree = "<group>"; };
 		49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+Internal.swift"; sourceTree = "<group>"; };
+		5AA681535D980BA99B12659B /* EvaluationAggregatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationAggregatorTests.swift; sourceTree = "<group>"; };
 		5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphicsFilter.swift; sourceTree = "<group>"; };
 		5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphicsFilter+Reflection.swift"; sourceTree = "<group>"; };
 		5B0E75D92E9690C400F66739 /* ExposureTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureTracker.swift; sourceTree = "<group>"; };
@@ -3595,6 +3598,7 @@
 		B3E46CAD2D91B3FC00BABF66 /* NetworkContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkContext.swift; sourceTree = "<group>"; };
 		B3FC3C0626526EFF00DEED9E /* VitalInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalInfo.swift; sourceTree = "<group>"; };
 		B3FC3C3B2653A97700DEED9E /* VitalInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalInfoTests.swift; sourceTree = "<group>"; };
+		BDC44AD2847746ED69201F65 /* EvaluationLoggingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationLoggingTests.swift; sourceTree = "<group>"; };
 		C63A979F48771C3277A41396 /* EvaluationLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationLogger.swift; sourceTree = "<group>"; };
 		CD117A3F5E4EFA0335A8268F /* FlagsEvaluationFeature.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FlagsEvaluationFeature.swift; sourceTree = "<group>"; };
 		D115C155135BEF011C5D0A3F /* FlagEvaluationEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FlagEvaluationEvent.swift; sourceTree = "<group>"; };
@@ -4820,6 +4824,8 @@
 				5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */,
 				5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */,
 				11014EACF1FB9927DAD57822 /* EvaluationMocks.swift */,
+				BDC44AD2847746ED69201F65 /* EvaluationLoggingTests.swift */,
+				5AA681535D980BA99B12659B /* EvaluationAggregatorTests.swift */,
 			);
 			path = Client;
 			sourceTree = "<group>";
@@ -9675,6 +9681,8 @@
 				5BF802752E9CD28900097B0E /* RUMFlagEvaluationReporterTests.swift in Sources */,
 				5B1D02742E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */,
 				11FAFFF952FD470DCA2009B3 /* EvaluationMocks.swift in Sources */,
+				770E0BF093842AF7D350E888 /* EvaluationLoggingTests.swift in Sources */,
+				144CDB9AFBDFF0B7EB10B4A3 /* EvaluationAggregatorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
