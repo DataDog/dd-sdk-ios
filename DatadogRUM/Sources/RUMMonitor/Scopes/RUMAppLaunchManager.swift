@@ -64,6 +64,11 @@ private extension RUMAppLaunchManager {
         self.timeToInitialDisplay = ttid
         let ttidVitalId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
 
+        var profiling: RUMVitalAppLaunchEvent.DD.Profiling?
+        if let profilingContext = context.additionalContext(ofType: ProfilingContext.self) {
+            profiling = .init(errorReason: profilingContext.error, status: profilingContext.profilingStatus)
+        }
+
         sendProfilerStopMessage(id: ttidVitalId, activeView: activeView)
 
         dependencies.appStateManager.currentAppStateInfo { [weak self] currentAppStateInfo in
@@ -85,7 +90,8 @@ private extension RUMAppLaunchManager {
                 attributes: attributes,
                 context: context,
                 writer: writer,
-                activeView: activeView
+                activeView: activeView,
+                profiling: profiling
             )
 
             // The TTFD is always written after the TTID. If it exists already, means it was not written before.
@@ -161,7 +167,8 @@ private extension RUMAppLaunchManager {
         attributes: [AttributeKey: AttributeValue],
         context: DatadogContext,
         writer: Writer,
-        activeView: RUMViewScope?
+        activeView: RUMViewScope?,
+        profiling: RUMVitalAppLaunchEvent.DD.Profiling? = nil
     ) {
         let vital = RUMVitalAppLaunchEvent.Vital(
             appLaunchMetric: appLaunchMetric,
@@ -171,11 +178,6 @@ private extension RUMAppLaunchManager {
             name: appLaunchMetric.name,
             startupType: startupType
         )
-
-        var profiling: RUMVitalAppLaunchEvent.DD.Profiling?
-        if let profilingContext = context.additionalContext(ofType: ProfilingContext.self) {
-            profiling = .init(errorReason: profilingContext.error, status: profilingContext.profilingStatus)
-        }
 
         let vitalEvent = RUMVitalAppLaunchEvent(
             dd: .init(profiling: profiling),
@@ -282,10 +284,14 @@ private extension RUMVitalAppLaunchEvent.Vital.AppLaunchMetric {
 private extension ProfilingContext {
     var profilingStatus: RUMVitalAppLaunchEvent.DD.Profiling.Status {
         switch self.status {
-        case .running: .running
-        case .stopped: .stopped
-        case .error: .error
-        case .unknown: .error
+        case .running: return .running
+        case let .stopped(reason):
+            if reason == .manual || reason == .timeout {
+                return .running
+            }
+            return .stopped
+        case .error: return .error
+        case .unknown: return .error
         }
     }
 
