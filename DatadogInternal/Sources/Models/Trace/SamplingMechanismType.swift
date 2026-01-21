@@ -5,34 +5,33 @@
  */
 
 /// The mechanism used to make a span sampling decision.
-public enum SamplingMechanismType: Equatable {
+///
+/// The raw values are the ones used in propagation headers like `_dd.p.dm`. They do not include the `-` character,
+/// since that character is a separator and not part of the value itself.
+public enum SamplingMechanismType: String, Equatable, Comparable {
     /// Fallback mechanism. This mechanism samples all spans. It should never be used, but it's included for completion.
-    case fallback
+    case fallback = "0"
     /// The main decision mechanism. Although the SDK runs in an agent-less scenario, we consider the SDK sampling
     /// decisions act as the agent rate in scenarios with independent tracers and agent.
-    case agentRate
+    case agentRate = "1"
     /// Decision mechanism used when a decision is manually set by the developer.
-    case manual
+    case manual = "4"
 
-    /// Tag value used on propagation headers.
-    public var tagValue: String {
+    typealias SamplingMechanismPrecedence = Int
+
+    /// Precedence values used to sort sampling mechanisms by order of precedence.
+    ///
+    /// - Note: We need to explicitly model these values because, per spec, the order of the raw values is actually
+    /// different from the precedence order.
+    private var precedence: SamplingMechanismPrecedence {
         switch self {
-        case .fallback:  "0"
-        case .agentRate: "1"
-        case .manual:    "4"
+        case .fallback:  0
+        case .agentRate: 1
+        case .manual:    2
         }
     }
 
-    /// Creates a ``SamplingMechanismType`` from a tag value used on propagation headers.
-    ///
-    /// - Note: Do not include the `-` character in the tag, since that character is a separator and
-    /// not part of the tag itself.
-    init?(tagValue: String) {
-        switch tagValue {
-        case "0": self = .fallback
-        case "1": self = .agentRate
-        case "4": self = .manual
-        default: return nil
-        }
+    public static func < (lhs: SamplingMechanismType, rhs: SamplingMechanismType) -> Bool {
+        lhs.precedence < rhs.precedence
     }
 }

@@ -69,7 +69,7 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
         traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(traceContext.spanID, representation: .decimal)
         var tags = ["_dd.p.tid=\(traceContext.traceID.idHiHex)"]
         if traceContext.samplingPriority.isKept {
-            tags.append("_dd.p.dm=-\(traceContext.samplingDecisionMaker.tagValue)")
+            tags.append("_dd.p.dm=-\(traceContext.samplingDecisionMaker.rawValue)")
         }
         traceHeaderFields[TracingHTTPHeaders.tagsField] = tags.joined(separator: ",")
         var baggageItems: [String] = []

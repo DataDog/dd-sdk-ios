@@ -85,7 +85,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
         ]
 
         if traceContext.samplingPriority.isKept {
-            tracestate[Constants.samplingDecisionMaker] = "-\(traceContext.samplingDecisionMaker.tagValue)"
+            tracestate[Constants.samplingDecisionMaker] = "-\(traceContext.samplingDecisionMaker.rawValue)"
         }
 
         // while merging, the tracestate values from the tracestate property take precedence

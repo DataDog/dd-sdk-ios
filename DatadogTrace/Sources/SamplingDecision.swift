@@ -97,7 +97,7 @@ internal final class SamplingDecision {
     /// This is the sampling priority of the highest precedence mechanism registered in this decision.
     var samplingPriority: SamplingPriority {
         mechanisms
-            .max { $0.0.precedence < $1.0.precedence }
+            .max { $0.0 < $1.0 }
             .map { $0.1 } ?? .autoKeep
     }
 
@@ -106,7 +106,7 @@ internal final class SamplingDecision {
     /// This is the highest precedence mechanism registered in this decision.
     var decisionMaker: SamplingMechanismType {
         mechanisms
-            .max { $0.0.precedence < $1.0.precedence }
-            .map { $0.0 } ?? .fallback
+            .keys
+            .max() ?? .fallback
     }
 }

@@ -45,12 +45,11 @@ public class HTTPHeadersReader: TracePropagationHeadersReader {
     }
 
     public var samplingPriority: SamplingPriority? {
-        if let sampling = httpHeaderFields[TracingHTTPHeaders.samplingPriorityField],
-           let samplingInteger = Int(sampling),
-           let samplingPriority = SamplingPriority(rawValue: samplingInteger) {
-            return samplingPriority
+        guard let sampling = httpHeaderFields[TracingHTTPHeaders.samplingPriorityField] else {
+            return nil
         }
-        return nil
+
+        return SamplingPriority(string: sampling)
     }
 
     public var samplingDecisionMaker: SamplingMechanismType? {
@@ -68,9 +67,8 @@ public class HTTPHeadersReader: TracePropagationHeadersReader {
                     let key = tagElements.first,
                     key == "_dd.p.dm",
                     case let value = tagElements[1],
-                    case let valueSegments = value.split(separator: "-", omittingEmptySubsequences: true),
-                    let tagValue = valueSegments.last,
-                    let mechanismType = SamplingMechanismType(tagValue: String(tagValue))
+                    let tagValue = Self.parseDecisionMakerTag(fromValue: value),
+                    let mechanismType = SamplingMechanismType(rawValue: String(tagValue))
                 else { return nil }
                 return mechanismType
             }

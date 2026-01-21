@@ -985,7 +985,7 @@ class TracerTests: XCTestCase {
         let child = tracer.startSpan(operationName: .mockAny(), childOf: span.context)
         let grandchild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
 
-        span.setTag(key: SpanTags.manualDrop, value: true)
+        child.setTag(key: SpanTags.manualDrop, value: true)
 
         grandchild.finish()
         child.finish()

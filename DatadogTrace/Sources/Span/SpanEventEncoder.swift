@@ -213,7 +213,7 @@ internal struct SpanEventEncoder {
             try container.encode(span.samplingRate, forKey: .samplingRate)
             try container.encode(span.samplingPriority.rawValue, forKey: .samplingPriority)
             if span.samplingPriority.isKept {
-                try container.encode("-\(span.samplingDecisionMaker.tagValue)", forKey: .decisionMaker)
+                try container.encode("-\(span.samplingDecisionMaker.rawValue)", forKey: .decisionMaker)
             }
         }
     }

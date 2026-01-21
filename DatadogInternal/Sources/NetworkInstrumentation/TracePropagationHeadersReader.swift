@@ -24,8 +24,22 @@ public protocol TracePropagationHeadersReader {
     var sampled: Bool? { get }
 }
 
-public extension TracePropagationHeadersReader {
-    var sampled: Bool? {
+extension TracePropagationHeadersReader {
+    public var sampled: Bool? {
         samplingPriority?.isKept
+    }
+
+    /// Helper function that parses "4" from a "-4" string.
+    ///
+    /// In the headers, the value of the decision maker key/value pair has the form of a dash and a number,
+    /// like "-4". This is not negative 4, it's defined as a separator and a positive integer. This function extracts
+    /// the last substring for a substring in this format.
+    ///
+    /// - parameters:
+    ///    - value: A substring in the format of "-x" as described above.
+    ///
+    /// - returns: The part of the input substring after the last dash if it exists, `nil` otherwise.
+    static func parseDecisionMakerTag(fromValue value: Substring) -> Substring? {
+        value.split(separator: "-", omittingEmptySubsequences: true).last
     }
 }

@@ -24,4 +24,11 @@ public enum SamplingPriority: Int {
         case .manualKeep, .autoKeep: true
         }
     }
+
+    init?(string: any StringProtocol) {
+        guard let intValue = Int(string) else {
+            return nil
+        }
+        self.init(rawValue: intValue)
+    }
 }

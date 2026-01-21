@@ -42,7 +42,7 @@ class W3CHTTPHeadersReaderTests: XCTestCase {
         let reader = W3CHTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNotNil(reader.read(), "When sampled, it should return trace context")
         XCTAssertEqual(reader.samplingPriority, .autoKeep)
-        XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.samplingDecisionMaker, .agentRate)
         XCTAssertEqual(reader.sampled, true)
     }
 
@@ -70,11 +70,8 @@ class W3CHTTPHeadersReaderTests: XCTestCase {
         let reader = W3CHTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNotNil(reader.read(), "When sampled, it should return trace context")
 
-        // W3C reader is based on the non-vendor-specific standard header so we only
-        // read values 0 or 1, not -1 and 2. Therefore we can't tell apart between
-        // .autoKeep and .manualKeep
-        XCTAssertEqual(reader.samplingPriority, .autoKeep)
-        XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.samplingPriority, .manualKeep)
+        XCTAssertEqual(reader.samplingDecisionMaker, .manual)
         XCTAssertEqual(reader.sampled, true)
     }
 
@@ -87,11 +84,7 @@ class W3CHTTPHeadersReaderTests: XCTestCase {
 
         let reader = W3CHTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
-
-        // W3C reader is based on the non-vendor-specific standard header so we only
-        // read values 0 or 1, not -1 and 2. Therefore we can't tell apart between
-        // .autoDrop and .manualDrop
-        XCTAssertEqual(reader.samplingPriority, .autoDrop)
+        XCTAssertEqual(reader.samplingPriority, .manualDrop)
         XCTAssertNil(reader.samplingDecisionMaker)
         XCTAssertEqual(reader.sampled, false)
     }
