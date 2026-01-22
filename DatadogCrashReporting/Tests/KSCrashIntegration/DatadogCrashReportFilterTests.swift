@@ -476,4 +476,67 @@ class DatadogCrashReportFilterTests: XCTestCase {
         XCTAssertEqual(ddReport1.meta.incidentIdentifier, "1")
         XCTAssertEqual(ddReport2.meta.incidentIdentifier, "2")
     }
+
+    func testFilterReports_HandlesInvalidOffsetCalculation() throws {
+        // Given - instruction_addr less than object_addr (should not happen in practice)
+        let json = """
+        {
+            "report": {
+                "timestamp": "2025-10-22T14:14:12Z",
+                "id": "incident-invalid-offset"
+            },
+            "system": {
+                "cpu_arch": "arm64"
+            },
+            "crash": {
+                "error": {
+                    "signal": {
+                        "name": "SIGSEGV"
+                    }
+                },
+                "threads": [
+                    {
+                        "index": 0,
+                        "crashed": true,
+                        "backtrace": {
+                            "contents": [
+                                {
+                                    "instruction_addr": 1000,
+                                    "object_addr": 5000,
+                                    "object_name": "MyApp"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "binary_images": []
+        }
+        """.data(using: .utf8)!
+
+        let dict = try XCTUnwrap(JSONSerialization.jsonObject(with: json) as? [String: Any])
+        let report = AnyCrashReport(CrashFieldDictionary(from: dict))
+        let filter = DatadogCrashReportFilter()
+        var capturedReports: [CrashReport]?
+
+        // When
+        filter.filterReports([report]) { reports, error in
+            XCTAssertNil(error)
+            capturedReports = reports
+        }
+
+        // Then
+        let ddReport = try XCTUnwrap(capturedReports?.first?.untypedValue as? DDCrashReport)
+
+        // Verify stack format using regex parser
+        let stackLines = ddReport.stack.split(separator: "\n")
+        XCTAssertEqual(stackLines.count, 1, "Should have 1 stack frame")
+
+        let parsed = try parseStackFrame(String(stackLines[0]))
+        XCTAssertEqual(parsed.index, 0)
+        XCTAssertEqual(parsed.libraryName, "MyApp")
+        XCTAssertEqual(parsed.instructionAddr, "0x00000000000003e8")
+        XCTAssertEqual(parsed.loadAddr, "0x0000000000001388")
+        XCTAssertEqual(parsed.offset, 0, "Offset should be 0 when instruction_addr < object_addr (prevents underflow)")
+    }
 }

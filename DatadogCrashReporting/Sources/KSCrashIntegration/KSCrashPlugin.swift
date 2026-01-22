@@ -34,7 +34,7 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
                     DatadogTypeSafeFilter(),
                     DatadogMinifyFilter(),
                     DatadogDiagnosticFilter(),
-                    DatadogCrashReportFilter()
+                    DatadogCrashReportFilter(telemetry: telemetry)
                 ]
             )
         } catch KSCrashInstallError.alreadyInstalled {
