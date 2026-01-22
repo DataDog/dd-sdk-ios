@@ -14,10 +14,43 @@ import TestUtilities
 /// Validates compliance with the evaluation logging (EVALLOG) specifications,
 /// which define how flag evaluations are tracked, aggregated, and sent to the backend.
 class EvaluationLoggingTests: XCTestCase {
-    // MARK: - Helper to skip tests
+    // MARK: - Shared Test Fixtures
 
-    private func skipTest() throws {
-        throw XCTSkip("EVALLOG tests not yet implemented")
+    /// Creates an aggregator, records multiple evaluations with time gaps, flushes, and returns the resulting event.
+    /// Useful for tests that need to verify aggregation behavior with temporal data.
+    private func recordAggregatedEvaluationWithTimeGaps(
+        assignment: FlagAssignment = FlagAssignment(
+            allocationKey: "alloc-1", variationKey: "var-1", variation: .boolean(true), reason: "MATCH", doLog: true
+        ),
+        context: FlagsEvaluationContext = FlagsEvaluationContext(targetingKey: "user-123", attributes: [:]),
+        flagError: String? = nil
+    ) throws -> (event: FlagEvaluationEvent, featureScope: FeatureScopeMock) {
+        let featureScope = FeatureScopeMock()
+        let dateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
+        let aggregator = EvaluationAggregator(
+            dateProvider: dateProvider,
+            featureScope: featureScope,
+            flushInterval: 60.0
+        )
+
+        // Record 3 evaluations with time gaps
+        aggregator.recordEvaluation(for: "test-flag", assignment: assignment, evaluationContext: context, flagError: flagError)
+        Thread.sleep(forTimeInterval: 0.05)
+
+        dateProvider.advance(bySeconds: 1)
+        aggregator.recordEvaluation(for: "test-flag", assignment: assignment, evaluationContext: context, flagError: flagError)
+        Thread.sleep(forTimeInterval: 0.05)
+
+        dateProvider.advance(bySeconds: 2)
+        aggregator.recordEvaluation(for: "test-flag", assignment: assignment, evaluationContext: context, flagError: flagError)
+
+        let flushExpectation = expectation(description: "Flush completes")
+        aggregator.flush { flushExpectation.fulfill() }
+        wait(for: [flushExpectation], timeout: 0.1)
+
+        let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        let event = try XCTUnwrap(events.first)
+        return (event, featureScope)
     }
 
     // MARK: - EVALLOG.1: EVP Intake
@@ -154,68 +187,17 @@ class EvaluationLoggingTests: XCTestCase {
         XCTAssertEqual(otherFlagEvent.evaluationCount, 1)
     }
 
-    // EVALLOG.3: Tracks evaluation count, first/last timestamps, runtime_default_used, error_message
+    // EVALLOG.3: Tracks evaluation count and first/last timestamps
     func testTracksAggregationFields() throws {
-        // Given
-        let featureScope = FeatureScopeMock()
-        let dateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
-        let aggregator = EvaluationAggregator(
-            dateProvider: dateProvider,
-            featureScope: featureScope,
-            flushInterval: 60.0
-        )
+        // Given/When
+        let (event, featureScope) = try recordAggregatedEvaluationWithTimeGaps()
 
-        let assignment = FlagAssignment(
-            allocationKey: "allocation-1",
-            variationKey: "variant-a",
-            variation: .boolean(true),
-            reason: "MATCH",
-            doLog: true
-        )
-        let context = FlagsEvaluationContext(targetingKey: "user-123", attributes: [:])
-
-        // When - Record with time gaps between each
-        let firstExpectation = expectation(description: "First record completes")
-        aggregator.recordEvaluation(
-            for: "test-flag", assignment: assignment, evaluationContext: context, flagError: nil
-        )
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) {
-            firstExpectation.fulfill()
-        }
-        wait(for: [firstExpectation], timeout: 0.1)
-
-        dateProvider.advance(bySeconds: 1)
-        aggregator.recordEvaluation(
-            for: "test-flag", assignment: assignment, evaluationContext: context, flagError: nil
-        )
-        Thread.sleep(forTimeInterval: 0.05)
-
-        dateProvider.advance(bySeconds: 2)
-        aggregator.recordEvaluation(
-            for: "test-flag", assignment: assignment, evaluationContext: context, flagError: nil
-        )
-
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush {
-            flushExpectation.fulfill()
-        }
-        wait(for: [flushExpectation], timeout: 0.1)
-
-        // Then
+        // Then - EVALLOG.3: Should track evaluation count
+        XCTAssertEqual(event.evaluationCount, 3)
         XCTAssertEqual(featureScope.eventsWritten.count, 1, "Should aggregate into single event")
 
-        let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
-        let decoded = try XCTUnwrap(events.first)
-
-        XCTAssertEqual(decoded.evaluationCount, 3, "Should track evaluation count")
-        XCTAssertEqual(decoded.timestamp, decoded.firstEvaluation, "timestamp should equal firstEvaluation")
-        XCTAssertLessThan(
-            decoded.firstEvaluation,
-            decoded.lastEvaluation,
-            "lastEvaluation should be after firstEvaluation"
-        )
-        XCTAssertNil(decoded.runtimeDefaultUsed, "runtimeDefaultUsed should be omitted for MATCH reason")
-        XCTAssertNil(decoded.error, "Should not have error")
+        // Then - EVALLOG.3: Should track first and last timestamps
+        XCTAssertLessThan(event.firstEvaluation, event.lastEvaluation)
     }
 
     // MARK: - EVALLOG.4: Event Buffering / Flushing
@@ -634,23 +616,56 @@ class EvaluationLoggingTests: XCTestCase {
 
     // EVALLOG.10: timestamp field equals first_evaluation
     func testTimestampEqualsFirstEvaluation() throws {
-        // Already tested in testTracksAggregationFields
-        // Verified: decoded.timestamp == decoded.firstEvaluation
-        try skipTest()
+        // Given/When
+        let (event, _) = try recordAggregatedEvaluationWithTimeGaps()
+
+        // Then
+        XCTAssertEqual(event.timestamp, event.firstEvaluation)
     }
 
     // MARK: - EVALLOG.11: Aggregation Period Lifecycle
 
-    // EVALLOG.11: Aggregation period starts at first evaluation and ends at flush
+    // EVALLOG.11: Aggregation period starts at first evaluation and ends at flush; subsequent evaluations start new periods
     func testAggregationPeriodLifecycle() throws {
-        // Already tested in EvaluationAggregatorTests.testFlushClearsPendingAggregations
-        try skipTest()
-    }
+        // Given
+        let featureScope = FeatureScopeMock()
+        let dateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
+        let aggregator = EvaluationAggregator(
+            dateProvider: dateProvider,
+            featureScope: featureScope,
+            flushInterval: 100.0
+        )
 
-    // EVALLOG.11: After flushing, subsequent evaluations start new aggregation periods
-    func testNewAggregationPeriodAfterFlush() throws {
-        // Already tested in EvaluationAggregatorTests.testFlushClearsPendingAggregations
-        try skipTest()
+        // When - Period 1: record evaluations and flush
+        aggregator.recordEvaluation(for: "flag-1", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: nil)
+        dateProvider.advance(bySeconds: 1)
+        aggregator.recordEvaluation(for: "flag-1", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: nil)
+
+        let firstFlushExpectation = expectation(description: "First flush")
+        aggregator.flush { firstFlushExpectation.fulfill() }
+        wait(for: [firstFlushExpectation], timeout: 0.1)
+
+        // Then - Period 1 ends with aggregated event
+        let firstPeriodEvents: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        XCTAssertEqual(firstPeriodEvents.count, 1)
+        let firstEvent = try XCTUnwrap(firstPeriodEvents.first)
+        XCTAssertEqual(firstEvent.evaluationCount, 2)
+
+        // When - Period 2: record new evaluation after flush
+        dateProvider.advance(bySeconds: 10)
+        aggregator.recordEvaluation(for: "flag-1", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: nil)
+
+        let secondFlushExpectation = expectation(description: "Second flush")
+        aggregator.flush { secondFlushExpectation.fulfill() }
+        wait(for: [secondFlushExpectation], timeout: 0.1)
+
+        // Then - Period 2 starts fresh
+        let allEvents: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        XCTAssertEqual(allEvents.count, 2, "Should have 2 events from 2 aggregation periods")
+
+        let secondEvent = try XCTUnwrap(allEvents.last)
+        XCTAssertEqual(secondEvent.evaluationCount, 1, "New period should start fresh")
+        XCTAssertGreaterThan(secondEvent.firstEvaluation, firstEvent.lastEvaluation)
     }
 
     // MARK: - EVALLOG.12: Enabled by Default
@@ -735,7 +750,10 @@ class EvaluationLoggingTests: XCTestCase {
 
     // EVALLOG.13: runtime_default_used omitted when false
     func testRuntimeDefaultUsedOmittedWhenFalse() throws {
-        // Already tested in testTracksAggregationFields - verified runtime_default_used is nil for MATCH reason
-        try skipTest()
+        // Given/When - shared helper uses MATCH reason by default
+        let (event, _) = try recordAggregatedEvaluationWithTimeGaps()
+
+        // Then
+        XCTAssertNil(event.runtimeDefaultUsed, "runtime_default_used should be omitted for MATCH reason")
     }
 }
