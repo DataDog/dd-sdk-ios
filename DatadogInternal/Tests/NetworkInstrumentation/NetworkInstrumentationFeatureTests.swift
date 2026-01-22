@@ -86,8 +86,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.data?.count, 10, "Metrics mode should capture data")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
-        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
-        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     func testMetricsMode_capturesMetricsForDataTaskWithURLRequest() throws {
@@ -170,8 +168,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.data?.count, 10, "Metrics mode should capture data")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
-        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
-        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     func testMetricsMode_capturesMetricsForDownloadTask() throws {
@@ -207,8 +203,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(interception.data, "Data not captured for download tasks (saved to file)")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
-        XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
-        XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

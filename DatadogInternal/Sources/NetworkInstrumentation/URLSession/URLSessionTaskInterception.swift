@@ -62,15 +62,23 @@ public class URLSessionTaskInterception {
     /// Task state tracked via `setState:` swizzling.
     internal var taskState: URLSessionTask.State?
 
-    /// Approximate start time captured when interception begins.
-    /// Available in both automatic and metrics modes.
-    /// Use `metrics?.fetch.start` when available for more accurate timing.
+    /// Approximate start time captured in Automatic mode when interception begins.
     public private(set) var startDate: Date?
 
-    /// Approximate end time captured when interception completes.
-    /// Available in both automatic and metrics modes.
-    /// Use `metrics?.fetch.end` when available for more accurate timing.
-    public private(set) var endDate: Date?
+    /// Approximate end time captured in Automatic mode when interception completes.
+    internal var endDate: Date?
+
+    /// Returns the most accurate start time available.
+    /// Prefers `URLSessionTaskMetrics` timing (metrics mode) over approximate timing (automatic mode).
+    public var fetchStartDate: Date? {
+        return metrics?.fetch.start ?? startDate
+    }
+
+    /// Returns the most accurate end time available.
+    /// Prefers `URLSessionTaskMetrics` timing (metrics mode) over approximate timing (automatic mode).
+    public var fetchEndDate: Date? {
+        return metrics?.fetch.end ?? endDate
+    }
 
     init(request: ImmutableRequest, isFirstParty: Bool, trackingMode: TrackingMode) {
         self.identifier = UUID()
