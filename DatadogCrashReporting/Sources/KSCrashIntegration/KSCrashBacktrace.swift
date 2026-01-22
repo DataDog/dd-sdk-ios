@@ -35,7 +35,7 @@ internal struct KSCrashBacktrace: BacktraceReporting {
     func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport? {
         // Convert Mach thread_t to pthread_t
         guard let pthread = pthread_from_mach_thread_np(threadID) else {
-            telemetry.error("[KSCrashBacktrace] Failed to get pthread for thread with ID: \(threadID)")
+            telemetry.error("Failed to get pthread for thread with ID: \(threadID)")
             return nil
         }
 
@@ -65,7 +65,14 @@ internal struct KSCrashBacktrace: BacktraceReporting {
             let libraryName = path.lastPathComponent
             let loadAddress = binaryImage.address
             let uuid = UUID(uuid: imageUUID.withMemoryRebound(to: uuid_t.self, capacity: 1) { $0.pointee })
-            let offset = address >= loadAddress ? UInt64(address) - loadAddress : 0
+
+            let offset: UInt64
+            if address >= loadAddress {
+                offset = UInt64(address) - loadAddress
+            } else {
+                offset = 0
+                telemetry.error("Invalid image load address, symbolication will fail")
+            }
 
             // Get architecture from binary image's CPU type
             let architecture = String(cString: kscpu_archForCPU(
@@ -109,7 +116,7 @@ internal struct KSCrashBacktrace: BacktraceReporting {
     private func getThreadName(pthread: pthread_t) -> String? {
         var buffer = [CChar](repeating: 0, count: 256)
         guard pthread_getname_np(pthread, &buffer, buffer.count) == KERN_SUCCESS, buffer[0] != 0 else {
-            telemetry.error("[KSCrashBacktrace] Failed to get pthread name")
+            telemetry.error("Failed to get pthread name")
             return nil // fails or empty
         }
         return String(cString: buffer)

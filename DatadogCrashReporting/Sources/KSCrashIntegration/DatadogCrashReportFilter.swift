@@ -37,13 +37,19 @@ internal import KSCrashRecording
 /// If a report cannot be converted (invalid format, missing required fields),
 /// the original report is passed through and an error is provided to the completion handler.
 internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
-    // Parse timestamp with fractional seconds support
-    // KSCrash timestamps use ISO8601 format with microsecond precision (e.g., "2025-10-22T14:14:12.007336Z")
+    /// Parse timestamp with fractional seconds support
+    /// KSCrash timestamps use ISO8601 format with microsecond precision (e.g., "2025-10-22T14:14:12.007336Z")
     let dateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter
     }()
+
+    let telemetry: Telemetry
+
+    init(telemetry: Telemetry = NOPTelemetry()) {
+        self.telemetry = telemetry
+    }
 
     /// Filters and converts crash reports to Datadog's format.
     ///
@@ -152,7 +158,14 @@ internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
                     return String(format: "%-4ld ??? 0x%016llx 0x0 + 0", index, instructionAddr)
                 }
 
-                let offset = instructionAddr >= objectAddr ? instructionAddr - objectAddr : 0
+                let offset: Int64
+                if instructionAddr >= objectAddr {
+                    offset = instructionAddr - objectAddr
+                } else {
+                    offset = 0
+                    telemetry.error("Invalid image load address, symbolication will fail")
+                }
+
                 // Format: frame_index (4 chars left-aligned) + library_name (35 chars left-aligned) + instruction_addr + image_base_addr + offset
                 return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, objectName, instructionAddr, objectAddr, offset)
             }
