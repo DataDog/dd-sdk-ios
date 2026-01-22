@@ -28,7 +28,7 @@ import Foundation
 ///     ]
 /// )
 /// ```
-public enum AnyValue: Equatable {
+public enum AnyValue: Equatable, Hashable {
     /// A string value.
     case string(String)
 
@@ -63,6 +63,39 @@ public enum AnyValue: Equatable {
 
     /// A null value.
     case null
+}
+
+extension AnyValue {
+    public func hash(into hasher: inout Hasher) {
+        switch self {
+        case .string(let value):
+            hasher.combine(0)
+            hasher.combine(value)
+        case .bool(let value):
+            hasher.combine(1)
+            hasher.combine(value)
+        case .int(let value):
+            hasher.combine(2)
+            hasher.combine(value)
+        case .double(let value):
+            hasher.combine(3)
+            hasher.combine(value)
+        case .dictionary(let value):
+            hasher.combine(4)
+            // Sort keys for deterministic hashing
+            for key in value.keys.sorted() {
+                hasher.combine(key)
+                hasher.combine(value[key])
+            }
+        case .array(let value):
+            hasher.combine(5)
+            for element in value {
+                hasher.combine(element)
+            }
+        case .null:
+            hasher.combine(6)
+        }
+    }
 }
 
 extension AnyValue: Codable {

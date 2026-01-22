@@ -126,41 +126,16 @@ class EvaluationLoggingTests: XCTestCase {
             flushInterval: 60.0
         )
 
-        // When - Record evaluations varying each part of composite key
-        let baseAssignment = FlagAssignment(
+        let assignment = FlagAssignment(
             allocationKey: "alloc-1", variationKey: "var-1", variation: .boolean(true), reason: "MATCH", doLog: true
         )
-        let baseContext = FlagsEvaluationContext(targetingKey: "user-1", attributes: [:])
+        let context = FlagsEvaluationContext(targetingKey: "user-1", attributes: [:])
 
-        aggregator.recordEvaluation(
-            for: "flag-1", assignment: baseAssignment, evaluationContext: baseContext, flagError: nil
-        )
-        aggregator.recordEvaluation(
-            for: "flag-2", assignment: baseAssignment, evaluationContext: baseContext, flagError: nil
-        )
-        aggregator.recordEvaluation(
-            for: "flag-1",
-            assignment: FlagAssignment(
-                allocationKey: "alloc-2", variationKey: "var-1", variation: .boolean(true), reason: "MATCH", doLog: true
-            ),
-            evaluationContext: baseContext,
-            flagError: nil
-        )
-        aggregator.recordEvaluation(
-            for: "flag-1",
-            assignment: baseAssignment,
-            evaluationContext: FlagsEvaluationContext(targetingKey: "user-2", attributes: [:]),
-            flagError: nil
-        )
-        aggregator.recordEvaluation(
-            for: "flag-1", assignment: baseAssignment, evaluationContext: baseContext, flagError: "error"
-        )
-        aggregator.recordEvaluation(
-            for: "flag-1",
-            assignment: baseAssignment,
-            evaluationContext: FlagsEvaluationContext(targetingKey: "user-1", attributes: ["attr": .string("value")]),
-            flagError: nil
-        )
+        // When - 3 identical + 1 different flag key
+        aggregator.recordEvaluation(for: "test-flag", assignment: assignment, evaluationContext: context, flagError: nil)
+        aggregator.recordEvaluation(for: "test-flag", assignment: assignment, evaluationContext: context, flagError: nil)
+        aggregator.recordEvaluation(for: "test-flag", assignment: assignment, evaluationContext: context, flagError: nil)
+        aggregator.recordEvaluation(for: "other-flag", assignment: assignment, evaluationContext: context, flagError: nil)
 
         let flushExpectation = expectation(description: "Flush completes")
         aggregator.flush {
@@ -169,7 +144,14 @@ class EvaluationLoggingTests: XCTestCase {
         wait(for: [flushExpectation], timeout: 0.1)
 
         // Then
-        XCTAssertEqual(featureScope.eventsWritten.count, 6)
+        let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        XCTAssertEqual(events.count, 2)
+
+        let testFlagEvent = try XCTUnwrap(events.first { $0.flag.key == "test-flag" })
+        let otherFlagEvent = try XCTUnwrap(events.first { $0.flag.key == "other-flag" })
+
+        XCTAssertEqual(testFlagEvent.evaluationCount, 3, "Identical evaluations should aggregate")
+        XCTAssertEqual(otherFlagEvent.evaluationCount, 1)
     }
 
     // EVALLOG.3: Tracks evaluation count, first/last timestamps, runtime_default_used, error_message
@@ -564,10 +546,54 @@ class EvaluationLoggingTests: XCTestCase {
     // MARK: - EVALLOG.9: Context Changes
 
     // EVALLOG.9: Different targeting contexts create separate events regardless of matching results
-    func testDifferentContextsCreateSeparateAggregations() throws {
-        // Already tested in testAggregatesByCompositeKey - context is part of aggregation key
-        // Different contexts create separate aggregations even with same flag and variant
-        try skipTest()
+    func testDifferentContextValuesCreateSeparateAggregations() throws {
+        // Given
+        let featureScope = FeatureScopeMock()
+        let aggregator = EvaluationAggregator(
+            dateProvider: DateProviderMock(now: .mockAny()),
+            featureScope: featureScope,
+            flushInterval: 60.0
+        )
+
+        let assignment = FlagAssignment(
+            allocationKey: "alloc-1", variationKey: "var-1", variation: .boolean(true), reason: "MATCH", doLog: true
+        )
+
+        // When - same context keys, different values: 2x iPhone, 1x Android
+        aggregator.recordEvaluation(
+            for: "test-flag",
+            assignment: assignment,
+            evaluationContext: FlagsEvaluationContext(targetingKey: "user-1", attributes: ["device": .string("iPhone")]),
+            flagError: nil
+        )
+        aggregator.recordEvaluation(
+            for: "test-flag",
+            assignment: assignment,
+            evaluationContext: FlagsEvaluationContext(targetingKey: "user-1", attributes: ["device": .string("Android")]),
+            flagError: nil
+        )
+        aggregator.recordEvaluation(
+            for: "test-flag",
+            assignment: assignment,
+            evaluationContext: FlagsEvaluationContext(targetingKey: "user-1", attributes: ["device": .string("iPhone")]),
+            flagError: nil
+        )
+
+        let flushExpectation = expectation(description: "Flush completes")
+        aggregator.flush {
+            flushExpectation.fulfill()
+        }
+        wait(for: [flushExpectation], timeout: 0.1)
+
+        // Then
+        let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        XCTAssertEqual(events.count, 2, "Different context values should create separate aggregations")
+
+        let iphoneEvent = try XCTUnwrap(events.first { $0.context?.evaluation?["device"] == .string("iPhone") })
+        let androidEvent = try XCTUnwrap(events.first { $0.context?.evaluation?["device"] == .string("Android") })
+
+        XCTAssertEqual(iphoneEvent.evaluationCount, 2)
+        XCTAssertEqual(androidEvent.evaluationCount, 1)
     }
 
     // MARK: - EVALLOG.10: Timestamp Field
