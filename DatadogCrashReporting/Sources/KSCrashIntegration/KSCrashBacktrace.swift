@@ -65,6 +65,7 @@ internal struct KSCrashBacktrace: BacktraceReporting {
             let libraryName = path.lastPathComponent
             let loadAddress = binaryImage.address
             let uuid = UUID(uuid: imageUUID.withMemoryRebound(to: uuid_t.self, capacity: 1) { $0.pointee })
+            let offset = address >= loadAddress ? UInt64(address) - loadAddress : 0
 
             // Get architecture from binary image's CPU type
             let architecture = String(cString: kscpu_archForCPU(
@@ -84,7 +85,7 @@ internal struct KSCrashBacktrace: BacktraceReporting {
             }
 
             // Format: frame_index (4 chars left-aligned) + library_name (35 chars left-aligned) + addresses + offset
-            return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, libraryName, address, loadAddress, UInt64(address) - loadAddress)
+            return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, libraryName, address, loadAddress, offset)
         }
         .joined(separator: "\n")
 
@@ -124,16 +125,19 @@ internal struct KSCrashBacktrace: BacktraceReporting {
 /// This allows us to determine the correct architecture (arm64, arm64e, etc.) for each
 /// binary image, which is critical for accurate stacktrace symbolication.
 private func symbolicate(address: uintptr_t) -> KSBinaryImage? {
-    // initalize the binary image cache.
-    // this has an atomic check so isn't expensive
-    // except for the first call.
-    ksbic_init()
-
     let untaggedAddress = kssymbolicator_callInstructionAddress(address)
+    let instructionPointer = UnsafeRawPointer(bitPattern: untaggedAddress)
 
+    // Use standard dladdr() instead of ksdl_dladdr() to work around a bug where ksdl_dladdr()
+    // can return the wrong image when looking up addresses in the presence of dynamic
+    // frameworks. The bug causes unsigned arithmetic underflow when calculating the
+    // instruction offset.
+    //
+    // This was fixed in KSCrash and is currently pending release.
+    // See: https://github.com/DataDog/dd-sdk-ios/issues/2645
     var info = Dl_info()
     guard
-        ksdl_dladdr(untaggedAddress, &info),
+        dladdr(instructionPointer, &info) != 0,
         let baseAddress = info.dli_fbase,
         let fileName = info.dli_fname
     else {

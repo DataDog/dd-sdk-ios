@@ -152,8 +152,9 @@ internal final class DatadogCrashReportFilter: NSObject, CrashReportFilter {
                     return String(format: "%-4ld ??? 0x%016llx 0x0 + 0", index, instructionAddr)
                 }
 
+                let offset = instructionAddr >= objectAddr ? instructionAddr - objectAddr : 0
                 // Format: frame_index (4 chars left-aligned) + library_name (35 chars left-aligned) + instruction_addr + image_base_addr + offset
-                return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, objectName, instructionAddr, objectAddr, instructionAddr - objectAddr)
+                return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, objectName, instructionAddr, objectAddr, offset)
             }
 
             let index: Int64 = try thread.value(forKey: .index)
