@@ -97,6 +97,47 @@ class URLSessionTaskInterceptionTests: XCTestCase {
         // Then - Now done with both metrics and completion
         XCTAssertTrue(interception.isDone)
     }
+
+    // MARK: - fetchStartDate / fetchEndDate
+
+    func testFetchDates_returnApproximateDatesWhenNoMetrics() {
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .automatic)
+        let approximateStart = Date.mockDecember15th2019At10AMUTC()
+        let approximateEnd = approximateStart.addingTimeInterval(1)
+
+        // When
+        interception.register(startDate: approximateStart)
+        interception.register(endDate: approximateEnd)
+
+        // Then
+        XCTAssertEqual(interception.fetchStartDate, approximateStart)
+        XCTAssertEqual(interception.fetchEndDate, approximateEnd)
+    }
+
+    func testFetchDates_preferMetricsOverApproximateDates() {
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .metrics)
+        let approximateStart = Date.mockDecember15th2019At10AMUTC()
+        let metricsStart = approximateStart.addingTimeInterval(0.1)
+        let metricsEnd = metricsStart.addingTimeInterval(2)
+        let approximateEnd = metricsEnd.addingTimeInterval(0.15)
+
+        // When
+        interception.register(startDate: approximateStart)
+        interception.register(endDate: approximateEnd)
+        interception.register(metrics: .mockWith(fetch: .init(start: metricsStart, end: metricsEnd)))
+
+        // Then - should prefer metrics timing
+        XCTAssertEqual(interception.fetchStartDate, metricsStart)
+        XCTAssertEqual(interception.fetchEndDate, metricsEnd)
+    }
+
+    func testFetchDates_returnNilWhenNothingRegistered() {
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .automatic)
+
+        // Then
+        XCTAssertNil(interception.fetchStartDate)
+        XCTAssertNil(interception.fetchEndDate)
+    }
 }
 
 class ResourceMetricsTests: XCTestCase {

@@ -396,6 +396,9 @@ extension NetworkInstrumentationFeature {
         }
         let request = ImmutableRequest(request: currentRequest)
 
+        // Capture start time before entering the queue for more accurate timing.
+        let startTime = Date()
+
         queue.async { [weak self] in
             guard let self = self else {
                 return
@@ -425,7 +428,7 @@ extension NetworkInstrumentationFeature {
             // Capture approximate start time for all modes
             // This enables Trace to work in automatic mode (where `URLSessionTaskMetrics` are unavailable)
             if interception.startDate == nil {
-                interception.register(startDate: Date())
+                interception.register(startDate: startTime)
             }
 
             if let traceContext = injectedTraceContexts.first {
@@ -467,7 +470,8 @@ extension NetworkInstrumentationFeature {
 
             // Don't finish yet if task has completion handler - let completion handler finish after capturing data
             if interception.isDone && !task.dd.hasCompletion {
-                self.finish(task: task, interception: interception)
+                // Metrics mode: `endDate` is `nil` because `URLSessionTaskMetrics` provides accurate timing
+                self.finish(task: task, interception: interception, endDate: nil)
             }
         }
     }
@@ -492,6 +496,9 @@ extension NetworkInstrumentationFeature {
     ///   - task: The task that has finished transferring data.
     ///   - error: If an error occurred, an error object indicating how the transfer failed, otherwise NULL.
     internal func task(_ task: URLSessionTask, didCompleteWithError error: Error?) {
+        // Capture end time before entering the queue for more accurate timing.
+        let endTime = Date()
+
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
                 return
@@ -503,7 +510,7 @@ extension NetworkInstrumentationFeature {
             )
 
             if interception.isDone {
-                self.finish(task: task, interception: interception)
+                self.finish(task: task, interception: interception, endDate: endTime)
             }
         }
     }
@@ -512,10 +519,12 @@ extension NetworkInstrumentationFeature {
         handlers.reduce(.init()) { $0 + $1.firstPartyHosts } + additionalFirstPartyHosts
     }
 
-    private func finish(task: URLSessionTask, interception: URLSessionTaskInterception) {
-        // Capture approximate end time for all modes
-        // This enables Trace to work in automatic mode (where `URLSessionTaskMetrics` are unavailable)
-        interception.register(endDate: Date())
+    private func finish(task: URLSessionTask, interception: URLSessionTaskInterception, endDate: Date?) {
+        // Register `endDate` if provided.
+        // Note: in metrics mode, `endDate` is `nil` because `URLSessionTaskMetrics` provides accurate timing.
+        if let endDate {
+            interception.register(endDate: endDate)
+        }
 
         handlers.forEach { $0.interceptionDidComplete(interception: interception) }
         interceptions[task] = nil
@@ -527,6 +536,9 @@ extension NetworkInstrumentationFeature {
     ///   - task: The task whose state has changed.
     ///   - state: The new state of the task (maps to URLSessionTask.State: 0=running, 1=suspended, 2=canceling, 3=completed).
     internal func task(_ task: URLSessionTask, didChangeToState state: Int) {
+        // Capture end time before entering the queue for more accurate timing.
+        let endTime = Date()
+
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
                 return
@@ -538,7 +550,7 @@ extension NetworkInstrumentationFeature {
             // When task completes, also register the response/error if not already done
             // This ensures completion is recorded even for async/await or delegate-less tasks without completion handlers
             // Note: We wait for .completed rather than .canceling because task.error is only populated
-            // after the task fully transitions to completed state
+            // after the task fully transitions to .completed state
             if state == URLSessionTask.State.completed.rawValue && interception.completion == nil {
                 interception.register(
                     response: task.response,
@@ -557,7 +569,7 @@ extension NetworkInstrumentationFeature {
             // This ensures we capture the response data through completion handler swizzling before finishing.
             // The completion handler will call finish() after capturing the data.
             if interception.isDone && !task.dd.hasCompletion {
-                self.finish(task: task, interception: interception)
+                self.finish(task: task, interception: interception, endDate: endTime)
             }
         }
     }
