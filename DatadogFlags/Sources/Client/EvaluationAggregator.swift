@@ -31,8 +31,21 @@ internal final class EvaluationAggregator {
     }
 
     deinit {
-        stopFlushTimer()
-        flush()
+        // Timer uses [weak self], so it becomes a no-op after deallocation.
+        // Copy values before async dispatch - self will be deallocated before the closure runs.
+        let scope = featureScope
+        let snapshot = aggregations
+
+        queue.async(flags: .barrier) {
+            guard !snapshot.isEmpty else {
+                return
+            }
+            scope.eventWriteContext { _, writer in
+                for aggregated in snapshot.values {
+                    writer.write(value: aggregated.toFlagEvaluationEvent())
+                }
+            }
+        }
     }
 
     func recordEvaluation(
@@ -41,7 +54,7 @@ internal final class EvaluationAggregator {
         evaluationContext: FlagsEvaluationContext,
         flagError: String?
     ) {
-        let workItem = DispatchWorkItem { [self] in
+        let workItem = DispatchWorkItem {
             let errorMessage = flagError
             let now = self.dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
 
@@ -90,7 +103,12 @@ internal final class EvaluationAggregator {
     }
 
     internal func flush(completion: (() -> Void)?) { // completion handler is for testing
-        queue.async { // strong capture ensures flush completes even if called from deinit
+        queue.async { [weak self] in
+            guard let self = self else {
+                completion?()
+                return
+            }
+
             let evaluationsToSend = Array(self.aggregations.values)
             self.aggregations.removeAll()
 
@@ -111,20 +129,16 @@ internal final class EvaluationAggregator {
     }
 
     private func startFlushTimer() {
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else {
+                return
+            }
             self.flushTimer = Timer.scheduledTimer(
                 withTimeInterval: self.flushInterval,
                 repeats: true
             ) { [weak self] _ in
                 self?.flush()
             }
-        }
-    }
-
-    private func stopFlushTimer() {
-        DispatchQueue.main.async {
-            self.flushTimer?.invalidate()
-            self.flushTimer = nil
         }
     }
 }
@@ -150,7 +164,12 @@ private struct AggregationKey: Hashable {
         self.allocationKey = allocationKey
         self.targetingKey = targetingKey
         self.errorMessage = errorMessage
-        self.contextHash = context.keys.sorted().joined(separator: ",").hashValue
+        var hasher = Hasher()
+        for key in context.keys.sorted() {
+            hasher.combine(key)
+            hasher.combine(context[key])
+        }
+        self.contextHash = hasher.finalize()
     }
 }
 
