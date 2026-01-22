@@ -129,16 +129,12 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
-        // Priority: metrics timing (most accurate) > approximate timing (fallback for automatic mode)
-        let fetchStart = interception.metrics?.fetch.start ?? interception.startDate
-        let fetchEnd = interception.metrics?.fetch.end ?? interception.endDate
-
         guard
             interception.isFirstPartyRequest, // `Span` should be only send for 1st party requests
             interception.origin != "rum", // if that request was tracked as RUM resource, the RUM backend will create the span on our behalf
             let tracer = tracer,
-            let startTime = fetchStart,
-            let endTime = fetchEnd,
+            let startTime = interception.fetchStartDate,
+            let endTime = interception.fetchEndDate,
             let resourceCompletion = interception.completion
         else {
             return
