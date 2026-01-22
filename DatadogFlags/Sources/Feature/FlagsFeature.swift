@@ -10,6 +10,11 @@ import DatadogInternal
 internal struct FlagsFeature: DatadogRemoteFeature {
     static let name = "flags"
 
+    private enum Constants {
+        static let minEvaluationFlushInterval: TimeInterval = 1.0
+        static let maxEvaluationFlushInterval: TimeInterval = 60.0
+    }
+
     let flagAssignmentsFetcher: any FlagAssignmentsFetching
     let requestBuilder: any FeatureRequestBuilder
     let messageReceiver: any FeatureMessageReceiver
@@ -47,10 +52,20 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         }
 
         let evaluationAggregator: EvaluationAggregator? = configuration.trackEvaluations ? {
+            var flushInterval = configuration.evaluationFlushInterval
+            if flushInterval < Constants.minEvaluationFlushInterval {
+                DD.logger.warn("`Flags.Configuration.evaluationFlushInterval` cannot be less than \(Constants.minEvaluationFlushInterval)s. A value of \(Constants.minEvaluationFlushInterval)s will be used.")
+                flushInterval = Constants.minEvaluationFlushInterval
+            } else if flushInterval > Constants.maxEvaluationFlushInterval {
+                DD.logger.warn("`Flags.Configuration.evaluationFlushInterval` cannot exceed \(Constants.maxEvaluationFlushInterval)s. A value of \(Constants.maxEvaluationFlushInterval)s will be used.")
+                flushInterval = Constants.maxEvaluationFlushInterval
+            }
+
             let evaluationFeatureScope = core.scope(for: FlagsEvaluationFeature.self)
             return EvaluationAggregator(
                 dateProvider: SystemDateProvider(),
-                featureScope: evaluationFeatureScope
+                featureScope: evaluationFeatureScope,
+                flushInterval: flushInterval
             )
         }() : nil
 

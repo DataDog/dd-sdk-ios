@@ -221,11 +221,45 @@ class EvaluationLoggingTests: XCTestCase {
     // MARK: - EVALLOG.4: Event Buffering / Flushing
 
     // EVALLOG.4: Time-based flush with configurable interval (default 10s, min 1s, max 1min)
-    func testFlushesAtConfigurableIntervalWithBoundsValidation() throws {
-        // NOTE: Requires configuration-level bounds validation and public API
-        // Current implementation: EvaluationAggregator has flushInterval parameter (default 10s)
-        // Time-based flushing behavior tested in EvaluationAggregatorTests
-        try skipTest()
+    func testDefaultEvaluationFlushInterval() throws {
+        let config = Flags.Configuration()
+        XCTAssertEqual(config.evaluationFlushInterval, 10.0, "Default flush interval should be 10 seconds")
+    }
+
+    func testEvaluationFlushIntervalBelowMinimumIsClamped() throws {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let config = Flags.Configuration(evaluationFlushInterval: 0.5)
+
+        // When
+        Flags.enable(with: config, in: core)
+
+        // Then
+        XCTAssertEqual(
+            dd.logger.warnLog?.message,
+            "`Flags.Configuration.evaluationFlushInterval` cannot be less than 1.0s. A value of 1.0s will be used."
+        )
+    }
+
+    func testEvaluationFlushIntervalAboveMaximumIsClamped() throws {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let config = Flags.Configuration(evaluationFlushInterval: 120.0)
+
+        // When
+        Flags.enable(with: config, in: core)
+
+        // Then
+        XCTAssertEqual(
+            dd.logger.warnLog?.message,
+            "`Flags.Configuration.evaluationFlushInterval` cannot exceed 60.0s. A value of 60.0s will be used."
+        )
     }
 
     // EVALLOG.4: Size-based flush when aggregation map reaches limit

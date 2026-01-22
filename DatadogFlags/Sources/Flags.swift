@@ -82,6 +82,13 @@ public enum Flags {
         /// Default: `true`.
         public var trackEvaluations: Bool
 
+        /// The interval at which aggregated evaluation data is flushed to the server.
+        ///
+        /// Values are clamped to a minimum of 1 second and maximum of 60 seconds.
+        ///
+        /// Default: `10.0` seconds.
+        public var evaluationFlushInterval: TimeInterval
+
         /// Enables the RUM integration.
         ///
         /// When enabled, flag evaluation events are sent to RUM for correlation with user sessions.
@@ -99,6 +106,7 @@ public enum Flags {
         ///   - trackExposures: Enables exposure logging to the exposures intake endpoint. Default: `true`.
         ///   - customEvaluationEndpoint: Custom server URL for sending evaluation data. Default: `nil`.
         ///   - trackEvaluations: Enables evaluation logging to the evaluations intake endpoint. Default: `true`.
+        ///   - evaluationFlushInterval: The interval for flushing aggregated evaluation data. Default: `10.0` seconds.
         ///   - rumIntegrationEnabled: Enables the RUM integration for flag evaluations. Default: `true`.
         public init(
             gracefulModeEnabled: Bool = true,
@@ -108,6 +116,7 @@ public enum Flags {
             trackExposures: Bool = true,
             customEvaluationEndpoint: URL? = nil,
             trackEvaluations: Bool = true,
+            evaluationFlushInterval: TimeInterval = 10.0,
             rumIntegrationEnabled: Bool = true
         ) {
             self.gracefulModeEnabled = gracefulModeEnabled
@@ -117,6 +126,7 @@ public enum Flags {
             self.trackExposures = trackExposures
             self.customEvaluationEndpoint = customEvaluationEndpoint
             self.trackEvaluations = trackEvaluations
+            self.evaluationFlushInterval = evaluationFlushInterval
             self.rumIntegrationEnabled = rumIntegrationEnabled
         }
     }
