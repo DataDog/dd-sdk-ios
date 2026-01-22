@@ -19,12 +19,12 @@ internal final class EvaluationAggregator {
     init(
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
-        flushInterval: TimeInterval = 10.0,
+        flushInterval: TimeInterval,
         maxAggregations: Int = 1_000
     ) {
         self.dateProvider = dateProvider
         self.featureScope = featureScope
-        self.flushInterval = min(max(flushInterval, 1.0), 60.0)
+        self.flushInterval = flushInterval
         self.maxAggregations = maxAggregations
 
         startFlushTimer()
