@@ -123,7 +123,8 @@ private extension RUMAppLaunchManager {
         }
 
         // Ignore command if the time since the SDK load exceeds the limit
-        guard let runtimeLoadDate = context.launchInfo.launchPhaseDates[.runtimeLoad],
+        let launchPhase: LaunchPhase = context.launchInfo.launchReason == .userLaunch ? .processLaunch : .runtimeLoad
+        guard let runtimeLoadDate = context.launchInfo.launchPhaseDates[launchPhase],
               (0..<Constants.maxTTIDDuration).contains(command.time.timeIntervalSince(runtimeLoadDate)) else {
             telemetryController.send(metric: .largeTTID(
                 context: context,
@@ -263,7 +264,8 @@ private extension RUMAppLaunchManager {
         }
 
         // Ignore command if the time since the SDK load is too big
-        guard let runtimeLoadDate = context.launchInfo.launchPhaseDates[.runtimeLoad],
+        let launchPhase: LaunchPhase = context.launchInfo.launchReason == .userLaunch ? .processLaunch : .runtimeLoad
+        guard let runtimeLoadDate = context.launchInfo.launchPhaseDates[launchPhase],
               (0..<Constants.maxTTFDDuration).contains(command.time.timeIntervalSince(runtimeLoadDate)) else {
             return false
         }
