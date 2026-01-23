@@ -36,7 +36,10 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
         guard profileStatus == CTOR_PROFILER_STATUS_RUNNING
                 || profileStatus == CTOR_PROFILER_STATUS_TIMEOUT
                 || profileStatus == CTOR_PROFILER_STATUS_STOPPED else {
-            telemetryController.send(metric: AppLaunchMetric.statusNotHandled)
+            if profileStatus != CTOR_PROFILER_STATUS_SAMPLED_OUT
+                && profileStatus != CTOR_PROFILER_STATUS_PREWARMED {
+                telemetryController.send(metric: AppLaunchMetric.statusNotHandled)
+            }
             return false
         }
 
