@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogProfiling"
-  s.version      = "3.4.0"
+  s.version      = "3.5.0"
   s.summary      = "Official Datadog Profiling module of the Swift SDK."
   
   s.homepage     = "https://www.datadoghq.com"

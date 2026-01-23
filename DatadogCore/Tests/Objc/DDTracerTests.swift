@@ -201,7 +201,7 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = objc_Tracer.shared()
         let objcSpanContext = objc_SpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, isKept: true)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, samplingDecision: .autoKept())
         )
 
         let objcWriter = objc_HTTPHeadersWriter(
@@ -213,7 +213,7 @@ class DDTracerTests: XCTestCase {
             "x-datadog-trace-id": "100",
             "x-datadog-parent-id": "200",
             "x-datadog-sampling-priority": "1",
-            "x-datadog-tags": "_dd.p.tid=a"
+            "x-datadog-tags": "_dd.p.tid=a,_dd.p.dm=-1"
         ]
         XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
@@ -257,7 +257,7 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = objc_Tracer.shared()
         let objcSpanContext = objc_SpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, isKept: true)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, samplingDecision: .autoKept())
         )
 
         let objcWriter = objc_B3HTTPHeadersWriter(
@@ -313,7 +313,7 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = objc_Tracer.shared()
         let objcSpanContext = objc_SpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, isKept: true)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200, samplingDecision: .autoKept())
         )
 
         let objcWriter = objc_W3CHTTPHeadersWriter(
@@ -323,7 +323,7 @@ class DDTracerTests: XCTestCase {
 
         let expectedHTTPHeaders = [
             "traceparent": "00-000000000000000a0000000000000064-00000000000000c8-01",
-            "tracestate": "dd=p:00000000000000c8;s:1"
+            "tracestate": "dd=p:00000000000000c8;s:1;t.dm:-1"
         ]
         XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }

@@ -17,10 +17,12 @@ private class MockWriter: OTFormatWriter, TracePropagationHeadersWriter {
 
 private class MockReader: OTFormatReader, TracePropagationHeadersReader {
     var extractedIDs: (traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?)? = nil
-    var extractedIsKept: Bool? = nil
+    var extractedSamplingPriority: SamplingPriority? = nil
+    var extractedSamplingDecisionMaker: SamplingMechanismType? = nil
 
     func read() -> (traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?)? { extractedIDs }
-    var sampled: Bool? { extractedIsKept }
+    var samplingPriority: DatadogInternal.SamplingPriority? { extractedSamplingPriority }
+    var samplingDecisionMaker: DatadogInternal.SamplingMechanismType? { extractedSamplingDecisionMaker }
 }
 
 class DatadogTracer_InjectAndExtract: XCTestCase {
@@ -45,7 +47,7 @@ class DatadogTracer_InjectAndExtract: XCTestCase {
             parentSpanID: .mockRandom(),
             baggageItems: .mockAny(),
             sampleRate: .mockRandom(min: 0, max: 100),
-            isKept: .random()
+            samplingDecision: .mockRandom()
         )
 
         let tracer = createTracer(sampleRate: 42)
@@ -61,20 +63,22 @@ class DatadogTracer_InjectAndExtract: XCTestCase {
             spanID: spanContext.spanID,
             parentSpanID: spanContext.parentSpanID,
             sampleRate: spanContext.sampleRate,
-            isKept: spanContext.isKept,
+            samplingPriority: spanContext.samplingDecision.samplingPriority,
+            samplingDecisionMaker: spanContext.samplingDecision.decisionMaker,
             rumSessionId: nil
         )
         XCTAssertEqual(writer.injectedTraceContext, expectedTraceContext)
     }
 
-    func testExtractnigSpanContextFromReader() throws {
+    func testExtractingSpanContextFromReader() throws {
         // Given
         let tracer = createTracer(sampleRate: 42)
         let reader = MockReader()
         let ids: (traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?) = (.mockRandom(), .mockRandom(), .mockRandom())
-        let isKept: Bool = .mockRandom()
+        let samplingDecision: SamplingDecision = .mockRandom()
         reader.extractedIDs = ids
-        reader.extractedIsKept = isKept
+        reader.extractedSamplingPriority = samplingDecision.samplingPriority
+        reader.extractedSamplingDecisionMaker = samplingDecision.decisionMaker
 
         // When
         let spanContext = try XCTUnwrap(tracer.extract(reader: reader) as? DDSpanContext)
@@ -84,7 +88,8 @@ class DatadogTracer_InjectAndExtract: XCTestCase {
         XCTAssertEqual(spanContext.spanID, ids.spanID)
         XCTAssertEqual(spanContext.parentSpanID, ids.parentSpanID)
         XCTAssertEqual(spanContext.sampleRate, 42)
-        XCTAssertEqual(spanContext.isKept, isKept)
+        XCTAssertEqual(spanContext.samplingDecision.samplingPriority, samplingDecision.samplingPriority)
+        XCTAssertEqual(spanContext.samplingDecision.decisionMaker, samplingDecision.decisionMaker)
     }
 
     func testExtractsEmptySpanContextFromReader() throws {
@@ -92,7 +97,8 @@ class DatadogTracer_InjectAndExtract: XCTestCase {
         let tracer = createTracer(sampleRate: 42)
         let reader = MockReader()
         reader.extractedIDs = nil
-        reader.extractedIsKept = nil
+        reader.extractedSamplingPriority = nil
+        reader.extractedSamplingDecisionMaker = nil
 
         // When
         XCTAssertNil(tracer.extract(reader: reader))

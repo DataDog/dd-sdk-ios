@@ -57,6 +57,7 @@ public enum W3CHTTPHeaders {
         // MARK: - Datadog specific tracestate keys
         public static let dd = "dd"
         public static let sampling = "s"
+        public static let samplingDecisionMaker = "t.dm"
         public static let origin = "o"
         public static let originRUM = "rum"
         public static let parentId = "p"

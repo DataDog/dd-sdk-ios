@@ -21,7 +21,9 @@ class WatchdogTerminationsMonitoringTests: XCTestCase {
         isSimulator: false,
         vendorId: .mockAny(),
         isDebugging: false,
-        systemBootTime: .init()
+        systemBootTime: .init(),
+        logicalCpuCount: .mockRandom(),
+        totalRam: .mockRandom()
     )
 
     override func setUp() {

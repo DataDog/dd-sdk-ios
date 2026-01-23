@@ -36,8 +36,8 @@ class DatadogTracer_SamplingTests: XCTestCase {
         // Then
         let events = try XCTUnwrap(featureScope.spanEventsWritten())
         XCTAssertTrue(events.allSatisfy({ $0.samplingRate == 0.42 }), "All kept spans must encode sample rate")
-        XCTAssertGreaterThan(events.filter({ $0.isKept }).count, 1, "Some spans should be kept")
-        XCTAssertEqual(events.filter({ !$0.isKept }).count, 0, "Not kept spans should be dropped")
+        XCTAssertGreaterThan(events.filter({ $0.samplingPriority.isKept }).count, 1, "Some spans should be kept")
+        XCTAssertEqual(events.filter({ !$0.samplingPriority.isKept }).count, 0, "Not kept spans should be dropped")
     }
 
     func testRecordingCustomSampleRateInRootSpanEvent() throws {
@@ -51,7 +51,7 @@ class DatadogTracer_SamplingTests: XCTestCase {
         // Then
         let events = try XCTUnwrap(featureScope.spanEventsWritten())
         XCTAssertEqual(events.filter({ $0.samplingRate == 1 }).count, 10)
-        XCTAssertEqual(events.filter({ $0.isKept }).count, 10)
+        XCTAssertEqual(events.filter({ $0.samplingPriority.isKept }).count, 10)
     }
 
     func testRootSampleInOverridesTracerAndPropagatesToChildSpans() throws {
@@ -68,7 +68,7 @@ class DatadogTracer_SamplingTests: XCTestCase {
         let events = try XCTUnwrap(featureScope.spanEventsWritten())
         XCTAssertEqual(events.count, 3)
         XCTAssertEqual(events.filter({ $0.samplingRate == 1 }).count, 3)
-        XCTAssertEqual(events.filter({ $0.isKept }).count, 3)
+        XCTAssertEqual(events.filter({ $0.samplingPriority.isKept }).count, 3)
     }
 
     func testRootSampleOutOverridesTracerAndPropagatesToChildSpans() throws {
@@ -95,7 +95,7 @@ class DatadogTracer_SamplingTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(featureScope.spanEventsWritten().first)
         XCTAssertEqual(event.samplingRate, 1)
-        XCTAssertTrue(event.isKept)
+        XCTAssertTrue(event.samplingPriority.isKept)
     }
 
     func testRecordingDroppedSpan() throws {
@@ -128,7 +128,7 @@ class DatadogTracer_SamplingTests: XCTestCase {
             XCTAssert(true, "No spans were collected")
         } else {
             XCTAssertEqual(events.filter({ $0.samplingRate == 0.5 }).count, 3, "All spans must encode the same sample rate")
-            XCTAssertEqual(events.filter({ $0.isKept }).count, 3, "All spans must be kept")
+            XCTAssertEqual(events.filter({ $0.samplingPriority.isKept }).count, 3, "All spans must be kept")
         }
     }
 }
