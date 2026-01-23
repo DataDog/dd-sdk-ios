@@ -26,7 +26,8 @@ extension TracePropagationHeadersWriter where Self: OTFormatWriter {
                 spanID: spanContext.spanID,
                 parentSpanID: spanContext.parentSpanID,
                 sampleRate: spanContext.sampleRate,
-                isKept: spanContext.isKept,
+                samplingPriority: spanContext.samplingDecision.samplingPriority,
+                samplingDecisionMaker: spanContext.samplingDecision.decisionMaker,
                 rumSessionId: nil
             )
         )
@@ -48,7 +49,10 @@ extension TracePropagationHeadersReader where Self: OTFormatReader {
             sampleRate: 0,
             // RUM-3470: The `false` default will be never reached. As we got trace and span ID,
             // it means that the request has been instrumented, so sampling decision was read as well.
-            isKept: sampled ?? false
+            samplingDecision: SamplingDecision(
+                from: samplingPriority ?? .autoDrop,
+                decisionMaker: samplingDecisionMaker
+            )
         )
     }
 }

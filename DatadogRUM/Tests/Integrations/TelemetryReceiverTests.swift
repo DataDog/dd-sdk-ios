@@ -464,6 +464,8 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(device.model, deviceMock.model)
         XCTAssertEqual(device.brand, deviceMock.brand)
         XCTAssertEqual(device.architecture, deviceMock.architecture)
+        XCTAssertEqual(device.logicalCpuCount, deviceMock.logicalCpuCount)
+        XCTAssertEqual(device.totalRam, deviceMock.totalRam)
         let os = try XCTUnwrap(event?.telemetry.os)
         XCTAssertEqual(os.version, osMock.version)
         XCTAssertEqual(os.name, osMock.name)

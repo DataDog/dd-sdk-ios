@@ -3,6 +3,8 @@
 # 3.5.1 / 23-01-2025
 
 - [FIX] Fix crash in App Hangs backtrace generation. See [#2647][]
+- [IMPROVEMENT] Add `DDLogEventUserInfo.anonymousId` property in ObjC API. See [#2640][]
+- [FEATURE] Support manually keeping or dropping a trace. See [#2639][]
 
 # 3.5.0 / 12-01-2025
 
@@ -1024,6 +1026,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2631]: https://github.com/DataDog/dd-sdk-ios/pull/2631
 [#2633]: https://github.com/DataDog/dd-sdk-ios/pull/2633
 [#2647]: https://github.com/DataDog/dd-sdk-ios/pull/2647
+[#2640]: https://github.com/DataDog/dd-sdk-ios/pull/2640
+[#2639]: https://github.com/DataDog/dd-sdk-ios/pull/2639
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

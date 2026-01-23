@@ -20,8 +20,30 @@ internal struct DDSpanContext: OTSpanContext {
     ///
     /// It is a value between `0.0` (drop) and `100.0` (keep), determined by the local or distributed trace sampler.
     let sampleRate: Float
-    /// Whether this span was sampled or rejected by the sampler.
-    let isKept: Bool
+    /// The sampling decision for the span.
+    let samplingDecision: SamplingDecision
+
+    /// Delegate method called by ``DDSpan.setTag(key:value:)`` that filters and runs custom actions for specific tags.
+    ///
+    /// Currently, two special tags are supported: ``SpanTags.manualKeep`` and ``SpanTags.manualDrop``. Iff the value
+    /// os those tags is set to true, the span is marked with a manual override to be sampled, or not, respectively.
+    ///
+    /// - parameters:
+    ///    - span: The span where a tag is being set.
+    ///    - key: The tag key.
+    ///    - value: The tag value.
+    /// - returns: `true` if the tag should be kept by the span as it would normally be, `false` if the tag should be ignored
+    /// and not kept by the span.
+    func span(_ span: DDSpan, willSetTagWithKey key: String, value: Encodable) -> Bool {
+        if key == SpanTags.manualDrop && value as? Bool == true {
+            samplingDecision.addManualDropOverride()
+            return false
+        } else if key == SpanTags.manualKeep && value as? Bool == true {
+            samplingDecision.addManualKeepOverride()
+            return false
+        }
+        return true
+    }
 
     // MARK: - Open Tracing interface
 

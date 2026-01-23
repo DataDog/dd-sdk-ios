@@ -561,14 +561,19 @@ extension RUMViewScope {
         // Update the stored state for next comparison
         accessibilityState = currentAccessibilityState
 
+        // Retrieve Session Replay config if any
+        let sessionReplayConfig = context.additionalContext(ofType: SessionReplayCoreContext.Configuration.self)
+
         let viewEvent = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 cls: nil,
                 configuration: .init(
-                    sessionReplaySampleRate: nil,
+                    sessionReplaySampleRate: sessionReplayConfig.map { Double($0.sampleRate) },
                     sessionSampleRate: Double(dependencies.sessionSampler.samplingRate),
-                    startSessionReplayRecordingManually: nil
+                    startSessionReplayRecordingManually: sessionReplayConfig?.startRecordingManually,
+                    traceSampleRate: context.additionalContext(ofType: TraceCoreContext.Configuration.self)
+                        .map { Double($0.sampleRate) }
                 ),
                 documentVersion: version.toInt64,
                 pageStates: nil,

@@ -16,7 +16,7 @@ class RUMViewScopeTests: XCTestCase {
         version: "test-version",
         buildNumber: "test-build",
         buildId: .mockRandom(),
-        device: .mockWith(name: "device-name"),
+        device: .mockWith(name: "device-name", logicalCpuCount: 4, totalRam: 2_048),
         os: .mockWith(
             name: "device-os",
             version: "os-version",
@@ -112,9 +112,17 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let hasReplay: Bool = .mockRandom()
+        let traceSampleRate: SampleRate = .mockRandom(min: 0, max: 100)
+        let sessionReplaySampleRate: SampleRate = .mockRandom(min: 0, max: 100)
+        let startRecordingManually: Bool = .random()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
         context.set(additionalContext: SessionReplayCoreContext.RecordsCount(value: [scope.viewUUID.toRUMDataFormat: 1]))
+        context.set(additionalContext: TraceCoreContext.Configuration(sampleRate: traceSampleRate))
+        context.set(additionalContext: SessionReplayCoreContext.Configuration(
+            sampleRate: sessionReplaySampleRate,
+            startRecordingManually: startRecordingManually
+        ))
 
         _ = scope.process(
             command: RUMCommandMock(time: currentTime),
@@ -140,6 +148,9 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.networkSettledTime, 420_000_000)
         XCTAssertEqual(event.view.interactionToNextViewTime, 840_000_000)
         XCTAssertEqual(event.dd.documentVersion, 1)
+        XCTAssertEqual(event.dd.configuration?.traceSampleRate, Double(traceSampleRate))
+        XCTAssertEqual(event.dd.configuration?.sessionReplaySampleRate, Double(sessionReplaySampleRate))
+        XCTAssertEqual(event.dd.configuration?.startSessionReplayRecordingManually, startRecordingManually)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
@@ -147,6 +158,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.buildVersion, "test-build")
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.device?.logicalCpuCount, 4)
+        XCTAssertEqual(event.device?.totalRam, 2_048)
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
         XCTAssertEqual(event.os?.build, "os-build")
@@ -235,6 +248,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.buildVersion, "test-build")
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.device?.logicalCpuCount, 4)
+        XCTAssertEqual(event.device?.totalRam, 2_048)
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
         XCTAssertEqual(event.os?.build, "os-build")
@@ -310,6 +325,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.buildVersion, "test-build")
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.device?.logicalCpuCount, 4)
+        XCTAssertEqual(event.device?.totalRam, 2_048)
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
         XCTAssertEqual(event.os?.build, "os-build")
@@ -445,6 +462,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.buildVersion, "test-build")
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.device?.logicalCpuCount, 4)
+        XCTAssertEqual(event.device?.totalRam, 2_048)
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
         XCTAssertEqual(event.os?.build, "os-build")
@@ -523,6 +542,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.buildVersion, "test-build")
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.device?.logicalCpuCount, 4)
+        XCTAssertEqual(event.device?.totalRam, 2_048)
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
         XCTAssertEqual(event.os?.build, "os-build")
@@ -586,6 +607,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.buildVersion, "test-build")
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.device?.logicalCpuCount, 4)
+        XCTAssertEqual(event.device?.totalRam, 2_048)
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
         XCTAssertEqual(event.os?.build, "os-build")
@@ -2951,6 +2974,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.buildVersion, "test-build")
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.device?.logicalCpuCount, 4)
+        XCTAssertEqual(event.device?.totalRam, 2_048)
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
         XCTAssertEqual(event.os?.build, "os-build")

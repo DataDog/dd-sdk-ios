@@ -58,8 +58,10 @@ public struct SpanEvent: Encodable {
     internal let origin: String?
     /// The sampling rate for the span (between 0 and 1)
     internal let samplingRate: Float
-    /// If the span is kept according to sampling rules
-    internal let isKept: Bool
+    /// The sampling priority of the span.
+    internal let samplingPriority: SamplingPriority
+    /// The mechanism that made the sampling priority decision.
+    internal let samplingDecisionMaker: SamplingMechanismType
 
     // MARK: - Meta
 
@@ -146,6 +148,8 @@ internal struct SpanEventEncoder {
 
         case ptid = "meta._dd.p.tid"
 
+        case decisionMaker = "meta._dd.p.dm"
+
         case userId = "meta.usr.id"
         case userName = "meta.usr.name"
         case userEmail = "meta.usr.email"
@@ -207,7 +211,10 @@ internal struct SpanEventEncoder {
         if span.parentID == nil {
             try container.encode(1, forKey: .isRootSpan)
             try container.encode(span.samplingRate, forKey: .samplingRate)
-            try container.encode((span.isKept ? 1 : 0), forKey: .samplingPriority)
+            try container.encode(span.samplingPriority.rawValue, forKey: .samplingPriority)
+            if span.samplingPriority.isKept {
+                try container.encode("-\(span.samplingDecisionMaker.rawValue)", forKey: .decisionMaker)
+            }
         }
     }
 

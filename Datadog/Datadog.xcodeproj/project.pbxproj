@@ -10,6 +10,14 @@
 		0904F9F42EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F52EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
+		09A9369D2F0EB989000B6379 /* SamplingMechanismType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */; };
+		09A9369E2F0EB989000B6379 /* SamplingPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369B2F0EB989000B6379 /* SamplingPriority.swift */; };
+		09A9369F2F0EB989000B6379 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369C2F0EB989000B6379 /* SpanContext.swift */; };
+		09A936A02F0EB989000B6379 /* SamplingMechanismType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */; };
+		09A936A12F0EB989000B6379 /* SamplingPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369B2F0EB989000B6379 /* SamplingPriority.swift */; };
+		09A936A22F0EB989000B6379 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369C2F0EB989000B6379 /* SpanContext.swift */; };
+		09D2B7EB2EF4258D0089F05B /* SamplingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */; };
+		09D2B7EC2EF4258D0089F05B /* SamplingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */; };
 		11030D5F2D959EAD00732D5F /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; };
 		11030D642D959EC300732D5F /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D20731B429A5279D00ECBF94 /* DatadogLogs.framework */; };
 		11030D692D959F1700732D5F /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
@@ -1740,8 +1748,8 @@
 		D2BEEDB92B3360F50065F3AC /* URLSessionTaskDelegateSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BEEDB72B3360F50065F3AC /* URLSessionTaskDelegateSwizzlerTests.swift */; };
 		D2BEEDBA2B33638F0065F3AC /* NetworkInstrumentationSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2181A8A2B0500BB00A518C0 /* NetworkInstrumentationSwizzler.swift */; };
 		D2BEEDBB2B3363900065F3AC /* NetworkInstrumentationSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2181A8A2B0500BB00A518C0 /* NetworkInstrumentationSwizzler.swift */; };
-		D2C179E12DD2388800556F68 /* SpanCoreContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C179E02DD2388800556F68 /* SpanCoreContext.swift */; };
-		D2C179E22DD2388800556F68 /* SpanCoreContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C179E02DD2388800556F68 /* SpanCoreContext.swift */; };
+		D2C179E12DD2388800556F68 /* TraceCoreContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C179E02DD2388800556F68 /* TraceCoreContext.swift */; };
+		D2C179E22DD2388800556F68 /* TraceCoreContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C179E02DD2388800556F68 /* TraceCoreContext.swift */; };
 		D2C1A4FA29C4C4CB00946C31 /* SpanSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122ECD25B1B74500F9C7F5 /* SpanSanitizer.swift */; };
 		D2C1A4FB29C4C4CB00946C31 /* MessageReceivers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2546C0A29AF56270054E00B /* MessageReceivers.swift */; };
 		D2C1A4FC29C4C4CB00946C31 /* RequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2546C0729AF55E90054E00B /* RequestBuilder.swift */; };
@@ -2539,6 +2547,10 @@
 
 /* Begin PBXFileReference section */
 		0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensionsTests.swift; sourceTree = "<group>"; };
+		09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingMechanismType.swift; sourceTree = "<group>"; };
+		09A9369B2F0EB989000B6379 /* SamplingPriority.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingPriority.swift; sourceTree = "<group>"; };
+		09A9369C2F0EB989000B6379 /* SpanContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanContext.swift; sourceTree = "<group>"; };
+		09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingDecision.swift; sourceTree = "<group>"; };
 		11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesMetric.swift; sourceTree = "<group>"; };
 		110311752EF96ED000750DD4 /* DDLogs+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDLogs+apiTests.m"; sourceTree = "<group>"; };
 		110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSampler.swift; sourceTree = "<group>"; };
@@ -3598,7 +3610,7 @@
 		D2BEEDB12B335DA90065F3AC /* URLSessionTaskDelegateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskDelegateSwizzler.swift; sourceTree = "<group>"; };
 		D2BEEDB42B33607D0065F3AC /* URLSessionSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzler.swift; sourceTree = "<group>"; };
 		D2BEEDB72B3360F50065F3AC /* URLSessionTaskDelegateSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskDelegateSwizzlerTests.swift; sourceTree = "<group>"; };
-		D2C179E02DD2388800556F68 /* SpanCoreContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanCoreContext.swift; sourceTree = "<group>"; };
+		D2C179E02DD2388800556F68 /* TraceCoreContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceCoreContext.swift; sourceTree = "<group>"; };
 		D2C1A55A29C4F2DF00946C31 /* DatadogTrace.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogTrace.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2C1A57329C4F2E800946C31 /* DatadogTraceTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogTraceTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2C5D52A2B84F6AB00B63F36 /* WebViewRecordReceiver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewRecordReceiver.swift; sourceTree = "<group>"; };
@@ -6978,6 +6990,7 @@
 				61A2CC382A44B0EA0000FF25 /* Trace.swift */,
 				61A2CC352A44B0A20000FF25 /* TraceConfiguration.swift */,
 				61A2CC3B2A44BED30000FF25 /* Tracer.swift */,
+				09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */,
 				D2546C0629AF55CE0054E00B /* Feature */,
 				D21C26E928AF9D22005DD405 /* Integrations */,
 				11F55FEA2DCE501A00DE4944 /* Objc */,
@@ -7254,9 +7267,14 @@
 		D2D748342DC223EE00C61353 /* Trace */ = {
 			isa = PBXGroup;
 			children = (
-				D2C179E02DD2388800556F68 /* SpanCoreContext.swift */,
+				D2C179E02DD2388800556F68 /* TraceCoreContext.swift */,
 				D2D748382DC2306100C61353 /* TraceID.swift */,
+				09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */,
+				09A9369B2F0EB989000B6379 /* SamplingPriority.swift */,
+				09A9369C2F0EB989000B6379 /* SpanContext.swift */,
+				D2C179E02DD2388800556F68 /* SpanCoreContext.swift */,
 				D2D748392DC2306100C61353 /* SpanID.swift */,
+				D2D748382DC2306100C61353 /* TraceID.swift */,
 			);
 			path = Trace;
 			sourceTree = "<group>";
@@ -9742,6 +9760,9 @@
 				D23039FA298D5236001A1FA3 /* Telemetry.swift in Sources */,
 				D23039FC298D5236001A1FA3 /* DataFormat.swift in Sources */,
 				D2160CED29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift in Sources */,
+				09A936A02F0EB989000B6379 /* SamplingMechanismType.swift in Sources */,
+				09A936A12F0EB989000B6379 /* SamplingPriority.swift in Sources */,
+				09A936A22F0EB989000B6379 /* SpanContext.swift in Sources */,
 				D2160C9E29C0DE5700FAA9A5 /* TracingHeaderType.swift in Sources */,
 				D23039F5298D5236001A1FA3 /* AnyEncodable.swift in Sources */,
 				D2303A00298D5236001A1FA3 /* DatadogExtended.swift in Sources */,
@@ -9802,7 +9823,7 @@
 				D23039E0298D5235001A1FA3 /* DatadogCoreProtocol.swift in Sources */,
 				5BFDD7A92E28FDD3009A2CEE /* RUMWebViewContext.swift in Sources */,
 				D23039FD298D5236001A1FA3 /* DataCompression.swift in Sources */,
-				D2C179E12DD2388800556F68 /* SpanCoreContext.swift in Sources */,
+				D2C179E12DD2388800556F68 /* TraceCoreContext.swift in Sources */,
 				B3E46CAE2D91B40000BABF66 /* NetworkContext.swift in Sources */,
 				D2EA0F462C0E1AE300CB20F8 /* SessionReplayConfiguration.swift in Sources */,
 				6167E6F92B81E95900C3CA2D /* BinaryImage.swift in Sources */,
@@ -10252,6 +10273,7 @@
 				D2C1A51429C4C53F00946C31 /* OTSpanContext.swift in Sources */,
 				3C6C7FEB2B459AAA006F5CBC /* OTelTraceId+Datadog.swift in Sources */,
 				3C6C7FE92B459AAA006F5CBC /* OTelSpanBuilder.swift in Sources */,
+				09D2B7EC2EF4258D0089F05B /* SamplingDecision.swift in Sources */,
 				D2C1A51329C4C53F00946C31 /* OTReference.swift in Sources */,
 				3C6C7FEF2B459AAA006F5CBC /* OTelSpanId+Datadog.swift in Sources */,
 				D2C1A4FB29C4C4CB00946C31 /* MessageReceivers.swift in Sources */,
@@ -10550,6 +10572,7 @@
 				D2C1A53E29C4F2DF00946C31 /* OTSpanContext.swift in Sources */,
 				3C6C7FEC2B459AAA006F5CBC /* OTelTraceId+Datadog.swift in Sources */,
 				3C6C7FEA2B459AAA006F5CBC /* OTelSpanBuilder.swift in Sources */,
+				09D2B7EB2EF4258D0089F05B /* SamplingDecision.swift in Sources */,
 				D2C1A53F29C4F2DF00946C31 /* OTReference.swift in Sources */,
 				3C6C7FF02B459AAA006F5CBC /* OTelSpanId+Datadog.swift in Sources */,
 				D2C1A54129C4F2DF00946C31 /* MessageReceivers.swift in Sources */,
@@ -10958,6 +10981,9 @@
 				D2D3199B29E98D970004F169 /* DefaultJSONEncoder.swift in Sources */,
 				D2D748322DC220B100C61353 /* LogMessage.swift in Sources */,
 				6128F56B2BA2237300D35B08 /* DataStore.swift in Sources */,
+				09A9369D2F0EB989000B6379 /* SamplingMechanismType.swift in Sources */,
+				09A9369E2F0EB989000B6379 /* SamplingPriority.swift in Sources */,
+				09A9369F2F0EB989000B6379 /* SpanContext.swift in Sources */,
 				3C3EF2B12C1AEBAB009E9E57 /* LaunchReport.swift in Sources */,
 				6167E7012B81EF7500C3CA2D /* BacktraceReportingFeature.swift in Sources */,
 				D2EBEE3529BA161100B15732 /* B3HTTPHeadersWriter.swift in Sources */,
@@ -10981,7 +11007,7 @@
 				D2DA237D298D57AA00C6C7E6 /* DataCompression.swift in Sources */,
 				5BFDD7AA2E28FDD3009A2CEE /* RUMWebViewContext.swift in Sources */,
 				D2C9A26A2C0F3F5A007526F5 /* SessionReplayConfiguration.swift in Sources */,
-				D2C179E22DD2388800556F68 /* SpanCoreContext.swift in Sources */,
+				D2C179E22DD2388800556F68 /* TraceCoreContext.swift in Sources */,
 				B3E46CAF2D91B40000BABF66 /* NetworkContext.swift in Sources */,
 				6167E6FA2B81E95900C3CA2D /* BinaryImage.swift in Sources */,
 				618031F92D6DC430007027E3 /* Threading.swift in Sources */,

@@ -173,7 +173,9 @@ extension DeviceInfo {
         isSimulator: Bool = true,
         vendorId: String? = "xyz",
         isDebugging: Bool = false,
-        systemBootTime: TimeInterval = Date.timeIntervalSinceReferenceDate
+        systemBootTime: TimeInterval = Date.timeIntervalSinceReferenceDate,
+        logicalCpuCount: Double = 6,
+        totalRam: Double = 2_048
     ) -> DeviceInfo {
         .init(
             name: name,
@@ -183,7 +185,9 @@ extension DeviceInfo {
             isSimulator: isSimulator,
             vendorId: vendorId,
             isDebugging: isDebugging,
-            systemBootTime: systemBootTime
+            systemBootTime: systemBootTime,
+            logicalCpuCount: logicalCpuCount,
+            totalRam: totalRam
         )
     }
 
@@ -196,7 +200,9 @@ extension DeviceInfo {
             isSimulator: .mockRandom(),
             vendorId: .mockRandom(),
             isDebugging: .mockRandom(),
-            systemBootTime: .mockRandom()
+            systemBootTime: .mockRandom(),
+            logicalCpuCount: .mockRandom(),
+            totalRam: .mockRandom()
         )
     }
 }
