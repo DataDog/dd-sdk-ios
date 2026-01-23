@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal struct FlagsEvaluationFeature: DatadogFeature {
+internal struct FlagsEvaluationFeature: DatadogRemoteFeature {
     static let name = "flags-evaluation"
 
     let requestBuilder: any FeatureRequestBuilder
