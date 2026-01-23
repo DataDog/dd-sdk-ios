@@ -1,7 +1,7 @@
 # Unreleased
 
 - [FEATURE] Automatic network instrumentation now tracks `URLSession` requests without requiring delegate registration. See [#2620][]
-- [FEATURE] Deprecate `URLSessionInstrumentation.enable(with:in:)` API in favor of `URLSessionInstrumentation.trackMetrics(with:in:)`. See [#2634][]
+- [FEATURE] Deprecate `URLSessionInstrumentation.enable(with:in:)` API in favor of `URLSessionInstrumentation.enableDurationBreakdown(with:in:)`. See [#2634][]
 - [IMPROVEMENT] Add `DDLogEventUserInfo.anonymousId` property in ObjC API. See [#2640][]
 - [FEATURE] Support manually keeping or dropping a trace. See [#2639][]
 

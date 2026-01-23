@@ -94,7 +94,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         )
         RUMMonitor.shared().debug = true
 
-        URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: DummySessionDataDelegate.self))
+        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: DummySessionDataDelegate.self))
 
         // Register Trace Provider
         OpenTelemetry.registerTracerProvider(

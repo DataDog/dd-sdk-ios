@@ -121,7 +121,7 @@ extension RUM {
         /// The configuration for automatic RUM resources tracking.
         ///
         /// For capturing additional detailed timing breakdowns (DNS, SSL, TTFB, etc.), see
-        /// ``URLSessionInstrumentation.trackMetrics(with:in:)``.
+        /// `URLSessionInstrumentation.enableDurationBreakdown(with:in:)`.
         ///
         /// Note: Automatic RUM resources tracking involves swizzling `URLSession` and `URLSessionTask` methods.
         ///

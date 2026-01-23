@@ -82,8 +82,8 @@ class URLSessionTaskInterceptionTests: XCTestCase {
         XCTAssertFalse(interception.isDone)
     }
 
-    func testInMetricsMode_itRequiresBothMetricsAndCompletion() {
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .metrics)
+    func testWithRegisteredDelegate_itRequiresBothMetricsAndCompletion() {
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .registeredDelegate)
 
         // When - Register only completion
         interception.register(response: .mockAny(), error: nil)
@@ -115,7 +115,7 @@ class URLSessionTaskInterceptionTests: XCTestCase {
     }
 
     func testFetchDates_preferMetricsOverApproximateDates() {
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .metrics)
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .registeredDelegate)
         let approximateStart = Date.mockDecember15th2019At10AMUTC()
         let metricsStart = approximateStart.addingTimeInterval(0.1)
         let metricsEnd = metricsStart.addingTimeInterval(2)
