@@ -35,7 +35,7 @@ internal struct KSCrashBacktrace: BacktraceReporting {
     func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport? {
         // Convert Mach thread_t to pthread_t
         guard let pthread = pthread_from_mach_thread_np(threadID) else {
-            telemetry.error("[KSCrashBacktrace] Failed to get pthread for thread with ID: \(threadID)")
+            telemetry.error("Failed to get pthread for thread with ID: \(threadID)")
             return nil
         }
 
@@ -66,6 +66,14 @@ internal struct KSCrashBacktrace: BacktraceReporting {
             let loadAddress = binaryImage.address
             let uuid = UUID(uuid: imageUUID.withMemoryRebound(to: uuid_t.self, capacity: 1) { $0.pointee })
 
+            let offset: UInt64
+            if address >= loadAddress {
+                offset = UInt64(address) - loadAddress
+            } else {
+                offset = 0
+                telemetry.error("Invalid image load address, symbolication will fail")
+            }
+
             // Get architecture from binary image's CPU type
             let architecture = String(cString: kscpu_archForCPU(
                 cpu_type_t(binaryImage.cpuType),
@@ -84,7 +92,7 @@ internal struct KSCrashBacktrace: BacktraceReporting {
             }
 
             // Format: frame_index (4 chars left-aligned) + library_name (35 chars left-aligned) + addresses + offset
-            return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, libraryName, address, loadAddress, UInt64(address) - loadAddress)
+            return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, libraryName, address, loadAddress, offset)
         }
         .joined(separator: "\n")
 
@@ -108,7 +116,7 @@ internal struct KSCrashBacktrace: BacktraceReporting {
     private func getThreadName(pthread: pthread_t) -> String? {
         var buffer = [CChar](repeating: 0, count: 256)
         guard pthread_getname_np(pthread, &buffer, buffer.count) == KERN_SUCCESS, buffer[0] != 0 else {
-            telemetry.error("[KSCrashBacktrace] Failed to get pthread name")
+            telemetry.error("Failed to get pthread name")
             return nil // fails or empty
         }
         return String(cString: buffer)
@@ -124,16 +132,19 @@ internal struct KSCrashBacktrace: BacktraceReporting {
 /// This allows us to determine the correct architecture (arm64, arm64e, etc.) for each
 /// binary image, which is critical for accurate stacktrace symbolication.
 private func symbolicate(address: uintptr_t) -> KSBinaryImage? {
-    // initalize the binary image cache.
-    // this has an atomic check so isn't expensive
-    // except for the first call.
-    ksbic_init()
-
     let untaggedAddress = kssymbolicator_callInstructionAddress(address)
+    let instructionPointer = UnsafeRawPointer(bitPattern: untaggedAddress)
 
+    // Use standard dladdr() instead of ksdl_dladdr() to work around a bug where ksdl_dladdr()
+    // can return the wrong image when looking up addresses in the presence of dynamic
+    // frameworks. The bug causes unsigned arithmetic underflow when calculating the
+    // instruction offset.
+    //
+    // This was fixed in KSCrash and is currently pending release.
+    // See: https://github.com/DataDog/dd-sdk-ios/issues/2645
     var info = Dl_info()
     guard
-        ksdl_dladdr(untaggedAddress, &info),
+        dladdr(instructionPointer, &info) != 0,
         let baseAddress = info.dli_fbase,
         let fileName = info.dli_fname
     else {
