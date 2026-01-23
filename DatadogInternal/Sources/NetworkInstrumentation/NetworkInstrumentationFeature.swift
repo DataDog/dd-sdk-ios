@@ -43,8 +43,8 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     @ReadWriteLock
     private var swizzlers: [ObjectIdentifier: NetworkInstrumentationSwizzler] = [:]
 
-    /// Tracks delegate classes registered in metrics mode.
-    /// Used to prevent automatic mode from processing tasks that are handled by metrics mode.
+    /// Tracks delegate classes registered via `enableDurationBreakdown(with:)`.
+    /// Used to prevent automatic mode from processing tasks that are handled by registered delegate mode.
     /// Maps ObjectIdentifier to the actual class type for isKind(of:) checks.
     @ReadWriteLock
     private var registeredDelegateClasses: [ObjectIdentifier: AnyClass] = [:]
@@ -67,11 +67,11 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// This method supports two modes:
     /// - Automatic Mode (`configuration == nil`): Tracks all tasks without requiring delegate registration.
     ///   Uses setState and completion handler swizzling. Does not capture `URLSessionTaskMetrics`.
-    /// - Metrics Mode (`configuration != nil`): Tracks tasks with registered delegate class.
+    /// - Registered Delegate Mode (`configuration != nil`): Tracks tasks with registered delegate class.
     ///   Additionally swizzles delegate methods to capture detailed timing breakdown.
     ///
     /// - Parameter configuration: The configuration to use. If `nil`, enables Automatic Mode.
-    ///   If provided, enables Metrics Mode for the specified delegate class.
+    ///   If provided, enables Registered Delegate Mode for the specified delegate class.
     internal func bind(configuration: URLSessionInstrumentation.Configuration?) throws {
         // Prepare mode (validates prerequisites and returns identifier)
         guard let identifier = prepareMode(for: configuration) else {
@@ -82,7 +82,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         swizzlers[identifier] = swizzler
 
         // Determine tracking mode based on configuration
-        let trackingMode: TrackingMode = configuration?.delegateClass != nil ? .metrics : .automatic
+        let trackingMode: TrackingMode = configuration?.delegateClass != nil ? .registeredDelegate : .automatic
 
         // Intercept when the task is started
         try swizzler.swizzle(
@@ -116,7 +116,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             }
         )
 
-        // In Metrics Mode (delegate class provided), swizzle delegate methods to capture data and metrics
+        // With registered delegate (delegate class provided), swizzle delegate methods to capture data and metrics
         if let delegateClass = configuration?.delegateClass {
             // Swizzle delegate methods for metrics collection and completion detection:
             // - didFinishCollecting: Captures `URLSessionTaskMetrics` for detailed timing information
@@ -144,7 +144,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                 }
             )
 
-            // Swizzle didReceive to capture response data in metrics mode
+            // Swizzle didReceive to capture response data with registered delegate
             // This ensures data is available for:
             // - ResourceAttributesProvider to access response body and add custom attributes
             // - GraphQL error detection (GraphQL errors are in response body, not HTTP status)
@@ -158,7 +158,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
         // Swizzle completion handlers for `URLSession.dataTask(with:completionHandler:)` methods
         //
-        // In dual-mode (automatic + metrics), both modes swizzle completion handlers.
+        // In dual-mode (automatic + registered delegate), both modes swizzle completion handlers.
         // To prevent double-counting, automatic mode skips tasks with registered delegates.
         try swizzler.swizzle(
             interceptCompletionHandler: { [weak self] task, _, error in
@@ -168,13 +168,13 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
                 // Determine if this swizzler should process this task
                 if let delegateClass = configuration?.delegateClass {
-                    // Metrics mode: only process if task has our registered delegate
+                    // Registered delegate mode: only process if task has our registered delegate
                     guard let delegate = task.dd.delegate, delegate.isKind(of: delegateClass) else {
                         return
                     }
                     self.task(task, didCompleteWithError: error)
                 } else {
-                    // Automatic mode: skip if task has a delegate registered in metrics mode
+                    // Automatic mode: skip if task has a registered delegate
                     if let delegate = task.dd.delegate, self.isRegisteredDelegate(delegate) {
                         return
                     }
@@ -187,13 +187,13 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
                 // Determine if this swizzler should process this task
                 if let delegateClass = configuration?.delegateClass {
-                    // Metrics mode: only process if task has our registered delegate
+                    // Registered delegate mode: only process if task has our registered delegate
                     guard let delegate = task.dd.delegate, delegate.isKind(of: delegateClass) else {
                         return
                     }
                     self.task(task, didReceive: data)
                 } else {
-                    // Automatic mode: skip if task has a delegate registered in metrics mode
+                    // Automatic mode: skip if task has a registered delegate
                     if let delegate = task.dd.delegate, self.isRegisteredDelegate(delegate) {
                         return
                     }
@@ -237,28 +237,28 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
     /// Prepares the tracking mode by validating prerequisites and determining the swizzler identifier.
     ///
-    /// - Parameter configuration: The configuration to prepare. If `nil`, prepares Automatic Mode. If provided, prepares Metrics Mode.
+    /// - Parameter configuration: The configuration to prepare. If `nil`, prepares Automatic Mode. If provided, prepares Registered Delegate Mode.
     /// - Returns: The identifier for the swizzler, or `nil` if validation failed.
     private func prepareMode(for configuration: URLSessionInstrumentation.Configuration?) -> ObjectIdentifier? {
         if let delegateClass = configuration?.delegateClass {
-            return prepareMetricsMode(for: delegateClass)
+            return prepareRegisteredDelegateMode(for: delegateClass)
         } else {
             return prepareAutomaticMode()
         }
     }
 
-    /// Prepares Metrics Mode for the specified delegate class.
+    /// Prepares registered delegate mode for the specified delegate class.
     ///
-    /// - Parameter delegateClass: The delegate class to register for metrics tracking.
+    /// - Parameter delegateClass: The delegate class to register.
     /// - Returns: The identifier for the swizzler, or `nil` if validation failed.
-    private func prepareMetricsMode(for delegateClass: URLSessionDataDelegate.Type) -> ObjectIdentifier? {
+    private func prepareRegisteredDelegateMode(for delegateClass: URLSessionDataDelegate.Type) -> ObjectIdentifier? {
         // Require automatic mode to be enabled first
         let automaticModeIdentifier = ObjectIdentifier(NetworkInstrumentationFeature.self)
         guard swizzlers[automaticModeIdentifier] != nil else {
             DD.logger.error(
                 """
-                Metrics mode requires automatic network instrumentation to be enabled first.
-                Please enable RUM or Trace with `urlSessionTracking` parameter before enabling metrics mode.
+                Duration breakdown requires automatic network instrumentation to be enabled first.
+                Please enable RUM or Trace with `urlSessionTracking` parameter before enabling duration breakdown.
                 """
             )
             return nil
@@ -301,7 +301,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
     /// Checks if a delegate is a kind of any registered delegate class.
     /// Uses `isKind(of:)` to properly handle subclasses, preventing automatic mode
-    /// from processing tasks that should be handled by metrics mode.
+    /// from processing tasks that should be handled by registered delegate mode.
     ///
     /// - Parameter delegate: The delegate to check
     /// - Returns: `true` if the delegate is a kind of any registered class, `false` otherwise
@@ -315,10 +315,10 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 extension NetworkInstrumentationFeature {
     /// Determines whether a task should be intercepted based on the tracking mode.
     ///
-    /// - Metrics mode (delegate class configured): Only intercepts tasks with the registered delegate
-    /// - Automatic mode (no delegate class): Intercepts all tasks except those with delegates registered in metrics mode
+    /// - Registered delegate mode (delegate class configured): Only intercepts tasks with the registered delegate
+    /// - Automatic mode (no delegate class): Intercepts all tasks except those with registered delegates
     ///
-    /// This coordination prevents double-processing when both automatic and metrics modes are enabled.
+    /// This coordination prevents double-processing when both automatic and registered delegate modes are enabled.
     ///
     /// - Parameters:
     ///   - task: The URLSessionTask to check
@@ -326,10 +326,10 @@ extension NetworkInstrumentationFeature {
     /// - Returns: `true` if this swizzler should intercept the task, `false` otherwise
     private func shouldInterceptTask( _ task: URLSessionTask, for configuration: URLSessionInstrumentation.Configuration?) -> Bool {
         if let delegateClass = configuration?.delegateClass {
-            // Metrics mode: only intercept tasks with our registered delegate
+            // Registered delegate mode: only intercept tasks with our registered delegate
             return task.dd.delegate?.isKind(of: delegateClass) == true
         } else {
-            // Automatic mode: skip tasks with delegates registered in metrics mode
+            // Automatic mode: skip tasks with registered delegates
             if let delegate = task.dd.delegate, isRegisteredDelegate(delegate) {
                 return false
             }
@@ -386,7 +386,7 @@ extension NetworkInstrumentationFeature {
     ///   - task: The URLSession task to intercept.
     ///   - injectedTraceContexts: The list of trace contexts injected into the task's request, one or none for each handler.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
-    ///   - trackingMode: The tracking mode to use for this interception (automatic or metrics).
+    ///   - trackingMode: The tracking mode to use for this interception (automatic or registered delegate).
     internal func intercept(task: URLSessionTask, with injectedTraceContexts: [TraceContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode) {
         // In response to https://github.com/DataDog/dd-sdk-ios/issues/1638 capture the current request object on the
         // caller thread and freeze its attributes through `ImmutableRequest`. This is to avoid changing the request
@@ -409,10 +409,10 @@ extension NetworkInstrumentationFeature {
             // Check if interception already exists for this task
             let isNewInterception = self.interceptions[task] == nil
 
-            // In dual-mode (automatic + metrics), prevent automatic mode from overriding metrics mode
-            // Metrics mode provides more detailed tracking, so it takes priority
+            // In dual-mode (automatic + registered delegate), prevent automatic mode from overriding registered delegate mode
+            // Registered delegate mode provides more detailed tracking, so it takes priority
             if let existingInterception = self.interceptions[task],
-               existingInterception.trackingMode == .metrics && trackingMode == .automatic {
+               existingInterception.trackingMode == .registeredDelegate && trackingMode == .automatic {
                 return
             }
 
@@ -444,7 +444,7 @@ extension NetworkInstrumentationFeature {
             self.interceptions[task] = interception
 
             // Only notify handlers when the interception is first created, not when it's reused
-            // This prevents double notifications when both automatic and metrics modes are enabled
+            // This prevents double notifications when both automatic and registered delegate modes are enabled
             if isNewInterception {
                 self.handlers.forEach { $0.interceptionDidStart(interception: interception) }
             }
@@ -465,12 +465,12 @@ extension NetworkInstrumentationFeature {
             let resourceMetrics = ResourceMetrics(taskMetrics: metrics)
             interception.register(metrics: resourceMetrics)
 
-            // Populate interception.responseSize for metrics mode
+            // Populate interception.responseSize for registered delegate mode
             self.captureResponseSize(for: interception, from: task, metrics: resourceMetrics)
 
             // Don't finish yet if task has completion handler - let completion handler finish after capturing data
             if interception.isDone && !task.dd.hasCompletion {
-                // Metrics mode: `endDate` is `nil` because `URLSessionTaskMetrics` provides accurate timing
+                // Registered delegate mode: `endDate` is `nil` because `URLSessionTaskMetrics` provides accurate timing
                 self.finish(task: task, interception: interception, endDate: nil)
             }
         }
@@ -521,7 +521,7 @@ extension NetworkInstrumentationFeature {
 
     private func finish(task: URLSessionTask, interception: URLSessionTaskInterception, endDate: Date?) {
         // Register `endDate` if provided.
-        // Note: in metrics mode, `endDate` is `nil` because `URLSessionTaskMetrics` provides accurate timing.
+        // Note: in registered delegate mode, `endDate` is `nil` because `URLSessionTaskMetrics` provides accurate timing.
         if let endDate {
             interception.register(endDate: endDate)
         }
@@ -576,7 +576,7 @@ extension NetworkInstrumentationFeature {
 
     /// Captures response size for an interception.
     ///
-    /// For metrics mode, prefers the response size from URLSessionTaskMetrics.
+    /// In registered delegate mode, prefers the response size from URLSessionTaskMetrics.
     /// Falls back to task.countOfBytesReceived when metrics don't have the size
     /// (e.g., upload tasks where URLSessionTaskMetrics reports 0).
     ///

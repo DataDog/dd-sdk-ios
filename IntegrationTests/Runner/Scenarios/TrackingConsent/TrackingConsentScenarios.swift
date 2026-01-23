@@ -20,8 +20,8 @@ internal class TrackingConsentBaseScenario {
         rumConfig.urlSessionTracking = .init()
         RUM.enable(with: rumConfig)
 
-        // Enable Network instrumentation
-        URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: CustomURLSessionDelegate.self))
+        // Enable duration breakdown for detailed timing data
+        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: CustomURLSessionDelegate.self))
 
         // Enable Trace
         var traceConfig = Trace.Configuration()

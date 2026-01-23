@@ -395,7 +395,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let interception = URLSessionTaskInterception(
             request: .mockAny(),
             isFirstParty: true,
-            trackingMode: .metrics
+            trackingMode: .registeredDelegate
         )
         interception.register(response: .mockAny(), error: nil)
         interception.register(
@@ -441,7 +441,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         // Given
         let request: ImmutableRequest = .mockWith(httpMethod: "POST")
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .metrics)
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
         interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
         interception.register(
             metrics: .mockWith(
@@ -477,8 +477,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
-        let incompleteInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .metrics)
-        // In metrics mode, interception is incomplete without both metrics and completion
+        let incompleteInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .registeredDelegate)
+        // With duration breakdown, interception is incomplete without both metrics and completion
 
         // When
         handler.interceptionDidComplete(interception: incompleteInterception)
@@ -488,13 +488,13 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertTrue(core.events.isEmpty)
     }
 
-    func testGivenThirdPartyInterception_inMetricsMode_itDoesNotSendTheSpan() throws {
+    func testGivenThirdPartyInterception_withRegisteredDelegate_itDoesNotSendTheSpan() throws {
         let expectation = expectation(description: "Do not send span")
         expectation.isInverted = true
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
-        // Given - metrics mode
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: false, trackingMode: .metrics)
+        // Given - with duration breakdown
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: false, trackingMode: .registeredDelegate)
         interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
@@ -532,16 +532,16 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertTrue(core.events.isEmpty)
     }
 
-    func testRUM2APMInterception_inMetricsMode_itDoesNotSendTheSpan() throws {
+    func testRUM2APMInterception_withRegisteredDelegate_itDoesNotSendTheSpan() throws {
         let expectation = expectation(description: "Do not send span")
         expectation.isInverted = true
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
-        // Given - metrics mode
+        // Given - with duration breakdown
         let request: ImmutableRequest = .mockWith(
             allHTTPHeaderFields: [TracingHTTPHeaders.originField: "rum"]
         )
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: false, trackingMode: .metrics)
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: false, trackingMode: .registeredDelegate)
         interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
@@ -587,7 +587,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .metrics)
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .registeredDelegate)
         interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
@@ -627,7 +627,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         core.context.applicationStateHistory = .mockAppInForeground()
 
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .metrics)
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .registeredDelegate)
         interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
@@ -735,7 +735,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertTrue(core.events.isEmpty)
     }
 
-    func testGivenMetricsMode_whenBothTimingsAvailable_itPrefersMetricsTiming() throws {
+    func testGivenRegisteredDelegate_whenBothTimingsAvailable_itPrefersMetricsTiming() throws {
         let expectation = expectation(description: "Send span")
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
@@ -748,7 +748,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let interception = URLSessionTaskInterception(
             request: .mockAny(),
             isFirstParty: true,
-            trackingMode: .metrics
+            trackingMode: .registeredDelegate
         )
         interception.register(response: .mockAny(), error: nil)
         interception.register(

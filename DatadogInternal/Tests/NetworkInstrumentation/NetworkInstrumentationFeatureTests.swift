@@ -50,15 +50,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         return (server, notifyInterceptionDidStart, notifyInterceptionDidComplete)
     }
 
-    // MARK: - Metrics Mode
+    // MARK: - Registered Delegate Mode
 
-    func testMetricsMode_capturesMetricsForDataTaskWithURL() throws {
+    func testRegisteredDelegate_capturesMetricsForDataTaskWithURL() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
         // Given
         // Automatic mode (required)
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
@@ -81,14 +81,14 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
-        XCTAssertEqual(interception.data?.count, 10, "Metrics mode should capture data")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.data?.count, 10, "Registered delegate mode should capture data")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    func testMetricsMode_capturesMetricsForDataTaskWithURLRequest() throws {
+    func testRegisteredDelegate_capturesMetricsForDataTaskWithURLRequest() throws {
         let notifyRequestMutation = expectation(description: "Notify request mutation")
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
@@ -104,7 +104,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
         )
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         // Session with delegate
@@ -128,19 +128,19 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
-        XCTAssertEqual(interception.data?.count, 10, "Metrics mode should capture data")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.data?.count, 10, "Registered delegate mode should capture data")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    func testMetricsMode_capturesMetricsForUploadTask() throws {
+    func testRegisteredDelegate_capturesMetricsForUploadTask() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
         // Session with delegate
@@ -163,19 +163,19 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
-        XCTAssertEqual(interception.data?.count, 10, "Metrics mode should capture data")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.data?.count, 10, "Registered delegate mode should capture data")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    func testMetricsMode_capturesMetricsForDownloadTask() throws {
+    func testRegisteredDelegate_capturesMetricsForDownloadTask() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
@@ -198,15 +198,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Download task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Download task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
         XCTAssertNil(interception.data, "Data not captured for download tasks (saved to file)")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    func testMetricsMode_capturesMetricsForAsyncDataFromURL() async throws {
+    func testRegisteredDelegate_capturesMetricsForAsyncDataFromURL() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
             return
@@ -216,7 +216,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
@@ -239,15 +239,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
         XCTAssertNil(interception.data, "Async APIs return data directly to caller, bypassing delegate's didReceive")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    func testMetricsMode_capturesMetricsForAsyncDataWithSessionDelegate() async throws {
+    func testRegisteredDelegate_capturesMetricsForAsyncDataWithSessionDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
             return
@@ -257,7 +257,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
@@ -280,15 +280,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
         XCTAssertNil(interception.data, "Async APIs return data directly to caller, bypassing delegate's didReceive")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    func testMetricsMode_capturesMetricsForAsyncDataWithPerTaskDelegate() async throws {
+    func testRegisteredDelegate_capturesMetricsForAsyncDataWithPerTaskDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
             return
@@ -298,7 +298,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
@@ -321,15 +321,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
         XCTAssertNil(interception.data, "Async APIs return data directly to caller, bypassing delegate's didReceive")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    func testMetricsMode_capturesMetricsForAsyncUploadWithPerTaskDelegate() async throws {
+    func testRegisteredDelegate_capturesMetricsForAsyncUploadWithPerTaskDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
             return
@@ -339,7 +339,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
@@ -362,15 +362,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
         XCTAssertNil(interception.data, "Data is not captured when using Async API")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    func testMetricsMode_capturesMetricsForAsyncUploadWithSessionDelegate() async throws {
+    func testRegisteredDelegate_capturesMetricsForAsyncUploadWithSessionDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
             return
@@ -380,7 +380,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
@@ -403,15 +403,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
         XCTAssertNil(interception.data, "Async APIs return data directly to caller, bypassing delegate's didReceive")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    func testMetricsMode_capturesMetricsForAsyncDataTaskWithURLRequest() async throws {
+    func testRegisteredDelegate_capturesMetricsForAsyncDataTaskWithURLRequest() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
             return
@@ -437,7 +437,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
         )
 
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
@@ -460,15 +460,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
         XCTAssertNil(interception.data, "Async APIs return data directly to caller, bypassing delegate's didReceive")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    func testMetricsMode_capturesMetricsForCombineDataTask() throws {
+    func testRegisteredDelegate_capturesMetricsForCombineDataTask() throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
             return
@@ -478,7 +478,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
@@ -506,19 +506,19 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = cancellable // extend lifetime of Combine subscription
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
-        XCTAssertEqual(interception.data?.count, 10, "Metrics mode should capture data")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.data?.count, 10, "Registered delegate mode should capture data")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    func testMetricsMode_capturesMetricsForCompletionHandlerDataTask() throws {
+    func testRegisteredDelegate_capturesMetricsForCompletionHandlerDataTask() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
@@ -541,19 +541,19 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
-        XCTAssertEqual(interception.data?.count, 10, "Metrics mode should capture data")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.data?.count, 10, "Registered delegate mode should capture data")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    func testMetricsMode_capturesMetricsForCompletionHandlerUploadTask() throws {
+    func testRegisteredDelegate_capturesMetricsForCompletionHandlerUploadTask() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        // Metrics mode
+        // Registered delegate mode
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
@@ -580,8 +580,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with session using registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with session using registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
         XCTAssertNil(interception.data, "Upload tasks with completion handler don't capture data via delegate")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
@@ -921,7 +921,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Given - Enable ONLY automatic mode (don't register delegate for metrics)
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
 
-        // Session has a delegate, but it's not registered for metrics mode
+        // Session has a delegate, but it's not a registered delegate class
         let delegate = SessionDataDelegateMock()
         let session = server.getInterceptedURLSession(delegate: delegate)
 
@@ -1009,17 +1009,17 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             skipIsMainThreadCheck: true
         )
 
-        // Given - Enable both automatic and metrics modes (reflects real-world usage)
+        // Given - Enable both automatic and registered delegate modes (reflects real-world usage)
         let delegate1 = MockDelegate()
         let delegate2 = MockDelegate2()
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core) // Automatic mode
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core) // Metrics mode
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core) // Registered delegate
 
         let session = server.getInterceptedURLSession()
 
         // When
         let url1 = URL.mockWith(url: "https://www.foo.com/1")
-        let task1 = session.dataTask(with: url1) // intercepted by metrics mode
+        let task1 = session.dataTask(with: url1) // intercepted by registered delegate mode
         task1.delegate = delegate1
         task1.resume()
 
@@ -1042,9 +1042,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Verify tracking modes are correct based on delegate type
 
         let interception1 = try XCTUnwrap(handler.interception(for: url1))
-        XCTAssertEqual(interception1.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception1.metrics, "Should capture metrics in metrics mode")
-        XCTAssertEqual(interception1.data?.count, 10, "Should capture data in metrics mode")
+        XCTAssertEqual(interception1.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception1.metrics, "Should capture metrics with registered delegate")
+        XCTAssertEqual(interception1.data?.count, 10, "Should capture data with registered delegate")
 
         let interception2 = try XCTUnwrap(handler.interception(for: url2))
         XCTAssertEqual(interception2.trackingMode, .automatic, "Task without registered delegate should be in automatic mode")
@@ -1059,9 +1059,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testGivenBothModesEnabled_whenSessionWithDelegateAndCompletionHandler_itCapturesMetrics() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
-        // Given - Enable both automatic and metrics modes
+        // Given - Enable both automatic and registered delegate modes
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core) // Automatic
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core) // Metrics
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core) // Registered delegate
 
         let delegate = SessionDataDelegateMock()
         let session = server.getInterceptedURLSession(delegate: delegate)
@@ -1082,8 +1082,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception.metrics, "Metrics mode should capture URLSessionTaskMetrics")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception.metrics, "Registered delegate mode should capture URLSessionTaskMetrics")
         XCTAssertEqual(interception.data?.count, 10, "Data size should match expected size")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception.completion, "Should capture completion")
@@ -1118,7 +1118,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interception(for: url))
-        XCTAssertEqual(interception.trackingMode, .metrics, "Should use metrics mode")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Should use registered delegate mode")
         XCTAssertNotNil(interception.metrics, "Should capture URLSessionTaskMetrics")
         XCTAssertEqual(interception.data?.count, 10, "Should capture data via completion handler")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
@@ -1154,7 +1154,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interception(for: url))
-        XCTAssertEqual(interception.trackingMode, .metrics, "Should use metrics mode")
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Should use registered delegate mode")
         XCTAssertNotNil(interception.metrics, "Should capture URLSessionTaskMetrics")
         XCTAssertEqual(interception.data?.count, 10, "Should capture data via delegate didReceive")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")
@@ -1334,9 +1334,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // When - Using Async/await API
         let url1: URL = .mockRandom()
-        _ = try? await session.data(from: url1, delegate: delegate) // Metrics mode (explicit delegate)
+        _ = try? await session.data(from: url1, delegate: delegate) // Registered Delegate mode
         let url2: URL = .mockRandom()
-        _ = try? await session.data(from: url2) // Automatic mode (no delegate at all)
+        _ = try? await session.data(from: url2) // Automatic mode (no delegate)
 
         // Then
         await dd_fulfillment(
@@ -1353,8 +1353,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should record 2 tasks")
 
         let interception1 = try XCTUnwrap(handler.interception(for: url1))
-        XCTAssertEqual(interception1.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
-        XCTAssertNotNil(interception1.metrics, "Task in metrics mode should collect metrics")
+        XCTAssertEqual(interception1.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
+        XCTAssertNotNil(interception1.metrics, "Task with registered delegate should collect metrics")
         XCTAssertNil(interception1.data, "Data should not be recorded for tasks with no completion handler")
         XCTAssertEqual(interception1.responseSize, 10, "Should capture response size")
         XCTAssertNotNil(interception1.completion, "Should capture completion")
@@ -1387,17 +1387,17 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Given - Both modes enabled
         let delegate = SessionDataDelegateMock()
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core) // Automatic mode
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core) // Metrics mode
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core) // Registered Delegate mode
 
         let session = server.getInterceptedURLSession()
 
-        // When - Download task with per-task delegate (metrics mode)
+        // When - Download task with per-task delegate (Registered Delegate mode)
         let url1 = URL.mockWith(url: "https://www.foo.com/download1")
         let task1 = session.downloadTask(with: url1)
         task1.delegate = delegate
         task1.resume()
 
-        // Download task without delegate (automatic mode)
+        // Download task without delegate (Automatic mode)
         let url2 = URL.mockWith(url: "https://www.foo.com/download2")
         let task2 = session.downloadTask(with: url2)
         task2.resume()
@@ -1406,9 +1406,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         wait(for: [notifyInterceptionDidComplete], timeout: 5)
         _ = server.waitAndReturnRequests(count: 2)
 
-        // Verify task with delegate uses metrics mode
+        // Verify task with delegate uses registered delegate mode
         let interception1 = try XCTUnwrap(handler.interception(for: url1))
-        XCTAssertEqual(interception1.trackingMode, .metrics, "Download task with registered per-task delegate should use metrics mode")
+        XCTAssertEqual(interception1.trackingMode, .registeredDelegate, "Download task with registered per-task delegate should use registered delegate mode")
         XCTAssertNotNil(interception1.metrics, "Should capture metrics")
         XCTAssertNil(interception1.data, "Data not captured for download tasks")
         XCTAssertEqual(interception1.responseSize, 10, "Should capture response size")
@@ -1468,7 +1468,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(error.code, NSURLErrorCancelled, "Error should be NSURLErrorCancelled")
     }
 
-    func testGivenMetricsMode_whenTaskCompletesWithFailure_itCapturesError() throws {
+    func testGivenRegisteredDelegate_whenTaskCompletesWithFailure_itCapturesError() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
 
@@ -1498,8 +1498,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let interception = try XCTUnwrap(handler.interception(for: url))
 
-        // Metrics mode captures metrics and completion (even on failure)
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
+        // Registered delegate mode captures metrics and completion (even on failure)
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
 
         let metrics = try XCTUnwrap(interception.metrics, "Should capture metrics even on failure")
         XCTAssertGreaterThan(metrics.fetch.start, dateBeforeRequest)
@@ -1513,7 +1513,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual((completion.error as? NSError)?.localizedDescription, "some error")
     }
 
-    func testGivenMetricsMode_whenTaskCompletesWithSuccess_itCapturesAllValues() throws {
+    func testGivenRegisteredDelegate_whenTaskCompletesWithSuccess_itCapturesAllValues() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
 
@@ -1542,15 +1542,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let interception = try XCTUnwrap(handler.interception(for: url))
 
-        // Metrics mode captures metrics and completion
-        XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
+        // Registered delegate mode captures metrics and completion
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
 
         let metrics = try XCTUnwrap(interception.metrics, "Should capture metrics")
         XCTAssertGreaterThan(metrics.fetch.start, dateBeforeRequest)
         XCTAssertLessThan(metrics.fetch.end, dateAfterRequest)
 
-        // Data is captured in metrics mode via didReceive delegate swizzling
-        XCTAssertNotNil(interception.data, "Data should be captured in metrics mode via didReceive swizzling")
+        // Data is captured with registered delegate via didReceive delegate swizzling
+        XCTAssertNotNil(interception.data, "Data should be captured with registered delegate via didReceive swizzling")
         XCTAssertNotNil(interception.responseSize, "Should capture response size")
         XCTAssertGreaterThan(interception.responseSize ?? 0, 0, "Response size should be greater than 0")
 
@@ -1706,7 +1706,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    func testGivenMetricsMode_whenUsingAsyncAPI_itCapturesAllValues() async throws {
+    func testGivenRegisteredDelegate_whenUsingAsyncAPI_itCapturesAllValues() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
             return
@@ -1754,7 +1754,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should record metrics for 2 tasks")
 
         handler.interceptions.forEach { id, interception in
-            XCTAssertEqual(interception.trackingMode, .metrics, "Task with registered delegate should be in metrics mode")
+            XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Task with registered delegate should use registered delegate mode")
             XCTAssertNotNil(interception.metrics, "Should capture metrics for \(id)")
             XCTAssertGreaterThan(interception.metrics?.fetch.start ?? .distantPast, dateBeforeAnyRequests)
             XCTAssertLessThan(interception.metrics?.fetch.end ?? .distantFuture, dateAfterAllRequests)
@@ -1793,13 +1793,13 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         )
     }
 
-    func testWhenEnableMetricsModeOnTheSameDelegate_thenItPrintsAWarning() throws {
+    func testWhenEnablingDurationBreakdownOnTheSameDelegate_thenItPrintsAWarning() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
-        URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
         // Then
         XCTAssertEqual(
@@ -1811,19 +1811,19 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         )
     }
 
-    func testWhenEnableMetricsModeBeforeAutomaticMode_thenItPrintsAnError() {
+    func testWhenEnablingDurationBreakdownBeforeAutomaticMode_thenItPrintsAnError() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        // When - Try to enable metrics mode without enabling automatic mode first
-        URLSessionInstrumentation.trackMetrics(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        // When - Try to enable duration breakdown without enabling automatic mode first
+        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
 
         // Then
         XCTAssertEqual(
             dd.logger.errorLog?.message,
             """
-            Metrics mode requires automatic network instrumentation to be enabled first.
-            Please enable RUM or Trace with `urlSessionTracking` parameter before enabling metrics mode.
+            Duration breakdown requires automatic network instrumentation to be enabled first.
+            Please enable RUM or Trace with `urlSessionTracking` parameter before enabling duration breakdown.
             """
         )
     }
@@ -1978,7 +1978,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
     }
 
-    func testMetricsMode_detectsFirstPartyHosts() throws {
+    func testRegisteredDelegate_detectsFirstPartyHosts() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
@@ -2138,7 +2138,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     // MARK: - Subclass Delegate Handling
 
-    func testGivenBothModesEnabled_whenUsingDelegateSubclass_itOnlyProcessesInMetricsMode() throws {
+    func testGivenBothModesEnabled_whenUsingDelegateSubclass_itOnlyProcessesWithRegisteredDelegate() throws {
         // pre iOS 15 cannot set delegate per task
         guard #available(iOS 15, tvOS 15, *) else {
             return
@@ -2146,9 +2146,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
-        // Given - Register BASE delegate class for metrics mode
+        // Given - Register BASE delegate class
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core) // Automatic mode
-        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: DelegateBaseClass.self), in: core) // Metrics mode
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: DelegateBaseClass.self), in: core) // Registered Delegate mode
 
         let session = server.getInterceptedURLSession()
 
@@ -2172,8 +2172,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let interception = try XCTUnwrap(handler.interception(for: url))
 
-        // Should use metrics mode (because subclass delegate matches registered base class via isKind(of:))
-        XCTAssertEqual(interception.trackingMode, .metrics, "Subclass delegate should be handled by metrics mode")
+        // Should use registered delegate mode (because subclass delegate matches registered base class via isKind(of:))
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate, "Subclass delegate should be handled by registered delegate mode")
         XCTAssertNotNil(interception.metrics, "Should capture metrics")
         XCTAssertEqual(interception.data?.count, 10, "Should capture data once (not duplicated, automatic capture is skipped)")
         XCTAssertEqual(interception.responseSize, 10, "Should capture response size")

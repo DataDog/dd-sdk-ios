@@ -234,6 +234,6 @@ extension TrackingMode: AnyMockable, RandomMockable {
     }
 
     public static func mockRandom() -> DatadogInternal.TrackingMode {
-        return [.automatic, .metrics].randomElement()!
+        return [.automatic, .registeredDelegate].randomElement()!
     }
 }

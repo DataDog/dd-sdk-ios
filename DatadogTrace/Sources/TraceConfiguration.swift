@@ -41,7 +41,7 @@ extension Trace {
         /// The configuration for automatic network requests tracing.
         ///
         /// For capturing additional detailed timing breakdowns (DNS, SSL, TTFB, etc.), see
-        /// `URLSessionInstrumentation.trackMetrics(with:in:)`.
+        /// `URLSessionInstrumentation.enableDurationBreakdown(with:in:)`.
         ///
         /// Note: Automatic tracing involves swizzling `URLSession` and `URLSessionTask` methods.
         ///

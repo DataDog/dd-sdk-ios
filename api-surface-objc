@@ -69,7 +69,7 @@ public final class objc_URLSessionInstrumentationFirstPartyHostsTracing: NSObjec
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>])
     public init(hosts: Set<String>)
 public final class objc_URLSessionInstrumentation: NSObject
-    public static func trackMetrics(configuration: objc_URLSessionInstrumentationConfiguration)
+    public static func enableDurationBreakdown(with configuration: objc_URLSessionInstrumentationConfiguration)
     public static func enable(configuration: objc_URLSessionInstrumentationConfiguration)
     public static func disable(delegateClass: URLSessionDataDelegate.Type)
 

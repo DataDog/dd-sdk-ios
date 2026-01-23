@@ -12,9 +12,9 @@ public enum TrackingMode {
     /// Does not capture detailed timing data.
     case automatic
 
-    /// Metrics mode: tracks tasks with registered delegate.
+    /// Registered delegate mode: tracks tasks with a delegate registered via `enableDurationBreakdown(with:)`.
     /// Captures `URLSessionTaskMetrics` for detailed timing breakdown (DNS, SSL, TTFB, etc.).
-    case metrics
+    case registeredDelegate
 }
 
 public class URLSessionTaskInterception {
@@ -25,14 +25,14 @@ public class URLSessionTaskInterception {
     public private(set) var request: ImmutableRequest
     /// Tells if the `request` is send to a 1st party host.
     public let isFirstPartyRequest: Bool
-    /// The tracking mode for this interception (automatic or metrics).
+    /// The tracking mode for this interception (automatic or registered delegate).
     internal let trackingMode: TrackingMode
     /// Task metrics collected during this interception.
     public private(set) var metrics: ResourceMetrics?
     /// Task data received during this interception.
     ///
     /// Data is collected in:
-    /// - Metrics mode: via `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)` swizzling
+    /// - Registered delegate mode: via `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)` swizzling
     /// - Automatic mode: via completion handler swizzling (only for tasks with completion handlers)
     ///
     /// Can be `nil` if:
@@ -45,7 +45,7 @@ public class URLSessionTaskInterception {
     /// This is captured via `task.countOfBytesReceived` and serves as a fallback when `metrics.responseSize` is unavailable.
     ///
     /// Priority for response size:
-    /// 1. `metrics.responseSize` - Most accurate, from `URLSessionTaskMetrics` (only available in metrics mode)
+    /// 1. `metrics.responseSize` - Most accurate, from `URLSessionTaskMetrics` (only available with registered delegate)
     /// 2. `responseSize` - Fallback from `task.countOfBytesReceived` (available in both modes)
     ///
     /// Available even when data is not captured (e.g., for tasks without completion handlers in automatic mode).
@@ -71,13 +71,13 @@ public class URLSessionTaskInterception {
     internal var endDate: Date?
 
     /// Returns the most accurate start time available.
-    /// Prefers `URLSessionTaskMetrics` timing (metrics mode) over approximate timing (automatic mode).
+    /// Prefers `URLSessionTaskMetrics` timing (registered delegate mode) over approximate timing (automatic mode).
     public var fetchStartDate: Date? {
         return metrics?.fetch.start ?? startDate
     }
 
     /// Returns the most accurate end time available.
-    /// Prefers `URLSessionTaskMetrics` timing (metrics mode) over approximate timing (automatic mode).
+    /// Prefers `URLSessionTaskMetrics` timing (registered delegate mode) over approximate timing (automatic mode).
     public var fetchEndDate: Date? {
         return metrics?.fetch.end ?? endDate
     }
@@ -150,7 +150,7 @@ public class URLSessionTaskInterception {
     ///
     /// The completion criteria depends on the tracking mode:
     /// - Automatic mode: Task is done when we have completion OR task state indicates completion.
-    /// - Metrics mode: Task is done when we have BOTH metrics AND completion.
+    /// - Registered delegate mode: Task is done when we have BOTH metrics AND completion.
     ///   We must wait for metrics to ensure detailed timing data is captured.
     public var isDone: Bool {
         switch trackingMode {
@@ -158,8 +158,8 @@ public class URLSessionTaskInterception {
             // In automatic mode, complete as soon as we have completion or state completion
             let isStateComplete = taskState == .completed
             return completion != nil || isStateComplete
-        case .metrics:
-            // In metrics mode, wait for both metrics AND completion
+        case .registeredDelegate:
+            // Registered delegate mode: wait for both metrics AND completion
             // to ensure we capture detailed timing data
             return completion != nil && metrics != nil
         }

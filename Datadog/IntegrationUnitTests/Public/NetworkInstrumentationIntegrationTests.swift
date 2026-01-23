@@ -52,7 +52,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
     func testParentSpanPropagation() throws {
         let expectation = expectation(description: "request completes")
         // Given
-        URLSessionInstrumentation.trackMetrics(
+        URLSessionInstrumentation.enableDurationBreakdown(
             with: URLSessionInstrumentation.Configuration(delegateClass: SessionDataDelegateMock.self),
             in: core
         )
@@ -114,7 +114,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
             in: core
         )
 
-        URLSessionInstrumentation.trackMetrics(
+        URLSessionInstrumentation.enableDurationBreakdown(
             with: .init(
                 delegateClass: InstrumentedSessionDelegate.self
             ),
@@ -133,7 +133,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         task.resume()
 
         wait(for: [providerExpectation], timeout: 10)
-        XCTAssertTrue(providerDataCount > 0, "Data should be available in metrics mode")
+        XCTAssertTrue(providerDataCount > 0, "Data should be available with registered delegate")
     }
 
     func testResourceAttributesProvider_givenURLSessionDataTaskRequestWithCompletionHandler() {
@@ -162,7 +162,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
             in: core
         )
 
-        URLSessionInstrumentation.trackMetrics(
+        URLSessionInstrumentation.enableDurationBreakdown(
             with: .init(
                 delegateClass: InstrumentedSessionDelegate.self
             ),

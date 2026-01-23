@@ -74,8 +74,8 @@ public enum Trace {
 
             try core.register(urlSessionHandler: urlSessionHandler)
 
-            // Enable automatic network tracking as the foundation for metrics mode.
-            // Distributed tracing requires metrics mode (enabled separately via URLSessionInstrumentation.enable)
+            // Enable automatic network tracking as the foundation for duration breakdown.
+            // Distributed tracing benefits from duration breakdown (enabled separately via URLSessionInstrumentation.enableDurationBreakdown)
             // to capture accurate timing from URLSessionTaskMetrics.
             try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
         }

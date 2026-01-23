@@ -599,7 +599,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .metrics)
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .registeredDelegate)
 
         // Create metrics with responseSize = 0
         let resourceMetrics = ResourceMetrics.mockWith(responseSize: 0)
