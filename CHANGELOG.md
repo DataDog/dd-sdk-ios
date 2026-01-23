@@ -1,10 +1,11 @@
 # Unreleased
 
+- [IMPROVEMENT] Add `DDLogEventUserInfo.anonymousId` property in ObjC API. See [#2640][]
+- [FEATURE] Support manually keeping or dropping a trace. See [#2639][]
+
 # 3.5.1 / 23-01-2025
 
 - [FIX] Fix crash in App Hangs backtrace generation. See [#2647][]
-- [IMPROVEMENT] Add `DDLogEventUserInfo.anonymousId` property in ObjC API. See [#2640][]
-- [FEATURE] Support manually keeping or dropping a trace. See [#2639][]
 
 # 3.5.0 / 12-01-2025
 
