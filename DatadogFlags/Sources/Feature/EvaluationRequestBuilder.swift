@@ -62,7 +62,7 @@ internal struct EvaluationRequestBuilder: FeatureRequestBuilder {
             geo: nil,
             device: EvaluationContext.DeviceInfo(
                 name: context.device.name,
-                type: deviceTypeString(from: context.device.type),
+                type: context.device.type.normalizedDeviceType,
                 brand: context.device.brand,
                 model: context.device.model
             ),
@@ -75,18 +75,5 @@ internal struct EvaluationRequestBuilder: FeatureRequestBuilder {
             env: context.env,
             rum: nil
         )
-    }
-
-    private func deviceTypeString(from type: DeviceInfo.DeviceType) -> String {
-        switch type {
-        case .iPhone, .iPod:
-            return "mobile"
-        case .iPad:
-            return "tablet"
-        case .appleTV:
-            return "tv"
-        case .appleVision, .appleWatch, .other:
-            return "other"
-        }
     }
 }

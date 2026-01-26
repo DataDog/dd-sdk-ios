@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal struct BatchedFlagEvaluations: Codable {
     let context: EvaluationContext?
@@ -37,7 +38,7 @@ internal struct EvaluationContext: Codable {
 
     struct DeviceInfo: Codable {
         let name: String
-        let type: String
+        let type: Device.DeviceType
         let brand: String
         let model: String
     }
