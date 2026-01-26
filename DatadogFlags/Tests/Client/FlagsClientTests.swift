@@ -252,12 +252,12 @@ final class FlagsClientTests: XCTestCase {
             )
         )
 
-        // Test exposure logging and RUM reporting
+        // Test exposure logging and RUM reporting (only successful evaluations)
         XCTAssertEqual(exposureLogger.logExposureCalls.count, 6)
         XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls.count, 6)
 
-        // Test evaluation logging
-        XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 6)
+        // Test evaluation logging (all evaluations including errors)
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 8)
         XCTAssertNil(evaluationLogger.logEvaluationCalls[0].error) // No error on successful evaluation
     }
 
