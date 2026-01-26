@@ -44,9 +44,7 @@ class EvaluationLoggingTests: XCTestCase {
         dateProvider.advance(bySeconds: 2)
         aggregator.recordEvaluation(for: "test-flag", assignment: assignment, evaluationContext: context, flagError: flagError)
 
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush { flushExpectation.fulfill() }
-        wait(for: [flushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
         let event = try XCTUnwrap(events.first)
@@ -141,12 +139,7 @@ class EvaluationLoggingTests: XCTestCase {
             flagError: nil
         )
 
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush {
-            flushExpectation.fulfill()
-        }
-
-        wait(for: [flushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then
         XCTAssertEqual(featureScope.eventsWritten.count, 2, "Should log all evaluations regardless of doLog")
@@ -289,11 +282,7 @@ class EvaluationLoggingTests: XCTestCase {
         aggregator.recordEvaluation(for: "test-flag", assignment: assignment, evaluationContext: context, flagError: nil)
         aggregator.recordEvaluation(for: "other-flag", assignment: assignment, evaluationContext: context, flagError: nil)
 
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush {
-            flushExpectation.fulfill()
-        }
-        wait(for: [flushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
@@ -450,11 +439,7 @@ class EvaluationLoggingTests: XCTestCase {
             for: "test-flag", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: "error-1"
         )
 
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush {
-            flushExpectation.fulfill()
-        }
-        wait(for: [flushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then
         XCTAssertEqual(featureScope.eventsWritten.count, 2, "Different error messages should create separate aggregations")
@@ -488,11 +473,7 @@ class EvaluationLoggingTests: XCTestCase {
             flagError: nil
         )
 
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush {
-            flushExpectation.fulfill()
-        }
-        wait(for: [flushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
@@ -527,11 +508,7 @@ class EvaluationLoggingTests: XCTestCase {
             flagError: nil
         )
 
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush {
-            flushExpectation.fulfill()
-        }
-        wait(for: [flushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
@@ -566,11 +543,7 @@ class EvaluationLoggingTests: XCTestCase {
             flagError: nil
         )
 
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush {
-            flushExpectation.fulfill()
-        }
-        wait(for: [flushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
@@ -619,11 +592,7 @@ class EvaluationLoggingTests: XCTestCase {
             flagError: "Some error occurred"
         )
 
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush {
-            flushExpectation.fulfill()
-        }
-        wait(for: [flushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
@@ -664,11 +633,7 @@ class EvaluationLoggingTests: XCTestCase {
             flagError: nil
         )
 
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush {
-            flushExpectation.fulfill()
-        }
-        wait(for: [flushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
@@ -714,11 +679,7 @@ class EvaluationLoggingTests: XCTestCase {
             flagError: nil
         )
 
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush {
-            flushExpectation.fulfill()
-        }
-        wait(for: [flushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
@@ -760,9 +721,7 @@ class EvaluationLoggingTests: XCTestCase {
         dateProvider.advance(bySeconds: 1)
         aggregator.recordEvaluation(for: "flag-1", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: nil)
 
-        let firstFlushExpectation = expectation(description: "First flush")
-        aggregator.flush { firstFlushExpectation.fulfill() }
-        wait(for: [firstFlushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then - Period 1 ends with aggregated event
         let firstPeriodEvents: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
@@ -774,9 +733,7 @@ class EvaluationLoggingTests: XCTestCase {
         dateProvider.advance(bySeconds: 10)
         aggregator.recordEvaluation(for: "flag-1", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: nil)
 
-        let secondFlushExpectation = expectation(description: "Second flush")
-        aggregator.flush { secondFlushExpectation.fulfill() }
-        wait(for: [secondFlushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then - Period 2 starts fresh
         let allEvents: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
@@ -826,11 +783,7 @@ class EvaluationLoggingTests: XCTestCase {
             flagError: nil
         )
 
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush {
-            flushExpectation.fulfill()
-        }
-        wait(for: [flushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
@@ -854,11 +807,7 @@ class EvaluationLoggingTests: XCTestCase {
             for: "test-flag", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: "evaluation error"
         )
 
-        let flushExpectation = expectation(description: "Flush completes")
-        aggregator.flush {
-            flushExpectation.fulfill()
-        }
-        wait(for: [flushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         // Then
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)

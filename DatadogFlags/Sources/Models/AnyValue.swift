@@ -82,7 +82,6 @@ extension AnyValue {
             hasher.combine(value)
         case .dictionary(let value):
             hasher.combine(4)
-            // Sort keys for deterministic hashing
             for key in value.keys.sorted() {
                 hasher.combine(key)
                 hasher.combine(value[key])
