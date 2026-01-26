@@ -98,7 +98,10 @@ class EvaluationLoggingTests: XCTestCase {
         XCTAssertEqual(url(for: .us1_fed), "https://browser-intake-ddog-gov.com/api/v2/flagevaluation")
 
         // Then - Verify Content-Type and batched schema
-        let request = try builder.request(for: events, with: .mockAny(), execution: .mockAny())
+        let contextWithRUM = DatadogContext.mockWith(
+            additionalContext: [RUMCoreContext.mockWith(applicationID: "rum-app-123")]
+        )
+        let request = try builder.request(for: events, with: contextWithRUM, execution: .mockAny())
         XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/json")
 
         let httpBodyData = try XCTUnwrap(request.httpBody)
@@ -107,6 +110,8 @@ class EvaluationLoggingTests: XCTestCase {
         XCTAssertNotNil(decodedBatch.context)
         XCTAssertEqual(decodedBatch.flagEvaluations.count, 1)
         XCTAssertEqual(decodedBatch.flagEvaluations.first?.flag.key, "test-flag")
+
+        XCTAssertEqual(decodedBatch.context?.rum?.application?.id, "rum-app-123")
     }
 
     // MARK: - EVALLOG.2: Log All Evaluations

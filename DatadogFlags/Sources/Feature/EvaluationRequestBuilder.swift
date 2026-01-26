@@ -73,7 +73,17 @@ internal struct EvaluationRequestBuilder: FeatureRequestBuilder {
             service: context.service,
             version: context.version,
             env: context.env,
-            rum: nil
+            rum: buildRumContext(from: context)
+        )
+    }
+
+    private func buildRumContext(from context: DatadogContext) -> EvaluationContext.RUMInfo? {
+        guard let rum = context.additionalContext(ofType: RUMCoreContext.self) else {
+            return nil
+        }
+        return EvaluationContext.RUMInfo(
+            application: EvaluationContext.RUMInfo.ApplicationInfo(id: rum.applicationID),
+            view: nil // viewURL not available in RUMCoreContext
         )
     }
 }
