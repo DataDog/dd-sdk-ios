@@ -153,11 +153,11 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 }
 
 extension NetworkInstrumentationFeature {
-    /// Helper structure that optionally contains a trace context and additional state, used to pass this
+    /// Helper structure that optionally contains a trace context and captured state, used to pass this
     /// information between calls.
     struct RequestInstrumentationContext {
         let traceContext: TraceContext?
-        let additionalState: DatadogURLSessionHandlerAdditionalState?
+        let capturedState: URLSessionHandlerCapturedState?
     }
 
     /// Intercepts the provided request by injecting trace headers based on first-party hosts configuration.
@@ -181,9 +181,9 @@ extension NetworkInstrumentationFeature {
         var request = request
         var instrumentationContexts: [RequestInstrumentationContext] = [] // each handler can inject distinct instrumentation context
         for handler in handlers {
-            let (nextRequest, nextTraceContext, additionalState) = handler.modify(request: request, headerTypes: headerTypes, networkContext: networkContext)
+            let (nextRequest, nextTraceContext, capturedState) = handler.modify(request: request, headerTypes: headerTypes, networkContext: networkContext)
             request = nextRequest
-            instrumentationContexts.append(.init(traceContext: nextTraceContext, additionalState: additionalState))
+            instrumentationContexts.append(.init(traceContext: nextTraceContext, capturedState: capturedState))
         }
 
         // Remove GraphQL headers before returning the modified request
@@ -237,7 +237,7 @@ extension NetworkInstrumentationFeature {
                 .forEach {
                     $0.interceptionDidStart(
                         interception: interception,
-                        additionalStates: instrumentationContexts.compactMap({ $0.additionalState })
+                        capturedStates: instrumentationContexts.compactMap({ $0.capturedState })
                     )
                 }
         }

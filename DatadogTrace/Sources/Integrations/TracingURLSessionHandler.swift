@@ -8,9 +8,9 @@ import Foundation
 import DatadogInternal
 
 internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
-    /// Additional state containing the active span, if any, at the time of the request modification for instrumentation,
+    /// Captured state containing the active span, if any, at the time of the request modification for instrumentation,
     /// obtained synchronously.
-    struct TracingURLSessionHandlerAdditionalState: DatadogURLSessionHandlerAdditionalState {
+    struct TracingURLSessionHandlerCapturedState: URLSessionHandlerCapturedState {
         /*
          Read the comments inside the modify(…), interceptionDidStart(…) and interceptionDidComplete(…)
          for details on the problem this solves, and how.
@@ -58,7 +58,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         self.traceContextInjection = traceContextInjection
     }
 
-    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, DatadogURLSessionHandlerAdditionalState?) {
+    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
         guard let tracer = tracer else {
             return (request, nil, nil)
         }
@@ -134,7 +134,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
          assume a user that is interesting in tracing a process that includes this request will
          not change the active span while this runs.
 
-         We then return it as additional state. We cannot return this in the TraceContext because
+         We then return it as captured state. We cannot return this in the TraceContext because
          if a request is not traced, there is no TraceContext.
 
          Read the comment in interceptionDidStart(…) to know how this information propagates.
@@ -143,15 +143,15 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         return (
             request,
             hasSetAnyHeader ? injectedSpanContext : nil,
-            tracer.activeSpan.map { TracingURLSessionHandlerAdditionalState(activeSpan: $0) }
+            tracer.activeSpan.map { TracingURLSessionHandlerCapturedState(activeSpan: $0) }
         )
     }
 
-    func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, additionalStates: [any DatadogURLSessionHandlerAdditionalState]) {
+    func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
         /*
-         Read the comment inside the modify(…) method to know where the additional state comes from.
+         Read the comment inside the modify(…) method to know where the captured state comes from.
 
-         If there is an additional state with the active span at the time the request was instrumented,
+         If there is an captured state with the active span at the time the request was instrumented,
          it's registered in the interception, so it can be obtained from the interceptionDidComplete
          method.
 
@@ -162,7 +162,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
          The comment inside the interceptionDidComplete(…) method explains how the registered active
          span is used.
          */
-        additionalStates.compactMap({ ($0 as? TracingURLSessionHandlerAdditionalState)?.activeSpan }).first.map {
+        capturedStates.compactMap({ ($0 as? TracingURLSessionHandlerCapturedState)?.activeSpan }).first.map {
             interception.register(activeSpanContext: $0.context)
         }
     }

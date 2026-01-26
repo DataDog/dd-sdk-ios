@@ -496,7 +496,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNil(taskInterception.trace)
 
         // When
-        handler.interceptionDidStart(interception: taskInterception, additionalStates: [])
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -540,7 +540,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNotNil(taskInterception.trace)
 
         // When
-        handler.interceptionDidStart(interception: taskInterception, additionalStates: [])
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
