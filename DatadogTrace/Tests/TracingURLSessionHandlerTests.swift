@@ -55,7 +55,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let (request, traceContext, additionalState) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -82,6 +82,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-1")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-01")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "dd=p:0000000000000064;s:1;t.dm:-1")
+        XCTAssertNil(additionalState)
 
         let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
         XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
@@ -115,7 +116,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.traceparent)
         orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.tracestate)
 
-        let (request, traceContext, _) = handler.modify(
+        let (request, traceContext, additionalState) = handler.modify(
             request: orgRequest,
             headerTypes: [
                 .datadog,
@@ -142,6 +143,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "custom")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "custom")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "custom")
+        XCTAssertNil(additionalState)
 
         XCTAssertNil(traceContext, "It must return no trace context")
     }
@@ -157,7 +159,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let (request, traceContext, additionalState) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -182,6 +184,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField))
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field))
         XCTAssertNil(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent))
+        XCTAssertNil(additionalState)
 
         XCTAssertNil(traceContext, "It must return no trace context")
     }
@@ -200,7 +203,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         span.setActive()
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let (request, traceContext, additionalState) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -228,6 +231,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "1")
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000065-1-0000000000000064")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000065-01")
+        assert(additionalState: additionalState, has: span)
 
         let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
         XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
@@ -252,7 +256,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         span.setTag(key: SpanTags.manualKeep, value: true)
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let (request, traceContext, additionalState) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -280,6 +284,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "1")
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000065-1-0000000000000064")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000065-01")
+        assert(additionalState: additionalState, has: span)
 
         let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
         XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
@@ -304,7 +309,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         span.setTag(key: SpanTags.manualDrop, value: true)
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let (request, traceContext, additionalState) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -332,6 +337,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "0")
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000065-0-0000000000000064")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000065-00")
+        assert(additionalState: additionalState, has: span)
 
         let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
         XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
@@ -356,7 +362,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         span.setTag(key: SpanTags.manualDrop, value: true)
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let (request, traceContext, additionalState) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -381,6 +387,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField))
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field))
         XCTAssertNil(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent))
+        assert(additionalState: additionalState, has: span)
 
         XCTAssertNil(traceContext, "It must return no trace context")
     }
@@ -593,5 +600,24 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5)
+    }
+
+    private func assert(additionalState: DatadogURLSessionHandlerAdditionalState?, has span: OTSpan?) {
+        guard let state = additionalState as? TracingURLSessionHandler.TracingURLSessionHandlerAdditionalState else {
+            XCTFail("Expected TracingURLSessionHandlerAdditionalState instance, got \(String(describing: additionalState))")
+            return
+        }
+
+        assertSameDDSpans(state.activeSpan, span)
+    }
+
+    private func assertSameDDSpans(_ lhs: OTSpan?, _ rhs: OTSpan?) {
+        guard let lSpan = lhs as? DDSpan,
+              let rSpan = rhs as? DDSpan,
+              lSpan === rSpan
+        else {
+            XCTFail("Expected spans to be the same DDSpan, got `\(String(describing: lhs))` and `\(String(describing: rhs))`")
+            return
+        }
     }
 }
