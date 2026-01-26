@@ -27,18 +27,18 @@ internal final class ConfigurationMetric {
     /// Number of threads covered in the process.
     let threadCoverage: Int
     /// Sampling rate in Hz.
-    let samplingInterval: Int
+    let samplingFrequency: Int
 
     init(
         bufferSize: Int = Int(SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE),
         stackDepth: Int = Int(SAMPLING_CONFIG_DEFAULT_STACK_DEPTH),
         threadCoverage: Int = Int(SAMPLING_CONFIG_DEFAULT_THREAD_COUNT),
-        samplingInterval: Int = Int(SAMPLING_CONFIG_DEFAULT_INTERVAL_HZ)
+        samplingFrequency: Int = Int(SAMPLING_CONFIG_DEFAULT_INTERVAL_HZ)
     ) {
         self.bufferSize = bufferSize
         self.stackDepth = stackDepth
         self.threadCoverage = threadCoverage
-        self.samplingInterval = samplingInterval
+        self.samplingFrequency = samplingFrequency
     }
 
     func asMetricAttributes() -> [String: Encodable]? {
@@ -51,6 +51,6 @@ extension ConfigurationMetric: Encodable {
         case bufferSize = "buffer_size"
         case stackDepth = "stack_depth"
         case threadCoverage = "thread_coverage"
-        case samplingInterval = "sampling_interval"
+        case samplingFrequency = "sampling_frequency"
     }
 }

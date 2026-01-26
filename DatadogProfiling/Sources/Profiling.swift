@@ -28,6 +28,7 @@ public enum Profiling {
     /// - Parameters:
     ///   - configuration: The profiling configuration to use.
     ///   - core: The Datadog core instance to register with. Defaults to the default core.
+    @available(*, message: "This API is experimental and may change in future releases")
     public static func enable(with configuration: Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default) {
         let telemetryController = ProfilingTelemetryController(
             sampleRate: configuration.debugSDK ? 100 : ProfilingTelemetryController.defaultSampleRate,

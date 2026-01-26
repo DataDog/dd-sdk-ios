@@ -1366,7 +1366,7 @@ public struct FlagsEvaluationContext: Equatable, Codable
 public enum Profiling
     public static func enable(with configuration: Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default)
 [?] extension Profiling
-    public struct Configuration: SampledTelemetry
+    public struct Configuration
         public var customEndpoint: URL?
-        public var sampleRate: SampleRate
-        public init(customEndpoint: URL? = nil,sampleRate: SampleRate = 10)
+        public var applicationLaunchSampleRate: SampleRate
+        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5)
