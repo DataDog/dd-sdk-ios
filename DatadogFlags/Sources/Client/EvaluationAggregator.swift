@@ -92,39 +92,25 @@ internal final class EvaluationAggregator {
             }
 
             if self.aggregations.count >= self.maxAggregations {
-                self.flush()
+                self.sendEvaluations()
             }
         }
         queue.async(execute: workItem)
     }
 
-    func flush() {
-        flush(completion: nil)
-    }
+    private func sendEvaluations() {
+        let evaluationsToSend = Array(aggregations.values)
+        aggregations.removeAll()
 
-    internal func flush(completion: (() -> Void)?) { // completion handler is for testing
-        queue.async { [weak self] in
-            guard let self = self else {
-                completion?()
-                return
+        guard !evaluationsToSend.isEmpty else {
+            return
+        }
+
+        featureScope.eventWriteContext { _, writer in
+            for aggregated in evaluationsToSend {
+                let event = aggregated.toFlagEvaluationEvent()
+                writer.write(value: event)
             }
-
-            let evaluationsToSend = Array(self.aggregations.values)
-            self.aggregations.removeAll()
-
-            guard !evaluationsToSend.isEmpty else {
-                completion?()
-                return
-            }
-
-            self.featureScope.eventWriteContext { _, writer in
-                for aggregated in evaluationsToSend {
-                    let event = aggregated.toFlagEvaluationEvent()
-                    writer.write(value: event)
-                }
-            }
-
-            completion?()
         }
     }
 
@@ -207,5 +193,13 @@ private struct AggregatedEvaluation {
             error: errorMessage.map { .init(message: $0) },
             context: eventContext
         )
+    }
+}
+
+extension EvaluationAggregator: Flushable {
+    func flush() {
+        queue.sync {
+            self.sendEvaluations()
+        }
     }
 }

@@ -28,9 +28,6 @@ class EvaluationAggregatorTests: XCTestCase {
             maxAggregations: 1_000
         )
 
-        let firstFlushExpectation = expectation(description: "First flush completes")
-        let secondFlushExpectation = expectation(description: "Second flush completes")
-
         // When - record some evaluations
         aggregator.recordEvaluation(
             for: "flag-1",
@@ -46,11 +43,7 @@ class EvaluationAggregatorTests: XCTestCase {
         )
 
         // Then - flush should send events
-        aggregator.flush {
-            firstFlushExpectation.fulfill()
-        }
-
-        wait(for: [firstFlushExpectation], timeout: 0.1)
+        aggregator.flush()
         XCTAssertEqual(featureScope.eventsWritten.count, 2)
 
         // When - record more evaluations after flush
@@ -62,11 +55,7 @@ class EvaluationAggregatorTests: XCTestCase {
         )
 
         // Then - previous aggregations were cleared, only new one exists
-        aggregator.flush {
-            secondFlushExpectation.fulfill()
-        }
-
-        wait(for: [secondFlushExpectation], timeout: 0.1)
+        aggregator.flush()
         XCTAssertEqual(featureScope.eventsWritten.count, 3, "Should have 2 from first flush + 1 from second flush")
     }
 
@@ -109,12 +98,7 @@ class EvaluationAggregatorTests: XCTestCase {
         wait(for: [expectation], timeout: 5.0)
 
         // Final flush to collect any remaining evaluations
-        let finalFlushExpectation = self.expectation(description: "Final flush completes")
-        aggregator.flush {
-            finalFlushExpectation.fulfill()
-        }
-
-        wait(for: [finalFlushExpectation], timeout: 0.1)
+        aggregator.flush()
 
         XCTAssertEqual(featureScope.eventsWritten.count, 50, "Should have written exactly one event per unique flag")
     }
