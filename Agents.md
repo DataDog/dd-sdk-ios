@@ -222,8 +222,8 @@ All source files must include the Apache License header:
 
 ## Dependencies
 
-- **PLCrashReporter**: Crash reporting (via Carthage)
-- **OpenTelemetryApi**: Distributed tracing (via SPM)
+- **KSCrash**: Crash reporting
+- **OpenTelemetryApi**: Distributed tracing
 
 Avoid adding new dependencies unless absolutely necessary (small footprint principle).
 
