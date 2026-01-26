@@ -200,7 +200,6 @@ extension FlagsClient: FlagsClientProtocol {
     }
 
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
-        let context = repository.context
         let defaultAssignment = FlagAssignment(
             allocationKey: "",
             variationKey: "",
@@ -209,7 +208,7 @@ extension FlagsClient: FlagsClientProtocol {
             doLog: false
         )
 
-        guard context != nil else {
+        guard let context = repository.context else {
             evaluationLogger.logEvaluation(
                 for: key,
                 assignment: defaultAssignment,
@@ -223,7 +222,7 @@ extension FlagsClient: FlagsClientProtocol {
             evaluationLogger.logEvaluation(
                 for: key,
                 assignment: defaultAssignment,
-                evaluationContext: context!,
+                evaluationContext: context,
                 flagError: "FLAG_NOT_FOUND"
             )
             return FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
@@ -233,7 +232,7 @@ extension FlagsClient: FlagsClientProtocol {
             evaluationLogger.logEvaluation(
                 for: key,
                 assignment: flagAssignment,
-                evaluationContext: context!,
+                evaluationContext: context,
                 flagError: "TYPE_MISMATCH"
             )
             return FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
@@ -246,7 +245,7 @@ extension FlagsClient: FlagsClientProtocol {
             reason: flagAssignment.reason
         )
 
-        trackEvaluation(key: key, assignment: flagAssignment, value: value, context: context!)
+        trackEvaluation(key: key, assignment: flagAssignment, value: value, context: context)
 
         return details
     }
