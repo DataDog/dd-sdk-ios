@@ -17,20 +17,29 @@ public protocol DatadogURLSessionHandler {
     ///   - request: The request to be modified.
     ///   - headerTypes: The types of tracing headers to inject into the request.
     ///   - networkContext: The context around the network request
-    /// - Returns: A tuple containing the modified request and the injected TraceContext. If no trace is injected (e.g., due to sampling),
-    ///            the returned request remains unmodified, and the trace context will be nil.
-    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?)
+    /// - Returns: A tuple containing the modified request, the injected TraceContext and optional additional state.
+    ///            If no trace is injected (e.g., due to sampling), the returned request remains unmodified, and the trace context will be `nil`.
+    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, DatadogURLSessionHandlerAdditionalState?)
 
     /// Notifies the handler that the interception has started.
     ///
-    /// - Parameter interception: The URLSession task interception.
-    func interceptionDidStart(interception: URLSessionTaskInterception)
+    /// - Parameters:
+    ///   - interception: The URLSession task interception.
+    ///   - additionalStates: Additional states optionally provided by the session handler.
+    func interceptionDidStart(interception: URLSessionTaskInterception, additionalStates: [any DatadogURLSessionHandlerAdditionalState])
 
     /// Notifies the handler that the interception has completed.
     ///
     /// - Parameter interception: The URLSession task interception.
     func interceptionDidComplete(interception: URLSessionTaskInterception)
 }
+
+/// Provides a way for session handlers to obtain data during the ``DatadogURLSessionHandler.modify(request:headerTypes:networkContext:)`` call
+/// and pass it to ``DatadogURLSessionHandler.interceptionDidStart(interception:additionalStates:)``.
+///
+/// This is useful when a piece of data needs to be obtained synchronously inside a session handler, and
+/// passed to the asynchronous process of setting up the interception that can run on a different thread.
+public protocol DatadogURLSessionHandlerAdditionalState { }
 
 extension DatadogCoreProtocol {
     /// Core extension for registering `URLSession` handlers.

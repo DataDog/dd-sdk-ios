@@ -55,7 +55,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -115,7 +115,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.traceparent)
         orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.tracestate)
 
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: orgRequest,
             headerTypes: [
                 .datadog,
@@ -157,7 +157,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -200,7 +200,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         span.setActive()
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -252,7 +252,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         span.setTag(key: SpanTags.manualKeep, value: true)
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -304,7 +304,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         span.setTag(key: SpanTags.manualDrop, value: true)
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -356,7 +356,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         span.setTag(key: SpanTags.manualDrop, value: true)
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,

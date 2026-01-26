@@ -155,12 +155,12 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
         interceptions.values.first { $0.request.url == url }
     }
 
-    public func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?) {
+    public func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, DatadogURLSessionHandlerAdditionalState?) {
         onRequestMutation?(request, headerTypes, networkContext)
-        return (modifiedRequest ?? request, injectedTraceContext)
+        return (modifiedRequest ?? request, injectedTraceContext, nil)
     }
 
-    public func interceptionDidStart(interception: URLSessionTaskInterception) {
+    public func interceptionDidStart(interception: URLSessionTaskInterception, additionalStates: [any DatadogURLSessionHandlerAdditionalState]) {
         onInterceptionDidStart?(interception)
         interceptions[interception.identifier] = interception
     }

@@ -69,17 +69,17 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
     // MARK: - DatadogURLSessionHandler
 
-    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?) {
+    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, DatadogURLSessionHandlerAdditionalState?) {
         distributedTracing?.modify(
             request: request,
             headerTypes: headerTypes,
             rumSessionId: networkContext?.rumContext?.sessionID,
             userId: networkContext?.userConfigurationContext?.id,
             accountId: networkContext?.accountConfigurationContext?.id
-        ) ?? (request, nil)
+        ) ?? (request, nil, nil)
     }
 
-    func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
+    func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, additionalStates: [any DatadogURLSessionHandlerAdditionalState]) {
         let url = interception.request.url?.absoluteString ?? "unknown_url"
         interception.register(origin: "rum")
 
@@ -196,7 +196,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 }
 
 extension DistributedTracing {
-    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?) -> (URLRequest, TraceContext?) {
+    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?) -> (URLRequest, TraceContext?, DatadogURLSessionHandlerAdditionalState?) {
         let traceID = traceIDGenerator.generate()
         let spanID = spanIDGenerator.generate()
 
@@ -272,7 +272,7 @@ extension DistributedTracing {
             }
         }
 
-        return (request, (hasSetAnyHeader && injectedSpanContext.samplingPriority.isKept) ? injectedSpanContext : nil)
+        return (request, (hasSetAnyHeader && injectedSpanContext.samplingPriority.isKept) ? injectedSpanContext : nil, nil)
     }
 
     func trace(from interception: DatadogInternal.URLSessionTaskInterception) -> RUMSpanContext? {
