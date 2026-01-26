@@ -147,6 +147,120 @@ class EvaluationLoggingTests: XCTestCase {
         XCTAssertEqual(featureScope.eventsWritten.count, 2, "Should log all evaluations regardless of doLog")
     }
 
+    // EVALLOG.2: Log evaluation when provider is not ready (no context set)
+    func testLogsEvaluationWhenProviderNotReady() {
+        // Given
+        let evaluationLogger = EvaluationLoggerMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(
+                state: nil // No context set - provider not ready
+            ),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: evaluationLogger,
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        // When
+        let details = client.getDetails(key: "any-flag", defaultValue: false)
+
+        // Then
+        XCTAssertEqual(details.error, .providerNotReady)
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 1, "Should log evaluation even when provider is not ready")
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls[0].flagKey, "any-flag")
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls[0].error, "PROVIDER_NOT_READY")
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls[0].context, .empty)
+    }
+
+    // EVALLOG.2: Log evaluation when flag is not found
+    func testLogsEvaluationWhenFlagNotFound() {
+        // Given
+        let evaluationLogger = EvaluationLoggerMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(
+                state: .init(
+                    flags: [:], // No flags
+                    context: .init(targetingKey: "user-123", attributes: [:]),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: evaluationLogger,
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        // When
+        let details = client.getDetails(key: "non-existent-flag", defaultValue: false)
+
+        // Then
+        XCTAssertEqual(details.error, .flagNotFound)
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 1, "Should log evaluation even when flag is not found")
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls[0].flagKey, "non-existent-flag")
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls[0].error, "FLAG_NOT_FOUND")
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls[0].assignment.reason, "DEFAULT")
+    }
+
+    // EVALLOG.2: Log evaluation when type mismatch occurs
+    func testLogsEvaluationWhenTypeMismatch() {
+        // Given
+        let evaluationLogger = EvaluationLoggerMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(
+                state: .init(
+                    flags: [
+                        "string-flag": .init(
+                            allocationKey: "alloc-1",
+                            variationKey: "var-1",
+                            variation: .string("hello"), // String type
+                            reason: "MATCH",
+                            doLog: true
+                        )
+                    ],
+                    context: .init(targetingKey: "user-123", attributes: [:]),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: evaluationLogger,
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        // When - Request as boolean (type mismatch)
+        let details: FlagDetails<Bool> = client.getDetails(key: "string-flag", defaultValue: false)
+
+        // Then
+        XCTAssertEqual(details.error, .typeMismatch)
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 1, "Should log evaluation even when type mismatch occurs")
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls[0].flagKey, "string-flag")
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls[0].error, "TYPE_MISMATCH")
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls[0].assignment.variationKey, "var-1")
+    }
+
+    // EVALLOG.2: Verify no exposure logging for error cases (only evaluation logging)
+    func testNoExposureLoggingForErrorCases() {
+        // Given
+        let exposureLogger = ExposureLoggerMock()
+        let evaluationLogger = EvaluationLoggerMock()
+        let client = FlagsClient(
+            repository: FlagsRepositoryMock(
+                state: .init(
+                    flags: [:],
+                    context: .init(targetingKey: "user-123", attributes: [:]),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: exposureLogger,
+            evaluationLogger: evaluationLogger,
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        // When
+        _ = client.getDetails(key: "non-existent-flag", defaultValue: false)
+
+        // Then
+        XCTAssertEqual(exposureLogger.logExposureCalls.count, 0, "Should NOT log exposure for flag not found")
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 1, "Should log evaluation for flag not found")
+    }
+
     // MARK: - EVALLOG.3: Aggregation
 
     // EVALLOG.3: Aggregate evaluations by flag_key, variant_key, allocation_key, targeting_key, error_message, context
