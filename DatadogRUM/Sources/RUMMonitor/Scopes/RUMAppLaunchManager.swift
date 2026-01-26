@@ -284,6 +284,17 @@ private extension RUMVitalAppLaunchEvent.Vital.AppLaunchMetric {
 }
 
 private extension ProfilingContext {
+    /**
+     * Returns the profiling status reported for app launch.
+     *
+     * Returns:
+     *  - `.running` when the profiler is actively running, or when it was manually stopped or timed out.
+     *  - `.stopped` when the profiler was not started, was sampled out, or the app launch was prewarmed.
+     *  - `.error` when the profiler encountered an error while starting or it is in an unknown status.
+     *
+     * Note: the implementation currently maps `.stopped(.manual)` and `.stopped(.timeout)` to `.running`
+     * because those cases indicate profiling collected enough samples to be associated with the launch.
+     */
     var profilingStatus: RUMVitalAppLaunchEvent.DD.Profiling.Status {
         switch self.status {
         case .running: return .running
