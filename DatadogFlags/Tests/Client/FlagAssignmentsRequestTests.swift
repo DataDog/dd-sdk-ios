@@ -25,6 +25,7 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         let context = DatadogContext.mockWith(
             clientToken: "test-token",
             env: "production",
+            sdkVersion: "3.5.1",
             additionalContext: [RUMCoreContext.mockWith(applicationID: "test-app-id")]
         )
         let customHeaders = ["X-Custom-Header": "custom-value"]
@@ -35,6 +36,10 @@ final class FlagAssignmentsRequestTests: XCTestCase {
               "env" : {
                 "dd_env" : "production",
                 "name" : "production"
+              },
+              "sdk" : {
+                "name" : "dd-sdk-ios",
+                "version" : "3.5.1"
               },
               "subject" : {
                 "targeting_attributes" : {
