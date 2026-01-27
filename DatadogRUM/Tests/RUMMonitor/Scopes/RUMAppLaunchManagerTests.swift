@@ -186,6 +186,30 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(vitalEvents.count, 0)
     }
 
+    func testTTIDCommand_isIgnoredWhenTheDurationBetweenProcessLaunchAndMainIsTooBig() throws {
+        // Given
+        let processLaunchDate = Date()
+        /// It is possible to observe large gaps between process launch and SDK initialization in sessions that are not prewarmed.
+        let runtimeLoadDate = processLaunchDate.addingTimeInterval(RUMAppLaunchManager.Constants.maxTTIDDuration)
+        mockContext = .mockWith(
+            launchInfo: .mockWith(
+                launchReason: .userLaunch,
+                processLaunchDate: processLaunchDate,
+                runtimeLoadDate: runtimeLoadDate
+            )
+        )
+        let command: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: runtimeLoadDate.addingTimeInterval(0.1)
+        )
+
+        // When
+        manager.process(command, context: mockContext, writer: mockWriter)
+
+        // Then
+        let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
+        XCTAssertEqual(vitalEvents.count, 0)
+    }
+
     func testTTIDCommand_isIgnoredWhenTheAppIsLaunchedInBackground() throws {
         // Given
         mockContext = .mockWith(launchInfo: .mockWith(launchReason: .backgroundLaunch, processLaunchDate: Date()))
@@ -386,6 +410,36 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 1)
         XCTAssertEqual(vitalEvents.first?.vital.appLaunchMetric, .ttid)
+    }
+
+    func testTTFDCommand_isIgnoredWhenTheDurationBetweenProcessLaunchAndMainIsTooBig() throws {
+        // Given
+        let processLaunchDate = Date()
+        /// It is possible to observe large gaps between process launch and SDK initialization in sessions that are not prewarmed.
+        let runtimeLoadDate = processLaunchDate.addingTimeInterval(RUMAppLaunchManager.Constants.maxTTFDDuration)
+        mockContext = .mockWith(
+            launchInfo: .mockWith(
+                launchReason: .userLaunch,
+                processLaunchDate: processLaunchDate,
+                runtimeLoadDate: runtimeLoadDate
+            )
+        )
+        // The TTFD is only reported if the TTID is available
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: runtimeLoadDate.addingTimeInterval(0.1)
+        )
+        let ttfdCommand: RUMTimeToFullDisplayCommand = .mockWith(
+            time: ttidCommand.time.addingTimeInterval(0.1)
+        )
+
+        // When
+        manager.process(ttidCommand, context: mockContext, writer: mockWriter)
+        manager.process(ttfdCommand, context: mockContext, writer: mockWriter)
+
+        // Then
+        let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
+        // Both TTID and TTFD exceed the max durations
+        XCTAssertEqual(vitalEvents.count, 0)
     }
 
     func testTTFDCommand_isIgnoredWhenTheAppIsLaunchedInBackground() throws {

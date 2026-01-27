@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Add `DatadogProfiling` module to profile app launches. See [#2654][]
 - [IMPROVEMENT] Add `DDLogEventUserInfo.anonymousId` property in ObjC API. See [#2640][]
 - [FEATURE] Support manually keeping or dropping a trace. See [#2639][]
 
@@ -29,7 +30,7 @@
 
 - [FIX] Fix tracing header injection for sampled out requests. See [#2473][]
 - [FIX] Remove GraphQL headers from request after processing it. See [#2566][]
-- [FEATURE] Support errors for GraphQL requests. See [#2552]
+- [FEATURE] Support errors for GraphQL requests. See [#2552][]
 
 # 3.2.0 / 30-10-2025
 
@@ -1029,6 +1030,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2647]: https://github.com/DataDog/dd-sdk-ios/pull/2647
 [#2640]: https://github.com/DataDog/dd-sdk-ios/pull/2640
 [#2639]: https://github.com/DataDog/dd-sdk-ios/pull/2639
+[#2654]: https://github.com/DataDog/dd-sdk-ios/pull/2654 
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

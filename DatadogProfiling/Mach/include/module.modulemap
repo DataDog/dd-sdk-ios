@@ -1,0 +1,25 @@
+module DatadogMachProfiler {
+  header "mach_profiler.h"
+  header "ctor_profiler.h"
+  header "dd_pprof.h"
+  export *
+
+  explicit module Cxx {
+      requires cplusplus
+      header "mach_sampling_profiler.h"
+      header "profile.h"
+      header "profile_pprof_packer.h"
+      export *
+  }
+
+  explicit module Pprof {
+      header "profile.pb-c.h"
+      export *
+  }
+
+  explicit module Testing {
+      header "ctor_profiler_testing.h"
+      header "safe_read_testing.h"
+      export *
+  }
+}

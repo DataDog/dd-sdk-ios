@@ -1358,3 +1358,15 @@ public struct FlagsEvaluationContext: Equatable, Codable
     public let targetingKey: String
     public let attributes: [String: AnyValue]
     public init(targetingKey: String, attributes: [String: AnyValue] = [:])
+
+# ----------------------------------
+# API surface for DatadogProfiling:
+# ----------------------------------
+
+public enum Profiling
+    public static func enable(with configuration: Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default)
+[?] extension Profiling
+    public struct Configuration
+        public var customEndpoint: URL?
+        public var applicationLaunchSampleRate: SampleRate
+        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5)

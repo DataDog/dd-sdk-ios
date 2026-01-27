@@ -111,12 +111,26 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
     /// events to this stack.
     public var events: [Encodable] { writer.events }
 
+    /// Recorded metadata from feature scopes.
+    ///
+    /// Invoking the `writer` from the `eventWriteContext` will add
+    /// events to this stack.
+    public var metadata: [Encodable] { writer.metadata }
+
     /// Returns all events of the given type.
     ///
     /// - Parameter type: The event type to retrieve.
     /// - Returns: A list of event of the give type.
     public func events<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
         writer.events(ofType: type)
+    }
+
+    /// Returns all metadata of the given type.
+    ///
+    /// - Parameter type: The metadata type to retrieve.
+    /// - Returns: A list of metadata of the give type.
+    public func metadata<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
+        writer.metadata(ofType: type)
     }
 
     public func mostRecentModifiedFileAt(before: Date) throws -> Date? {

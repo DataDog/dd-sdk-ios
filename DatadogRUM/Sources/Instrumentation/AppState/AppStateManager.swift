@@ -134,7 +134,7 @@ internal final class AppStateManager: AppStateManaging {
 
     /// Reads the app state from the data store asynchronously.
     /// - Parameter completion: The completion block called with the app state.
-    private func readAppState(completion: @escaping (AppStateInfo?) -> Void) {
+    func readAppState(completion: @escaping (AppStateInfo?) -> Void) {
         featureScope.rumDataStore.value(forKey: .appStateKey) { (state: AppStateInfo?) in
             DD.logger.debug("Reading app state from data store.")
             completion(state)

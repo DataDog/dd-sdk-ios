@@ -40,7 +40,7 @@ class SendingCrashReportTests: XCTestCase {
         core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
     }
 
-        override func tearDownWithError() throws {
+    override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
         super.tearDown()
