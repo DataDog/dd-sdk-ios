@@ -41,7 +41,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.datadog],
             networkContext: NetworkContext(
@@ -82,7 +82,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.b3],
             networkContext: NetworkContext(
@@ -119,7 +119,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.b3multi],
             networkContext: NetworkContext(
@@ -159,7 +159,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.tracecontext],
             networkContext: NetworkContext(
@@ -196,7 +196,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.datadog],
             networkContext: NetworkContext(
@@ -228,7 +228,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.b3],
             networkContext: NetworkContext(
@@ -258,7 +258,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.b3multi],
             networkContext: NetworkContext(
@@ -291,7 +291,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.tracecontext],
             networkContext: NetworkContext(
@@ -336,7 +336,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let initialBaggageHeaderValue = "custom=12"
         orgRequest.setValue(initialBaggageHeaderValue, forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
-        let (request, _) = handler.modify(
+        let (request, _, _) = handler.modify(
             request: orgRequest,
             headerTypes: [
                 .datadog,
@@ -395,7 +395,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.tracestate)
         orgRequest.setValue("custom=12", forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: orgRequest,
             headerTypes: [
                 .b3,
@@ -454,7 +454,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.tracestate)
         orgRequest.setValue("custom=12", forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
-        let (request, traceContext) = handler.modify(
+        let (request, traceContext, _) = handler.modify(
             request: orgRequest,
             headerTypes: [
                 .b3,
@@ -496,7 +496,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNil(taskInterception.trace)
 
         // When
-        handler.interceptionDidStart(interception: taskInterception)
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -540,7 +540,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNotNil(taskInterception.trace)
 
         // When
-        handler.interceptionDidStart(interception: taskInterception)
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -713,7 +713,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
         let request: URLRequest = .mockWith(httpMethod: "GET")
-        let (modifiedRequest, _) = handler.modify(
+        let (modifiedRequest, _, _) = handler.modify(
             request: request,
             headerTypes: [.datadog, .tracecontext, .b3, .b3multi],
             networkContext: NetworkContext(
@@ -761,7 +761,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         request.setValue("custom.key=custom.value,another.key=another.value", forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
         // When
-        let (modifiedRequest, _) = handler.modify(
+        let (modifiedRequest, _, _) = handler.modify(
             request: request,
             headerTypes: [.datadog],
             networkContext: NetworkContext(
@@ -798,7 +798,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         request.setValue("custom.key=custom.value,session.id=old.session.id", forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
         // When
-        let (modifiedRequest, _) = handler.modify(
+        let (modifiedRequest, _, _) = handler.modify(
             request: request,
             headerTypes: [.tracecontext],
             networkContext: NetworkContext(
@@ -837,7 +837,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         request.setValue(" toto=1,car= Dacia Sandero ,session.id = 2,testProp=1; testProp2=4;prop3 ", forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
         // When
-        let (modifiedRequest, _) = handler.modify(
+        let (modifiedRequest, _, _) = handler.modify(
             request: request,
             headerTypes: [.tracecontext],
             networkContext: NetworkContext(
@@ -888,7 +888,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let request = URLRequest.mockWith(url: "https://www.example.com")
 
         // When
-        let (modifiedRequest, _) = handler.modify(
+        let (modifiedRequest, _, _) = handler.modify(
             request: request,
             headerTypes: [.tracecontext],
             networkContext: NetworkContext(
@@ -921,7 +921,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         request.setValue("custom.key=custom.value", forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
         // When
-        let (modifiedRequest, _) = handler.modify(
+        let (modifiedRequest, _, _) = handler.modify(
             request: request,
             headerTypes: [.datadog, .tracecontext], // Both inject baggage headers
             networkContext: NetworkContext(
@@ -966,7 +966,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         mockRequest.setValue("query GetUser($userId: ID!) { user(id: $userId) { name } }", forHTTPHeaderField: ExpectedGraphQLHeaders.payload)
 
         // When
-        let (_, traceContext) = handler.modify(
+        let (_, traceContext, _) = handler.modify(
             request: mockRequest,
             headerTypes: [.datadog],
             networkContext: NetworkContext(
@@ -1097,7 +1097,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // When - Make multiple requests with the same session ID
         var samplingDecisions: [SamplingPriority] = []
         for _ in 1...10 {
-            let (_, traceContext) = handler.modify(
+            let (_, traceContext, _) = handler.modify(
                 request: .mockWith(url: "https://www.example.com"),
                 headerTypes: [.datadog],
                 networkContext: NetworkContext(

@@ -8,6 +8,18 @@ import Foundation
 import DatadogInternal
 
 internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
+    /// Captured state containing the active span, if any, at the time of the request modification for instrumentation,
+    /// obtained synchronously.
+    struct TracingURLSessionHandlerCapturedState: URLSessionHandlerCapturedState {
+        /*
+         Read the comments inside the modify(…), interceptionDidStart(…) and interceptionDidComplete(…)
+         for details on the problem this solves, and how.
+         */
+
+        /// The active span at the time of request instrumentation, if any, `nil` otherwise.
+        let activeSpan: OTSpan?
+    }
+
     /// Integration with Core Context.
     let contextReceiver: ContextMessageReceiver
     /// First party hosts defined by the user.
@@ -46,9 +58,9 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         self.traceContextInjection = traceContextInjection
     }
 
-    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?) {
+    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
         guard let tracer = tracer else {
-            return (request, nil)
+            return (request, nil, nil)
         }
 
         // Use the current active span as parent if the propagation headers support it.
@@ -101,29 +113,57 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             }
         }
 
-        return (request, hasSetAnyHeader ? injectedSpanContext : nil)
-    }
-
-    func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
         /*
          A note about how the active span context is registered: the order these three methods
-         is called is modify(…), immediately followed by interceptionDidStart(…) (synchronously) and
-         later interceptionDidComplete(…), asynchronously, after the session task completes.
+         is called is modify(…) (synchronously), followed by interceptionDidStart(…) and
+         interceptionDidComplete(…), both asynchronously.
 
-         Modify(…) is where the TraceContext is created and may be returned from. However, if the
-         span is not sampled, and TraceContextInjection is configured for .sampled (the default
-         config at the time of writing), there is no propagation through headers not injected
-         context, so modify returns nil.
+         Modify (this method) is where the TraceContext is created and may be returned from.
+         However, if the span is not sampled, and TraceContextInjection is configured for .sampled
+         (the default config at the time of writing), there is no propagation through headers nor
+         injected context, so modify returns nil.
 
          Therefore, there is the need to keep track of the active span, if any, in a different
          way, so we can associate the child span created in this session handler, and treat
          it properly (usually that means setting the same sampling priority as the parent and
          in the case the parent is dropped, drop the new span as well).
 
-         To do that, we register a possible active span context in the interception from here.
-         The comment inside the interceptionDidComplete(…) method explains how this is used.
+         The first step is to obtain it here, in the only session handler function that runs
+         synchronously with the request. Although it's true users may change the active span
+         from any other thread, this is the most accurate place to obtain it, and we have to
+         assume a user that is interesting in tracing a process that includes this request will
+         not change the active span while this runs.
+
+         We then return it as captured state. We cannot return this in the TraceContext because
+         if a request is not traced, there is no TraceContext.
+
+         Read the comment in interceptionDidStart(…) to know how this information propagates.
          */
-        tracer?.activeSpan.map {
+
+        return (
+            request,
+            hasSetAnyHeader ? injectedSpanContext : nil,
+            tracer.activeSpan.map { TracingURLSessionHandlerCapturedState(activeSpan: $0) }
+        )
+    }
+
+    func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
+        /*
+         Read the comment inside the modify(…) method to know where the captured state comes from.
+
+         If there is an captured state with the active span at the time the request was instrumented,
+         it's registered in the interception, so it can be obtained from the interceptionDidComplete
+         method.
+
+         Note this method (interceptionDidStart) runs on a background thread, so obtaining the active
+         span here would be inaccurate, as this method can run much later, even after the request
+         is finished.
+
+         The comment inside the interceptionDidComplete(…) method explains how the registered active
+         span is used.
+         */
+        // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
+        capturedStates.compactMap({ ($0 as? TracingURLSessionHandlerCapturedState)?.activeSpan }).first.map {
             interception.register(activeSpanContext: $0.context)
         }
     }
@@ -142,9 +182,11 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         let span: OTSpan
 
         /*
+         Read the comments inside the modify(…) and interceptionDidStart(…) methods to know where
+         and how the information used below is obtained.
+
          We need to create a new span here. Some of the span specifics depends on what
-         happen before, in the modify and interceptionDidStart(…) methods. Read the comment
-         in interceptionDidStart(…) for an introduction.
+         happen before, in the modify(…) and interceptionDidStart(…) methods.
 
          The first case is when we have a trace context in the interception. This means
          we propagated information through the headers of the request. In that case, we
