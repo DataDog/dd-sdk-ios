@@ -160,12 +160,32 @@ internal class RUMResourceScope: RUMScope {
         if let metrics = resourceMetrics {
             resourceStartTime = metrics.fetch.start
             resourceDuration = metrics.fetch.end.timeIntervalSince(metrics.fetch.start)
-            size = metrics.responseSize ?? command.size
+            size = metrics.responseBodySize?.decoded ?? command.size
         } else {
             resourceStartTime = resourceLoadingStartTime
             resourceDuration = command.time.timeIntervalSince(resourceLoadingStartTime)
             size = command.size
         }
+
+        let encodedBodySize: Int64? = {
+            guard let metrics = resourceMetrics else {
+                return nil
+            }
+            let requestEncoded = metrics.requestBodySize?.encoded ?? 0
+            let responseEncoded = metrics.responseBodySize?.encoded ?? 0
+            let total = requestEncoded + responseEncoded
+            return total > 0 ? total : nil
+        }()
+
+        let decodedBodySize: Int64? = {
+            guard let metrics = resourceMetrics else {
+                return nil
+            }
+            let requestDecoded = metrics.requestBodySize?.decoded ?? 0
+            let responseDecoded = metrics.responseBodySize?.decoded ?? 0
+            let total = requestDecoded + responseDecoded
+            return total > 0 ? total : nil
+        }()
 
         // Write resource event
         let resourceEvent = RUMResourceEvent(
@@ -207,7 +227,7 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).dd.toInt64Nanoseconds
                     )
                 },
-                decodedBodySize: nil,
+                decodedBodySize: decodedBodySize,
                 deliveryType: nil,
                 dns: resourceMetrics?.dns.map { metric in
                     .init(
@@ -222,7 +242,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 duration: resolveResourceDuration(resourceDuration),
-                encodedBodySize: nil,
+                encodedBodySize: encodedBodySize,
                 firstByte: resourceMetrics?.firstByte.map { metric in
                     .init(
                         duration: metric.duration.dd.toInt64Nanoseconds,
