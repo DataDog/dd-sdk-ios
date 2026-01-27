@@ -162,6 +162,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
          The comment inside the interceptionDidComplete(…) method explains how the registered active
          span is used.
          */
+        // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
         capturedStates.compactMap({ ($0 as? TracingURLSessionHandlerCapturedState)?.activeSpan }).first.map {
             interception.register(activeSpanContext: $0.context)
         }

@@ -179,6 +179,8 @@ extension NetworkInstrumentationFeature {
 
         let networkContext = self.networkContextProvider.currentNetworkContext
         var request = request
+
+        // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
         var instrumentationContexts: [RequestInstrumentationContext] = [] // each handler can inject distinct instrumentation context
         for handler in handlers {
             let (nextRequest, nextTraceContext, capturedState) = handler.modify(request: request, headerTypes: headerTypes, networkContext: networkContext)
