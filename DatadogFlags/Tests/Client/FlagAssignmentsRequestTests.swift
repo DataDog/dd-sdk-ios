@@ -37,9 +37,9 @@ final class FlagAssignmentsRequestTests: XCTestCase {
                 "dd_env" : "production",
                 "name" : "production"
               },
-              "sdk" : {
-                "name" : "dd-sdk-ios",
-                "version" : "3.5.1"
+              "source" : {
+                "sdk_name" : "dd-sdk-ios",
+                "sdk_version" : "3.5.1"
               },
               "subject" : {
                 "targeting_attributes" : {
