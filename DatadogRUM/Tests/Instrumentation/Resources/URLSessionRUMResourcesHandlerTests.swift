@@ -586,7 +586,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.attributes.count, 0)
         XCTAssertEqual(resourceStopCommand.kind, RUMResourceType(response: response))
         XCTAssertEqual(resourceStopCommand.httpStatusCode, 200)
-        XCTAssertEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize)
+        XCTAssertEqual(resourceStopCommand.size, taskInterception.metrics?.responseBodySize?.decoded)
     }
 
     func testGivenTaskInterceptionWithMetricsAndError_whenInterceptionCompletes_itStopsRUMResourceWithErrorAndMetrics() throws {

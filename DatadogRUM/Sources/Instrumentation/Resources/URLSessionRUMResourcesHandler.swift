@@ -155,7 +155,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
                     attributes: combinedAttributes,
                     kind: RUMResourceType(response: httpResponse),
                     httpStatusCode: httpResponse.statusCode,
-                    size: interception.metrics?.responseSize
+                    size: interception.metrics?.responseBodySize?.decoded
                 )
             )
         }

@@ -143,6 +143,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResourceInCITest_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -225,6 +227,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.ciTest?.testExecutionId, fakeCiTestId)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResourceInSyntheticsTest_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -309,6 +313,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.synthetics?.testId, fakeSyntheticsTestId)
         XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResourceWithSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -338,6 +344,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.traceId, "64")
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.rulePsr, 0.42)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResourceWithoutSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -363,6 +371,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.dd.traceId)
         XCTAssertNil(event.dd.spanId)
         XCTAssertNil(event.dd.rulePsr)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenConfiguredSoruce_whenResourceLoadingEnds_itSendsResourceEventWithCorrecSource() throws {
@@ -402,6 +412,8 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.source, .init(rawValue: customSource))
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithNegativeDuration_itSendsResourceEventWithPositiveDuration() throws {
@@ -468,6 +480,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEventWithCustomSpanAndTraceId() throws {
@@ -533,6 +547,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
@@ -939,7 +955,7 @@ class RUMResourceScopeTests: XCTestCase {
                     start: resourceFetchStart.addingTimeInterval(9),
                     end: resourceFetchStart.addingTimeInterval(10)
                 ),
-                responseSize: 2_048
+                responseBodySize: (encoded: 1_500, decoded: 2_048)
             )
         )
 
@@ -1000,6 +1016,71 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        // Body size metrics (only response body size was provided)
+        XCTAssertEqual(event.resource.encodedBodySize, 1_500)
+        XCTAssertEqual(event.resource.decodedBodySize, 2_048)
+    }
+
+    func testGivenStartedResource_whenResourceReceivesMetricsWithRequestAndResponseBodySizes_itAggregatesThemInSentResourceEvent() throws {
+        guard #available(iOS 13, tvOS 13, *) else {
+            return
+        }
+
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        let resourceFetchStart = Date()
+        let metricsCommand = RUMAddResourceMetricsCommand(
+            resourceKey: "/resource/1",
+            time: currentTime,
+            attributes: [:],
+            metrics: .mockWith(
+                fetch: .init(
+                    start: resourceFetchStart,
+                    end: resourceFetchStart.addingTimeInterval(10)
+                ),
+                requestBodySize: (encoded: 512, decoded: 1_024),
+                responseBodySize: (encoded: 1_536, decoded: 2_048)
+            )
+        )
+
+        XCTAssertTrue(scope.process(command: metricsCommand, context: context, writer: writer))
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [:],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        // encodedBodySize = request encoded (512) + response encoded (1536) = 2048
+        XCTAssertEqual(event.resource.encodedBodySize, 2_048, "Encoded body size should aggregate request and response")
+        // decodedBodySize = request decoded (1024) + response decoded (2048) = 3072
+        XCTAssertEqual(event.resource.decodedBodySize, 3_072, "Decoded body size should aggregate request and response")
     }
 
     func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {
@@ -1100,6 +1181,8 @@ class RUMResourceScopeTests: XCTestCase {
         let providerDomain = try XCTUnwrap(event.resource.provider?.domain)
         XCTAssertEqual(providerType, .firstParty)
         XCTAssertEqual(providerDomain, "firstparty.com")
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedThirdartyResource_whenResourceLoadingEnds_itSendsResourceEventWithoutResourceProvider() throws {
@@ -1130,6 +1213,8 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertNil(event.resource.provider)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedFirstPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithFirstPartyProvider() throws {
