@@ -257,7 +257,10 @@ public extension OTSpan
 public extension OTSpan
     func setError(_ error: Error,file: StaticString = #fileID,line: UInt = #line)
     func setError(kind: String,message: String,stack: String = "",file: StaticString = #fileID,line: UInt = #line)
-public protocol OTSpanContext
+public extension OTSpan
+    func keepTrace()
+    func dropTrace()
+public protocol OTSpanContext: SpanContext
     func forEachBaggageItem(callback: (_ key: String, _ value: String) -> Bool)
 public protocol OTTracer
     func startSpan(operationName: String,references: [OTReference]?,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
@@ -319,6 +322,8 @@ public enum SpanTags
     public static let resource = "resource.name"
     public static let operation = "operation.name"
     public static let service = "service.name"
+    public static let manualDrop = "manual.drop"
+    public static let manualKeep = "manual.keep"
 public class Tracer
     public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> OTTracer
 
@@ -1353,3 +1358,15 @@ public struct FlagsEvaluationContext: Equatable, Codable
     public let targetingKey: String
     public let attributes: [String: AnyValue]
     public init(targetingKey: String, attributes: [String: AnyValue] = [:])
+
+# ----------------------------------
+# API surface for DatadogProfiling:
+# ----------------------------------
+
+public enum Profiling
+    public static func enable(with configuration: Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default)
+[?] extension Profiling
+    public struct Configuration
+        public var customEndpoint: URL?
+        public var applicationLaunchSampleRate: SampleRate
+        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5)

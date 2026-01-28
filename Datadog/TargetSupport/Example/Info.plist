@@ -2,12 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CustomLogsURL</key>
-	<string>$(CUSTOM_LOGS_URL)</string>
-	<key>CustomTraceURL</key>
-	<string>$(CUSTOM_TRACE_URL)</string>
-	<key>CustomRUMURL</key>
-	<string>$(CUSTOM_RUM_URL)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -24,8 +18,19 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>CustomLogsURL</key>
+	<string>$(CUSTOM_LOGS_URL)</string>
+	<key>CustomRUMURL</key>
+	<string>$(CUSTOM_RUM_URL)</string>
+	<key>CustomTraceURL</key>
+	<string>$(CUSTOM_TRACE_URL)</string>
 	<key>DatadogClientToken</key>
 	<string>$(DATADOG_CLIENT_TOKEN)</string>
+	<key>DatadogProfiling</key>
+	<dict>
+		<key>AppLaunchProfileSampleRate</key>
+		<integer>100</integer>
+	</dict>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

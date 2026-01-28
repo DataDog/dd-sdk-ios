@@ -11,3 +11,4 @@ builder:
         - DatadogCrashReporting iOS
         - DatadogWebViewTracking iOS
         - DatadogFlags iOS
+        - DatadogProfiling iOS

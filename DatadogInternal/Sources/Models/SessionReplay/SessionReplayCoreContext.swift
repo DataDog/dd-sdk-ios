@@ -37,4 +37,27 @@ public enum SessionReplayCoreContext {
             self.value = value
         }
     }
+
+    /// The Session Replay configuration.
+    public struct Configuration: AdditionalContext {
+        public static let key = "sr_configuration"
+
+        /// The sample rate for session replay.
+        public let sampleRate: SampleRate
+        /// Whether session replay recording should be started manually.
+        public let startRecordingManually: Bool
+
+        /// Creates a Session Replay configuration.
+        ///
+        /// - Parameters:
+        ///   - sampleRate: The sample rate for session replay.
+        ///   - startRecordingManually: Whether session replay recording should be started manually.
+        public init(
+            sampleRate: SampleRate,
+            startRecordingManually: Bool
+        ) {
+            self.sampleRate = sampleRate
+            self.startRecordingManually = startRecordingManually
+        }
+    }
 }

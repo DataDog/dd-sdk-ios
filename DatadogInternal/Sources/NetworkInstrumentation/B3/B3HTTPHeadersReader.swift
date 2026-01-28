@@ -43,13 +43,24 @@ public class B3HTTPHeadersReader: TracePropagationHeadersReader {
         return nil
     }
 
-    public var sampled: Bool? {
+    public var samplingPriority: SamplingPriority? {
         if let single = httpHeaderFields[B3HTTPHeaders.Single.b3Field] {
-            return single.components(separatedBy: B3HTTPHeaders.Constants.b3Separator).dd[safe: 2] != B3HTTPHeaders.Constants.unsampledValue
+            // A deny decision can be encoded as a single zero, per
+            // https://github.com/openzipkin/b3-propagation
+            if single == "0" {
+                return .autoDrop
+            }
+            let sampled = single.components(separatedBy: B3HTTPHeaders.Constants.b3Separator).dd[safe: 2] != B3HTTPHeaders.Constants.unsampledValue
+            return sampled ? .autoKeep : .autoDrop
         } else if let multiple = httpHeaderFields[B3HTTPHeaders.Multiple.sampledField] {
-            return multiple == B3HTTPHeaders.Constants.sampledValue
+            let sampled = multiple == B3HTTPHeaders.Constants.sampledValue
+            return sampled ? .autoKeep : .autoDrop
         }
 
         return nil
+    }
+
+    public var samplingDecisionMaker: SamplingMechanismType? {
+        nil
     }
 }

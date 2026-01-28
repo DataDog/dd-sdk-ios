@@ -9,6 +9,7 @@ import DatadogRUM
 import DatadogSessionReplay // it should compile for iOS and tvOS, but APIs are only available on iOS
 import DatadogTrace
 import DatadogFlags
+import DatadogProfiling
 import OpenTelemetryApi
 
 internal class ViewController: UIViewController {

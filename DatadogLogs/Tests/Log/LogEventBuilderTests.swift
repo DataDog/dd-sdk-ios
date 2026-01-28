@@ -29,6 +29,8 @@ class LogEventBuilderTests: XCTestCase {
         let randomName: String = .mockRandom()
         let randomModel: String = .mockRandom()
         let randomArchitecture: String = .mockRandom()
+        let randomProcessorCount: Double = .mockRandom()
+        let randomTotalRam: Double = .mockRandom()
 
         // Given
         let builder = LogEventBuilder(
@@ -53,7 +55,9 @@ class LogEventBuilderTests: XCTestCase {
                 device: .mockWith(
                     name: randomName,
                     model: randomModel,
-                    architecture: randomArchitecture
+                    architecture: randomArchitecture,
+                    logicalCpuCount: randomProcessorCount,
+                    totalRam: randomTotalRam
                 ),
                 os: .mockWith(
                     name: randomOsName,
@@ -81,6 +85,8 @@ class LogEventBuilderTests: XCTestCase {
             XCTAssertEqual(log.device.name, randomName)
             XCTAssertEqual(log.device.model, randomModel)
             XCTAssertEqual(log.device.architecture, randomArchitecture)
+            XCTAssertEqual(log.device.logicalCpuCount, randomProcessorCount)
+            XCTAssertEqual(log.device.totalRam, randomTotalRam)
             XCTAssertEqual(log.os.name, randomOsName)
             XCTAssertEqual(log.os.version, randomOsVersion)
             XCTAssertEqual(log.os.build, randomOsBuildNumber)
@@ -107,6 +113,8 @@ class LogEventBuilderTests: XCTestCase {
         let randomModel: String = .mockRandom()
         let randomOSVersion: String = .mockRandom()
         let randomOSBuild: String = .mockRandom()
+        let randomProcessorCount: Double = .mockRandom()
+        let randomTotalRam: Double = .mockRandom()
 
         let randomSDKContext: DatadogContext = .mockWith(
             env: randomEnvironment,
@@ -116,7 +124,9 @@ class LogEventBuilderTests: XCTestCase {
             serverTimeOffset: randomServerOffset,
             device: .mockWith(
                 name: randomName,
-                model: randomModel
+                model: randomModel,
+                logicalCpuCount: randomProcessorCount,
+                totalRam: randomTotalRam
             ),
             os: .mockWith(
                 version: randomOSVersion,
@@ -164,6 +174,8 @@ class LogEventBuilderTests: XCTestCase {
             XCTAssertEqual(log.device.brand, "Apple")
             XCTAssertEqual(log.device.name, randomName)
             XCTAssertEqual(log.device.model, randomModel)
+            XCTAssertEqual(log.device.logicalCpuCount, randomProcessorCount)
+            XCTAssertEqual(log.device.totalRam, randomTotalRam)
             XCTAssertEqual(log.os.version, randomOSVersion)
             XCTAssertEqual(log.os.build, randomOSBuild)
             expectation.fulfill()

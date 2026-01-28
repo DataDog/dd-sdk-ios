@@ -36,7 +36,7 @@ internal struct DistributedTracing {
 internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RUMCommandPublisher {
     /// The date provider
     let dateProvider: DateProvider
-    /// DistributinTracing
+    /// DistributedTracing
     let distributedTracing: DistributedTracing?
     /// Attributes-providing callback.
     /// It is configured by the user and should be used to associate additional RUM attributes with intercepted RUM Resource.
@@ -69,17 +69,17 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
     // MARK: - DatadogURLSessionHandler
 
-    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?) {
+    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
         distributedTracing?.modify(
             request: request,
             headerTypes: headerTypes,
             rumSessionId: networkContext?.rumContext?.sessionID,
             userId: networkContext?.userConfigurationContext?.id,
             accountId: networkContext?.accountConfigurationContext?.id
-        ) ?? (request, nil)
+        ) ?? (request, nil, nil)
     }
 
-    func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
+    func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
         let url = interception.request.url?.absoluteString ?? "unknown_url"
         interception.register(origin: "rum")
 
@@ -196,7 +196,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 }
 
 extension DistributedTracing {
-    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?) -> (URLRequest, TraceContext?) {
+    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
         let traceID = traceIDGenerator.generate()
         let spanID = spanIDGenerator.generate()
 
@@ -214,7 +214,8 @@ extension DistributedTracing {
             spanID: spanID,
             parentSpanID: nil,
             sampleRate: samplingRate,
-            isKept: sampler.sample(),
+            samplingPriority: sampler.sample() ? .autoKeep : .autoDrop,
+            samplingDecisionMaker: .agentRate,
             rumSessionId: rumSessionId,
             userId: userId,
             accountId: accountId,
@@ -271,7 +272,7 @@ extension DistributedTracing {
             }
         }
 
-        return (request, (hasSetAnyHeader && injectedSpanContext.isKept) ? injectedSpanContext : nil)
+        return (request, (hasSetAnyHeader && injectedSpanContext.samplingPriority.isKept) ? injectedSpanContext : nil, nil)
     }
 
     func trace(from interception: DatadogInternal.URLSessionTaskInterception) -> RUMSpanContext? {

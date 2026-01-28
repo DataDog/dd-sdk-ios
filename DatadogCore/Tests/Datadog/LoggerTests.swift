@@ -42,7 +42,9 @@ class LoggerTests: XCTestCase {
             device: .mockWith(
                 name: "Device Name",
                 model: "Model Name",
-                architecture: "testArch"
+                architecture: "testArch",
+                logicalCpuCount: 4,
+                totalRam: 4_096
             ),
             os: .mockWith(
                 name: "testOS",
@@ -78,10 +80,12 @@ class LoggerTests: XCTestCase {
             "brightness_level": 0.5,
             "locale": "en-US",
             "locales": ["en"],
+            "logical_cpu_count": 4,
             "name": "Device Name",
             "model": "Model Name",
             "power_saving_mode": 0,
             "time_zone": "Europe/Paris",
+            "total_ram": 4096,
             "type": "other"
           },
           "service" : "default-service-name",

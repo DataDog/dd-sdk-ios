@@ -168,6 +168,7 @@ public class objc_LogEventUserInfo: NSObject
     public var id: String?
     public var name: String?
     public var email: String?
+    public var anonymousId: String?
     public var extraInfo: [String: Any]
 public class objc_LogEventAccountInfo: NSObject
     public var id: String
@@ -270,6 +271,8 @@ public protocol objc_OTSpan
     func getBaggageItem(_ key: String) -> String?
     func setError(_ error: Error)
     func setError(kind: String, message: String, stack: String?)
+    func keepTrace()
+    func dropTrace()
     func finish()
     func finishWithTime(_ finishTime: Date?)
     func setActive() -> objc_OTSpan
@@ -504,13 +507,13 @@ public class objc_RUMActionEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
-    public var isLowRamDevice: NSNumber?
+    public var isLowRam: NSNumber?
     public var locale: String?
     public var locales: [String]?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
-    public var processorCount: NSNumber?
     public var timeZone: String?
     public var totalRam: NSNumber?
     public var type: objc_RUMActionEventDeviceDeviceType
@@ -690,13 +693,13 @@ public class objc_RUMErrorEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
-    public var isLowRamDevice: NSNumber?
+    public var isLowRam: NSNumber?
     public var locale: String?
     public var locales: [String]?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
-    public var processorCount: NSNumber?
     public var timeZone: String?
     public var totalRam: NSNumber?
     public var type: objc_RUMErrorEventDeviceDeviceType
@@ -1022,13 +1025,13 @@ public class objc_RUMLongTaskEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
-    public var isLowRamDevice: NSNumber?
+    public var isLowRam: NSNumber?
     public var locale: String?
     public var locales: [String]?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
-    public var processorCount: NSNumber?
     public var timeZone: String?
     public var totalRam: NSNumber?
     public var type: objc_RUMLongTaskEventDeviceDeviceType
@@ -1245,13 +1248,13 @@ public class objc_RUMResourceEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
-    public var isLowRamDevice: NSNumber?
+    public var isLowRam: NSNumber?
     public var locale: String?
     public var locales: [String]?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
-    public var processorCount: NSNumber?
     public var timeZone: String?
     public var totalRam: NSNumber?
     public var type: objc_RUMResourceEventDeviceDeviceType
@@ -1578,13 +1581,13 @@ public class objc_RUMViewEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
-    public var isLowRamDevice: NSNumber?
+    public var isLowRam: NSNumber?
     public var locale: String?
     public var locales: [String]?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
-    public var processorCount: NSNumber?
     public var timeZone: String?
     public var totalRam: NSNumber?
     public var type: objc_RUMViewEventDeviceDeviceType
@@ -1951,13 +1954,13 @@ public class objc_RUMVitalAppLaunchEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
-    public var isLowRamDevice: NSNumber?
+    public var isLowRam: NSNumber?
     public var locale: String?
     public var locales: [String]?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
-    public var processorCount: NSNumber?
     public var timeZone: String?
     public var totalRam: NSNumber?
     public var type: objc_RUMVitalAppLaunchEventDeviceDeviceType
@@ -2145,13 +2148,13 @@ public class objc_RUMVitalDurationEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
-    public var isLowRamDevice: NSNumber?
+    public var isLowRam: NSNumber?
     public var locale: String?
     public var locales: [String]?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
-    public var processorCount: NSNumber?
     public var timeZone: String?
     public var totalRam: NSNumber?
     public var type: objc_RUMVitalDurationEventDeviceDeviceType
@@ -2328,13 +2331,13 @@ public class objc_RUMVitalOperationStepEventDevice: NSObject
     public var batteryLevel: NSNumber?
     public var brand: String?
     public var brightnessLevel: NSNumber?
-    public var isLowRamDevice: NSNumber?
+    public var isLowRam: NSNumber?
     public var locale: String?
     public var locales: [String]?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
     public var name: String?
     public var powerSavingMode: NSNumber?
-    public var processorCount: NSNumber?
     public var timeZone: String?
     public var totalRam: NSNumber?
     public var type: objc_RUMVitalOperationStepEventDeviceDeviceType
@@ -2586,9 +2589,9 @@ public enum objc_TelemetryConfigurationEventTelemetryConfigurationViewTrackingSt
 public class objc_TelemetryConfigurationEventTelemetryRUMTelemetryDevice: NSObject
     public var architecture: String?
     public var brand: String?
-    public var isLowRamDevice: NSNumber?
+    public var isLowRam: NSNumber?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
-    public var processorCount: NSNumber?
     public var totalRam: NSNumber?
 public class objc_TelemetryConfigurationEventTelemetryRUMTelemetryOperatingSystem: NSObject
     public var build: String?
@@ -2638,9 +2641,9 @@ public class objc_TelemetryDebugEventTelemetry: NSObject
 public class objc_TelemetryDebugEventTelemetryRUMTelemetryDevice: NSObject
     public var architecture: String?
     public var brand: String?
-    public var isLowRamDevice: NSNumber?
+    public var isLowRam: NSNumber?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
-    public var processorCount: NSNumber?
     public var totalRam: NSNumber?
 public class objc_TelemetryDebugEventTelemetryRUMTelemetryOperatingSystem: NSObject
     public var build: String?
@@ -2691,9 +2694,9 @@ public class objc_TelemetryErrorEventTelemetry: NSObject
 public class objc_TelemetryErrorEventTelemetryRUMTelemetryDevice: NSObject
     public var architecture: String?
     public var brand: String?
-    public var isLowRamDevice: NSNumber?
+    public var isLowRam: NSNumber?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
-    public var processorCount: NSNumber?
     public var totalRam: NSNumber?
 public class objc_TelemetryErrorEventTelemetryError: NSObject
     public var kind: String?
@@ -2918,6 +2921,12 @@ public final class objc_SessionReplayPrivacyOverrides: NSObject
 
 # ----------------------------------
 # API surface for DatadogFlags:
+# ----------------------------------
+
+
+
+# ----------------------------------
+# API surface for DatadogProfiling:
 # ----------------------------------
 
 

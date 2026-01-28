@@ -54,7 +54,8 @@ extension TraceContext: AnyMockable, RandomMockable {
             spanID: .mockRandom(),
             parentSpanID: .mockRandom(),
             sampleRate: .mockRandom(min: 0, max: 100),
-            isKept: .random()
+            samplingPriority: .mockRandom(),
+            samplingDecisionMaker: .mockRandom()
         )
     }
 
@@ -63,7 +64,8 @@ extension TraceContext: AnyMockable, RandomMockable {
         spanID: SpanID = .mockAny(),
         parentSpanID: SpanID? = nil,
         sampleRate: Float = .mockAny(),
-        isKept: Bool = .mockAny(),
+        samplingPriority: SamplingPriority = .mockAny(),
+        samplingDecisionMaker: SamplingMechanismType = .mockAny(),
         rumSessionId: String? = .mockAny()
     ) -> TraceContext {
         return TraceContext(
@@ -71,7 +73,8 @@ extension TraceContext: AnyMockable, RandomMockable {
             spanID: spanID,
             parentSpanID: parentSpanID,
             sampleRate: sampleRate,
-            isKept: isKept,
+            samplingPriority: samplingPriority,
+            samplingDecisionMaker: samplingDecisionMaker,
             rumSessionId: rumSessionId
         )
     }
@@ -152,12 +155,12 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
         interceptions.values.first { $0.request.url == url }
     }
 
-    public func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?) {
+    public func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
         onRequestMutation?(request, headerTypes, networkContext)
-        return (modifiedRequest ?? request, injectedTraceContext)
+        return (modifiedRequest ?? request, injectedTraceContext, nil)
     }
 
-    public func interceptionDidStart(interception: URLSessionTaskInterception) {
+    public func interceptionDidStart(interception: URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
         onInterceptionDidStart?(interception)
         interceptions[interception.identifier] = interception
     }

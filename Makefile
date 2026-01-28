@@ -11,6 +11,7 @@ all: env-check repo-setup dependencies templates
 		benchmark-build benchmark-upload \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
 		api-surface spi-docs-build \
+		profiling-protoc \
 		dogfood-shopist dogfood-datadog-app \
 		release-build release-validate release-publish-github \
 		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs \
@@ -103,6 +104,7 @@ test-ios-all:
 	@$(MAKE) test-ios SCHEME="DatadogCrashReporting iOS"
 	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking iOS"
 	@$(MAKE) test-ios SCHEME="DatadogFlags iOS"
+	@$(MAKE) test-ios SCHEME="DatadogProfiling iOS"
 	@$(MAKE) test-ios SCHEME="DatadogIntegrationTests iOS"
 
 # Run unit tests for specified SCHEME using tvOS Simulator
@@ -122,6 +124,7 @@ test-tvos-all:
 	@$(MAKE) test-tvos SCHEME="DatadogTrace tvOS"
 	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting tvOS"
 	@$(MAKE) test-tvos SCHEME="DatadogFlags tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogProfiling tvOS"
 	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests tvOS"
 
 # Run UI tests for specified TEST_PLAN
@@ -298,6 +301,11 @@ sr-models-generate:
 sr-models-verify:
 	@$(MAKE) models-verify PRODUCT="sr"
 
+# Generate profiling protobuf-c files from pprof proto
+protoc-pprof:
+	@$(ECHO_TITLE) "protoc-pprof"
+	./tools/protoc-pprof.sh --proto-path DatadogProfiling/Protos/profile.proto --output-dir DatadogProfiling/Mach
+
 # Pushes current SR snapshots to snapshots repo
 sr-snapshots-push:
 	@$(ECHO_TITLE) "make sr-snapshots-push"
@@ -323,8 +331,6 @@ sr-snapshot-tests-open:
 	@$(ECHO_TITLE) "make sr-snapshot-tests-open"
 	./tools/sr-snapshot-test.sh --open-project
 
-### API-SURFACE
-
 # Define default paths for API output files
 SWIFT_OUTPUT_PATH ?= api-surface-swift
 OBJC_OUTPUT_PATH ?= api-surface-objc
@@ -336,7 +342,7 @@ ifeq ($(ENV),ci)
 endif
 
 # Define the list of Datadog modules for API surface generation
-DATADOG_MODULES := DatadogCore DatadogLogs DatadogTrace DatadogRUM DatadogCrashReporting DatadogWebViewTracking DatadogSessionReplay DatadogFlags
+DATADOG_MODULES := DatadogCore DatadogLogs DatadogTrace DatadogRUM DatadogCrashReporting DatadogWebViewTracking DatadogSessionReplay DatadogFlags DatadogProfiling
 
 # Generate api-surface files for Datadog APIs
 api-surface:
@@ -445,6 +451,7 @@ release-publish-dependent-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCrashReporting.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogWebViewTracking.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogFlags.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogProfiling.podspec"
 
 # Set ot update CI secrets
 set-ci-secret:
