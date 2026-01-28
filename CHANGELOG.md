@@ -1,14 +1,16 @@
 # Unreleased
 
+# 3.6.0 / 28-01-2026
+
 - [FEATURE] Add `DatadogProfiling` module to profile app launches. See [#2654][]
 - [IMPROVEMENT] Add `DDLogEventUserInfo.anonymousId` property in ObjC API. See [#2640][]
 - [FEATURE] Support manually keeping or dropping a trace. See [#2639][]
 
-# 3.5.1 / 23-01-2025
+# 3.5.1 / 23-01-2026
 
 - [FIX] Fix crash in App Hangs backtrace generation. See [#2647][]
 
-# 3.5.0 / 12-01-2025
+# 3.5.0 / 12-01-2026
 
 - [FEATURE] Report time to initial display (TTID). See [#2517][] [#2464][] 
 - [FEATURE] Add public API to report time to full display (TTFD). See [#2522][]
