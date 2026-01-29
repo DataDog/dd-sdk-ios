@@ -38,8 +38,7 @@ struct SessionReplayScenario: Scenario {
                 replaySampleRate: 100,
                 textAndInputPrivacyLevel: .maskSensitiveInputs,
                 imagePrivacyLevel: .maskNone,
-                touchPrivacyLevel: .show,
-                featureFlags: [.screenChangeScheduling: true]
+                touchPrivacyLevel: .show
             )
         )
 
