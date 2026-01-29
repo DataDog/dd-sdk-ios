@@ -8,7 +8,7 @@ let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment[
 
 let package = Package(
     name: "Datadog",
-    platforms: [.iOS(.v12), .tvOS(.v12), .macOS(.v12), .watchOS(.v7)],
+    platforms: [.iOS(.v15), .tvOS(.v15), .macOS(.v12), .watchOS(.v7)],
     products: [
         .library(
             name: "DatadogCore",
@@ -48,7 +48,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/kstenerud/KSCrash.git", from: "2.5.0"),
+        .package(url: "https://github.com/kstenerud/KSCrash.git", branch: "master"),
         .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.3.0")),
     ],
     targets: [
