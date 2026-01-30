@@ -14,8 +14,8 @@ internal struct DDNoopGlobals {
     static let context = DDNoopSpanContext()
 }
 
-internal class DDNoopTracer: OTTracer, OpenTelemetryApi.Tracer {
-    var activeSpan: OTSpan? = nil
+internal final class DDNoopTracer: OTTracer, OpenTelemetryApi.Tracer, Sendable {
+    var activeSpan: OTSpan? { nil }
 
     private func warn() {
         DD.logger.warn(
