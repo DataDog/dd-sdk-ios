@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.2
 
 import PackageDescription
 import Foundation
@@ -207,7 +207,7 @@ let package = Package(
             path: "DatadogProfiling",
             sources: ["Sources"],
             resources: [
-                .copy("Resources/PrivacyInfo.xcprivacy")
+                .copy("../Resources/PrivacyInfo.xcprivacy")
             ],
             swiftSettings: internalSwiftSettings
         ),
@@ -261,6 +261,7 @@ let package = Package(
         )
     ],
     cxxLanguageStandard: .cxx17
+    swiftLanguageVersions: [.v6]
 )
 
 // If the `DD_TEST_UTILITIES_ENABLED` development ENV is set, export additional utility packages.
