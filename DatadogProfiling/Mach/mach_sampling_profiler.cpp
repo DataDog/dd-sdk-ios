@@ -15,6 +15,7 @@
 #include <mach/machine/thread_state.h>
 #include <mach-o/loader.h>
 #include <mach-o/dyld.h>
+#include <algorithm>
 
 // Address validation constants and macros
 //
@@ -68,6 +69,15 @@ static constexpr size_t PTHREAD_THREAD_NAME_MAX = 64;
 
 // Main thread pthread identifier for comparison
 static pthread_t g_main_pthread = NULL;
+
+struct library_image_t {
+    uintptr_t start_addr;
+    uintptr_t end_addr;
+    binary_image_t info;
+};
+
+static std::vector<library_image_t> g_image_cache;
+static std::mutex g_image_cache_mutex;
 
 // Safe memory read using signal handling
 // Thread-local storage for signal-based safe memory reading
@@ -214,8 +224,33 @@ bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
     if (!info) return false;
     
     // Validate the PC address - it should be a reasonable user-space address
-    if (!is_valid_userspace_addr((uintptr_t)pc)) return false;
+    uintptr_t addr = (uintptr_t)pc;
+    if (!is_valid_userspace_addr(addr)) return false;
+
+    // Try cache first
+    {
+        std::lock_guard<std::mutex> lock(g_image_cache_mutex);
+        if (!g_image_cache.empty()) {
+            auto it = std::upper_bound(g_image_cache.begin(), g_image_cache.end(), addr,
+                [](uintptr_t val, const library_image_t& entry) {
+                    return val < entry.start_addr;
+                });
+            
+            if (it != g_image_cache.begin()) {
+                --it;
+                if (addr >= it->start_addr && addr < it->end_addr) {
+                    info->load_address = it->info.load_address;
+                    memcpy(info->uuid, it->info.uuid, sizeof(uuid_t));
+                    if (it->info.filename) {
+                        info->filename = strdup(it->info.filename);
+                    }
+                    return true;
+                }
+            }
+        }
+    }
     
+    // Fallback for libraries loaded after cache or if cache is empty
     Dl_info dl_info;
     if (dladdr(pc, &dl_info) == 0) return false;
     if (!is_valid_userspace_addr((uintptr_t)dl_info.dli_fbase)) return false;
@@ -616,15 +651,6 @@ void mach_sampling_profiler::main() {
 void mach_sampling_profiler::flush_buffer() {
     if (sample_buffer.empty()) return;
 
-    // Fill in binary image information for all frames
-    for (auto& trace : sample_buffer) {
-        for (uint32_t i = 0; i < trace.frame_count; i++) {
-            auto& frame = trace.frames[i];
-            binary_image_init(&frame.image);
-            binary_image_lookup_pc(&frame.image, (void*)frame.instruction_ptr);
-        }
-    }
-
     callback(sample_buffer.data(), sample_buffer.size(), ctx);
 
     // Free allocated frame memory and binary image data
@@ -645,6 +671,55 @@ void safe_read_memory_for_testing(void* addr, void* buffer, size_t size) {
 
 void init_safe_read_handlers_for_testing(void) {
     init_safe_read_handlers();
+}
+
+void profiler_cache_binary_images(void) {
+    std::lock_guard<std::mutex> lock(g_image_cache_mutex);
+    if (!g_image_cache.empty()) return;
+
+    uint32_t count = _dyld_image_count();
+    for (uint32_t i = 0; i < count; i++) {
+        const struct mach_header_64* header = (const struct mach_header_64*)_dyld_get_image_header(i);
+        if (!header || header->magic != MH_MAGIC_64) continue;
+
+        uintptr_t slide = _dyld_get_image_vmaddr_slide(i);
+        uintptr_t low_addr = UINTPTR_MAX;
+        uintptr_t high_addr = 0;
+        uuid_t uuid = {0};
+        bool found_uuid = false;
+
+        const struct load_command* cmd = (const struct load_command*)(header + 1);
+        for (uint32_t j = 0; j < header->ncmds; j++) {
+            if (cmd->cmd == LC_SEGMENT_64) {
+                const struct segment_command_64* seg = (const struct segment_command_64*)cmd;
+                uintptr_t seg_start = slide + seg->vmaddr;
+                uintptr_t seg_end = seg_start + seg->vmsize;
+                if (seg_start < low_addr) low_addr = seg_start;
+                if (seg_end > high_addr) high_addr = seg_end;
+            } else if (cmd->cmd == LC_UUID) {
+                const struct uuid_command* uuid_cmd = (const struct uuid_command*)cmd;
+                memcpy(uuid, uuid_cmd->uuid, sizeof(uuid_t));
+                found_uuid = true;
+            }
+            cmd = (const struct load_command*)((char*)cmd + cmd->cmdsize);
+        }
+
+        if (found_uuid && low_addr != UINTPTR_MAX) {
+            library_image_t entry;
+            binary_image_init(&entry.info);
+            entry.start_addr = low_addr;
+            entry.end_addr = high_addr;
+            entry.info.load_address = (uint64_t)header;
+            memcpy(entry.info.uuid, uuid, sizeof(uuid_t));
+            const char* name = _dyld_get_image_name(i);
+            if (name) entry.info.filename = strdup(name);
+            g_image_cache.push_back(entry);
+        }
+    }
+
+    std::sort(g_image_cache.begin(), g_image_cache.end(), [](const library_image_t& a, const library_image_t& b) {
+        return a.start_addr < b.start_addr;
+    });
 }
 
 } // extern "C"
