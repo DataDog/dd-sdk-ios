@@ -16,6 +16,7 @@
 #include <cstring>
 #include <random>
 #include <mutex>
+#include <pthread.h>
 
 static constexpr int64_t CTOR_PROFILER_TIMEOUT_NS = 5000000000ULL; // 5 seconds
 
@@ -266,6 +267,29 @@ private:
 } // namespace dd::profiler
 
 /**
+ * Wrapper for pthread_create to call profiler_cache_binary_images
+ */
+static void* cache_binary_images_thread_entry(void*) {
+    pthread_setname_np("com.datadoghq.profiler.cache-images");
+    profiler_cache_binary_images();
+    return nullptr;
+}
+
+/**
+ * Pre-cache binary images in a background thread
+ */
+static void start_binary_image_caching() {
+    pthread_t cache_thread;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_set_qos_class_np(&attr, QOS_CLASS_UTILITY, 0);
+    if (pthread_create(&cache_thread, &attr, cache_binary_images_thread_entry, nullptr) == 0) {
+        pthread_detach(cache_thread);
+    }
+    pthread_attr_destroy(&attr);
+}
+
+/**
  * Constructor function that runs early during app launch to check if
  * constructor-based profiling should be enabled based on bundle configuration
  * and prewarming.
@@ -279,6 +303,9 @@ static void ctor_profiler_auto_start() {
     }
 
     set_main_thread(pthread_self());
+
+    // Pre-cache binary images in a background thread
+    start_binary_image_caching();
 
     // Create profiler and start with sample rate
     g_ctor_profiler = new dd::profiler::ctor_profiler(read_profiling_sample_rate(), is_active_prewarm());

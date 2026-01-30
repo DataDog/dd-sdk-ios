@@ -136,6 +136,14 @@ typedef void (*stack_trace_callback_t)(const stack_trace_t* traces, size_t count
 void set_main_thread(pthread_t thread);
 
 /**
+ * Pre-caches binary image information for all currently loaded images.
+ *
+ * This can be called early in the process lifecycle to avoid repetitive
+ * lookups during profiling.
+ */
+void profiler_cache_binary_images(void);
+
+/**
  * Creates a profiler instance.
  *
  * Uses fixed intervals for consistent sampling behavior.

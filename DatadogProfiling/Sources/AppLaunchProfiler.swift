@@ -32,6 +32,8 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
             return false
         }
 
+        print("*******************************handling TTID")
+
         let profileStatus = ctor_profiler_get_status()
         guard profileStatus == CTOR_PROFILER_STATUS_RUNNING
                 || profileStatus == CTOR_PROFILER_STATUS_TIMEOUT
@@ -89,6 +91,8 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                 ].joined(separator: ","),
                 additionalAttributes: cmd.context
             )
+
+            print("*******************************Writing TTID")
 
             writer.write(value: pprof, metadata: event)
             self.telemetryController.send(metric: AppLaunchMetric(status: .init(profileStatus), durationNs: duration, fileSize: Int64(size)))
