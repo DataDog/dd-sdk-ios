@@ -33,8 +33,10 @@ public struct DD {
 import OSLog
 #endif
 
+// TODO: RUM-14097 consolePrint needs to handle concurrency in a better way
+// to support concurrency without `nonisolated(unsafe)` and tests running in parallel.
 /// Function printing `String` content to console.
-public var consolePrint: @Sendable (String, CoreLoggerLevel) -> Void = { message, level in
+nonisolated(unsafe) public var consolePrint: @Sendable (String, CoreLoggerLevel) -> Void = { message, level in
     #if canImport(OSLog)
     if #available(iOS 14.0, tvOS 14.0, *) {
         switch level {
