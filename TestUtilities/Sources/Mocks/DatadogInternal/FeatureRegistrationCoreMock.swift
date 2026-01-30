@@ -21,18 +21,19 @@ import Foundation
 ///
 /// **Note:** If you need different capabilities, check other available core mocks,
 /// before you consider adding it here.
-public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
+public final class FeatureRegistrationCoreMock: DatadogCoreProtocol, Sendable {
     /// Counts references to this mock, so we can test if there are no memory leaks.
+    @ReadWriteLock
     public private(set) static var referenceCount = 0
 
     public internal(set) var registeredFeatures: [DatadogFeature] = []
 
     public init() {
-        FeatureRegistrationCoreMock.referenceCount += 1
+        Self._referenceCount.mutate { $0 += 1 }
     }
 
     deinit {
-        FeatureRegistrationCoreMock.referenceCount -= 1
+        Self._referenceCount.mutate { $0 -= 1 }
     }
 
     // MARK: - Supported
