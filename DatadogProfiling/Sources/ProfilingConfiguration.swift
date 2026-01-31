@@ -21,6 +21,8 @@ extension Profiling {
         /// Default: `5.0`.
         public var applicationLaunchSampleRate: SampleRate
 
+        public var continuousProfiling: Bool = true
+
         // MARK: - Internal
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)

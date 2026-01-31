@@ -18,25 +18,31 @@ internal import DatadogMachProfiler
 internal final class ProfilerFeature: DatadogRemoteFeature {
     static let name = "profiler"
 
+    internal static let maxObjectSize = 10.MB.asUInt32()
+
     let requestBuilder: FeatureRequestBuilder
 
     let messageReceiver: FeatureMessageReceiver
+
+    let continuousProfiler: ContinuousProfiler?
 
     let telemetryController: ProfilingTelemetryController
 
     /// Setting max-file-age to minimum will force creating a batch per profile.
     /// It is necessary as the profiling intake only accepts one profile per request.
-    let performanceOverride = PerformancePresetOverride(maxFileSize: .min)
+    let performanceOverride: PerformancePresetOverride? = PerformancePresetOverride(maxFileSize: maxObjectSize, maxObjectSize: maxObjectSize)
 
     init(
         requestBuilder: FeatureRequestBuilder,
         messageReceiver: FeatureMessageReceiver,
+        continuousProfiler: ContinuousProfiler?,
         sampleRate: SampleRate,
         telemetryController: ProfilingTelemetryController,
         userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
     ) {
         self.requestBuilder = requestBuilder
         self.messageReceiver = messageReceiver
+        self.continuousProfiler = continuousProfiler
         self.telemetryController = telemetryController
 
         setProfilingEnabled(in: userDefaults)

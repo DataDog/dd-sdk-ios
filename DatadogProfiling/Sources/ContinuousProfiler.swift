@@ -15,50 +15,56 @@ internal import DatadogMachProfiler
 #endif
 // swiftlint:enable duplicate_imports
 
-internal final class AppLaunchProfiler: FeatureMessageReceiver {
+internal final class ContinuousProfiler {
     /// Shared counter to track pending `AppLaunchProfiler`s from handling the `ProfilerStop` message
     private static var pendingInstances: Int = 0
     private static let lock = NSLock()
 
-    private let isContinuousProfiling: Bool
     private let telemetryController: ProfilingTelemetryController
 
+    private var timer: Timer?
+
     init(
-        isContinuousProfiling: Bool,
-        telemetryController: ProfilingTelemetryController = .init()
+        core: DatadogCoreProtocol,
+        telemetryController: ProfilingTelemetryController = .init(),
+        frequency: TimeInterval = TimeInterval(10)
     ) {
         Self.registerInstance()
-        self.isContinuousProfiling = isContinuousProfiling
         self.telemetryController = telemetryController
+
+        print("*******************************init continuous profiling \(Date())")
+
+        // Schedule reoccurring samples
+        let timer = Timer(
+            timeInterval: frequency,
+            repeats: true
+        ) { [weak self] _ in
+
+            self?.sendProfile(core: core)
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        self.timer = timer
     }
 
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(cmd as ProfilerStop) = message else {
-            return false
-        }
+    deinit {
+        Self.unregisterInstance()
+    }
 
-        print("*******************************handling TTID")
+    func sendProfile(core: DatadogCoreProtocol) {
+        print("*******************************handling continuous profiling \(Date())")
 
         let profileStatus = ctor_profiler_get_status()
-        guard profileStatus == CTOR_PROFILER_STATUS_RUNNING
-                || profileStatus == CTOR_PROFILER_STATUS_TIMEOUT
-                || profileStatus == CTOR_PROFILER_STATUS_STOPPED else {
-            if profileStatus != CTOR_PROFILER_STATUS_SAMPLED_OUT
-                && profileStatus != CTOR_PROFILER_STATUS_PREWARMED {
-                telemetryController.send(metric: AppLaunchMetric.statusNotHandled)
-            }
-            return false
+        guard profileStatus == CTOR_PROFILER_STATUS_RUNNING else {
+            print("+++++++++++++++profiling status\(profileStatus)")
+            return
         }
 
-        if isContinuousProfiling == false {
-            ctor_profiler_stop()
-        }
         core.set(context: ProfilingContext(status: .current))
-        defer { Self.unregisterInstance() }
 
-        guard let profile = ctor_profiler_get_profile(false) else {
-            telemetryController.send(metric: AppLaunchMetric.noProfile)
-            return false
+        guard let profile = ctor_profiler_get_profile(true) else {
+
+            print("+++++++++++++++no profile")
+            return
         }
 
         var data: UnsafeMutablePointer<UInt8>?
@@ -68,9 +74,10 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
         let size = dd_pprof_serialize(profile, &data)
 
         guard let data else {
-            telemetryController.send(metric: AppLaunchMetric.noData)
-            return false
+            return
         }
+
+        print("+++++++++++++++\(duration) ++++++++ \(size)")
 
         let pprof = Data(bytes: data, count: size)
         dd_pprof_free_serialized_data(data)
@@ -94,24 +101,21 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                     "language:swift",
                     "format:pprof",
                     "remote_symbols:yes",
-                    "operation:launch"
+                    "operation:continuous_profiling"
                 ].joined(separator: ","),
-                additionalAttributes: cmd.context
+                additionalAttributes: [:]
             )
 
-            print("*******************************Writing TTID")
+            print("*******************************Writing continuous profile")
 
             writer.write(value: pprof, metadata: event)
-            self.telemetryController.send(metric: AppLaunchMetric(status: .init(profileStatus), durationNs: duration, fileSize: Int64(size)))
         }
-
-        return true
     }
 }
 
 // MARK: - Handle AppLaunchProfiler instances
 
-private extension AppLaunchProfiler {
+private extension ContinuousProfiler {
     /// Registers the `AppLaunchProfiler` to handle the `ProfilerStop` message.
     static func registerInstance() {
         lock.lock()
@@ -126,12 +130,15 @@ private extension AppLaunchProfiler {
         defer { lock.unlock() }
 
         pendingInstances -= 1
+        if pendingInstances <= 0 {
+            ctor_profiler_destroy()
+        }
     }
 }
 
 // MARK: - Testing funcs
 
-extension AppLaunchProfiler {
+extension ContinuousProfiler {
     /// Returns the current pending instances count.
     static var currentPendingInstances: Int {
         lock.lock()
@@ -144,32 +151,5 @@ extension AppLaunchProfiler {
         lock.lock()
         defer { lock.unlock() }
         pendingInstances = 0
-    }
-}
-
-extension ProfilingContext.Status {
-    static var current: Self { .init(ctor_profiler_get_status()) }
-
-    init(_ status: ctor_profiler_status_t) {
-        switch status {
-        case CTOR_PROFILER_STATUS_NOT_STARTED:
-            self = .stopped(reason: .notStarted)
-        case CTOR_PROFILER_STATUS_RUNNING:
-            self = .running
-        case CTOR_PROFILER_STATUS_STOPPED:
-            self = .stopped(reason: .manual)
-        case CTOR_PROFILER_STATUS_TIMEOUT:
-            self = .stopped(reason: .timeout)
-        case CTOR_PROFILER_STATUS_PREWARMED:
-            self = .stopped(reason: .prewarmed)
-        case CTOR_PROFILER_STATUS_SAMPLED_OUT:
-            self = .stopped(reason: .sampledOut)
-        case CTOR_PROFILER_STATUS_ALLOCATION_FAILED:
-            self = .error(reason: .memoryAllocationFailed)
-        case CTOR_PROFILER_STATUS_ALREADY_STARTED:
-            self = .error(reason: .alreadyStarted)
-        default:
-            self = .unknown
-        }
     }
 }

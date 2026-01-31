@@ -33,7 +33,7 @@ internal final class ConfigurationMetric {
         bufferSize: Int = Int(SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE),
         stackDepth: Int = Int(SAMPLING_CONFIG_DEFAULT_STACK_DEPTH),
         threadCoverage: Int = Int(SAMPLING_CONFIG_DEFAULT_THREAD_COUNT),
-        samplingFrequency: Int = Int(SAMPLING_CONFIG_DEFAULT_INTERVAL_HZ)
+        samplingFrequency: Int = Int(SAMPLING_CONFIG_DEFAULT_FREQUENCY_HZ)
     ) {
         self.bufferSize = bufferSize
         self.stackDepth = stackDepth

@@ -197,6 +197,7 @@ void ctor_profiler_stop(void);
  * profiling. This data contains deduplicated stack traces, binary mappings, and
  * sample metadata that can be serialized for analysis.
  * 
+ * @param cleanup If true, the profile data will be removed from the profiler and subsequent calls will return NULL.
  * @return Typed handle to profile data, or NULL if:
  *         - Profiling was never started
  *         - No samples were collected
@@ -208,7 +209,7 @@ void ctor_profiler_stop(void);
  * 
  * @see `ctor_profiler_stop()`, `ctor_profiler_destroy()`
  */
-ctor_profile_t* ctor_profiler_get_profile(void);
+ctor_profile_t* ctor_profiler_get_profile(bool cleanup);
 
 /**
  * @brief Destroys the constructor profiler data and frees all associated memory

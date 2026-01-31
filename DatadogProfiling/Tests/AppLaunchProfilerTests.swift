@@ -74,7 +74,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         // Then
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Profiler should be destroyed after processing message")
-        XCTAssertNil(ctor_profiler_get_profile(), "Profile should be nil after destroy")
+        XCTAssertNil(ctor_profiler_get_profile(false), "Profile should be nil after destroy")
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
     }
 
@@ -310,13 +310,13 @@ final class AppLaunchProfilerTests: XCTestCase {
             if remainingInstances > 0 {
                 // Then
                 XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, remainingInstances)
-                XCTAssertNotNil(ctor_profiler_get_profile(), "Profile should still exist after first receive")
+                XCTAssertNotNil(ctor_profiler_get_profile(false), "Profile should still exist after first receive")
             }
         }
 
         // Then
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
-        XCTAssertNil(ctor_profiler_get_profile(), "Profile should be nil after all instances received")
+        XCTAssertNil(ctor_profiler_get_profile(false), "Profile should be nil after all instances received")
     }
 
     func testConcurrentRegistration_isThreadSafe() {

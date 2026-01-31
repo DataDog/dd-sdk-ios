@@ -85,8 +85,9 @@ typedef struct sampling_config {
  * Default sampling configuration values.
  */
 /// Sampling frequency. Default to ~101 Hz (1/101 seconds ≈ 9.9ms)
-#define SAMPLING_CONFIG_DEFAULT_INTERVAL_HZ     101     // 101 Hz
-#define SAMPLING_CONFIG_DEFAULT_INTERVAL_NANOS  1000000 // 1ms
+#define SAMPLING_CONFIG_DEFAULT_FREQUENCY_HZ    101     // 101 Hz
+/// Sampling interval. Default to 9.9ms
+#define SAMPLING_CONFIG_DEFAULT_INTERVAL_NS     9900990 // ~101 Hz (1/101 seconds ≈ 9.9ms)
 /// Max buffer size of samples. It is a larger buffer to delay stack aggregation.
 #define SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE     10000
 /// Max frames per trace.
@@ -99,7 +100,7 @@ typedef struct sampling_config {
  * For C++ use only. Use sampling_config_get_default() from Swift.
  */
 static const sampling_config_t SAMPLING_CONFIG_DEFAULT = {
-    SAMPLING_CONFIG_DEFAULT_INTERVAL_NANOS,  // sampling_interval_nanos
+    SAMPLING_CONFIG_DEFAULT_INTERVAL_NS,  // sampling_interval_nanos
     0,                                       // profile_current_thread_only
     SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE,     // max_buffer_size
     SAMPLING_CONFIG_DEFAULT_STACK_DEPTH,     // max_stack_depth

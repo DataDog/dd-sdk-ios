@@ -18,8 +18,6 @@
 #include <mutex>
 #include <pthread.h>
 
-static constexpr int64_t CTOR_PROFILER_TIMEOUT_NS = 5000000000ULL; // 5 seconds
-
 namespace dd::profiler { class ctor_profiler; }
 
 static dd::profiler::ctor_profiler* g_ctor_profiler = nullptr;
@@ -156,9 +154,8 @@ public:
 
     ctor_profiler(
         double sample_rate = 0.0,
-        bool is_prewarming = false,
-        int64_t timeout_ns = CTOR_PROFILER_TIMEOUT_NS
-    ) : sample_rate(sample_rate), is_prewarming(is_prewarming), timeout_ns(timeout_ns) {}
+        bool is_prewarming = false
+    ) : sample_rate(sample_rate), is_prewarming(is_prewarming) {}
 
     ~ctor_profiler() {
         if (profiler) delete profiler;
@@ -186,19 +183,14 @@ public:
             return;
         }
 
-        // Use 101 Hz sampling frequency
-        uint64_t sampling_interval_ns = 9900990; // ~101 Hz (1/101 seconds ≈ 9.9ms)
-
         // Create profile aggregator
-        profile = new dd::profiler::profile(sampling_interval_ns);
-        if (!profile) {
-            status = CTOR_PROFILER_STATUS_ALLOCATION_FAILED;
+        if (!create_profile()) {
             return;
         }
 
         // Configure profiler
         sampling_config_t config = SAMPLING_CONFIG_DEFAULT;
-        config.sampling_interval_nanos = sampling_interval_ns;
+        config.sampling_interval_nanos = SAMPLING_CONFIG_DEFAULT_INTERVAL_NS;
 
         profiler = new mach_sampling_profiler(&config, callback, this);
         if (!profiler) {
@@ -230,14 +222,42 @@ public:
         profiler->stop_sampling();
     }
 
-    profile* get_profile() const { return profile; }
+    /**
+     * Retrieves the profile data.
+     * 
+     * @param cleanup If true, takes ownership of the profile data, removing it from the profiler.
+     *                Subsequent calls will return nullptr.
+     * @return The profile data, or nullptr if none exists
+     */
+    profile* get_profile(bool cleanup = false) {
+        dd::profiler::profile* p = profile;
+        if (cleanup) {
+            profile = nullptr;
+            create_profile();
+        }
+        return p;
+    }
 
 private:
     mach_sampling_profiler* profiler = nullptr;
     profile* profile = nullptr;
     double sample_rate = 0.0;
     bool is_prewarming = false;
-    int64_t timeout_ns = CTOR_PROFILER_TIMEOUT_NS; // 5 seconds default
+
+    /**
+     * Internal helper to create a fresh profile aggregator.
+     * 
+     * @return true if successful, false on allocation failure
+     */
+    bool create_profile() {
+        // Create profile aggregator
+        profile = new dd::profiler::profile(SAMPLING_CONFIG_DEFAULT_INTERVAL_NS);
+        if (!profile) {
+            status = CTOR_PROFILER_STATUS_ALLOCATION_FAILED;
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Static callback function to handle collected stack traces
@@ -257,10 +277,6 @@ private:
 
         // Check for timeout after adding samples
         int64_t duration_ns = profile->end_timestamp() - profile->start_timestamp();
-        if (duration_ns > profiler->timeout_ns) {
-            profiler->stop();
-            profiler->status = CTOR_PROFILER_STATUS_TIMEOUT;
-        }
     }
 };
 
@@ -327,9 +343,9 @@ ctor_profiler_status_t ctor_profiler_get_status(void) {
     return g_ctor_profiler ? g_ctor_profiler->status : CTOR_PROFILER_STATUS_NOT_CREATED;
 }
 
-ctor_profile_t* ctor_profiler_get_profile(void) {
+ctor_profile_t* ctor_profiler_get_profile(bool cleanup) {
     std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
-    return g_ctor_profiler ? reinterpret_cast<ctor_profile_t*>(g_ctor_profiler->get_profile()) : nullptr;
+    return g_ctor_profiler ? reinterpret_cast<ctor_profile_t*>(g_ctor_profiler->get_profile(cleanup)) : nullptr;
 }
 
 void ctor_profiler_destroy(void) {
@@ -345,7 +361,7 @@ extern "C" {
 void ctor_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns) {
     std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
     delete g_ctor_profiler;
-    g_ctor_profiler = new dd::profiler::ctor_profiler(sample_rate, is_prewarming, timeout_ns);
+    g_ctor_profiler = new dd::profiler::ctor_profiler(sample_rate, is_prewarming);
     g_ctor_profiler->start();
 }
 

@@ -40,7 +40,11 @@ public enum Profiling {
                     customUploadURL: configuration.customEndpoint,
                     telemetry: core.telemetry
                 ),
-                messageReceiver: AppLaunchProfiler(telemetryController: telemetryController),
+                messageReceiver: AppLaunchProfiler(
+                    isContinuousProfiling: configuration.continuousProfiling,
+                    telemetryController: telemetryController
+                ),
+                continuousProfiler: configuration.continuousProfiling ? ContinuousProfiler(core: core) : nil,
                 sampleRate: configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate,
                 telemetryController: telemetryController
             )

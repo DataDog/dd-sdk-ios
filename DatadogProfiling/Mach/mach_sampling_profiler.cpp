@@ -591,6 +591,7 @@ void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_na
     if (trace.frame_count > 0) {
         sample_buffer.push_back(trace);
         if (sample_buffer.size() >= config.max_buffer_size) {
+            printf("flushing the buffer");
             flush_buffer();
         }
     } else {
