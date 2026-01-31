@@ -12,7 +12,7 @@ internal final class EvaluationAggregator {
     private let maxAggregations: Int
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
-    private let queue = DispatchQueue(label: "com.datadoghq.flags.evaluation-aggregator")
+    @ReadWriteLock
     private var aggregations: [AggregationKey: AggregatedEvaluation] = [:]
     private var flushTimer: Timer?
 
@@ -31,21 +31,8 @@ internal final class EvaluationAggregator {
     }
 
     deinit {
-        // Timer uses [weak self], so it becomes a no-op after deallocation.
-        // Copy values before async dispatch - self will be deallocated before the closure runs.
-        let scope = featureScope
-        let snapshot = aggregations
-
-        queue.async(flags: .barrier) {
-            guard !snapshot.isEmpty else {
-                return
-            }
-            scope.eventWriteContext { _, writer in
-                for aggregated in snapshot.values {
-                    writer.write(value: aggregated.toFlagEvaluationEvent())
-                }
-            }
-        }
+        flushTimer?.invalidate()
+        sendEvaluations()
     }
 
     func recordEvaluation(
@@ -54,23 +41,25 @@ internal final class EvaluationAggregator {
         evaluationContext: FlagsEvaluationContext,
         flagError: String?
     ) {
-        let workItem = DispatchWorkItem {
-            let errorMessage = flagError
-            let now = self.dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let errorMessage = flagError
+        let now = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
 
-            let key = AggregationKey(
-                flagKey: flagKey,
-                variantKey: assignment.variationKey,
-                allocationKey: assignment.allocationKey,
-                targetingKey: evaluationContext.targetingKey,
-                errorMessage: errorMessage,
-                context: evaluationContext.attributes
-            )
+        let key = AggregationKey(
+            flagKey: flagKey,
+            variantKey: assignment.variationKey,
+            allocationKey: assignment.allocationKey,
+            targetingKey: evaluationContext.targetingKey,
+            errorMessage: errorMessage,
+            context: evaluationContext.attributes
+        )
 
-            if var existing = self.aggregations[key] {
+        var shouldFlush = false
+
+        _aggregations.mutate { aggregations in
+            if var existing = aggregations[key] {
                 existing.evaluationCount += 1
                 existing.lastEvaluation = now
-                self.aggregations[key] = existing
+                aggregations[key] = existing
             } else {
                 let runtimeDefaultUsed = assignment.reason == "DEFAULT" || errorMessage != nil
 
@@ -88,19 +77,24 @@ internal final class EvaluationAggregator {
                     runtimeDefaultUsed: runtimeDefaultUsed ? true : nil
                 )
 
-                self.aggregations[key] = aggregated
+                aggregations[key] = aggregated
             }
 
-            if self.aggregations.count >= self.maxAggregations {
-                self.sendEvaluations()
-            }
+            shouldFlush = aggregations.count >= self.maxAggregations
         }
-        queue.async(execute: workItem)
+
+        if shouldFlush {
+            sendEvaluations()
+        }
     }
 
     private func sendEvaluations() {
-        let evaluationsToSend = Array(aggregations.values)
-        aggregations.removeAll()
+        var evaluationsToSend: [AggregatedEvaluation] = []
+
+        _aggregations.mutate { aggregations in
+            evaluationsToSend = Array(aggregations.values)
+            aggregations.removeAll()
+        }
 
         guard !evaluationsToSend.isEmpty else {
             return
@@ -198,8 +192,6 @@ private struct AggregatedEvaluation {
 
 extension EvaluationAggregator: Flushable {
     func flush() {
-        queue.sync {
-            self.sendEvaluations()
-        }
+        sendEvaluations()
     }
 }
