@@ -43,15 +43,18 @@ public final class FlagsClient {
 
     private let repository: any FlagsRepositoryProtocol
     private let exposureLogger: any ExposureLogging
+    private let evaluationLogger: any EvaluationLogging
     private let rumFlagEvaluationReporter: any RUMFlagEvaluationReporting
 
     internal init(
         repository: any FlagsRepositoryProtocol,
         exposureLogger: any ExposureLogging,
+        evaluationLogger: any EvaluationLogging,
         rumFlagEvaluationReporter: any RUMFlagEvaluationReporting
     ) {
         self.repository = repository
         self.exposureLogger = exposureLogger
+        self.evaluationLogger = evaluationLogger
         self.rumFlagEvaluationReporter = rumFlagEvaluationReporter
     }
 
@@ -179,6 +182,7 @@ public final class FlagsClient {
                 featureScope: featureScope
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),
+            evaluationLogger: feature.makeEvaluationLogger(featureScope),
             rumFlagEvaluationReporter: feature.makeRUMFlagEvaluationReporter(featureScope)
         )
 
@@ -196,11 +200,41 @@ extension FlagsClient: FlagsClientProtocol {
     }
 
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
+        let defaultAssignment = FlagAssignment(
+            allocationKey: "",
+            variationKey: "",
+            variation: .unknown(""),
+            reason: "DEFAULT",
+            doLog: false
+        )
+
+        guard let context = repository.context else {
+            evaluationLogger.logEvaluation(
+                for: key,
+                assignment: defaultAssignment,
+                evaluationContext: .empty,
+                flagError: "PROVIDER_NOT_READY"
+            )
+            return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
+        }
+
         guard let flagAssignment = repository.flagAssignment(for: key) else {
+            evaluationLogger.logEvaluation(
+                for: key,
+                assignment: defaultAssignment,
+                evaluationContext: context,
+                flagError: "FLAG_NOT_FOUND"
+            )
             return FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
         }
 
         guard let value = flagAssignment.variation(as: T.self) else {
+            evaluationLogger.logEvaluation(
+                for: key,
+                assignment: flagAssignment,
+                evaluationContext: context,
+                flagError: "TYPE_MISMATCH"
+            )
             return FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
         }
 
@@ -211,9 +245,7 @@ extension FlagsClient: FlagsClientProtocol {
             reason: flagAssignment.reason
         )
 
-        if let context = repository.context {
-            trackEvaluation(key: key, assignment: flagAssignment, value: value, context: context)
-        }
+        trackEvaluation(key: key, assignment: flagAssignment, value: value, context: context)
 
         return details
     }
@@ -223,6 +255,13 @@ extension FlagsClient: FlagsClientProtocol {
             for: key,
             assignment: assignment,
             evaluationContext: context
+        )
+
+        evaluationLogger.logEvaluation(
+            for: key,
+            assignment: assignment,
+            evaluationContext: context,
+            flagError: nil
         )
 
         rumFlagEvaluationReporter.sendFlagEvaluation(
