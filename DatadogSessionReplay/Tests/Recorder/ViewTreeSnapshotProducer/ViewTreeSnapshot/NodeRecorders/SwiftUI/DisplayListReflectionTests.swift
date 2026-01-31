@@ -56,6 +56,10 @@ class DisplayListReflectionTests: XCTestCase {
 
     // MARK: Shape
     func testDisplayList_withShapeContent() throws {
+        if #available(iOS 26, tvOS 26, *) {
+            throw XCTSkip("This test uses a test fixture that doesn't match iOS 26's internal structure")
+        }
+
         let color = Color._Resolved.mockRandom()
         let path: SwiftUI.Path = [
             SwiftUI.Path { $0.move(to: .zero); $0.addLine(to: CGPoint(x: 10, y: 10)) },
