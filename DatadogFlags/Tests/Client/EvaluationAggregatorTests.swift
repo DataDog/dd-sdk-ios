@@ -19,7 +19,7 @@ class EvaluationAggregatorTests: XCTestCase {
 
     // MARK: - Implementation Details
 
-    func testFlushClearsPendingAggregations() {
+    func testSendEvaluationsClearsPendingAggregations() {
         // Given
         let aggregator = EvaluationAggregator(
             dateProvider: DateProviderMock(now: .mockAny()),
@@ -43,7 +43,7 @@ class EvaluationAggregatorTests: XCTestCase {
         )
 
         // Then - flush should send events
-        aggregator.flush()
+        aggregator.sendEvaluations()
         XCTAssertEqual(featureScope.eventsWritten.count, 2)
 
         // When - record more evaluations after flush
@@ -55,13 +55,13 @@ class EvaluationAggregatorTests: XCTestCase {
         )
 
         // Then - previous aggregations were cleared, only new one exists
-        aggregator.flush()
+        aggregator.sendEvaluations()
         XCTAssertEqual(featureScope.eventsWritten.count, 3, "Should have 2 from first flush + 1 from second flush")
     }
 
     // MARK: - Thread Safety
 
-    func testConcurrentFlushAndRecord() {
+    func testConcurrentSendEvaluationsAndRecord() {
         // Given
         let aggregator = EvaluationAggregator(
             dateProvider: DateProviderMock(now: .mockAny()),
@@ -89,7 +89,7 @@ class EvaluationAggregatorTests: XCTestCase {
 
         DispatchQueue.global().async {
             for _ in 0..<iterations {
-                aggregator.flush()
+                aggregator.sendEvaluations()
                 expectation.fulfill()
             }
         }
@@ -98,7 +98,7 @@ class EvaluationAggregatorTests: XCTestCase {
         wait(for: [expectation], timeout: 5.0)
 
         // Final flush to collect any remaining evaluations
-        aggregator.flush()
+        aggregator.sendEvaluations()
 
         XCTAssertEqual(featureScope.eventsWritten.count, 50, "Should have written exactly one event per unique flag")
     }
