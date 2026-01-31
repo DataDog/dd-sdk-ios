@@ -88,7 +88,7 @@ internal final class EvaluationAggregator {
         }
     }
 
-    private func sendEvaluations() {
+    func sendEvaluations() {
         var evaluationsToSend: [AggregatedEvaluation] = []
 
         _aggregations.mutate { aggregations in
@@ -117,7 +117,7 @@ internal final class EvaluationAggregator {
                 withTimeInterval: self.flushInterval,
                 repeats: true
             ) { [weak self] _ in
-                self?.flush()
+                self?.sendEvaluations()
             }
         }
     }
@@ -187,11 +187,5 @@ private struct AggregatedEvaluation {
             error: errorMessage.map { .init(message: $0) },
             context: eventContext
         )
-    }
-}
-
-extension EvaluationAggregator: Flushable {
-    func flush() {
-        sendEvaluations()
     }
 }
