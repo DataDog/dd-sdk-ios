@@ -380,8 +380,6 @@ class EvaluationLoggingTests: XCTestCase {
         )
 
         // Then
-        Thread.sleep(forTimeInterval: 0.1)
-
         XCTAssertEqual(featureScope.eventsWritten.count, 3, "Should auto-flush when maxAggregations reached")
     }
 
@@ -403,13 +401,11 @@ class EvaluationLoggingTests: XCTestCase {
             flagError: nil
         )
 
-        // Deallocate aggregator (deinit calls flush)
+        // Deallocate aggregator (deinit calls sendEvaluations)
         aggregator = nil
 
         // Then
-        Thread.sleep(forTimeInterval: 0.1)
-
-        XCTAssertEqual(featureScope.eventsWritten.count, 1, "Deinit should flush pending evaluations")
+        XCTAssertEqual(featureScope.eventsWritten.count, 1, "Deinit should send pending evaluations")
 
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
         let decoded = try XCTUnwrap(events.first)
