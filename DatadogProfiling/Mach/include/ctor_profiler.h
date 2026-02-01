@@ -170,15 +170,18 @@ typedef struct profile ctor_profile_t;
 ctor_profiler_status_t ctor_profiler_get_status(void);
 
 /**
- * @brief Stops constructor-based profiling if it's currently running
- * 
- * This function should be called when the application has finished its launch phase
- * and no longer needs constructor-based profiling. It will:
- * 
- * - Stop the sampling thread
- * - Flush any remaining collected samples
- * - Set the profiler state to inactive
- * 
+ * @brief Starts profiling if it's currently stopped or ignored otherwise.
+ *
+ *
+ * After calling this function, `ctor_profiler_get_status()` will return `CTOR_PROFILER_STATUS_RUNNING`.
+ *
+ * @note Safe to call multiple times - subsequent calls are no-ops
+ */
+void ctor_profiler_start(void);
+
+/**
+ * @brief Stops constructor-based profiling if it's currently running.
+ *
  * After calling this function, `ctor_profiler_get_status()` will return `CTOR_PROFILER_STATUS_STOPPED`.
  *
  * @note Safe to call multiple times - subsequent calls are no-ops
@@ -186,7 +189,6 @@ ctor_profiler_status_t ctor_profiler_get_status(void);
  * 
  * @warning Once stopped, constructor profiling cannot be restarted in the same process
  * 
- * @see `ctor_profiler_get_status()`
  */
 void ctor_profiler_stop(void);
 

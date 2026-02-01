@@ -15,45 +15,40 @@ internal import DatadogMachProfiler
 #endif
 // swiftlint:enable duplicate_imports
 
-internal final class ContinuousProfiler {
-    /// Shared counter to track pending `AppLaunchProfiler`s from handling the `ProfilerStop` message
-    private static var pendingInstances: Int = 0
-    private static let lock = NSLock()
-
-    private let featureScope: FeatureScope
+internal final class DatadogProfiler: CustomProfiler {
     private let telemetryController: ProfilingTelemetryController
 
-    private var timer: Timer?
-
     init(
-        core: DatadogCoreProtocol,
-        telemetryController: ProfilingTelemetryController = .init(),
-        frequency: TimeInterval = TimeInterval(30)
+        telemetryController: ProfilingTelemetryController = .init()
     ) {
-        Self.registerInstance()
-        self.featureScope = core.scope(for: ProfilerFeature.self)
         self.telemetryController = telemetryController
 
-        print("*******************************init continuous profiling \(Date())")
-
-        // Schedule reoccurring samples
-        let timer = Timer(
-            timeInterval: frequency,
-            repeats: true
-        ) { [weak self] _ in
-
-            self?.sendProfile()
-        }
-        RunLoop.main.add(timer, forMode: .common)
-        self.timer = timer
+        print("*******************************init custom profiling \(Date())")
     }
 
-    deinit {
-        Self.unregisterInstance()
+    public static func start() {
+        Self.start(currentThreadOnly: false, in: CoreRegistry.default)
     }
 
-    func sendProfile() {
-        print("*******************************handling continuous profiling \(Date())")
+    public static func start(currentThreadOnly: Bool, in core: DatadogCoreProtocol) {
+        let featureScope = core.scope(for: ProfilerFeature.self)
+        ctor_profiler_start()
+    }
+
+    public static func stop() {
+        Self.stop(in: CoreRegistry.default)
+    }
+
+/// Stops the current profiling session and uploads the captured data.
+///
+/// This method stops the profiler, captures the performance data, creates a profile event
+/// with appropriate metadata (including RUM context if available), and sends it to Datadog.
+///
+/// - Parameter core: The Datadog core instance to use. Defaults to the default core.
+public static func stop(in core: DatadogCoreProtocol) {
+        let featureScope = core.scope(for: ProfilerFeature.self)
+
+        print("*******************************handling custom profiling \(Date())")
 
         let profileStatus = ctor_profiler_get_status()
         guard profileStatus == CTOR_PROFILER_STATUS_RUNNING else {
@@ -113,51 +108,4 @@ internal final class ContinuousProfiler {
             writer.write(value: pprof, metadata: event)
         }
     }
-}
-
-// MARK: - Handle AppLaunchProfiler instances
-
-private extension ContinuousProfiler {
-    /// Registers the `AppLaunchProfiler` to handle the `ProfilerStop` message.
-    static func registerInstance() {
-        lock.lock()
-        defer { lock.unlock() }
-
-        pendingInstances += 1
-    }
-
-    /// Decrements the pending instance counter and destroys the profiler when all instances are done.
-    static func unregisterInstance() {
-        lock.lock()
-        defer { lock.unlock() }
-
-        pendingInstances -= 1
-        if pendingInstances <= 0 {
-            ctor_profiler_destroy()
-        }
-    }
-}
-
-// MARK: - Testing funcs
-
-extension ContinuousProfiler {
-    /// Returns the current pending instances count.
-    static var currentPendingInstances: Int {
-        lock.lock()
-        defer { lock.unlock() }
-        return pendingInstances
-    }
-
-    /// Resets the pending instances counter.
-    static func resetPendingInstances() {
-        lock.lock()
-        defer { lock.unlock() }
-        pendingInstances = 0
-    }
-}
-
-enum Operation: String, CaseIterable {
-    case appLaunch = "launch"
-    case continuousProfiling = "continuous"
-    case customProfiling = "custom"
 }

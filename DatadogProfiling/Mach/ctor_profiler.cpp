@@ -173,6 +173,8 @@ public:
             return;
         }
 
+        if (status == CTOR_PROFILER_STATUS_RUNNING) return;
+
         if (is_prewarming) {
             status = CTOR_PROFILER_STATUS_PREWARMED;
             return;
@@ -335,6 +337,11 @@ static void ctor_profiler_auto_start() {
 }
 
 // C API implementations
+
+void ctor_profiler_start(void) {
+    std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
+    if (g_ctor_profiler) g_ctor_profiler->start();
+}
 
 void ctor_profiler_stop(void) {
     std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);

@@ -25,6 +25,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
     let messageReceiver: FeatureMessageReceiver
 
     let continuousProfiler: ContinuousProfiler?
+    let customProfiler: CustomProfiler
 
     let telemetryController: ProfilingTelemetryController
 
@@ -33,19 +34,22 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
     let performanceOverride: PerformancePresetOverride? = PerformancePresetOverride(maxFileSize: maxObjectSize, maxObjectSize: maxObjectSize)
 
     init(
+        core: DatadogCoreProtocol,
+        configuration: Profiling.Configuration,
         requestBuilder: FeatureRequestBuilder,
         messageReceiver: FeatureMessageReceiver,
-        continuousProfiler: ContinuousProfiler?,
-        sampleRate: SampleRate,
         telemetryController: ProfilingTelemetryController,
         userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
     ) {
         self.requestBuilder = requestBuilder
         self.messageReceiver = messageReceiver
-        self.continuousProfiler = continuousProfiler
         self.telemetryController = telemetryController
 
+        self.customProfiler = DatadogProfiler()
+        self.continuousProfiler = configuration.continuousProfiling ? ContinuousProfiler(core: core) : nil
+
         setProfilingEnabled(in: userDefaults)
+        let sampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
         set(sampleRate: sampleRate, in: userDefaults)
     }
 

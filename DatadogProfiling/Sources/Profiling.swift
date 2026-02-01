@@ -36,6 +36,8 @@ public enum Profiling {
         )
         try? core.register(
             feature: ProfilerFeature(
+                core: core,
+                configuration: configuration,
                 requestBuilder: RequestBuilder(
                     customUploadURL: configuration.customEndpoint,
                     telemetry: core.telemetry
@@ -44,8 +46,6 @@ public enum Profiling {
                     isContinuousProfiling: configuration.continuousProfiling,
                     telemetryController: telemetryController
                 ),
-                continuousProfiler: configuration.continuousProfiling ? ContinuousProfiler(core: core) : nil,
-                sampleRate: configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate,
                 telemetryController: telemetryController
             )
         )
