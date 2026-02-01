@@ -18,9 +18,10 @@ internal import DatadogMachProfiler
 internal final class AppLaunchProfiler: FeatureMessageReceiver {
     /// Shared counter to track pending `AppLaunchProfiler`s from handling the `ProfilerStop` message
     private static var pendingInstances: Int = 0
+    private static var appLaunchProfile: OpaquePointer?
     private static let lock = NSLock()
 
-    private let isContinuousProfiling: Bool
+    private let isContinuousProfilingActive: Bool
     private let telemetryController: ProfilingTelemetryController
 
     init(
@@ -28,7 +29,7 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
         telemetryController: ProfilingTelemetryController = .init()
     ) {
         Self.registerInstance()
-        self.isContinuousProfiling = isContinuousProfiling
+        self.isContinuousProfilingActive = isContinuousProfiling
         self.telemetryController = telemetryController
     }
 
@@ -50,13 +51,13 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
             return false
         }
 
-        if isContinuousProfiling == false {
+        if isContinuousProfilingActive == false {
             ctor_profiler_stop()
         }
         core.set(context: ProfilingContext(status: .current))
         defer { Self.unregisterInstance() }
 
-        guard let profile = ctor_profiler_get_profile(false) else {
+        guard let profile = appLaunchProfile() else {
             telemetryController.send(metric: AppLaunchMetric.noProfile)
             return false
         }
@@ -94,7 +95,7 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                     "language:swift",
                     "format:pprof",
                     "remote_symbols:yes",
-                    "operation:launch"
+                    "operation:\(Operation.appLaunch)"
                 ].joined(separator: ","),
                 additionalAttributes: cmd.context
             )
@@ -106,6 +107,20 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
         }
 
         return true
+    }
+
+    private func appLaunchProfile() -> OpaquePointer? {
+        Self.lock.lock()
+        defer { Self.lock.unlock() }
+
+        if let profile = Self.appLaunchProfile {
+            return profile
+        }
+
+        let currentProfile = ctor_profiler_get_profile(true)
+        Self.appLaunchProfile = currentProfile
+
+        return currentProfile
     }
 }
 

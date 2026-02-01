@@ -230,6 +230,9 @@ public:
      * @return The profile data, or nullptr if none exists
      */
     profile* get_profile(bool cleanup = false) {
+        if (profiler) {
+            profiler->flush_buffer();
+        }
         dd::profiler::profile* p = profile;
         if (cleanup) {
             profile = nullptr;

@@ -27,7 +27,7 @@ internal final class ContinuousProfiler {
     init(
         core: DatadogCoreProtocol,
         telemetryController: ProfilingTelemetryController = .init(),
-        frequency: TimeInterval = TimeInterval(10)
+        frequency: TimeInterval = TimeInterval(30)
     ) {
         Self.registerInstance()
         self.telemetryController = telemetryController
@@ -77,7 +77,7 @@ internal final class ContinuousProfiler {
             return
         }
 
-        print("+++++++++++++++\(duration) ++++++++ \(size)")
+        print("+++++++++++++++\(end - start) ++++++++ \(size)")
 
         let pprof = Data(bytes: data, count: size)
         dd_pprof_free_serialized_data(data)
@@ -101,7 +101,7 @@ internal final class ContinuousProfiler {
                     "language:swift",
                     "format:pprof",
                     "remote_symbols:yes",
-                    "operation:continuous_profiling"
+                    "operation:\(Operation.continuousProfiling)"
                 ].joined(separator: ","),
                 additionalAttributes: [:]
             )
@@ -152,4 +152,10 @@ extension ContinuousProfiler {
         defer { lock.unlock() }
         pendingInstances = 0
     }
+}
+
+enum Operation: String, CaseIterable {
+    case appLaunch = "launch"
+    case continuousProfiling = "continuous"
+    case customProfiling = "custom"
 }

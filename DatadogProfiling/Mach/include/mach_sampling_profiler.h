@@ -59,6 +59,11 @@ public:
     void stop_sampling();
 
     /**
+     * @brief Flushes the current sample buffer to the callback
+     */
+    void flush_buffer();
+
+    /**
      * @brief Atomic flag indicating if profiling is currently running
      */
     std::atomic<bool> running;
@@ -107,11 +112,6 @@ protected:
      */
     void sample_thread(thread_t thread, uint64_t interval_nanos);
 
-    /**
-     * @brief Flushes the sample buffer (common implementation)
-     */
-    void flush_buffer();
-
 private:
     /**
      * @brief Static entry point for the sampling thread
@@ -122,6 +122,11 @@ private:
      * @brief Mutex to protect start/stop operations from concurrent access
      */
     std::mutex state_mutex;
+
+    /**
+     * @brief Mutex to protect buffer operations
+     */
+    std::mutex buffer_mutex;
 };
 
 } // namespace dd::profiler

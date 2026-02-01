@@ -89,7 +89,7 @@ typedef struct sampling_config {
 /// Sampling interval. Default to 9.9ms
 #define SAMPLING_CONFIG_DEFAULT_INTERVAL_NS     9900990 // ~101 Hz (1/101 seconds ≈ 9.9ms)
 /// Max buffer size of samples. It is a larger buffer to delay stack aggregation.
-#define SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE     10000
+#define SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE     100000
 /// Max frames per trace.
 #define SAMPLING_CONFIG_DEFAULT_STACK_DEPTH     128
 /// Max threads count.

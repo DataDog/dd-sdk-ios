@@ -589,8 +589,15 @@ void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_na
     }
 
     if (trace.frame_count > 0) {
-        sample_buffer.push_back(trace);
-        if (sample_buffer.size() >= config.max_buffer_size) {
+        bool should_flush = false;
+        {
+            std::lock_guard<std::mutex> lock(buffer_mutex);
+            sample_buffer.push_back(trace);
+            if (sample_buffer.size() >= config.max_buffer_size) {
+                should_flush = true;
+            }
+        }
+        if (should_flush) {
             printf("flushing the buffer");
             flush_buffer();
         }
@@ -650,10 +657,15 @@ void mach_sampling_profiler::main() {
  * Flushes the sample buffer by calling the callback with collected traces.
  */
 void mach_sampling_profiler::flush_buffer() {
-    if (sample_buffer.empty()) return;
+    std::vector<stack_trace_t> traces_to_flush;
+    {
+        std::lock_guard<std::mutex> lock(buffer_mutex);
+        if (sample_buffer.empty()) return;
+        traces_to_flush.swap(sample_buffer);
+    }
 
     // Fill in binary image information for all frames using the cache
-    for (auto& trace : sample_buffer) {
+    for (auto& trace : traces_to_flush) {
         for (uint32_t i = 0; i < trace.frame_count; i++) {
             auto& frame = trace.frames[i];
             binary_image_init(&frame.image);
@@ -661,14 +673,12 @@ void mach_sampling_profiler::flush_buffer() {
         }
     }
 
-    callback(sample_buffer.data(), sample_buffer.size(), ctx);
+    callback(traces_to_flush.data(), traces_to_flush.size(), ctx);
 
     // Free allocated frame memory and binary image data
-    for (auto& trace : sample_buffer) {
+    for (auto& trace : traces_to_flush) {
         stack_trace_destroy(&trace);
     }
-    
-    sample_buffer.clear();
 }
 
 } // namespace dd:profiler
