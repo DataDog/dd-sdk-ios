@@ -35,12 +35,8 @@ class EvaluationLoggingTests: XCTestCase {
 
         // Record 3 evaluations with time gaps
         aggregator.recordEvaluation(for: "test-flag", assignment: assignment, evaluationContext: context, flagError: flagError)
-        Thread.sleep(forTimeInterval: 0.05)
-
         dateProvider.advance(bySeconds: 1)
         aggregator.recordEvaluation(for: "test-flag", assignment: assignment, evaluationContext: context, flagError: flagError)
-        Thread.sleep(forTimeInterval: 0.05)
-
         dateProvider.advance(bySeconds: 2)
         aggregator.recordEvaluation(for: "test-flag", assignment: assignment, evaluationContext: context, flagError: flagError)
 
@@ -296,6 +292,7 @@ class EvaluationLoggingTests: XCTestCase {
     }
 
     // EVALLOG.3: Tracks evaluation count and first/last timestamps
+    // EVALLOG.10: timestamp field equals first_evaluation
     func testTracksAggregationFields() throws {
         // Given/When
         let (event, featureScope) = try recordAggregatedEvaluationWithTimeGaps()
@@ -306,15 +303,12 @@ class EvaluationLoggingTests: XCTestCase {
 
         // Then - EVALLOG.3: Should track first and last timestamps
         XCTAssertLessThan(event.firstEvaluation, event.lastEvaluation)
+
+        // Then - EVALLOG.10: timestamp equals first_evaluation
+        XCTAssertEqual(event.timestamp, event.firstEvaluation)
     }
 
     // MARK: - EVALLOG.4: Event Buffering / Flushing
-
-    // EVALLOG.4: Time-based flush with configurable interval (default 10s, min 1s, max 1min)
-    func testDefaultEvaluationFlushInterval() throws {
-        let config = Flags.Configuration()
-        XCTAssertEqual(config.evaluationFlushInterval, 10.0, "Default flush interval should be 10 seconds")
-    }
 
     func testEvaluationFlushIntervalBelowMinimumIsClamped() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
@@ -688,17 +682,6 @@ class EvaluationLoggingTests: XCTestCase {
         XCTAssertEqual(androidEvent.evaluationCount, 1)
     }
 
-    // MARK: - EVALLOG.10: Timestamp Field
-
-    // EVALLOG.10: timestamp field equals first_evaluation
-    func testTimestampEqualsFirstEvaluation() throws {
-        // Given/When
-        let (event, _) = try recordAggregatedEvaluationWithTimeGaps()
-
-        // Then
-        XCTAssertEqual(event.timestamp, event.firstEvaluation)
-    }
-
     // MARK: - EVALLOG.11: Aggregation Period Lifecycle
 
     // EVALLOG.11: Aggregation period starts at first evaluation and ends at flush; subsequent evaluations start new periods
@@ -740,27 +723,28 @@ class EvaluationLoggingTests: XCTestCase {
         XCTAssertGreaterThan(secondEvent.firstEvaluation, firstEvent.lastEvaluation)
     }
 
-    // MARK: - EVALLOG.12: Enabled by Default
+    // MARK: - EVALLOG.4 & EVALLOG.12: Default Configuration
 
+    // EVALLOG.4: Default flush interval is 10s
     // EVALLOG.12: Evaluation logging must be enabled by default but may be disabled
-    func testEvaluationLoggingEnabledByDefaultAndCanBeDisabled() throws {
-        // Given
-        let defaultConfig = Flags.Configuration()
+    func testDefaultConfigurationValues() throws {
+        let config = Flags.Configuration()
 
-        // Then
-        XCTAssertTrue(defaultConfig.trackEvaluations, "Evaluation logging should be enabled by default")
+        // EVALLOG.4: Default flush interval
+        XCTAssertEqual(config.evaluationFlushInterval, 10.0, "Default flush interval should be 10 seconds")
 
-        // When
+        // EVALLOG.12: Evaluation logging enabled by default
+        XCTAssertTrue(config.trackEvaluations, "Evaluation logging should be enabled by default")
+
+        // EVALLOG.12: Can be disabled
         let disabledConfig = Flags.Configuration(trackEvaluations: false)
-
-        // Then
         XCTAssertFalse(disabledConfig.trackEvaluations, "Evaluation logging should be disableable")
     }
 
     // MARK: - EVALLOG.13: Runtime Default Used
 
-    // EVALLOG.13: runtime_default_used true for DEFAULT reason
-    func testRuntimeDefaultUsedForDefaultReason() throws {
+    // EVALLOG.13: runtime_default_used behavior for different reasons
+    func testRuntimeDefaultUsedBehavior() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let aggregator = EvaluationAggregator(
@@ -769,11 +753,29 @@ class EvaluationLoggingTests: XCTestCase {
             flushInterval: 60.0
         )
 
-        // When
+        // When - DEFAULT reason
         aggregator.recordEvaluation(
-            for: "test-flag",
+            for: "default-flag",
             assignment: FlagAssignment(
                 allocationKey: "", variationKey: "", variation: .boolean(false), reason: "DEFAULT", doLog: true
+            ),
+            evaluationContext: .mockAny(),
+            flagError: nil
+        )
+
+        // When - ERROR reason (with error message)
+        aggregator.recordEvaluation(
+            for: "error-flag",
+            assignment: .mockAnyBoolean(),
+            evaluationContext: .mockAny(),
+            flagError: "evaluation error"
+        )
+
+        // When - MATCH reason (normal evaluation)
+        aggregator.recordEvaluation(
+            for: "match-flag",
+            assignment: FlagAssignment(
+                allocationKey: "alloc-1", variationKey: "var-1", variation: .boolean(true), reason: "MATCH", doLog: true
             ),
             evaluationContext: .mockAny(),
             flagError: nil
@@ -783,41 +785,15 @@ class EvaluationLoggingTests: XCTestCase {
 
         // Then
         let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
-        let event = try XCTUnwrap(events.first)
+        XCTAssertEqual(events.count, 3)
 
-        XCTAssertEqual(event.runtimeDefaultUsed, true, "runtime_default_used should be true for DEFAULT reason")
-    }
+        let defaultEvent = try XCTUnwrap(events.first { $0.flag.key == "default-flag" })
+        XCTAssertEqual(defaultEvent.runtimeDefaultUsed, true, "runtime_default_used should be true for DEFAULT reason")
 
-    // EVALLOG.13: runtime_default_used true for ERROR reason
-    func testRuntimeDefaultUsedForErrorReason() throws {
-        // Given
-        let featureScope = FeatureScopeMock()
-        let aggregator = EvaluationAggregator(
-            dateProvider: DateProviderMock(now: .mockAny()),
-            featureScope: featureScope,
-            flushInterval: 60.0
-        )
+        let errorEvent = try XCTUnwrap(events.first { $0.flag.key == "error-flag" })
+        XCTAssertEqual(errorEvent.runtimeDefaultUsed, true, "runtime_default_used should be true for ERROR")
 
-        // When
-        aggregator.recordEvaluation(
-            for: "test-flag", assignment: .mockAnyBoolean(), evaluationContext: .mockAny(), flagError: "evaluation error"
-        )
-
-        aggregator.sendEvaluations()
-
-        // Then
-        let events: [FlagEvaluationEvent] = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
-        let event = try XCTUnwrap(events.first)
-
-        XCTAssertEqual(event.runtimeDefaultUsed, true, "runtime_default_used should be true for ERROR")
-    }
-
-    // EVALLOG.13: runtime_default_used omitted when false
-    func testRuntimeDefaultUsedOmittedWhenFalse() throws {
-        // Given/When - shared helper uses MATCH reason by default
-        let (event, _) = try recordAggregatedEvaluationWithTimeGaps()
-
-        // Then
-        XCTAssertNil(event.runtimeDefaultUsed, "runtime_default_used should be omitted for MATCH reason")
+        let matchEvent = try XCTUnwrap(events.first { $0.flag.key == "match-flag" })
+        XCTAssertNil(matchEvent.runtimeDefaultUsed, "runtime_default_used should be omitted for MATCH reason")
     }
 }
