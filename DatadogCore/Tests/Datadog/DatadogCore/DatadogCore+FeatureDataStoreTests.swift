@@ -13,12 +13,14 @@ private struct FeatureAMock: DatadogRemoteFeature {
     static let name: String = "feature-a"
     var requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     var messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    var performanceOverride: DatadogInternal.PerformancePresetOverride?
 }
 
 private struct FeatureBMock: DatadogRemoteFeature {
     static let name: String = "feature-b"
     var requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     var messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    var performanceOverride: DatadogInternal.PerformancePresetOverride?
 }
 
 class DatadogCore_FeatureDataStoreTests: XCTestCase {

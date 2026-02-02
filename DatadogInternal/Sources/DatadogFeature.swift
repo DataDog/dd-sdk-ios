@@ -32,7 +32,3 @@ public protocol DatadogRemoteFeature: DatadogFeature {
     /// (Optional) `PerformancePresetOverride` allows overriding certain performance presets if needed.
     var performanceOverride: PerformancePresetOverride? { get }
 }
-
-extension DatadogRemoteFeature {
-    public var performanceOverride: PerformancePresetOverride? { nil }
-}

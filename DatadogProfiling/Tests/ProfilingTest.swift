@@ -25,7 +25,9 @@ class ProfilingTest: XCTestCase {
         // Then
         let feature = core.feature(named: ProfilerFeature.name, type: ProfilerFeature.self)
         let requestBuilder = feature?.requestBuilder as? RequestBuilder
+        XCTAssertEqual(feature?.performanceOverride?.maxFileSize, .min)
         XCTAssertEqual(requestBuilder?.customUploadURL, configuration.customEndpoint)
+        XCTAssertEqual(feature?.telemetryController.sampleRate, 20)
 
         let context = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
         XCTAssertEqual(context.status, .running)
