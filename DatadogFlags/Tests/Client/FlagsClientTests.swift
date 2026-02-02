@@ -258,7 +258,11 @@ final class FlagsClientTests: XCTestCase {
 
         // Test evaluation logging (all evaluations including errors)
         XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 8)
-        XCTAssertNil(evaluationLogger.logEvaluationCalls[0].error) // No error on successful evaluation
+        for i in 0..<6 {
+            XCTAssertNil(evaluationLogger.logEvaluationCalls[i].error, "Call \(i) should have no error")
+        }
+        XCTAssertNotNil(evaluationLogger.logEvaluationCalls[6].error, "flagNotFound should have error")
+        XCTAssertNotNil(evaluationLogger.logEvaluationCalls[7].error, "typeMismatch should have error")
     }
 
     func testFlagEvaluationTracking() {

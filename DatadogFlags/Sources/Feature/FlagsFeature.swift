@@ -61,10 +61,9 @@ internal struct FlagsFeature: DatadogRemoteFeature {
                 flushInterval = Constants.maxEvaluationFlushInterval
             }
 
-            let evaluationFeatureScope = core.scope(for: FlagsEvaluationFeature.self)
             return EvaluationAggregator(
                 dateProvider: SystemDateProvider(),
-                featureScope: evaluationFeatureScope,
+                featureScope: core.scope(for: FlagsEvaluationFeature.self),
                 flushInterval: flushInterval
             )
         }() : nil

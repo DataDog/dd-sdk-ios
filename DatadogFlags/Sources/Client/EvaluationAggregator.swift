@@ -11,14 +11,14 @@ internal final class EvaluationAggregator {
     private let flushInterval: TimeInterval
     private let maxAggregations: Int
     private let dateProvider: any DateProvider
-    private let featureScope: any FeatureScope
+    private let featureScope: FeatureScope
     @ReadWriteLock
     private var aggregations: [AggregationKey: AggregatedEvaluation] = [:]
     private var flushTimer: Timer?
 
     init(
         dateProvider: any DateProvider,
-        featureScope: any FeatureScope,
+        featureScope: FeatureScope,
         flushInterval: TimeInterval,
         maxAggregations: Int = 1_000
     ) {
@@ -32,7 +32,7 @@ internal final class EvaluationAggregator {
 
     deinit {
         flushTimer?.invalidate()
-        sendEvaluations()
+        // Note: We don't flush here due to exclusivity conflict with DatadogCore.stop()
     }
 
     func recordEvaluation(
@@ -109,16 +109,11 @@ internal final class EvaluationAggregator {
     }
 
     private func startFlushTimer() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else {
-                return
-            }
-            self.flushTimer = Timer.scheduledTimer(
-                withTimeInterval: self.flushInterval,
-                repeats: true
-            ) { [weak self] _ in
-                self?.sendEvaluations()
-            }
+        flushTimer = Timer.scheduledTimer(
+            withTimeInterval: flushInterval,
+            repeats: true
+        ) { [weak self] _ in
+            self?.sendEvaluations()
         }
     }
 }

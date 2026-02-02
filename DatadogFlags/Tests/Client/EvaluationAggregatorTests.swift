@@ -11,9 +11,6 @@ import TestUtilities
 @_spi(Internal)
 @testable import DatadogFlags
 
-/// Note: Aggregation behavior for EVALLOG specs (flush triggers, aggregation key, first timestamp, count)
-/// are tested in `EvaluationLoggingTests` as part of validating EVALLOG specifications compliance.
-/// This test suite focuses on implementation-specific details like thread safety and internal state management.
 class EvaluationAggregatorTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
@@ -28,7 +25,7 @@ class EvaluationAggregatorTests: XCTestCase {
             maxAggregations: 1_000
         )
 
-        // When - record some evaluations
+        // When
         aggregator.recordEvaluation(
             for: "flag-1",
             assignment: .mockAnyBoolean(),
@@ -42,11 +39,10 @@ class EvaluationAggregatorTests: XCTestCase {
             flagError: nil
         )
 
-        // Then - flush should send events
+        // Then
         aggregator.sendEvaluations()
         XCTAssertEqual(featureScope.eventsWritten.count, 2)
 
-        // When - record more evaluations after flush
         aggregator.recordEvaluation(
             for: "flag-3",
             assignment: .mockAnyBoolean(),
@@ -54,7 +50,6 @@ class EvaluationAggregatorTests: XCTestCase {
             flagError: nil
         )
 
-        // Then - previous aggregations were cleared, only new one exists
         aggregator.sendEvaluations()
         XCTAssertEqual(featureScope.eventsWritten.count, 3, "Should have 2 from first flush + 1 from second flush")
     }
@@ -74,7 +69,7 @@ class EvaluationAggregatorTests: XCTestCase {
         let expectation = self.expectation(description: "All operations complete")
         expectation.expectedFulfillmentCount = iterations * 2
 
-        // When - record and flush concurrently
+        // When
         DispatchQueue.global().async {
             for index in 0..<iterations {
                 aggregator.recordEvaluation(
@@ -94,10 +89,8 @@ class EvaluationAggregatorTests: XCTestCase {
             }
         }
 
-        // Then - all operations complete without crashes or deadlocks
+        // Then
         wait(for: [expectation], timeout: 5.0)
-
-        // Final flush to collect any remaining evaluations
         aggregator.sendEvaluations()
 
         XCTAssertEqual(featureScope.eventsWritten.count, 50, "Should have written exactly one event per unique flag")
