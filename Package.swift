@@ -49,7 +49,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/kstenerud/KSCrash.git", from: "2.5.0"),
-        .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.3.0")),
+        .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core.git", revision: "2fa47a7517be07f4efc959e513c8f80719cee65d"),
     ],
     targets: [
         .target(
@@ -106,7 +106,10 @@ let package = Package(
                 .target(name: "DatadogInternal"),
                 .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-core")
             ],
-            path: "DatadogTrace/Sources"
+            path: "DatadogTrace/Sources",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
         ),
         .testTarget(
             name: "DatadogTraceTests",
@@ -114,7 +117,10 @@ let package = Package(
                 .target(name: "DatadogTrace"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogTrace/Tests"
+            path: "DatadogTrace/Tests",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
         ),
 
         .target(
@@ -254,7 +260,7 @@ let package = Package(
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
         )
     ],
-//    swiftLanguageVersions: [.v6]
+    swiftLanguageModes: [.v5]
 )
 
 // If the `DD_TEST_UTILITIES_ENABLED` development ENV is set, export additional utility packages.
