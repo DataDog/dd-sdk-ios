@@ -10,14 +10,15 @@ import DatadogInternal
 
 @testable import DatadogTrace
 
-class ActiveSpansPoolTests: XCTestCase {
+@MainActor
+class ActiveSpansPoolTests: XCTestCase, Sendable {
     private var core: DatadogCoreProtocol! // swiftlint:disable:this implicitly_unwrapped_optional
 
-    override func setUpWithError() throws {
+    override func setUp() async throws {
         core = PassthroughCoreMock()
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         core = nil
     }
 
@@ -79,34 +80,31 @@ class ActiveSpansPoolTests: XCTestCase {
         XCTAssertTrue(tracer.activeSpansPool.isEmpty)
     }
 
-    func testActiveSpanIsKeptPerTask() throws {
+    @available(iOS 13.0, tvOS 13, *)
+    func testActiveSpanIsKeptPerTask() async throws {
         let tracer = DatadogTracer.mockAny(in: core)
         let oneSpan = tracer.startSpan(operationName: .mockAny()).setActive()
-        var firstSpan: OTSpan?
-        var secondSpan: OTSpan?
 
-        let expectation1 = self.expectation(description: "firstSpan created")
-        let expectation2 = self.expectation(description: "secondSpan created")
-
-        DispatchQueue.global(qos: .default).async {
-            firstSpan = tracer.startSpan(operationName: .mockAny()).setActive()
-            XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, firstSpan!.dd.ddContext.spanID)
-            expectation1.fulfill()
+        let task1 = Task {
+            let firstSpan = tracer.startSpan(operationName: .mockAny()).setActive()
+            XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, firstSpan.dd.ddContext.spanID)
+            return firstSpan
         }
 
-        DispatchQueue.global(qos: .default).async {
-            Thread.sleep(forTimeInterval: 0.5)
+        let task2 = Task {
+            try await Task.sleep(nanoseconds: 500_000_000)
             XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
-            secondSpan = tracer.startSpan(operationName: .mockAny()).setActive()
-            XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, secondSpan!.dd.ddContext.spanID)
-            expectation2.fulfill()
+            let secondSpan = tracer.startSpan(operationName: .mockAny()).setActive()
+            XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, secondSpan.dd.ddContext.spanID)
+            return secondSpan
         }
 
         XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
-        waitForExpectations(timeout: 5, handler: nil)
+        let (firstSpan, secondSpan) = try await (task1.value, task2.value)
         oneSpan.finish()
-        firstSpan?.finish()
-        secondSpan?.finish()
+        firstSpan.finish()
+        secondSpan.finish()
+
         XCTAssertNil(tracer.activeSpan)
         XCTAssertTrue(tracer.activeSpansPool.isEmpty)
     }

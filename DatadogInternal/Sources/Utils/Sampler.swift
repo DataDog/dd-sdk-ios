@@ -11,7 +11,7 @@ import Foundation
 public typealias SampleRate = Float
 
 /// Protocol for determining sampling decisions.
-public protocol Sampling {
+public protocol Sampling: Sendable {
     /// Value between `0.0` and `100.0`, where `0.0` means NO event will be sent and `100.0` means ALL events will be sent.
     var samplingRate: SampleRate { get }
     /// Determines whether sampling should be performed.
