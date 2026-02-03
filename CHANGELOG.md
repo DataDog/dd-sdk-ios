@@ -1,12 +1,12 @@
 # Unreleased
 
-- [IMPROVEMENT] Skip malformed Logs attributes individually instead of dropping the entire 
-  event, and log clear error messages. See [#2665][]
+- [FEATURE] Add evaluation logging to `DatadogFlags` module. See [#2646][]
+- [IMPROVEMENT] Skip malformed Logs attributes individually instead of dropping the entire event, and log clear error messages. See [#2665][]
 
 # 3.6.1 / 02-02-2026
 
 - [FIX] Prevent crashes related to swapping the `__cxa_throw` function. See [#2661][]
-        
+
 # 3.6.0 / 28-01-2026
 
 - [FEATURE] Add `DatadogProfiling` module to profile app launches. See [#2654][]
@@ -1038,6 +1038,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2633]: https://github.com/DataDog/dd-sdk-ios/pull/2633
 [#2647]: https://github.com/DataDog/dd-sdk-ios/pull/2647
 [#2640]: https://github.com/DataDog/dd-sdk-ios/pull/2640
+[#2646]: https://github.com/DataDog/dd-sdk-ios/pull/2646
 [#2639]: https://github.com/DataDog/dd-sdk-ios/pull/2639
 [#2654]: https://github.com/DataDog/dd-sdk-ios/pull/2654
 [#2665]: https://github.com/DataDog/dd-sdk-ios/pull/2665
