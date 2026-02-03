@@ -4810,7 +4810,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let synthetics: RUMSyntheticsTest?
 
     /// RUM event type
-    public let type: String = "view"
+    public var type: String = "view"
 
     /// User properties
     public var usr: RUMUser?

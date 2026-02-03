@@ -564,7 +564,7 @@ extension RUMViewScope {
         // Retrieve Session Replay config if any
         let sessionReplayConfig = context.additionalContext(ofType: SessionReplayCoreContext.Configuration.self)
 
-        let viewEvent = RUMViewEvent(
+        var viewEvent = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 cls: nil,
@@ -670,6 +670,11 @@ extension RUMViewScope {
                 url: viewPath
             )
         )
+
+        // Send as view_update for subsequent updates (version > 1)
+        if version > 1 {
+            viewEvent.type = "view_update"
+        }
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
             writer.write(
