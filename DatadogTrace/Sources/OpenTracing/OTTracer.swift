@@ -6,6 +6,8 @@ import DatadogInternal
 /// 
 /// Tracer should be thread-safe.
 public protocol OTTracer {
+    typealias TagValue = Encodable & Sendable
+
     /// Start a new span with the given operation name.
     ///
     /// - parameter operationName: the operation name for the newly-started span
@@ -20,7 +22,7 @@ public protocol OTTracer {
     func startSpan(
         operationName: String,
         references: [OTReference]?,
-        tags: [String: Encodable]?,
+        tags: [String: TagValue]?,
         startTime: Date?
     ) -> OTSpan
 
@@ -35,7 +37,7 @@ public protocol OTTracer {
     /// - returns:            a valid Span instance; it is the caller's responsibility to call `finish()`.
     func startRootSpan(
         operationName: String,
-        tags: [String: Encodable]?,
+        tags: [String: TagValue]?,
         startTime: Date?,
         customSampleRate: SampleRate?
     ) -> OTSpan
@@ -97,7 +99,7 @@ public extension OTTracer {
     func startSpan(
         operationName: String,
         childOf parent: OTSpanContext? = nil,
-        tags: [String: Encodable]? = nil,
+        tags: [String: TagValue]? = nil,
         startTime: Date? = nil
     ) -> OTSpan {
         let references = parent.map { [OTReference.child(of: $0)] }
@@ -120,7 +122,7 @@ public extension OTTracer {
     /// - returns:            a valid Span instance; it is the caller's responsibility to call `finish()`.
     func startRootSpan(
         operationName: String,
-        tags: [String: Encodable]? = nil,
+        tags: [String: TagValue]? = nil,
         startTime: Date? = nil,
         customSampleRate: SampleRate? = nil
     ) -> OTSpan {
