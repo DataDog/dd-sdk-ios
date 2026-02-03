@@ -191,9 +191,19 @@ extension DatadogExtension where ExtendedType == [String: Any] {
     public var swiftAttributes: [String: Encodable] {
         type.mapValues { AnyEncodable($0) }
     }
+
+    public var swiftSendableAttributes: [String: Encodable & Sendable] {
+        type.mapValues { AnyEncodable($0) }
+    }
 }
 
 extension DatadogExtension where ExtendedType == [String: Encodable] {
+    public var objCAttributes: [String: Any] {
+        type.compactMapValues { ($0 as? AnyEncodable)?.value }
+    }
+}
+
+extension DatadogExtension where ExtendedType == [String: Encodable & Sendable] {
     public var objCAttributes: [String: Any] {
         type.compactMapValues { ($0 as? AnyEncodable)?.value }
     }

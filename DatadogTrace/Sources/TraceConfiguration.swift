@@ -21,7 +21,7 @@ import DatadogInternal
 extension Trace {
     /// Trace feature configuration.
     public struct Configuration: SampledTelemetry {
-        public typealias EventMapper = (SpanEvent) -> SpanEvent
+        public typealias EventMapper = @Sendable (SpanEvent) -> SpanEvent
 
         /// The sampling rate for spans created with the default tracer.
         ///
@@ -36,7 +36,7 @@ extension Trace {
         public var service: String?
 
         /// Global tags associated with each span created with the default tracer.
-        public var tags: [String: Encodable]?
+        public var tags: [String: OTTracer.TagValue]?
 
         /// The configuration for automatic network requests tracing.
         ///
@@ -149,7 +149,7 @@ extension Trace {
         public init(
             sampleRate: SampleRate = .maxSampleRate,
             service: String? = nil,
-            tags: [String: Encodable]? = nil,
+            tags: [String: OTTracer.TagValue]? = nil,
             urlSessionTracking: URLSessionTracking? = nil,
             bundleWithRumEnabled: Bool = true,
             networkInfoEnabled: Bool = false,

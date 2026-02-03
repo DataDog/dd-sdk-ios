@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Builds `SpanEvent` representation (for later serialization) from span information recorded in `DDSpan` and values received from global configuration.
-internal struct SpanEventBuilder {
+internal struct SpanEventBuilder: @unchecked Sendable {
     /// Service name to encode in span.
     let service: String?
     /// Enriches traces with network connection info.
@@ -19,6 +19,7 @@ internal struct SpanEventBuilder {
     let eventsMapper: SpanEventMapper?
     /// If spans should be enriched with the current RUM context.
     let bundleWithRUM: Bool
+    // TODO: RUM-13222 Make Telemetry Sendable so @unchecked can be removed from SpanEventBuilder
     /// Telemetry interface.
     let telemetry: Telemetry
     /// Span attributes encoder
@@ -46,7 +47,7 @@ internal struct SpanEventBuilder {
         // Add baggage items as tags
         tags = baggageItems
 
-        // Add regular tags (prefer regular tags over baggate items)
+        // Add regular tags (prefer regular tags over baggage items)
         let regularTags = castValuesToString(tagsReducer.reducedSpanTags)
         tags.merge(regularTags) { _, regularTag in regularTag }
 

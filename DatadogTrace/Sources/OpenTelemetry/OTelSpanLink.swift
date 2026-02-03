@@ -7,8 +7,9 @@
 import Foundation
 import OpenTelemetryApi
 
+// TODO: RUM-13222 OpenTelemetryApi.SpanContext is *definitely* not sendable. Since we're not adding a new problem, it already existed, marking it as @unchecked for now.
 /// Represents a span link containing a `SpanContext` and additional attributes.
-internal struct OTelSpanLink: Equatable {
+internal struct OTelSpanLink: Equatable, @unchecked Sendable {
     /// Context of the linked span.
     let context: OpenTelemetryApi.SpanContext
 

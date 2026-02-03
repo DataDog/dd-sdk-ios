@@ -15,7 +15,7 @@ import DatadogInternal
 /// user may call `DDSpan.setTag(key: SpanTags.manualDrop, value: true)` on any of
 /// the spans that are part of a trace to mark the entire trace as manually dropped, since all the span contexts
 /// are pointing to the same instance of `SamplingDecision`.
-internal final class SamplingDecision {
+internal final class SamplingDecision: @unchecked Sendable {
     /// The decision mechanisms used in this decision.
     ///
     /// This dictionary should contain only the relevant mechanisms. For example, most `SamplingDecision`

@@ -38,7 +38,7 @@ internal class ActivityReference {
 }
 
 /// Helper class to get the current Span
-internal class ActiveSpansPool {
+internal final class ActiveSpansPool: @unchecked Sendable {
     private var contextMap = [os_activity_id_t: DDSpan]()
     private let rlock = NSRecursiveLock()
 

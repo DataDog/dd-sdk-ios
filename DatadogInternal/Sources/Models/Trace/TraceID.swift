@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct TraceID: RawRepresentable, Equatable, Hashable {
+public struct TraceID: RawRepresentable, Equatable, Hashable, Sendable {
     /// The `String` representation format of a `TraceID`.
     public enum Representation {
         case decimal
@@ -26,11 +26,11 @@ public struct TraceID: RawRepresentable, Equatable, Hashable {
 
     /// The unique integer (64-bit unsigned) ID of the trace
     /// (high 64 bits of the 128-bit trace ID).
-    public private(set) var idHi: UInt64
+    public let idHi: UInt64
 
     /// The unique integer (64-bit unsigned) ID of the trace
     /// (low 64 bits of the 128-bit trace ID).
-    public private(set) var idLo: UInt64
+    public let idLo: UInt64
 
     /// The `String` representation of high 64 bits of the trace ID.
     public var idHiHex: String {
@@ -184,7 +184,7 @@ extension String {
 }
 
 /// A `TraceID` generator interface.
-public protocol TraceIDGenerator {
+public protocol TraceIDGenerator: Sendable {
     /// Generates a new and unique `TraceID`.
     ///
     /// - Returns: The generated `TraceID`
@@ -194,7 +194,7 @@ public protocol TraceIDGenerator {
 /// A Default `TraceID` generator.
 /// TraceId are 128 bit and follows a specific format:
 /// <32-bit unix seconds> <32 bits of zero> <64 random bits>
-public struct DefaultTraceIDGenerator: TraceIDGenerator {
+public struct DefaultTraceIDGenerator: TraceIDGenerator, Sendable {
     /// Describes the lower and upper boundary of lower part of the trace ID.
     public static let defaultGenerationRange = (1...UInt64.max)
 

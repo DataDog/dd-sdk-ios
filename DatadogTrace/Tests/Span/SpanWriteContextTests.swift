@@ -12,6 +12,7 @@ import DatadogInternal
 class SpanWriteContextTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    @MainActor
     func testWhenRequestingSpanWriteContext_itProvidesInitialCoreContext() {
         let retrieveContext = expectation(description: "provide core context")
 

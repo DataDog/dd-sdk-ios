@@ -8,8 +8,8 @@ import Foundation
 import DatadogInternal
 
 /// Creates randomized `[String: Codable]` attributes
-public func mockRandomAttributes() -> [AttributeKey: AttributeValue] {
-    struct Foo: Codable {
+public func mockRandomAttributes() -> [AttributeKey: AttributeValue & Sendable] {
+    struct Foo: Codable, Sendable {
         var bar: String = .mockRandom()
         var bizz = Bizz()
 
