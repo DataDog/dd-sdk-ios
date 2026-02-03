@@ -29,7 +29,7 @@ public final class objc_TraceConfiguration: NSObject {
     }
 
     public var tags: [String: Any]? {
-        set { swiftConfig.tags = newValue?.dd.swiftAttributes }
+        set { swiftConfig.tags = newValue?.dd.swiftSendableAttributes }
         get { swiftConfig.tags?.dd.objCAttributes }
     }
 
@@ -146,7 +146,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
             objcTracer: self,
             swiftSpan: swiftTracer.startSpan(
                 operationName: operationName,
-                tags: tags.flatMap { castTagsToSwift($0) }
+                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTracer.TagValue] }
             )
         )
     }
@@ -173,7 +173,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
             swiftSpan: swiftTracer.startSpan(
                 operationName: operationName,
                 childOf: ddspanContext?.swiftSpanContext,
-                tags: tags.flatMap { castTagsToSwift($0) }
+                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTracer.TagValue]}
             )
         )
     }
@@ -190,7 +190,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
             swiftSpan: swiftTracer.startSpan(
                 operationName: operationName,
                 childOf: ddspanContext?.swiftSpanContext,
-                tags: tags.flatMap { castTagsToSwift($0) },
+                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTracer.TagValue]},
                 startTime: startTime
             )
         )
@@ -206,7 +206,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
             objcTracer: self,
             swiftSpan: swiftTracer.startRootSpan(
                 operationName: operationName,
-                tags: tags.flatMap { castTagsToSwift($0) },
+                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTracer.TagValue] },
                 startTime: startTime,
                 customSampleRate: customSampleRate?.floatValue
             )

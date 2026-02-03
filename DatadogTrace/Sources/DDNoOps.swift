@@ -36,17 +36,17 @@ internal final class DDNoopTracer: OTTracer, OpenTelemetryApi.Tracer, Sendable {
         warn()
     }
 
-    func startSpan(operationName: String, references: [OTReference]?, tags: [String: Encodable]?, startTime: Date?) -> OTSpan {
+    func startSpan(operationName: String, references: [OTReference]?, tags: [String: TagValue]?, startTime: Date?) -> OTSpan {
         warn()
         return DDNoopGlobals.span
     }
 
-    func startRootSpan(operationName: String, tags: [String: Encodable]?, startTime: Date?) -> OTSpan {
+    func startRootSpan(operationName: String, tags: [String: TagValue]?, startTime: Date?) -> OTSpan {
         warn()
         return DDNoopGlobals.span
     }
 
-    func startRootSpan(operationName: String, tags: [String: any Encodable]?, startTime: Date?, customSampleRate: SampleRate?) -> any OTSpan {
+    func startRootSpan(operationName: String, tags: [String: any TagValue]?, startTime: Date?, customSampleRate: SampleRate?) -> any OTSpan {
         warn()
         return DDNoopGlobals.span
     }
@@ -67,7 +67,7 @@ internal struct DDNoopSpan: OTSpan {
     func log(fields: [String: Encodable], timestamp: Date) {}
     func baggageItem(withKey key: String) -> String? { nil }
     func setBaggageItem(key: String, value: String) {}
-    func setTag(key: String, value: Encodable) {}
+    func setTag(key: String, value: OTTracer.TagValue) {}
     @discardableResult
     func setActive() -> OTSpan { self }
 }
