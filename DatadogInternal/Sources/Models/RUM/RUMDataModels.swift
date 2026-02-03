@@ -4810,6 +4810,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let synthetics: RUMSyntheticsTest?
 
     /// RUM event type
+    // TODO(RUMM-4657): Revert to `let` when RUMViewUpdateEvent struct is added
     public var type: String = "view"
 
     /// User properties

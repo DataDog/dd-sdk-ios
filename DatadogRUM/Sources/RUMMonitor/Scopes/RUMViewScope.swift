@@ -671,7 +671,9 @@ extension RUMViewScope {
             )
         )
 
-        // Send as view_update for subsequent updates (version > 1)
+        // PROTOTYPE: Change type to view_update for backend validation.
+        // NOTE: This still sends ALL fields (not partial updates).
+        // Production implementation will need RUMViewUpdateEvent struct with partial fields.
         if version > 1 {
             viewEvent.type = "view_update"
         }
