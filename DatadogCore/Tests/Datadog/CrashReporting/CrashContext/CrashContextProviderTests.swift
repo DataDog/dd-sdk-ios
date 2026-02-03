@@ -71,7 +71,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.viewEvent, value: rumView), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -91,7 +91,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.viewEvent, value: rumView), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -114,8 +114,8 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.viewEvent, value: rumView), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.viewReset, value: true), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -135,8 +135,8 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.viewEvent, value: rumView), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.viewReset, value: true), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -159,14 +159,14 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.sessionState, value: rumSessionState), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumSessionState), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
         let crashContext = try XCTUnwrap(latestCrashContext)
         XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: sdkContext)
-        DDAssertJSONEqual(crashContext.lastRUMSessionState, rumSessionState, "Last RUM session state must be available")
+        XCTAssertEqual(crashContext.lastRUMSessionState, rumSessionState, "Last RUM session state must be available")
     }
 
     func testWhenSDKContextIsReceivedAfterRUMSessionState_itNotifiesNewCrashContext() throws {
@@ -179,7 +179,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.sessionState, value: rumSessionState), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumSessionState), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -187,7 +187,7 @@ class CrashContextProviderTests: XCTestCase {
         let crashContext = try XCTUnwrap(latestCrashContext)
         XCTAssertEqual(crashContext, provider.currentCrashContext)
         DDAssert(crashContext: crashContext, includes: nextSDKContext)
-        DDAssertJSONEqual(crashContext.lastRUMSessionState, rumSessionState, "Last RUM session state must be available even after next SDK context update")
+        XCTAssertEqual(crashContext.lastRUMSessionState, rumSessionState, "Last RUM session state must be available even after next SDK context update")
     }
 
     // MARK: - Receiving Global RUM Attributes
@@ -198,11 +198,11 @@ class CrashContextProviderTests: XCTestCase {
 
         // Given
         let sdkContext: DatadogContext = .mockRandom()
-        let rumAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+        let rumAttributes: RUMEventAttributes = .mockRandom()
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.attributes, value: rumAttributes), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumAttributes), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -217,12 +217,12 @@ class CrashContextProviderTests: XCTestCase {
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
-        let rumAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+        let rumAttributes: RUMEventAttributes = .mockRandom()
         let nextSDKContext: DatadogContext = .mockRandom()
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: RUMBaggageKeys.attributes, value: rumAttributes), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(rumAttributes), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -241,11 +241,11 @@ class CrashContextProviderTests: XCTestCase {
 
         // Given
         let sdkContext: DatadogContext = .mockRandom()
-        let logAttributes = AnyCodable(mockRandomAttributes())
+        let logAttributes: LogEventAttributes = .mockRandom()
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: GlobalLogAttributes.key, value: logAttributes), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(logAttributes), from: NOPDatadogCore()))
 
         // Then
         provider.flush()
@@ -260,12 +260,12 @@ class CrashContextProviderTests: XCTestCase {
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
-        let logAttributes = AnyCodable(mockRandomAttributes())
+        let logAttributes: LogEventAttributes = .mockRandom()
         let nextSDKContext: DatadogContext = .mockRandom()
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .baggage(key: GlobalLogAttributes.key, value: logAttributes), from: NOPDatadogCore()))
+        XCTAssertTrue(provider.receive(message: .payload(logAttributes), from: NOPDatadogCore()))
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -288,9 +288,9 @@ class CrashContextProviderTests: XCTestCase {
             closures: [
                 { _ = provider.currentCrashContext },
                 { _ = provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .baggage(key: RUMBaggageKeys.viewReset, value: true), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState), from: NOPDatadogCore()) },
+                { _ = provider.receive(message: .payload(viewEvent), from: NOPDatadogCore()) },
+                { _ = provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: NOPDatadogCore()) },
+                { _ = provider.receive(message: .payload(sessionState), from: NOPDatadogCore()) },
             ],
             iterations: 50
         )
@@ -302,19 +302,21 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Helpers
 
     private func DDAssert(crashContext: CrashContext, includes sdkContext: DatadogContext, file: StaticString = #filePath, line: UInt = #line) {
-        XCTAssertEqual(crashContext.appLaunchDate, sdkContext.launchTime?.launchDate, file: file, line: line)
+        XCTAssertEqual(crashContext.appLaunchDate, sdkContext.launchInfo.processLaunchDate, file: file, line: line)
         XCTAssertEqual(crashContext.serverTimeOffset, sdkContext.serverTimeOffset, file: file, line: line)
         XCTAssertEqual(crashContext.service, sdkContext.service, file: file, line: line)
         XCTAssertEqual(crashContext.env, sdkContext.env, file: file, line: line)
         XCTAssertEqual(crashContext.version, sdkContext.version, file: file, line: line)
         XCTAssertEqual(crashContext.buildNumber, sdkContext.buildNumber, file: file, line: line)
-        XCTAssertEqual(crashContext.device, sdkContext.device, file: file, line: line)
+        DDAssertReflectionEqual(crashContext.device, sdkContext.normalizedDevice(), file: file, line: line)
+        DDAssertReflectionEqual(crashContext.os, sdkContext.os, file: file, line: line)
         XCTAssertEqual(crashContext.sdkVersion, sdkContext.sdkVersion, file: file, line: line)
         XCTAssertEqual(crashContext.source, sdkContext.source, file: file, line: line)
         XCTAssertEqual(crashContext.trackingConsent, sdkContext.trackingConsent, file: file, line: line)
         DDAssertReflectionEqual(crashContext.userInfo, sdkContext.userInfo, file: file, line: line)
+        DDAssertReflectionEqual(crashContext.accountInfo, sdkContext.accountInfo, file: file, line: line)
         XCTAssertEqual(crashContext.networkConnectionInfo, sdkContext.networkConnectionInfo, file: file, line: line)
         XCTAssertEqual(crashContext.carrierInfo, sdkContext.carrierInfo, file: file, line: line)
-        XCTAssertEqual(crashContext.lastIsAppInForeground, sdkContext.applicationStateHistory.currentSnapshot.state.isRunningInForeground, file: file, line: line)
+        XCTAssertEqual(crashContext.lastIsAppInForeground, sdkContext.applicationStateHistory.currentState.isRunningInForeground, file: file, line: line)
     }
 }

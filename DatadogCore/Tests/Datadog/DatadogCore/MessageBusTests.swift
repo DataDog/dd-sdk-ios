@@ -18,12 +18,12 @@ class MessageBusTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
 
-        let receiver = FeatureMessageReceiverMock(expectation: expectation) { message in
+        let receiver = FeatureMessageReceiverMock { message in
             // Then
-            if let value: String = try? message.baggage(forKey: "test") {
-                XCTAssertEqual(value, "value")
+            switch message {
+            case let .payload(payload as String) where payload == "value":
                 expectation.fulfill()
-            } else {
+            default:
                 XCTFail("wrong message case")
             }
         }
@@ -35,7 +35,7 @@ class MessageBusTests: XCTestCase {
         bus.connect(receiver, forKey: "receiver 2")
 
         // When
-        bus.send(message: .baggage(key: "test", value: "value"))
+        bus.send(message: .payload("value"))
 
         // Then
         wait(for: [expectation], timeout: 0.5)
@@ -44,7 +44,7 @@ class MessageBusTests: XCTestCase {
 
     func testItForwardConfigurationAfterDispatch() throws {
         let expectation = XCTestExpectation(description: "dispatch configuration")
-        let receiver = FeatureMessageReceiverMock(expectation: expectation) { message in
+        let receiver = FeatureMessageReceiverMock { message in
             guard
                 case .telemetry(let telemetry) = message,
                 case .configuration(let configuration) = telemetry
@@ -73,7 +73,7 @@ class MessageBusTests: XCTestCase {
     }
 }
 
-extension MessageBus: Telemetry {
+extension MessageBus: @retroactive Telemetry {
     public func send(telemetry: DatadogInternal.TelemetryMessage) {
         send(message: .telemetry(telemetry))
     }

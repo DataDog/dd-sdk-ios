@@ -21,8 +21,8 @@ class RUMInternalProxyTests: XCTestCase {
         RUM.enable(with: .mockAny(), in: core)
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
@@ -44,8 +44,8 @@ class RUMInternalProxyTests: XCTestCase {
         let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
         let views = try session.views.dropApplicationLaunchView()
         let longTask = views[0].longTaskEvents.first
-        XCTAssertEqual(longTask?.date, (date - duration).timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(longTask?.longTask.duration, duration.toInt64Nanoseconds)
+        XCTAssertEqual(longTask?.date, (date - duration).timeIntervalSince1970.dd.toInt64Milliseconds)
+        XCTAssertEqual(longTask?.longTask.duration, duration.dd.toInt64Nanoseconds)
     }
 
     func testProxyRecordsPerformanceMetricsAreSent() throws {

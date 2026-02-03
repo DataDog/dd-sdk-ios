@@ -64,7 +64,7 @@ public typealias AttributeValue = Encodable
 
 // MARK: - Internal attributes
 
-/// Internal attributes, passed from cross-platform bridge.
+/// Internal attributes, passed from cross-platform bridge or internal integrations.
 /// Used to configure or override SDK internal features and attributes for the need of cross-platform SDKs (e.g. React Native SDK).
 public struct CrossPlatformAttributes {
     /// Custom app version passed from CP SDK. Used for all events issued by the SDK (both coming from cross-platform SDK and produced internally, like RUM long tasks).
@@ -124,12 +124,6 @@ public struct CrossPlatformAttributes {
     /// Expects `Double` value between `0.0` and `1.0`.
     public static let rulePSR = "_dd.rule_psr"
 
-    /// Custom attribute of the log passed from CP SDK. Used in error logs reported by cross platform SDK.
-    /// It flags the error has being fatal for the host application, so we can prevent creating a duplicate RUM error.
-    /// The goal of RUMM-3289 is to create an RFC to get rid of this mechanism.
-    /// Expects `Bool` value.
-    public static let errorLogIsCrash = "_dd.error_log.is_crash"
-
     /// Custom attribute passed when starting GraphQL RUM resources from a cross platform SDK.
     /// It sets the GraphQL operation name if it was defined by the developer.
     /// Expects `String` value.
@@ -146,9 +140,14 @@ public struct CrossPlatformAttributes {
     public static let graphqlPayload = "_dd.graphql.payload"
 
     /// Custom attribute passed when starting GraphQL RUM resources resources from a cross platform SDK.
-    /// It sets the GraphQL varibles as a JSON string if they were defined by the developer.
+    /// It sets the GraphQL variables as a JSON string if they were defined by the developer.
     /// Expects `String` value.
     public static let graphqlVariables = "_dd.graphql.variables"
+
+    /// Custom attribute passed when completing GraphQL RUM resources that contain errors in the response.
+    /// It sets the GraphQL errors from the response body as JSON data.
+    /// Expects `Data` value.
+    public static let graphqlErrors = "_dd.graphql.errors"
 
     /// Override the `source_type` of errors reported by the native crash handler. This is used on
     /// platforms that can supply extra steps or information on a native crash (such as Unity's IL2CPP)
@@ -156,6 +155,30 @@ public struct CrossPlatformAttributes {
 
     /// Add "binary images" to the reportted error to assist with symbolication. Used by Unity for IL2CPP symbolicaiton
     public static let includeBinaryImages = "_dd.error.include_binary_images"
+
+    /// Custom Flutter vital - First Build Complete. The amount of time between a route change (the start of a view) and when the first
+    /// `build` method is complete. In nanoseconds since view start
+    public static let flutterFirstBuildComplete: String = "_dd.performance.first_build_complete"
+
+    /// Custom value for Interaction To Next view.
+    /// For Flutter this is the amount of time between an action occurring and the First Build Complete occurring on the next view.
+    public static let customINVValue: String = "_dd.view.custom_inv_value"
+}
+
+/// HTTP header names used to pass GraphQL metadata from the application to the SDK.
+/// These headers are read from intercepted requests and mapped to internal attributes.
+public struct GraphQLHeaders {
+    /// HTTP header name for GraphQL operation name.
+    public static let operationName: String = "_dd-custom-header-graph-ql-operation-name"
+
+    /// HTTP header name for GraphQL operation type.
+    public static let operationType: String = "_dd-custom-header-graph-ql-operation-type"
+
+    /// HTTP header name for GraphQL variables.
+    public static let variables: String = "_dd-custom-header-graph-ql-variables"
+
+    /// HTTP header name for GraphQL payload.
+    public static let payload: String = "_dd-custom-header-graph-ql-payload"
 }
 
 public struct LaunchArguments {

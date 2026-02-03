@@ -136,8 +136,8 @@ internal extension XCTestCase {
         diffAttachement.lifetime = .deleteOnSuccess
         add(diffAttachement)
 
-        // Check if both wireframe images are identical (precission: 1) or their difference is not
-        // noticable for the human eye (perceptualPrecision: 0.98).
+        // Check if both wireframe images are identical (precision: 1) or their difference is not
+        // noticeable for the human eye (perceptualPrecision: 0.98).
         // Ref.: http://zschuessler.github.io/DeltaE/learn/#toc-defining-delta-e
         return compare(oldImages.rightImage, newImages.rightImage, precision: 1, perceptualPrecision: 0.98)
     }
@@ -151,7 +151,6 @@ internal extension XCTestCase {
 //
 // Modifications made:
 // - simplification of platform & version specific code branches
-import UIKit
 import CoreImage.CIKernel
 import MetalPerformanceShaders
 
@@ -182,7 +181,9 @@ internal func compare(_ old: UIImage, _ new: UIImage, precision: Float, perceptu
         return "Reference image's data could not be loaded."
     }
     if let newContext = context(for: newCgImage), let newData = newContext.data {
-        if memcmp(oldData, newData, byteCount) == 0 { return nil }
+        if memcmp(oldData, newData, byteCount) == 0 {
+            return nil
+        }
     }
     var newerBytes = [UInt8](repeating: 0, count: byteCount)
     guard
@@ -193,7 +194,9 @@ internal func compare(_ old: UIImage, _ new: UIImage, precision: Float, perceptu
     else {
         return "Newly-taken snapshot's data could not be loaded."
     }
-    if memcmp(oldData, newerData, byteCount) == 0 { return nil }
+    if memcmp(oldData, newerData, byteCount) == 0 {
+        return nil
+    }
     if precision >= 1, perceptualPrecision >= 1 {
         return "Newly-taken snapshot does not match reference."
     }
@@ -262,7 +265,9 @@ func perceptuallyCompare(_ old: CIImage, _ new: CIImage, pixelPrecision: Float, 
         colorSpace: nil
     )
     let actualPixelPrecision = 1 - averagePixel
-    guard actualPixelPrecision < pixelPrecision else { return nil }
+    guard actualPixelPrecision < pixelPrecision else {
+        return nil
+    }
     var maximumDeltaE: Float = 0
     context.render(
         deltaOutputImage.applyingFilter("CIAreaMaximum", parameters: [kCIInputExtentKey: new.extent]),

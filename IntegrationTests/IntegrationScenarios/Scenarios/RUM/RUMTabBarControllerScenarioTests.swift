@@ -5,17 +5,10 @@
  */
 
 import HTTPServerMock
+import TestUtilities
 import XCTest
 
 private extension ExampleApplication {
-    func tapTapBarButton(named tabName: String) {
-        tabBars.buttons[tabName].tap()
-    }
-
-    func tapButton(named buttonName: String) {
-        staticTexts[buttonName].tap()
-    }
-
     func tapBackButton() {
         navigationBars["UIView"].buttons.firstMatch.tap()
     }
@@ -34,14 +27,14 @@ class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
             )
         ) // start on "Screen A"
 
-        app.tapTapBarButton(named: "Tab B") // go to "Screen B1"
-        app.tapButton(named: "Screen B1") // go to "Screen B2"
+        app.tapTapBar(item: "Tab B") // go to "Screen B1"
+        app.tapButton(titled: "Screen B1") // go to "Screen B2"
         app.tapBackButton() // go to "Screen B1"
-        app.tapTapBarButton(named: "Tab C") // go to "Screen C1"
-        app.tapButton(named: "Screen C1") // go to "Screen C2"
-        app.tapTapBarButton(named: "Tab A") // go to "Screen A"
-        app.tapTapBarButton(named: "Tab C") // go to "Screen C2"
-        app.tapTapBarButton(named: "Tab C") // go to "Screen C1"
+        app.tapTapBar(item: "Tab C") // go to "Screen C1"
+        app.tapButton(titled: "Screen C1") // go to "Screen C2"
+        app.tapTapBar(item: "Tab A") // go to "Screen A"
+        app.tapTapBar(item: "Tab C") // go to "Screen C2"
+        app.tapTapBar(item: "Tab C") // go to "Screen C1"
 
         try app.endRUMSession()
 
@@ -57,7 +50,8 @@ class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let initialView = session.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
-        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertNotNil(session.ttidEvent)
+        XCTAssertGreaterThan(session.timeToInitialDisplay!, 0)
 
         XCTAssertEqual(session.views[1].name, "Screen A")
         XCTAssertEqual(session.views[1].path, "UIViewController")

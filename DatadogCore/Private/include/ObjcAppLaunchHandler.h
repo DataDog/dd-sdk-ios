@@ -8,39 +8,59 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// `AppLaunchHandler` aims to track some times as part of the sequence
-/// described in Apple's "About the App Launch Sequence"
-///
-/// ref. https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
+/// Returned when `__dd_private_getTaskPolicy()` fails to query the kernel (return code != KERN_SUCCESS).
+FOUNDATION_EXPORT const NSInteger __dd_private_TASK_POLICY_KERN_FAILURE;
+
+/// Returned when `__dd_private_getTaskPolicy()` falls back to the system’s default policy (get_default == TRUE).
+FOUNDATION_EXPORT const NSInteger __dd_private_TASK_POLICY_DEFAULTED;
+
+/// Returned when `__dd_private_getTaskPolicy()` queries are unsupported on the current platform (e.g., tvOS).
+FOUNDATION_EXPORT const NSInteger __dd_private_TASK_POLICY_UNAVAILABLE;
+
+/// `AppLaunchHandler` tracks key timestamps in the app launch sequence, as described in Apple's documentation:
+/// https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
 @interface __dd_private_AppLaunchHandler : NSObject
 
-typedef void (^UIApplicationDidBecomeActiveCallback) (NSTimeInterval);
-
-/// Sole instance of the Application Launch Handler.
-@property (class, readonly) __dd_private_AppLaunchHandler *shared;
-
-/// Returns the Application process launch date.
-@property (atomic, readonly) NSDate* launchDate;
-
-/// Returns the time interval in seconds between startup of the application process and the
-/// `UIApplicationDidBecomeActiveNotification`. Or `nil` If the
-/// `UIApplicationDidBecomeActiveNotification` has not been reached yet.
-@property (atomic, readonly, nullable) NSNumber* launchTime;
-
-/// Returns `true` when the application is pre-warmed.
+/// Callback block invoked when the app receives a UIApplication notification.
 ///
-/// System sets environment variable `ActivePrewarm` to 1 when app is pre-warmed.
-@property (atomic, readonly) BOOL isActivePrewarm;
+/// - Parameter didFinishLaunchingTimeInterval: The date when the `didFinishLaunching` notification triggered.
+/// - Parameter didBecomeActiveTimeInterval: The date when the `didBecomeActive` notification triggered.
+typedef void (^UIApplicationNotificationCallback)(NSDate * _Nullable didFinishLaunchingTimeInterval,
+                                                  NSDate * _Nullable didBecomeActiveTimeInterval);
 
-/// Sets the callback to be invoked when the application becomes active.
+/// Shared singleton instance.
+@property (class, nonatomic, readonly) __dd_private_AppLaunchHandler *shared;
+
+/// The current process’s task policy role (`task_role_t`), indicating how the process was started (e.g., user vs background launch).
+/// On success, the property contains the raw [`policy.role`](https://developer.apple.com/documentation/kernel/task_role_t) value;
+/// otherwise, it returns one of the special constants:
+/// - `__dd_private_TASK_POLICY_KERN_FAILURE`
+/// - `__dd_private_TASK_POLICY_DEFAULTED`
+/// - `__dd_private_TASK_POLICY_UNAVAILABLE`
+@property (nonatomic, readonly) NSInteger taskPolicyRole;
+
+/// The timestamp when the application process was launched.
+@property (nonatomic, readonly) NSDate *processLaunchDate;
+
+/// The timestamp when the SDK was loaded.
+@property (nonatomic, readonly) NSDate *runtimeLoadDate;
+
+/// The timestamp right before the @c main() is executed.
+@property (nonatomic, readonly) NSDate *runtimePreMainDate;
+
+/// Observes the given notification center for application lifecycle events.
 ///
-/// The closure get the updated handler as argument. You will not get any
-/// notification if the application became active before setting the callback
-/// 
-/// - Parameter callback: The callback closure.
-- (void)setApplicationDidBecomeActiveCallback:(UIApplicationDidBecomeActiveCallback)callback;
+/// This method listens for the application becoming active and updates launch-related timestamps accordingly.
+///
+/// - Parameter notificationCenter: The `NSNotificationCenter` instance used to observe application state changes.
+- (void)observeNotificationCenter:(NSNotificationCenter *)notificationCenter;
 
-- (instancetype)init NS_UNAVAILABLE;
+/// Sets a callback to be invoked when the application receives UIApplication notifications.
+///
+/// - Parameter callback: A closure executed upon app activation.
+- (void)setApplicationNotificationCallback:(nonnull UIApplicationNotificationCallback)callback;
+
+- (instancetype)init;
 + (instancetype)new NS_UNAVAILABLE;
 
 @end

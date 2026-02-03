@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
+
 import XCTest
 import TestUtilities
 
@@ -12,16 +14,18 @@ import TestUtilities
 
 class WebViewRecordReceiverTests: XCTestCase {
     func testGivenRUMContextAvailable_whenReceivingWebRecord_itCreatesSegment() throws {
+        let browserViewID: String = .mockRandom()
         let serverTimeOffset: TimeInterval = .mockRandom(min: -10, max: 10).rounded()
 
-        let rumContext: RUMContext = .mockWith(
-            serverTimeOffset: serverTimeOffset
+        let rumContext: RUMCoreContext = .mockAny()
+        let webViewContext: RUMWebViewContext = .mockWith(
+            serverTimeOffsets: [browserViewID: serverTimeOffset]
         )
 
         let scope = FeatureScopeMock(
             context: .mockWith(
                 source: "react-native",
-                baggages: ["rum": FeatureBaggage(rumContext)]
+                additionalContext: [rumContext, webViewContext]
             )
         )
 
@@ -36,8 +40,6 @@ class WebViewRecordReceiverTests: XCTestCase {
             "type": 2
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
-        let browserViewID: String = .mockRandom()
-
         // When
 
         let message = WebViewMessage.record(webRecordMock, WebViewMessage.View(id: browserViewID))
@@ -50,7 +52,7 @@ class WebViewRecordReceiverTests: XCTestCase {
             "viewID": browserViewID,
             "records": [
                 [
-                    "timestamp": 100_000 + serverTimeOffset.toInt64Milliseconds,
+                    "timestamp": 100_000 + serverTimeOffset.dd.toInt64Milliseconds,
                     "type": 2
                 ].merging(random, uniquingKeysWith: { old, _ in old })
             ]
@@ -66,7 +68,7 @@ class WebViewRecordReceiverTests: XCTestCase {
         let scope = FeatureScopeMock()
 
         // Given
-        XCTAssertNil(scope.contextMock.baggages["rum"])
+        XCTAssertNil(scope.contextMock.additionalContext(ofType: RUMCoreContext.self))
 
         let receiver = WebViewRecordReceiver(scope: scope)
 
@@ -86,33 +88,12 @@ class WebViewRecordReceiverTests: XCTestCase {
         let receiver = WebViewRecordReceiver(scope: scope)
 
         // When
-        let otherMessage: FeatureMessage = .baggage(key: "message to other receiver", value: String.mockRandom())
+        let otherMessage: FeatureMessage = .payload(String.mockRandom())
         let result = receiver.receive(message: otherMessage, from: NOPDatadogCore())
 
         // Then
         XCTAssertFalse(result, "It must reject messages addressed to other receivers")
     }
-
-    func testWhenReceivingInvalidBaggage_itSendsTelemetryError() throws {
-        // Given
-        let telemetry = TelemetryReceiverMock()
-        let scope = FeatureScopeMock(
-            context: .mockWith(baggages: ["rum": FeatureBaggage(123)])
-        )
-        let core = PassthroughCoreMock(
-            messageReceiver: telemetry
-        )
-
-        let receiver = WebViewRecordReceiver(scope: scope)
-
-        // When
-        let record = WebViewMessage.record(mockRandomAttributes(), WebViewMessage.View(id: .mockRandom()))
-        XCTAssert(
-            receiver.receive(message: .webview(record), from: core)
-        )
-
-        // Then
-        let message = try XCTUnwrap(telemetry.messages.first?.asError?.message)
-        XCTAssert(message.contains("Fails to decode RUM context from Session Replay - typeMismatch"))
-    }
 }
+
+#endif

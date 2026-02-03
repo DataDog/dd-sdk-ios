@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogCrashReporting"
-  s.version      = "2.14.1"
+  s.version      = "3.6.0"
   s.summary      = "Official Datadog Crash Reporting SDK for iOS."
 
   s.homepage     = "https://www.datadoghq.com"
@@ -23,7 +23,8 @@ Pod::Spec.new do |s|
 
   s.source_files = "DatadogCrashReporting/Sources/**/*.swift"
   s.dependency 'DatadogInternal', s.version.to_s
-  s.dependency 'PLCrashReporter', '~> 1.11.2'
+  s.dependency 'KSCrash/Recording', '2.5.0'
+  s.dependency 'KSCrash/Filters', '2.5.0'
 
   s.resource_bundle = {
     "DatadogCrashReporting" => "DatadogCrashReporting/Resources/PrivacyInfo.xcprivacy"

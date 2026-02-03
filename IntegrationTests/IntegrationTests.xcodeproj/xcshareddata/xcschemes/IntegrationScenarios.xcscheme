@@ -55,7 +55,7 @@
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "NO"
@@ -165,13 +165,6 @@
             BlueprintIdentifier = "61133B81242393DE00786299"
             BuildableName = "Datadog.framework"
             BlueprintName = "Datadog iOS"
-            ReferencedContainer = "container:Datadog.xcodeproj">
-         </BuildableReference>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "61133BEF242397DA00786299"
-            BuildableName = "DatadogObjc.framework"
-            BlueprintName = "DatadogObjc iOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>

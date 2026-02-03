@@ -37,18 +37,17 @@ import DatadogInternal
 ///
 /// All subscriptions will be cancelled when the provider is deallocated.
 internal final class DatadogContextProvider {
-    /// The current `context`.
-    ///
-    /// The value must be accessed from the `queue` only.
-    private var context: DatadogContext {
-        didSet { receivers.forEach { $0(context) } }
-    }
-
-    /// The queue used to synchronize the access to the `DatadogContext`.
-    internal let queue = DispatchQueue(
+    static let defaultQueue = DispatchQueue(
         label: "com.datadoghq.core-context",
         qos: .utility
     )
+    /// The current `context`.
+    ///
+    /// The value must be accessed from the `queue` only.
+    private var context: DatadogContext
+
+    /// The queue used to synchronize the access to the `DatadogContext`.
+    internal let queue: DispatchQueue
 
     /// List of receivers to invoke when the context changes.
     private var receivers: [ContextValueReceiver<DatadogContext>]
@@ -56,30 +55,21 @@ internal final class DatadogContextProvider {
     /// List of subscription of context values.
     private var subscriptions: [ContextValueSubscription]
 
-    /// A reader for key-path values of the context.
-    private var reader: KeyPathContextValueReader<DatadogContext>
-
     /// Creates a context provider to perform reads and writes on the
     /// shared Datadog context.
     ///
-    /// - Parameter context: The inital context value.
-    init(context: DatadogContext) {
+    /// - Parameters:
+    ///   - context: The initial context value.
+    ///   - queue: The queue to synchronize the access to the `DatadogContext`.
+    init(context: DatadogContext, queue: DispatchQueue = DatadogContextProvider.defaultQueue) {
         self.context = context
+        self.queue = queue
         self.receivers = []
         self.subscriptions = []
-        self.reader = KeyPathContextValueReader()
     }
 
     deinit {
         subscriptions.forEach { $0.cancel() }
-    }
-
-    /// Reads current context.
-    ///
-    /// **Warning:** Must be called from the `queue`.
-    private func unsafeRead() -> DatadogContext {
-        reader.read(to: &self.context)
-        return context
     }
 
     /// Publishes context changes to the given receiver.
@@ -96,21 +86,26 @@ internal final class DatadogContextProvider {
     /// 
     /// - Returns: The current context.
     func read() -> DatadogContext {
-        queue.sync(execute: unsafeRead)
+        queue.sync { context }
     }
 
     /// Reads to the `context` asynchronously, without blocking the caller thread.
     ///
     /// - Parameter block: The block closure called with the current context.
     func read(block: @escaping (DatadogContext) -> Void) {
-        queue.async { block(self.unsafeRead()) }
+        queue.async { block(self.context) }
     }
 
     /// Writes to the `context` asynchronously, without blocking the caller thread.
     ///
     /// - Parameter block: The block closure called with the current context.
     func write(block: @escaping (inout DatadogContext) -> Void) {
-        queue.async { block(&self.context) }
+        queue.async {
+            block(&self.context)
+            self.receivers.forEach { receiver in
+                receiver(self.context)
+            }
+        }
     }
 
     /// Subscribes a context's property to a publisher.
@@ -132,23 +127,6 @@ internal final class DatadogContextProvider {
         write {
             $0[keyPath: keyPath] = publisher.initialValue
             self.subscriptions.append(subscription)
-        }
-    }
-
-    /// Assigns a value reader to a context property.
-    ///
-    /// The context provider has the ability to a assign a value reader that complies to
-    /// ``ContextValueReader`` to a specific context property. e.g.:
-    ///
-    ///     let reader = ServerOffsetReader<TimeInterval>()
-    ///     provider.assign(reader: reader, to: \.serverTimeOffset)
-    ///
-    /// - Parameters:
-    ///   - reader: The value reader.
-    ///   - keyPath: A context's key path that supports reading from and writing to the resulting value.
-    func assign<Reader>(reader: Reader, to keyPath: WritableKeyPath<DatadogContext, Reader.Value>) where Reader: ContextValueReader {
-        queue.async {
-            self.reader.append(reader: reader, receiver: keyPath)
         }
     }
 

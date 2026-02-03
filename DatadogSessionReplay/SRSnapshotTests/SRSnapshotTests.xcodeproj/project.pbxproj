@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5BA0067B2E49F6A3000148DB /* UIImage+SVG.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA0067A2E49F698000148DB /* UIImage+SVG.swift */; };
+		5BA0067D2E49F8BF000148DB /* UIColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA0067C2E49F8B3000148DB /* UIColor+Hex.swift */; };
+		5BB746152E02ABB900B568F1 /* SwiftUIFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */; };
+		5BB746182E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */; };
 		614396642A5E8C0600197326 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396632A5E8C0600197326 /* Environment.swift */; };
 		614396652A5E8C0600197326 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396632A5E8C0600197326 /* Environment.swift */; };
 		619C49B429952E12006B66A6 /* SnapshotTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B329952E12006B66A6 /* SnapshotTestCase.swift */; };
@@ -23,6 +27,7 @@
 		61C06D6029D487E7007521D8 /* Framer in Frameworks */ = {isa = PBXBuildFile; productRef = 61C06D5F29D487E7007521D8 /* Framer */; };
 		61E4305A2A6FE3B000B71899 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 61E430592A6FE3B000B71899 /* DatadogSessionReplay */; };
 		61E7DFB7299A57A9001D7A3A /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E7DFB6299A57A9001D7A3A /* MenuViewController.swift */; };
+		96363B2C2CD26AF3006FEC9D /* PrivacyOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96363B2B2CD26AF3006FEC9D /* PrivacyOverrides.swift */; };
 		D2F37BFB2A40A2CF004A28A4 /* TestUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = D2F37BFA2A40A2CF004A28A4 /* TestUtilities */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +42,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5BA0067A2E49F698000148DB /* UIImage+SVG.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+SVG.swift"; sourceTree = "<group>"; };
+		5BA0067C2E49F8B3000148DB /* UIColor+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Hex.swift"; sourceTree = "<group>"; };
+		5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIFixture.swift; sourceTree = "<group>"; };
+		5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewWithPrivacyOverrides.swift; sourceTree = "<group>"; };
 		614396632A5E8C0600197326 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Environment.swift; path = SRHost/Environment.swift; sourceTree = "<group>"; };
 		619C49B329952E12006B66A6 /* SnapshotTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotTestCase.swift; sourceTree = "<group>"; };
 		619C49B62995512A006B66A6 /* ImageComparison.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComparison.swift; sourceTree = "<group>"; };
@@ -60,6 +69,7 @@
 		61BB97692A5E7BEA00AFFF86 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		61BB976A2A5E822700AFFF86 /* SRSnapshotTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = SRSnapshotTests.xcconfig; sourceTree = "<group>"; };
 		61E7DFB6299A57A9001D7A3A /* MenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
+		96363B2B2CD26AF3006FEC9D /* PrivacyOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyOverrides.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,10 +94,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5BB746162E02B34600B568F1 /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
 		619C49B529955106006B66A6 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				5BA0067C2E49F8B3000148DB /* UIColor+Hex.swift */,
+				5BA0067A2E49F698000148DB /* UIImage+SVG.swift */,
+				5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */,
 				619C49B329952E12006B66A6 /* SnapshotTestCase.swift */,
+				96363B2B2CD26AF3006FEC9D /* PrivacyOverrides.swift */,
 				61BB975E2A5D675400AFFF86 /* ImageComposition.swift */,
 				619C49B62995512A006B66A6 /* ImageComparison.swift */,
 				619C49BA299639BC006B66A6 /* ImageRendering.swift */,
@@ -134,6 +156,7 @@
 			isa = PBXGroup;
 			children = (
 				61B3BC642993BEAF0032C78A /* SRSnapshotTests.swift */,
+				5BB746162E02B34600B568F1 /* Fixtures */,
 				619C49B529955106006B66A6 /* Utils */,
 				619C49B8299551F5006B66A6 /* _snapshots_ */,
 			);
@@ -287,10 +310,15 @@
 			files = (
 				619C49BB299639BC006B66A6 /* ImageRendering.swift in Sources */,
 				614396652A5E8C0600197326 /* Environment.swift in Sources */,
+				5BA0067B2E49F6A3000148DB /* UIImage+SVG.swift in Sources */,
 				61B3BC652993BEAF0032C78A /* SRSnapshotTests.swift in Sources */,
+				96363B2C2CD26AF3006FEC9D /* PrivacyOverrides.swift in Sources */,
+				5BA0067D2E49F8BF000148DB /* UIColor+Hex.swift in Sources */,
 				61BB975F2A5D675400AFFF86 /* ImageComposition.swift in Sources */,
+				5BB746182E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift in Sources */,
 				619C49B72995512A006B66A6 /* ImageComparison.swift in Sources */,
 				619C49B429952E12006B66A6 /* SnapshotTestCase.swift in Sources */,
+				5BB746152E02ABB900B568F1 /* SwiftUIFixture.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -565,7 +593,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ncreated/Framer";
 			requirement = {
-				branch = "ncreated-patch-1";
+				branch = main;
 				kind = branch;
 			};
 		};

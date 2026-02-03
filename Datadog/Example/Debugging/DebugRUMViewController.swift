@@ -7,10 +7,10 @@
 import UIKit
 import DatadogRUM
 import DatadogCore
+import DatadogInternal
 
 class DebugRUMViewController: UIViewController {
     @IBOutlet weak var rumServiceNameTextField: UITextField!
-    @IBOutlet weak var consoleTextView: UITextView!
 
     private var simulatedViewControllers: [UIViewController] = []
 
@@ -18,7 +18,6 @@ class DebugRUMViewController: UIViewController {
         super.viewDidLoad()
         rumServiceNameTextField.text = serviceName
         hideKeyboardWhenTapOutside()
-        startDisplayingDebugInfo(in: consoleTextView)
 
         viewURLTextField.placeholder = viewURL
         actionViewURLTextField.placeholder = actionViewURL
@@ -180,6 +179,51 @@ class DebugRUMViewController: UIViewController {
         }
         simulatedViewControllers.append(viewController)
         sendErrorEventButton.disableFor(seconds: 0.5)
+    }
+
+    // MARK: - Telemetry Events
+
+    @IBAction func didTapTelemetryEvent(_ sender: Any) {
+        guard let button = sender as? UIButton, let title = button.currentTitle else {
+            return
+        }
+        button.disableFor(seconds: 0.5)
+
+        let telemetry = CoreRegistry.default.telemetry
+
+        switch title {
+        case "debug":
+            telemetry.debug(
+                id: UUID().uuidString,
+                message: "DEBUG telemetry message",
+                attributes: [
+                    "attribute-foo": "foo",
+                    "attribute-42": 42,
+                ]
+            )
+        case "error":
+            telemetry.error(
+                id: UUID().uuidString,
+                message: "ERROR telemetry message",
+                kind: "error.telemetry.kind",
+                stack: "error.telemetry.stack"
+            )
+        case "metric":
+            telemetry.metric(
+                name: "METRIC telemetry",
+                attributes: [
+                    "attribute-foo": "foo",
+                    "attribute-42": 42,
+                ],
+                sampleRate: 100
+            )
+        case "usage":
+            telemetry.send(
+                telemetry: .usage(.init(event: .setTrackingConsent(.granted), sampleRate: 100))
+            )
+        default:
+            break
+        }
     }
 }
 

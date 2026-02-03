@@ -10,14 +10,31 @@ import WebKit
 import SwiftUI
 
 internal struct UnsupportedViewRecorder: NodeRecorder {
-    let identifier = UUID()
-    // swiftlint:disable opening_brace
-    private let unsupportedViewsPredicates: [(UIView, ViewTreeRecordingContext) -> Bool] = [
-        { _, context in context.viewControllerContext.isRootView(of: .safari) },
-        { _, context in context.viewControllerContext.isRootView(of: .activity) },
-        { _, context in context.viewControllerContext.isRootView(of: .swiftUI) }
-    ]
-    // swiftlint:enable opening_brace
+    internal let identifier: UUID
+
+    private let unsupportedViewsPredicates: [(UIView, ViewTreeRecordingContext) -> Bool]
+
+    init(
+        identifier: UUID,
+        featureFlags: SessionReplay.Configuration.FeatureFlags
+    ) {
+        self.identifier = identifier
+        // swiftlint:disable opening_brace
+        var predicates: [(UIView, ViewTreeRecordingContext) -> Bool] = [
+            { _, context in context.viewControllerContext.isRootView(of: .safari) },
+            { _, context in context.viewControllerContext.isRootView(of: .activity) }
+        ]
+
+        // disable swiftui based on ff
+        if !featureFlags[.swiftui] {
+            predicates.append(
+                { _, context in context.viewControllerContext.isRootView(of: .swiftUI) }
+            )
+        }
+        // swiftlint:enable opening_brace
+
+        self.unsupportedViewsPredicates = predicates
+    }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard unsupportedViewsPredicates.contains(where: { $0(view, context) }) else {
@@ -26,6 +43,7 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
         guard attributes.isVisible else {
             return InvisibleElement(subtreeStrategy: .ignore)
         }
+
         let builder = UnsupportedViewWireframesBuilder(
             wireframeRect: view.frame,
             wireframeID: context.ids.nodeID(view: view, nodeRecorder: self),
@@ -49,9 +67,11 @@ internal struct UnsupportedViewWireframesBuilder: NodeWireframesBuilder {
             builder.createPlaceholderWireframe(
                 id: wireframeID,
                 frame: attributes.frame,
+                clip: attributes.clip,
                 label: unsupportedClassName
             )
         ]
     }
 }
+
 #endif

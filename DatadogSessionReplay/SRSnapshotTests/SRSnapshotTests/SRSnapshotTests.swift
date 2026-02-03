@@ -7,6 +7,7 @@
 import XCTest
 import SRFixtures
 import TestUtilities
+import DatadogSessionReplay
 @testable import SRHost
 
 final class SRSnapshotTests: SnapshotTestCase {
@@ -19,48 +20,48 @@ final class SRSnapshotTests: SnapshotTestCase {
     private var shouldRecord = false
 
     func testBasicShapes() throws {
-        try takeSnapshotFor(.basicShapes, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(Fixture.basicShapes, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testBasicTexts() throws {
-        try takeSnapshotFor(.basicTexts, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(Fixture.basicTexts, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testSliders() throws {
-        try takeSnapshotFor(.sliders, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(Fixture.sliders, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testProgressViews() throws {
-        try takeSnapshotFor(.progressViews, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(Fixture.progressViews, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testActivityIndicators() throws {
-        try takeSnapshotFor(.activityIndicators, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(Fixture.activityIndicators, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testSegments() throws {
-        try takeSnapshotFor(.segments, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(Fixture.segments, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testPickers() throws {
-        try takeSnapshotFor(.pickers, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(Fixture.pickers, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testSwitches() throws {
-        try takeSnapshotFor(.switches, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(Fixture.switches, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testTextFields() throws {
-        try takeSnapshotFor(.textFields, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(Fixture.textFields, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testSteppers() throws {
-        try takeSnapshotFor(.steppers, with: [.allow, .mask, .maskUserInput], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(Fixture.steppers, with: allTextAndInputPrivacyLevels, shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
     }
 
     func testDatePickers() throws {
         try takeSnapshotForPicker(
-            fixture: .datePickersInline, 
+            fixture: .datePickersInline,
             waitTime: 1.0,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath,
@@ -70,14 +71,14 @@ final class SRSnapshotTests: SnapshotTestCase {
         try takeSnapshotForPicker(
             fixture: .datePickersCompact,
             additionalSetup: { ($0 as! DatePickersCompactViewController).openCalendarPopover() },
-            waitTime: 1.0, 
+            waitTime: 1.0,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath,
             fileNamePrefix: "compact"
         )
 
         try takeSnapshotForPicker(
-            fixture: .datePickersWheels, 
+            fixture: .datePickersWheels,
             waitTime: 1.0,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath,
@@ -87,15 +88,15 @@ final class SRSnapshotTests: SnapshotTestCase {
 
     func testTimePickers() throws {
         try takeSnapshotFor(
-            .timePickersCountDown, 
-            with: [.allow, .mask, .maskUserInput],
+            Fixture.timePickersCountDown,
+            with: allTextAndInputPrivacyLevels,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath,
             fileNamePrefix: "count-down"
         )
 
         try takeSnapshotForPicker(
-            fixture: .timePickersWheels, 
+            fixture: .timePickersWheels,
             waitTime: 1.0,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath,
@@ -113,11 +114,32 @@ final class SRSnapshotTests: SnapshotTestCase {
     }
 
     func testImages() throws {
-        try takeSnapshotFor(.images, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(
+            Fixture.images,
+            with: [.maskSensitiveInputs, .maskAll],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
     }
 
-    func testUnsupportedView() throws {
-        try takeSnapshotFor(.unsupportedViews, with: [.allow], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+    func testImages_MaskAll() throws {
+        try takeSnapshotFor(
+            Fixture.images,
+            with: [.maskSensitiveInputs, .maskAll],
+            imagePrivacyLevel: .maskAll,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
+    }
+
+    func testImages_MaskNone() throws {
+        try takeSnapshotFor(
+            Fixture.images,
+            with: [.maskSensitiveInputs, .maskAll],
+            imagePrivacyLevel: .maskNone,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
     }
 
     func testAlert() throws {
@@ -125,7 +147,7 @@ final class SRSnapshotTests: SnapshotTestCase {
             fixture: .popups,
             showPopup: { $0.showAlert() },
             waitTime: 1.0,
-            privacyModes: [.allow, .mask, .maskUserInput],
+            textPrivacyModes: allTextAndInputPrivacyLevels,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath
         )
@@ -134,7 +156,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testSafari() throws {
         try takeSnapshotForPopup(
             fixture: .popups,
-            showPopup: { $0.showSafari() }, 
+            showPopup: { $0.showSafari() },
             waitTime: 1.0,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath
@@ -143,7 +165,7 @@ final class SRSnapshotTests: SnapshotTestCase {
 
     func testActivity() throws {
         try takeSnapshotForPopup(
-            fixture: .popups, 
+            fixture: .popups,
             showPopup: { $0.showActivity() },
             waitTime: 1.0,
             shouldRecord: shouldRecord,
@@ -152,7 +174,84 @@ final class SRSnapshotTests: SnapshotTestCase {
     }
 
     func testSwiftUI() throws {
-        try takeSnapshotFor(.swiftUI, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        // Mask all
+        try takeSnapshotFor(
+            Fixture.swiftUI,
+            with: [.maskAll],
+            imagePrivacyLevel: .maskAll,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "maskAll_images"
+        )
+
+        // Intermediate levels
+        try takeSnapshotFor(
+            Fixture.swiftUI,
+            with: [.maskAllInputs],
+            imagePrivacyLevel: .maskNonBundledOnly,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "maskNonBundledOnly_images"
+        )
+
+        // Mask none
+        try takeSnapshotFor(
+            Fixture.swiftUI,
+            with: [.maskSensitiveInputs],
+            imagePrivacyLevel: .maskNone,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "maskNone_images"
+        )
+    }
+
+    func testSymbols() throws {
+        // Mask all
+        try takeSnapshotFor(
+            Fixture.symbols,
+            with: [.maskAll],
+            imagePrivacyLevel: .maskAll,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "maskAll_images"
+        )
+
+        // Mask none
+        try takeSnapshotFor(
+            Fixture.symbols,
+            with: [.maskSensitiveInputs],
+            imagePrivacyLevel: .maskNone,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "maskNone_images"
+        )
+    }
+
+    @available(iOS 16.0, *)
+    func testSwiftUIWithPrivacyOverrides() throws {
+        let core = FeatureRegistrationCoreMock()
+        // SwiftUI privacy overrides only work when SessionReplay is enabled
+        SessionReplay.enable(
+            with: .init(
+                // Just to silence the deprecation warning (these are trumped by `takeSnapshotFor` parameters)
+                textAndInputPrivacyLevel: .maskSensitiveInputs,
+                imagePrivacyLevel: .maskNone,
+                touchPrivacyLevel: .show
+            ),
+            in: core
+        )
+
+        // Mask none
+        try takeSnapshotFor(
+            SwiftUIFixture {
+                SwiftUIViewWithPrivacyOverrides(core: core)
+            },
+            with: [.maskSensitiveInputs],
+            imagePrivacyLevel: .maskNone,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "maskNone_images"
+        )
     }
 
     func testNavigationBars() throws {
@@ -162,14 +261,14 @@ final class SRSnapshotTests: SnapshotTestCase {
         // Therefore, Embedded Navigation Bars snapshot tests are also included for more accurate simulations.
 
         // Test Static Navigation Bars without tinted color
-        try takeSnapshotFor(.navigationBars, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.navigationBars.slug)
+        try takeSnapshotFor(Fixture.navigationBars, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.navigationBars.slug)
 
         // Test Static Navigation Bars with tinted color
-        let vc2 = show(fixture: .navigationBars) as! NavigationBarControllers
+        let vc2 = show(fixture: Fixture.navigationBars) as! NavigationBarControllers
         vc2.setTintColor()
         wait(seconds: 0.1)
 
-        try forPrivacyModes([.allow, .mask]) { privacyMode in
+        try forPrivacyModes([.maskSensitiveInputs, .maskAll]) { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             let fileNamePrefix = Fixture.navigationBars.slug
             DDAssertSnapshotTest(
@@ -200,7 +299,7 @@ final class SRSnapshotTests: SnapshotTestCase {
             navController.pushNextView()
             wait(seconds: 0.5)
 
-            try forPrivacyModes([.allow, .mask]) { privacyMode in
+            try forPrivacyModes([.maskSensitiveInputs, .maskAll]) { privacyMode in
                 let image = try takeSnapshot(with: privacyMode)
                 let fileNamePrefix = fixture.slug
                 DDAssertSnapshotTest(
@@ -214,12 +313,111 @@ final class SRSnapshotTests: SnapshotTestCase {
 
     func testTabBars() throws {
         // - Static Tab Bars
-        try takeSnapshotFor(.tabbar, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
+        try takeSnapshotFor(Fixture.tabbar, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath)
 
         // - Embedded Tab Bar
-        try takeSnapshotFor(.embeddedTabbar, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.embeddedTabbar.slug)
+        try takeSnapshotFor(Fixture.embeddedTabbar, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.embeddedTabbar.slug)
 
         // - Embedded Tab Bar, with unselected item tint color
-        try takeSnapshotFor(.embeddedTabbarUnselectedTintColor, with: [.allow, .mask], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.embeddedTabbarUnselectedTintColor.slug)
+        try takeSnapshotFor(Fixture.embeddedTabbarUnselectedTintColor, with: [.maskSensitiveInputs, .maskAll], shouldRecord: shouldRecord, folderPath: snapshotsFolderPath, fileNamePrefix: Fixture.embeddedTabbarUnselectedTintColor.slug)
+    }
+
+    // MARK: Privacy Overrides
+    func testMaskingPrivacyOverrides() throws {
+        try takeSnapshotFor(
+            Fixture.basicShapes,
+            privacyTags: [
+                .hideView(tag: 2)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "hideOverride_masking"
+        )
+
+        try takeSnapshotFor(
+            Fixture.basicTexts,
+            with: [.maskSensitiveInputs],
+            privacyTags: [
+                .maskAllText(tag: 2),
+                .hideView(tag: 3)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "textOverrides_masking"
+        )
+
+        try takeSnapshotFor(
+            Fixture.images,
+            imagePrivacyLevel: .maskNone,
+            privacyTags: [
+                .maskAllImages(tag: 2),
+                .maskNonBundledImages(tag: 3),
+                .hideView(tag: 4)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "imageOverrides_masking"
+        )
+    }
+
+    func testMaskingPrivacyOverridesOnParentView() throws {
+        try takeSnapshotFor(
+            Fixture.basicShapes,
+            privacyTags: [
+                .hideView(tag: 1)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "hideOverride_masking_parentView"
+        )
+
+        try takeSnapshotFor(
+            Fixture.basicTexts,
+            with: [.maskSensitiveInputs],
+            privacyTags: [
+                .maskAllText(tag: 1)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "textOverride_masking_parentView"
+        )
+
+        try takeSnapshotFor(
+            Fixture.images,
+            imagePrivacyLevel: .maskNone,
+            privacyTags: [
+                .maskAllImages(tag: 1)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "imageOverride_masking_parentView"
+        )
+    }
+
+    func testUnmaskingPrivacyOverrides() throws {
+        try takeSnapshotFor(
+            Fixture.basicTexts,
+            with: [.maskAll],
+            privacyTags: [
+                .unmaskText(tag: 2),
+                .unmaskText(tag: 3)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "textOverrides_unmasking"
+        )
+
+        try takeSnapshotFor(
+            Fixture.images,
+            imagePrivacyLevel: .maskAll,
+            privacyTags: [
+                .unmaskImages(tag: 2),
+                .unmaskImages(tag: 3),
+                .unmaskImages(tag: 4)
+            ],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath,
+            fileNamePrefix: "imageOverrides_unmasking"
+        )
     }
 }

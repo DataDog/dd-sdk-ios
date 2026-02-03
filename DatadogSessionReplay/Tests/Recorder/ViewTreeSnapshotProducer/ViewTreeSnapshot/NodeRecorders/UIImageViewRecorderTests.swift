@@ -8,16 +8,18 @@
 import XCTest
 @_spi(Internal)
 @testable import DatadogSessionReplay
-import TestUtilities
+@_spi(Internal)
+@testable import TestUtilities
 
 // swiftlint:disable opening_brace
 class UIImageViewRecorderTests: XCTestCase {
-    private let recorder = UIImageViewRecorder()
+    private let recorder = UIImageViewRecorder(identifier: UUID())
     /// The view under test.
     private let imageView = UIImageView()
     /// `ViewAttributes` simulating common attributes of image view's `UIView`.
     private var viewAttributes: ViewAttributes = .mockAny()
 
+    // MARK: Appearance
     func testWhenImageViewHasNoImageAndNoAppearance() throws {
         // When
         imageView.image = nil
@@ -53,9 +55,18 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UIImageViewWireframesBuilder)
     }
 
-    func testWhenShouldRecordImagePredicateReturnsFalse() throws {
+    func testWhenViewIsNotOfExpectedType() {
         // When
-        let recorder = UIImageViewRecorder(shouldRecordImagePredicate: { _ in return false })
+        let view = UITextField()
+
+        // Then
+        XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
+    }
+
+    // MARK: Predicate Override
+    func testWhenShouldRecordImagePredicateOverrideReturnsFalse() throws {
+        // When
+        let recorder = UIImageViewRecorder(identifier: UUID(), shouldRecordImagePredicateOverride: { _ in return false })
         imageView.image = UIImage()
         viewAttributes = .mock(fixture: .visible())
 
@@ -67,9 +78,9 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertNil(builder.imageResource)
     }
 
-    func testWhenShouldRecordImagePredicateReturnsTrue() throws {
+    func testWhenShouldRecordImagePredicateOverrideReturnsTrue() throws {
         // When
-        let recorder = UIImageViewRecorder(shouldRecordImagePredicate: { _ in return true })
+        let recorder = UIImageViewRecorder(identifier: UUID(), shouldRecordImagePredicateOverride: { _ in return true })
         imageView.image = UIImage()
         viewAttributes = .mock(fixture: .visible())
 
@@ -81,12 +92,80 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertNotNil(builder.imageResource)
     }
 
-    func testWhenViewIsNotOfExpectedType() {
+    // MARK: Image Privacy
+    func testWhenMaskAllImagePrivacy_itDoesNotRecordImage() throws {
+        // Given
+        let imagePrivacy = ImagePrivacyLevel.maskAll
+        let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: imagePrivacy))
+
         // When
-        let view = UITextField()
+        let recorder = UIImageViewRecorder(identifier: UUID())
+        imageView.image = UIImage()
+        viewAttributes = .mock(fixture: .visible())
 
         // Then
-        XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
+        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: context))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
+        XCTAssertNil(builder.imageResource)
+    }
+
+    func testWhenMaskNoneImagePrivacy_itDoesRecordImage() throws {
+        // Given
+        let imagePrivacy = ImagePrivacyLevel.maskNone
+        let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: imagePrivacy))
+
+        // When
+        let recorder = UIImageViewRecorder(identifier: UUID())
+        imageView.image = UIImage()
+        viewAttributes = .mock(fixture: .visible())
+
+        // Then
+        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: context))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
+        XCTAssertNotNil(builder.imageResource)
+    }
+
+    func testWhenMaskContentImagePrivacy_itDoesRecordSFSymbolImage() throws {
+        // Given
+        let imagePrivacy = ImagePrivacyLevel.maskNonBundledOnly
+        let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: imagePrivacy))
+
+        // When
+        let recorder = UIImageViewRecorder(identifier: UUID())
+        if #available(iOS 13.0, *) {
+            imageView.image = UIImage(systemName: "star")
+        }
+        viewAttributes = .mock(fixture: .visible())
+
+        // Then
+        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: context))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
+        XCTAssertNotNil(builder.imageResource)
+    }
+
+    // MARK: Privacy Overrides
+    func testWhenImageViewHasImagePrivacyOverride() throws {
+        // Given
+        let globalImagePrivacy = ImagePrivacyLevel.maskNone
+        let context = ViewTreeRecordingContext.mockWith(recorder: .mockWith(imagePrivacy: globalImagePrivacy))
+
+        imageView.image = UIImage()
+        let overrideImagePrivacy: ImagePrivacyLevel = .maskAll
+        let overrides: PrivacyOverrides = .mockWith(imagePrivacy: overrideImagePrivacy)
+        viewAttributes = .mockWith(overrides: overrides)
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: context))
+
+        // Then
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
+        XCTAssertNil(builder.imageResource)
     }
 }
 // swiftlint:enable opening_brace

@@ -5,18 +5,26 @@
  */
 
 import Foundation
+import DatadogInternal
 
-/// Lightweight representation of current RUM session state, used to compute `RUMOffViewEventsHandlingRule`.
-/// It gets serialized into fatal error context for computing the rule upon app process restart.
-internal struct RUMSessionState: Equatable, Codable {
-    /// The session ID. Can be `.nullUUID` if the session was rejected by sampler.
-    let sessionUUID: UUID
-    /// If this is the very first session in the app process (`true`) or was re-created upon timeout (`false`).
-    let isInitialSession: Bool
-    /// If this session has ever tracked any view (used to reason about "application launch" events).
-    let hasTrackedAnyView: Bool
-    /// If the there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
-    let didStartWithReplay: Bool?
+/// Lightweight representation of current RUM application state, used to compute `RUMOffViewEventsHandlingRule`.
+internal final class RUMApplicationState {
+    /// The number of views created in this app other than `ApplicationLaunch`.
+    var numberOfNonApplicationLaunchViewsCreated: Int
+    /// If any previous session was explicitly stopped with `stopSession()` API.
+    var wasAnySessionStopped: Bool
+    /// If the previous session was explicitly stopped with `stopSession()` API.
+    var wasPreviousSessionStopped: Bool
+
+    init(
+        numberOfNonApplicationLaunchViewsCreated: Int = 0,
+        wasAnySessionStopped: Bool = false,
+        wasPreviousSessionStopped: Bool = false
+    ) {
+        self.numberOfNonApplicationLaunchViewsCreated = numberOfNonApplicationLaunchViewsCreated
+        self.wasAnySessionStopped = wasAnySessionStopped
+        self.wasPreviousSessionStopped = wasPreviousSessionStopped
+    }
 }
 
 /// The rule for handling RUM events which are tracked while there is no active view.
@@ -45,43 +53,74 @@ internal enum RUMOffViewEventsHandlingRule: Equatable {
     // MARK: - Init
 
     /// - Parameters:
+    ///   - applicationState: RUM application state tracked since `RUM.enabled()`. Might be `nil` if the rule is applied for crash reports
+    ///   processed after app is restarted.
     ///   - sessionState: RUM session state or `nil` if no session is started
     ///   - isAppInForeground: if the app is in foreground
     ///   - isBETEnabled: if Background Events Tracking feature is enabled in SDK configuration
+    ///   - command: the command that is about to trigger the off-view event
     init(
+        applicationState: RUMApplicationState?,
         sessionState: RUMSessionState?,
         isAppInForeground: Bool,
-        isBETEnabled: Bool
+        isBETEnabled: Bool,
+        command: RUMCommand?
     ) {
         if let session = sessionState {
-            guard session.sessionUUID != .nullUUID else {
+            guard session.sessionUUID != UUID.dd.nullUUID else {
                 self = .doNotHandle // when session is sampled, do not track off-view events at all
                 return
             }
 
-            let thereWasNoViewInThisSession = !session.hasTrackedAnyView
-            let thereWasNoViewInThisAppProcess = session.isInitialSession && thereWasNoViewInThisSession
+            let thereWasNoViewInThisAppProcess = {
+                if let applicationState {
+                    return applicationState.numberOfNonApplicationLaunchViewsCreated == 0
+                } else {
+                    let thereWasNoViewInThisSession = !session.hasTrackedAnyView
+                    return session.isInitialSession && thereWasNoViewInThisSession
+                }
+            }()
 
             if thereWasNoViewInThisAppProcess {
                 if isAppInForeground {
-                    self = .handleInApplicationLaunchView
+                    if applicationState?.wasAnySessionStopped == true {
+                        self = .doNotHandle
+                    } else {
+                        self = .handleInApplicationLaunchView
+                    }
                 } else if isBETEnabled {
-                    self = .handleInBackgroundView
+                    if applicationState?.wasPreviousSessionStopped == true && command?.canStartBackgroundViewAfterSessionStop == false {
+                        self = .doNotHandle
+                    } else {
+                        self = .handleInBackgroundView
+                    }
                 } else {
                     self = .doNotHandle
                 }
             } else {
                 if !isAppInForeground && isBETEnabled {
-                    self = .handleInBackgroundView
+                    if applicationState?.wasPreviousSessionStopped == true && command?.canStartBackgroundViewAfterSessionStop == false {
+                        self = .doNotHandle
+                    } else {
+                        self = .handleInBackgroundView
+                    }
                 } else {
                     self = .doNotHandle
                 }
             }
         } else {
             if isAppInForeground {
-                self = .handleInApplicationLaunchView
+                if applicationState?.wasAnySessionStopped == true {
+                    self = .doNotHandle
+                } else {
+                    self = .handleInApplicationLaunchView
+                }
             } else if isBETEnabled {
-                self = .handleInBackgroundView
+                if applicationState?.wasPreviousSessionStopped == true && command?.canStartBackgroundViewAfterSessionStop == false {
+                    self = .doNotHandle
+                } else {
+                    self = .handleInBackgroundView
+                }
             } else {
                 self = .doNotHandle
             }

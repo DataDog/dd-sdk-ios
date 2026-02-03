@@ -13,7 +13,7 @@ import Foundation
 public typealias DataStoreKeyVersion = UInt16
 
 /// The default version of data stored for keys (equals `0`).
-public let dataStoreDefaultKeyVersion: DataStoreKeyVersion = 0
+public let dataStoreDefaultKeyVersion: DataStoreKeyVersion = 1
 
 /// Possible results of retrieving a value from the data store.
 public enum DataStoreValueResult {
@@ -61,6 +61,17 @@ public protocol DataStore {
     ///
     /// - Parameter key: The unique identifier for the value to be deleted. Must be a valid file name, as it will be persisted in files.
     func removeValue(forKey key: String)
+
+    /// Clears all data that has not already yet been uploaded Datadog servers.
+    ///
+    /// Note: This may impact the SDK's ability to detect App Hangs and Watchdog Terminations
+    /// or other features that rely on data persisted in the data store.
+    func clearAllData()
+
+    /// Awaits completion of all asynchronous data writes and reads.
+    ///
+    /// **blocks the caller thread**
+    func flush()
 }
 
 public extension DataStore {
@@ -83,4 +94,8 @@ public struct NOPDataStore: DataStore {
     public func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {}
     /// no-op
     public func removeValue(forKey key: String) {}
+    /// no-op
+    public func clearAllData() {}
+    /// no-op
+    public func flush() {}
 }

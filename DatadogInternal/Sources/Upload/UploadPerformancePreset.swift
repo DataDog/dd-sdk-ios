@@ -18,4 +18,9 @@ public protocol UploadPerformancePreset {
     /// If upload succeeds or fails, current interval is changed by this rate. Should be less or equal `1.0`.
     /// E.g: if rate is `0.1` then `delay` can be increased or decreased by `delay * 0.1`.
     var uploadDelayChangeRate: Double { get }
+    /// Number of batches to process during one upload cycle.
+    var maxBatchesPerUpload: Int { get }
+    /// Maximum jitter (in seconds) applied to upload delays to avoid concurrent execution.
+    /// Actual jitter will be randomly selected from 0...maxUploadJitter range.
+    var maxUploadJitter: TimeInterval { get }
 }

@@ -24,6 +24,9 @@ class FileWriterTests: XCTestCase {
     }
 
     func testItWritesDataWithMetadataToSingleFileInTLVFormat() throws {
+        let expectation = expectation(description: "Writes complete")
+        expectation.expectedFulfillmentCount = 3
+
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: directory,
@@ -35,9 +38,9 @@ class FileWriterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
-        writer.write(value: ["key2": "value2"]) // skipped metadata here
-        writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
+        writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"], completion: expectation.fulfill)
+        writer.write(value: ["key2": "value2"], completion: expectation.fulfill) // skipped metadata here
+        writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"], completion: expectation.fulfill)
 
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
@@ -58,6 +61,8 @@ class FileWriterTests: XCTestCase {
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
+
+        wait(for: [expectation], timeout: 0)
     }
 
     func testItWritesEncryptedDataWithMetadataToSingleFileInTLVFormat() throws {
@@ -102,6 +107,9 @@ class FileWriterTests: XCTestCase {
     }
 
     func testItWritesDataToSingleFileInTLVFormat() throws {
+        let expectation = expectation(description: "Writes complete")
+        expectation.expectedFulfillmentCount = 3
+
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: directory,
@@ -113,9 +121,9 @@ class FileWriterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        writer.write(value: ["key1": "value1"])
-        writer.write(value: ["key2": "value2"])
-        writer.write(value: ["key3": "value3"])
+        writer.write(value: ["key1": "value1"], completion: expectation.fulfill)
+        writer.write(value: ["key2": "value2"], completion: expectation.fulfill)
+        writer.write(value: ["key3": "value3"], completion: expectation.fulfill)
 
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
@@ -130,9 +138,14 @@ class FileWriterTests: XCTestCase {
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
+
+        wait(for: [expectation], timeout: 0)
     }
 
     func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
+        let expectation = expectation(description: "Writes complete")
+        expectation.expectedFulfillmentCount = 2
+
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -150,13 +163,18 @@ class FileWriterTests: XCTestCase {
                 ),
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry(),
-                metricsData: .init(trackName: "rum", consentLabel: .mockAny(), uploaderPerformance: UploadPerformanceMock.noOp)
+                metricsData: .init(
+                    trackName: "rum",
+                    consentLabel: .mockAny(),
+                    uploaderPerformance: UploadPerformanceMock.noOp,
+                    backgroundTasksEnabled: .mockAny()
+                )
             ),
             encryption: nil,
             telemetry: NOPTelemetry()
         )
 
-        writer.write(value: ["key1": "value1"]) // will be written
+        writer.write(value: ["key1": "value1"], completion: expectation.fulfill) // will be written
 
         XCTAssertEqual(try directory.files().count, 1)
         var reader = try BatchDataBlockReader(input: directory.files()[0].stream())
@@ -164,16 +182,20 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(blocks.count, 1)
         XCTAssertEqual(blocks[0].data, #"{"key1":"value1"}"#.utf8Data)
 
-        writer.write(value: ["key2": "value3 that makes it exceed 23 bytes"]) // will be dropped
+        writer.write(value: ["key2": "value3 that makes it exceed 23 bytes"], completion: expectation.fulfill) // will be dropped
 
         reader = try BatchDataBlockReader(input: directory.files()[0].stream())
         blocks = try XCTUnwrap(reader.all())
         XCTAssertEqual(blocks.count, 1) // same content as before
         XCTAssertEqual(dd.logger.errorLog?.message, "(rum) Failed to encode value")
-        XCTAssertEqual(dd.logger.errorLog?.error?.message, "DataBlock length exceeds limit of 23 bytes")
+        XCTAssertEqual(dd.logger.errorLog?.error?.message, "DataBlock with \(47) bytes exceeds limit of \(23) bytes")
+
+        wait(for: [expectation], timeout: 0)
     }
 
     func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() throws {
+        let expectation = expectation(description: "Writes complete")
+
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -183,19 +205,29 @@ class FileWriterTests: XCTestCase {
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry(),
-                metricsData: .init(trackName: "rum", consentLabel: .mockAny(), uploaderPerformance: UploadPerformanceMock.noOp)
+                metricsData: .init(
+                    trackName: "rum",
+                    consentLabel: .mockAny(),
+                    uploaderPerformance: UploadPerformanceMock.noOp,
+                    backgroundTasksEnabled: .mockAny()
+                )
             ),
             encryption: nil,
             telemetry: NOPTelemetry()
         )
 
-        writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
+        writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."), completion: expectation.fulfill)
 
         XCTAssertEqual(dd.logger.errorLog?.message, "(rum) Failed to encode value")
         XCTAssertEqual(dd.logger.errorLog?.error?.message, "failed to encode `FailingEncodable`.")
+
+        wait(for: [expectation], timeout: 0)
     }
 
     func testGivenErrorVerbosity_whenIOExceptionIsThrown_itPrintsError() throws {
+        let expectation = expectation(description: "Writes complete")
+        expectation.expectedFulfillmentCount = 2
+
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -205,19 +237,26 @@ class FileWriterTests: XCTestCase {
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry(),
-                metricsData: .init(trackName: "rum", consentLabel: .mockAny(), uploaderPerformance: UploadPerformanceMock.noOp)
+                metricsData: .init(
+                    trackName: "rum",
+                    consentLabel: .mockAny(),
+                    uploaderPerformance: UploadPerformanceMock.noOp,
+                    backgroundTasksEnabled: .mockAny()
+                )
             ),
             encryption: nil,
             telemetry: NOPTelemetry()
         )
 
-        writer.write(value: ["ok"]) // will create the file
+        writer.write(value: ["ok"], completion: expectation.fulfill) // will create the file
         try? directory.files()[0].makeReadonly()
-        writer.write(value: ["won't be written"])
+        writer.write(value: ["won't be written"], completion: expectation.fulfill)
         try? directory.files()[0].makeReadWrite()
 
         XCTAssertEqual(dd.logger.errorLog?.message, "(rum) Failed to write 26 bytes to file")
         XCTAssertTrue(dd.logger.errorLog!.error!.message.contains("You don’t have permission"))
+
+        wait(for: [expectation], timeout: 0)
     }
 
     /// NOTE: Test added after incident-4797

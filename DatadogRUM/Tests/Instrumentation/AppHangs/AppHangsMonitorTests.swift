@@ -27,6 +27,7 @@ class AppHangsMonitorTests: XCTestCase {
     private let fatalErrorContext = FatalErrorContextNotifier(messageBus: NOPFeatureScope())
     private let currentProcessID = UUID()
     private let dateProvider = DateProviderMock()
+    private let uuidGenerator = RUMUUIDGeneratorMock()
     private var dd: DDMock<CoreLoggerMock>! // swiftlint:disable:this implicitly_unwrapped_optional
     private var monitor: AppHangsMonitor! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -37,7 +38,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: currentProcessID,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            uuidGenerator: uuidGenerator
         )
     }
 
@@ -179,7 +181,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: UUID(), // different process
-            dateProvider: DateProviderMock(now: currentDate)
+            dateProvider: DateProviderMock(now: currentDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         monitor.start()
         defer { monitor.stop() }
@@ -196,6 +199,7 @@ class AppHangsMonitorTests: XCTestCase {
         XCTAssertEqual(featureScope.eventsWritten.count, 2, "It must send both RUM error and RUM view")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1)
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1)
+        XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
     }
 
     func testGivenPendingHangStartedMoreThan4HoursAgo_whenStartedInAnotherProcess_itSendsOnlyRUMError() throws {
@@ -219,7 +223,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: UUID(), // different process
-            dateProvider: DateProviderMock(now: currentDate)
+            dateProvider: DateProviderMock(now: currentDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         monitor.start()
         defer { monitor.stop() }
@@ -235,6 +240,7 @@ class AppHangsMonitorTests: XCTestCase {
 
         XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must send only RUM error")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1)
+        XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
     }
 
     func testGivenPendingHangStartedWithPendingOrNotGrantedConsent_whenStartedInAnotherProcess_itSendsNoEvent() throws {
@@ -257,7 +263,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: UUID(), // different process
-            dateProvider: DateProviderMock()
+            dateProvider: DateProviderMock(),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         monitor.start()
         defer { monitor.stop() }
@@ -272,6 +279,7 @@ class AppHangsMonitorTests: XCTestCase {
         )
 
         XCTAssertEqual(featureScope.eventsWritten.count, 0, "It must send no event")
+        XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
     }
 
     // MARK: - Fatal App Hangs - Testing Uploaded Data
@@ -299,7 +307,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: UUID(), // different process
-            dateProvider: DateProviderMock(now: currentDate)
+            dateProvider: DateProviderMock(now: currentDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         monitor.start()
         defer { monitor.stop() }
@@ -323,7 +332,7 @@ class AppHangsMonitorTests: XCTestCase {
         XCTAssertEqual(viewEvent.view.action.count, lastView.view.action.count)
         XCTAssertEqual(
             viewEvent.date,
-            hangDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds - 1,
+            hangDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds - 1,
             "It must be issued at hang date corrected by recorded offset and shifted back by 1ms"
         )
         XCTAssertEqual(viewEvent.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
@@ -374,7 +383,8 @@ class AppHangsMonitorTests: XCTestCase {
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: UUID(), // different process
-            dateProvider: DateProviderMock(now: currentDate)
+            dateProvider: DateProviderMock(now: currentDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         monitor.start()
         defer { monitor.stop() }
@@ -384,6 +394,7 @@ class AppHangsMonitorTests: XCTestCase {
         XCTAssertEqual(errorEvent.application.id, lastView.application.id)
         XCTAssertEqual(errorEvent.session.id, lastView.session.id)
         XCTAssertEqual(errorEvent.view.id, lastView.view.id)
+        DDTAssertValidRUMUUID(errorEvent.error.id)
         XCTAssertEqual(errorEvent.error.category, .appHang)
         XCTAssertEqual(errorEvent.error.isCrash, true, "Fatal hang must be marked as crash")
         XCTAssertEqual(errorEvent.view.name, lastView.view.name, "It must include view attributes")
@@ -396,7 +407,7 @@ class AppHangsMonitorTests: XCTestCase {
         )
         XCTAssertEqual(
             errorEvent.date,
-            hangDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+            hangDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
             "It must include error date corrected by recorded server time offset"
         )
         XCTAssertEqual(errorEvent.error.type, AppHangsMonitor.Constants.appHangErrorType)
@@ -422,7 +433,7 @@ class AppHangsMonitorTests: XCTestCase {
 
         // Given (track hang in previous app session)
         featureScope.contextMock.trackingConsent = .granted
-        featureScope.contextMock.launchTime = .mockWith(launchDate: appLaunchDate)
+        featureScope.contextMock.launchInfo = .mockWith(processLaunchDate: appLaunchDate)
         featureScope.contextMock.serverTimeOffset = 0
         monitor.start()
         fatalErrorContext.view = .mockRandom()
@@ -431,14 +442,15 @@ class AppHangsMonitorTests: XCTestCase {
 
         // When (app is restarted)
         let appRestartDate = appLaunchDate.addingTimeInterval(.mockRandom(min: 10, max: 100))
-        featureScope.contextMock.launchTime = .mockWith(launchDate: appRestartDate)
+        featureScope.contextMock.launchInfo = .mockWith(processLaunchDate: appRestartDate)
         featureScope.contextMock.serverTimeOffset = .mockRandom(min: 0, max: 100)
         let monitor = AppHangsMonitor(
             featureScope: featureScope,
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
             processID: UUID(), // different process
-            dateProvider: DateProviderMock(now: appRestartDate)
+            dateProvider: DateProviderMock(now: appRestartDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
         )
         monitor.start()
         defer { monitor.stop() }
@@ -446,6 +458,6 @@ class AppHangsMonitorTests: XCTestCase {
         // Then
         let errorEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(errorEvent.error.category, .appHang)
-        XCTAssertEqual(errorEvent.error.timeSinceAppStart, hangTimeSinceAppStart.toInt64Milliseconds)
+        XCTAssertEqual(errorEvent.error.timeSinceAppStart, hangTimeSinceAppStart.dd.toInt64Milliseconds)
     }
 }

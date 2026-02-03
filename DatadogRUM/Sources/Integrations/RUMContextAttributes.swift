@@ -19,35 +19,13 @@ internal enum RUMContextAttributes {
         /// The ID of current RUM view (standard UUID `String`, lowercased).
         internal static let viewID = "view.id"
 
+        /// The name of current RUM view (standard UUID `String`, lowercased).
+        internal static let viewName = "view.name"
+
         /// The ID of current RUM action (standard UUID `String`, lowercased).
         internal static let userActionID = "user_action.id"
+
+        /// The ID of current RUM vital (standard UUID `String`, lowercased).
+        internal static let vitalID = "vital.id"
     }
-
-    /// Key that aggregates the dictionary of all the RUM context IDs.
-    internal static let ids = "ids"
-
-    /// Server time offset of current RUM view used for date correction.
-    internal static let serverTimeOffset = "server_time_offset"
-}
-
-/// The RUM context received from `DatadogCore`.
-internal struct RUMCoreContext: Codable {
-    enum CodingKeys: String, CodingKey {
-        case applicationID = "application.id"
-        case sessionID = "session.id"
-        case viewID = "view.id"
-        case userActionID = "user_action.id"
-        case viewServerTimeOffset = "server_time_offset"
-    }
-
-    /// Current RUM application ID - standard UUID string, lowecased.
-    let applicationID: String
-    /// Current RUM session ID - standard UUID string, lowecased.
-    let sessionID: String
-    /// Current RUM view ID - standard UUID string, lowecased. It can be empty when view is being loaded.
-    let viewID: String?
-    /// The ID of current RUM action (standard UUID `String`, lowercased).
-    let userActionID: String?
-    /// Current view related server time offset
-    let viewServerTimeOffset: TimeInterval?
 }

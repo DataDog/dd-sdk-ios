@@ -8,8 +8,8 @@
 import SwiftUI
 import DatadogInternal
 
-/// `SwiftUI.ViewModifier` for RUM which invoke `startView` and `stopView` from the
-/// global RUM Monitor when the modified view appears and disappears.
+/// `SwiftUI.ViewModifier` which notifes RUM instrumentation when modified view appears and disappears.
+/// It makes an entry point to RUM views instrumentation in SwiftUI.
 @available(iOS 13, tvOS 13, *)
 internal struct RUMViewModifier: SwiftUI.ViewModifier {
     /// Datadog RUM instrumentation instance

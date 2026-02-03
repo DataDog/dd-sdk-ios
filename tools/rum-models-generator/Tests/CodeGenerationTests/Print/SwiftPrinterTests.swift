@@ -21,22 +21,22 @@ final class SwiftPrinterTests: XCTestCase {
                         comment: "Description of Bar.",
                         properties: [
                             SwiftStruct.Property(
-                                name: "property1",
-                                comment: "Description of Bar's `property1`.",
+                                name: "public",
+                                comment: "Description of Bar's `public`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: true,
                                 mutability: .immutable,
                                 defaultValue: nil,
-                                codingKey: .static(value: "property1")
+                                codingKey: .static(value: "public")
                             ),
                             SwiftStruct.Property(
-                                name: "property2",
-                                comment: "Description of Bar's `property2`.",
+                                name: "internal",
+                                comment: "Description of Bar's `internal`.",
                                 type: SwiftPrimitive<String>(),
                                 isOptional: false,
                                 mutability: .mutable,
                                 defaultValue: nil,
-                                codingKey: .static(value: "property2")
+                                codingKey: .static(value: "internal")
                             )
                         ],
                         conformance: [codableProtocol]
@@ -118,24 +118,53 @@ final class SwiftPrinterTests: XCTestCase {
             /// Description of FooBar's `propertiesByNames`.
             public let propertiesByNames: [String: String]?
 
-            enum CodingKeys: String, CodingKey {
+            public enum CodingKeys: String, CodingKey {
                 case bar = "bar"
                 case bizz = "bizz"
                 case buzz = "buzz"
                 case propertiesByNames = "propertiesByNames"
             }
 
+            /// Description of FooBar.
+            ///
+            /// - Parameters:
+            ///   - bar: Description of Bar.
+            ///   - buzz: Description of FooBar's `buzz`.
+            ///   - propertiesByNames: Description of FooBar's `propertiesByNames`.
+            public init(
+                bar: BAR? = nil,
+                buzz: [Buzz]? = nil,
+                propertiesByNames: [String: String]? = nil
+            ) {
+                self.bar = bar
+                self.buzz = buzz
+                self.propertiesByNames = propertiesByNames
+            }
+
             /// Description of Bar.
             public struct BAR: Codable {
-                /// Description of Bar's `property1`.
-                public let property1: String?
+                /// Description of Bar's `public`.
+                public let `public`: String?
 
-                /// Description of Bar's `property2`.
-                public var property2: String
+                /// Description of Bar's `internal`.
+                public var `internal`: String
 
-                enum CodingKeys: String, CodingKey {
-                    case property1 = "property1"
-                    case property2 = "property2"
+                public enum CodingKeys: String, CodingKey {
+                    case `public` = "public"
+                    case `internal` = "internal"
+                }
+
+                /// Description of Bar.
+                ///
+                /// - Parameters:
+                ///   - `public`: Description of Bar's `public`.
+                ///   - `internal`: Description of Bar's `internal`.
+                public init(
+                    `public`: String? = nil,
+                    `internal`: String
+                ) {
+                    self.`public` = `public`
+                    self.`internal` = `internal`
                 }
             }
 
@@ -208,11 +237,11 @@ final class SwiftPrinterTests: XCTestCase {
     func testPrintingSwiftStructWithStaticCodingKeys() throws {
         let `struct` = SwiftStruct(
             name: "Foo",
-            comment: nil,
+            comment: "Foo structure",
             properties: [
                 SwiftStruct.Property(
                     name: "property1",
-                    comment: nil,
+                    comment: "property_1",
                     type: SwiftPrimitive<String>(),
                     isOptional: false,
                     mutability: .immutable,
@@ -221,7 +250,7 @@ final class SwiftPrinterTests: XCTestCase {
                 ),
                 SwiftStruct.Property(
                     name: "property2",
-                    comment: nil,
+                    comment: "property_2",
                     type: SwiftDictionary(
                         value: SwiftPrimitive<Int>()
                     ),
@@ -229,6 +258,15 @@ final class SwiftPrinterTests: XCTestCase {
                     mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "property_2")
+                ),
+                SwiftStruct.Property(
+                    name: "property3",
+                    comment: "property_3",
+                    type: SwiftPrimitive<String>(),
+                    isOptional: false,
+                    mutability: .immutable,
+                    defaultValue: "default value",
+                    codingKey: .static(value: "property_3")
                 ),
             ],
             conformance: [codableProtocol]
@@ -239,14 +277,34 @@ final class SwiftPrinterTests: XCTestCase {
 
         let expected = """
 
+        /// Foo structure
         public struct Foo: Codable {
+            /// property_1
             public let property1: String
 
+            /// property_2
             public let property2: [String: Int]
 
-            enum CodingKeys: String, CodingKey {
+            /// property_3
+            public let property3: String = "default value"
+
+            public enum CodingKeys: String, CodingKey {
                 case property1 = "property_1"
                 case property2 = "property_2"
+                case property3 = "property_3"
+            }
+
+            /// Foo structure
+            ///
+            /// - Parameters:
+            ///   - property1: property_1
+            ///   - property2: property_2
+            public init(
+                property1: String,
+                property2: [String: Int]
+            ) {
+                self.property1 = property1
+                self.property2 = property2
             }
         }
 
@@ -271,15 +329,6 @@ final class SwiftPrinterTests: XCTestCase {
                     defaultValue: nil,
                     codingKey: .dynamic
                 ),
-                SwiftStruct.Property(
-                    name: "ignoredProperty",
-                    comment: "This property will be ignored in coding because it uses default value and is immutable",
-                    type: SwiftPrimitive<String>(),
-                    isOptional: false,
-                    mutability: .immutable,
-                    defaultValue: "default value",
-                    codingKey: .static(value: "ignoredProperty")
-                )
             ],
             conformance: [codableProtocol]
         )
@@ -292,11 +341,13 @@ final class SwiftPrinterTests: XCTestCase {
         public struct Foo: Codable {
             public let context: [String: Codable]
 
-            /// This property will be ignored in coding because it uses default value and is immutable
-            public let ignoredProperty: String = "default value"
-
-            enum StaticCodingKeys: String, CodingKey {
-                case ignoredProperty = "ignoredProperty"
+            ///
+            /// - Parameters:
+            ///   - context:
+            public init(
+                context: [String: Codable]
+            ) {
+                self.context = context
             }
         }
 
@@ -305,22 +356,18 @@ final class SwiftPrinterTests: XCTestCase {
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
                 try context.forEach {
-                    let key = DynamicCodingKey($0)
-                    try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+                    try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
                 }
             }
 
             public init(from decoder: Decoder) throws {
-                // Decode other properties into [String: Codable] dictionary:
+                // Decode other properties into [String: AnyCodable] dictionary:
                 let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-                let dynamicKeys = dynamicContainer.allKeys
-                var dictionary: [String: Codable] = [:]
+                self.context = [:]
 
-                try dynamicKeys.forEach { codingKey in
-                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+                try dynamicContainer.allKeys.forEach {
+                    self.context[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
                 }
-
-                self.context = dictionary
             }
         }
 
@@ -362,6 +409,15 @@ final class SwiftPrinterTests: XCTestCase {
                     mutability: .mutable,
                     defaultValue: nil,
                     codingKey: .static(value: "property_2")
+                ),
+                SwiftStruct.Property(
+                    name: "property3",
+                    comment: nil,
+                    type: SwiftPrimitive<String>(),
+                    isOptional: false,
+                    mutability: .immutable,
+                    defaultValue: "default value",
+                    codingKey: .static(value: "property_3")
                 )
             ],
             conformance: [codableProtocol]
@@ -379,9 +435,27 @@ final class SwiftPrinterTests: XCTestCase {
 
             public var property2: Bool?
 
-            enum StaticCodingKeys: String, CodingKey {
+            public let property3: String = "default value"
+
+            public enum StaticCodingKeys: String, CodingKey {
                 case property1 = "property_1"
                 case property2 = "property_2"
+                case property3 = "property_3"
+            }
+
+            ///
+            /// - Parameters:
+            ///   - property1:
+            ///   - context:
+            ///   - property2:
+            public init(
+                property1: Int,
+                context: [String: Encodable],
+                property2: Bool? = nil
+            ) {
+                self.property1 = property1
+                self.context = context
+                self.property2 = property2
             }
         }
 
@@ -391,12 +465,12 @@ final class SwiftPrinterTests: XCTestCase {
                 var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
                 try staticContainer.encodeIfPresent(property1, forKey: .property1)
                 try staticContainer.encodeIfPresent(property2, forKey: .property2)
+                try staticContainer.encodeIfPresent(property3, forKey: .property3)
 
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
                 try context.forEach {
-                    let key = DynamicCodingKey($0)
-                    try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+                    try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
                 }
             }
 
@@ -406,17 +480,14 @@ final class SwiftPrinterTests: XCTestCase {
                 self.property1 = try staticContainer.decode(Int.self, forKey: .property1)
                 self.property2 = try staticContainer.decodeIfPresent(Bool.self, forKey: .property2)
 
-                // Decode other properties into [String: Codable] dictionary:
+                // Decode other properties into [String: AnyCodable] dictionary:
                 let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+                self.context = [:]
+
                 let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
-                let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
-                var dictionary: [String: Codable] = [:]
-
-                try dynamicKeys.forEach { codingKey in
-                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+                try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+                    self.context[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
                 }
-
-                self.context = dictionary
             }
         }
 
@@ -495,9 +566,21 @@ final class SwiftPrinterTests: XCTestCase {
 
             public var associatedTypeEnum: AssociatedTypeEnum?
 
-            enum CodingKeys: String, CodingKey {
+            public enum CodingKeys: String, CodingKey {
                 case fooProperty = "foo_property"
                 case associatedTypeEnum = "associated_type_enum"
+            }
+
+            ///
+            /// - Parameters:
+            ///   - fooProperty:
+            ///   - associatedTypeEnum:
+            public init(
+                fooProperty: Int,
+                associatedTypeEnum: AssociatedTypeEnum? = nil
+            ) {
+                self.fooProperty = fooProperty
+                self.associatedTypeEnum = associatedTypeEnum
             }
 
             /// `AssociatedTypeEnum` comment
@@ -552,8 +635,18 @@ final class SwiftPrinterTests: XCTestCase {
                 public struct SomeStruct: Codable {
                     public let someStructProperty: Bool
 
-                    enum CodingKeys: String, CodingKey {
+                    public enum CodingKeys: String, CodingKey {
                         case someStructProperty = "some_struct_property"
+                    }
+
+                    /// `SomeStruct` comment
+                    ///
+                    /// - Parameters:
+                    ///   - someStructProperty:
+                    public init(
+                        someStructProperty: Bool
+                    ) {
+                        self.someStructProperty = someStructProperty
                     }
                 }
             }
@@ -580,15 +673,6 @@ final class SwiftPrinterTests: XCTestCase {
                     defaultValue: nil,
                     codingKey: .dynamic
                 ),
-                SwiftStruct.Property(
-                    name: "ignoredProperty",
-                    comment: "This property will be ignored in coding because it uses default value and is immutable",
-                    type: SwiftPrimitive<String>(),
-                    isOptional: false,
-                    mutability: .immutable,
-                    defaultValue: "default value",
-                    codingKey: .static(value: "ignoredProperty")
-                )
             ],
             conformance: [codableProtocol]
         )
@@ -614,11 +698,14 @@ final class SwiftPrinterTests: XCTestCase {
         public struct Foo: Codable {
             public let context: [String: Codable]
 
-            /// This property will be ignored in coding because it uses default value and is immutable
-            public let ignoredProperty: String = "default value"
-
-            enum StaticCodingKeys: String, CodingKey {
-                case ignoredProperty = "ignoredProperty"
+            /// This comment should be above the attribute
+            ///
+            /// - Parameters:
+            ///   - context:
+            public init(
+                context: [String: Codable]
+            ) {
+                self.context = context
             }
         }
 
@@ -627,22 +714,18 @@ final class SwiftPrinterTests: XCTestCase {
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
                 try context.forEach {
-                    let key = DynamicCodingKey($0)
-                    try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+                    try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
                 }
             }
 
             public init(from decoder: Decoder) throws {
-                // Decode other properties into [String: Codable] dictionary:
+                // Decode other properties into [String: AnyCodable] dictionary:
                 let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-                let dynamicKeys = dynamicContainer.allKeys
-                var dictionary: [String: Codable] = [:]
+                self.context = [:]
 
-                try dynamicKeys.forEach { codingKey in
-                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+                try dynamicContainer.allKeys.forEach {
+                    self.context[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
                 }
-
-                self.context = dictionary
             }
         }
 
@@ -652,6 +735,97 @@ final class SwiftPrinterTests: XCTestCase {
             case case1 = "case 1"
             case case2 = "case 2"
             case case3 = "case 3"
+        }
+
+        """
+
+        XCTAssertEqual(expected, actual)
+    }
+
+    func testPrintingSwiftStructWithMultiLineComments() throws {
+        let `struct` = SwiftStruct(
+            name: "Foo",
+            comment: "This is a multi-line comment\nwith a newline in the middle\nand another line",
+            properties: [
+                SwiftStruct.Property(
+                    name: "property1",
+                    comment: "Property comment with newline\nat the end\n",
+                    type: SwiftPrimitive<String>(),
+                    isOptional: false,
+                    mutability: .immutable,
+                    defaultValue: nil,
+                    codingKey: .static(value: "property_1")
+                ),
+                SwiftStruct.Property(
+                    name: "property2",
+                    comment: "Single line comment",
+                    type: SwiftPrimitive<Int>(),
+                    isOptional: true,
+                    mutability: .mutable,
+                    defaultValue: nil,
+                    codingKey: .static(value: "property_2")
+                ),
+            ],
+            conformance: [codableProtocol]
+        )
+
+        let `enum` = SwiftEnum(
+            name: "TestEnum",
+            comment: "Enum comment\nwith multiple lines\nand trailing newline\n",
+            cases: [
+                SwiftEnum.Case(label: "case1", rawValue: .string(value: "case1")),
+                SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
+            ],
+            conformance: [codableProtocol]
+        )
+
+        let printer = SwiftPrinter()
+        let actual = try printer.print(swiftTypes: [`struct`, `enum`])
+
+        let expected = """
+
+        /// This is a multi-line comment
+        /// with a newline in the middle
+        /// and another line
+        public struct Foo: Codable {
+            /// Property comment with newline
+            /// at the end
+            ///
+            public let property1: String
+
+            /// Single line comment
+            public var property2: Int?
+
+            public enum CodingKeys: String, CodingKey {
+                case property1 = "property_1"
+                case property2 = "property_2"
+            }
+
+            /// This is a multi-line comment
+            /// with a newline in the middle
+            /// and another line
+            ///
+            /// - Parameters:
+            ///   - property1: Property comment with newline
+            /// at the end
+            ///
+            ///   - property2: Single line comment
+            public init(
+                property1: String,
+                property2: Int? = nil
+            ) {
+                self.property1 = property1
+                self.property2 = property2
+            }
+        }
+
+        /// Enum comment
+        /// with multiple lines
+        /// and trailing newline
+        ///
+        public enum TestEnum: String, Codable {
+            case case1 = "case1"
+            case case2 = "case2"
         }
 
         """

@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogRUM
 
 class VitalInfoSamplerTests: XCTestCase {
@@ -96,12 +97,17 @@ class VitalInfoSamplerTests: XCTestCase {
     func testItSamplesDataFromBackgroundThreads() {
         // swiftlint:disable implicitly_unwrapped_optional
         var sampler: VitalInfoSampler!
+        let displayLinker = DisplayLinker(notificationCenter: .default)
+
         DispatchQueue.global().sync {
+            let refreshRateReader = VitalRefreshRateReader()
+            displayLinker.register(refreshRateReader)
+
             // in real-world scenarios, sampling will be started from background threads
             sampler = VitalInfoSampler(
-                cpuReader: VitalCPUReader(),
+                cpuReader: VitalCPUReader(notificationCenter: .default),
                 memoryReader: VitalMemoryReader(),
-                refreshRateReader: VitalRefreshRateReader(),
+                refreshRateReader: refreshRateReader,
                 frequency: 0.1
             )
         }

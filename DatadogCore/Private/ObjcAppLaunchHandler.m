@@ -6,109 +6,175 @@
 
 #import <pthread.h>
 #import <sys/sysctl.h>
+#import <mach/mach.h>
 
 #import "ObjcAppLaunchHandler.h"
 
-#if TARGET_OS_IOS || TARGET_OS_TV
+#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 #import <UIKit/UIKit.h>
+#elif TARGET_OS_OSX
+#import <AppKit/AppKit.h>
 #endif
 
-// A very long application launch time is most-likely the result of a pre-warmed process.
-// We consider 30s as a threshold for pre-warm detection.
-#define COLD_START_TIME_THRESHOLD 30
+/// Constants for special task policy results
+/// Returned when the kernel query fails (kernel_result != KERN_SUCCESS).
+const NSInteger __dd_private_TASK_POLICY_KERN_FAILURE   = -999;
+/// Returned when the policy falls back to the system default (get_default == TRUE).
+const NSInteger __dd_private_TASK_POLICY_DEFAULTED      = -99;
+/// Returned when task policy queries are unsupported on this platform (e.g., tvOS).
+const NSInteger __dd_private_TASK_POLICY_UNAVAILABLE    = -9;
 
-/// Get the process start time from kernel.
+/// Retrieves the process start timestamp relative to the 1 January 2001 reference date.
 ///
-/// The time interval is related to the 1 January 2001 00:00:00 GMT reference date.
-///
-/// - Parameter timeInterval: Pointer to time interval to hold the process start time interval.
+/// @param timeInterval Pointer to an NSTimeInterval where the result will be stored.
+///                     On success, *timeInterval is set to the process start offset in seconds.
+/// @return 0 on success; non-zero errno value on failure.
 int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval);
 
-/// `AppLaunchHandler` aims to track some times as part of the sequence
-/// described in Apple's "About the App Launch Sequence"
-///
-/// ref. https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
 @implementation __dd_private_AppLaunchHandler {
-    NSTimeInterval _processStartTime;
-    NSTimeInterval _timeToApplicationDidBecomeActive;
-    BOOL _isActivePrewarm;
-    UIApplicationDidBecomeActiveCallback _applicationDidBecomeActiveCallback;
+    NSTimeInterval _processLaunchDate;
+    NSTimeInterval _runtimeLoadDate;
+    NSTimeInterval _runtimePreMainDate;
+    NSTimeInterval _didFinishLaunchingDate;
+    NSTimeInterval _didBecomeActiveDate;
+    NSMutableArray<UIApplicationNotificationCallback> *_applicationNotificationCallbacks;
 }
 
-/// Shared instance of the Application Launch Handler.
 static __dd_private_AppLaunchHandler *_shared;
 
 + (void)load {
-    // This is called at the `DatadogPrivate` load time, keep the work minimal
-    _shared = [[self alloc] initWithProcessInfo:NSProcessInfo.processInfo
-                                       loadTime:CFAbsoluteTimeGetCurrent()];
-#if TARGET_OS_IOS || TARGET_OS_TV
-    NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
-    id __block __unused token = [center addObserverForName:UIApplicationDidBecomeActiveNotification
-                                                    object:nil
-                                                     queue:NSOperationQueue.mainQueue
-                                                usingBlock:^(NSNotification *_){
-
-        @synchronized(_shared) {
-            NSTimeInterval time = CFAbsoluteTimeGetCurrent() - _shared->_processStartTime;
-            _shared->_timeToApplicationDidBecomeActive = time;
-            _shared->_applicationDidBecomeActiveCallback(time);
-        }
-
-        [center removeObserver:token];
-        token = nil;
-    }];
-#endif
+    NSTimeInterval runtimeLoadDate = CFAbsoluteTimeGetCurrent();
+    _shared = [[self alloc] init];
+    _shared->_runtimeLoadDate = runtimeLoadDate;
+    [_shared observeNotificationCenter:NSNotificationCenter.defaultCenter];
 }
 
 + (__dd_private_AppLaunchHandler *)shared {
     return _shared;
 }
 
-- (instancetype)initWithProcessInfo:(NSProcessInfo *)processInfo loadTime:(NSTimeInterval)loadTime {
-    NSTimeInterval startTime;
-    if (processStartTimeIntervalSinceReferenceDate(&startTime) != 0) {
-        // fallback on the loading time
-        startTime = loadTime;
-    }
-
-    // The ActivePrewarm variable indicates whether the app was launched via pre-warming.
-    BOOL isActivePrewarm = [processInfo.environment[@"ActivePrewarm"] isEqualToString:@"1"];
-    return [self initWithStartTime:startTime isActivePrewarm:isActivePrewarm];
+/**
+ * Constructor attribute function that runs right before  @c main() is executed during app launch.
+ */
+__attribute__((constructor(65535)))
+static void recordPreMainDate(void) {
+    _shared->_runtimePreMainDate = CFAbsoluteTimeGetCurrent();
 }
 
-- (instancetype)initWithStartTime:(NSTimeInterval)startTime isActivePrewarm:(BOOL)isActivePrewarm {
+- (instancetype)init {
+    NSTimeInterval startTime;
+    if (processStartTimeIntervalSinceReferenceDate(&startTime) != 0) {
+        startTime = CFAbsoluteTimeGetCurrent();
+    }
     self = [super init];
     if (!self) return nil;
-    _processStartTime = startTime;
-    _isActivePrewarm = isActivePrewarm;
-    _applicationDidBecomeActiveCallback = ^(NSTimeInterval _) {};
+
+    _processLaunchDate = startTime;
+    _applicationNotificationCallbacks = [NSMutableArray array];
     return self;
 }
 
-- (NSDate *)launchDate {
+- (void)observeNotificationCenter:(NSNotificationCenter *)notificationCenter {
+    __weak NSNotificationCenter *weakCenter = notificationCenter;
+
+#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
+    __block id __unused didFinishLaunchingNotification = [notificationCenter addObserverForName:UIApplicationDidFinishLaunchingNotification
+                                                                object:nil
+                                                                 queue:NSOperationQueue.mainQueue
+                                                            usingBlock:^(NSNotification *_){
+
+        @synchronized(self) {
+            self->_didFinishLaunchingDate = CFAbsoluteTimeGetCurrent();
+            NSDate *didFinishLaunchingDate = [NSDate dateWithTimeIntervalSinceReferenceDate:self->_didFinishLaunchingDate];
+            NSDate *didBecomeActiveDate = self->_didBecomeActiveDate > 0 ? [NSDate dateWithTimeIntervalSinceReferenceDate:self->_didBecomeActiveDate] : nil;
+
+            for (UIApplicationNotificationCallback callback in self->_applicationNotificationCallbacks) {
+                callback(didFinishLaunchingDate, didBecomeActiveDate);
+            }
+        }
+
+        [weakCenter removeObserver:didFinishLaunchingNotification];
+        didFinishLaunchingNotification = nil;
+    }];
+#endif
+
+    NSString *didBecomeActiveNotificationName;
+#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
+    didBecomeActiveNotificationName = UIApplicationDidBecomeActiveNotification;
+#elif TARGET_OS_OSX
+    didBecomeActiveNotificationName = NSApplicationDidBecomeActiveNotification;
+#endif
+
+    if (!didBecomeActiveNotificationName || !weakCenter) {
+        return;
+    }
+
+    __block id __unused didBecomeActiveNotification = [notificationCenter addObserverForName:didBecomeActiveNotificationName
+                                                                object:nil
+                                                                 queue:NSOperationQueue.mainQueue
+                                                            usingBlock:^(NSNotification *_){
+        @synchronized(self) {
+            self->_didBecomeActiveDate = CFAbsoluteTimeGetCurrent();
+            NSDate *didBecomeActiveDate = [NSDate dateWithTimeIntervalSinceReferenceDate:self->_didBecomeActiveDate];
+            NSDate *didFinishLaunchingDate = self->_didFinishLaunchingDate > 0 ? [NSDate dateWithTimeIntervalSinceReferenceDate:self->_didFinishLaunchingDate] : nil;
+
+            for (UIApplicationNotificationCallback callback in self->_applicationNotificationCallbacks) {
+                callback(didFinishLaunchingDate, didBecomeActiveDate);
+            }
+            //we can clean the callbacks array since the new triggered notifications won't be associated with the app launch
+            [self->_applicationNotificationCallbacks removeAllObjects];
+        }
+
+        [weakCenter removeObserver:didBecomeActiveNotification];
+        didBecomeActiveNotification = nil;
+    }];
+}
+
+/// Retrieves the current process’s task policy role (`task_role_t`).
+/// Returns the raw `policy.role` on success, or one of the special `__dd_private_TASK_POLICY_*` constants.
+- (NSInteger)taskPolicyRole {
+#if TARGET_OS_TV || TARGET_OS_WATCH
+    return __dd_private_TASK_POLICY_UNAVAILABLE;
+#else
+    task_category_policy_data_t policy;
+    mach_msg_type_number_t count = TASK_CATEGORY_POLICY_COUNT;
+    boolean_t get_default = FALSE;
+    kern_return_t kernel_result = task_policy_get(mach_task_self(),
+                                                  TASK_CATEGORY_POLICY,
+                                                  (task_policy_t)&policy,
+                                                  &count,
+                                                  &get_default);
+    if (kernel_result != KERN_SUCCESS) {
+        return __dd_private_TASK_POLICY_KERN_FAILURE;
+    }
+    if (get_default) {
+        return __dd_private_TASK_POLICY_DEFAULTED;
+    }
+    return policy.role;
+#endif
+}
+
+- (NSDate *)processLaunchDate {
     @synchronized(self) {
-        return [NSDate dateWithTimeIntervalSinceReferenceDate:_processStartTime];
+        return [NSDate dateWithTimeIntervalSinceReferenceDate:_processLaunchDate];
     }
 }
 
-- (NSNumber *)launchTime {
+- (NSDate *)runtimeLoadDate {
     @synchronized(self) {
-        return _timeToApplicationDidBecomeActive > 0 ?
-            @(_timeToApplicationDidBecomeActive) : nil;
+        return [NSDate dateWithTimeIntervalSinceReferenceDate:_runtimeLoadDate];
     }
 }
 
-- (BOOL)isActivePrewarm {
+- (NSDate *)runtimePreMainDate {
     @synchronized(self) {
-        if (_isActivePrewarm) return _isActivePrewarm;
-        return _timeToApplicationDidBecomeActive > COLD_START_TIME_THRESHOLD;
+        return [NSDate dateWithTimeIntervalSinceReferenceDate:_runtimePreMainDate];
     }
 }
 
-- (void)setApplicationDidBecomeActiveCallback:(UIApplicationDidBecomeActiveCallback)callback {
+- (void)setApplicationNotificationCallback:(nonnull UIApplicationNotificationCallback)callback {
     @synchronized(self) {
-        _applicationDidBecomeActiveCallback = callback;
+        [_applicationNotificationCallbacks addObject:[callback copy]];
     }
 }
 

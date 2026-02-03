@@ -207,7 +207,6 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(child.parentID, nil)
     }
 
-    /// TODO: RUM-4795 This test is currently disabled as it proves to be flaky.
     func testSetActive_givenParentSpan() throws {
         // Given
         let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
@@ -217,6 +216,51 @@ final class OTelSpanTests: XCTestCase {
         // When
         childSpan.end()
         parentSpan.end()
+
+        // Then
+        let recordedSpans = try featureScope.spanEventsWritten()
+        XCTAssertEqual(recordedSpans.count, 2)
+        let child = recordedSpans.first!
+        let parent = recordedSpans.last!
+        XCTAssertEqual(child.traceID, parent.traceID)
+        XCTAssertNil(parent.parentID)
+        XCTAssertEqual(child.parentID, parent.spanID)
+    }
+
+    func testSetActive_givenParentWithMultipleChildren() throws {
+        // Given
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
+        let parentSpan = tracer.spanBuilder(spanName: "Parent").setActive(true).startSpan()
+        let childSpan = tracer.spanBuilder(spanName: "Child1").setActive(true).startSpan()
+        childSpan.end()
+
+        // When
+        let secondChild = tracer.spanBuilder(spanName: "Child2").startSpan()
+        secondChild.end()
+        parentSpan.end()
+
+        // Then
+        let recordedSpans = try featureScope.spanEventsWritten()
+        XCTAssertEqual(recordedSpans.count, 3)
+        let recordedParent = recordedSpans.first { $0.resource == "Parent" }!
+        let recordedChild1 = recordedSpans.first { $0.resource == "Child1" }!
+        let recordedChild2 = recordedSpans.first { $0.resource == "Child2" }!
+
+        XCTAssertEqual(recordedChild1.traceID, recordedParent.traceID)
+        XCTAssertEqual(recordedChild1.parentID, recordedParent.spanID)
+        XCTAssertEqual(recordedChild2.traceID, recordedParent.traceID)
+        XCTAssertEqual(recordedChild2.parentID, recordedParent.spanID)
+    }
+
+    func testWithActiveSpan() throws {
+        // Given
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
+
+        // When
+        tracer.spanBuilder(spanName: "Parent").withActiveSpan { _ in
+            let childSpan = tracer.spanBuilder(spanName: "Child").startSpan()
+            childSpan.end()
+        }
 
         // Then
         let recordedSpans = try featureScope.spanEventsWritten()
@@ -268,6 +312,71 @@ final class OTelSpanTests: XCTestCase {
         let recordedSpan = recordedSpans.first!
         let expectedTags =
         [
+            "key": "true",
+            "key2": "value2",
+            "key3": "3",
+            "key4": "4.0",
+            "span.kind": "internal",
+        ]
+        DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
+    }
+
+    func testSetAttributes() throws {
+        // Given
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
+        let span = tracer.spanBuilder(spanName: "Span").startSpan()
+
+        // When
+        span.setAttributes([
+            "key": .bool(true),
+            "key2": .string("value2"),
+            "key3": .int(3),
+            "key4": .double(4.0),
+        ])
+        span.end()
+
+        // Then
+        let recordedSpans = try featureScope.spanEventsWritten()
+        XCTAssertEqual(recordedSpans.count, 1)
+        let recordedSpan = recordedSpans.first!
+        let expectedTags =
+        [
+            "key": "true",
+            "key2": "value2",
+            "key3": "3",
+            "key4": "4.0",
+            "span.kind": "internal",
+        ]
+        DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
+    }
+
+    func testSetGlobalAttribute() throws {
+        // Given
+        let tracer: DatadogTracer = .mockWith(
+            featureScope: featureScope,
+            tags: [
+                "global": "keep_me",
+                "key3": "replace_me"
+            ]
+        )
+
+        let span = tracer.spanBuilder(spanName: "Span").startSpan()
+
+        // When
+        span.setAttribute(key: "key", value: .bool(true))
+        span.setAttribute(key: "key2", value: .string("value2"))
+        span.setAttribute(key: "key3", value: .int(3))
+        span.setAttribute(key: "key4", value: .double(4.0))
+
+        span.end()
+
+        // Then
+        let recordedSpans = try featureScope.spanEventsWritten()
+        XCTAssertEqual(recordedSpans.count, 1)
+        let recordedSpan = recordedSpans.first!
+        let expectedTags =
+        [
+            "global": "keep_me",
             "key": "true",
             "key2": "value2",
             "key3": "3",

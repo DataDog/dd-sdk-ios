@@ -7,11 +7,12 @@
 #if os(iOS)
 import XCTest
 @_spi(Internal)
+import TestUtilities
+@_spi(Internal)
 @testable import DatadogSessionReplay
-@testable import TestUtilities
 
 class RecorderTests: XCTestCase {
-    func testAfterCapturingSnapshot_itIsPassesToProcessor() throws {
+    func testAfterCapturingSnapshot_itIsPassedToProcessor() throws {
         let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom(count: 1)
         let mockTouchSnapshots: [TouchSnapshot] = .mockRandom(count: 1)
         let snapshotProcessor = SnapshotProcessorSpy()
@@ -30,7 +31,6 @@ class RecorderTests: XCTestCase {
 
         // Then
         DDAssertReflectionEqual(snapshotProcessor.processedSnapshots.map { $0.viewTreeSnapshot }, mockViewTreeSnapshots)
-        DDAssertReflectionEqual(snapshotProcessor.processedSnapshots.map { $0.touchSnapshot }, mockTouchSnapshots)
     }
 
     func testWhenCapturingSnapshots_itUsesDefaultRecorderContext() throws {
@@ -50,7 +50,12 @@ class RecorderTests: XCTestCase {
 
         // Then
         XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 1)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0], recorderContext)
+        let context = try XCTUnwrap(viewTreeSnapshotProducer.succeedingContexts.first)
+        XCTAssertEqual(context.applicationID, recorderContext.applicationID)
+        XCTAssertEqual(context.sessionID, recorderContext.sessionID)
+        XCTAssertEqual(context.viewID, recorderContext.viewID)
+        XCTAssertEqual(context.viewServerTimeOffset, recorderContext.viewServerTimeOffset)
+        XCTAssertEqual(context.date, recorderContext.date)
     }
 
     func testWhenCapturingSnapshots_itUsesAdditionalNodeRecorders() throws {
@@ -59,7 +64,7 @@ class RecorderTests: XCTestCase {
         let windowObserver = AppWindowObserverMock()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
             windowObserver: windowObserver,
-            snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: [additionalNodeRecorder])
+            snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: [additionalNodeRecorder], featureFlags: .allEnabled)
         )
         let touchSnapshotProducer = TouchSnapshotProducerMock()
 
@@ -74,8 +79,61 @@ class RecorderTests: XCTestCase {
         try recorder.captureNextRecord(recorderContext)
 
         // Then
-        let queryContext = try XCTUnwrap(additionalNodeRecorder.queryContexts.first)
-        XCTAssertEqual(queryContext.recorder, recorderContext)
+        let queryContext = try XCTUnwrap(additionalNodeRecorder.queryContexts.first?.recorder)
+        XCTAssertEqual(queryContext.applicationID, recorderContext.applicationID)
+        XCTAssertEqual(queryContext.sessionID, recorderContext.sessionID)
+        XCTAssertEqual(queryContext.viewID, recorderContext.viewID)
+        XCTAssertEqual(queryContext.viewServerTimeOffset, recorderContext.viewServerTimeOffset)
+        XCTAssertEqual(queryContext.date, recorderContext.date)
+    }
+
+    // MARK: Touch Snapshot Recording
+    func testAfterCapturingSnapshot_withTouchPrivacyShow_itIsPassedToProcessor() throws {
+        let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom(count: 1)
+        let mockTouchSnapshots: [TouchSnapshot] = .mockRandom(count: 1)
+        let snapshotProcessor = SnapshotProcessorSpy()
+
+        // Given
+        let recorder = Recorder(
+            uiApplicationSwizzler: .mockAny(),
+            viewTreeSnapshotProducer: ViewTreeSnapshotProducerMock(succeedingSnapshots: mockViewTreeSnapshots),
+            touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: mockTouchSnapshots),
+            snapshotProcessor: snapshotProcessor
+        )
+        let recorderContext = Recorder.Context.mockWith(
+            touchPrivacy: .show
+        )
+
+        // When
+        try recorder.captureNextRecord(recorderContext)
+
+        // Then
+        DDAssertReflectionEqual(snapshotProcessor.processedSnapshots.map { $0.viewTreeSnapshot }, mockViewTreeSnapshots)
+        XCTAssertEqual(snapshotProcessor.processedSnapshots.compactMap { $0.touchSnapshot }.count, mockTouchSnapshots.count)
+    }
+
+    func testAfterCapturingSnapshot_withTouchPrivacyHide_itDoesNotPassToProcessor() throws {
+        let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom(count: 1)
+        let mockTouchSnapshots: [TouchSnapshot] = .mockRandom(count: 0)
+        let snapshotProcessor = SnapshotProcessorSpy()
+
+        // Given
+        let recorder = Recorder(
+            uiApplicationSwizzler: .mockAny(),
+            viewTreeSnapshotProducer: ViewTreeSnapshotProducerMock(succeedingSnapshots: mockViewTreeSnapshots),
+            touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: mockTouchSnapshots),
+            snapshotProcessor: snapshotProcessor
+        )
+        let recorderContext = Recorder.Context.mockWith(
+            touchPrivacy: .hide
+        )
+
+        // When
+        try recorder.captureNextRecord(recorderContext)
+
+        // Then
+        DDAssertReflectionEqual(snapshotProcessor.processedSnapshots.map { $0.viewTreeSnapshot }, mockViewTreeSnapshots)
+        XCTAssertEqual(snapshotProcessor.processedSnapshots.compactMap { $0.touchSnapshot }.count, mockTouchSnapshots.count)
     }
 }
 #endif

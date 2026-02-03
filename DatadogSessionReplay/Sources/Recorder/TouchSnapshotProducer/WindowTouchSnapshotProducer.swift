@@ -18,18 +18,24 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
     /// Touches recorded since last call to `takeSnapshot()`
     private var buffer: [TouchSnapshot.Touch] = []
 
-    init(windowObserver: AppWindowObserver) {
+    init(
+        windowObserver: AppWindowObserver
+    ) {
         self.windowObserver = windowObserver
     }
 
     func takeSnapshot(context: Recorder.Context) -> TouchSnapshot? {
-        if let offset = context.viewServerTimeOffset {
-            buffer = buffer.compactMap {
-                var touch = $0
-                touch.date.addTimeInterval(offset)
-                return touch
+        buffer = buffer.compactMap { touch in
+            var updatedTouch = touch
+            if let offset = context.viewServerTimeOffset {
+                updatedTouch.date.addTimeInterval(offset)
             }
+
+            // Filter the buffer to only include touches that should be recorded
+            let shouldRecord = shouldRecordTouch(updatedTouch, in: context)
+            return shouldRecord ? updatedTouch : nil
         }
+
         guard let firstTouch = buffer.first else {
             return nil
         }
@@ -40,7 +46,12 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
 
     // MARK: - UIEventHandler
 
-    /// Delegate of `UIApplicationSwizzler` - called each time when `UIApplication` receives an `UIEvent`.
+    /// Delegate of `UIApplicationSwizzler`.
+    /// This method is triggered whenever `UIApplication` receives an `UIEvent`.
+    /// It captures `UITouch` events, determines if the touch should be recorded
+    /// based on the view hierarchy's touch privacy settings, and appends valid
+    /// touches to a buffer for later snapshot creation. Touches are only recorded
+    /// if they are not excluded by any `touchPrivacy` override set on the view or its ancestors.
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
         guard event.type == .touches,
             let window = windowObserver.relevantWindow,
@@ -54,16 +65,55 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
                 continue
             }
 
+            let touchId = idsGenerator.touchIdentifier(for: touch)
+
+            // Capture the touch privacy override when the touch begins
+            if phase == .down, let privacyOverride = resolveTouchOverride(for: touch) {
+                touch.touchPrivacyOverride = privacyOverride
+            }
+
             buffer.append(
                 TouchSnapshot.Touch(
-                    id: idsGenerator.touchIdentifier(for: touch),
+                    id: touchId,
                     phase: phase,
                     date: Date(),
-                    position: touch.location(in: window)
+                    position: touch.location(in: window),
+                    touchOverride: touch.touchPrivacyOverride
                 )
             )
         }
     }
+
+    /// Determines whether the touch event should be recorded based on its privacy override and the global privacy settings.
+    /// If the touch has a specific privacy override, that override is used.
+    /// Otherwise, the global touch privacy setting is applied.
+    /// - Parameter touchId: The unique identifier for the touch event.
+    /// - Returns: `true` if the touch should be recorded, `false` otherwise.
+    internal func shouldRecordTouch(_ touch: TouchSnapshot.Touch, in context: Recorder.Context
+    ) -> Bool {
+        let privacy: TouchPrivacyLevel = touch.touchOverride ?? context.touchPrivacy
+        return privacy == .show
+    }
+
+    /// Resolves the touch privacy override for the given touch by traversing the view hierarchy.
+    /// It checks the `dd.sessionReplayPrivacyOverrides.touchPrivacy` property for the view where the touch occurred
+    /// and its ancestors, if needed. The first non-nil override encountered is returned.
+    /// - Parameter touch: The touch event to check.
+    /// - Returns: The `TouchPrivacyLevel` for the view, or `nil` if no override is found.
+    internal func resolveTouchOverride(for touch: UITouch) -> TouchPrivacyLevel? {
+        guard let initialView = touch.view else {
+            return nil
+        }
+
+        var view: UIView? = initialView
+        while view != nil {
+            if let touchPrivacy = view?.dd._privacyOverrides?.touchPrivacy {
+                return touchPrivacy
+            }
+            view = view?.superview
+        }
+        return nil
+   }
 }
 
 internal extension UITouch.Phase {

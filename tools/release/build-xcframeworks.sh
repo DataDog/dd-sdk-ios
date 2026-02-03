@@ -25,6 +25,7 @@ parse_args "$@"
 
 
 REPO_PATH=$(realpath "$repo_path")
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo_info "Clean '$REPO_PATH' with 'git clean -fxd'"
 cd "$REPO_PATH" && git clean -fxd && cd -
@@ -82,11 +83,7 @@ build_xcframework() {
         xcoptions+=(-archive "$ARCHIVES_TEMP_OUTPUT/$product/tvos-simulator.xcarchive" -framework "$product.framework")
     fi
 
-    # Datadog class conflicts with module name and Swift emits invalid module interface
-    # cf. https://github.com/apple/swift/issues/56573
-    #
-    # Therefore, we cannot provide ABI stability and we have to supply '-allow-internal-distribution'.
-    xcodebuild -create-xcframework -allow-internal-distribution ${xcoptions[@]} -output "$XCFRAMEWORKS_OUTPUT/$product.xcframework" | xcbeautify
+    xcodebuild -create-xcframework ${xcoptions[@]} -output "$XCFRAMEWORKS_OUTPUT/$product.xcframework" | xcbeautify
 
     echo_succ "The '$product.xcframework' was created successfully in '$XCFRAMEWORKS_OUTPUT'"
 }
@@ -99,16 +96,16 @@ PLATFORMS=""
 [[ "$ios" == "true" ]] && PLATFORMS+="iOS"
 [[ "$tvos" == "true" ]] && { [ -n "$PLATFORMS" ] && PLATFORMS+=","; PLATFORMS+="tvOS"; }
 
-echo_info "Building xcframeworks:"
-echo_info "- REPO_PATH = '$REPO_PATH'"
-echo_info "- ARCHIVES_TEMP_OUTPUT = '$ARCHIVES_TEMP_OUTPUT'"
-echo_info "- XCFRAMEWORKS_OUTPUT = '$XCFRAMEWORKS_OUTPUT'"
-echo_info "- PLATFORMS = '$PLATFORMS'"
+echo_info "Building xcframeworks"
+echo_info "▸ REPO_PATH = '$REPO_PATH'"
+echo_info "▸ ARCHIVES_TEMP_OUTPUT = '$ARCHIVES_TEMP_OUTPUT'"
+echo_info "▸ XCFRAMEWORKS_OUTPUT = '$XCFRAMEWORKS_OUTPUT'"
+echo_info "▸ PLATFORMS = '$PLATFORMS'"
 
 # Build third-party XCFrameworks
 echo_subtitle2 "Run 'carthage bootstrap --platform $PLATFORMS --use-xcframeworks'"
-carthage bootstrap --platform $PLATFORMS --use-xcframeworks
-cp -r "Carthage/Build/CrashReporter.xcframework" "$XCFRAMEWORKS_OUTPUT"
+export REPO_ROOT=$(realpath "$SCRIPT_DIR/../..") 
+$REPO_ROOT/tools/carthage-shim.sh bootstrap --platform $PLATFORMS --use-xcframeworks
 cp -r "Carthage/Build/OpenTelemetryApi.xcframework" "$XCFRAMEWORKS_OUTPUT"
 
 # Build Datadog XCFrameworks
@@ -117,8 +114,9 @@ build_xcframework DatadogCore "$PLATFORMS"
 build_xcframework DatadogLogs "$PLATFORMS"
 build_xcframework DatadogTrace "$PLATFORMS"
 build_xcframework DatadogRUM "$PLATFORMS"
-build_xcframework DatadogObjc "$PLATFORMS"
 build_xcframework DatadogCrashReporting "$PLATFORMS"
+build_xcframework DatadogFlags "$PLATFORMS"
+build_xcframework DatadogProfiling "$PLATFORMS"
 
 # Build iOS-only Datadog XCFrameworks
 if [[ "$ios" == "true" ]]; then

@@ -7,9 +7,7 @@
 import Foundation
 
 /// Describes current device information.
-public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
-    // MARK: - Info
-
+public struct DeviceInfo: Equatable {
     /// Device manufacturer name. Always'Apple'
     public let brand: String
 
@@ -19,14 +17,8 @@ public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
     /// Device model name, e.g. "iPhone10,1", "iPhone13,2".
     public let model: String
 
-    /// The name of operating system, e.g. "iOS", "iPadOS", "tvOS".
-    public let osName: String
-
-    /// The version of the operating system, e.g. "15.4.1".
-    public let osVersion: String
-
-    /// The build numer of the operating system, e.g.  "15D21" or "13D20".
-    public let osBuildNumber: String?
+    /// The type of device.
+    public let type: DeviceType
 
     /// The architecture of the device
     public let architecture: String
@@ -43,29 +35,88 @@ public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
     /// Returns system boot time since epoch.
     public let systemBootTime: TimeInterval
 
+    /// Number of logical processors available to the system.
+    public let logicalCpuCount: Double?
+
+    /// Total physical memory (RAM) in megabytes.
+    public let totalRam: Double?
+
     public init(
         name: String,
         model: String,
         osName: String,
-        osVersion: String,
-        osBuildNumber: String?,
         architecture: String,
         isSimulator: Bool,
         vendorId: String?,
         isDebugging: Bool,
-        systemBootTime: TimeInterval
+        systemBootTime: TimeInterval,
+        logicalCpuCount: Double?,
+        totalRam: Double?
     ) {
         self.brand = "Apple"
         self.name = name
         self.model = model
-        self.osName = osName
-        self.osVersion = osVersion
-        self.osBuildNumber = osBuildNumber
+        self.type = .init(modelName: model, osName: osName)
         self.architecture = architecture
         self.isSimulator = isSimulator
         self.vendorId = vendorId
         self.isDebugging = isDebugging
         self.systemBootTime = systemBootTime
+        self.logicalCpuCount = logicalCpuCount
+        self.totalRam = totalRam
+    }
+}
+
+extension DeviceInfo {
+    /// Represents the type of device.
+    public enum DeviceType: Codable, Equatable {
+        case iPhone
+        case iPod
+        case iPad
+        case appleTV
+        case appleVision
+        case appleWatch
+        case other(model: String, os: String)
+
+        public var normalizedDeviceType: Device.DeviceType {
+            switch self {
+            case .iPhone, .iPod:
+                    .mobile
+            case .iPad:
+                    .tablet
+            case .appleTV:
+                    .tv
+            case .appleVision, .appleWatch, .other:
+                    .other
+            }
+        }
+    }
+}
+
+private extension DeviceInfo.DeviceType {
+    /// Infers `DeviceType` from provided model name and operating system name.
+    /// - Parameters:
+    ///   - modelName: The name of the device model, e.g. "iPhone10,1".
+    ///   - osName: The name of the operating system, e.g. "iOS", "tvOS".
+    init(modelName: String, osName: String) {
+        let lowercasedModelName = modelName.lowercased()
+        let lowercasedOSName = osName.lowercased()
+
+        if lowercasedModelName.hasPrefix("iphone") {
+            self = .iPhone
+        } else if lowercasedModelName.hasPrefix("ipod") {
+            self = .iPod
+        } else if lowercasedModelName.hasPrefix("ipad") || (lowercasedOSName == "ipados" && lowercasedModelName.hasPrefix("realitydevice") == false) {
+            self = .iPad
+        } else if lowercasedModelName.hasPrefix("appletv") || lowercasedOSName == "tvos" || lowercasedOSName == "apple tvos" {
+            self = .appleTV
+        } else if lowercasedModelName.hasPrefix("realitydevice") || lowercasedOSName == "visionos" {
+            self = .appleVision
+        } else if lowercasedModelName.hasPrefix("watch") || lowercasedOSName == "watchos" {
+            self = .appleWatch
+        } else {
+            self = .other(model: modelName, os: osName)
+        }
     }
 }
 
@@ -75,14 +126,14 @@ import MachO
 import UIKit
 
 extension DeviceInfo {
-    /// Creates device info based on UIKit description.
+    /// Creates device info based on device description.
     ///
     /// - Parameters:
     ///   - processInfo: The current process information.
-    ///   - device: The `UIDevice` description.
+    ///   - device: The device description.
     public init(
-        processInfo: ProcessInfo = .processInfo,
-        device: UIDevice = .current,
+        processInfo: ProcessInfo,
+        device: _UIDevice = .dd.current,
         sysctl: SysctlProviding = Sysctl()
     ) {
         var architecture = "unknown"
@@ -90,43 +141,43 @@ extension DeviceInfo {
             architecture = String(utf8String: archInfo.name) ?? "unknown"
         }
 
-        let build = try? sysctl.osBuild()
         let isDebugging = try? sysctl.isDebugging()
         let systemBootTime = try? sysctl.systemBootTime()
 
         #if !targetEnvironment(simulator)
         let model = try? sysctl.model()
-        // Real iOS device
+        // Real device
         self.init(
             name: device.model,
             model: model ?? device.model,
             osName: device.systemName,
-            osVersion: device.systemVersion,
-            osBuildNumber: build,
             architecture: architecture,
             isSimulator: false,
             vendorId: device.identifierForVendor?.uuidString,
             isDebugging: isDebugging ?? false,
-            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate
+            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate,
+            logicalCpuCount: Double(processInfo.processorCount),
+            totalRam: Double(processInfo.physicalMemory / (1_024 * 1_024))
         )
         #else
         let model = processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? device.model
-        // iOS Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
+        // Simulator - battery monitoring doesn't work on Simulator, so return "always OK" value
         self.init(
             name: device.model,
             model: "\(model) Simulator",
             osName: device.systemName,
-            osVersion: device.systemVersion,
-            osBuildNumber: build,
             architecture: architecture,
             isSimulator: true,
             vendorId: device.identifierForVendor?.uuidString,
             isDebugging: isDebugging ?? false,
-            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate
+            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate,
+            logicalCpuCount: Double(processInfo.processorCount),
+            totalRam: Double(processInfo.physicalMemory / (1_024 * 1_024))
         )
         #endif
     }
 }
+
 #elseif os(macOS)
 /// Creates device info based on Host description.
 ///
@@ -142,9 +193,7 @@ extension DeviceInfo {
             architecture = String(utf8String: archInfo.name) ?? "unknown"
         }
 
-        let build = (try? sysctl.osBuild()) ?? ""
         let model = (try? sysctl.model()) ?? ""
-        let systemVersion = processInfo.operatingSystemVersion
         let systemBootTime = try? sysctl.systemBootTime()
         let isDebugging = try? sysctl.isDebugging()
 #if targetEnvironment(simulator)
@@ -157,14 +206,78 @@ extension DeviceInfo {
             name: model.components(separatedBy: CharacterSet.letters.inverted).joined(),
             model: model,
             osName: "macOS",
-            osVersion: "\(systemVersion.majorVersion).\(systemVersion.minorVersion).\(systemVersion.patchVersion)",
-            osBuildNumber: build,
             architecture: architecture,
             isSimulator: isSimulator,
             vendorId: nil,
             isDebugging: isDebugging ?? false,
-            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate
+            systemBootTime: systemBootTime ?? Date.timeIntervalSinceReferenceDate,
+            logicalCpuCount: Double(processInfo.processorCount),
+            totalRam: Double(processInfo.physicalMemory / (1_024 * 1_024))
         )
     }
 }
+
 #endif
+
+#if canImport(WatchKit)
+import WatchKit
+
+public typealias _UIDevice = WKInterfaceDevice
+
+extension _UIDevice: DatadogExtended {}
+extension DatadogExtension where ExtendedType == _UIDevice {
+    /// Returns the shared device object.
+    public static var current: ExtendedType { .current() }
+}
+#elseif canImport(UIKit)
+import UIKit
+
+public typealias _UIDevice = UIDevice
+
+extension _UIDevice: DatadogExtended {}
+extension DatadogExtension where ExtendedType == _UIDevice {
+    /// Returns the shared device object.
+    public static var current: ExtendedType { .current }
+}
+#endif
+
+extension DatadogContext {
+    /// Current device information to send in the events.
+    ///
+    /// - Parameter addLocales: Temporary boolean to remove locales from events that don't support array parameters.
+    /// NOTE: RUM-9494 only basic types (boolean, string, number) are supported for `meta.*` attributes.
+    ///
+    /// - Returns: The device model for the events.
+    public func normalizedDevice(addLocales: Bool = true) -> Device {
+        var battery: Double?
+        if let batteryLevel = batteryStatus?.level {
+            battery = Double(batteryLevel)
+        }
+
+        var brightness: Double?
+        if let brightnessLevel = brightnessLevel {
+            brightness = Double(brightnessLevel)
+        }
+
+        var locales: [String]?
+        if addLocales {
+            locales = localeInfo.locales
+        }
+
+        return .init(
+            architecture: device.architecture,
+            batteryLevel: battery,
+            brand: device.brand,
+            brightnessLevel: brightness,
+            locale: localeInfo.currentLocale,
+            locales: locales,
+            logicalCpuCount: device.logicalCpuCount,
+            model: device.model,
+            name: device.name,
+            powerSavingMode: isLowPowerModeEnabled,
+            timeZone: localeInfo.timeZoneIdentifier,
+            totalRam: device.totalRam,
+            type: device.type.normalizedDeviceType
+        )
+    }
+}

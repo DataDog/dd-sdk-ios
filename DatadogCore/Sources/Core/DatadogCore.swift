@@ -45,6 +45,10 @@ internal final class DatadogCore {
     /// `contextProvider`
     let userInfoPublisher = UserInfoPublisher()
 
+    /// The account info publisher that publishes value to the
+    /// `contextProvider`
+    let accountInfoPublisher = AccountInfoPublisher()
+
     /// The application version publisher.
     let applicationVersionPublisher: ApplicationVersionPublisher
 
@@ -53,10 +57,7 @@ internal final class DatadogCore {
 
     /// Registry for Features.
     @ReadWriteLock
-    private(set) var stores: [String: (
-        storage: FeatureStorage,
-        upload: FeatureUpload
-    )] = [:]
+    private(set) var stores: [String: (storage: FeatureStorage, upload: FeatureUpload)] = [:]
 
     /// Registry for Features.
     @ReadWriteLock
@@ -110,6 +111,7 @@ internal final class DatadogCore {
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
         self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
+        self.contextProvider.subscribe(\.accountInfo, to: accountInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
 
@@ -139,23 +141,97 @@ internal final class DatadogCore {
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
         let userInfo = UserInfo(
+            anonymousId: userInfoPublisher.current.anonymousId,
             id: id,
             name: name,
             email: email,
             extraInfo: extraInfo
         )
-
         userInfoPublisher.current = userInfo
     }
 
     /// Add or override the extra info of the current user
     ///
     ///  - Parameters:
-    ///    - extraInfo: The user's custom attibutes to add or override
+    ///    - extraInfo: The user's custom attributes to add or override
     func addUserExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
         var extraInfo = userInfoPublisher.current.extraInfo
         newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
         userInfoPublisher.current.extraInfo = extraInfo
+    }
+
+    /// Clear the current user information
+    ///
+    /// User information will be `nil`
+    /// Following Logs, Traces, RUM Events will not include the user information anymore
+    ///
+    /// Any active RUM Session, active RUM View at the time of call will have their `user` attribute emptied
+    ///
+    /// If you want to retain the current `user` on the active RUM session,
+    /// you need to stop the session first by using `RUMMonitor.stopSession()`
+    ///
+    /// If you want to retain the current `user` on the active RUM views,
+    /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
+    ///
+    func clearUserInfo() {
+        userInfoPublisher.current = UserInfo(anonymousId: userInfoPublisher.current.anonymousId)
+    }
+
+    /// Sets current account information.
+    ///
+    /// Those will be added to logs, traces and RUM events automatically.
+    ///
+    /// - Parameters:
+    ///   - id: Account ID
+    ///   - name: Name representing the account, if any
+    ///   - extraInfo: Account's custom attributes, if any
+    func setAccountInfo(
+        id: String,
+        name: String? = nil,
+        extraInfo: [AttributeKey: AttributeValue] = [:]
+    ) {
+        let accountInfo = AccountInfo(
+            id: id,
+            name: name,
+            extraInfo: extraInfo
+        )
+        accountInfoPublisher.current = accountInfo
+    }
+
+    /// Add or override the extra info of the current account
+    ///
+    ///  - Parameters:
+    ///    - extraInfo: The account's custom attributes to add or override
+    func addAccountExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
+        guard let accountInfo = accountInfoPublisher.current else {
+            DD.logger.error(
+                "Failed to add Account ExtraInfo because no Account Info exist yet. Please call `setAccountInfo` first."
+            )
+            #if DEBUG
+            assertionFailure("Failed to add Account ExtraInfo because no Account Info exist yet. Please call `setAccountInfo` first.")
+            #endif
+            return
+        }
+        var extraInfo = accountInfo.extraInfo
+        newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
+        accountInfoPublisher.current?.extraInfo = extraInfo
+    }
+
+    /// Clear the current account information
+    ///
+    /// Account information will be `nil`
+    /// Following Logs, Traces, RUM Events will not include the account information anymore
+    ///
+    /// Any active RUM Session, active RUM View at the time of call will have their `account` attribute emptied
+    ///
+    /// If you want to retain the current `account` on the active RUM session,
+    /// you need to stop the session first by using `RUMMonitor.stopSession()`
+    ///
+    /// If you want to retain the current `account` on the active RUM views,
+    /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
+    ///
+    func clearAccountInfo() {
+        accountInfoPublisher.current = nil
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
@@ -163,7 +239,12 @@ internal final class DatadogCore {
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
         if trackingConsent != consentPublisher.consent {
-            allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
+            contextProvider.queue.async { [allStorages] in
+                // RUM-3175: To prevent race conditions with ongoing "event write" operations,
+                // data migration must be synchronized on the context queue. This guarantees that
+                // all latest events have been written before migration occurs.
+                allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
+            }
             consentPublisher.consent = trackingConsent
         }
     }
@@ -171,6 +252,7 @@ internal final class DatadogCore {
     /// Clears all data that has not already yet been uploaded Datadog servers.
     func clearAllData() {
         allStorages.forEach { $0.clearAllData() }
+        allDataStores.forEach { $0.clearAllData() }
     }
 
     /// Adds a message receiver to the bus.
@@ -197,10 +279,17 @@ internal final class DatadogCore {
         stores.values.map { $0.upload }
     }
 
+    private var allDataStores: [DataStore] {
+        features.values.compactMap { feature in
+            let featureType = type(of: feature) as DatadogFeature.Type
+            return scope(for: featureType).dataStore
+        }
+    }
+
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
     /// this instance of the SDK. It **blocks the caller thread**.
     ///
-    /// Upon return, it is safe to assume that all events were stored and got uploaded. The SDK was deinitialised so this instance of core is missfunctional.
+    /// Upon return, it is safe to assume that all events were stored and got uploaded. The SDK was deinitialised so this instance of core is non-functional.
     func flushAndTearDown() {
         flush()
 
@@ -250,6 +339,7 @@ extension DatadogCore: DatadogCoreProtocol {
                 dateProvider: dateProvider,
                 performance: performancePreset,
                 encryption: encryption,
+                backgroundTasksEnabled: backgroundTasksEnabled,
                 telemetry: telemetry
             )
 
@@ -261,7 +351,6 @@ extension DatadogCore: DatadogCoreProtocol {
                 httpClient: httpClient,
                 performance: performancePreset,
                 backgroundTasksEnabled: backgroundTasksEnabled,
-                maxBatchesPerUpload: maxBatchesPerUpload,
                 isRunFromExtension: isRunFromExtension,
                 telemetry: telemetry
             )
@@ -299,16 +388,20 @@ extension DatadogCore: DatadogCoreProtocol {
         return CoreFeatureScope<Feature>(in: self)
     }
 
-    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
-        contextProvider.write { $0.baggages[key] = baggage() }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        contextProvider.write { $0.set(additionalContext: context()) }
     }
 
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         bus.send(message: message, else: fallback)
     }
+
+    func set(anonymousId: String?) {
+        userInfoPublisher.current.anonymousId = anonymousId
+    }
 }
 
-internal class CoreFeatureScope<Feature>: FeatureScope where Feature: DatadogFeature {
+internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope where Feature: DatadogFeature {
     private weak var core: DatadogCore?
     private let store: FeatureDataStore
 
@@ -364,8 +457,12 @@ internal class CoreFeatureScope<Feature>: FeatureScope where Feature: DatadogFea
         core?.send(message: message, else: fallback)
     }
 
-    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
-        core?.set(baggage: baggage, forKey: key)
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        core?.set(context: context)
+    }
+
+    func set(anonymousId: String?) {
+        core?.set(anonymousId: anonymousId)
     }
 
     var telemetry: Telemetry {
@@ -394,9 +491,25 @@ extension DatadogContextProvider {
         applicationVersion: String,
         sdkInitDate: Date,
         device: DeviceInfo,
+        os: OperatingSystem,
+        locale: LocaleInfo,
+        processInfo: ProcessInfo,
         dateProvider: DateProvider,
-        serverDateProvider: ServerDateProvider
+        serverDateProvider: ServerDateProvider,
+        notificationCenter: NotificationCenter,
+        appLaunchHandler: AppLaunchHandling,
+        appStateProvider: AppStateProvider
     ) {
+        // `ContextProvider` must be initialized on the main thread for two key reasons:
+        // - It interacts with UIKit APIs to read the initial app state, which is only safe on the main thread.
+        // - It subscribes to app state change notifications, and we need this subscription to occur
+        //   before any Feature subscriptions. This ensures that Core always processes state changes first.
+        dd_assert(Thread.isMainThread, "Must be called on main thread")
+
+        let initialAppState = appStateProvider.current
+        let appStateHistory = AppStateHistory(initialState: initialAppState, date: dateProvider.now)
+        let launchInfo = appLaunchHandler.resolveLaunchInfo(using: processInfo)
+
         let context = DatadogContext(
             site: site,
             clientToken: clientToken,
@@ -414,11 +527,11 @@ extension DatadogContextProvider {
             applicationBundleType: applicationBundleType,
             sdkInitDate: dateProvider.now,
             device: device,
+            os: os,
+            localeInfo: locale,
             nativeSourceOverride: nativeSourceOverride,
-            // this is a placeholder waiting for the `ApplicationStatePublisher`
-            // to be initialized on the main thread, this value will be overrided
-            // as soon as the subscription is made.
-            applicationStateHistory: .active(since: dateProvider.now)
+            launchInfo: launchInfo,
+            applicationStateHistory: appStateHistory
         )
 
         self.init(context: context)
@@ -426,7 +539,7 @@ extension DatadogContextProvider {
         subscribe(\.serverTimeOffset, to: ServerOffsetPublisher(provider: serverDateProvider))
 
         #if !os(macOS)
-        subscribe(\.launchTime, to: LaunchTimePublisher())
+        subscribe(\.launchInfo, to: LaunchInfoPublisher(handler: appLaunchHandler, initialValue: launchInfo))
         #endif
 
         subscribe(\.networkConnectionInfo, to: NWPathMonitorPublisher())
@@ -436,16 +549,23 @@ extension DatadogContextProvider {
         #endif
 
         #if os(iOS) && !targetEnvironment(simulator)
-        subscribe(\.batteryStatus, to: BatteryStatusPublisher())
-        subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher())
+        subscribe(\.batteryStatus, to: BatteryStatusPublisher(notificationCenter: notificationCenter, device: .current))
+        subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher(notificationCenter: notificationCenter, processInfo: processInfo))
         #endif
 
+        #if os(iOS)
+        subscribe(\.brightnessLevel, to: BrightnessLevelPublisher(notificationCenter: notificationCenter))
+        #endif
+
+        subscribe(\.localeInfo, to: LocaleInfoPublisher(initialLocale: locale, notificationCenter: notificationCenter))
+
         #if os(iOS) || os(tvOS)
-        DispatchQueue.main.async {
-            // must be call on the main thread to read `UIApplication.State`
-            let applicationStatePublisher = ApplicationStatePublisher(dateProvider: dateProvider)
-            self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
-        }
+        let applicationStatePublisher = ApplicationStatePublisher(
+            appStateHistory: appStateHistory,
+            notificationCenter: notificationCenter,
+            dateProvider: dateProvider
+        )
+        self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
         #endif
     }
 }
@@ -461,7 +581,7 @@ extension DatadogCore: Flushable {
         // follow our design choices around SDK core's threading.
 
         // Reset baggages that need not be persisted across flushes.
-        set(baggage: nil, forKey: LaunchReport.baggageKey)
+        removeContext(ofType: LaunchReport.self)
 
         let features = features.values.compactMap { $0 as? Flushable }
 
@@ -500,9 +620,15 @@ extension DatadogCore: Storage {
         }
     }
 }
+// swiftlint:disable duplicate_imports
 #if SPM_BUILD
-import DatadogPrivate
+    #if swift(>=6.0)
+    internal import DatadogPrivate
+    #else
+    @_implementationOnly import DatadogPrivate
+    #endif
 #endif
+// swiftlint:enable duplicate_imports
 
 internal let registerObjcExceptionHandlerOnce: () -> Void = {
     ObjcException.rethrow = __dd_private_ObjcExceptionHandler.rethrow

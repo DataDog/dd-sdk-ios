@@ -78,11 +78,11 @@ class FilesOrchestratorTests: XCTestCase {
     func testWhenWritableFileHasNoEnoughSpaceLeft_itCreatesNewFile() throws {
         let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 0.001))
         let chunkedData: [Data] = .mockChunksOf(
-            totalSize: performance.maxFileSize,
-            maxChunkSize: performance.maxObjectSize
+            totalSize: performance.maxFileSize.asUInt64(),
+            maxChunkSize: performance.maxObjectSize.asUInt64()
         )
 
-        let file1 = try orchestrator.getWritableFile(writeSize: performance.maxObjectSize)
+        let file1 = try orchestrator.getWritableFile(writeSize: performance.maxObjectSize.asUInt64())
         try chunkedData.forEach { chunk in try file1.append(data: chunk) }
 
         let file2 = try orchestrator.getWritableFile(writeSize: 1)
@@ -131,8 +131,8 @@ class FilesOrchestratorTests: XCTestCase {
         let orchestrator = FilesOrchestrator(
             directory: .init(url: temporaryDirectory),
             performance: StoragePerformanceMock(
-                maxFileSize: oneMB, // 1MB
-                maxDirectorySize: 3 * oneMB, // 3MB,
+                maxFileSize: oneMB.asUInt32(), // 1MB
+                maxDirectorySize: (3 * oneMB).asUInt32(), // 3MB,
                 maxFileAgeForWrite: .distantFuture,
                 minFileAgeForRead: .mockAny(),
                 maxFileAgeForRead: .mockAny(),
@@ -167,6 +167,31 @@ class FilesOrchestratorTests: XCTestCase {
         _ = try orchestrator.getWritableFile(writeSize: oneMB)
         XCTAssertEqual(try orchestrator.directory.files().count, 3)
         XCTAssertNil(try? orchestrator.directory.file(named: file2.name))
+    }
+
+    func testWhenFileAlreadyExists_itWaitsAndCreatesFileWithNextName() throws {
+        let date: Date = .mockDecember15th2019At10AMUTC()
+        let dateProvider = RelativeDateProvider(
+            startingFrom: date,
+            advancingBySeconds: FilesOrchestrator.Constants.fileNamePrecision
+        )
+
+        // Given: A file with the current time already exists
+        let orchestrator = configureOrchestrator(using: dateProvider)
+        let existingFile = try orchestrator.directory.createFile(named: fileNameFrom(fileCreationDate: date))
+
+        // When: The orchestrator attempts to create a new file with the next available name
+        let nextFile = try orchestrator.getWritableFile(writeSize: 1)
+
+        // Then
+        let existingFileDate = fileCreationDateFrom(fileName: existingFile.name)
+        let nextFileDate = fileCreationDateFrom(fileName: nextFile.name)
+        XCTAssertNotEqual(existingFile.name, nextFile.name, "The new file should have a different name than the existing file")
+        XCTAssertGreaterThanOrEqual(
+            nextFileDate.timeIntervalSince(existingFileDate),
+            FilesOrchestrator.Constants.fileNamePrecision,
+            "The timestamp of the new file should be at least `fileNamePrecision` later than the existing file"
+        )
     }
 
     // MARK: - Readable file tests

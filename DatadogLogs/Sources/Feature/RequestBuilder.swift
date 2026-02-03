@@ -27,18 +27,23 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         self.telemetry = telemetry
     }
 
-    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
+    func request(
+        for events: [Event],
+        with context: DatadogContext,
+        execution: ExecutionContext
+    ) -> URLRequest {
         let builder = URLRequestBuilder(
             url: url(with: context),
             queryItems: [
-                .ddsource(source: context.source)
+                .ddsource(source: context.source),
             ],
             headers: [
                 .contentTypeHeader(contentType: .applicationJSON),
                 .userAgentHeader(
                     appName: context.applicationName,
                     appVersion: context.version,
-                    device: context.device
+                    device: context.device,
+                    os: context.os
                 ),
                 .ddAPIKeyHeader(clientToken: context.clientToken),
                 .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),

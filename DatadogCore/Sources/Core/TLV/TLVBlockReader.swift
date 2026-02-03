@@ -15,7 +15,7 @@ internal final class TLVBlockReader<BlockType> where BlockType: RawRepresentable
     private let stream: InputStream
 
     /// Maximum data length of a block.
-    private let maxBlockLength: UInt64
+    private let maxBlockLength: TLVBlockSize
 
     /// Reads block from an input stream.
     ///
@@ -25,7 +25,7 @@ internal final class TLVBlockReader<BlockType> where BlockType: RawRepresentable
     /// - Parameter stream: The input stream
     init(
         input stream: InputStream,
-        maxBlockLength: UInt64 = MAX_DATA_LENGTH
+        maxBlockLength: TLVBlockSize = maxTLVDataLength
     ) {
         self.maxBlockLength = maxBlockLength
         self.stream = stream
@@ -113,7 +113,7 @@ internal final class TLVBlockReader<BlockType> where BlockType: RawRepresentable
     /// Reads a block.
     private func readBlock() throws -> TLVBlock<BlockType> {
         // read an entire block before inferring the data type
-        // to leave the stream in a usuable state if an unkown
+        // to leave the stream in a usable state if an unknown
         // type was encountered.
         let type = try readType()
         let data = try readData()
@@ -141,11 +141,11 @@ internal final class TLVBlockReader<BlockType> where BlockType: RawRepresentable
         // length.
         // Additionally check that length hasn't been corrupted and
         // we don't try to generate a huge buffer.
-        guard let length = Int(exactly: size), length <= maxBlockLength else {
-            throw TLVBlockError.bytesLengthExceedsLimit(limit: maxBlockLength)
+        guard let length = TLVBlockSize(exactly: size), length <= maxBlockLength else {
+            throw TLVBlockError.bytesLengthExceedsLimit(length: TLVBlockSize(exactly: size), limit: maxBlockLength)
         }
 
-        return try read(length: length)
+        return try read(length: Int(length))
     }
 }
 extension TLVBlockError: CustomStringConvertible {
@@ -158,8 +158,8 @@ extension TLVBlockError: CustomStringConvertible {
             return "Invalid DataBlock type: \(type)"
         case .invalidByteSequence(let expected, let got):
             return "Invalid bytes sequence in DataBlock: expected \(expected) bytes but got \(got)"
-        case .bytesLengthExceedsLimit(let limit):
-            return "DataBlock length exceeds limit of \(limit) bytes"
+        case .bytesLengthExceedsLimit(let length, let limit):
+            return "DataBlock with \(length ?? 0) bytes exceeds limit of \(limit) bytes"
         case .dataAllocationFailure:
             return "Allocation failure while reading stream"
         case .endOfStream:

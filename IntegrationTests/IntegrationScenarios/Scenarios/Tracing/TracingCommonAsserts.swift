@@ -4,8 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import XCTest
 import HTTPServerMock
+import TestUtilities
+import XCTest
 
 /// A set of common assertions for all Tracing tests.
 protocol TracingCommonAsserts {
@@ -33,16 +34,12 @@ extension TracingCommonAsserts {
         requests.forEach { request in
             XCTAssertEqual(request.httpMethod, "POST")
 
-            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309`
-            XCTAssertFalse(
-                request.path.contains("?"),
-                """
-                Request path must contain no query parameters.
-                ✉️ path: \(request.path)
-                """,
-                file: file,
-                line: line
-            )
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddtags=retry_count:1`
+            XCTAssertFalse(request.path.isEmpty)
+            XCTAssertNil(request.queryItems)
+
+            let ddtags = request.queryItems?.ddtags()
+            XCTAssertNil(ddtags)
 
             XCTAssertEqual(request.httpHeaders["Content-Type"], "text/plain;charset=UTF-8", file: file, line: line)
             XCTAssertEqual(request.httpHeaders["User-Agent"]?.matches(regex: userAgentRegex), true, file: file, line: line)
@@ -82,23 +79,19 @@ extension TracingCommonAsserts {
                 line: line
             )
 
-            if #available(iOS 12.0, *) { // The `iOS11NetworkConnectionInfoProvider` doesn't provide those info
-                try matcher.meta.networkAvailableInterfaces().split(separator: "+").forEach { interface in
-                    XCTAssertTrue(
-                        SpanMatcher.allowedNetworkAvailableInterfacesValues.contains(String(interface)),
-                        file: file,
-                        line: line
-                    )
-                }
-
-                XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionSupportsIPv4()), file: file, line: line)
-                XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionSupportsIPv6()), file: file, line: line)
-                XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionIsExpensive()), file: file, line: line)
+            try matcher.meta.networkAvailableInterfaces().split(separator: "+").forEach { interface in
+                XCTAssertTrue(
+                    SpanMatcher.allowedNetworkAvailableInterfacesValues.contains(String(interface)),
+                    file: file,
+                    line: line
+                )
             }
 
-            if #available(iOS 13.0, *) {
-                XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionIsConstrained()), file: file, line: line)
-            }
+            XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionSupportsIPv4()), file: file, line: line)
+            XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionSupportsIPv6()), file: file, line: line)
+            XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionIsExpensive()), file: file, line: line)
+
+            XCTAssertTrue(["0", "1"].contains(try matcher.meta.networkConnectionIsConstrained()), file: file, line: line)
 
             #if targetEnvironment(simulator)
                 // When running on iOS Simulator

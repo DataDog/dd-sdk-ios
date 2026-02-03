@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import XCTest
+@_spi(Internal)
 import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
@@ -47,7 +48,7 @@ class RecordsBuilderTests: XCTestCase {
         DDAssertReflectionEqual(mutations.adds[0].wireframe, next[2])
     }
 
-    func testWhenNextWireframesAddsNewRoot_itCreatesFullSnapshotRecord() throws {
+    func testWhenNextWireframesAddsNewRoot_itCreatesIncrementalRecord() throws {
         let builder = RecordsBuilder(telemetry: TelemetryMock())
 
         // Given
@@ -58,8 +59,11 @@ class RecordsBuilderTests: XCTestCase {
         let record = builder.createIncrementalSnapshotRecord(from: .mockAny(), with: next, lastWireframes: previous)
 
         // Then
-        let fullRecord = try XCTUnwrap(record?.fullSnapshot)
-        DDAssertReflectionEqual(fullRecord.data.wireframes, next)
+        let incrementalRecord = try XCTUnwrap(record?.incrementalSnapshot)
+        guard case .mutationData = incrementalRecord.data else {
+            XCTFail("Expected `mutationData` in incremental record, got \(incrementalRecord.data)")
+            return
+        }
     }
 
     // This case does not need a full snapshot for the player to work, but adding a
@@ -68,15 +72,21 @@ class RecordsBuilderTests: XCTestCase {
         let builder = RecordsBuilder(telemetry: TelemetryMock())
 
         // Given
-        let previous: [SRWireframe] = [.mockRandomWith(id: 0), .mockRandomWith(id: 1)]
-        let next: [SRWireframe] = [.mockRandomWith(id: 1)]
+        let previous: [SRWireframe] = [
+            .shapeWireframe(value: .mockRandomWith(id: 0)),
+            .shapeWireframe(value: .mockRandomWith(id: 1))
+        ]
+        let next: [SRWireframe] = [.shapeWireframe(value: .mockRandomWith(id: 1))]
 
         // When
         let record = builder.createIncrementalSnapshotRecord(from: .mockAny(), with: next, lastWireframes: previous)
 
         // Then
-        let fullRecord = try XCTUnwrap(record?.fullSnapshot)
-        DDAssertReflectionEqual(fullRecord.data.wireframes, next)
+        let incrementalRecord = try XCTUnwrap(record?.incrementalSnapshot)
+        guard case .mutationData = incrementalRecord.data else {
+            XCTFail("Expected `mutationData` in incremental record, got \(incrementalRecord.data)")
+            return
+        }
     }
 
     func testWhenWireframesAreNotConsistent_itFallbacksToFullSnapshotRecordAndSendsErrorTelemetry() throws {

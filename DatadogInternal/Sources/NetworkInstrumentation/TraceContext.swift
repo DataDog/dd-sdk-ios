@@ -18,8 +18,24 @@ public struct TraceContext: Equatable {
     ///
     /// It is a value between `0.0` (drop) and `100.0` (keep), determined by the local or distributed trace sampler.
     public let sampleRate: Float
-    /// Indicates whether this span was sampled or rejected by the sampler.
-    public let isKept: Bool
+
+    /// The sampling priority for the span.
+    public let samplingPriority: SamplingPriority
+
+    /// The sampling mechanism used to make the sampling priority decision.
+    public let samplingDecisionMaker: SamplingMechanismType
+
+    /// The unique identifier for the current RUM Session, if any.
+    public let rumSessionId: String?
+
+    /// The unique identifier for the current user, if any.
+    public let userId: String?
+
+    /// The unique identifier for the current account, if any.
+    public let accountId: String?
+
+    /// GraphQL request attributes extracted from the request, if any.
+    public let graphql: GraphQLRequestAttributes?
 
     /// Initializes a `TraceContext` instance with the provided parameters.
     ///
@@ -28,18 +44,33 @@ public struct TraceContext: Equatable {
     ///   - spanID: The unique identifier for the span.
     ///   - parentSpanID: The unique identifier for the parent span, if any.
     ///   - sampleRate: The sample rate used for injecting the span into a request.
-    ///   - isKept: A boolean indicating whether this span was sampled or rejected by the sampler.
+    ///   - samplingPriority: The sampling priority for the span.
+    ///   - samplingDecisionMaker: The sampling mechanism used to make the sampling priority decision.
+    ///   - rumSessionId: The unique identifier for the current RUM Session, if any.
+    ///   - userId: The unique identifier for the current user, if any.
+    ///   - accountId: The unique identifier for the current account, if any.
+    ///   - graphql: GraphQL request attributes extracted from the request, if any.
     public init(
         traceID: TraceID,
         spanID: SpanID,
         parentSpanID: SpanID?,
         sampleRate: Float,
-        isKept: Bool
+        samplingPriority: SamplingPriority,
+        samplingDecisionMaker: SamplingMechanismType,
+        rumSessionId: String?,
+        userId: String? = nil,
+        accountId: String? = nil,
+        graphql: GraphQLRequestAttributes? = nil
     ) {
         self.traceID = traceID
         self.spanID = spanID
         self.parentSpanID = parentSpanID
         self.sampleRate = sampleRate
-        self.isKept = isKept
+        self.samplingPriority = samplingPriority
+        self.samplingDecisionMaker = samplingDecisionMaker
+        self.rumSessionId = rumSessionId
+        self.userId = userId
+        self.accountId = accountId
+        self.graphql = graphql
     }
 }

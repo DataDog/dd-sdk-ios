@@ -6,13 +6,16 @@
 
 import XCTest
 import SRFixtures
+import DatadogInternal
 import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import SRHost
 
-private var defaultPrivacyLevel: SessionReplayPrivacyLevel {
-    return SessionReplay.Configuration(replaySampleRate: 100).defaultPrivacyLevel
+private var defaultImagePrivacyLevel: ImagePrivacyLevel = .maskNonBundledOnly
+private var defaultTextAndInputPrivacyLevel: TextAndInputPrivacyLevel = .maskSensitiveInputs
+internal var allTextAndInputPrivacyLevels: [TextAndInputPrivacyLevel] {
+    return TextAndInputPrivacyLevel.allCases
 }
 
 internal class SnapshotTestCase: XCTestCase {
@@ -20,13 +23,20 @@ internal class SnapshotTestCase: XCTestCase {
 
     /// Shows view controller for given fixture in full screen.
     @discardableResult
-    func show(fixture: Fixture) -> UIViewController? {
+    func show(fixture: any FixtureProtocol, with privacyTags: [PrivacyTag] = []) -> UIViewController? {
         let expectation = self.expectation(description: "Wait for view controller being shown")
 
         var viewController: UIViewController?
 
         app.show(fixture: fixture) {
             viewController = $0
+            for privacyTag in privacyTags {
+                if let view = viewController?.view.viewWithTag(privacyTag.tag) {
+                    privacyTag.createPrivacyApplier().apply(to: view)
+                } else {
+                    print("Warning: No view found with tag \(privacyTag.tag)")
+                }
+            }
             expectation.fulfill()
         }
 
@@ -35,23 +45,26 @@ internal class SnapshotTestCase: XCTestCase {
         return viewController
     }
 
+    // swiftlint:disable function_default_parameter_at_end
     /// Helper method for most snapshot tests
     func takeSnapshotFor(
-        _ fixture: Fixture,
-        with privacyModes: [SessionReplayPrivacyLevel] = [defaultPrivacyLevel],
+        _ fixture: any FixtureProtocol,
+        with textAndInputPrivacyLevels: [TextAndInputPrivacyLevel] = [defaultTextAndInputPrivacyLevel],
+        imagePrivacyLevel: ImagePrivacyLevel = defaultImagePrivacyLevel,
+        privacyTags: [PrivacyTag] = [],
         shouldRecord: Bool,
         folderPath: String,
         fileNamePrefix: String? = nil,
         file: StaticString = #filePath,
         function: StaticString = #function
     ) throws {
-        show(fixture: fixture)
+        show(fixture: fixture, with: privacyTags)
         // Give time for the view to appear and lay out properly
         wait(seconds: 0.2)
 
-        try forPrivacyModes(privacyModes) { privacyMode in
-            let image = try takeSnapshot(with: privacyMode)
-            let fileNameSuffix = fileNamePrefix == nil ? "-\(privacyMode)-privacy" : "-\(fileNamePrefix!)-\(privacyMode)-privacy"
+        try forPrivacyModes(textAndInputPrivacyLevels) { textPrivacyLevel in
+            let image = try takeSnapshot(with: textPrivacyLevel, imagePrivacyLevel: imagePrivacyLevel)
+            let fileNameSuffix = fileNamePrefix == nil ? "-\(textPrivacyLevel)-privacy" : "-\(fileNamePrefix!)-\(textPrivacyLevel)-privacy"
             let snapshotLocation: ImageLocation = .folder(named: folderPath, fileNameSuffix: fileNameSuffix, file: file, function: function)
 
             DDAssertSnapshotTest(
@@ -61,6 +74,7 @@ internal class SnapshotTestCase: XCTestCase {
             )
         }
     }
+    // swiftlint:enable function_default_parameter_at_end
 
     /// Helper method for date and time picker snapshot tests
     func takeSnapshotForPicker(
@@ -88,12 +102,13 @@ internal class SnapshotTestCase: XCTestCase {
         }
     }
 
+    // swiftlint:disable function_default_parameter_at_end
     /// Helper method for snapshot tests showing PopupsViewController
     func takeSnapshotForPopup(
         fixture: Fixture,
         showPopup: (PopupsViewController) -> Void,
         waitTime: TimeInterval,
-        privacyModes: [SessionReplayPrivacyLevel] = [defaultPrivacyLevel],
+        textPrivacyModes: [TextAndInputPrivacyLevel] = [defaultTextAndInputPrivacyLevel],
         shouldRecord: Bool,
         folderPath: String,
         file: StaticString = #filePath,
@@ -102,20 +117,23 @@ internal class SnapshotTestCase: XCTestCase {
         let vc = show(fixture: fixture) as! PopupsViewController
         showPopup(vc)
         wait(seconds: waitTime)
-        print("privacyModes:", privacyModes)
 
-        for privacyMode in privacyModes {
-            let image = try takeSnapshot(with: privacyMode)
+        for textPrivacyMode in textPrivacyModes {
+            let image = try takeSnapshot(with: textPrivacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
-                snapshotLocation: .folder(named: folderPath, fileNameSuffix: "-\(privacyMode)-privacy", file: file, function: function),
+                snapshotLocation: .folder(named: folderPath, fileNameSuffix: "-\(textPrivacyMode)-privacy", file: file, function: function),
                 record: shouldRecord
             )
         }
     }
+    // swiftlint:enable function_default_parameter_at_end
 
     /// Captures side-by-side snapshot of the app UI and recorded wireframes.
-    func takeSnapshot(with privacyLevel: SessionReplayPrivacyLevel = defaultPrivacyLevel) throws -> UIImage {
+    func takeSnapshot(
+        with textAndInputPrivacyLevel: TextAndInputPrivacyLevel = defaultTextAndInputPrivacyLevel,
+        imagePrivacyLevel: ImagePrivacyLevel = defaultImagePrivacyLevel
+    ) throws -> UIImage {
         let expectWireframes = self.expectation(description: "Wait for wireframes")
         let expectResources = self.expectation(description: "Wait for resources")
 
@@ -130,12 +148,13 @@ internal class SnapshotTestCase: XCTestCase {
             recordWriter: RecordWriter(core: PassthroughCoreMock()),
             resourceProcessor: resourceProcessor,
             srContextPublisher: SRContextPublisher(core: PassthroughCoreMock()),
-            telemetry: TelemetryMock()
+            telemetry: NOPTelemetry()
         )
 
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
-            additionalNodeRecorders: []
+            additionalNodeRecorders: [],
+            featureFlags: [.swiftui: true]
         )
 
         // Set up wireframes interception:
@@ -154,7 +173,17 @@ internal class SnapshotTestCase: XCTestCase {
 
         // Capture next record with mock RUM Context
         try recorder.captureNextRecord(
-            .init(privacy: privacyLevel, applicationID: "", sessionID: "", viewID: "", viewServerTimeOffset: 0)
+            .init(
+                textAndInputPrivacy: textAndInputPrivacyLevel,
+                imagePrivacy: imagePrivacyLevel,
+                touchPrivacy: .show,
+                applicationID: "",
+                sessionID: "",
+                viewID: "",
+                viewServerTimeOffset: 0,
+                date: Date(),
+                telemetry: NOPTelemetry()
+            )
         )
 
         waitForExpectations(timeout: 30) // very pessimistic timeout to mitigate CI lags
@@ -170,13 +199,13 @@ internal class SnapshotTestCase: XCTestCase {
         // Add XCTest attachements for debugging and troubleshooting:
         // - attach recorded wireframes as JSON
         let wireframesAttachement = XCTAttachment(string: renderedWireframes.debugInfo.dumpWireframesAsJSON())
-        wireframesAttachement.name = "recorded-wireframes-(\(privacyLevel)).json"
+        wireframesAttachement.name = "recorded-wireframes-(\(textAndInputPrivacyLevel)).json"
         wireframesAttachement.lifetime = .deleteOnSuccess
         add(wireframesAttachement)
 
         // - attach rendered as blueprint text
         let blueprintAttachement = XCTAttachment(string: renderedWireframes.debugInfo.dumpImageAsBlueprint())
-        blueprintAttachement.name = "rendered-blueprint-(\(privacyLevel)).txt"
+        blueprintAttachement.name = "rendered-blueprint-(\(textAndInputPrivacyLevel)).txt"
         blueprintAttachement.lifetime = .deleteOnSuccess
         add(blueprintAttachement)
 
@@ -195,8 +224,8 @@ internal class SnapshotTestCase: XCTestCase {
     }
 
     func forPrivacyModes(
-        _ modes: [SessionReplayPrivacyLevel] = [.mask, .allow, .maskUserInput],
-        do work: (SessionReplayPrivacyLevel) throws -> Void) rethrows {
+        _ modes: [TextAndInputPrivacyLevel] = TextAndInputPrivacyLevel.allCases,
+        do work: (TextAndInputPrivacyLevel) throws -> Void) rethrows {
         try modes.forEach { try work($0) }
     }
 }

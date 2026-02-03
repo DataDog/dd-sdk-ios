@@ -7,10 +7,12 @@
 #if os(iOS)
 import XCTest
 @_spi(Internal)
+import TestUtilities
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 class UINavigationBarRecorderTests: XCTestCase {
-    private let recorder = UINavigationBarRecorder()
+    private let recorder = UINavigationBarRecorder(identifier: UUID())
 
     func testWhenViewIsOfExpectedType() throws {
         // Given
@@ -21,7 +23,7 @@ class UINavigationBarRecorderTests: XCTestCase {
         ]
 
         let navigationBar = UINavigationBar.mock(withFixture: fixtures.randomElement()!)
-        let viewAttributes = ViewAttributes(frameInRootView: navigationBar.frame, view: navigationBar)
+        let viewAttributes = ViewAttributes(view: navigationBar, frame: navigationBar.frame, clip: navigationBar.frame, overrides: .mockAny())
 
         // When
         let semantics = try XCTUnwrap(recorder.semantics(of: navigationBar, with: viewAttributes, in: .mockAny()) as? SpecificElement)

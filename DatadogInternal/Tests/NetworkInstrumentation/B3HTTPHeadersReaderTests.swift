@@ -17,6 +17,9 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertEqual(ids?.traceID, 1_234)
         XCTAssertEqual(ids?.spanID, 2_345)
         XCTAssertEqual(ids?.parentSpanID, 5_678)
+        XCTAssertEqual(reader.samplingPriority, .autoKeep)
+        XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, true)
     }
 
     func testItReadsSingleHeaderWithSampling() {
@@ -27,6 +30,9 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(ids?.traceID)
         XCTAssertNil(ids?.spanID)
         XCTAssertNil(ids?.parentSpanID)
+        XCTAssertEqual(reader.samplingPriority, .autoDrop)
+        XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, false)
     }
 
     func testItReadsSingleHeaderWithoutOptionalValues() {
@@ -37,6 +43,9 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertEqual(ids?.traceID, 1_234)
         XCTAssertEqual(ids?.spanID, 2_345)
         XCTAssertNil(ids?.parentSpanID)
+        XCTAssertEqual(reader.samplingPriority, .autoKeep)
+        XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, true)
     }
 
     func testItReadsMultipleHeader() {
@@ -52,6 +61,9 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertEqual(ids?.traceID, 1_234)
         XCTAssertEqual(ids?.spanID, 2_345)
         XCTAssertEqual(ids?.parentSpanID, 5_678)
+        XCTAssertEqual(reader.samplingPriority, .autoKeep)
+        XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, true)
     }
 
     func testItReadsMultipleHeaderWithSampling() {
@@ -64,6 +76,9 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertNil(ids?.traceID)
         XCTAssertNil(ids?.spanID)
         XCTAssertNil(ids?.parentSpanID)
+        XCTAssertEqual(reader.samplingPriority, .autoDrop)
+        XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertEqual(reader.sampled, false)
     }
 
     func testItReadsMultipleHeaderWithoutOptionalValues() {
@@ -77,35 +92,56 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertEqual(ids?.traceID, 1_234)
         XCTAssertEqual(ids?.spanID, 2_345)
         XCTAssertNil(ids?.parentSpanID)
+        XCTAssertNil(reader.samplingPriority)
+        XCTAssertNil(reader.samplingDecisionMaker)
+        XCTAssertNil(reader.sampled)
     }
 
     func testReadingSampledTraceContext() {
         let encoding: B3HTTPHeadersWriter.InjectEncoding = [.multiple, .single].randomElement()!
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100), injectEncoding: encoding, traceContextInjection: .all)
-        writer.write(traceContext: .mockRandom())
+        let writer = B3HTTPHeadersWriter(injectEncoding: encoding, traceContextInjection: .all)
+        writer.write(traceContext: .mockWith(
+            samplingPriority: .autoKeep,
+            samplingDecisionMaker: .agentRate
+        ))
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNotNil(reader.read(), "When sampled, it should return trace context")
+        XCTAssertEqual(reader.samplingPriority, .autoKeep)
+        XCTAssertNil(reader.samplingDecisionMaker)
         XCTAssertEqual(reader.sampled, true)
     }
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsAll() {
         let encoding: B3HTTPHeadersWriter.InjectEncoding = [.multiple, .single].randomElement()!
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0), injectEncoding: encoding, traceContextInjection: .all)
-        writer.write(traceContext: .mockRandom())
+        let writer = B3HTTPHeadersWriter(injectEncoding: encoding, traceContextInjection: .all)
+        writer.write(traceContext: .mockWith(
+            samplingPriority: .autoDrop,
+            samplingDecisionMaker: .agentRate
+        ))
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
-        XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
+        let ids = reader.read()
+        XCTAssertEqual(ids?.traceID, 0)
+        XCTAssertEqual(ids?.spanID, 0)
+        XCTAssertNil(ids?.parentSpanID)
+        XCTAssertEqual(reader.samplingPriority, .autoDrop)
+        XCTAssertNil(reader.samplingDecisionMaker)
         XCTAssertEqual(reader.sampled, false)
     }
 
     func testReadingNotSampledTraceContext_givenTraceContextInjectionIsSampled() {
         let encoding: B3HTTPHeadersWriter.InjectEncoding = [.multiple, .single].randomElement()!
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0), injectEncoding: encoding, traceContextInjection: .sampled)
-        writer.write(traceContext: .mockRandom())
+        let writer = B3HTTPHeadersWriter(injectEncoding: encoding, traceContextInjection: .sampled)
+        writer.write(traceContext: .mockWith(
+            samplingPriority: .autoDrop,
+            samplingDecisionMaker: .agentRate
+        ))
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
+        XCTAssertNil(reader.samplingPriority)
+        XCTAssertNil(reader.samplingDecisionMaker)
         XCTAssertNil(reader.sampled)
     }
 }

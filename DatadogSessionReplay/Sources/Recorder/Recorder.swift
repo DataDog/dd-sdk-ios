@@ -21,9 +21,13 @@ internal protocol Recording {
 @_spi(Internal)
 public class Recorder: Recording {
     /// The context of recording next snapshot.
-    public struct Context: Equatable {
+    public struct Context {
+        /// The content recording policy for texts and inputs at the moment of requesting snapshot.
+        public let textAndInputPrivacy: TextAndInputPrivacyLevel
+        /// The image recording policy from the moment of requesting snapshot.
+        public let imagePrivacy: ImagePrivacyLevel
         /// The content recording policy from the moment of requesting snapshot.
-        public let privacy: SessionReplayPrivacyLevel
+        public let touchPrivacy: TouchPrivacyLevel
         /// Current RUM application ID - standard UUID string, lowecased.
         let applicationID: String
         /// Current RUM session ID - standard UUID string, lowecased.
@@ -34,21 +38,29 @@ public class Recorder: Recording {
         let viewServerTimeOffset: TimeInterval?
         /// The time of requesting this snapshot.
         let date: Date
+        /// The telemetry instance to report to.
+        let telemetry: Telemetry
 
         internal init(
-            privacy: PrivacyLevel,
+            textAndInputPrivacy: TextAndInputPrivacyLevel,
+            imagePrivacy: ImagePrivacyLevel,
+            touchPrivacy: TouchPrivacyLevel,
             applicationID: String,
             sessionID: String,
             viewID: String,
             viewServerTimeOffset: TimeInterval?,
-            date: Date = Date()
+            date: Date,
+            telemetry: Telemetry
         ) {
-            self.privacy = privacy
+            self.textAndInputPrivacy = textAndInputPrivacy
+            self.imagePrivacy = imagePrivacy
+            self.touchPrivacy = touchPrivacy
             self.applicationID = applicationID
             self.sessionID = sessionID
             self.viewID = viewID
             self.viewServerTimeOffset = viewServerTimeOffset
             self.date = date
+            self.telemetry = telemetry
         }
     }
 
@@ -63,16 +75,18 @@ public class Recorder: Recording {
 
     convenience init(
         snapshotProcessor: SnapshotProcessing,
-        additionalNodeRecorders: [NodeRecorder]
+        additionalNodeRecorders: [NodeRecorder],
+        featureFlags: SessionReplay.Configuration.FeatureFlags
     ) throws {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
             windowObserver: windowObserver,
-            snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: additionalNodeRecorders)
+            snapshotBuilder: ViewTreeSnapshotBuilder(
+                additionalNodeRecorders: additionalNodeRecorders,
+                featureFlags: featureFlags
+            )
         )
-        let touchSnapshotProducer = WindowTouchSnapshotProducer(
-            windowObserver: windowObserver
-        )
+        let touchSnapshotProducer = WindowTouchSnapshotProducer(windowObserver: windowObserver)
 
         self.init(
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),

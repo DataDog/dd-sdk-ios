@@ -6,8 +6,10 @@
 
 #if os(iOS)
 import XCTest
-@testable import DatadogSessionReplay
+import DatadogInternal
 import TestUtilities
+
+@testable import DatadogSessionReplay
 
 class SRContextPublisherTests: XCTestCase {
     func testItSetsHasReplayAccordingly() throws {
@@ -51,10 +53,16 @@ class SRContextPublisherTests: XCTestCase {
 }
 
 private extension PassthroughCoreMock {
-    var hasReplay: Bool? { try? context.baggages["sr_has_replay"]?.decode() }
+    var hasReplay: Bool? {
+        context.additionalContext(
+            ofType: SessionReplayCoreContext.HasReplay.self
+        )?.value
+    }
 
     var recordsCountByViewID: [String: Int64]? {
-        try? context.baggages["sr_records_count_by_view_id"]?.decode()
+        context.additionalContext(
+            ofType: SessionReplayCoreContext.RecordsCount.self
+        )?.value
     }
 }
 #endif

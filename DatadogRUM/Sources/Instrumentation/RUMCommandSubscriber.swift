@@ -27,3 +27,19 @@ internal protocol RUMCommandPublisher: AnyObject {
     /// - Parameter subscriber: The RUM command subscriber.
     func publish(to subscriber: RUMCommandSubscriber)
 }
+
+/// Represents the type of instrumentation used to create different RUM commands.
+internal enum InstrumentationType: Int {
+    /// Command issued through UIKit predicate-based instrumentation.
+    case uikit
+    /// Command issued through SwiftUI predicate-based instrumentation.
+    case swiftuiAutomatic
+    /// Command issued through SwiftUI-based instrumentation with view modifiers.
+    case swiftui
+    /// Command issued through manual instrumentation, originating from the `RUMMonitor` API.
+    case manual
+
+    /// The priority of this instrumentation. Higher values take precedence, allowing actions from one type to overwrite those
+    /// from a lower-priority type (e.g., a SwiftUI button tap takes precedence over the touch on its containing UIKit table view cell).
+    var priority: Int { rawValue }
+}

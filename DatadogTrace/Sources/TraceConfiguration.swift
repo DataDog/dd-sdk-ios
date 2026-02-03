@@ -7,23 +7,20 @@
 import Foundation
 import DatadogInternal
 
-// Export `DDURLSessionDelegate` elements to be available with `import DatadogTrace`:
+// Export `URLSessionInstrumentation` elements to be available with `import DatadogTrace`:
 // swiftlint:disable duplicate_imports
-@_exported import class DatadogInternal.DatadogURLSessionDelegate
-@_exported import typealias DatadogInternal.DDURLSessionDelegate
-@_exported import protocol DatadogInternal.__URLSessionDelegateProviding
 @_exported import enum DatadogInternal.URLSessionInstrumentation
 
 @_exported import class DatadogInternal.HTTPHeadersWriter
 @_exported import class DatadogInternal.B3HTTPHeadersWriter
 @_exported import class DatadogInternal.W3CHTTPHeadersWriter
-@_exported import enum DatadogInternal.TraceSamplingStrategy
 @_exported import enum DatadogInternal.TraceContextInjection
+@_exported import enum DatadogInternal.TracingHeaderType
 // swiftlint:enable duplicate_imports
 
 extension Trace {
     /// Trace feature configuration.
-    public struct Configuration {
+    public struct Configuration: SampledTelemetry {
         public typealias EventMapper = (SpanEvent) -> SpanEvent
 
         /// The sampling rate for spans created with the default tracer.
@@ -31,7 +28,7 @@ extension Trace {
         /// It must be a number between 0.0 and 100.0, where 0 means no spans will be collected.
         ///
         /// Default: `100.0`.
-        public var sampleRate: Float
+        public var sampleRate: SampleRate
 
         /// The `service` value for spans.
         ///
@@ -104,23 +101,23 @@ extension Trace {
                 ///
                 /// - Parameters:
                 ///   - hosts: The set of hosts to inject tracing headers. Note: Hosts must not include the "http(s)://" prefix.
-                ///   - sampleRate: The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `20`.
-                ///   - traceControlInjection: The strategy for injecting trace context into requests. Default: `.all`.
+                ///   - sampleRate: The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `100`.
+                ///   - traceControlInjection: The strategy for injecting trace context into requests. Default: `.sampled`.
                 case trace(
                     hosts: Set<String>,
-                    sampleRate: Float = 20,
-                    traceControlInjection: TraceContextInjection = .all
+                    sampleRate: Float = .maxSampleRate,
+                    traceControlInjection: TraceContextInjection = .sampled
                 )
 
                 /// Trace given hosts with using custom tracing headers.
                 ///
                 /// - `hostsWithHeaders` - Dictionary of hosts and tracing header types to use. Note: Hosts must not include "http(s)://" prefix.
-                /// - `sampleRate` - The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `20`.
-                ///   - traceControlInjection: The strategy for injecting trace context into requests. Default: `.all`.
+                /// - `sampleRate` - The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `100`.
+                ///   - traceControlInjection: The strategy for injecting trace context into requests. Default: `.sampled`.
                 case traceWithHeaders(
                     hostsWithHeaders: [String: Set<TracingHeaderType>],
-                    sampleRate: Float = 20,
-                    traceControlInjection: TraceContextInjection = .all
+                    sampleRate: Float = .maxSampleRate,
+                    traceControlInjection: TraceContextInjection = .sampled
                 )
             }
 
@@ -150,7 +147,7 @@ extension Trace {
         ///   - eventMapper: Custom mapper for span events.
         ///   - customEndpoint: Custom server url for sending traces.
         public init(
-            sampleRate: Float = 100,
+            sampleRate: SampleRate = .maxSampleRate,
             service: String? = nil,
             tags: [String: Encodable]? = nil,
             urlSessionTracking: URLSessionTracking? = nil,

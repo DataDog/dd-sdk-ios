@@ -23,6 +23,7 @@ public struct URLRequestBuilder {
         public static let ddEVPOriginHeaderField = "DD-EVP-ORIGIN"
         public static let ddEVPOriginVersionHeaderField = "DD-EVP-ORIGIN-VERSION"
         public static let ddRequestIDHeaderField = "DD-REQUEST-ID"
+        public static let ddIdempotencyKeyHeaderField = "DD-IDEMPOTENCY-KEY"
 
         public enum ContentType {
             case applicationJSON
@@ -54,7 +55,12 @@ public struct URLRequestBuilder {
         }
 
         /// Standard "User-Agent" header.
-        public static func userAgentHeader(appName: String, appVersion: String, device: DeviceInfo) -> HTTPHeader {
+        public static func userAgentHeader(
+            appName: String,
+            appVersion: String,
+            device: DeviceInfo,
+            os: OperatingSystem
+        ) -> HTTPHeader {
             var sanitizedAppName = appName
 
             if let regex = try? NSRegularExpression(pattern: "[^a-zA-Z0-9 -]+") {
@@ -66,7 +72,7 @@ public struct URLRequestBuilder {
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             }
 
-            let agent = "\(sanitizedAppName)/\(appVersion) CFNetwork (\(device.name); \(device.osName)/\(device.osVersion))"
+            let agent = "\(sanitizedAppName)/\(appVersion) CFNetwork (\(device.name); \(os.name)/\(os.version))"
             return HTTPHeader(field: userAgentHeaderField, value: { agent })
         }
 
@@ -90,6 +96,13 @@ public struct URLRequestBuilder {
         /// An optional Datadog header for debugging Intake requests by their ID.
         public static func ddRequestIDHeader() -> HTTPHeader {
             return HTTPHeader(field: ddRequestIDHeaderField, value: { UUID().uuidString })
+        }
+
+        /// An optional Datadog header for ensuring idempotent requests.
+        /// - Parameter key: The idempotency key.
+        /// - Returns: Header with the idempotency key.
+        public static func ddIdempotencyKeyHeader(key: String) -> HTTPHeader {
+            return HTTPHeader(field: ddIdempotencyKeyHeaderField, value: { key })
         }
     }
     /// Upload `URL`.

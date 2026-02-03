@@ -74,11 +74,17 @@ internal final class TouchIdentifierGenerator {
 // MARK: - UIView tagging
 
 fileprivate var associatedTouchIdentifierKey: UInt8 = 1
+fileprivate var associatedTouchPrivacyOverrideKey: UInt8 = 2
 
-private extension UITouch {
+internal extension UITouch {
     var identifier: TouchIdentifier? {
         set { objc_setAssociatedObject(self, &associatedTouchIdentifierKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
         get { objc_getAssociatedObject(self, &associatedTouchIdentifierKey) as? TouchIdentifier }
+    }
+
+    var touchPrivacyOverride: TouchPrivacyLevel? {
+        set { objc_setAssociatedObject(self, &associatedTouchPrivacyOverrideKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+        get { objc_getAssociatedObject(self, &associatedTouchPrivacyOverrideKey) as? TouchPrivacyLevel }
     }
 }
 #endif

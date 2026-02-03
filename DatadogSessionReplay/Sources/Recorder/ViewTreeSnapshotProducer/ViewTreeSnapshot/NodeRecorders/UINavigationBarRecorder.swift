@@ -8,7 +8,11 @@
 import UIKit
 
 internal struct UINavigationBarRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
+
+    init(identifier: UUID) {
+        self.identifier = identifier
+    }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let navigationBar = view as? UINavigationBar else {
@@ -32,10 +36,25 @@ internal struct UINavigationBarRecorder: NodeRecorder {
 
     private func inferOccupiedFrame(of navigationBar: UINavigationBar, in context: ViewTreeRecordingContext) -> CGRect {
         var occupiedFrame = navigationBar.frame
+        var largeTitleFrame: CGRect?
+
         for subview in navigationBar.subviews {
             let subviewFrame = subview.convert(subview.bounds, to: context.coordinateSpace)
+
+            if subview.isNavigationBarLargeTitleView {
+                largeTitleFrame = subviewFrame
+            }
+
             occupiedFrame = occupiedFrame.union(subviewFrame)
         }
+
+        if #available(iOS 26, *), navigationBar.isSwiftUINavigationBar, let largeTitleFrame {
+            // For SwiftUI navigation bars, exclude the large title view from `occupiedFrame`
+            // to prevent occluding the large title that's rendered as a sibling view
+            let height = max(0, min(largeTitleFrame.height, occupiedFrame.height))
+            occupiedFrame = occupiedFrame.inset(by: .init(top: 0, left: 0, bottom: height, right: 0))
+        }
+
         return occupiedFrame
     }
 
@@ -74,6 +93,7 @@ internal struct UINavigationBarWireframesBuilder: NodeWireframesBuilder {
             builder.createShapeWireframe(
                 id: wireframeID,
                 frame: wireframeRect,
+                clip: attributes.clip,
                 borderColor: UIColor.lightGray.withAlphaComponent(0.5).cgColor,
                 borderWidth: 1,
                 backgroundColor: color,
@@ -83,4 +103,26 @@ internal struct UINavigationBarWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
+
+extension UIView {
+    private enum Constants {
+        static let UIKitNavigationBarClass: AnyClass? = NSClassFromString("SwiftUI.UIKitNavigationBar")
+        static let NavigationBarLargeTitleView: AnyClass? = NSClassFromString("UIKit.NavigationBarLargeTitleView")
+    }
+
+    fileprivate var isSwiftUINavigationBar: Bool {
+        guard let cls = Constants.UIKitNavigationBarClass else {
+            return false
+        }
+        return type(of: self).isSubclass(of: cls)
+    }
+
+    fileprivate var isNavigationBarLargeTitleView: Bool {
+        guard let cls = Constants.NavigationBarLargeTitleView else {
+            return false
+        }
+        return type(of: self).isSubclass(of: cls)
+    }
+}
+
 #endif

@@ -23,7 +23,7 @@
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
@@ -128,7 +128,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_CLASS_NAME"
-            value = "RUMSwiftUIInstrumentationScenario"
+            value = "RUMSwiftUIManualInstrumentationScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -208,17 +208,32 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_CLASS_NAME"
-            value = "CrashReportingCollectOrSendWithLoggingScenario"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "WebViewTrackingScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "SRMultipleViewsRecordingScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMSwiftUIAutoInstrumentationRootTabbarScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMSwiftUIAutoInstrumentationSingleRootViewScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMSwiftUIAutoInstrumentationActionViewScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMFeatureOperationsScenario"
             isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>

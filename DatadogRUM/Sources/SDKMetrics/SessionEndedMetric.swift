@@ -39,16 +39,6 @@ internal class SessionEndedMetric {
         static let rseKey = "rse"
     }
 
-    /// Represents the type of instrumentation used to start a view.
-    internal enum ViewInstrumentationType: String, Encodable {
-        /// View was started manually through `RUMMonitor.shared().startView()` API.
-        case manual
-        /// View was started automatically with `UIKitRUMViewsPredicate`.
-        case uikit
-        /// View was started through `trackRUMView()` SwiftUI modifier.
-        case swiftui
-    }
-
     /// An ID of the session being tracked through this metric object.
     let sessionID: RUMUUID
 
@@ -64,7 +54,7 @@ internal class SessionEndedMetric {
         let viewURL: String
         /// The type of instrumentation that started this view.
         /// It can be `nil` if view was started implicitly by RUM, which is the case for "ApplicationLaunch" and "Background" views.
-        let instrumentationType: ViewInstrumentationType?
+        let instrumentationType: InstrumentationType?
         /// The start of the view in milliseconds from from epoch.
         let startMs: Int64
         /// The duration of the view in nanoseconds.
@@ -74,7 +64,7 @@ internal class SessionEndedMetric {
 
         init(
             viewURL: String,
-            instrumentationType: ViewInstrumentationType?,
+            instrumentationType: InstrumentationType?,
             startMs: Int64,
             durationNs: Int64,
             hasReplay: Bool
@@ -96,14 +86,25 @@ internal class SessionEndedMetric {
     /// Info about the last tracked view.
     private var lastTrackedView: TrackedViewInfo?
 
+    /// Stores information about tracked actions, referencing them by their instrumentation type.
+    private var trackedActions: [String: Int] = [:]
+
     /// Tracks the number of SDK errors by their kind.
     private var trackedSDKErrors: [String: Int] = [:]
 
     /// Indicates if the session was stopped through `stopSession()` API.
     private var wasStopped = false
 
+    /// Information about the upload quality during the session.
+    private var uploadQuality: [String: Attributes.UploadQuality] = [:]
+
     /// If `RUM.Configuration.trackBackgroundEvents` was enabled for this session.
     private let tracksBackgroundEvents: Bool
+
+    /// If the app supports scenes and doesn’t use an app delegate object to manage transitions to and from the foreground or background.
+    /// It doesn't imply whether the app has an actual `UISceneDelegate` implementation or behavior - it only means that app declares `UIApplicationSceneManifest`
+    /// in its `Info.plist`. The presence of that key changes the initiali lifecycle of thea app (in case of user launch, apps with scene manifest start shortly in BACKGROUND before moving to INACTIVE).
+    private let isUsingSceneLifecycle: Bool
 
     /// The current value of NTP offset at session start.
     private let ntpOffsetAtStart: TimeInterval
@@ -114,10 +115,19 @@ internal class SessionEndedMetric {
         case resource
         case error
         case longTask
+        case viewLoadingTime
     }
 
     /// Tracks the number of RUM events missed due to absence of an active RUM view.
     private var missedEvents: [MissedEventType: Int] = [:]
+
+    /// The number of sessions created in this app process prior to the current one.
+    /// Only includes sessions that tracked at least one view.
+    private let validSessionCount: Int
+
+    /// Indicates whether this session has tracked at least one view.
+    /// Used by the caller to increment `validSessionCount` only for "real" sessions.
+    var hasTrackedAnyViews: Bool { !trackedViews.isEmpty }
 
     // MARK: - Tracking Metric State
 
@@ -127,17 +137,22 @@ internal class SessionEndedMetric {
     ///   - precondition: The precondition that led to starting this session.
     ///   - context: The SDK context at the moment of starting this session.
     ///   - tracksBackgroundEvents: If background events tracking is enabled for this session.
+    ///   - validSessionCount: The number of sessions created in this app process prior to the current one.
     init(
         sessionID: RUMUUID,
         precondition: RUMSessionPrecondition?,
         context: DatadogContext,
-        tracksBackgroundEvents: Bool
+        tracksBackgroundEvents: Bool,
+        isUsingSceneLifecycle: Bool,
+        validSessionCount: Int
     ) {
         self.sessionID = sessionID
         self.bundleType = context.applicationBundleType
         self.precondition = precondition
         self.tracksBackgroundEvents = tracksBackgroundEvents
+        self.isUsingSceneLifecycle = isUsingSceneLifecycle
         self.ntpOffsetAtStart = context.serverTimeOffset
+        self.validSessionCount = validSessionCount
     }
 
     /// Tracks the view event that occurred during the session.
@@ -145,7 +160,7 @@ internal class SessionEndedMetric {
     ///   - view: the view event to track
     ///   - instrumentationType: the type of instrumentation used to start this view (only the first value for each `view.id` is tracked; succeeding values
     ///   will be ignored so it is okay to pass value on first call and then follow with `nil` for next updates of given `view.id`)
-    func track(view: RUMViewEvent, instrumentationType: ViewInstrumentationType?) throws {
+    func track(view: RUMViewEvent, instrumentationType: InstrumentationType?) throws {
         guard view.session.id == sessionID.toRUMDataFormat else {
             throw SessionEndedMetricError.trackingViewInForeignSession(viewURL: view.view.url, sessionID: sessionID)
         }
@@ -173,29 +188,70 @@ internal class SessionEndedMetric {
         lastTrackedView = info
     }
 
+    /// Tracks information about an action that occurred during the session.
+    /// - Parameters:
+    ///   - action: the action event to track
+    ///   - instrumentationType: the type of instrumentation used to start this action
+    func track(action: RUMActionEvent, instrumentationType: InstrumentationType) {
+        guard action.session.id == sessionID.toRUMDataFormat else {
+            return
+        }
+
+        trackedActions[instrumentationType.metricKey, default: 0] += 1
+    }
+
     /// Tracks the kind of SDK error that occurred during the session.
     /// - Parameter sdkErrorKind: the kind of SDK error
     func track(sdkErrorKind: String) {
-        if let count = trackedSDKErrors[sdkErrorKind] {
-            trackedSDKErrors[sdkErrorKind] = count + 1
-        } else {
-            trackedSDKErrors[sdkErrorKind] = 1
-        }
+        trackedSDKErrors[sdkErrorKind, default: 0] += 1
     }
 
     /// Tracks an event missed due to absence of an active view.
     /// - Parameter missedEventType: the type of an event that was missed
     func track(missedEventType: MissedEventType) {
-        if let count = missedEvents[missedEventType] {
-            missedEvents[missedEventType] = count + 1
-        } else {
-            missedEvents[missedEventType] = 1
-        }
+        missedEvents[missedEventType, default: 0] += 1
     }
 
     /// Signals that the session was stopped with `stopSession()` API.
     func trackWasStopped() {
         wasStopped = true
+    }
+
+    /// Tracks the upload quality metric for aggregation.
+    ///
+    /// - Parameters:
+    ///   - attributes: The upload quality attributes
+    func track(uploadQuality attributes: [String: Encodable]) {
+        guard let track = attributes[UploadQualityMetric.track] as? String else {
+            return
+        }
+
+        let uploadQuality = self.uploadQuality[track] ?? Attributes.UploadQuality(
+            cycleCount: 0,
+            failureCount: [:],
+            blockerCount: [:]
+        )
+
+        var failureCount = uploadQuality.failureCount
+        var blockerCount = uploadQuality.blockerCount
+
+        if let failure = attributes[UploadQualityMetric.failure] as? String {
+            // Merge by incrementing values
+            failureCount.merge([failure: 1], uniquingKeysWith: +)
+        }
+
+        if let blockers = attributes[UploadQualityMetric.blockers] as? [String] {
+            // Merge by incrementing values
+            blockerCount = blockers.reduce(into: blockerCount) { count, blocker in
+                count[blocker, default: 0] += 1
+            }
+        }
+
+        self.uploadQuality[track] = Attributes.UploadQuality(
+            cycleCount: uploadQuality.cycleCount + 1,
+            failureCount: failureCount,
+            blockerCount: blockerCount
+        )
     }
 
     // MARK: - Exporting Attributes
@@ -242,6 +298,20 @@ internal class SessionEndedMetric {
         }
 
         let viewsCount: ViewsCount
+
+        struct ActionsCount: Encodable {
+            /// The number of distinct actions sent during this session.
+            let total: Int
+            /// The map of action instrumentation types to the number of actions tracked with each instrumentation.
+            let byInstrumentation: [String: Int]
+
+            enum CodingKeys: String, CodingKey {
+                case total
+                case byInstrumentation = "by_instrumentation"
+            }
+        }
+
+        let actionsCount: ActionsCount
 
         struct SDKErrorsCount: Encodable {
             /// The total number of SDK errors that occurred during the session, excluding any effects from telemetry limits
@@ -295,6 +365,80 @@ internal class SessionEndedMetric {
         /// Information on number of events missed due to absence of an active view.
         let noViewEventsCount: NoViewEventsCount
 
+        struct UploadQuality: Encodable {
+            let cycleCount: Int
+            let failureCount: [String: Int]
+            let blockerCount: [String: Int]
+
+            enum CodingKeys: String, CodingKey {
+                case cycleCount = "cycle_count"
+                case failureCount = "failure_count"
+                case blockerCount = "blocker_count"
+            }
+        }
+
+        /// Information about the upload quality during the session.
+        /// The upload quality is splitting between upload track name.
+        /// Tracks upload quality during the session, aggregating them by track name.
+        /// Each track reports its own upload quality metrics.
+        let uploadQuality: [String: UploadQuality]
+
+        struct LaunchInfo: Encodable {
+            /// The reason the app process was launched: "user launch", "background launch", or "prewarming".
+            let launchReason: String
+            /// The process’s task policy role (`task_role_t`), indicating how the process was started (e.g., user vs. background launch).
+            /// This is mapped to strings based on the possible [`policy.role`](https://developer.apple.com/documentation/kernel/task_role_t) values,
+            /// including fallback cases defined in `AppLaunchHandling.taskPolicyRole`.
+            let taskRole: String
+            /// Indicates whether the app was prewarmed by the system.
+            let prewarmed: Bool
+            /// Time in milliseconds from process start to SDK initialization.
+            let timeToSdkInit: Int64
+            /// Time in milliseconds from process start to the first `applicationDidBecomeActive`.
+            /// `nil` if the app never became active before the session ended.
+            let timeToDidBecomeActive: Int64?
+            /// Indicates whether the app uses the `UIScene` lifecycle (`true`) or the `UIApplication` lifecycle (`false`).
+            let hasScenesLifecycle: Bool
+            /// The app state at the moment of SDK initialization: "active", "background", or "inactive".
+            let appStateAtSdkInit: String
+
+            enum CodingKeys: String, CodingKey {
+                case launchReason = "launch_reason"
+                case taskRole = "task_role"
+                case prewarmed = "prewarmed"
+                case timeToSdkInit = "tt_sdk_init"
+                case timeToDidBecomeActive = "tt_become_active"
+                case hasScenesLifecycle = "has_scenes_lifecycle"
+            }
+        }
+
+        /// Information about the app process launch. Shared between all sessions within the same app process.
+        let launchInfo: LaunchInfo
+
+        struct LifecycleInfo: Encodable {
+            /// Time in milliseconds from process start to the beginning of this session.
+            let timeToSessionStart: Int64
+            /// The number of RUM sessions created within this app process prior to this one.
+            let sessionsCount: Int
+            /// The app state when this session started: "active", "background", or "inactive".
+            let appStateAtSessionStart: String
+            /// The app state when this session ended.
+            let appStateAtSessionEnd: String
+            /// The percentage of the session duration during which the app was in the foreground, between `0.0` and `1.0`.
+            let foregroundCoverage: Double?
+
+            enum CodingKeys: String, CodingKey {
+                case timeToSessionStart = "tt_session_start"
+                case sessionsCount = "session_count"
+                case appStateAtSessionStart = "state_at_start"
+                case appStateAtSessionEnd = "state_at_end"
+                case foregroundCoverage = "fg_coverage"
+            }
+        }
+
+        /// Information about app lifecycle during this session. `nil` if this session tracked no views (unexpected).
+        let lifecycleInfo: LifecycleInfo?
+
         enum CodingKeys: String, CodingKey {
             case processType = "process_type"
             case precondition
@@ -302,9 +446,13 @@ internal class SessionEndedMetric {
             case wasStopped = "was_stopped"
             case hasBackgroundEventsTrackingEnabled = "has_background_events_tracking_enabled"
             case viewsCount = "views_count"
+            case actionsCount = "actions_count"
             case sdkErrorsCount = "sdk_errors_count"
             case ntpOffset = "ntp_offset"
             case noViewEventsCount = "no_view_events_count"
+            case uploadQuality = "upload_quality"
+            case launchInfo = "launch_info"
+            case lifecycleInfo = "lifecycle_info"
         }
     }
 
@@ -314,11 +462,34 @@ internal class SessionEndedMetric {
     /// - Parameter context: the SDK context valid at the moment of this call
     /// - Returns: metric attributes
     func asMetricAttributes(with context: DatadogContext) -> [String: Encodable] {
+        var lifecycleInfo: Attributes.LifecycleInfo?
+
         // Compute duration
         var durationNs: Int64?
         if let firstView = firstTrackedView, let lastView = lastTrackedView {
             let endOfLastViewNs = lastView.startMs.msToNs.addingReportingOverflow(lastView.durationNs).partialValue
             durationNs = endOfLastViewNs.subtractingReportingOverflow(firstView.startMs.msToNs).partialValue
+
+            // Compute lifecycle information
+            let sessionStart = Date(timeIntervalSince1970: firstView.startMs.msToSeconds)
+            let sessionEnd = Date(timeIntervalSince1970: endOfLastViewNs.nsToSeconds)
+
+            if sessionStart < sessionEnd { // sanity check
+                let sessionDuration = sessionEnd.timeIntervalSince(sessionStart)
+                let foregroundDuration = context.applicationStateHistory.foregroundDuration(during: sessionStart...sessionEnd)
+                let foregroundCoverage = round(Double(foregroundDuration / sessionDuration) * 1_000) / 1_000
+
+                let stateAtStart = context.applicationStateHistory.state(at: sessionStart) ?? context.applicationStateHistory.initialState
+                let stateAtEnd = context.applicationStateHistory.state(at: sessionEnd) ?? context.applicationStateHistory.currentState
+
+                lifecycleInfo = .init(
+                    timeToSessionStart: firstView.startMs - context.launchInfo.processLaunchDate.timeIntervalSince1970.dd.toInt64Milliseconds,
+                    sessionsCount: validSessionCount,
+                    appStateAtSessionStart: stateAtStart.toString,
+                    appStateAtSessionEnd: stateAtEnd.toString,
+                    foregroundCoverage: foregroundCoverage
+                )
+            }
         }
 
         // Compute views count
@@ -327,10 +498,11 @@ internal class SessionEndedMetric {
         let appLaunchViewsCount = trackedViews.values.filter({ $0.viewURL == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL }).count
         var byInstrumentationViewsCount: [String: Int] = [:]
         trackedViews.values.forEach {
-            if let instrumentationType = $0.instrumentationType?.rawValue {
-                byInstrumentationViewsCount[instrumentationType] = (byInstrumentationViewsCount[instrumentationType] ?? 0) + 1
+            if let instrumentationType = $0.instrumentationType {
+                byInstrumentationViewsCount[instrumentationType.metricKey, default: 0] += 1
             }
         }
+        let totalActionsCount = trackedActions.values.reduce(0, +)
         let withHasReplayCount = trackedViews.values.reduce(0, { acc, next in acc + (next.hasReplay ? 1 : 0) })
 
         // Compute SDK errors count
@@ -358,20 +530,43 @@ internal class SessionEndedMetric {
                     byInstrumentation: byInstrumentationViewsCount,
                     withHasReplay: withHasReplayCount
                 ),
+                actionsCount: .init(
+                    total: totalActionsCount,
+                    byInstrumentation: trackedActions
+                ),
                 sdkErrorsCount: .init(
                     total: totalSDKErrors,
                     byKind: top5SDKErrorsByKind
                 ),
                 ntpOffset: .init(
-                    atStart: ntpOffsetAtStart.toInt64Milliseconds,
-                    atEnd: context.serverTimeOffset.toInt64Milliseconds
+                    atStart: ntpOffsetAtStart.dd.toInt64Milliseconds,
+                    atEnd: context.serverTimeOffset.dd.toInt64Milliseconds
                 ),
                 noViewEventsCount: .init(
                     actions: missedEvents[.action] ?? 0,
                     resources: missedEvents[.resource] ?? 0,
                     errors: missedEvents[.error] ?? 0,
                     longTasks: missedEvents[.longTask] ?? 0
-                )
+                ),
+                uploadQuality: uploadQuality,
+                launchInfo: .init(
+                    launchReason: {
+                        switch context.launchInfo.launchReason {
+                        case .userLaunch: return "user launch"
+                        case .backgroundLaunch: return "background launch"
+                        case .prewarming: return "prewarming"
+                        case .uncertain: return "uncertain"
+                        }
+                    }(),
+                    taskRole: context.launchInfo.raw.taskPolicyRole,
+                    prewarmed: context.launchInfo.raw.isPrewarmed,
+                    timeToSdkInit: context.sdkInitDate.timeIntervalSince(context.launchInfo.processLaunchDate).dd.toInt64Milliseconds,
+                    timeToDidBecomeActive: context.launchInfo.launchPhaseDates[.didBecomeActive]?
+                        .timeIntervalSince(context.launchInfo.processLaunchDate).dd.toInt64Milliseconds,
+                    hasScenesLifecycle: isUsingSceneLifecycle,
+                    appStateAtSdkInit: context.applicationStateHistory.initialState.toString
+                ),
+                lifecycleInfo: lifecycleInfo
             )
         ]
     }
@@ -401,4 +596,30 @@ internal class SessionEndedMetric {
 private extension Int64 {
     /// Converts timestamp represented in milliseconds to nanoseconds with preventing Int64 overflow.
     var msToNs: Int64 { multipliedReportingOverflow(by: 1_000_000).partialValue }
+    /// Converts timestamp represented in milliseconds to seconds.
+    var msToSeconds: TimeInterval { TimeInterval(self) / 1_000 }
+    /// Converts timestamp represented in nanoseconds to seconds.
+    var nsToSeconds: TimeInterval { TimeInterval(self) / 1_000_000_000 }
+}
+
+extension InstrumentationType: Encodable {
+    var metricKey: String {
+        switch self {
+        case .uikit: return "uikit"
+        case .swiftuiAutomatic: return "swiftuiAutomatic"
+        case .swiftui: return "swiftui"
+        case .manual: return "manual"
+        }
+    }
+}
+
+private extension AppState {
+    var toString: String {
+        switch self {
+        case .active: return "active"
+        case .inactive: return "inactive"
+        case .background: return "background"
+        case .terminated: return "terminated"
+        }
+    }
 }

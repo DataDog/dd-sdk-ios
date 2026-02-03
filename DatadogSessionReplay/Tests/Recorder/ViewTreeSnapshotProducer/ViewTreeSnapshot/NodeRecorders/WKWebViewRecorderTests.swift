@@ -7,13 +7,13 @@
 import XCTest
 #if os(iOS)
 import WebKit
+@_spi(Internal)
 import TestUtilities
-
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
 class WKWebViewRecorderTests: XCTestCase {
-    private let recorder = WKWebViewRecorder()
+    private let recorder = WKWebViewRecorder(identifier: UUID())
     /// The web-view under test.
     private let webView = WKWebView()
     /// `ViewAttributes` simulating common attributes of web-view's `UIView`.
@@ -78,10 +78,10 @@ class WKWebViewRecorderTests: XCTestCase {
         XCTAssertEqual(wireframe.id, Int64(webView.hash))
         XCTAssertEqual(wireframe.slotId, String(webView.hash))
         XCTAssertNil(wireframe.clip)
-        XCTAssertEqual(wireframe.x, Int64(withNoOverflow: attributes.frame.minX))
-        XCTAssertEqual(wireframe.y, Int64(withNoOverflow: attributes.frame.minY))
-        XCTAssertEqual(wireframe.width, Int64(withNoOverflow: attributes.frame.width))
-        XCTAssertEqual(wireframe.height, Int64(withNoOverflow: attributes.frame.height))
+        XCTAssertEqual(wireframe.x, Int64.ddWithNoOverflow( attributes.frame.minX))
+        XCTAssertEqual(wireframe.y, Int64.ddWithNoOverflow( attributes.frame.minY))
+        XCTAssertEqual(wireframe.width, Int64.ddWithNoOverflow( attributes.frame.width))
+        XCTAssertEqual(wireframe.height, Int64.ddWithNoOverflow( attributes.frame.height))
         XCTAssertTrue(wireframe.isVisible ?? false)
         XCTAssertTrue(builder.hiddenWebViewWireframes().isEmpty, "webview slot should be removed from builder")
     }

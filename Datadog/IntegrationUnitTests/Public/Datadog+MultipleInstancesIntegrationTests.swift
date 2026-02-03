@@ -89,12 +89,22 @@ class Datadog_MultipleInstancesIntegrationTests: XCTestCase {
         defaultLogs.forEach { log in
             log.assertService(equals: "com.bundle.default")
             log.assertMessage(equals: "Default SDK log")
-            log.assertTags(equal: ["env:default-env", "version:1.0-default"])
+            log.assertTags(equal: [
+                "env:default-env",
+                "version:1.0-default",
+                "sdk_version:\(__sdkVersion)",
+                "service:com.bundle.default"
+            ])
         }
         customLogs.forEach { log in
             log.assertService(equals: "com.bundle.custom")
             log.assertMessage(equals: "Custom SDK log")
-            log.assertTags(equal: ["env:custom-env", "version:1.0-custom"])
+            log.assertTags(equal: [
+                "env:custom-env",
+                "version:1.0-custom",
+                "sdk_version:\(__sdkVersion)",
+                "service:com.bundle.custom"
+            ])
         }
     }
 }

@@ -27,8 +27,10 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertEqual(rse.viewsCount.total, 0)
         XCTAssertEqual(rse.viewsCount.background, 0)
         XCTAssertEqual(rse.viewsCount.applicationLaunch, 0)
+        XCTAssertEqual(rse.actionsCount.total, 0)
         XCTAssertEqual(rse.sdkErrorsCount.total, 0)
         XCTAssertEqual(rse.sdkErrorsCount.byKind, [:])
+        XCTAssertNil(rse.lifecycleInfo)
     }
 
     // MARK: - Metric Type
@@ -118,7 +120,7 @@ class SessionEndedMetricTests: XCTestCase {
     func testComputingDurationFromSingleView() throws {
         // Given
         let metric = SessionEndedMetric.with(sessionID: sessionID)
-        let view: RUMViewEvent = .mockRandomWith(sessionID: sessionID)
+        let view: RUMViewEvent = .mockRandomWith(sessionID: sessionID.rawValue)
 
         // When
         try metric.track(view: view, instrumentationType: nil)
@@ -132,9 +134,9 @@ class SessionEndedMetricTests: XCTestCase {
     func testComputingDurationFromMultipleViews() throws {
         // Given
         let metric = SessionEndedMetric.with(sessionID: sessionID)
-        let view1: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 10.s2ms, viewTimeSpent: 10.s2ns)
-        let view2: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 10.s2ms + 10.s2ms, viewTimeSpent: 20.s2ns)
-        let view3: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 10.s2ms + 10.s2ms + 20.s2ms, viewTimeSpent: 50.s2ns)
+        let view1: RUMViewEvent = .mockRandomWith(sessionID: sessionID.rawValue, date: 10.s2ms, viewTimeSpent: 10.s2ns)
+        let view2: RUMViewEvent = .mockRandomWith(sessionID: sessionID.rawValue, date: 10.s2ms + 10.s2ms, viewTimeSpent: 20.s2ns)
+        let view3: RUMViewEvent = .mockRandomWith(sessionID: sessionID.rawValue, date: 10.s2ms + 10.s2ms + 20.s2ms, viewTimeSpent: 50.s2ns)
 
         // When
         try metric.track(view: view1, instrumentationType: nil)
@@ -150,8 +152,8 @@ class SessionEndedMetricTests: XCTestCase {
     func testComputingDurationFromOverlappingViews() throws {
         // Given
         let metric = SessionEndedMetric.with(sessionID: sessionID)
-        let view1: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 10.s2ms, viewTimeSpent: 10.s2ns)
-        let view2: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 15.s2ms, viewTimeSpent: 20.s2ns) // starts in the middle of `view1`
+        let view1: RUMViewEvent = .mockRandomWith(sessionID: sessionID.rawValue, date: 10.s2ms, viewTimeSpent: 10.s2ns)
+        let view2: RUMViewEvent = .mockRandomWith(sessionID: sessionID.rawValue, date: 15.s2ms, viewTimeSpent: 20.s2ns) // starts in the middle of `view1`
 
         // When
         try metric.track(view: view1, instrumentationType: nil)
@@ -166,12 +168,12 @@ class SessionEndedMetricTests: XCTestCase {
     func testDurationIsAlwaysComputedFromTheFirstAndLastView() throws {
         // Given
         let metric = SessionEndedMetric.with(sessionID: sessionID)
-        let firstView: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 5.s2ms, viewTimeSpent: 10.s2ns)
-        let lastView: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 5.s2ms + 10.s2ms, viewTimeSpent: 20.s2ns)
+        let firstView: RUMViewEvent = .mockRandomWith(sessionID: sessionID.rawValue, date: 5.s2ms, viewTimeSpent: 10.s2ns)
+        let lastView: RUMViewEvent = .mockRandomWith(sessionID: sessionID.rawValue, date: 5.s2ms + 10.s2ms, viewTimeSpent: 20.s2ns)
 
         // When
         try metric.track(view: firstView, instrumentationType: nil)
-        try (0..<10).forEach { _ in try metric.track(view: .mockRandomWith(sessionID: sessionID), instrumentationType: nil) } // middle views should not alter the duration
+        try (0..<10).forEach { _ in try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue), instrumentationType: nil) } // middle views should not alter the duration
         try metric.track(view: lastView, instrumentationType: nil)
         let attributes = metric.asMetricAttributes()
 
@@ -235,8 +237,8 @@ class SessionEndedMetricTests: XCTestCase {
 
         // Then
         let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
-        XCTAssertEqual(rse.ntpOffset.atStart, offsetAtStart.toInt64Milliseconds)
-        XCTAssertEqual(rse.ntpOffset.atEnd, offsetAtEnd.toInt64Milliseconds)
+        XCTAssertEqual(rse.ntpOffset.atStart, offsetAtStart.dd.toInt64Milliseconds)
+        XCTAssertEqual(rse.ntpOffset.atEnd, offsetAtEnd.dd.toInt64Milliseconds)
     }
 
     // MARK: - Views Count
@@ -248,7 +250,7 @@ class SessionEndedMetricTests: XCTestCase {
         let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
-        try viewIDs.forEach { try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: $0), instrumentationType: nil) }
+        try viewIDs.forEach { try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: $0), instrumentationType: nil) }
         let attributes = metric.asMetricAttributes()
 
         // Then
@@ -265,8 +267,8 @@ class SessionEndedMetricTests: XCTestCase {
 
         // When
         try (0..<5).forEach { _ in // repeat few times
-            try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: viewID1), instrumentationType: nil)
-            try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: viewID2), instrumentationType: nil)
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: viewID1), instrumentationType: nil)
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: viewID2), instrumentationType: nil)
         }
         let attributes = metric.asMetricAttributes()
 
@@ -286,7 +288,7 @@ class SessionEndedMetricTests: XCTestCase {
         // When
         try viewIDs.forEach { viewID in
             let viewURL = backgroundViewIDs.contains(viewID) ? RUMOffViewEventsHandlingRule.Constants.backgroundViewURL : .mockRandom()
-            try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: viewID, viewURL: viewURL), instrumentationType: nil)
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: viewID, viewURL: viewURL), instrumentationType: nil)
         }
         let attributes = metric.asMetricAttributes()
 
@@ -306,7 +308,7 @@ class SessionEndedMetricTests: XCTestCase {
         // When
         try viewIDs.forEach { viewID in
             let viewURL = appLaunchViewIDs.contains(viewID) ? RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL : .mockRandom()
-            try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: viewID, viewURL: viewURL), instrumentationType: nil)
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: viewID, viewURL: viewURL), instrumentationType: nil)
         }
         let attributes = metric.asMetricAttributes()
 
@@ -318,7 +320,8 @@ class SessionEndedMetricTests: XCTestCase {
     func testReportingViewsCountByInstrumentationType() throws {
         let manualViewsCount: Int = .mockRandom(min: 1, max: 10)
         let swiftuiViewsCount: Int = .mockRandom(min: 1, max: 10)
-        let uikitViewsCount: Int = .mockRandom(min: 1, max: 10)
+        let uikitPredicateViewsCount: Int = .mockRandom(min: 1, max: 10)
+        let swiftuiAutomaticPredicateViewsCount: Int = .mockRandom(min: 1, max: 10)
         let unknownViewsCount: Int = .mockRandom(min: 1, max: 10)
 
         // Given
@@ -326,28 +329,32 @@ class SessionEndedMetricTests: XCTestCase {
 
         // When
         try (0..<manualViewsCount).forEach { idx in
-            try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "manual\(idx)"), instrumentationType: .manual)
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "manual\(idx)"), instrumentationType: .manual)
         }
         try (0..<swiftuiViewsCount).forEach { idx in
-            try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "swiftui\(idx)"), instrumentationType: .swiftui)
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "swiftui\(idx)"), instrumentationType: .swiftui)
         }
-        try (0..<uikitViewsCount).forEach { idx in
-            try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "uikit\(idx)"), instrumentationType: .uikit)
+        try (0..<uikitPredicateViewsCount).forEach { idx in
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "uikit\(idx)"), instrumentationType: .uikit)
+        }
+        try (0..<swiftuiAutomaticPredicateViewsCount).forEach { idx in
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "swiftuiAutomatic\(idx)"), instrumentationType: .swiftuiAutomatic)
         }
         try (0..<unknownViewsCount).forEach { idx in
-            try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "unknown\(idx)"), instrumentationType: nil)
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "unknown\(idx)"), instrumentationType: nil)
         }
         let attributes = metric.asMetricAttributes()
 
         // Then
         let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
-        XCTAssertEqual(rse.viewsCount.total, manualViewsCount + swiftuiViewsCount + uikitViewsCount + unknownViewsCount)
+        XCTAssertEqual(rse.viewsCount.total, manualViewsCount + swiftuiViewsCount + uikitPredicateViewsCount + swiftuiAutomaticPredicateViewsCount + unknownViewsCount)
         XCTAssertEqual(
             rse.viewsCount.byInstrumentation,
             [
                 "manual": manualViewsCount,
                 "swiftui": swiftuiViewsCount,
-                "uikit": uikitViewsCount
+                "uikit": uikitPredicateViewsCount,
+                "swiftuiAutomatic": swiftuiAutomaticPredicateViewsCount
             ]
         )
     }
@@ -355,12 +362,13 @@ class SessionEndedMetricTests: XCTestCase {
     func testWhenReportingViewsCountByInstrumentationType_itIgnoresSuccedingInstrumentationTypesForGivenViewID() throws {
         // Given
         let metric = SessionEndedMetric.with(sessionID: sessionID)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "view-id"), instrumentationType: .manual)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .manual)
 
         // When
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "view-id"), instrumentationType: nil)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "view-id"), instrumentationType: .swiftui)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "view-id"), instrumentationType: .uikit)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: nil)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .swiftui)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .uikit)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .swiftuiAutomatic)
         let attributes = metric.asMetricAttributes()
 
         // Then
@@ -373,12 +381,12 @@ class SessionEndedMetricTests: XCTestCase {
         let metric = SessionEndedMetric.with(sessionID: sessionID)
 
         // When
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "1", hasReplay: nil), instrumentationType: nil)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "1", hasReplay: false), instrumentationType: nil)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "1", hasReplay: true), instrumentationType: nil) // count
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "2", hasReplay: false), instrumentationType: nil)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "3", hasReplay: true), instrumentationType: nil) // count
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: "3", hasReplay: false), instrumentationType: nil) // ignore
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "1", hasReplay: nil), instrumentationType: nil)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "1", hasReplay: false), instrumentationType: nil)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "1", hasReplay: true), instrumentationType: nil) // count
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "2", hasReplay: false), instrumentationType: nil)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "3", hasReplay: true), instrumentationType: nil) // count
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "3", hasReplay: false), instrumentationType: nil) // ignore
         let attributes = metric.asMetricAttributes()
 
         // Then
@@ -399,6 +407,96 @@ class SessionEndedMetricTests: XCTestCase {
         // Then
         let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
         XCTAssertEqual(rse.viewsCount.total, 0)
+    }
+
+    // MARK: - Actions Count
+
+    func testReportingTotalActionsCount() throws {
+        let actionCount: Int = .mockRandom(min: 1, max: 10)
+
+        // Given
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
+
+        // When
+        (0..<actionCount).forEach { _ in
+            metric.track(
+                action: .mockWith(sessionID: sessionID.rawValue),
+                instrumentationType: .manual
+            )
+        }
+        let attributes = metric.asMetricAttributes()
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(rse.actionsCount.total, actionCount)
+    }
+
+    func testReportingActionsCountByInstrumentationType() throws {
+        let manualActionsCount: Int = .mockRandom(min: 1, max: 10)
+        let swiftuiActionsCount: Int = .mockRandom(min: 1, max: 10)
+        let uikitPredicateActionsCount: Int = .mockRandom(min: 1, max: 10)
+        let swiftuiAutomaticPredicateActionsCount: Int = .mockRandom(min: 1, max: 10)
+
+        // Given
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
+
+        // When
+        (0..<manualActionsCount).forEach { _ in
+            metric.track(
+                action: .mockWith(sessionID: sessionID.rawValue),
+                instrumentationType: .manual
+            )
+        }
+        (0..<swiftuiActionsCount).forEach { _ in
+            metric.track(
+                action: .mockWith(sessionID: sessionID.rawValue),
+                instrumentationType: .swiftui
+            )
+        }
+        (0..<uikitPredicateActionsCount).forEach { _ in
+            metric.track(
+                action: .mockWith(sessionID: sessionID.rawValue),
+                instrumentationType: .uikit
+            )
+        }
+        (0..<swiftuiAutomaticPredicateActionsCount).forEach { _ in
+            metric.track(
+                action: .mockWith(sessionID: sessionID.rawValue),
+                instrumentationType: .swiftuiAutomatic
+            )
+        }
+        let attributes = metric.asMetricAttributes()
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(
+            rse.actionsCount.total,
+            manualActionsCount + swiftuiActionsCount + uikitPredicateActionsCount + swiftuiAutomaticPredicateActionsCount
+        )
+        XCTAssertEqual(
+            rse.actionsCount.byInstrumentation,
+            [
+                "manual": manualActionsCount,
+                "swiftui": swiftuiActionsCount,
+                "uikit": uikitPredicateActionsCount,
+                "swiftuiAutomatic": swiftuiAutomaticPredicateActionsCount
+            ]
+        )
+    }
+
+    func testWhenReportingActionsCount_itIgnoresActionsFromDifferentSession() throws {
+        // Given
+        let metric = SessionEndedMetric.with(sessionID: sessionID)
+
+        // When
+        metric.track(action: .mockAny(), instrumentationType: .manual)
+        metric.track(action: .mockAny(), instrumentationType: .manual)
+        let attributes = metric.asMetricAttributes()
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(rse.actionsCount.total, 0)
+        XCTAssertEqual(rse.actionsCount.byInstrumentation, [:])
     }
 
     // MARK: - SDK Errors Count
@@ -492,14 +590,149 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertEqual(rse.noViewEventsCount.longTasks, missedLongTasksCount)
     }
 
+    // MARK: - Tracks Upload Quality
+
+    func testUploadQualityMetricAggregation() throws {
+        let metric = SessionEndedMetric.with(sessionID: sessionID, context: .mockWith(applicationBundleType: .iOSApp))
+        metric.track(uploadQuality: [
+            UploadQualityMetric.track: "feature",
+            UploadQualityMetric.failure: "error1"
+        ])
+
+        metric.track(uploadQuality: [
+            UploadQualityMetric.track: "feature",
+            UploadQualityMetric.failure: "error1",
+            UploadQualityMetric.blockers: ["blocker1", "blocker2"]
+        ])
+
+        metric.track(uploadQuality: [
+            UploadQualityMetric.track: "feature",
+        ])
+
+        metric.track(uploadQuality: [
+            UploadQualityMetric.track: "feature",
+            UploadQualityMetric.failure: "error2",
+            UploadQualityMetric.blockers: ["blocker1"]
+        ])
+
+        // When
+        let matcher = try JSONObjectMatcher(AnyEncodable(metric.asMetricAttributes()))
+
+        XCTAssertEqual(try matcher.value("rse.upload_quality.feature.cycle_count") as Int, 4)
+        XCTAssertEqual(try matcher.value("rse.upload_quality.feature.failure_count.error1") as Int, 2)
+        XCTAssertEqual(try matcher.value("rse.upload_quality.feature.failure_count.error2") as Int, 1)
+        XCTAssertEqual(try matcher.value("rse.upload_quality.feature.blocker_count.blocker1") as Int, 2)
+        XCTAssertEqual(try matcher.value("rse.upload_quality.feature.blocker_count.blocker2") as Int, 1)
+    }
+
+    // MARK: - Launch Info
+
+    func testReportingLaunchInfo() throws {
+        let prewarmed: Bool = .mockRandom()
+        let isUsingSceneLifecycle: Bool = .mockRandom()
+        let processLaunchDate = Date()
+        let launchInfo = LaunchInfo(
+            launchReason: .userLaunch,
+            processLaunchDate: processLaunchDate,
+            runtimeLoadDate: nil,
+            runtimePreMainDate: nil,
+            didFinishLaunchingDate: nil,
+            didBecomeActiveDate: processLaunchDate.addingTimeInterval(1.84),
+            raw: .init(taskPolicyRole: "TASK_ROLE_MOCK", isPrewarmed: prewarmed)
+        )
+        let sdkInitDate = launchInfo.processLaunchDate + 0.42
+        let context: DatadogContext = .mockWith(
+            sdkInitDate: sdkInitDate,
+            launchInfo: launchInfo,
+            applicationStateHistory: .mockWith(initialState: .inactive, date: sdkInitDate)
+        )
+
+        // Given
+        let metric = SessionEndedMetric.with(
+            sessionID: sessionID,
+            context: context,
+            isUsingSceneLifecycle: isUsingSceneLifecycle
+        )
+
+        // When
+        let attributes = metric.asMetricAttributes(with: context)
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(rse.launchInfo.launchReason, "user launch")
+        XCTAssertEqual(rse.launchInfo.taskRole, "TASK_ROLE_MOCK")
+        XCTAssertEqual(rse.launchInfo.prewarmed, prewarmed)
+        XCTAssertEqual(rse.launchInfo.timeToSdkInit, sdkInitDate.timeIntervalSince(launchInfo.processLaunchDate).dd.toInt64Milliseconds)
+        XCTAssertEqual(rse.launchInfo.timeToDidBecomeActive, 1.84.dd.toInt64Milliseconds)
+        XCTAssertEqual(rse.launchInfo.hasScenesLifecycle, isUsingSceneLifecycle)
+        XCTAssertEqual(rse.launchInfo.appStateAtSdkInit, "inactive")
+    }
+
+    // MARK: - Lifecycle Info
+
+    func testReportingLifecycleInfo() throws {
+        let processLaunchDate = Date()
+        let view1Start = processLaunchDate + 1
+        let view1Stop = view1Start + 10 // view1 lasts for 10s
+        let view2Start = view1Stop + 4 // 4s in background, then view2 starts
+        let view2Stop = view2Start + 5 // view2 lasts for 5s
+        let validSessionCount: Int = .mockRandom()
+
+        let context: DatadogContext = .mockWith(
+            launchInfo: .mockWith(processLaunchDate: processLaunchDate),
+            applicationStateHistory: .mockWith(
+                initialState: .inactive,
+                date: processLaunchDate,
+                transitions: [
+                    (.background, view1Stop), // background on "view1 stop"
+                    (.active, view2Start), // foreground on "view2 start"
+                ]
+            )
+        )
+
+        // Given
+        let metric = SessionEndedMetric.with(sessionID: sessionID, validSessionCount: validSessionCount)
+
+        // When
+        try metric.track(
+            view: .mockRandomWith(
+                sessionID: sessionID.rawValue,
+                viewID: "view1",
+                date: view1Start.timeIntervalSince1970.dd.toInt64Milliseconds,
+                viewTimeSpent: (view1Stop.timeIntervalSince(view1Start)).dd.toInt64Nanoseconds
+            ),
+            instrumentationType: .manual
+        )
+        try metric.track(
+            view: .mockRandomWith(
+                sessionID: sessionID.rawValue,
+                viewID: "view2",
+                date: view2Start.timeIntervalSince1970.dd.toInt64Milliseconds,
+                viewTimeSpent: (view2Stop.timeIntervalSince(view2Start)).dd.toInt64Nanoseconds
+            ),
+            instrumentationType: .manual
+        )
+        let attributes = metric.asMetricAttributes(with: context)
+
+        // Then
+        let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
+        XCTAssertEqual(rse.lifecycleInfo?.timeToSessionStart, view1Start.timeIntervalSince(processLaunchDate).dd.toInt64Milliseconds)
+        XCTAssertEqual(rse.lifecycleInfo?.sessionsCount, validSessionCount)
+        XCTAssertEqual(rse.lifecycleInfo?.appStateAtSessionStart, "inactive")
+        XCTAssertEqual(rse.lifecycleInfo?.appStateAtSessionEnd, "active")
+        DDAssertEqual(rse.lifecycleInfo?.foregroundCoverage, (10 + 5) / (10 + 4 + 5), accuracy: 0.001)
+    }
+
     // MARK: - Metric Spec
 
     func testEncodedMetricAttributesFollowTheSpec() throws {
         // Given
         let metric = SessionEndedMetric.with(sessionID: sessionID, context: .mockWith(applicationBundleType: .iOSApp))
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewTimeSpent: 10), instrumentationType: .manual)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewTimeSpent: 10), instrumentationType: .swiftui)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewTimeSpent: 10), instrumentationType: .uikit)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .manual)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .swiftui)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .uikit)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .swiftuiAutomatic)
+        metric.track(uploadQuality: [UploadQualityMetric.track: "feature"])
 
         // When
         let matcher = try JSONObjectMatcher(AnyEncodable(metric.asMetricAttributes()))
@@ -516,6 +749,7 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.manual") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.swiftui") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.uikit") as Int)
+        XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.swiftuiAutomatic") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.with_has_replay") as Int)
         XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.total") as Int)
         XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.by_kind") as [String: Int])
@@ -525,6 +759,7 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertNotNil(try matcher.value("rse.no_view_events_count.resources") as Int)
         XCTAssertNotNil(try matcher.value("rse.no_view_events_count.errors") as Int)
         XCTAssertNotNil(try matcher.value("rse.no_view_events_count.long_tasks") as Int)
+        XCTAssertNotNil(try matcher.value("rse.upload_quality.feature.cycle_count") as Int)
     }
 }
 
@@ -544,9 +779,18 @@ private extension SessionEndedMetric {
         sessionID: RUMUUID,
         precondition: RUMSessionPrecondition? = .mockRandom(),
         context: DatadogContext = .mockRandom(),
-        tracksBackgroundEvents: Bool = .mockRandom()
+        tracksBackgroundEvents: Bool = .mockRandom(),
+        isUsingSceneLifecycle: Bool = .mockRandom(),
+        validSessionCount: Int = .mockRandom()
     ) -> SessionEndedMetric {
-        SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context, tracksBackgroundEvents: tracksBackgroundEvents)
+        SessionEndedMetric(
+            sessionID: sessionID,
+            precondition: precondition,
+            context: context,
+            tracksBackgroundEvents: tracksBackgroundEvents,
+            isUsingSceneLifecycle: isUsingSceneLifecycle,
+            validSessionCount: validSessionCount
+        )
     }
 
     func asMetricAttributes() -> [String: Encodable] {

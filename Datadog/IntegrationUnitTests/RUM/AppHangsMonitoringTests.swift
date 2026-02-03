@@ -19,8 +19,8 @@ class AppHangsMonitoringTests: XCTestCase {
     private let mainQueue = DispatchQueue(label: "main-queue-mock", qos: .userInteractive)
 
     private var expectedHangDurationRangeNs: ClosedRange<Int64> {
-        let min = hangDuration.toInt64Nanoseconds / 2 // -50% margin
-        let max = hangDuration.toInt64Nanoseconds * 5 // +500% margin to avoid flakiness
+        let min = hangDuration.dd.toInt64Nanoseconds / 2 // -50% margin
+        let max = hangDuration.dd.toInt64Nanoseconds * 5 // +500% margin to avoid flakiness
         return (min...max)
     }
 
@@ -31,8 +31,8 @@ class AppHangsMonitoringTests: XCTestCase {
         core = DatadogCoreProxy()
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+    override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
     }
 

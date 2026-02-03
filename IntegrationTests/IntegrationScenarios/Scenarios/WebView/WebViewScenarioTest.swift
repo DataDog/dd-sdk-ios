@@ -6,6 +6,7 @@
 
 import Foundation
 import HTTPServerMock
+import TestUtilities
 import XCTest
 
 class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
@@ -43,7 +44,8 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
         // Check iOS SDK events:
         let initialView = session.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
-        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertNotNil(session.ttidEvent)
+        XCTAssertGreaterThan(session.timeToInitialDisplay!, 0)
 
         let nativeView = session.views[1]
         XCTAssertEqual(nativeView.name, "Runner.WebViewTrackingFixtureViewController")

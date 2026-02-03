@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import DatadogInternal
 import Foundation
 
 internal struct RUMContext {

@@ -12,9 +12,8 @@ EXPECTED_XCFRAMEWORKS := DatadogInternal \
 						DatadogTrace \
 						DatadogRUM \
 						DatadogSessionReplay \
-						DatadogObjc \
 						DatadogCrashReporting \
-						CrashReporter \
+						DatadogFlags \
 						DatadogWebViewTracking \
 						OpenTelemetryApi
 else ifeq ($(PLATFORM), tvOS Simulator)
@@ -25,9 +24,8 @@ EXPECTED_XCFRAMEWORKS := DatadogInternal \
 						DatadogLogs \
 						DatadogTrace \
 						DatadogRUM \
-						DatadogObjc \
 						DatadogCrashReporting \
-						CrashReporter \
+						DatadogFlags \
 						OpenTelemetryApi
 endif
 
@@ -46,7 +44,7 @@ ifeq ($(CARTHAGE_PLATFORM),)
 	@exit 1
 endif
 	@$(ECHO_INFO) "Using CARTHAGE_PLATFORM='$(CARTHAGE_PLATFORM)'"
-	carthage update --platform $(CARTHAGE_PLATFORM) --use-xcframeworks
+	REPO_ROOT=$(REPO_ROOT) $(REPO_ROOT)/tools/carthage-shim.sh update --platform $(CARTHAGE_PLATFORM) --use-xcframeworks
 
 test:
 	@$(call require_param,OS)

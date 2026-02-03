@@ -52,9 +52,9 @@ echo_box() {
   local len=$((${#text}+2))
   local separator=$(printf '.%.0s' {1..$len})
   echo -e " ${COLOR}${separator}${RESET}"
-  echo -e "${COLOR}┌$(printf '%*s' $len | tr ' ' '─')┐${RESET}"
+  echo -e "${COLOR}┌$(printf '\u2500%.0s' $(seq 1 $len))┐${RESET}"
   echo -e "${COLOR}│ ${BOLD}$text${RESET}${COLOR} │${RESET}"
-  echo -e "${COLOR}└$(printf '%*s' $len | tr ' ' '─')┘${RESET}"
+  echo -e "${COLOR}└$(printf '\u2500%.0s' $(seq 1 $len))┘${RESET}"
 }
 
 echo_title() {

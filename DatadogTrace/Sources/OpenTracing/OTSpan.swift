@@ -52,10 +52,10 @@ public protocol OTSpan {
     ///     let span1 = tracer.startSpan(operationName: "root").setActive()
     ///
     ///     // As `span2` has no explicit parent, it becomes the child of the active `span1`:
-    ///     let span2 = tracer.startSpan(operationName: "child of `span1`")
+    ///     let span2 = tracer.startSpan(operationName: "child of `span1`").setActive()
     ///
-    ///     // As `span3` has the explicit parent (nil) it won't become the child of the active span:
-    ///     let span3 = tracer.startSpan(operationName: "another root", childOf: nil)
+    ///     // As `span3` is a root span, it won't become the child of the active span:
+    ///     let span3 = tracer.startRootSpan(operationName: "another root").setActive()
     ///
     @discardableResult
     func setActive() -> OTSpan
@@ -146,5 +146,42 @@ public extension OTSpan {
             fields[OTLogFields.stack] = fileAndStack.joined(separator: "\n")
         }
         log(fields: fields)
+    }
+}
+
+/// Sampling conveniences
+public extension OTSpan {
+    /// Forces the trace this span is part of to be kept, regardless of the sampling configuration.
+    ///
+    /// This API should be called on a root span immediately after its creation. Although calling it
+    /// on any span will automatically keep all the spans of that trace (including parent, children,
+    /// siblings, etc), if the trace was determined to be not sampled by the current sampling configuration,
+    /// any span that has finished before this API is called will not be sampled, resulting in potentially
+    /// incomplete traces.
+    ///
+    /// Calling this API immediately after creating the root span also guarantees that any propagation
+    /// as part of distributed tracing includes the correct information regarding this trace sampling
+    /// priority.
+    ///
+    /// - Note: This API is equivalent to calling `setTag(key: SpanTags.manualKeep, value: true)`.
+    func keepTrace() {
+        setTag(key: SpanTags.manualKeep, value: true)
+    }
+
+    /// Forces the trace this span is part of to be dropped, regardless of the sampling configuration.
+    ///
+    /// This API should be called on a root span immediately after its creation. Although calling it
+    /// on any span will automatically drop all the spans of that trace (including parent, children,
+    /// siblings, etc), if the trace was determined to be sampled by the current sampling configuration,
+    /// any span that has finished before this API is called will be sampled, resulting in potentially
+    /// incomplete traces.
+    ///
+    /// Calling this API immediately after creating the root span also guarantees that any propagation
+    /// as part of distributed tracing includes the correct information regarding this trace sampling
+    /// priority.
+    ///
+    /// - Note: This API is equivalent to calling `setTag(key: SpanTags.manualDrop, value: true)`.
+    func dropTrace() {
+        setTag(key: SpanTags.manualDrop, value: true)
     }
 }

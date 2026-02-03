@@ -6,7 +6,8 @@
 
 #if os(iOS)
 import XCTest
-@testable import TestUtilities
+@_spi(Internal)
+import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
@@ -136,7 +137,7 @@ class DiffSRWireframes: XCTestCase {
         let wireframeB: SRWireframe = .imageWireframe(value: .mockWith(base64: base64, id: randomID))
 
         // When
-        let mutations = try? XCTUnwrap(wireframeB.mutations(from: wireframeA))
+        let mutations = try? wireframeB.mutations(from: wireframeA)
         let isDifferent = wireframeA.isDifferent(than: wireframeB)
 
         // Then
@@ -146,6 +147,39 @@ class DiffSRWireframes: XCTestCase {
         } else {
             XCTFail("mutations are expected to be `.imageWireframeUpdate`")
         }
+    }
+
+    func testUpdatingContentClip() throws {
+        let id: WireframeID = .mockRandom()
+
+        // Given
+        let clip0 = SRContentClip(bottom: nil, left: nil, right: nil, top: nil)
+        let wireframe0: SRWireframe = .shapeWireframe(value: .mockWith(clip: clip0, id: id))
+
+        let clip1 = SRContentClip(bottom: nil, left: nil, right: 10, top: 10)
+        let wireframe1: SRWireframe = .shapeWireframe(value: .mockWith(clip: clip1, id: id))
+
+        let clip2 = SRContentClip(bottom: 10, left: 10, right: nil, top: nil)
+        let wireframe2: SRWireframe = .shapeWireframe(value: .mockWith(clip: clip2, id: id))
+
+        // When
+        let mutation1 = try XCTUnwrap(wireframe1.mutations(from: wireframe0))
+        let result1 = try XCTUnwrap(wireframe0.merge(mutation: mutation1)?.shapeWireframe)
+
+        let mutation2 = try XCTUnwrap(wireframe2.mutations(from: wireframe1))
+        let result2 = try XCTUnwrap(wireframe1.merge(mutation: mutation2)?.shapeWireframe)
+
+        let mutation3 = try XCTUnwrap(wireframe0.mutations(from: wireframe2))
+        let result3 = try XCTUnwrap(wireframe2.merge(mutation: mutation3)?.shapeWireframe)
+
+        let mutation4 = try XCTUnwrap(wireframe0.mutations(from: wireframe0))
+        let result4 = try XCTUnwrap(wireframe0.merge(mutation: mutation4)?.shapeWireframe)
+
+        // Then
+        XCTAssertEqual(result1.clip, SRContentClip(bottom: nil, left: nil, right: 10, top: 10))
+        XCTAssertEqual(result2.clip, SRContentClip(bottom: 10, left: 10, right: 0, top: 0))
+        XCTAssertEqual(result3.clip, SRContentClip(bottom: 0, left: 0, right: nil, top: nil))
+        XCTAssertEqual(result4.clip, SRContentClip(bottom: nil, left: nil, right: nil, top: nil))
     }
 }
 

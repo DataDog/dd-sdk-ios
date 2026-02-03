@@ -45,6 +45,9 @@ public enum W3CHTTPHeaders {
     /// also conveys information about the request’s position in multiple distributed tracing graphs.
     public static let tracestate = "tracestate"
 
+    /// The baggage header represents a set of user-defined properties associated with a distributed request.
+    public static let baggage = "baggage"
+
     public enum Constants {
         public static let version = "00"
         public static let sampledValue = "01"
@@ -54,10 +57,21 @@ public enum W3CHTTPHeaders {
         // MARK: - Datadog specific tracestate keys
         public static let dd = "dd"
         public static let sampling = "s"
+        public static let samplingDecisionMaker = "t.dm"
         public static let origin = "o"
         public static let originRUM = "rum"
         public static let parentId = "p"
         public static let tracestateKeyValueSeparator = ":"
         public static let tracestatePairSeparator = ";"
+        public static let rumSessionBaggageKey = "session.id"
+        public static let accountBaggageKey = "account.id"
+        public static let userBaggageKey = "user.id"
+
+        /// Documentation:
+        /// The SDK will set and may override the following baggage keys during header injection and merging:
+        /// - "session.id": current RUM session identifier
+        /// - "user.id": current user identifier
+        /// - "account.id": current account identifier
+        /// When merging with user-provided baggage, SDK values take precedence for these keys.
     }
 }

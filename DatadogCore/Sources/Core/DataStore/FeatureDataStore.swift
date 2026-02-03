@@ -9,7 +9,7 @@ import DatadogInternal
 
 /// A concrete implementation of the `DataStore` protocol using file storage.
 internal final class FeatureDataStore: DataStore {
-    private enum Constants {
+    enum Constants {
         /// The version of this data store implementation.
         /// If a breaking change is introduced to the format of managed files, the version must be upgraded and old data should be deleted.
         static let dataStoreVersion = 1
@@ -35,7 +35,7 @@ internal final class FeatureDataStore: DataStore {
     ) {
         self.feature = feature
         self.coreDirectory = directory
-        self.directoryPath = "\(Constants.dataStoreVersion)/" + feature
+        self.directoryPath = coreDirectory.getDataStorePath(forFeatureNamed: feature)
         self.queue = queue
         self.telemetry = telemetry
     }
@@ -83,6 +83,18 @@ internal final class FeatureDataStore: DataStore {
             } catch let error {
                 DD.logger.error("[Data Store] Error on deleting `\(key)` value for `\(self.feature)`", error: error)
                 self.telemetry.error("[Data Store] Error on deleting `\(key)` value for `\(self.feature)`", error: DDError(error: error))
+            }
+        }
+    }
+
+    func clearAllData() {
+        queue.async {
+            do {
+                let directory = try self.coreDirectory.coreDirectory.subdirectoryIfExists(path: self.directoryPath)
+                try directory?.deleteAllFiles()
+            } catch let error {
+                DD.logger.error("[Data Store] Error on clearing all data for `\(self.feature)`", error: error)
+                self.telemetry.error("[Data Store] Error on clearing all data for `\(self.feature)`", error: DDError(error: error))
             }
         }
     }

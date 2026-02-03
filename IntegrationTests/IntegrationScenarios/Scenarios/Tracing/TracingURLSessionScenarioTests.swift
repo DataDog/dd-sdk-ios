@@ -4,8 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import HTTPServerMock
 import DatadogInternal
+import HTTPServerMock
+import TestUtilities
 import XCTest
 
 private extension ExampleApplication {
@@ -15,36 +16,6 @@ private extension ExampleApplication {
 }
 
 class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
-    func testTracingURLSessionScenario_composition() throws {
-        try runTest(
-            for: "TracingURLSessionScenario",
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyComposition,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-    
-    func testTracingURLSessionScenario_legacyWithAdditionalFirstyPartyHosts() throws {
-        try runTest(
-            for: "TracingURLSessionScenario",
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyWithAdditionalFirstyPartyHosts,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-
-    func testTracingURLSessionScenario_directWithGlobalFirstPartyHosts() throws {
-        try runTest(
-            for: "TracingURLSessionScenario",
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyWithFeatureFirstPartyHosts,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-
     func testTracingURLSessionScenario_delegateUsingFeatureFirstPartyHosts() throws {
         try runTest(
             for: "TracingURLSessionScenario",
@@ -59,47 +30,7 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         try runTest(
             for: "TracingURLSessionScenario",
             urlSessionSetup: .init(
-                instrumentationMethod: .delegateWithAdditionalFirstyPartyHosts,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-    
-    func testTracingURLSessionScenario_inheritance() throws {
-        try runTest(
-            for: "TracingURLSessionScenario",
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyInheritance,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-
-    func testTracingNSURLSessionScenario_composition() throws {
-        try runTest(
-            for: "TracingNSURLSessionScenario",
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyComposition,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-
-    func testTracingNSURLSessionScenario_legacyWithFeatureFirstPartyHosts() throws {
-        try runTest(
-            for: "TracingNSURLSessionScenario",
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyWithFeatureFirstPartyHosts,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-    
-    func testTracingNSURLSessionScenario_legacyWithAdditionalFirstyPartyHosts() throws {
-        try runTest(
-            for: "TracingNSURLSessionScenario",
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyWithAdditionalFirstyPartyHosts,
+                instrumentationMethod: .delegateWithAdditionalFirstPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -119,17 +50,7 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         try runTest(
             for: "TracingNSURLSessionScenario",
             urlSessionSetup: .init(
-                instrumentationMethod: .delegateWithAdditionalFirstyPartyHosts,
-                initializationMethod: .afterSDK
-            )
-        )
-    }
-    
-    func testTracingNSURLSessionScenario_inheritance() throws {
-        try runTest(
-            for: "TracingNSURLSessionScenario",
-            urlSessionSetup: .init(
-                instrumentationMethod: .legacyInheritance,
+                instrumentationMethod: .delegateWithAdditionalFirstPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -244,6 +165,6 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-sampling-priority"], "1")
         XCTAssertNil(firstPartyRequest.httpHeaders["x-datadog-origin"])
         let tid = try taskWithRequest.meta.tid()
-        XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-tags"], "_dd.p.tid=\(tid)")
+        XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-tags"], "_dd.p.tid=\(tid),_dd.p.dm=-1")
     }
 }

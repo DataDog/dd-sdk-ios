@@ -30,6 +30,7 @@ class ActiveSpansPoolTests: XCTestCase {
         XCTAssert(tracer.activeSpan?.dd.ddContext.spanID == oneSpan.dd.ddContext.spanID)
         oneSpan.finish()
         XCTAssertNil(tracer.activeSpan)
+        XCTAssertTrue(tracer.activeSpansPool.isEmpty)
     }
 
     func testsWhenSpanIsFinishedIsRemovedFromActiveSpan() throws {
@@ -41,6 +42,7 @@ class ActiveSpansPoolTests: XCTestCase {
 
         oneSpan.finish()
         XCTAssertNil(tracer.activeSpan)
+        XCTAssertTrue(tracer.activeSpansPool.isEmpty)
     }
 
     func testsSpanWithoutParentInheritsActiveSpan() throws {
@@ -58,6 +60,7 @@ class ActiveSpansPoolTests: XCTestCase {
         XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, firstSpan.dd.ddContext.spanID)
         firstSpan.finish()
         XCTAssertNil(tracer.activeSpan)
+        XCTAssertTrue(tracer.activeSpansPool.isEmpty)
     }
 
     func testsSpanWithParentDoesntInheritActiveSpan() throws {
@@ -72,6 +75,8 @@ class ActiveSpansPoolTests: XCTestCase {
         XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, otherSpan.dd.ddContext.spanID)
         oneSpan.finish()
         otherSpan.finish()
+        XCTAssertNil(tracer.activeSpan)
+        XCTAssertTrue(tracer.activeSpansPool.isEmpty)
     }
 
     func testActiveSpanIsKeptPerTask() throws {
@@ -102,9 +107,28 @@ class ActiveSpansPoolTests: XCTestCase {
         oneSpan.finish()
         firstSpan?.finish()
         secondSpan?.finish()
+        XCTAssertNil(tracer.activeSpan)
+        XCTAssertTrue(tracer.activeSpansPool.isEmpty)
     }
 
-    func testsSetActiveSpanCalledMultipleTimes() throws {
+    func testSetActiveSpanCalledMultipleTimesInSingleSpan() throws {
+        let tracer = DatadogTracer.mockAny(in: core)
+        defer { tracer.activeSpansPool.destroy() }
+
+        let span = tracer.startSpan(operationName: "Reactivated")
+        (3...Int.mockRandom(min: 3, max: 10)).forEach { _ in
+            span.setActive()
+        }
+
+        XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, span.dd.ddContext.spanID)
+
+        span.finish()
+
+        XCTAssertNil(tracer.activeSpan)
+        XCTAssertTrue(tracer.activeSpansPool.isEmpty)
+    }
+
+    func testSetActiveSpanCalledMultipleTimesInTwoSpans() throws {
         let tracer = DatadogTracer.mockAny(in: core)
         defer { tracer.activeSpansPool.destroy() }
 
@@ -125,5 +149,27 @@ class ActiveSpansPoolTests: XCTestCase {
         XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, firstSpan.dd.ddContext.spanID)
         firstSpan.finish()
         XCTAssertNil(tracer.activeSpan)
+        XCTAssertTrue(tracer.activeSpansPool.isEmpty)
+    }
+
+    func testSetActive_givenParentWithMultipleChildren() throws {
+        let tracer = DatadogTracer.mockAny(in: core)
+        defer { tracer.activeSpansPool.destroy() }
+
+        let parentSpan = tracer.startSpan(operationName: .mockAny()).setActive()
+        let child1Span = tracer.startSpan(operationName: "Child1").setActive()
+        child1Span.finish()
+
+        let child2Span = tracer.startSpan(operationName: "Child2")
+        child2Span.finish()
+        parentSpan.finish()
+
+        XCTAssertEqual(child1Span.dd.ddContext.traceID, parentSpan.dd.ddContext.traceID)
+        XCTAssertEqual(child1Span.dd.ddContext.parentSpanID, parentSpan.dd.ddContext.spanID)
+        XCTAssertEqual(child2Span.dd.ddContext.traceID, parentSpan.dd.ddContext.traceID)
+        XCTAssertEqual(child2Span.dd.ddContext.parentSpanID, parentSpan.dd.ddContext.spanID)
+
+        XCTAssertNil(tracer.activeSpan)
+        XCTAssertTrue(tracer.activeSpansPool.isEmpty)
     }
 }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>distributionBundleIdentifier</key>
+	<string>com.datadoghq.benchmarks.Runner</string>
+	<key>method</key>
+	<string>development</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>com.datadoghq.benchmarks.Runner</key>
+		<string>Datadog Benchmark Runner</string>
+	</dict>
+	<key>signingCertificate</key>
+	<string>Apple Development: Simao Seica (35XV3565V6)</string>
+	<key>teamID</key>
+	<string>JKFCB4CN7C</string>
+</dict>
+</plist>

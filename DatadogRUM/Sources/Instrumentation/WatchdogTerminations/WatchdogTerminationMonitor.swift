@@ -21,17 +21,14 @@ internal final class WatchdogTerminationMonitor {
 
     enum ErrorMessages {
         static let failedToCheckWatchdogTermination = "Failed to check if Watchdog Termination occurred"
-        static let failedToStartAppState = "Failed to start Watchdog Termination App State Manager"
         static let detectedWatchdogTermination = "Based on heuristics, previous app session was terminated by Watchdog"
         static let failedToReadViewEvent = "Failed to read the view event from the data store"
         static let rumViewEventUpdated = "RUM View event updated"
         static let failedToSendWatchdogTermination = "Failed to send Watchdog Termination event"
-        static let launchTimeFailure = "Failed to send Watchdog Termination event due to not being able to get the launch time"
-        static let failedToDecodeLaunchReport = "Fails to decode LaunchReport in RUM"
     }
 
     let checker: WatchdogTerminationChecker
-    let appStateManager: WatchdogTerminationAppStateManager
+    let appStateManager: AppStateManager
     let feature: FeatureScope
     let reporter: WatchdogTerminationReporting
     let storage: Storage?
@@ -42,9 +39,9 @@ internal final class WatchdogTerminationMonitor {
     internal var currentState: State
 
     init(
-        appStateManager: WatchdogTerminationAppStateManager,
+        appStateManager: AppStateManager,
         checker: WatchdogTerminationChecker,
-        stroage: Storage?,
+        storage: Storage?,
         feature: FeatureScope,
         reporter: WatchdogTerminationReporting
     ) {
@@ -52,7 +49,7 @@ internal final class WatchdogTerminationMonitor {
         self.appStateManager = appStateManager
         self.feature = feature
         self.reporter = reporter
-        self.storage = stroage
+        self.storage = storage
         self.currentState = .stopped
     }
 
@@ -65,12 +62,6 @@ internal final class WatchdogTerminationMonitor {
 
         currentState = .starting
         sendWatchTerminationIfFound(launch: launchReport) { [weak self] in
-            do {
-                try self?.appStateManager.storeCurrentAppState()
-            } catch {
-                DD.logger.error(ErrorMessages.failedToStartAppState, error: error)
-                self?.feature.telemetry.error(ErrorMessages.failedToStartAppState, error: error)
-            }
             self?.currentState = .started
         }
     }
@@ -97,19 +88,13 @@ internal final class WatchdogTerminationMonitor {
     /// Checks if the app was terminated by Watchdog and sends the Watchdog Termination event to Datadog.
     /// - Parameter launch: The launch report containing information about the app launch.
     private func sendWatchTerminationIfFound(launch: LaunchReport, completion: @escaping () -> Void) {
-        do {
-            try checker.isWatchdogTermination(launch: launch) { [weak self] isWatchdogTermination, state  in
-                if isWatchdogTermination, let state = state {
-                    DD.logger.debug(ErrorMessages.detectedWatchdogTermination)
-                    self?.sendWatchTermination(state: state, completion: completion)
-                } else {
-                    completion()
-                }
+        checker.isWatchdogTermination(launch: launch) { [weak self] isWatchdogTermination, state  in
+            if isWatchdogTermination, let state = state {
+                DD.logger.debug(ErrorMessages.detectedWatchdogTermination)
+                self?.sendWatchTermination(state: state, completion: completion)
+            } else {
+                completion()
             }
-        } catch {
-            DD.logger.error(ErrorMessages.failedToCheckWatchdogTermination, error: error)
-            feature.telemetry.error(ErrorMessages.failedToCheckWatchdogTermination, error: error)
-            completion()
         }
     }
 
@@ -117,16 +102,10 @@ internal final class WatchdogTerminationMonitor {
     /// Because Watchdog Termination are reported in the next app session, it uses the saved `RUMViewEvent`
     /// to report the event.
     /// - Parameter state: The app state when the Watchdog Termination occurred.
-    private func sendWatchTermination(state: WatchdogTerminationAppState, completion: @escaping () -> Void) {
+    private func sendWatchTermination(state: AppStateInfo, completion: @escaping () -> Void) {
         feature.context { [weak self] context in
-            guard let launchTime = context.launchTime else {
-                DD.logger.error(ErrorMessages.launchTimeFailure)
-                completion()
-                return
-            }
-
             do {
-                let likelyCrashedAt = try self?.storage?.mostRecentModifiedFileAt(before: launchTime.launchDate)
+                let likelyCrashedAt = try self?.storage?.mostRecentModifiedFileAt(before: context.launchInfo.processLaunchDate)
                 self?.feature.rumDataStore.value(forKey: .watchdogRUMViewEvent) { [weak self] (viewEvent: RUMViewEvent?) in
                     guard let viewEvent = viewEvent else {
                         DD.logger.error(ErrorMessages.failedToReadViewEvent)
@@ -169,16 +148,16 @@ extension WatchdogTerminationMonitor: FeatureMessageReceiver {
     ///   - core: The core instance.
     /// - Returns: Always `false`, because it doesn't block the message propagation.
     func receive(message: DatadogInternal.FeatureMessage, from core: any DatadogInternal.DatadogCoreProtocol) -> Bool {
-        feature.context { [weak self] context in
-            do {
-                guard let launchReport = try context.baggages[LaunchReport.baggageKey]?.decode(type: LaunchReport.self) else {
-                    return
-                }
-                self?.start(launchReport: launchReport)
-            } catch {
-                DD.logger.error(ErrorMessages.failedToDecodeLaunchReport, error: error)
-                self?.feature.telemetry.error(ErrorMessages.failedToDecodeLaunchReport, error: error)
+        guard case .context(let context) = message else {
+            return false
+        }
+
+        if currentState == .stopped {
+            guard let launchReport = context.additionalContext(ofType: LaunchReport.self) else {
+                return false
             }
+
+            self.start(launchReport: launchReport)
         }
 
         // Once the monitor has started, ie watchdog termination check has been done
@@ -187,13 +166,8 @@ extension WatchdogTerminationMonitor: FeatureMessageReceiver {
             return false
         }
 
-        switch message {
-        case .baggage, .webview, .telemetry:
-            break
-        case .context(let context):
-            let state = context.applicationStateHistory.currentSnapshot.state
-            appStateManager.updateAppState(state: state)
-        }
+        let state = context.applicationStateHistory.currentState
+        appStateManager.updateAppState(state: state)
 
         return false
     }

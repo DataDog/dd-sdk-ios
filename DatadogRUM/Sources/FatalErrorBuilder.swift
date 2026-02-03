@@ -34,6 +34,8 @@ internal struct FatalErrorBuilder {
 
     let error: FatalError
 
+    let errorUUID: RUMUUID
+
     let errorDate: Date
     let errorType: String
     let errorMessage: String
@@ -43,11 +45,19 @@ internal struct FatalErrorBuilder {
     let errorBinaryImages: [RUMErrorEvent.Error.BinaryImages]?
     let errorWasTruncated: Bool?
     let errorMeta: RUMErrorEvent.Error.Meta?
+
+    let additionalAttributes: [String: Encodable]?
+
     var timeSinceAppStart: TimeInterval?
 
     /// Creates RUM error linked to given view.
     func createRUMError(with lastRUMView: RUMViewEvent) -> RUMErrorEvent {
-        let msSinceAppStart = timeSinceAppStart.map { max(0, $0.toInt64Milliseconds) }
+        let msSinceAppStart = timeSinceAppStart.map { max(0, $0.dd.toInt64Milliseconds) }
+
+        // Merge last view attributes with crash report attributes
+        let lastViewContextAttributes = lastRUMView.context?.contextInfo ?? [:]
+        let additionalAttributes = self.additionalAttributes ?? [:]
+        let contextInfo = lastViewContextAttributes.merging(additionalAttributes) { _, new in new }
 
         let event = RUMErrorEvent(
             dd: .init(
@@ -63,6 +73,7 @@ internal struct FatalErrorBuilder {
                     sessionPrecondition: lastRUMView.dd.session?.sessionPrecondition
                 )
             ),
+            account: lastRUMView.account,
             action: nil,
             application: .init(id: lastRUMView.application.id),
             buildId: lastRUMView.buildId,
@@ -70,8 +81,11 @@ internal struct FatalErrorBuilder {
             ciTest: lastRUMView.ciTest,
             connectivity: lastRUMView.connectivity,
             container: nil,
-            context: lastRUMView.context,
-            date: errorDate.timeIntervalSince1970.toInt64Milliseconds,
+            context: RUMEventAttributes(
+                contextInfo: contextInfo
+            ),
+            date: errorDate.timeIntervalSince1970.dd.toInt64Milliseconds,
+            ddtags: context.ddTags,
             device: lastRUMView.device,
             display: nil,
             error: .init(
@@ -86,7 +100,7 @@ internal struct FatalErrorBuilder {
                 csp: nil,
                 handling: nil,
                 handlingStack: nil,
-                id: nil,
+                id: errorUUID.toRUMDataFormat,
                 isCrash: {
                     switch error {
                     case .crash: return true
@@ -134,12 +148,14 @@ internal struct FatalErrorBuilder {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: original.dd.browserSdkVersion,
+                cls: original.dd.cls,
                 configuration: original.dd.configuration,
                 documentVersion: original.dd.documentVersion + 1,
                 pageStates: original.dd.pageStates,
                 replayStats: original.dd.replayStats,
                 session: original.dd.session
             ),
+            account: original.account,
             application: original.application,
             buildId: original.buildId,
             buildVersion: original.buildVersion,
@@ -147,7 +163,8 @@ internal struct FatalErrorBuilder {
             connectivity: original.connectivity,
             container: original.container,
             context: original.context,
-            date: errorDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the fatal error after view in RUM session
+            date: errorDate.timeIntervalSince1970.dd.toInt64Milliseconds - 1, // -1ms to put the fatal error after view in RUM session
+            ddtags: context.ddTags,
             device: original.device,
             display: original.display,
             os: original.os,
@@ -188,6 +205,7 @@ internal struct FatalErrorBuilder {
                 firstInputTime: original.view.firstInputTime,
                 flutterBuildTime: original.view.flutterBuildTime,
                 flutterRasterTime: original.view.flutterRasterTime,
+                freezeRate: original.view.freezeRate,
                 frozenFrame: original.view.frozenFrame,
                 frustration: original.view.frustration,
                 id: original.view.id,
@@ -195,6 +213,7 @@ internal struct FatalErrorBuilder {
                 interactionToNextPaint: original.view.interactionToNextPaint,
                 interactionToNextPaintTargetSelector: original.view.interactionToNextPaintTargetSelector,
                 interactionToNextPaintTime: original.view.interactionToNextPaintTime,
+                interactionToNextViewTime: original.view.interactionToNextViewTime,
                 isActive: false, // after fatal error, this is no longer active view
                 isSlowRendered: original.view.isSlowRendered,
                 jsRefreshRate: original.view.jsRefreshRate,
@@ -207,10 +226,13 @@ internal struct FatalErrorBuilder {
                 memoryAverage: original.view.memoryAverage,
                 memoryMax: original.view.memoryMax,
                 name: original.view.name,
+                networkSettledTime: original.view.networkSettledTime,
                 referrer: original.view.referrer,
                 refreshRateAverage: original.view.refreshRateAverage,
                 refreshRateMin: original.view.refreshRateMin,
                 resource: original.view.resource,
+                slowFrames: original.view.slowFrames,
+                slowFramesRate: original.view.slowFramesRate,
                 timeSpent: original.view.timeSpent,
                 url: original.view.url
             )

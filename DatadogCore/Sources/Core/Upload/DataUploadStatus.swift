@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-private enum HTTPResponseStatusCode: Int {
+internal enum HTTPResponseStatusCode: Int {
     /// The request has been accepted for processing.
     case accepted = 202
     /// The server cannot or will not process the request (client error).
@@ -72,28 +72,32 @@ internal struct DataUploadStatus {
     let userDebugDescription: String
 
     let error: DataUploadError?
+
+    let attempt: UInt
 }
 
 extension DataUploadStatus {
     // MARK: - Initialization
 
-    init(httpResponse: HTTPURLResponse, ddRequestID: String?) {
+    init(httpResponse: HTTPURLResponse, ddRequestID: String?, attempt: UInt) {
         let statusCode = HTTPResponseStatusCode(rawValue: httpResponse.statusCode) ?? .unexpected
 
         self.init(
             needsRetry: statusCode.needsRetry,
             responseCode: httpResponse.statusCode,
-            userDebugDescription: "[response code: \(httpResponse.statusCode) (\(statusCode)), request ID: \(ddRequestID ?? "(???)")]",
-            error: DataUploadError(status: httpResponse.statusCode)
+            userDebugDescription: "[response code: \(httpResponse.statusCode) (\(statusCode)), request ID: \(ddRequestID ?? "(???)")",
+            error: DataUploadError(status: httpResponse.statusCode),
+            attempt: attempt
         )
     }
 
-    init(networkError: Error) {
+    init(networkError: Error, attempt: UInt) {
         self.init(
             needsRetry: true, // retry this upload as it failed due to network transport isse
             responseCode: nil,
             userDebugDescription: "[error: \(DDError(error: networkError).message)]", // e.g. "[error: A data connection is not currently allowed]"
-            error: DataUploadError(networkError: networkError)
+            error: DataUploadError(networkError: networkError),
+            attempt: attempt
         )
     }
 }
@@ -101,54 +105,27 @@ extension DataUploadStatus {
 // MARK: - Data Upload Errors
 
 internal enum DataUploadError: Error, Equatable {
-    case unauthorized
-    case httpError(statusCode: Int)
+    case httpError(statusCode: HTTPResponseStatusCode)
     case networkError(error: NSError)
 }
 
-/// A list of known NSURLError codes which should not produce error in Telemetry.
-/// Receiving these codes doesn't mean SDK issue, but the network transportation scenario where the connection interrupted due to external factors.
-/// These list should evolve and we may want to add more codes in there.
-///
-/// Ref.: https://developer.apple.com/documentation/foundation/1508628-url_loading_system_error_codes
-private let ignoredNSURLErrorCodes = Set([
-    NSURLErrorNetworkConnectionLost, // -1005
-    NSURLErrorTimedOut, // -1001
-    NSURLErrorCannotParseResponse, // - 1017
-    NSURLErrorNotConnectedToInternet, // -1009
-    NSURLErrorCannotFindHost, // -1003
-    NSURLErrorSecureConnectionFailed, // -1200
-    NSURLErrorDataNotAllowed, // -1020
-    NSURLErrorCannotConnectToHost, // -1004
-])
-
 extension DataUploadError {
     init?(status code: Int) {
-        guard let responseStatusCode = HTTPResponseStatusCode(rawValue: code) else {
-            // If status code is unexpected, do not produce an error for internal Telemetry - otherwise monitoring may
-            // become too verbose for old installations if we introduce a new status code in the API.
+        guard let statusCode = HTTPResponseStatusCode(rawValue: code) else {
             return nil
         }
 
-        switch responseStatusCode {
+        switch statusCode {
         case .accepted:
             return nil
-        case .unauthorized, .forbidden:
-            self = .unauthorized
-        case .internalServerError, .serviceUnavailable, .badGateway, .gatewayTimeout, .insufficientStorage:
-            // These codes indicate Datadog service issue - so do not produce error as there is no fix reqiured for SDK
-            return nil
-        case .badRequest, .payloadTooLarge, .tooManyRequests, .requestTimeout:
-            // These codes might indicate SDK issue - so produce an error so we send it through telemetry.
-            self = .httpError(statusCode: code)
-        case .unexpected:
-            return nil
+        default:
+            self = .httpError(statusCode: statusCode)
         }
     }
 
     init?(networkError: Error) {
         let nsError = networkError as NSError
-        guard nsError.domain == NSURLErrorDomain, !ignoredNSURLErrorCodes.contains(nsError.code) else {
+        guard nsError.domain == NSURLErrorDomain else {
             return nil
         }
 

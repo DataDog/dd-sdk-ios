@@ -33,7 +33,7 @@ class TraceTests: XCTestCase {
     }
 
     func testWhenEnabledInNOPCore_itPrintsError() {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 
@@ -88,6 +88,19 @@ class TraceTests: XCTestCase {
         XCTAssertEqual(tracer.localTraceSampler.samplingRate, random, accuracy: 0.001)
     }
 
+    func testWhenEnabled_itUpdateCoreContext() throws {
+        let core = PassthroughCoreMock()
+        let random: SampleRate = .mockRandom(min: 0, max: 100)
+        config.sampleRate = random
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        let config = try XCTUnwrap(core.context.additionalContext(ofType: TraceCoreContext.Configuration.self))
+        XCTAssertEqual(config.sampleRate, random)
+    }
+
     func testWhenEnabledWithService() {
         // Given
         let random: String = .mockRandom()
@@ -121,10 +134,12 @@ class TraceTests: XCTestCase {
         oneOf([
             { self.config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(hosts: ["example.com"])
-            ) },
+            )
+            },
             { self.config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: ["example.com": [.datadog, .b3]])
-            ) },
+            )
+            },
         ])
         // swiftlint:enable opening_brace
 
@@ -140,7 +155,7 @@ class TraceTests: XCTestCase {
             networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self),
             "It should register `TracingURLSessionHandler` to `NetworkInstrumentationFeature`"
         )
-        XCTAssertEqual(tracingHandler.distributedTraceSampler.samplingRate, 20)
+        XCTAssertEqual(tracingHandler.samplingRate, 100)
     }
 
     func testWhenEnabledWithURLSessionTrackingAndCustomSampleRate() throws {
@@ -150,10 +165,12 @@ class TraceTests: XCTestCase {
         oneOf([
             { self.config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(hosts: ["example.com"], sampleRate: random)
-            ) },
+            )
+            },
             { self.config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: ["example.com": [.datadog, .b3]], sampleRate: random)
-            ) },
+            )
+            },
         ])
         // swiftlint:enable opening_brace
 
@@ -169,7 +186,7 @@ class TraceTests: XCTestCase {
             networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self),
             "It should register `TracingURLSessionHandler` to `NetworkInstrumentationFeature`"
         )
-        XCTAssertEqual(tracingHandler.distributedTraceSampler.samplingRate, random, accuracy: 0.001)
+        XCTAssertEqual(tracingHandler.samplingRate, random, accuracy: 0.001)
     }
 
     func testWhenEnabledWithBundleWithRUM() throws {
@@ -246,7 +263,7 @@ class TraceTests: XCTestCase {
         let networkInstrumentation = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         let tracingHandler = try XCTUnwrap(networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self))
         XCTAssertEqual(tracer.localTraceSampler.samplingRate, 100)
-        XCTAssertEqual(tracingHandler.distributedTraceSampler.samplingRate, 100)
+        XCTAssertEqual(tracingHandler.samplingRate, 100)
     }
 
     func testWhenEnabledWithNoDebugSDKArgument() throws {
@@ -269,6 +286,6 @@ class TraceTests: XCTestCase {
         let networkInstrumentation = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         let tracingHandler = try XCTUnwrap(networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self))
         XCTAssertEqual(tracer.localTraceSampler.samplingRate, random)
-        XCTAssertEqual(tracingHandler.distributedTraceSampler.samplingRate, random)
+        XCTAssertEqual(tracingHandler.samplingRate, random)
     }
 }

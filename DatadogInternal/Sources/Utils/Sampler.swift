@@ -6,8 +6,14 @@
 
 import Foundation
 
+/// Alias to represent the sample rate type.
+/// The value is between `0.0` and `100.0`, where `0.0` means NO event will be sent and `100.0` means ALL events will be sent.
+public typealias SampleRate = Float
+
 /// Protocol for determining sampling decisions.
 public protocol Sampling {
+    /// Value between `0.0` and `100.0`, where `0.0` means NO event will be sent and `100.0` means ALL events will be sent.
+    var samplingRate: SampleRate { get }
     /// Determines whether sampling should be performed.
     ///
     /// - Returns: A boolean value indicating whether sampling should occur.
@@ -18,9 +24,9 @@ public protocol Sampling {
 /// Sampler, deciding if events should be sent do Datadog or dropped.
 public struct Sampler: Sampling {
     /// Value between `0.0` and `100.0`, where `0.0` means NO event will be sent and `100.0` means ALL events will be sent.
-    public let samplingRate: Float
+    public let samplingRate: SampleRate
 
-    public init(samplingRate: Float) {
+    public init(samplingRate: SampleRate) {
         self.samplingRate = max(0, min(100, samplingRate))
     }
 
@@ -31,17 +37,15 @@ public struct Sampler: Sampling {
     }
 }
 
-/// A sampler that determines sampling decisions deterministically (the same each time).
-internal struct DeterministicSampler: Sampling {
-    /// Value between `0.0` and `100.0`, where `0.0` means NO event will be sent and `100.0` means ALL events will be sent.
-    let samplingRate: Float
-    /// Persisted sampling decision.
-    private let shouldSample: Bool
+extension SampleRate {
+    /// Maximum sampling rate. It means every event is kept.
+    public static let maxSampleRate: Self = 100.0
 
-    init(shouldSample: Bool, samplingRate: Float) {
-        self.samplingRate = samplingRate
-        self.shouldSample = shouldSample
+    /// Represents the percentage expressed as a decimal between 0 and 1. For example, 0.25 means 25%.
+    public var percentageProportion: Self { self / 100.0 }
+
+    /// Composes two sample rates. For example, one SampleRate of 20% composed with another of 15% will return a percentage of 3%.
+    public func composed(with sampleRate: SampleRate) -> Self {
+        self.percentageProportion * sampleRate.percentageProportion * 100
     }
-
-    func sample() -> Bool { shouldSample }
 }

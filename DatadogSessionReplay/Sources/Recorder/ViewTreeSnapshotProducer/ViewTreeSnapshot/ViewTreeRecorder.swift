@@ -17,7 +17,7 @@ internal struct ViewTreeRecorder {
     /// Creates `Nodes` for given view and its subtree hierarchy.
     func record(_ anyView: UIView, in context: ViewTreeRecordingContext) -> [Node] {
         var nodes: [Node] = []
-        recordRecursively(nodes: &nodes, view: anyView, context: context)
+        recordRecursively(nodes: &nodes, view: anyView, context: context, overrides: anyView.dd._privacyOverrides)
         return nodes
     }
 
@@ -26,7 +26,8 @@ internal struct ViewTreeRecorder {
     private func recordRecursively(
         nodes: inout [Node],
         view: UIView,
-        context: ViewTreeRecordingContext
+        context: ViewTreeRecordingContext,
+        overrides: PrivacyOverrides?
     ) {
         var context = context
         if let viewController = view.next as? UIViewController {
@@ -36,7 +37,17 @@ internal struct ViewTreeRecorder {
             context.viewControllerContext.isRootView = false
         }
 
-        let semantics = nodeSemantics(for: view, in: context)
+        // Convert the frame in root view space
+        let frame = view.convert(view.bounds, to: context.coordinateSpace)
+
+        if view.clipsToBounds {
+            // Propagate view's clipping intersection when clipsToBounds is
+            // enabled.
+            context.clip = frame.intersection(context.clip)
+        }
+
+        let attributes = ViewAttributes(view: view, frame: frame, clip: context.clip, overrides: overrides)
+        let semantics = nodeSemantics(for: view, with: attributes, in: context)
 
         if !semantics.nodes.isEmpty {
             nodes.append(contentsOf: semantics.nodes)
@@ -45,19 +56,15 @@ internal struct ViewTreeRecorder {
         switch semantics.subtreeStrategy {
         case .record:
             for subview in view.subviews {
-                recordRecursively(nodes: &nodes, view: subview, context: context)
+                let subviewOverrides = SessionReplayPrivacyOverrides.merge(subview.dd._privacyOverrides, with: overrides)
+                recordRecursively(nodes: &nodes, view: subview, context: context, overrides: subviewOverrides)
             }
         case .ignore:
             break
         }
     }
 
-    private func nodeSemantics(for view: UIView, in context: ViewTreeRecordingContext) -> NodeSemantics {
-        let attributes = ViewAttributes(
-            frameInRootView: view.convert(view.bounds, to: context.coordinateSpace),
-            view: view
-        )
-
+    private func nodeSemantics(for view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics {
         var semantics: NodeSemantics = UnknownElement.constant
 
         for nodeRecorder in nodeRecorders {

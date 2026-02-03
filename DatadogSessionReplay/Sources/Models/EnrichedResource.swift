@@ -23,16 +23,31 @@ internal struct EnrichedResource: Codable, Equatable {
     }
     internal var identifier: String
     internal var data: Data
+    internal var mimeType: String
     internal var context: Context
 
     internal init(
         identifier: String,
         data: Data,
+        mimeType: String,
         context: Context
     ) {
         self.identifier = identifier
         self.data = data
+        self.mimeType = mimeType
         self.context = context
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.identifier = try container.decode(String.self, forKey: .identifier)
+        self.data = try container.decode(Data.self, forKey: .data)
+        self.context = try container.decode(EnrichedResource.Context.self, forKey: .context)
+
+        // Maintain backward compatibility:
+        //   Before introducing `mimeType` all resources where PNG images
+        self.mimeType = try container.decodeIfPresent(String.self, forKey: .mimeType) ?? "image/png"
     }
 }
 #endif

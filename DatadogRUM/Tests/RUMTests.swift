@@ -42,7 +42,7 @@ class RUMTests: XCTestCase {
     }
 
     func testWhenEnabledInNOPCore_itPrintsError() {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 
@@ -89,10 +89,11 @@ class RUMTests: XCTestCase {
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
         let telemetryReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: TelemetryReceiver.self)
         let crashReportReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
+        XCTAssertEqual(rum.performanceOverride.maxFileAgeForRead, 24.hours)
         XCTAssertEqual(monitor.scopes.dependencies.rumApplicationID, applicationID)
         XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, 100)
+        XCTAssertEqual(monitor.scopes.dependencies.sessionEndedMetric.sampleRate, 15)
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 20)
-        XCTAssertEqual(telemetryReceiver?.metricsExtraSampler.samplingRate, 15)
         XCTAssertEqual(crashReportReceiver?.sessionSampler.samplingRate, 100)
     }
 
@@ -100,6 +101,8 @@ class RUMTests: XCTestCase {
         // Given
         config.uiKitViewsPredicate = UIKitRUMViewsPredicateMock()
         config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
+        config.swiftUIViewsPredicate = SwiftUIRUMViewsPredicateMock()
+        config.swiftUIActionsPredicate = SwiftUIRUMActionsPredicateMock()
         config.longTaskThreshold = 0.5
         config.appHangThreshold = 2
 
@@ -110,17 +113,21 @@ class RUMTests: XCTestCase {
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
         XCTAssertIdentical(monitor, rum.instrumentation.viewsHandler.subscriber)
-        XCTAssertIdentical(monitor, (rum.instrumentation.actionsHandler as? UIKitRUMUserActionsHandler)?.subscriber)
+        XCTAssertIdentical(monitor, (rum.instrumentation.actionsHandler as? RUMActionsHandler)?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.longTasks?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.appHangs?.nonFatalHangsHandler.subscriber)
+        XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
     }
 
     func testWhenEnabledWithNoInstrumentations() throws {
         // Given
         config.uiKitViewsPredicate = nil
         config.uiKitActionsPredicate = nil
+        config.swiftUIViewsPredicate = nil
+        config.swiftUIActionsPredicate = nil
         config.longTaskThreshold = nil
         config.appHangThreshold = nil
+        config.trackMemoryWarnings = false
 
         // When
         RUM.enable(with: config, in: core)
@@ -131,11 +138,16 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(
             monitor,
             rum.instrumentation.viewsHandler.subscriber,
-            "It must always subscribe RUM monitor to `RUMViewsHandler` as it is required for manual SwiftUI instrumentation"
+            "It must always subscribe RUM monitor to `RUMViewsHandler` as it is required for SwiftUI instrumentation"
         )
-        XCTAssertNil(rum.instrumentation.actionsHandler)
+        XCTAssertIdentical(
+            monitor,
+            (rum.instrumentation.actionsHandler as? RUMActionsHandler)?.subscriber,
+            "It must always subscribe RUM monitor to `RUMActionsHandler` as it is required for SwiftUI instrumentation"
+        )
         XCTAssertNil(rum.instrumentation.longTasks)
         XCTAssertNil(rum.instrumentation.appHangs)
+        XCTAssertNil(rum.instrumentation.memoryWarningMonitor)
     }
 
     func testWhenEnabledWithInvalidLongTasksThreshold() throws {
@@ -408,11 +420,12 @@ class RUMTests: XCTestCase {
         // When
         config = RUM.Configuration(applicationID: applicationID)
         config.uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionID)
-        config.sessionSampleRate = 100
+        config.sessionSampleRate = .maxSampleRate
         RUM.enable(with: config, in: core)
 
         // Then
-        let context: RUMCoreContext? = try core.context.baggages["rum"]?.decode()
+        let context = core.context.additionalContext(ofType: RUMCoreContext.self)
+
         XCTAssertNotNil(context)
         XCTAssertEqual(context?.applicationID, applicationID)
         XCTAssertEqual(context?.sessionID, sessionID.toRUMDataFormat)
@@ -479,6 +492,6 @@ class RUMTests: XCTestCase {
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         let urlSessionHandler = try XCTUnwrap(feature.handlers.first as? URLSessionRUMResourcesHandler)
         XCTAssertEqual(urlSessionHandler.distributedTracing?.firstPartyHosts.hosts, hosts)
-        XCTAssertEqual(urlSessionHandler.distributedTracing?.sampler.samplingRate, debugSDK ? 100.0 : sampleRate)
+        XCTAssertEqual(urlSessionHandler.distributedTracing?.samplingRate, debugSDK ? 100.0 : sampleRate)
     }
 }

@@ -8,7 +8,11 @@
 import UIKit
 
 internal struct UISliderRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
+
+    init(identifier: UUID) {
+        self.identifier = identifier
+    }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let slider = view as? UISlider else {
@@ -30,7 +34,7 @@ internal struct UISliderRecorder: NodeRecorder {
             thumbWireframeID: ids[3],
             value: (min: slider.minimumValue, max: slider.maximumValue, current: slider.value),
             isEnabled: slider.isEnabled,
-            isMasked: context.recorder.privacy.shouldMaskInputElements,
+            isMasked: context.recorder.textAndInputPrivacy.shouldMaskInputElements,
             minTrackTintColor: slider.minimumTrackTintColor?.cgColor ?? slider.tintColor?.cgColor,
             maxTrackTintColor: slider.maximumTrackTintColor?.cgColor,
             thumbTintColor: slider.thumbTintColor?.cgColor
@@ -71,8 +75,7 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
         let track = builder.createShapeWireframe(
             id: minTrackWireframeID,
             frame: trackFrame,
-            borderColor: nil,
-            borderWidth: nil,
+            clip: attributes.clip,
             backgroundColor: SystemColors.tertiarySystemFill,
             cornerRadius: wireframeRect.height * 0.5,
             opacity: isEnabled ? attributes.alpha : 0.5
@@ -80,7 +83,7 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
 
         // Create background wireframe if the underlying `UIView` has any appearance:
         if attributes.hasAnyAppearance {
-            let background = builder.createShapeWireframe(id: backgroundWireframeID, frame: attributes.frame, attributes: attributes)
+            let background = builder.createShapeWireframe(id: backgroundWireframeID, attributes: attributes)
 
             return [background, track]
         } else {
@@ -105,6 +108,7 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
         let thumb = builder.createShapeWireframe(
             id: thumbWireframeID,
             frame: thumbFrame,
+            clip: attributes.clip,
             borderColor: isEnabled ? SystemColors.secondarySystemFill : SystemColors.tertiarySystemFill,
             borderWidth: 1,
             backgroundColor: isEnabled ? (thumbTintColor ?? UIColor.white.cgColor) : SystemColors.tertiarySystemBackground,
@@ -120,8 +124,7 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
         let leftTrack = builder.createShapeWireframe(
             id: minTrackWireframeID,
             frame: leftTrackFrame,
-            borderColor: nil,
-            borderWidth: nil,
+            clip: attributes.clip,
             backgroundColor: minTrackTintColor ?? SystemColors.tintColor,
             cornerRadius: 0,
             opacity: isEnabled ? attributes.alpha : 0.5
@@ -135,8 +138,7 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
         let rightTrack = builder.createShapeWireframe(
             id: maxTrackWireframeID,
             frame: rightTrackFrame,
-            borderColor: nil,
-            borderWidth: nil,
+            clip: attributes.clip,
             backgroundColor: maxTrackTintColor ?? SystemColors.tertiarySystemFill,
             cornerRadius: 0,
             opacity: isEnabled ? attributes.alpha : 0.5
@@ -144,7 +146,7 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
 
         if attributes.hasAnyAppearance {
             // Create background wireframe only if view declares visible background
-            let background = builder.createShapeWireframe(id: backgroundWireframeID, frame: wireframeRect, attributes: attributes)
+            let background = builder.createShapeWireframe(id: backgroundWireframeID, attributes: attributes)
 
             return [background, leftTrack, rightTrack, thumb]
         } else {

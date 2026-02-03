@@ -24,7 +24,7 @@ extension InternalExtension where ExtendedType == RUM {
 
     /// Enable URL session tracking after RUM has already been enabled. This method
     /// is only needed if the configuration of URL session tracking is not known at initialization time,
-    /// or in the case of cross platform frameworks that do not initalize native URL session tracking.
+    /// or in the case of cross platform frameworks that do not initialize native URL session tracking.
     ///
     /// - Parameters:
     ///    - configuration: the configuration for URL session tracking
@@ -51,7 +51,7 @@ extension InternalExtension where ExtendedType == RUM {
         switch configuration.firstPartyHostsTracing {
         case let .trace(hosts, sampleRate, traceContextInjection):
             distributedTracing = DistributedTracing(
-                sampler: Sampler(samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate),
+                samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate,
                 firstPartyHosts: FirstPartyHosts(hosts),
                 traceIDGenerator: rumConfiguration.traceIDGenerator,
                 spanIDGenerator: rumConfiguration.spanIDGenerator,
@@ -59,7 +59,7 @@ extension InternalExtension where ExtendedType == RUM {
             )
         case let .traceWithHeaders(hostsWithHeaders, sampleRate, traceContextInjection):
             distributedTracing = DistributedTracing(
-                sampler: Sampler(samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate),
+                samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate,
                 firstPartyHosts: FirstPartyHosts(hostsWithHeaders),
                 traceIDGenerator: rumConfiguration.traceIDGenerator,
                 spanIDGenerator: rumConfiguration.spanIDGenerator,

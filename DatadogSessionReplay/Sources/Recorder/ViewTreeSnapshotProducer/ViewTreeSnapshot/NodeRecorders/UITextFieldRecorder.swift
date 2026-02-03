@@ -8,26 +8,30 @@
 import UIKit
 
 internal struct UITextFieldRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
+
     /// `UIViewRecorder` for recording appearance of the text field.
     private let backgroundViewRecorder: UIViewRecorder
     /// `UIImageViewRecorder` for recording icons that are displayed in text field.
     private let iconsRecorder: UIImageViewRecorder
     private let subtreeRecorder: ViewTreeRecorder
 
-    var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isPlaceholder: Bool) -> TextObfuscating = { context, isSensitive, isPlaceholder in
+    var textObfuscator: (ViewTreeRecordingContext, _ viewAttributes: ViewAttributes, _ isSensitive: Bool, _ isPlaceholder: Bool) -> TextObfuscating = { context, viewAttributes, isSensitive, isPlaceholder in
+        let resolvedPrivacyLevel = viewAttributes.resolveTextAndInputPrivacyLevel(in: context)
+
         if isPlaceholder {
-            return context.recorder.privacy.hintTextObfuscator
+            return resolvedPrivacyLevel.hintTextObfuscator
         } else if isSensitive {
-            return context.recorder.privacy.sensitiveTextObfuscator
+            return resolvedPrivacyLevel.sensitiveTextObfuscator
         } else {
-            return context.recorder.privacy.inputAndOptionTextObfuscator
+            return resolvedPrivacyLevel.inputAndOptionTextObfuscator
         }
     }
 
-    init() {
-        self.backgroundViewRecorder = UIViewRecorder()
-        self.iconsRecorder = UIImageViewRecorder()
+    init(identifier: UUID) {
+        self.identifier = identifier
+        self.backgroundViewRecorder = UIViewRecorder(identifier: UUID())
+        self.iconsRecorder = UIImageViewRecorder(identifier: UUID())
         self.subtreeRecorder = ViewTreeRecorder(nodeRecorders: [backgroundViewRecorder, iconsRecorder])
     }
 
@@ -93,7 +97,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
             isPlaceholderText: isPlaceholder,
             font: textField.font,
             fontScalingEnabled: textField.adjustsFontSizeToFitWidth,
-            textObfuscator: textObfuscator(context, textField.isSensitiveText, isPlaceholder)
+            textObfuscator: textObfuscator(context, attributes, textField.dd.isSensitiveText, isPlaceholder)
         )
         return Node(viewAttributes: attributes, wireframesBuilder: builder)
     }
@@ -118,6 +122,7 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
             builder.createTextWireframe(
                 id: wireframeID,
                 frame: wireframeRect,
+                clip: attributes.clip,
                 text: textObfuscator.mask(text: text),
                 textFrame: wireframeRect,
                 textAlignment: .init(systemTextAlignment: textAlignment),

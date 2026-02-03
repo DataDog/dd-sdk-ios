@@ -20,11 +20,11 @@ class RUMMonitorTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = DatadogCoreProxy()
-        config = RUM.Configuration(applicationID: .mockAny())
+        config = RUM.Configuration(applicationID: .mockAny(), trackAnonymousUser: false)
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         config = nil
         super.tearDown()
@@ -35,7 +35,7 @@ class RUMMonitorTests: XCTestCase {
         // Given
         var capturedSession: String?
         config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        config.sessionSampleRate = 100.0
+        config.sessionSampleRate = .maxSampleRate
         config.onSessionStart = { session, sampled in
             capturedSession = session
         }
@@ -43,7 +43,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         // When
-        let expectation = XCTestExpectation(description: "currentSessionID callback recieved")
+        let expectation = XCTestExpectation(description: "currentSessionID callback received")
         monitor.currentSessionID { sessionId in
             // Then
             XCTAssertNotNil(sessionId)
@@ -62,7 +62,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         // When
-        let expectation = XCTestExpectation(description: "currentSessionID callback recieved")
+        let expectation = XCTestExpectation(description: "currentSessionID callback received")
         monitor.currentSessionID { sessionId in
             // Then
             XCTAssertNil(sessionId)
@@ -75,7 +75,7 @@ class RUMMonitorTests: XCTestCase {
     func testWhenSessionIsStopped_itReturnsNil() throws {
         // Given
         config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        config.sessionSampleRate = 100.0
+        config.sessionSampleRate = .maxSampleRate
         RUM.enable(with: config, in: core)
         let monitor = RUMMonitor.shared(in: core)
 
@@ -84,7 +84,7 @@ class RUMMonitorTests: XCTestCase {
 
         // When
         monitor.stopSession()
-        let expectation = XCTestExpectation(description: "currentSessionID callback recieved")
+        let expectation = XCTestExpectation(description: "currentSessionID callback received")
         monitor.currentSessionID { sessionId in
             // Then
             XCTAssertNil(sessionId)
@@ -316,7 +316,7 @@ class RUMMonitorTests: XCTestCase {
         let views = try session.views.dropApplicationLaunchView()
         let resourceEvent = views[0].resourceEvents[0]
         XCTAssertEqual(resourceEvent.resource.graphql?.operationName, "GetCountry")
-        XCTAssertEqual(resourceEvent.resource.graphql?.operationType.rawValue, "query")
+        XCTAssertEqual(resourceEvent.resource.graphql?.operationType?.rawValue, "query")
         XCTAssertEqual(resourceEvent.resource.graphql?.payload, "{country(code:$code){name}}")
         XCTAssertEqual(resourceEvent.resource.graphql?.variables, "{\"code\":\"BE\"}")
     }
@@ -334,28 +334,26 @@ class RUMMonitorTests: XCTestCase {
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
-        try rumEventMatchers[0].model(ofType: RUMActionEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.action.type, .applicationStart)
-        }
+
         // Start ApplicationLaunch view
-        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.view.action.count, 1)
-            XCTAssertEqual(rumModel.view.resource.count, 0)
-        }
-        // Stop ApplicationLaunch view
-        try rumEventMatchers[2].model(ofType: RUMViewEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.view.action.count, 1)
-            XCTAssertEqual(rumModel.view.resource.count, 0)
-        }
-        try rumEventMatchers[3].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[0].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 0)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
-        try rumEventMatchers[4].model(ofType: RUMActionEvent.self) { rumModel in
+        // Stop ApplicationLaunch view
+        try rumEventMatchers[1].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 0)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+        }
+        try rumEventMatchers[2].model(ofType: RUMViewEvent.self) { rumModel in
+            XCTAssertEqual(rumModel.view.action.count, 0)
+            XCTAssertEqual(rumModel.view.resource.count, 0)
+        }
+        try rumEventMatchers[3].model(ofType: RUMActionEvent.self) { rumModel in
             XCTAssertEqual(rumModel.action.type, .tap)
             XCTAssertEqual(rumModel.action.target?.name, actionName)
         }
-        try rumEventMatchers[5].model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers[4].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 1)
             XCTAssertEqual(rumModel.view.resource.count, 0)
         }
@@ -612,20 +610,48 @@ class RUMMonitorTests: XCTestCase {
             }
     }
 
+    func testStartingView_thenSendingActionEvents() throws {
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+
+        monitor.startView(viewController: mockView)
+
+        monitor.addAction(type: .tap, name: "tap action", attributes: ["event-attribute1": "foo1"])
+
+        monitor.startAction(type: .swipe, name: "swipe action", attributes: ["event-attribute1": "foo1"])
+        monitor.stopAction(type: .swipe, name: "swipe action", attributes: ["event-attribute2": "foo2"])
+
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let actionEvents = rumEventMatchers.filterRUMEvents(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actionEvents.count, 2)
+
+        let event1Matcher = actionEvents[0]
+        let event1: RUMActionEvent = try event1Matcher.model()
+        XCTAssertEqual(event1.action.type, .tap)
+        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+
+        let event2Matcher = actionEvents[1]
+        let event2: RUMActionEvent = try event2Matcher.model()
+        XCTAssertEqual(event2.action.type, .swipe)
+        XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+        XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
+    }
+
     // MARK: - Sending user info
 
     func testWhenUserInfoIsProvided_itIsSendWithAllEvents() throws {
-        core.context = .mockWith(
-            userInfo: UserInfo(
-                id: "abc-123",
-                name: "Foo",
-                email: "foo@bar.com",
-                extraInfo: [
-                    "str": "value",
-                    "int": 11_235,
-                    "bool": true
-                ]
-            )
+        core.setUserInfo(
+            id: "abc-123",
+            name: "Foo",
+            email: "foo@bar.com",
+            extraInfo: [
+                "str": "value",
+                "int": 11_235,
+                "bool": true
+            ]
         )
         RUM.enable(with: config, in: core)
 
@@ -642,7 +668,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-        let expectedUserInfo = RUMUser(email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [
+        let expectedUserInfo = RUMUser(anonymousId: nil, email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [
             "str": AnyEncodable("value"),
             "int": AnyEncodable(11_235),
             "bool": AnyEncodable(true)
@@ -915,11 +941,10 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)[0]
 
-        let views = try session.views.dropApplicationLaunchView()
-        let viewEvents = views[0].viewEvents
-        let actionEvents = views[0].actionEvents
-        let resourceEvents = views[0].resourceEvents
-        let errorEvents = views[0].errorEvents
+        let viewEvents = session.views[0].viewEvents
+        let actionEvents = session.views[0].actionEvents
+        let resourceEvents = session.views[0].resourceEvents
+        let errorEvents = session.views[0].errorEvents
 
         XCTAssertGreaterThan(viewEvents.count, 0)
         XCTAssertGreaterThan(actionEvents.count, 0)
@@ -927,7 +952,7 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertGreaterThan(errorEvents.count, 0)
 
         // All RUM events should be send later than or equal this earliest server time
-        let earliestServerTime = deviceTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds
+        let earliestServerTime = deviceTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds
 
         viewEvents.forEach { view in
             XCTAssertGreaterThanOrEqual(view.date, earliestServerTime, "Event `date` should be adjusted to server time")
@@ -945,17 +970,21 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - Tracking App Launch Events
 
-    func testWhenInitializing_itStartsApplicationLaunchView_withLaunchTime() throws {
+    func testWhenInitializing_itStartsApplicationLaunchView() throws {
         // Given
         let launchDate: Date = .mockDecember15th2019At10AMUTC()
         let sdkInitDate = launchDate.addingTimeInterval(10)
 
         core.context = .mockWith(
             sdkInitDate: sdkInitDate,
-            launchTime: LaunchTime(
-                launchTime: nil,
-                launchDate: launchDate,
-                isActivePrewarm: false
+            launchInfo: LaunchInfo(
+                launchReason: .userLaunch,
+                processLaunchDate: launchDate,
+                runtimeLoadDate: nil,
+                runtimePreMainDate: nil,
+                didFinishLaunchingDate: nil,
+                didBecomeActiveDate: nil,
+                raw: .mockAny()
             )
         )
 
@@ -970,7 +999,6 @@ class RUMMonitorTests: XCTestCase {
 
         XCTAssertEqual(view.view.name, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName)
         XCTAssertEqual(view.view.url, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL)
-        XCTAssertEqual(view.date, launchDate.timeIntervalSince1970.toInt64Milliseconds)
     }
 
     func testWhenInitializingWithActivePrewarm_itStartsApplicationLaunchView_withSdkInitDate() throws {
@@ -979,10 +1007,14 @@ class RUMMonitorTests: XCTestCase {
         let sdkInitDate = launchDate.addingTimeInterval(10)
         core.context = .mockWith(
             sdkInitDate: sdkInitDate,
-            launchTime: LaunchTime(
-                launchTime: nil,
-                launchDate: launchDate,
-                isActivePrewarm: true
+            launchInfo: LaunchInfo(
+                launchReason: .prewarming,
+                processLaunchDate: launchDate,
+                runtimeLoadDate: nil,
+                runtimePreMainDate: nil,
+                didFinishLaunchingDate: nil,
+                didBecomeActiveDate: nil,
+                raw: .mockAny()
             )
         )
         config.dateProvider = RelativeDateProvider(
@@ -1002,7 +1034,7 @@ class RUMMonitorTests: XCTestCase {
 
         XCTAssertEqual(view.view.name, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName)
         XCTAssertEqual(view.view.url, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL)
-        XCTAssertEqual(view.date, sdkInitDate.timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(view.date, sdkInitDate.timeIntervalSince1970.dd.toInt64Milliseconds)
     }
 
     func testWhenCollectingEventsBeforeStartingFirstView_itTracksThemWithinApplicationLaunchView() throws {
@@ -1012,10 +1044,14 @@ class RUMMonitorTests: XCTestCase {
 
         core.context = .mockWith(
             sdkInitDate: sdkInitDate,
-            launchTime: LaunchTime(
-                launchTime: nil,
-                launchDate: launchDate,
-                isActivePrewarm: false
+            launchInfo: LaunchInfo(
+                launchReason: .userLaunch,
+                processLaunchDate: launchDate,
+                runtimeLoadDate: nil,
+                runtimePreMainDate: nil,
+                didFinishLaunchingDate: nil,
+                didBecomeActiveDate: nil,
+                raw: .mockAny()
             )
         )
         config.dateProvider = RelativeDateProvider(
@@ -1041,16 +1077,13 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.views.count, 2, "It should track 2 views")
 
         let appLaunchView = session.views[0]
-        let launchDateInMilliseconds = launchDate.timeIntervalSince1970.toInt64Milliseconds
-        let sdkInitDateInMilliseconds = sdkInitDate.timeIntervalSince1970.toInt64Milliseconds
+        let sdkInitDateInMilliseconds = sdkInitDate.timeIntervalSince1970.dd.toInt64Milliseconds
 
         XCTAssertEqual(appLaunchView.name, "ApplicationLaunch", "It should track 'ApplicationLaunch' view")
-        XCTAssertEqual(appLaunchView.viewEvents.first?.date, launchDateInMilliseconds, "'ApplicationLaunch' view should start at launch time")
-        XCTAssertEqual(appLaunchView.actionEvents.count, 2, "'ApplicationLaunch' should track 2 actions")
-        XCTAssertEqual(appLaunchView.actionEvents[0].action.type, .applicationStart, "'ApplicationLaunch' should track 'application start' action")
-        XCTAssertEqual(appLaunchView.actionEvents[0].date, launchDateInMilliseconds, "'application start' action should be tracked at launch time")
-        XCTAssertEqual(appLaunchView.actionEvents[1].action.target?.name, "A1", "'ApplicationLaunch' should track 'A1' action")
-        XCTAssertGreaterThan(appLaunchView.actionEvents[1].date, sdkInitDateInMilliseconds, "'A1' action should be tracked after SDK init")
+        XCTAssertEqual(appLaunchView.viewEvents.first?.date, sdkInitDateInMilliseconds, "'ApplicationLaunch' view should start at launch time")
+        XCTAssertEqual(appLaunchView.actionEvents.count, 1, "'ApplicationLaunch' should track 2 actions")
+        XCTAssertEqual(appLaunchView.actionEvents[0].action.target?.name, "A1", "'ApplicationLaunch' should track 'A1' action")
+        XCTAssertGreaterThan(appLaunchView.actionEvents[0].date, sdkInitDateInMilliseconds, "'A1' action should be tracked after SDK init")
         XCTAssertEqual(appLaunchView.errorEvents.count, 1, "'ApplicationLaunch' should track 1 error")
         XCTAssertEqual(appLaunchView.errorEvents[0].error.message, "E1", "'ApplicationLaunch' should track 'E1' error")
         XCTAssertEqual(appLaunchView.resourceEvents.count, 1, "'ApplicationLaunch' should track 1 resource")
@@ -1081,13 +1114,9 @@ class RUMMonitorTests: XCTestCase {
             return resourceEvent
         }
         config.actionEventMapper = { actionEvent in
-            if actionEvent.action.type == .applicationStart {
-                return nil // drop `.applicationStart` action
-            } else {
-                var actionEvent = actionEvent
-                actionEvent.action.target?.name = "Modified tap action name"
-                return actionEvent
-            }
+            var actionEvent = actionEvent
+            actionEvent.action.target?.name = "Modified tap action name"
+            return actionEvent
         }
         config.errorEventMapper = { errorEvent in
             var errorEvent = errorEvent
@@ -1130,7 +1159,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testDroppingEventsBeforeTheyGetSent() throws {
         config.resourceEventMapper = { _ in nil }
-        config.actionEventMapper = { event in event.action.type == .applicationStart ? event : nil }
+        config.actionEventMapper = { _ in nil }
         config.errorEventMapper = { _ in nil }
         config.longTaskEventMapper = { _ in nil }
         RUM.enable(with: config, in: core)
@@ -1229,7 +1258,7 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Usage
 
     func testGivenSDKNotInitialized_whenObtainingSharedMonitor_itPrintsError() throws {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 
@@ -1248,7 +1277,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testGivenRUMNotEnabled_whenObtainingSharedMonitor_itPrintsError() throws {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 

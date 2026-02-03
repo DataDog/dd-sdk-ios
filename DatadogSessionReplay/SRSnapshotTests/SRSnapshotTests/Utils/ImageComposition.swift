@@ -56,7 +56,7 @@ internal func createSideBySideImage(
         context.cgContext.strokePath()
 
         // Add image titles
-        let textAttributes: [NSAttributedString.Key : Any] = [
+        let textAttributes: [NSAttributedString.Key: Any] = [
             NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 15),
             NSAttributedString.Key.foregroundColor: #colorLiteral(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922, alpha: 1),
         ]

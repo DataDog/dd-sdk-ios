@@ -28,31 +28,27 @@ internal struct WebViewRecordReceiver: FeatureMessageReceiver {
         }
 
         scope.eventWriteContext { context, writer in
-            do {
-                // Extract the `RUMContext` or `nil` if RUM session is not sampled:
-                guard let rumContext = try context.baggages[RUMContext.key]?.decode(type: RUMContext.self) else {
-                    return
-                }
-
-                var event = event
-
-                if let timestamp = event["timestamp"] as? Int, let offset = rumContext.viewServerTimeOffset {
-                    event["timestamp"] = Int64(timestamp) + offset.toInt64Milliseconds
-                }
-
-                let record = WebRecord(
-                    applicationID: rumContext.applicationID,
-                    sessionID: rumContext.sessionID,
-                    viewID: view.id,
-                    records: [AnyEncodable(event)]
-                )
-
-                writer.write(value: record)
-            } catch {
-                core.telemetry
-                    .error("Fails to decode RUM context from Session Replay", error: error)
+            // Extract the `RUMContext` or `nil` if RUM session is not sampled:
+            guard let rumContext = context.additionalContext(ofType: RUMCoreContext.self) else {
                 return
             }
+
+            var event = event
+
+            if let timestamp = event["timestamp"] as? Int,
+               let webViewContext = context.additionalContext(ofType: RUMWebViewContext.self),
+               let offset = webViewContext.serverTimeOffset(forView: view.id) {
+                event["timestamp"] = Int64(timestamp) + offset.dd.toInt64Milliseconds
+            }
+
+            let record = WebRecord(
+                applicationID: rumContext.applicationID,
+                sessionID: rumContext.sessionID,
+                viewID: view.id,
+                records: [AnyEncodable(event)]
+            )
+
+            writer.write(value: record)
         }
 
         return true

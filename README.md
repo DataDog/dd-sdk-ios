@@ -44,9 +44,7 @@ RUM allows you to monitor web views and eliminate blind spots in your hybrid mob
 
 ## Integrations
 
-### Alamofire
-
-If you use [Alamofire][4], review the [`Datadog Alamofire Extension` library](DatadogExtensions/Alamofire/) to learn how to automatically instrument requests with the Datadog iOS SDK.
+If you use [Alamofire][7], [Apollo GraphQL][8], [SDWebImage][9], or [OpenAPI Generator][10], see [Integrated Libraries][4] to learn how to instrument requests automatically.
 
 ## Contributing
 
@@ -63,6 +61,10 @@ See the [Supported Versions][6] documentation for more details.
 [1]: https://docs.datadoghq.com/logs/log_collection/ios
 [2]: https://docs.datadoghq.com/tracing/setup_overview/setup/ios
 [3]: https://docs.datadoghq.com/real_user_monitoring/ios
-[4]: https://github.com/Alamofire/Alamofire
+[4]: https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/integrated_libraries/ios
 [5]: https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/web_view_tracking?tab=ios
 [6]: https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/supported_versions/ios/
+[7]: https://github.com/Alamofire/Alamofire
+[8]: https://github.com/apollographql/apollo-ios
+[9]: https://github.com/SDWebImage/SDWebImage
+[10]: https://github.com/OpenAPITools/openapi-generator

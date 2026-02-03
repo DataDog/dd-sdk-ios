@@ -14,31 +14,34 @@ import CoreGraphics
 /// - they have no appearance (e.g. nodes denoting container views)
 /// - they are covered by another opaque nodes (displayed closer to the screen surface).
 internal struct NodesFlattener {
-    /// This current implementation is greedy and works in `O(n*log(n))`, wheares `O(n)` is possible.
-    /// TODO: RUMM-2461 Improve flattening performance.
     func flattenNodes(in snapshot: ViewTreeSnapshot) -> [Node] {
+        let viewportRect = CGRect(origin: .zero, size: snapshot.viewportSize)
         var flattened: [Node] = []
+        var opaqueFrames: [CGRect] = []
 
-        for nextNode in snapshot.nodes {
-            // When accepting nodes, remove ones that are covered by another opaque node:
-            flattened = flattened.compactMap { previousNode in
-                let previousFrame = previousNode.wireframesBuilder.wireframeRect
-                let nextFrame = nextNode.wireframesBuilder.wireframeRect
+        // Process nodes in reverse DFS order (children before parents)
+        for node in snapshot.nodes.reversed() {
+            let nodeFrame = node.wireframesBuilder.wireframeRect
 
-                // Drop previous node when:
-                let dropPreviousNode = nextFrame.contains(previousFrame) // its rect is fully covered by the next node
-                    && nextNode.viewAttributes.hasAnyAppearance // and the next node brings something visual
-                    && !nextNode.viewAttributes.isTranslucent // and the next node is opaque
+            // Skip nodes outside viewport
+            guard viewportRect.intersects(nodeFrame) else { continue }
 
-                return dropPreviousNode ? nil : previousNode
+            // Skip if occluded by any existing opaque frame
+            let isOccluded = opaqueFrames.contains { opaqueFrame in
+                opaqueFrame.contains(nodeFrame)
             }
-            // Add only node that intersects with the screen bounds
-            if CGRect(origin: .zero, size: snapshot.viewportSize).intersects(nextNode.wireframesBuilder.wireframeRect) {
-                flattened.append(nextNode)
+
+            if !isOccluded {
+                flattened.append(node)
+
+                // If this node is opaque and has appearance, it occludes its area
+                if node.viewAttributes.hasAnyAppearance && !node.viewAttributes.isTranslucent {
+                    opaqueFrames.append(nodeFrame)
+                }
             }
         }
 
-        return flattened
+        return flattened.reversed()
     }
 }
 #endif

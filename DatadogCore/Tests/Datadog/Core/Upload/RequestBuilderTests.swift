@@ -61,10 +61,10 @@ class RequestBuilderTests: XCTestCase {
                 .userAgentHeader(
                     appName: "FoobarApp",
                     appVersion: "1.2.3",
-                    device: .mockWith(
-                        name: "iPhone",
-                        osName: "iOS",
-                        osVersion: "13.3.1"
+                    device: .mockWith(name: "iPhone"),
+                    os: .mockWith(
+                        name: "iOS",
+                        version: "13.3.1"
                     )
                 )
             ]
@@ -81,10 +81,10 @@ class RequestBuilderTests: XCTestCase {
                 .userAgentHeader(
                     appName: "Foobar 電話 𝛼β",
                     appVersion: "1.2.3",
-                    device: .mockWith(
-                        name: "iPhone",
-                        osName: "iOS",
-                        osVersion: "13.3.1"
+                    device: .mockWith(name: "iPhone"),
+                    os: .mockWith(
+                        name: "iOS",
+                        version: "13.3.1"
                     )
                 )
             ]
@@ -138,7 +138,7 @@ class RequestBuilderTests: XCTestCase {
             queryItems: .mockRandom(),
             headers: [
                 .contentTypeHeader(contentType: .textPlainUTF8),
-                .userAgentHeader(appName: .mockAny(), appVersion: .mockAny(), device: .mockAny()),
+                .userAgentHeader(appName: .mockAny(), appVersion: .mockAny(), device: .mockAny(), os: .mockAny()),
                 .ddAPIKeyHeader(clientToken: .mockAny()),
                 .ddEVPOriginHeader(source: .mockAny()),
                 .ddEVPOriginVersionHeader(sdkVersion: .mockAny()),
@@ -159,7 +159,7 @@ class RequestBuilderTests: XCTestCase {
 
     // MARK: - Request Method
 
-    func testItUsesPOSTMethodForProducedReqest() {
+    func testItUsesPOSTMethodForProducedRequest() {
         let builder = URLRequestBuilder(url: .mockRandom(), queryItems: .mockRandom(), headers: .mockRandom())
         let request = builder.uploadRequest(with: .mockRandom())
         XCTAssertEqual(request.httpMethod, "POST")

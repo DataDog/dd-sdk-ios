@@ -8,17 +8,23 @@
 import UIKit
 
 internal struct UITextViewRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
 
-    var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isEditable: Bool) -> TextObfuscating = { context, isSensitive, isEditable in
+    init(identifier: UUID) {
+        self.identifier = identifier
+    }
+
+    var textObfuscator: (ViewTreeRecordingContext, _ viewAttributes: ViewAttributes, _ isSensitive: Bool, _ isEditable: Bool) -> TextObfuscating = { context, viewAttributes, isSensitive, isEditable in
+        let resolvedPrivacyLevel = viewAttributes.resolveTextAndInputPrivacyLevel(in: context)
+
         if isSensitive {
-            return context.recorder.privacy.sensitiveTextObfuscator
+            return resolvedPrivacyLevel.sensitiveTextObfuscator
         }
 
         if isEditable {
-            return context.recorder.privacy.inputAndOptionTextObfuscator
+            return resolvedPrivacyLevel.inputAndOptionTextObfuscator
         } else {
-            return context.recorder.privacy.staticTextObfuscator
+            return resolvedPrivacyLevel.staticTextObfuscator
         }
     }
 
@@ -37,7 +43,7 @@ internal struct UITextViewRecorder: NodeRecorder {
             textAlignment: textView.textAlignment,
             textColor: textView.textColor?.cgColor ?? UIColor.black.cgColor,
             font: textView.font,
-            textObfuscator: textObfuscator(context, textView.isSensitiveText, textView.isEditable),
+            textObfuscator: textObfuscator(context, attributes, textView.dd.isSensitiveText, textView.isEditable),
             contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
@@ -66,19 +72,6 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
         attributes.frame
     }
 
-    private var clip: SRContentClip {
-        let top = abs(contentRect.origin.y)
-        let left = abs(contentRect.origin.x)
-        let bottom = max(contentRect.height - attributes.frame.height - top, 0)
-        let right = max(contentRect.width - attributes.frame.width - left, 0)
-        return SRContentClip(
-            bottom: Int64(withNoOverflow: bottom),
-            left: Int64(withNoOverflow: left),
-            right: Int64(withNoOverflow: right),
-            top: Int64(withNoOverflow: top)
-        )
-    }
-
     private var relativeIntersectedRect: CGRect {
         // UITextView adds additional padding for presented content.
         let padding: CGFloat = 8
@@ -95,9 +88,9 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
             builder.createTextWireframe(
                 id: wireframeID,
                 frame: relativeIntersectedRect,
+                clip: attributes.clip,
                 text: textObfuscator.mask(text: text),
                 textAlignment: .init(systemTextAlignment: textAlignment, vertical: .top),
-                clip: clip,
                 textColor: textColor,
                 font: font,
                 borderColor: attributes.layerBorderColor,

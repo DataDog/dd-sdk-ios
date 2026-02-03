@@ -19,7 +19,6 @@ internal struct FeatureUpload {
         httpClient: HTTPClient,
         performance: PerformancePreset,
         backgroundTasksEnabled: Bool,
-        maxBatchesPerUpload: Int,
         isRunFromExtension: Bool,
         telemetry: Telemetry
     ) {
@@ -31,14 +30,19 @@ internal struct FeatureUpload {
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
-            requestBuilder: requestBuilder
+            requestBuilder: requestBuilder,
+            featureName: featureName
         )
 
         #if canImport(UIKit)
         let backgroundTaskCoordinator: BackgroundTaskCoordinator?
         switch (backgroundTasksEnabled, isRunFromExtension) {
         case (true, false):
+            #if os(watchOS)
+            backgroundTaskCoordinator = ExtensionBackgroundTaskCoordinator()
+            #else
             backgroundTaskCoordinator = AppBackgroundTaskCoordinator()
+            #endif
         case (true, true):
             backgroundTaskCoordinator = ExtensionBackgroundTaskCoordinator()
         case (false, _):
@@ -58,7 +62,7 @@ internal struct FeatureUpload {
                 delay: DataUploadDelay(performance: performance),
                 featureName: featureName,
                 telemetry: telemetry,
-                maxBatchesPerUpload: maxBatchesPerUpload,
+                maxBatchesPerUpload: performance.maxBatchesPerUpload,
                 backgroundTaskCoordinator: backgroundTaskCoordinator
             )
         )

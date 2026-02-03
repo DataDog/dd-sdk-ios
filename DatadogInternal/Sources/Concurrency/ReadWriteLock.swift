@@ -9,8 +9,8 @@ import Foundation
 /// A property wrapper using a fair, POSIX conforming reader-writer lock for atomic
 /// access to the value.  It is optimised for concurrent reads and exclusive writes.
 ///
-/// The wrapper is a class to prevent copying the lock, it creates and initilaizes a `pthread_rwlock_t`.
-/// An additional method `mutate` allow to safely mutate the value in-place (to read it
+/// The wrapper is a class to prevent copying the lock, it creates and initializes a `pthread_rwlock_t`.
+/// An additional method `mutate` allows to safely mutate the value in-place (to read it
 /// and write it while obtaining the lock only once).
 @propertyWrapper
 public final class ReadWriteLock<Value>: @unchecked Sendable {
@@ -18,15 +18,20 @@ public final class ReadWriteLock<Value>: @unchecked Sendable {
     private var value: Value
 
     /// The lock object.
-    private var rwlock = pthread_rwlock_t()
+    private let rwlock: UnsafeMutablePointer<pthread_rwlock_t>
 
     public init(wrappedValue value: Value) {
-        pthread_rwlock_init(&rwlock, nil)
+        // allocate on the heap to create a stable pointer
+        rwlock = .allocate(capacity: 1)
+        rwlock.initialize(to: pthread_rwlock_t())
+        pthread_rwlock_init(rwlock, nil)
         self.value = value
     }
 
     deinit {
-        pthread_rwlock_destroy(&rwlock)
+        pthread_rwlock_destroy(rwlock)
+        rwlock.deinitialize(count: 1)
+        rwlock.deallocate()
     }
 
     /// The wrapped value.
@@ -35,8 +40,8 @@ public final class ReadWriteLock<Value>: @unchecked Sendable {
     /// writing.
     public var wrappedValue: Value {
         get {
-            pthread_rwlock_rdlock(&rwlock)
-            defer { pthread_rwlock_unlock(&rwlock) }
+            pthread_rwlock_rdlock(rwlock)
+            defer { pthread_rwlock_unlock(rwlock) }
             return value
         }
         set { mutate { $0 = newValue } }
@@ -47,8 +52,8 @@ public final class ReadWriteLock<Value>: @unchecked Sendable {
     ///
     /// - Parameter closure: The closure with the mutable value.
     public func mutate(_ closure: (inout Value) throws -> Void) rethrows {
-        pthread_rwlock_wrlock(&rwlock)
-        defer { pthread_rwlock_unlock(&rwlock) }
+        pthread_rwlock_wrlock(rwlock)
+        defer { pthread_rwlock_unlock(rwlock) }
         try closure(&value)
     }
 }

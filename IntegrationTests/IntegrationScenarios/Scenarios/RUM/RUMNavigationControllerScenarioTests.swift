@@ -5,11 +5,12 @@
  */
 
 import HTTPServerMock
+import TestUtilities
 import XCTest
 
 private extension ExampleApplication {
     func tapPushNextScreenButton() {
-        buttons["Push Next Screen"].safeTap(within: 5)
+        tapButton(titled: "Push Next Screen")
     }
 
     func tapBackButton() {
@@ -17,7 +18,7 @@ private extension ExampleApplication {
     }
 
     func tapPopToTheFirstScreenButton() {
-        buttons["Pop To The First Screen"].safeTap()
+        tapButton(titled: "Pop To The First Screen")
     }
 
     func swipeInteractiveBackGesture() {
@@ -62,7 +63,8 @@ class RUMNavigationControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         let initialView = session.views[0]
         XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
-        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertNotNil(session.ttidEvent)
+        XCTAssertGreaterThan(session.timeToInitialDisplay!, 0)
 
         XCTAssertEqual(session.views[1].name, "Screen1")
         XCTAssertEqual(session.views[1].path, "UIViewController")

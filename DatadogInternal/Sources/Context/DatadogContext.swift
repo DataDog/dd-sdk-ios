@@ -71,16 +71,23 @@ public struct DatadogContext {
     /// Current device information.
     public var device: DeviceInfo
 
+    /// Operating System information.
+    public let os: OperatingSystem
+
+    /// Current locale information.
+    public var localeInfo: LocaleInfo
+
     /// Current user information.
     public var userInfo: UserInfo?
+
+    /// Current user information.
+    public var accountInfo: AccountInfo?
 
     /// The user's consent to data collection
     public var trackingConsent: TrackingConsent = .pending
 
-    /// Application launch time.
-    ///
-    /// Can be `nil` if the launch could not yet been evaluated.
-    public var launchTime: LaunchTime?
+    /// Application launch info.
+    public var launchInfo: LaunchInfo
 
     /// Provides the history of app foreground / background states.
     public var applicationStateHistory: AppStateHistory
@@ -106,11 +113,14 @@ public struct DatadogContext {
     /// This value can be `nil` of the current device battery interface is not available.
     public var batteryStatus: BatteryStatus?
 
+    /// The current brightness status.
+    public var brightnessLevel: BrightnessLevel?
+
     /// `true` if the Low Power Mode is enabled.
     public var isLowPowerModeEnabled = false
 
-    /// Type-less context baggages.
-    public var baggages: [String: FeatureBaggage] = [:]
+    /// Additional context that can set from `core` instance.
+    private var additionalContext: [String: AdditionalContext] = [:]
 
     // swiftlint:disable function_default_parameter_at_end
     public init(
@@ -131,27 +141,31 @@ public struct DatadogContext {
         applicationBundleType: BundleType,
         sdkInitDate: Date,
         device: DeviceInfo,
+        os: OperatingSystem,
+        localeInfo: LocaleInfo,
         nativeSourceOverride: String? = nil,
         userInfo: UserInfo? = nil,
+        accountInfo: AccountInfo? = nil,
         trackingConsent: TrackingConsent = .pending,
-        launchTime: LaunchTime? = nil,
+        launchInfo: LaunchInfo,
         applicationStateHistory: AppStateHistory,
         networkConnectionInfo: NetworkConnectionInfo? = nil,
         carrierInfo: CarrierInfo? = nil,
         batteryStatus: BatteryStatus? = nil,
+        brightnessLevel: BrightnessLevel? = nil,
         isLowPowerModeEnabled: Bool = false,
-        baggages: [String: FeatureBaggage] = [:]
+        additionalContext: [String: AdditionalContext] = [:]
     ) {
         self.site = site
         self.clientToken = clientToken
-        self.service = service
-        self.env = env
-        self.version = version
+        self.service = service.sanitizedToDDTags()
+        self.env = env.sanitizedToDDTags()
+        self.version = version.sanitizedToDDTags()
         self.buildNumber = buildNumber
         self.buildId = buildId
-        self.variant = variant
+        self.variant = variant?.sanitizedToDDTags()
         self.source = source
-        self.sdkVersion = sdkVersion
+        self.sdkVersion = sdkVersion.sanitizedToDDTags()
         self.ciAppOrigin = ciAppOrigin
         self.serverTimeOffset = serverTimeOffset
         self.applicationName = applicationName
@@ -159,16 +173,82 @@ public struct DatadogContext {
         self.applicationBundleType = applicationBundleType
         self.sdkInitDate = sdkInitDate
         self.device = device
+        self.os = os
+        self.localeInfo = localeInfo
         self.nativeSourceOverride = nativeSourceOverride
         self.userInfo = userInfo
+        self.accountInfo = accountInfo
         self.trackingConsent = trackingConsent
-        self.launchTime = launchTime
+        self.launchInfo = launchInfo
         self.applicationStateHistory = applicationStateHistory
         self.networkConnectionInfo = networkConnectionInfo
         self.carrierInfo = carrierInfo
         self.batteryStatus = batteryStatus
+        self.brightnessLevel = brightnessLevel
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
-        self.baggages = baggages
+        self.additionalContext = additionalContext
     }
     // swiftlint:enable function_default_parameter_at_end
+}
+
+/// Defines an additional context value type associated to a key.
+public protocol AdditionalContext {
+    /// The additional context key.
+    static var key: String { get }
+}
+
+extension DatadogContext {
+    /// Datadog tags to send in the events.
+    public var ddTags: String {
+        var tags = [
+            "service": service,
+            "version": version,
+            "sdk_version": sdkVersion,
+            "env": env
+        ]
+
+        if let variant {
+            tags["variant"] = variant
+        }
+
+        return tags.map { "\($0.key):\($0.value)" }.joined(separator: ",")
+    }
+}
+
+extension DatadogContext {
+    /// Gets an additional context value of `Context` type.
+    ///
+    /// - Parameter type: The additional context type.
+    /// - Returns: The `Context` if found
+    public func additionalContext<Context>(ofType type: Context.Type) -> Context? where Context: AdditionalContext {
+        additionalContext[type.key] as? Context
+    }
+
+    /// Sets additional context to `DatadogContext`.
+    ///
+    /// This method only mutates the current instance. To propagate an additional context
+    /// across the Datadog SDK, please use the ``DatadogCoreProtocol/set(context:)`` instead.
+    ///
+    /// - Parameters:
+    ///   - context: The additional context to set.
+    public mutating func set<Context>(additionalContext context: Context?) where Context: AdditionalContext {
+        additionalContext[Context.key] = context
+    }
+
+    /// Removes additional context from `DatadogContext`.
+    ///
+    /// This method only mutates the current instance. To propagate an additional context
+    /// across the Datadog SDK, please use the ``DatadogCoreProtocol/removeContext(ofType:)`` instead
+    /// 
+    /// - Parameters:
+    ///   - type: The context's type to remove.
+    public mutating func removeContext<Context>(ofType type: Context.Type) where Context: AdditionalContext {
+        additionalContext[Context.key] = nil
+    }
+}
+
+extension String {
+    func sanitizedToDDTags() -> String {
+        self.replacingOccurrences(of: "[,:]", with: "", options: .regularExpression)
+    }
 }

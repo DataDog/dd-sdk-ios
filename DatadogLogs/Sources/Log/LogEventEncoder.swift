@@ -51,18 +51,6 @@ public struct LogEvent: Encodable {
         internal let internalAttributes: [String: Encodable]?
     }
 
-    /// User information associated with a the log event.
-    public struct UserInfo {
-        /// User ID, if any.
-        public let id: String?
-        /// Name representing the user, if any.
-        public let name: String?
-        /// User email, if any.
-        public let email: String?
-        /// User custom attributes, if any.
-        public var extraInfo: [String: Encodable]
-    }
-
     /// Error description associated with a log event.
     public struct Error {
         /// Description of BinaryImage (used for symbolicaiton of stack traces)
@@ -109,35 +97,15 @@ public struct LogEvent: Encodable {
         public var binaryImages: [BinaryImage]?
     }
 
-    /// Device information.
-    public struct DeviceInfo: Codable {
-        /// Device manufacturer name. Always'Apple'
-        public let brand: String
-
-        /// Device marketing name, e.g. "iPhone", "iPad", "iPod touch".
-        public let name: String
-
-        /// Device model name, e.g. "iPhone10,1", "iPhone13,2".
-        public let model: String
-
-        /// The architecture of the device
-        public let architecture: String
-    }
-
-    /// Operating System description.
-    public struct OperatingSystem: Codable {
-        /// Operating system name, e.g. Android, iOS
-        public let name: String
-        /// Full operating system version, e.g. 8.1.1
-        public let version: String
-        /// Operating system build number, e.g. 15D21
-        public let build: String?
-    }
-
     /// Datadog specific attributes.
     public struct Dd: Codable {
         /// Device information
-        public let device: DeviceInfo
+        public struct Device: Codable {
+            /// The CPU architecture of the device. Used to symbolication and deobfuscation.
+            public let architecture: String
+        }
+        /// Device with the architecture info
+        public let device: Device
     }
 
     /// The log's timestamp
@@ -150,7 +118,7 @@ public struct LogEvent: Encodable {
     public var error: Error?
     /// The service name configured for Logs.
     public let serviceName: String
-    /// The current log environement.
+    /// The current log environment.
     public let environment: String
     /// The configured logger name.
     public let loggerName: String
@@ -168,16 +136,22 @@ public struct LogEvent: Encodable {
     public let variant: String?
     /// Datadog specific attributes
     public let dd: Dd
-    /// The associated log error
+    /// Device information
+    public let device: Device
+    /// Operating System information
     public let os: OperatingSystem
     /// Custom user information configured globally for the SDK.
     public var userInfo: UserInfo
+    /// Custom account information configured globally for the SDK.
+    public var accountInfo: AccountInfo?
     /// The network connection information from the moment the log was sent.
     public let networkConnectionInfo: NetworkConnectionInfo?
     /// The mobile carrier information from the moment the log was sent.
     public let mobileCarrierInfo: CarrierInfo?
     /// The attributes associated with this log.
     public var attributes: LogEvent.Attributes
+    /// Datadog tags to send with logs, in addition to ``tags``.
+    public let ddTags: String
     /// Tags associated with this log.
     public var tags: [String]?
 
@@ -197,7 +171,6 @@ internal struct LogEventEncoder {
         case serviceName = "service"
         case environment = "env"
         case tags = "ddtags"
-        case os = "os"
 
         // MARK: - Error
 
@@ -215,7 +188,12 @@ internal struct LogEventEncoder {
         case buildId = "build_id"
 
         // MARK: - Dd info
+
         case dd = "_dd"
+
+        // MARK: - Device info
+        case device
+        case os
 
         // MARK: - Logger info
 
@@ -225,9 +203,15 @@ internal struct LogEventEncoder {
 
         // MARK: - User info
 
+        case userAnonymousId = "usr.anonymous_id"
         case userId = "usr.id"
         case userName = "usr.name"
         case userEmail = "usr.email"
+
+        // MARK: - Account info
+
+        case accountId = "account.id"
+        case accountName = "account.name"
 
         // MARK: - Network connection info
 
@@ -261,7 +245,6 @@ internal struct LogEventEncoder {
         try container.encode(log.status, forKey: .status)
         try container.encode(log.message, forKey: .message)
         try container.encode(log.serviceName, forKey: .serviceName)
-        try container.encode(log.os, forKey: .os)
 
         // Encode log.error properties
         if let someError = log.error {
@@ -288,11 +271,20 @@ internal struct LogEventEncoder {
         }
 
         try container.encode(log.dd, forKey: .dd)
+        try container.encode(log.device, forKey: .device)
+        try container.encode(log.os, forKey: .os)
 
         // Encode user info
-        try log.userInfo.id.ifNotNil { try container.encode($0, forKey: .userId) }
-        try log.userInfo.name.ifNotNil { try container.encode($0, forKey: .userName) }
-        try log.userInfo.email.ifNotNil { try container.encode($0, forKey: .userEmail) }
+        try log.userInfo.id.dd.ifNotNil { try container.encode($0, forKey: .userId) }
+        try log.userInfo.name.dd.ifNotNil { try container.encode($0, forKey: .userName) }
+        try log.userInfo.email.dd.ifNotNil { try container.encode($0, forKey: .userEmail) }
+        try log.userInfo.anonymousId.dd.ifNotNil { try container.encode($0, forKey: .userAnonymousId) }
+
+        // Encode account info
+        if let accountInfo = log.accountInfo {
+            try container.encode(accountInfo.id, forKey: .accountId)
+            try accountInfo.name.dd.ifNotNil { try container.encode($0, forKey: .accountName) }
+        }
 
         // Encode network info
         if let networkConnectionInfo = log.networkConnectionInfo {
@@ -301,17 +293,17 @@ internal struct LogEventEncoder {
             try container.encode(networkConnectionInfo.supportsIPv4, forKey: .networkConnectionSupportsIPv4)
             try container.encode(networkConnectionInfo.supportsIPv6, forKey: .networkConnectionSupportsIPv6)
             try container.encode(networkConnectionInfo.isExpensive, forKey: .networkConnectionIsExpensive)
-            try networkConnectionInfo.isConstrained.ifNotNil {
+            try networkConnectionInfo.isConstrained.dd.ifNotNil {
                 try container.encode($0, forKey: .networkConnectionIsConstrained)
             }
         }
 
         // Encode mobile carrier info
         if let carrierInfo = log.mobileCarrierInfo {
-            try carrierInfo.carrierName.ifNotNil {
+            try carrierInfo.carrierName.dd.ifNotNil {
                 try container.encode($0, forKey: .mobileNetworkCarrierName)
             }
-            try carrierInfo.carrierISOCountryCode.ifNotNil {
+            try carrierInfo.carrierISOCountryCode.dd.ifNotNil {
                 try container.encode($0, forKey: .mobileNetworkCarrierISOCountryCode)
             }
             try container.encode(carrierInfo.radioAccessTechnology, forKey: .mobileNetworkCarrierRadioTechnology)
@@ -319,35 +311,62 @@ internal struct LogEventEncoder {
         }
 
         // Encode attributes...
+        // Individual attribute encoding failures are caught and logged, allowing the event to be sent
+        // with all successfully encoded attributes. This prevents a single malformed attribute from
+        // causing the entire event to be dropped.
         var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
 
         // 1. user info attributes
-        try log.userInfo.extraInfo.forEach {
-            let key = DynamicCodingKey("usr.\($0)")
-            try attributesContainer.encode(AnyEncodable($1), forKey: key)
+        log.userInfo.extraInfo.forEach { name, value in
+            let key = DynamicCodingKey("usr.\(name)")
+            attributesContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: key,
+                attributeName: name,
+                context: .userInfo
+            )
         }
 
-        // 2. user attributes
-        let encodableUserAttributes = Dictionary(
-            uniqueKeysWithValues: log.attributes.userAttributes.map { name, value in (name, AnyEncodable(value)) }
-        )
-        try encodableUserAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
-
-        // 3. internal attributes
-        if let internalAttributes = log.attributes.internalAttributes {
-            let encodableInternalAttributes = Dictionary(
-                uniqueKeysWithValues: internalAttributes.map { name, value in (name, AnyEncodable(value)) }
+        // 2. account info attributes
+        log.accountInfo?.extraInfo.forEach { name, value in
+            let key = DynamicCodingKey("account.\(name)")
+            attributesContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: key,
+                attributeName: name,
+                context: .accountInfo
             )
-            try encodableInternalAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
+        }
+
+        // 3. user attributes
+        log.attributes.userAttributes.forEach { name, value in
+            attributesContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .custom
+            )
+        }
+
+        // 4. internal attributes
+        if let internalAttributes = log.attributes.internalAttributes {
+            internalAttributes.forEach { name, value in
+                attributesContainer.encodeAttribute(
+                    AnyEncodable(value),
+                    forKey: DynamicCodingKey(name),
+                    attributeName: name,
+                    context: .internal
+                )
+            }
         }
 
         // Encode tags
         var tags = log.tags ?? []
-        tags.append("env:\(log.environment)") // include default env tag
-        tags.append("version:\(log.applicationVersion)") // include default version tag
-        if let variant = log.variant {
-            tags.append("variant:\(variant)")
-        }
+        // Include dd tags
+        // log.ddTags is already a string with multiple tags
+        // joined by ",". That is OK, as it gets joined with
+        // the specific ones for this log.
+        tags.append(log.ddTags)
         let tagsString = tags.joined(separator: ",")
         try container.encode(tagsString, forKey: .tags)
     }

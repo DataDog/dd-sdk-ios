@@ -8,8 +8,8 @@
 import XCTest
 import WebKit
 import DatadogInternal
+@_spi(Internal)
 import TestUtilities
-
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
@@ -26,7 +26,7 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenProcessingFirstViewTreeSnapshot_itWritesRecordsThatIndicateStartOfASegment() throws {
         let time = Date()
-        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+        let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let core = PassthroughCoreMock()
@@ -64,7 +64,7 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenRUMContextDoesNotChangeInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() {
         let time = Date()
-        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+        let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let core = PassthroughCoreMock()
@@ -113,7 +113,7 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenOrientationChanges_itWritesRecordsViewportResizeDataSegment() {
         let time = Date()
-        let rum: RUMContext = .mockRandom()
+        let rum: RUMCoreContext = .mockRandom()
 
         // Given
         let core = PassthroughCoreMock()
@@ -146,8 +146,8 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecords[0].records[1].isFocusRecord)
         XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord)
 
-        XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with 'full snapshot' → 'incremental snapshot' records")
-        XCTAssertTrue(enrichedRecords[1].records[0].isFullSnapshotRecord)
+        XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with 'incremental snapshot' records")
+        XCTAssertTrue(enrichedRecords[1].records[0].isIncrementalSnapshotRecord)
         XCTAssertTrue(enrichedRecords[1].records[1].isIncrementalSnapshotRecord)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.height, 100)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.width, 200)
@@ -157,8 +157,8 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenRUMContextChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatIndicateNextSegments() {
         let time = Date()
-        let rum1: RUMContext = .mockRandom()
-        let rum2: RUMContext = .mockRandom()
+        let rum1: RUMCoreContext = .mockRandom()
+        let rum2: RUMCoreContext = .mockRandom()
 
         // Given
         let core = PassthroughCoreMock()
@@ -214,7 +214,7 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenProcessingViewTreeSnapshot_itIncludeWebViewSlotFromNode() throws {
         let time = Date()
-        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+        let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let core = PassthroughCoreMock()
@@ -235,7 +235,13 @@ class SnapshotProcessorTests: XCTestCase {
         // When
         let snapshot = ViewTreeSnapshot(
             date: time,
-            context: .init(privacy: .allow, rumContext: rum, date: time),
+            context: .init(
+                textAndInputPrivacy: .mockRandom(),
+                imagePrivacy: .mockRandom(),
+                touchPrivacy: .mockRandom(),
+                rumContext: rum,
+                date: time
+            ),
             viewportSize: .mockRandom(minWidth: 1_000, minHeight: 1_000),
             nodes: [node],
             webViewSlotIDs: Set([hiddenSlot, visibleSlot])
@@ -262,7 +268,7 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenProcessingViewTreeSnapshot_itIncludeWebViewSlotFromCache() throws {
         let time = Date()
-        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+        let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let core = PassthroughCoreMock()
@@ -305,8 +311,8 @@ class SnapshotProcessorTests: XCTestCase {
             imageWireframeID: .mockAny(),
             attributes: .mockAny(),
             contentFrame: .mockAny(),
-            clipsToBounds: .mockAny(),
-            imageResource: resource
+            imageResource: resource,
+            imagePrivacyLevel: .maskNonBundledOnly
         )
         let snapshot: ViewTreeSnapshot = .mockWith(
             context: .mockRandom(),
@@ -339,7 +345,7 @@ class SnapshotProcessorTests: XCTestCase {
         let earliestTouchTime = Date()
         let snapshotTime = earliestTouchTime.addingTimeInterval(5)
         let numberOfTouches = 10
-        let rum: RUMContext = .mockWith(serverTimeOffset: 0)
+        let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
 
         // Given
         let core = PassthroughCoreMock()
@@ -378,8 +384,8 @@ class SnapshotProcessorTests: XCTestCase {
                 "Touch information must be send in 'incremental snapshot'"
             )
             XCTAssertEqual(pointerInteractionData.pointerType, .touch)
-            XCTAssertGreaterThanOrEqual(record.timestamp, earliestTouchTime.timeIntervalSince1970.toInt64Milliseconds)
-            XCTAssertLessThanOrEqual(record.timestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
+            XCTAssertGreaterThanOrEqual(record.timestamp, earliestTouchTime.timeIntervalSince1970.dd.toInt64Milliseconds)
+            XCTAssertLessThanOrEqual(record.timestamp, snapshotTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         }
 
         XCTAssertEqual(core.recordsCountByViewID, ["abc": 13])
@@ -387,8 +393,8 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenRUMContextTimeOffsetChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() {
         let time = Date()
-        let rum1: RUMContext = .mockWith(serverTimeOffset: 123)
-        let rum2: RUMContext = .mockWith(serverTimeOffset: 456)
+        let rum1: RUMCoreContext = .mockWith(serverTimeOffset: 123)
+        let rum2: RUMCoreContext = .mockWith(serverTimeOffset: 456)
 
         // Given
         let core = PassthroughCoreMock()
@@ -431,12 +437,58 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertEqual(core.recordsCountByViewID, ["abc": 4])
     }
 
+    func testViewRetentionInBackgroundProcessing() {
+        weak var weakView: UIView?
+
+        autoreleasepool {
+            let view = UIView()
+            weakView = view
+            view.dd.sessionReplayPrivacyOverrides.imagePrivacy = .maskAll
+
+            let time = Date()
+            let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
+
+            // Given
+            let core = PassthroughCoreMock()
+            let srContextPublisher = SRContextPublisher(core: core)
+            let processor = SnapshotProcessor(
+                queue: NoQueue(),
+                recordWriter: recordWriter,
+                resourceProcessor: ResourceProcessorSpy(),
+                srContextPublisher: srContextPublisher,
+                telemetry: TelemetryMock()
+            )
+
+            // When
+            let snapshot = generateViewTreeSnapshot(for: view, date: time, rumContext: rum)
+            processor.process(viewTreeSnapshot: snapshot, touchSnapshot: nil)
+
+            // Then
+            XCTAssertEqual(recordWriter.records.count, 1)
+
+            // View should still exist here
+            XCTAssertNotNil(weakView)
+        }
+
+        // View should be deallocated even though snapshot was processed in background
+        XCTAssertNil(weakView)
+    }
+
     // MARK: - `ViewTreeSnapshot` generation
 
-    private let snapshotBuilder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [])
+    private let snapshotBuilder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [], featureFlags: .allEnabled)
 
-    private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMContext) -> ViewTreeSnapshot {
-        snapshotBuilder.createSnapshot(of: viewTree, with: .init(privacy: .allow, rumContext: rumContext, date: date))
+    private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMCoreContext) -> ViewTreeSnapshot {
+        snapshotBuilder.createSnapshot(
+            of: viewTree,
+            with: .init(
+                textAndInputPrivacy: .mockRandom(),
+                imagePrivacy: .mockRandom(),
+                touchPrivacy: .mockRandom(),
+                rumContext: rumContext,
+                date: date
+            )
+        )
     }
 
     private func generateSimpleViewTree() -> UIView {
@@ -486,7 +538,8 @@ class SnapshotProcessorTests: XCTestCase {
                         id: .mockRandom(min: 0, max: TouchIdentifier(numberOfTouches)),
                         phase: [.down, .move, .up].randomElement()!,
                         date: startTime.addingTimeInterval(Double(index) * (dt / Double(numberOfTouches))),
-                        position: .mockRandom()
+                        position: .mockRandom(),
+                        touchOverride: nil
                     )
             }
         )
@@ -495,7 +548,9 @@ class SnapshotProcessorTests: XCTestCase {
 
 fileprivate extension PassthroughCoreMock {
     var recordsCountByViewID: [String: Int64]? {
-        return try? context.baggages["sr_records_count_by_view_id"]?.decode()
+        context.additionalContext(
+            ofType: SessionReplayCoreContext.RecordsCount.self
+        )?.value
     }
 }
 #endif

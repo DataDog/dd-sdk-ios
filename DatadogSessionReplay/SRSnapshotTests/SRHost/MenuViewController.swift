@@ -44,12 +44,12 @@ internal extension Fixture {
             return "Time Picker (compact)"
         case .images:
             return "Images"
-        case .unsupportedViews:
-            return "Unsupported Views"
         case .popups:
             return "Popups"
         case .swiftUI:
             return "SwiftUI"
+        case .symbols:
+            return "Symbols"
         case .navigationBars:
             return "Navigation Bars"
         case .navigationBarDefaultTranslucent:

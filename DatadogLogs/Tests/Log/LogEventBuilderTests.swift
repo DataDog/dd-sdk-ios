@@ -29,6 +29,8 @@ class LogEventBuilderTests: XCTestCase {
         let randomName: String = .mockRandom()
         let randomModel: String = .mockRandom()
         let randomArchitecture: String = .mockRandom()
+        let randomProcessorCount: Double = .mockRandom()
+        let randomTotalRam: Double = .mockRandom()
 
         // Given
         let builder = LogEventBuilder(
@@ -53,10 +55,14 @@ class LogEventBuilderTests: XCTestCase {
                 device: .mockWith(
                     name: randomName,
                     model: randomModel,
-                    osName: randomOsName,
-                    osVersion: randomOsVersion,
-                    osBuildNumber: randomOsBuildNumber,
-                    architecture: randomArchitecture
+                    architecture: randomArchitecture,
+                    logicalCpuCount: randomProcessorCount,
+                    totalRam: randomTotalRam
+                ),
+                os: .mockWith(
+                    name: randomOsName,
+                    version: randomOsVersion,
+                    build: randomOsBuildNumber
                 )
             ),
             threadName: randomThreadName
@@ -75,10 +81,12 @@ class LogEventBuilderTests: XCTestCase {
             XCTAssertEqual(log.serviceName, randomService)
             XCTAssertEqual(log.loggerName, randomLoggerName)
             XCTAssertEqual(log.threadName, randomThreadName)
-            XCTAssertEqual(log.dd.device.brand, "Apple")
-            XCTAssertEqual(log.dd.device.name, randomName)
-            XCTAssertEqual(log.dd.device.model, randomModel)
-            XCTAssertEqual(log.dd.device.architecture, randomArchitecture)
+            XCTAssertEqual(log.device.brand, "Apple")
+            XCTAssertEqual(log.device.name, randomName)
+            XCTAssertEqual(log.device.model, randomModel)
+            XCTAssertEqual(log.device.architecture, randomArchitecture)
+            XCTAssertEqual(log.device.logicalCpuCount, randomProcessorCount)
+            XCTAssertEqual(log.device.totalRam, randomTotalRam)
             XCTAssertEqual(log.os.name, randomOsName)
             XCTAssertEqual(log.os.version, randomOsVersion)
             XCTAssertEqual(log.os.build, randomOsBuildNumber)
@@ -105,6 +113,8 @@ class LogEventBuilderTests: XCTestCase {
         let randomModel: String = .mockRandom()
         let randomOSVersion: String = .mockRandom()
         let randomOSBuild: String = .mockRandom()
+        let randomProcessorCount: Double = .mockRandom()
+        let randomTotalRam: Double = .mockRandom()
 
         let randomSDKContext: DatadogContext = .mockWith(
             env: randomEnvironment,
@@ -115,8 +125,12 @@ class LogEventBuilderTests: XCTestCase {
             device: .mockWith(
                 name: randomName,
                 model: randomModel,
-                osVersion: randomOSVersion,
-                osBuildNumber: randomOSBuild
+                logicalCpuCount: randomProcessorCount,
+                totalRam: randomTotalRam
+            ),
+            os: .mockWith(
+                version: randomOSVersion,
+                build: randomOSBuild
             ),
             userInfo: randomUserInfo,
             networkConnectionInfo: randomNetworkInfo,
@@ -157,9 +171,11 @@ class LogEventBuilderTests: XCTestCase {
             DDAssertDictionariesEqual(log.userInfo.extraInfo, randomUserInfo.extraInfo)
             XCTAssertEqual(log.networkConnectionInfo, randomNetworkInfo)
             XCTAssertEqual(log.mobileCarrierInfo, randomCarrierInfo)
-            XCTAssertEqual(log.dd.device.brand, "Apple")
-            XCTAssertEqual(log.dd.device.name, randomName)
-            XCTAssertEqual(log.dd.device.model, randomModel)
+            XCTAssertEqual(log.device.brand, "Apple")
+            XCTAssertEqual(log.device.name, randomName)
+            XCTAssertEqual(log.device.model, randomModel)
+            XCTAssertEqual(log.device.logicalCpuCount, randomProcessorCount)
+            XCTAssertEqual(log.device.totalRam, randomTotalRam)
             XCTAssertEqual(log.os.version, randomOSVersion)
             XCTAssertEqual(log.os.build, randomOSBuild)
             expectation.fulfill()

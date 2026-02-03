@@ -38,38 +38,16 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// This value will be merged with the tracestate from the trace context.
     private let tracestate: [String: String]
 
-    private let samplingStrategy: TraceSamplingStrategy
     private let traceContextInjection: TraceContextInjection
 
     /// Initializes the headers writer.
     ///
-    /// - Parameter samplingRate: The sampling rate applied for headers injection.
-    /// - Parameter tracestate: The tracestate to be injected.
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public convenience init(samplingRate: Float) {
-        self.init(sampleRate: samplingRate, tracestate: [:])
-    }
-
-    /// Initializes the headers writer.
-    ///
-    /// - Parameter sampleRate: The sampling rate applied for headers injection, with 20% as the default.
-    /// - Parameter tracestate: The tracestate to be injected.
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public convenience init(sampleRate: Float = 20, tracestate: [String: String] = [:]) {
-        self.init(samplingStrategy: .custom(sampleRate: sampleRate), tracestate: tracestate, traceContextInjection: .all)
-    }
-
-    /// Initializes the headers writer.
-    ///
-    /// - Parameter samplingStrategy: The strategy for sampling trace propagation headers.
     /// - Parameter tracestate: The tracestate to be injected.
     /// - Parameter traceContextInjection: The strategy for injecting trace context into requests.
     public init(
-        samplingStrategy: TraceSamplingStrategy,
         tracestate: [String: String] = [:],
-        traceContextInjection: TraceContextInjection = .all
+        traceContextInjection: TraceContextInjection = .sampled
     ) {
-        self.samplingStrategy = samplingStrategy
         self.tracestate = tracestate
         self.traceContextInjection = traceContextInjection
     }
@@ -82,36 +60,59 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     public func write(traceContext: TraceContext) {
         typealias Constants = W3CHTTPHeaders.Constants
 
-        let sampler = samplingStrategy.sampler(for: traceContext)
-        let sampled = sampler.sample()
-
-        switch (traceContextInjection, sampled) {
-        case (.all, _), (.sampled, true):
-            traceHeaderFields[W3CHTTPHeaders.traceparent] = [
-                Constants.version,
-                String(traceContext.traceID, representation: .hexadecimal32Chars),
-                String(traceContext.spanID, representation: .hexadecimal16Chars),
-                sampled ? Constants.sampledValue : Constants.unsampledValue
-            ]
-            .joined(separator: Constants.separator)
-
-            // while merging, the tracestate values from the tracestate property take precedence
-            // over the ones from the trace context
-            let tracestate: [String: String] = [
-                Constants.sampling: "\(sampled ? 1 : 0)",
-                Constants.parentId: String(traceContext.spanID, representation: .hexadecimal16Chars)
-            ].merging(tracestate) { old, new in
-                return new
+        let sampled = traceContext.samplingPriority.isKept
+        let shouldInject: Bool = {
+            switch traceContextInjection {
+            case .all:      return true
+            case .sampled:  return sampled
             }
+        }()
+        guard shouldInject else {
+            return
+        }
 
-            let ddtracestate = tracestate
-                .map { "\($0.key)\(Constants.tracestateKeyValueSeparator)\($0.value)" }
-                .sorted()
-                .joined(separator: Constants.tracestatePairSeparator)
+        traceHeaderFields[W3CHTTPHeaders.traceparent] = [
+            Constants.version,
+            String(traceContext.traceID, representation: .hexadecimal32Chars),
+            String(traceContext.spanID, representation: .hexadecimal16Chars),
+            sampled ? Constants.sampledValue : Constants.unsampledValue
+        ]
+        .joined(separator: Constants.separator)
 
-            traceHeaderFields[W3CHTTPHeaders.tracestate] = "\(Constants.dd)=\(ddtracestate)"
-        case (.sampled, false):
-            break
+        var tracestate: [String: String] = [
+            Constants.sampling: "\(traceContext.samplingPriority.rawValue)",
+            Constants.parentId: String(traceContext.spanID, representation: .hexadecimal16Chars)
+        ]
+
+        if traceContext.samplingPriority.isKept {
+            tracestate[Constants.samplingDecisionMaker] = "-\(traceContext.samplingDecisionMaker.rawValue)"
+        }
+
+        // while merging, the tracestate values from the tracestate property take precedence
+        // over the ones from the trace context
+        tracestate.merge(self.tracestate) { old, new in
+            return new
+        }
+
+        let ddtracestate = tracestate
+            .map { "\($0.key)\(Constants.tracestateKeyValueSeparator)\($0.value)" }
+            .sorted()
+            .joined(separator: Constants.tracestatePairSeparator)
+
+        traceHeaderFields[W3CHTTPHeaders.tracestate] = "\(Constants.dd)=\(ddtracestate)"
+
+        var baggageItems: [String] = []
+        if let sessionId = traceContext.rumSessionId {
+            baggageItems.append("\(Constants.rumSessionBaggageKey)=\(sessionId)")
+        }
+        if let userId = traceContext.userId {
+            baggageItems.append("\(Constants.userBaggageKey)=\(userId)")
+        }
+        if let accountId = traceContext.accountId {
+            baggageItems.append("\(Constants.accountBaggageKey)=\(accountId)")
+        }
+        if !baggageItems.isEmpty {
+            traceHeaderFields[W3CHTTPHeaders.baggage] = baggageItems.joined(separator: ",")
         }
     }
 }

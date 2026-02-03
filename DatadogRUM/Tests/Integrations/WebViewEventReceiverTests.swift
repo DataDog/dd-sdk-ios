@@ -195,7 +195,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
             commandSubscriber: commandsSubscriberMock,
-            viewCache: ViewCache()
+            viewCache: ViewCache(dateProvider: SystemDateProvider())
         )
 
         // When
@@ -214,11 +214,11 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache()
+            viewCache: ViewCache(dateProvider: SystemDateProvider())
         )
 
         // When
-        let otherMessage: FeatureMessage = .baggage(key: "message to other receiver", value: String.mockRandom())
+        let otherMessage: FeatureMessage = .payload(String.mockRandom())
         let result = receiver.receive(message: otherMessage, from: NOPDatadogCore())
 
         // Then
@@ -232,9 +232,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let dateProvider = RelativeDateProvider()
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock = .mockWith(
-            baggages: [
-                RUMFeature.name: FeatureBaggage(rumContext)
-            ]
+            additionalContext: [rumContext]
         )
 
         let receiver = WebViewEventReceiver(
@@ -245,7 +243,7 @@ class WebViewEventReceiverTests: XCTestCase {
         )
 
         dateProvider.advance(bySeconds: 1)
-        let date = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
         let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
         let webEventMock: JSON = [
             // Known properties:
@@ -273,7 +271,7 @@ class WebViewEventReceiverTests: XCTestCase {
                 "id": rumContext.sessionID,
             ],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": date + featureScope.contextMock.serverTimeOffset.toInt64Milliseconds,
+            "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         XCTAssertTrue(result, "It must accept the message")
@@ -284,13 +282,13 @@ class WebViewEventReceiverTests: XCTestCase {
 
     func testGivenRUMContextNotAvailable_whenReceivingWebEvent_itIsDropped() throws {
         // Given
-        XCTAssertNil(featureScope.contextMock.baggages[RUMFeature.name])
+        XCTAssertNil(featureScope.contextMock.additionalContext(ofType: RUMCoreContext.self))
 
         let receiver = WebViewEventReceiver(
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache()
+            viewCache: ViewCache(dateProvider: SystemDateProvider())
         )
 
         // When
@@ -301,43 +299,15 @@ class WebViewEventReceiverTests: XCTestCase {
         XCTAssertTrue(featureScope.eventsWritten.isEmpty, "The event must be dropped")
     }
 
-    func testGivenInvalidRUMContext_whenReceivingEvent_itSendsErrorTelemetry() throws {
-        struct InvalidRUMContext: Codable {
-            var foo = "bar"
-        }
-
-        // Given
-        featureScope.contextMock = .mockWith(
-            baggages: [
-                RUMFeature.name: FeatureBaggage(InvalidRUMContext())
-            ]
-        )
-
-        let receiver = WebViewEventReceiver(
-            featureScope: featureScope,
-            dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache()
-        )
-
-        // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: randomWebEvent()), from: NOPDatadogCore())
-
-        // Then
-        XCTAssertTrue(result, "It should accept the message")
-        let errorTelemetry = try XCTUnwrap(featureScope.telemetryMock.messages.firstError(), "It must send error telemetry")
-        XCTAssertTrue(errorTelemetry.message.hasPrefix("Failed to decode `RUMCoreContext`"))
-    }
-
     func testGivenReplayContextAvailable_whenReceivingWebEvent_itInjectReplayInfo() throws {
         // Given
         let dateProvider = RelativeDateProvider()
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock = .mockWith(
             source: "react-native",
-            baggages: [
-                RUMFeature.name: FeatureBaggage(rumContext),
-                SessionReplayDependency.hasReplay: FeatureBaggage(true)
+            additionalContext: [
+                rumContext,
+                SessionReplayCoreContext.HasReplay(value: true)
             ]
         )
 
@@ -351,12 +321,12 @@ class WebViewEventReceiverTests: XCTestCase {
         let containerViewID: String = .mockRandom()
         receiver.viewCache.insert(
             id: containerViewID,
-            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
             hasReplay: true
         )
 
         dateProvider.advance(bySeconds: 1)
-        let date = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
         let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
         let webHasReplay: Bool = .mockRandom()
         let webEventMock: JSON = [
@@ -402,7 +372,7 @@ class WebViewEventReceiverTests: XCTestCase {
                 "has_replay": webHasReplay
             ] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": date + featureScope.contextMock.serverTimeOffset.toInt64Milliseconds,
+            "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         XCTAssertTrue(result, "It must accept the message")
@@ -417,9 +387,9 @@ class WebViewEventReceiverTests: XCTestCase {
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock = .mockWith(
             source: "react-native",
-            baggages: [
-                RUMFeature.name: FeatureBaggage(rumContext),
-                SessionReplayDependency.hasReplay: FeatureBaggage(false)
+            additionalContext: [
+                rumContext,
+                SessionReplayCoreContext.HasReplay(value: false)
             ]
         )
 
@@ -433,12 +403,12 @@ class WebViewEventReceiverTests: XCTestCase {
         let containerViewID: String = .mockRandom()
         receiver.viewCache.insert(
             id: containerViewID,
-            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
             hasReplay: true
         )
 
         dateProvider.advance(bySeconds: 1)
-        let date = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
         let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
         let webEventMock: JSON = [
             // Known properties:
@@ -478,7 +448,7 @@ class WebViewEventReceiverTests: XCTestCase {
                 "has_replay": false
             ] as [String: Any],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": date + featureScope.contextMock.serverTimeOffset.toInt64Milliseconds,
+            "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         XCTAssertTrue(result, "It must accept the message")

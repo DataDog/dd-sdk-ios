@@ -18,6 +18,7 @@ internal class URLSessionClient: HTTPClient {
         configuration.urlCache = nil
         configuration.connectionProxyDictionary = proxyConfiguration
 
+        #if !os(watchOS)
         // URLSession does not set the `Proxy-Authorization` header automatically when using a proxy
         // configuration. We manually set the HTTP basic authentication header.
         if let user = proxyConfiguration?[kCFProxyUsernameKey] as? String,
@@ -25,6 +26,7 @@ internal class URLSessionClient: HTTPClient {
             let authorization = basicHTTPAuthentication(username: user, password: password)
             configuration.httpAdditionalHeaders = ["Proxy-Authorization": authorization]
         }
+        #endif
 
         self.init(session: URLSession(configuration: configuration))
     }
@@ -33,9 +35,12 @@ internal class URLSessionClient: HTTPClient {
         self.session = session
     }
 
-    func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
+    func send(request: URLRequest, delegate: URLSessionTaskDelegate?, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
         let task = session.dataTask(with: request) { data, response, error in
             completion(httpClientResult(for: (data, response, error)))
+        }
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, *) {
+            task.delegate = delegate
         }
         task.resume()
     }

@@ -11,21 +11,19 @@ import DatadogCrashReporting
 @testable import DatadogRUM
 
 class WatchdogTerminationsMonitoringTests: XCTestCase {
-    // swiftlint:disable:this implicitly_unwrapped_optional
-    var core: DatadogCoreProxy!
-    // swiftlint:disable:this implicitly_unwrapped_optional
+    var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     var rumConfig = RUM.Configuration(applicationID: .mockAny())
     let device: DeviceInfo = .init(
         name: .mockAny(),
         model: .mockAny(),
         osName: .mockAny(),
-        osVersion: .mockAny(),
-        osBuildNumber: .mockAny(),
         architecture: .mockAny(),
         isSimulator: false,
         vendorId: .mockAny(),
         isDebugging: false,
-        systemBootTime: .init()
+        systemBootTime: .init(),
+        logicalCpuCount: .mockRandom(),
+        totalRam: .mockRandom()
     )
 
     override func setUp() {
@@ -34,8 +32,8 @@ class WatchdogTerminationsMonitoringTests: XCTestCase {
         rumConfig.trackWatchdogTerminations = true
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
 
         super.tearDown()
@@ -106,7 +104,6 @@ class WatchdogTerminationsMonitoringTests: XCTestCase {
         XCTAssertEqual(watchdogCrash.error.source, .source)
         XCTAssertEqual(watchdogCrash.error.category, .watchdogTermination)
     }
-
 
     /// Watchdog Termination check is done in the background, we need to wait for it to finish before we can proceed with the test
     /// - Parameter core: `DatadogCoreProxy` instance

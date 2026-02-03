@@ -7,10 +7,12 @@
 #if os(iOS)
 import XCTest
 @_spi(Internal)
+import TestUtilities
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 class UIStepperRecorderTests: XCTestCase {
-    private let recorder = UIStepperRecorder()
+    private let recorder = UIStepperRecorder(identifier: UUID())
     private let stepper = UIStepper()
     /// `ViewAttributes` simulating common attributes of switch's `UIView`.
     private var viewAttributes: ViewAttributes = .mockAny()

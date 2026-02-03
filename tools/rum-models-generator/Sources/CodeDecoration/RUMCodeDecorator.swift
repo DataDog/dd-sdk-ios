@@ -22,12 +22,13 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
                 "RUMCITest",
                 "RUMSessionType",
                 "RUMSyntheticsTest",
-                "RUMDevice",
-                "RUMOperatingSystem",
+                "Device",
+                "OperatingSystem",
                 "RUMActionID",
                 "RUMSessionPrecondition",
                 "RUMTelemetryDevice",
                 "RUMTelemetryOperatingSystem",
+                "RUMAccount"
             ]
         )
     }
@@ -47,6 +48,15 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
 
         if context.parent == nil {
             `struct`.conformance = [rumDataModelProtocol] // Conform root structs to `RUMDataModel`
+        }
+
+        // Vital has a member `description` that needs to be renamed for Obj-C
+        `struct`.properties = `struct`.properties.map {
+            var prop = $0
+            if prop.name == "description" {
+                prop.name = "\(`struct`.name.lowerCamelCased)Description"
+            }
+            return prop
         }
 
         return `struct`
@@ -111,8 +121,6 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
                 // than `*.device` in common schema: https://github.com/DataDog/rum-events-format/blob/dcd62e58566b9d158c404f3588edc62c041262dd/schemas/rum/_common-schema.json#L264-L295
                 // For that reason, we generate it under different name, so the `RUMTelemetryDevice` can be shared between telemetry events.
                 fixedName = "RUMTelemetryDevice"
-            } else {
-                fixedName = "RUMDevice"
             }
         }
 
@@ -123,7 +131,7 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
                 // For that reason, we generate it under different name, so the `RUMTelemetryOperatingSystem` can be shared between telemetry events.
                 fixedName = "RUMTelemetryOperatingSystem"
             } else {
-                fixedName = "RUMOperatingSystem"
+                fixedName = "OperatingSystem"
             }
         }
 
@@ -137,6 +145,10 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
 
         if fixedName == "SessionPrecondition" {
             fixedName = "RUMSessionPrecondition"
+        }
+
+        if fixedName == "Account" {
+            fixedName = "RUMAccount"
         }
 
         return fixedName

@@ -7,14 +7,15 @@
 import Foundation
 import os.activity
 
-/// This symbol is only accesible in Activity framework from Objective-C because uses a macro to create it, to use it from Swift
+/// This symbol is only accessible in Activity framework from Objective-C because uses a macro to create it, to use it from Swift
 /// we must recreate whats done in the macro in Swift code.
 internal let OS_ACTIVITY_CURRENT = unsafeBitCast(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "_os_activity_current"), to: os_activity_t.self)
 
 /// Used to reference the active span in the current execution context.
 internal class ActivityReference {
     let activityId: os_activity_id_t
-    fileprivate var activityState = os_activity_scope_state_s()
+    private var activityState = os_activity_scope_state_s()
+    private var isActive = true
 
     init() {
         let dso = UnsafeMutableRawPointer(mutating: #dsohandle)
@@ -23,8 +24,16 @@ internal class ActivityReference {
         os_activity_scope_enter(activity, &activityState)
     }
 
-    deinit {
+    func leave() {
+        guard isActive else {
+            return
+        }
+        isActive = false
         os_activity_scope_leave(&activityState)
+    }
+
+    deinit {
+        leave()
     }
 }
 
@@ -32,6 +41,12 @@ internal class ActivityReference {
 internal class ActiveSpansPool {
     private var contextMap = [os_activity_id_t: DDSpan]()
     private let rlock = NSRecursiveLock()
+
+    var isEmpty: Bool {
+        rlock.lock()
+        defer { rlock.unlock() }
+        return contextMap.isEmpty
+    }
 
     /// Returns the Span from the current context
     func getActiveSpan() -> DDSpan? {
@@ -51,9 +66,11 @@ internal class ActiveSpansPool {
         rlock.unlock()
     }
 
-    func removeSpan(activityReference: ActivityReference) {
+    func removeSpan(span: DDSpan) {
         rlock.lock()
-        contextMap[activityReference.activityId] = nil
+        contextMap = contextMap.filter { key, value in
+            value.ddContext.spanID != span.ddContext.spanID
+        }
         rlock.unlock()
     }
 

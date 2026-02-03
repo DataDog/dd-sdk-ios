@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogRUM"
-  s.version      = "2.14.1"
+  s.version      = "3.6.0"
   s.summary      = "Datadog Real User Monitoring Module."
 
   s.homepage     = "https://www.datadoghq.com"

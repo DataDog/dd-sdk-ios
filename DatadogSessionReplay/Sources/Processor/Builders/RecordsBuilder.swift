@@ -26,12 +26,12 @@ internal class RecordsBuilder {
     func createMetaRecord(from snapshot: ViewTreeSnapshot) -> SRRecord {
         let record = SRMetaRecord(
             data: .init(
-                height: Int64(withNoOverflow: snapshot.viewportSize.height),
+                height: Int64.ddWithNoOverflow(snapshot.viewportSize.height),
                 href: nil,
-                width: Int64(withNoOverflow: snapshot.viewportSize.width)
+                width: Int64.ddWithNoOverflow(snapshot.viewportSize.width)
             ),
             slotId: nil,
-            timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+            timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
         )
         return .metaRecord(value: record)
     }
@@ -42,7 +42,7 @@ internal class RecordsBuilder {
         let record = SRFocusRecord(
             data: SRFocusRecord.Data(hasFocus: true),
             slotId: nil,
-            timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+            timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
         )
         return .focusRecord(value: record)
     }
@@ -53,7 +53,7 @@ internal class RecordsBuilder {
     func createFullSnapshotRecord(from snapshot: ViewTreeSnapshot, wireframes: [SRWireframe]) -> SRRecord {
         let record = SRFullSnapshotRecord(
             data: .init(wireframes: wireframes),
-            timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+            timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
         )
 
         return .fullSnapshotRecord(value: record)
@@ -66,9 +66,6 @@ internal class RecordsBuilder {
     /// In case of unexpected failure, it will fallback to creating FSR instead.
     /// If the root wireframe has changed, we trigger a full snapshot so it is added first in the replay.
     func createIncrementalSnapshotRecord(from snapshot: ViewTreeSnapshot, with wireframes: [SRWireframe], lastWireframes: [SRWireframe]) -> SRRecord? {
-        if wireframes.first?.id != lastWireframes.first?.id {
-            return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
-        }
         do {
             return try createIncrementalSnapshotRecord(from: snapshot, newWireframes: wireframes, lastWireframes: lastWireframes)
         } catch {
@@ -95,7 +92,7 @@ internal class RecordsBuilder {
                     }
                 )
             ),
-            timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+            timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
         )
 
         return .incrementalSnapshotRecord(value: record)
@@ -119,7 +116,7 @@ internal class RecordsBuilder {
                         y: round(touch.position.y)
                     )
                 ),
-                timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+                timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
             )
             return .incrementalSnapshotRecord(value: record)
         }
@@ -129,18 +126,18 @@ internal class RecordsBuilder {
         from snapshot: ViewTreeSnapshot,
         lastSnapshot: ViewTreeSnapshot
     ) -> SRRecord? {
-        guard lastSnapshot.viewportSize.aspectRatio != snapshot.viewportSize.aspectRatio else {
+        guard lastSnapshot.viewportSize.dd.aspectRatio != snapshot.viewportSize.dd.aspectRatio else {
             return nil
         }
         return .incrementalSnapshotRecord(
             value: SRIncrementalSnapshotRecord(
                 data: .viewportResizeData(
                     value: .init(
-                        height: Int64(withNoOverflow: snapshot.viewportSize.height),
-                        width: Int64(withNoOverflow: snapshot.viewportSize.width)
+                        height: Int64.ddWithNoOverflow(snapshot.viewportSize.height),
+                        width: Int64.ddWithNoOverflow(snapshot.viewportSize.width)
                     )
                 ),
-                timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+                timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
             )
         )
     }

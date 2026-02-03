@@ -20,13 +20,21 @@ class NOPMonitorTests: XCTestCase {
 
         // When
         noop.addAttribute(forKey: .mockAny(), value: String.mockAny())
+        noop.addAttributes(mockRandomAttributes())
         noop.removeAttribute(forKey: .mockAny())
+        noop.removeAttributes(forKeys: .mockAny())
         noop.stopSession()
+        noop.reportAppFullyDisplayed()
+        noop.addViewAttribute(forKey: .mockAny(), value: String.mockAny())
+        noop.addViewAttributes(mockRandomAttributes())
+        noop.removeViewAttribute(forKey: .mockAny())
+        noop.removeViewAttributes(forKeys: .mockAny())
         noop.startView(viewController: mockView)
         noop.stopView(viewController: mockView)
         noop.startView(key: "view-key")
         noop.stopView(key: "view-key")
         noop.addTiming(name: .mockAny())
+        noop.addViewLoadingTime(overwrite: .mockAny())
         noop.addError(message: .mockAny())
         noop.addError(error: ProgrammerError(description: .mockAny()))
         noop.startResource(resourceKey: .mockAny(), request: .mockAny())
@@ -41,21 +49,33 @@ class NOPMonitorTests: XCTestCase {
         noop.startAction(type: .click, name: .mockAny())
         noop.stopAction(type: .click)
         noop.addFeatureFlagEvaluation(name: .mockAny(), value: String.mockAny())
+        noop.startFeatureOperation(name: .mockAny())
+        noop.succeedFeatureOperation(name: .mockAny())
+        noop.failFeatureOperation(name: .mockAny(), reason: .mockAny())
+
         noop.debug = .mockRandom()
         _ = noop.debug
 
         // Then
-        XCTAssertEqual(dd.logger.criticalLogs.count, 24)
+        XCTAssertEqual(dd.logger.criticalLogs.count, 35)
         let actualMessages = dd.logger.criticalLogs.map { $0.message }
         let expectedMessages = [
             "addAttribute(forKey:value:)",
+            "addAttributes(_:)",
             "removeAttribute(forKey:)",
+            "removeAttributes(forKeys:)",
             "stopSession()",
+            "reportAppFullyDisplayed()",
+            "addViewAttribute(forKey:value:)",
+            "addViewAttributes(_:)",
+            "removeViewAttribute(forKey:)",
+            "removeViewAttributes(forKeys:)",
             "startView(viewController:name:attributes:)",
             "stopView(viewController:attributes:)",
             "startView(key:name:attributes:)",
             "stopView(key:attributes:)",
             "addTiming(name:)",
+            "addViewLoadingTime(overwrite:)",
             "addError(message:type:stack:source:attributes:file:line:)",
             "addError(error:source:attributes:)",
             "startResource(resourceKey:request:attributes:)",
@@ -70,6 +90,9 @@ class NOPMonitorTests: XCTestCase {
             "startAction(type:name:attributes:)",
             "stopAction(type:name:attributes:)",
             "addFeatureFlagEvaluation(name:value:)",
+            "startFeatureOperation(name:operationKey:attributes:)",
+            "succeedFeatureOperation(name:operationKey:attributes:)",
+            "failFeatureOperation(name:operationKey:reason:attributes:)",
             "debug",
             "debug",
         ].map { method in

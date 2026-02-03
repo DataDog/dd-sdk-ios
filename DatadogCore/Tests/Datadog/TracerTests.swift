@@ -5,13 +5,13 @@
  */
 
 import XCTest
-import TestUtilities
 import DatadogInternal
 
 @testable import DatadogTrace
 @testable import DatadogLogs
 @testable import DatadogCore
 @testable import DatadogRUM
+@testable import TestUtilities
 
 // swiftlint:disable multiline_arguments_brackets
 class TracerTests: XCTestCase {
@@ -24,8 +24,8 @@ class TracerTests: XCTestCase {
         config = Trace.Configuration()
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+    override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         config = nil
         super.tearDown()
@@ -41,7 +41,18 @@ class TracerTests: XCTestCase {
             source: "abc",
             sdkVersion: "1.2.3",
             ciAppOrigin: nil,
-            applicationBundleIdentifier: "com.datadoghq.ios-sdk"
+            applicationBundleIdentifier: "com.datadoghq.ios-sdk",
+            device: .mockWith(
+                name: "iPhone",
+                model: "iPhone10,1",
+                architecture: "arm64",
+                logicalCpuCount: 4,
+                totalRam: 2_048
+            ),
+            os: .mockWith(
+                version: "15.4.1",
+                build: "13D20"
+            )
         )
         config.dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         config.traceIDGenerator = RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100))
@@ -58,7 +69,6 @@ class TracerTests: XCTestCase {
         {
           "spans": [
             {
-              "_dd.agent_psr": 1,
               "trace_id": "64",
               "span_id": "64",
               "parent_id": "0",
@@ -71,10 +81,32 @@ class TracerTests: XCTestCase {
               "type": "custom",
               "meta.tracer.version": "1.2.3",
               "meta.version": "1.0.0",
+              "meta.device": {
+                "architecture": "arm64",
+                "battery_level": 0.5,
+                "brand": "Apple",
+                "brightness_level": 0,
+                "locale": "en-US",
+                "logical_cpu_count": 4,
+                "model": "iPhone10,1",
+                "name": "iPhone",
+                "power_saving_mode": 0,
+                "time_zone": "Europe/Paris",
+                "total_ram": 2048,
+                "type": "mobile"
+              },
+              "meta.os": {
+                "build": "13D20",
+                "name": "iOS",
+                "version": "15.4.1",
+                "version_major": "15"
+              },
               "meta._dd.source": "abc",
               "metrics._top_level": 1,
               "metrics._sampling_priority_v1": 1,
-              "meta._dd.p.tid": "a"
+              "metrics._dd.agent_psr": 1,
+              "meta._dd.p.tid": "a",
+              "meta._dd.p.dm": "-1"
             }
           ],
           "env": "custom"
@@ -360,6 +392,52 @@ class TracerTests: XCTestCase {
         XCTAssertNil(try? spanMatchers[3].meta.userID())
         XCTAssertNil(try? spanMatchers[3].meta.userName())
         XCTAssertNil(try? spanMatchers[3].meta.userEmail())
+    }
+
+    // MARK: - Sending account info
+
+    func testSendingAccountInfo() throws {
+        core.context = .mockWith(
+            accountInfo: nil
+        )
+
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core).dd
+
+        tracer.startSpan(operationName: "span with no account info").finish()
+
+        core.context.accountInfo = AccountInfo(id: "abc-123", name: "Foo", extraInfo: [:])
+        tracer.startSpan(operationName: "span with account `id` and `name`").finish()
+
+        core.context.accountInfo = AccountInfo(
+            id: "abc-123",
+            name: "Foo",
+            extraInfo: [
+                "str": "value",
+                "int": 11_235,
+                "bool": true
+            ]
+        )
+        tracer.startSpan(operationName: "span with account `id`, `name`, `email` and `extraInfo`").finish()
+
+        core.context.accountInfo = nil
+        tracer.startSpan(operationName: "span with no account info").finish()
+
+        let spanMatchers = try core.waitAndReturnSpanMatchers()
+        XCTAssertNil(try? spanMatchers[0].meta.accountID())
+        XCTAssertNil(try? spanMatchers[0].meta.accountName())
+
+        XCTAssertEqual(try spanMatchers[1].meta.accountID(), "abc-123")
+        XCTAssertEqual(try spanMatchers[1].meta.accountName(), "Foo")
+
+        XCTAssertEqual(try spanMatchers[2].meta.accountID(), "abc-123")
+        XCTAssertEqual(try spanMatchers[2].meta.accountName(), "Foo")
+        XCTAssertEqual(try spanMatchers[2].meta.custom(keyPath: "meta.account.str"), "value")
+        XCTAssertEqual(try spanMatchers[2].meta.custom(keyPath: "meta.account.int"), "11235")
+        XCTAssertEqual(try spanMatchers[2].meta.custom(keyPath: "meta.account.bool"), "true")
+
+        XCTAssertNil(try? spanMatchers[3].meta.accountID())
+        XCTAssertNil(try? spanMatchers[3].meta.accountName())
     }
 
     // MARK: - Sending carrier info
@@ -732,7 +810,7 @@ class TracerTests: XCTestCase {
         let injectedContext = tracer.startSpan(operationName: .mockAny()).context
 
         // When
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
+        let writer = HTTPHeadersWriter(traceContextInjection: .all)
         tracer.inject(spanContext: injectedContext, writer: writer)
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -743,7 +821,8 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(injectedContext.dd.spanID, extractedContext.dd.spanID)
         XCTAssertEqual(injectedContext.dd.parentSpanID, extractedContext.dd.parentSpanID)
         XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
-        XCTAssertEqual(injectedContext.dd.isKept, extractedContext.dd.isKept)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.samplingPriority, extractedContext.dd.samplingDecision.samplingPriority)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.decisionMaker, extractedContext.dd.samplingDecision.decisionMaker)
     }
 
     func testInjectingAndExtractingSpanContextUsingB3SingleCarrier() {
@@ -753,7 +832,7 @@ class TracerTests: XCTestCase {
         let injectedContext = tracer.startSpan(operationName: .mockAny()).context
 
         // When
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: .single, traceContextInjection: .all)
+        let writer = B3HTTPHeadersWriter(injectEncoding: .single, traceContextInjection: .all)
         tracer.inject(spanContext: injectedContext, writer: writer)
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -764,7 +843,8 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(injectedContext.dd.spanID, extractedContext.dd.spanID)
         XCTAssertEqual(injectedContext.dd.parentSpanID, extractedContext.dd.parentSpanID)
         XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
-        XCTAssertEqual(injectedContext.dd.isKept, extractedContext.dd.isKept)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.samplingPriority, extractedContext.dd.samplingDecision.samplingPriority)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.decisionMaker, extractedContext.dd.samplingDecision.decisionMaker)
     }
 
     func testInjectingAndExtractingSpanContextUsingB3MultipleCarrier() {
@@ -774,7 +854,7 @@ class TracerTests: XCTestCase {
         let injectedContext = tracer.startSpan(operationName: .mockAny()).context
 
         // When
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: .multiple, traceContextInjection: .all)
+        let writer = B3HTTPHeadersWriter(injectEncoding: .multiple, traceContextInjection: .all)
         tracer.inject(spanContext: injectedContext, writer: writer)
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -785,7 +865,8 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(injectedContext.dd.spanID, extractedContext.dd.spanID)
         XCTAssertEqual(injectedContext.dd.parentSpanID, extractedContext.dd.parentSpanID)
         XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
-        XCTAssertEqual(injectedContext.dd.isKept, extractedContext.dd.isKept)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.samplingPriority, extractedContext.dd.samplingDecision.samplingPriority)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.decisionMaker, extractedContext.dd.samplingDecision.decisionMaker)
     }
 
     func testInjectingAndExtractingSpanContextUsingW3CCarrier() {
@@ -795,7 +876,7 @@ class TracerTests: XCTestCase {
         let injectedContext = tracer.startSpan(operationName: .mockAny()).context
 
         // When
-        let writer = W3CHTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
+        let writer = W3CHTTPHeadersWriter(traceContextInjection: .all)
         tracer.inject(spanContext: injectedContext, writer: writer)
 
         let reader = W3CHTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -806,7 +887,112 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(injectedContext.dd.spanID, extractedContext.dd.spanID)
         XCTAssertEqual(injectedContext.dd.parentSpanID, extractedContext.dd.parentSpanID)
         XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
-        XCTAssertEqual(injectedContext.dd.isKept, extractedContext.dd.isKept)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.samplingPriority, extractedContext.dd.samplingDecision.samplingPriority)
+        XCTAssertEqual(injectedContext.dd.samplingDecision.decisionMaker, extractedContext.dd.samplingDecision.decisionMaker)
+    }
+
+    // MARK: - Manually keeping/dropping spans
+
+    func testSendingManuallyKeptSpan() throws {
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
+
+        let span = tracer.startRootSpan(operationName: .mockAny())
+        span.setTag(key: SpanTags.manualKeep, value: true)
+        span.finish()
+
+        let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try spanMatcher.metrics.samplingPriority(), 2)
+        XCTAssertEqual(try spanMatcher.meta.samplingDecisionMechanism(), "-4")
+    }
+
+    func testManuallyDroppingSpan() throws {
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
+
+        let span = tracer.startRootSpan(operationName: .mockAny())
+        span.setTag(key: SpanTags.manualDrop, value: true)
+        span.finish()
+
+        XCTAssertTrue(try core.waitAndReturnSpanMatchers().isEmpty)
+    }
+
+    func testMarkingManuallyKeptRootSpanWithChildren() throws {
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
+
+        let span = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 0)
+        span.setTag(key: SpanTags.manualKeep, value: true)
+
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: span.context)
+        let grandchild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+
+        grandchild.finish()
+        child.finish()
+        span.finish()
+
+        let spanMatcher = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spanMatcher.count, 3)
+        XCTAssertEqual(try spanMatcher.filter { try $0.parentSpanID() != 0 }.count, 2)
+        XCTAssertEqual(spanMatcher.filter { (try? $0.metrics.samplingPriority()) == 2 }.count, 1)
+        XCTAssertEqual(spanMatcher.filter { (try? $0.meta.samplingDecisionMechanism()) == "-4" }.count, 1)
+    }
+
+    func testMarkingManuallyKeptChildSpanWithChildren() throws {
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
+
+        let span = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 0)
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: span.context)
+        let grandchild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+
+        span.setTag(key: SpanTags.manualKeep, value: true)
+
+        grandchild.finish()
+        child.finish()
+        span.finish()
+
+        let spanMatcher = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spanMatcher.count, 3)
+        XCTAssertEqual(try spanMatcher.filter { try $0.parentSpanID() != 0 }.count, 2)
+        XCTAssertEqual(spanMatcher.filter { (try? $0.metrics.samplingPriority()) == 2 }.count, 1)
+        XCTAssertEqual(spanMatcher.filter { (try? $0.meta.samplingDecisionMechanism()) == "-4" }.count, 1)
+    }
+
+    func testMarkingManuallyDroppedRootSpanWithChildren() throws {
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
+
+        let span = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 100)
+        span.setTag(key: SpanTags.manualDrop, value: true)
+
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: span.context)
+        let grandchild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+
+        grandchild.finish()
+        child.finish()
+        span.finish()
+
+        let spanMatcher = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spanMatcher.count, 0)
+    }
+
+    func testMarkingManuallyDroppedChildSpanWithChildren() throws {
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
+
+        let span = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 100)
+        let child = tracer.startSpan(operationName: .mockAny(), childOf: span.context)
+        let grandchild = tracer.startSpan(operationName: .mockAny(), childOf: child.context)
+
+        child.setTag(key: SpanTags.manualDrop, value: true)
+
+        grandchild.finish()
+        child.finish()
+        span.finish()
+
+        let spanMatcher = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spanMatcher.count, 0)
     }
 
     // MARK: - Span Dates Correction
@@ -832,7 +1018,7 @@ class TracerTests: XCTestCase {
         let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
         XCTAssertEqual(
             try spanMatcher.startTime(),
-            deviceTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toNanoseconds,
+            deviceTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toNanoseconds,
             "The `startTime` should be using server time."
         )
         XCTAssertEqual(
@@ -885,7 +1071,7 @@ class TracerTests: XCTestCase {
     // MARK: - Usage errors
 
     func testGivenSDKNotInitialized_whenObtainingSharedTracer_itPrintsError() {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 
@@ -905,7 +1091,7 @@ class TracerTests: XCTestCase {
     }
 
     func testGivenTraceNotEnabled_whenObtainingSharedTracer_itPrintsError() {
-        let printFunction = PrintFunctionMock()
+        let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
 

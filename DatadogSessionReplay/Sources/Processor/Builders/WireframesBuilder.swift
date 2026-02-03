@@ -67,7 +67,7 @@ extension SessionReplayWireframesBuilder {
     public func createShapeWireframe(
         id: WireframeID,
         frame: CGRect,
-        clip: SRContentClip? = nil,
+        clip: CGRect,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
@@ -76,13 +76,13 @@ extension SessionReplayWireframesBuilder {
     ) -> SRWireframe {
         let wireframe = SRShapeWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
-            clip: clip,
-            height: Int64(withNoOverflow: frame.height),
+            clip: SRContentClip(frame, intersecting: clip),
+            height: Int64.ddWithNoOverflow( frame.height),
             id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
-            width: Int64(withNoOverflow: frame.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int64.ddWithNoOverflow( frame.width),
+            x: Int64.ddWithNoOverflow( frame.minX),
+            y: Int64.ddWithNoOverflow( frame.minY)
         )
 
         return .shapeWireframe(value: wireframe)
@@ -92,8 +92,7 @@ extension SessionReplayWireframesBuilder {
         id: WireframeID,
         resource: SessionReplayResource,
         frame: CGRect,
-        mimeType: String = "png",
-        clip: SRContentClip? = nil,
+        clip: CGRect,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
@@ -106,16 +105,16 @@ extension SessionReplayWireframesBuilder {
         let wireframe = SRImageWireframe(
             base64: nil, // field deprecated - we should use resource endpoint instead
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
-            clip: clip,
-            height: Int64(withNoOverflow: frame.height),
+            clip: SRContentClip(frame, intersecting: clip),
+            height: Int64.ddWithNoOverflow( frame.height),
             id: id,
             isEmpty: false, // field deprecated - we should use placeholder wireframe instead
-            mimeType: mimeType,
+            mimeType: resource.mimeType,
             resourceId: resource.calculateIdentifier(),
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
-            width: Int64(withNoOverflow: frame.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int64.ddWithNoOverflow( frame.width),
+            x: Int64.ddWithNoOverflow( frame.minX),
+            y: Int64.ddWithNoOverflow( frame.minY)
         )
         return .imageWireframe(value: wireframe)
     }
@@ -123,14 +122,15 @@ extension SessionReplayWireframesBuilder {
     public func createTextWireframe(
         id: WireframeID,
         frame: CGRect,
+        clip: CGRect,
         text: String,
         textFrame: CGRect? = nil,
         textAlignment: SRTextPosition.Alignment? = nil,
-        clip: SRContentClip? = nil,
         textColor: CGColor? = nil,
         font: UIFont? = nil,
         fontOverride: FontOverride? = nil,
         fontScalingEnabled: Bool = false,
+        truncationMode: SRTextStyle.TruncationMode? = nil,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
@@ -141,14 +141,14 @@ extension SessionReplayWireframesBuilder {
         let textPosition = SRTextPosition(
             alignment: textAlignment,
             padding: .init(
-                bottom: Int64(withNoOverflow: frame.maxY - textFrame.maxY),
-                left: Int64(withNoOverflow: textFrame.minX - frame.minX),
-                right: Int64(withNoOverflow: frame.maxX - textFrame.maxX),
-                top: Int64(withNoOverflow: textFrame.minY - frame.minY)
+                bottom: Int64.ddWithNoOverflow( frame.maxY - textFrame.maxY),
+                left: Int64.ddWithNoOverflow( textFrame.minX - frame.minX),
+                right: Int64.ddWithNoOverflow( frame.maxX - textFrame.maxX),
+                top: Int64.ddWithNoOverflow( textFrame.minY - frame.minY)
             )
         )
 
-        var fontSize = Int64(withNoOverflow: fontOverride?.size ?? font?.pointSize ?? Fallback.fontSize)
+        var fontSize = Int64.ddWithNoOverflow( fontOverride?.size ?? font?.pointSize ?? Fallback.fontSize)
         if text.count > 0, fontScalingEnabled {
             // Calculates the approximate font size for available text area √(frameArea / numberOfCharacters)
             let area = textFrame.width * textFrame.height
@@ -162,21 +162,22 @@ extension SessionReplayWireframesBuilder {
         let textStyle = SRTextStyle(
             color: textColor.flatMap { hexString(from: $0) } ?? Fallback.color,
             family: Fallback.fontFamily,
-            size: fontSize
+            size: fontSize,
+            truncationMode: truncationMode
         )
 
         let wireframe = SRTextWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
-            clip: clip,
-            height: Int64(withNoOverflow: frame.height),
+            clip: SRContentClip(frame, intersecting: clip),
+            height: Int64.ddWithNoOverflow( frame.height),
             id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             text: text,
             textPosition: textPosition,
             textStyle: textStyle,
-            width: Int64(withNoOverflow: frame.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int64.ddWithNoOverflow( frame.width),
+            x: Int64.ddWithNoOverflow( frame.minX),
+            y: Int64.ddWithNoOverflow( frame.minY)
         )
 
         return .textWireframe(value: wireframe)
@@ -185,17 +186,17 @@ extension SessionReplayWireframesBuilder {
     public func createPlaceholderWireframe(
         id: Int64,
         frame: CGRect,
-        label: String,
-        clip: SRContentClip? = nil
+        clip: CGRect,
+        label: String
     ) -> SRWireframe {
         let wireframe = SRPlaceholderWireframe(
-            clip: clip,
-            height: Int64(withNoOverflow: frame.size.height),
+            clip: SRContentClip(frame, intersecting: clip),
+            height: Int64.ddWithNoOverflow( frame.size.height),
             id: id,
             label: label,
-            width: Int64(withNoOverflow: frame.size.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int64.ddWithNoOverflow( frame.size.width),
+            x: Int64.ddWithNoOverflow( frame.minX),
+            y: Int64.ddWithNoOverflow( frame.minY)
         )
         return .placeholderWireframe(value: wireframe)
     }
@@ -203,7 +204,7 @@ extension SessionReplayWireframesBuilder {
     public func visibleWebViewWireframe(
         id: Int,
         frame: CGRect,
-        clip: SRContentClip? = nil,
+        clip: CGRect,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
@@ -212,15 +213,15 @@ extension SessionReplayWireframesBuilder {
     ) -> SRWireframe {
         let wireframe = SRWebviewWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
-            clip: clip,
-            height: Int64(withNoOverflow: frame.height),
+            clip: SRContentClip(frame, intersecting: clip),
+            height: Int64.ddWithNoOverflow( frame.height),
             id: Int64(id),
             isVisible: true,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             slotId: String(id),
-            width: Int64(withNoOverflow: frame.size.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int64.ddWithNoOverflow( frame.size.width),
+            x: Int64.ddWithNoOverflow( frame.minX),
+            y: Int64.ddWithNoOverflow( frame.minY)
         )
 
         /// Remove the slot from the builder because a wireframe
@@ -258,7 +259,7 @@ extension SessionReplayWireframesBuilder {
 
         return .init(
             color: hexString(from: borderColor) ?? Fallback.color,
-            width: Int64(withNoOverflow: borderWidth.rounded(.up))
+            width: Int64.ddWithNoOverflow( borderWidth.rounded(.up))
         )
     }
 
@@ -267,10 +268,10 @@ extension SessionReplayWireframesBuilder {
             return nil
         }
 
-        return .init(
+        return SRShapeStyle(
             backgroundColor: hexString(from: backgroundColor) ?? Fallback.color,
-            cornerRadius: cornerRadius.map { Double($0) },
-            opacity: opacity.map { Double($0) }
+            cornerRadius: cornerRadius.flatMap { $0.isNaN ? nil : Double($0) },
+            opacity: opacity.flatMap { $0.isNaN ? nil : Double($0) }
         )
     }
 }
@@ -281,11 +282,11 @@ internal typealias WireframesBuilder = SessionReplayWireframesBuilder
 // MARK: - Convenience
 
 internal extension WireframesBuilder {
-    func createShapeWireframe(id: WireframeID, frame: CGRect, attributes: ViewAttributes) -> SRWireframe {
+    func createShapeWireframe(id: WireframeID, attributes: ViewAttributes) -> SRWireframe {
         return createShapeWireframe(
             id: id,
-            frame: frame,
-            clip: nil,
+            frame: attributes.frame,
+            clip: attributes.clip,
             borderColor: attributes.layerBorderColor,
             borderWidth: attributes.layerBorderWidth,
             backgroundColor: attributes.backgroundColor,
@@ -311,5 +312,50 @@ extension SRContentClip {
             top: top
         )
     }
+
+    /// Creates a Content Clip by intersecting the view frame with the clipping rectangle.
+    ///
+    /// The clipping rectangle usually represents the bounds of the parent view when `clipsToBounds` is enabled.
+    /// It determines which portion of the view should remain visible after clipping.
+    ///
+    /// If the intersection is empty, the view is completely clipped, and the resulting clip dimensions reflect the view’s size,
+    /// indicating no visible content. This will result in a wireframe with no drawing area, recorders should, in practice, prevent
+    /// this use case.
+    ///
+    /// - Parameters:
+    ///   - frame: The view frame.
+    ///   - clip: The clipping rectangle representing the visible area.
+    init?(_ frame: CGRect, intersecting clip: CGRect) {
+        let intersection = frame.intersection(clip)
+
+        guard !intersection.isEmpty else {
+            self.init(
+                bottom: nil,
+                left: Int64.ddWithNoOverflow( frame.width),
+                right: nil,
+                top: Int64.ddWithNoOverflow( frame.height)
+            )
+
+            return
+        }
+
+        let top = intersection.minY - frame.minY
+        let left = intersection.minX - frame.minX
+        let bottom = frame.maxY - intersection.maxY
+        let right = frame.maxX - intersection.maxX
+
+        // more reliable than intersection == frame
+        if top.isZero, left.isZero, bottom.isZero, right.isZero {
+            return nil
+        }
+
+        self.init(
+            bottom: bottom.isZero ? nil : Int64.ddWithNoOverflow( bottom),
+            left: left.isZero ? nil : Int64.ddWithNoOverflow( left),
+            right: right.isZero ? nil : Int64.ddWithNoOverflow( right),
+            top: top.isZero ? nil : Int64.ddWithNoOverflow( top)
+        )
+    }
 }
+
 #endif

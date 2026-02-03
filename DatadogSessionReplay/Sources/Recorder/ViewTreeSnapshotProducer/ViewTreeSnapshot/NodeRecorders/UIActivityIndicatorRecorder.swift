@@ -8,7 +8,11 @@
 import UIKit
 
 internal struct UIActivityIndicatorRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
+
+    init(identifier: UUID) {
+        self.identifier = identifier
+    }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let activityIndicator = view as? UIActivityIndicatorView else {
@@ -38,7 +42,8 @@ internal struct UIActivityIndicatorRecorder: NodeRecorder {
         let subtreeViewRecorder = ViewTreeRecorder(
             nodeRecorders: [
                 UIImageViewRecorder(
-                    shouldRecordImagePredicate: { $0.image != nil }
+                    identifier: identifier,
+                    shouldRecordImagePredicateOverride: { $0.image != nil }
                 )
             ]
         )
@@ -59,6 +64,7 @@ internal struct UIActivityIndicatorWireframesBuilder: NodeWireframesBuilder {
             builder.createShapeWireframe(
                 id: wireframeID,
                 frame: wireframeRect,
+                clip: attributes.clip,
                 backgroundColor: backgroundColor,
                 cornerRadius: attributes.layerCornerRadius,
                 opacity: attributes.alpha

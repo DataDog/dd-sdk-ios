@@ -4,8 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import XCTest
+import TestUtilities
 import HTTPServerMock
+import XCTest
 
 /// A set of common assertions for all RUM tests.
 protocol RUMCommonAsserts {
@@ -21,18 +22,16 @@ extension RUMCommonAsserts {
         requests.forEach { request in
             XCTAssertEqual(request.httpMethod, "POST")
 
-            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddsource=ios&&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:1.3.0-beta3,env:integration`
-            let pathRegex = #"^(.*)(\?ddsource=ios&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:)\#(semverPattern)(,env:integration)$"#
-            XCTAssertTrue(
-                request.path.matches(regex: pathRegex),
-                """
-                Request path doesn't match the expected regex.
-                ✉️ path: \(request.path)
-                🧪 expected regex:  \(pathRegex)
-                """,
-                file: file,
-                line: line
-            )
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddsource=ios&&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:1.3.0-beta3,env:integration,retry_count:1`
+            XCTAssertNotNil(request.path, file: file, line: line)
+            XCTAssertNotNil(request.queryItems)
+            XCTAssertEqual(request.queryItems!.count, 2)
+            XCTAssertEqual(request.queryItems?.value(name: "ddsource"), "ios", file: file, line: line)
+
+            let ddtags = request.queryItems?.ddtags()
+            XCTAssertNotNil(ddtags, file: file, line: line)
+            XCTAssertEqual(ddtags?.count, 1, file: file, line: line)
+            XCTAssertEqual(ddtags?["retry_count"], "1", file: file, line: line)
 
             XCTAssertEqual(request.httpHeaders["Content-Type"], "text/plain;charset=UTF-8", file: file, line: line)
             XCTAssertEqual(request.httpHeaders["User-Agent"]?.matches(regex: userAgentRegex), true, file: file, line: line)
@@ -40,6 +39,7 @@ extension RUMCommonAsserts {
             XCTAssertEqual(request.httpHeaders["DD-EVP-ORIGIN"], "ios", file: file, line: line)
             XCTAssertEqual(request.httpHeaders["DD-EVP-ORIGIN-VERSION"]?.matches(regex: semverRegex), true, file: file, line: line)
             XCTAssertEqual(request.httpHeaders["DD-REQUEST-ID"]?.matches(regex: ddRequestIDRegex), true, file: file, line: line)
+            XCTAssertEqual(request.httpHeaders["DD-IDEMPOTENCY-KEY"]?.matches(regex: sha1Regex), true, file: file, line: line)
         }
     }
 }

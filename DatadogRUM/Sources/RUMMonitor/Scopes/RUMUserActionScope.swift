@@ -9,7 +9,7 @@ import DatadogInternal
 
 internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     struct Constants {
-        /// If no activity is observed within this period in a discrete (discontinous) User Action, it is condiered ended.
+        /// If no activity is observed within this period in a discrete (discontinuous) User Action, it is considered ended.
         /// The activity may be i.e. due to Resource started loading.
         static let discreteActionTimeoutDuration: TimeInterval = 0.1 // 100 milliseconds
         /// Maximum duration of a continuous User Action. If it gets exceeded, a new session is started.
@@ -32,6 +32,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     /// This User Action's UUID.
     let actionUUID: RUMUUID
+    /// The type of instrumentation that issued an action that created this scope.
+    let instrumentation: InstrumentationType
     /// The start time of this User Action.
     private let actionStartTime: Date
 
@@ -58,6 +60,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     /// Number of Resources that started but not yet ended during this User Action's lifespan.
     private var activeResourcesCount: Int = 0
 
+    /// Interaction-to-Next-View metric for this view.
+    private let interactionToNextViewMetric: INVMetricTracking?
+
     /// Callback called when a `RUMActionEvent` is submitted for storage.
     private let onActionEventSent: (RUMActionEvent) -> Void
 
@@ -70,6 +75,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         startTime: Date,
         serverTimeOffset: TimeInterval,
         isContinuous: Bool,
+        instrumentation: InstrumentationType,
+        interactionToNextViewMetric: INVMetricTracking?,
         onActionEventSent: @escaping (RUMActionEvent) -> Void
     ) {
         self.parent = parent
@@ -82,6 +89,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         self.serverTimeOffset = serverTimeOffset
         self.isContinuous = isContinuous
         self.lastActivityTime = startTime
+        self.instrumentation = instrumentation
+        self.interactionToNextViewMetric = interactionToNextViewMetric
         self.onActionEventSent = onActionEventSent
     }
 
@@ -97,7 +106,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         if let expirationTime = possibleExpirationTime(currentTime: command.time), allResourcesCompletedLoading() {
-            sendActionEvent(completionTime: expirationTime, on: nil, context: context, writer: writer)
+            // Stop user action due to timeout
+            sendActionEvent(completionTime: expirationTime, on: command, context: context, writer: writer)
             return false
         }
 
@@ -131,8 +141,10 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     // MARK: - Sending RUM Events
 
-    private func sendActionEvent(completionTime: Date, on command: RUMCommand?, context: DatadogContext, writer: Writer) {
-        attributes.merge(rumCommandAttributes: command?.attributes)
+    private func sendActionEvent(completionTime: Date, on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        if command is RUMUserActionCommand {
+            attributes.merge(command.attributes) { $1 }
+        }
 
         var frustrations: [RUMActionEvent.Action.Frustration.FrustrationType]? = nil
         if dependencies.trackFrustrations, errorsCount > 0, actionType == .tap {
@@ -149,12 +161,13 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                     sessionPrecondition: self.context.sessionPrecondition
                 )
             ),
+            account: .init(context: context),
             action: .init(
                 crash: .init(count: 0),
                 error: .init(count: errorsCount.toInt64),
                 frustration: frustrations.map { .init(type: $0) },
                 id: actionUUID.toRUMDataFormat,
-                loadingTime: completionTime.timeIntervalSince(actionStartTime).toInt64Nanoseconds,
+                loadingTime: completionTime.timeIntervalSince(actionStartTime).dd.toInt64Nanoseconds,
                 longTask: .init(count: longTasksCount),
                 resource: .init(count: resourcesCount.toInt64),
                 target: .init(name: name),
@@ -166,11 +179,12 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: attributes),
-            date: actionStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context, telemetry: dependencies.telemetry),
+            context: .init(contextInfo: command.globalAttributes.merging(parent.attributes) { $1 }.merging(attributes) { $1 }),
+            date: actionStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
+            ddtags: context.ddTags,
+            device: context.normalizedDevice(),
             display: nil,
-            os: .init(context: context),
+            os: context.os,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
@@ -192,7 +206,25 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
         if let event = dependencies.eventBuilder.build(from: actionEvent) {
             writer.write(value: event)
+
+            // Track action in session ended metric
+            dependencies.sessionEndedMetric.track(
+                action: event,
+                instrumentationType: instrumentation,
+                in: self.context.sessionID
+            )
+
             onActionEventSent(event)
+
+            if let activeViewID = self.context.activeViewID {
+                interactionToNextViewMetric?.trackAction(
+                    startTime: actionStartTime,
+                    endTime: completionTime,
+                    name: name,
+                    type: actionType,
+                    in: activeViewID
+                )
+            }
         }
     }
 

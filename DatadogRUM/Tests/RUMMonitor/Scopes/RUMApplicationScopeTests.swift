@@ -5,9 +5,9 @@
  */
 
 import XCTest
-import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
+@testable import TestUtilities
 
 class RUMApplicationScopeTests: XCTestCase {
     let writer = FileWriterMock()
@@ -20,7 +20,7 @@ class RUMApplicationScopeTests: XCTestCase {
     ) -> RUMApplicationScope {
         let scope = RUMApplicationScope(dependencies: dependencies)
         // Always receive `RUMSDKInitCommand` as the very first command (see: `Monitor.notifySDKInit()`)
-        let initCommand = RUMSDKInitCommand(time: sdkContext.sdkInitDate)
+        let initCommand = RUMSDKInitCommand(time: sdkContext.sdkInitDate, globalAttributes: [:])
         _ = scope.process(command: initCommand, context: sdkContext, writer: writer)
         return scope
     }
@@ -242,79 +242,6 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertNotNil(scope.activeSession)
     }
 
-    func testGivenStoppedSession_whenUserActionOccurs_itRestartsTheLastKnownView() throws {
-        // Given
-        let currentTime = Date()
-        let scope = createRUMApplicationScope(
-            dependencies: .mockWith(
-                sessionSampler: .mockKeepAll()
-            )
-        )
-        let viewName: String = .mockRandom()
-        let viewPath: String = .mockRandom()
-        _ = scope.process(
-            command: RUMStartViewCommand.mockWith(
-                name: viewName,
-                path: viewPath
-            ),
-            context: .mockAny(),
-            writer: writer
-        )
-        _ = scope.process(
-            command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)),
-            context: .mockAny(),
-            writer: writer
-        )
-
-        // When
-        let secondSesionStartTime = currentTime.addingTimeInterval(3)
-        _ = scope.process(
-            command: RUMCommandMock(time: secondSesionStartTime, isUserInteraction: true),
-            context: .mockAny(),
-            writer: writer
-        )
-
-        // Then
-        XCTAssertEqual(scope.sessionScopes.count, 1)
-        let activeSession = try XCTUnwrap(scope.activeSession)
-        XCTAssertEqual(activeSession.viewScopes.count, 1)
-        let activeView = try XCTUnwrap(activeSession.viewScopes.first)
-        XCTAssertEqual(activeView.viewPath, viewPath)
-        XCTAssertEqual(activeView.viewName, viewName)
-        XCTAssertEqual(activeView.viewStartTime, secondSesionStartTime)
-    }
-
-    func testGivenStoppedSession_whenNonUserInteractionEvent_itDoesNotStartANewSession() throws {
-        // Given
-        let currentTime = Date()
-        let scope = createRUMApplicationScope(
-            dependencies: .mockWith(
-                sessionSampler: .mockKeepAll()
-            )
-        )
-        _ = scope.process(
-            command: RUMCommandMock(time: currentTime.addingTimeInterval(1), isUserInteraction: true),
-            context: .mockAny(),
-            writer: writer
-        )
-        _ = scope.process(
-            command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)),
-            context: .mockAny(),
-            writer: writer
-        )
-
-        // When
-        _ = scope.process(
-            command: RUMCommandMock(time: currentTime.addingTimeInterval(3), isUserInteraction: false),
-            context: .mockAny(),
-            writer: writer
-        )
-
-        // Then
-        XCTAssertEqual(scope.sessionScopes.count, 0)
-        XCTAssertNil(scope.activeSession)
-    }
-
     func testGivenSessionProcessingResources_whenStopped_itStaysInactive() throws {
         // Given
         let currentTime = Date()
@@ -394,9 +321,9 @@ class RUMApplicationScopeTests: XCTestCase {
     func testGivenAppLaunchInForegroundAndNoPrewarming_whenInitialSessionIsStarted() throws {
         // Given
         let sdkContext: DatadogContext = .mockWith(
-            launchTime: .mockWith(
-                launchDate: .mockDecember15th2019At10AMUTC(),
-                isActivePrewarm: false
+            launchInfo: .mockWith(
+                launchReason: .userLaunch,
+                processLaunchDate: .mockDecember15th2019At10AMUTC()
             ),
             applicationStateHistory: .mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
         )
@@ -425,9 +352,9 @@ class RUMApplicationScopeTests: XCTestCase {
     func testGivenAppLaunchInBackgroundAndNoPrewarming_whenInitialSessionIsStarted() throws {
         // Given
         let sdkContext: DatadogContext = .mockWith(
-            launchTime: .mockWith(
-                launchDate: .mockDecember15th2019At10AMUTC(),
-                isActivePrewarm: false
+            launchInfo: .mockWith(
+                launchReason: .backgroundLaunch,
+                processLaunchDate: .mockDecember15th2019At10AMUTC()
             ),
             applicationStateHistory: .mockAppInBackground(since: .mockDecember15th2019At10AMUTC())
         )
@@ -454,11 +381,11 @@ class RUMApplicationScopeTests: XCTestCase {
     func testGivenLaunchWithPrewarming_whenInitialSessionIsStarted() throws {
         // Given
         let sdkContext: DatadogContext = .mockWith(
-            launchTime: .mockWith(
-                launchDate: .mockDecember15th2019At10AMUTC(),
-                isActivePrewarm: true
+            launchInfo: .mockWith(
+                launchReason: .prewarming,
+                processLaunchDate: .mockDecember15th2019At10AMUTC()
             ),
-            applicationStateHistory: .mockRandom(since: .mockDecember15th2019At10AMUTC())
+            applicationStateHistory: .mockWith(initialState: .background, date: .mockDecember15th2019At10AMUTC())
         )
 
         // When

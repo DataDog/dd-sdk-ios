@@ -21,19 +21,22 @@ class DataUploaderTests: XCTestCase {
 
         let uploader = DataUploader(
             httpClient: HTTPClientMock(response: randomResponse),
-            requestBuilder: FeatureRequestBuilderMock(request: randomRequest)
+            requestBuilder: FeatureRequestBuilderMock(request: randomRequest),
+            featureName: .mockRandom()
         )
 
         // When
         let uploadStatus = try uploader.upload(
             events: .mockAny(),
-            context: .mockAny()
+            context: .mockAny(),
+            previous: nil
         )
 
         // Then
         let expectedUploadStatus = DataUploadStatus(
             httpResponse: randomResponse,
-            ddRequestID: randomRequest.value(forHTTPHeaderField: "DD-REQUEST-ID")
+            ddRequestID: randomRequest.value(forHTTPHeaderField: "DD-REQUEST-ID"),
+            attempt: 0
         )
 
         DDAssertReflectionEqual(uploadStatus, expectedUploadStatus)
@@ -48,17 +51,19 @@ class DataUploaderTests: XCTestCase {
 
         let uploader = DataUploader(
             httpClient: HTTPClientMock(error: randomError),
-            requestBuilder: FeatureRequestBuilderMock(request: randomRequest)
+            requestBuilder: FeatureRequestBuilderMock(request: randomRequest),
+            featureName: .mockRandom()
         )
 
         // When
         let uploadStatus = try uploader.upload(
             events: .mockAny(),
-            context: .mockAny()
+            context: .mockAny(),
+            previous: nil
         )
 
         // Then
-        let expectedUploadStatus = DataUploadStatus(networkError: randomError)
+        let expectedUploadStatus = DataUploadStatus(networkError: randomError, attempt: 0)
 
         DDAssertReflectionEqual(uploadStatus, expectedUploadStatus)
     }
@@ -69,11 +74,12 @@ class DataUploaderTests: XCTestCase {
 
         let uploader = DataUploader(
             httpClient: HTTPClientMock(),
-            requestBuilder: FailingRequestBuilderMock(error: error)
+            requestBuilder: FailingRequestBuilderMock(error: error),
+            featureName: .mockRandom()
         )
 
         // When & Then
-        XCTAssertThrowsError(try uploader.upload(events: .mockAny(), context: .mockAny())) { error in
+        XCTAssertThrowsError(try uploader.upload(events: .mockAny(), context: .mockAny(), previous: nil)) { error in
             XCTAssertTrue(error is ErrorMock)
         }
     }

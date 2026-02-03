@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import DatadogInternal
+import TestUtilities
 import XCTest
 
 // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
@@ -14,6 +16,8 @@ let semverRegex = "^\(semverPattern)$"
 let userAgentRegex = #"^.*/\d+[.\d]* CFNetwork \([a-zA-Z ]+; iOS/[0-9.]+\)$"#
 /// Regex for matching the value of `DD-REQUEST-ID` header, e.g. "DD-REQUEST-ID: 524A2616-D2AA-4FE5-BBD9-898D173BE658"
 let ddRequestIDRegex = #"^[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}$"#
+let numberPattern = "[0-9]+$"
+let sha1Regex = "^[0-9a-f]{40}$"
 
 /// Convenient interface to navigate through Example app's main screen.
 class ExampleApplication: XCUIApplication {

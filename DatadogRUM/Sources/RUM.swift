@@ -17,17 +17,23 @@ public enum RUM {
     ///   - configuration: Configuration of the feature.
     ///   - core: The instance of Datadog SDK to enable RUM in (global instance by default).
     public static func enable(
-        with configuration: RUM.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default
+        with configuration: RUM.Configuration,
+        in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         do {
-            try enableOrThrow(with: configuration, in: core)
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            try runOnMainThreadSync {
+                try enableOrThrow(with: configuration, in: core)
+            }
         } catch let error {
             consolePrint("\(error)", .error)
-       }
+        }
     }
 
     internal static func enableOrThrow(
-        with configuration: RUM.Configuration, in core: DatadogCoreProtocol
+        with configuration: RUM.Configuration,
+        in core: DatadogCoreProtocol
     ) throws {
         guard !(core is NOPDatadogCore) else {
             throw ProgrammerError(

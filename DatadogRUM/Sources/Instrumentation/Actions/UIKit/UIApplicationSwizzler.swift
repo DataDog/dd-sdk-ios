@@ -7,10 +7,10 @@
 import UIKit
 import DatadogInternal
 
-internal class UIApplicationSwizzler {
+internal final class UIApplicationSwizzler {
     let sendEvent: SendEvent
 
-    init(handler: UIEventHandler) throws {
+    init(handler: RUMActionsHandling) throws {
         sendEvent = try SendEvent(handler: handler)
     }
 
@@ -31,9 +31,9 @@ internal class UIApplicationSwizzler {
     > {
         private static let selector = #selector(UIApplication.sendEvent(_:))
         private let method: Method
-        private let handler: UIEventHandler
+        private let handler: RUMActionsHandling
 
-        init(handler: UIEventHandler) throws {
+        init(handler: RUMActionsHandling) throws {
             self.method = try dd_class_getInstanceMethod(UIApplication.self, Self.selector)
             self.handler = handler
         }

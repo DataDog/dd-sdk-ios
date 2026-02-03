@@ -12,10 +12,9 @@ EXPECTED_XCFRAMEWORKS := DatadogInternal \
 						DatadogTrace \
 						DatadogRUM \
 						DatadogSessionReplay \
-						DatadogObjc \
 						DatadogCrashReporting \
-						CrashReporter \
 						DatadogWebViewTracking \
+						DatadogFlags \
 						OpenTelemetryApi
 else ifeq ($(PLATFORM), tvOS Simulator)
 SCHEME := App tvOS
@@ -25,9 +24,8 @@ EXPECTED_XCFRAMEWORKS := DatadogInternal \
 						DatadogLogs \
 						DatadogTrace \
 						DatadogRUM \
-						DatadogObjc \
 						DatadogCrashReporting \
-						CrashReporter \
+						DatadogFlags \
 						OpenTelemetryApi
 endif
 

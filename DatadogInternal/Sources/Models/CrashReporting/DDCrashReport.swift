@@ -7,10 +7,10 @@
 import Foundation
 
 /// Crash Report format supported by Datadog SDK.
-public struct DDCrashReport: Codable, PassthroughAnyCodable {
+public struct DDCrashReport {
     /// Meta information about the process.
     /// Ref.: https://developer.apple.com/documentation/xcode/examining-the-fields-in-a-crash-report
-    public struct Meta: Codable, PassthroughAnyCodable {
+    public struct Meta: Encodable {
         /// A client-generated 16-byte UUID of the incident.
         public let incidentIdentifier: String?
         /// The name of the crashed process.
@@ -76,6 +76,8 @@ public struct DDCrashReport: Codable, PassthroughAnyCodable {
     public let wasTruncated: Bool
     /// The last context injected through `inject(context:)`
     public let context: Data?
+    /// Additional attributes of the crash
+    public let additionalAttributes: AnyCodable
 
     public init(
         date: Date?,
@@ -86,7 +88,8 @@ public struct DDCrashReport: Codable, PassthroughAnyCodable {
         binaryImages: [BinaryImage],
         meta: Meta,
         wasTruncated: Bool,
-        context: Data?
+        context: Data?,
+        additionalAttributes: [String: Encodable]?
     ) {
         self.date = date
         self.type = type
@@ -97,5 +100,6 @@ public struct DDCrashReport: Codable, PassthroughAnyCodable {
         self.meta = meta
         self.wasTruncated = wasTruncated
         self.context = context
+        self.additionalAttributes = AnyCodable(additionalAttributes)
     }
 }

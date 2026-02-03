@@ -8,6 +8,9 @@
 #   --artifacts-path: The path to build artifacts.
 #   --podspec-name: The name of podspec file to publish.
 
+# ENVs:
+# - DRY_RUN: Set to '1' to do everything except publishing podspecs to Cocoapods trunk.
+
 set -eo pipefail
 source ./tools/utils/argparse.sh
 source ./tools/utils/echo-color.sh
@@ -86,16 +89,16 @@ POD_STATUS__ERROR=3
 #   POD_STATUS__SUCCESS     : If the command succeeds.
 #   POD_STATUS__NEEDS_RETRY : If the command fails due to a dependency issue and requires retrying.
 #   POD_STATUS__ALREADY_EXISTS : If the podspec already exists in the trunk.
-#   POD_STATUS__ERROR       : If an unexpected error occured in the last `pod` command.
+#   POD_STATUS__ERROR       : If an unexpected error occurred in the last `pod` command.
 check_pod_command_status() {
     # This error likely indicates that podspec for one of dependencies isn not yet available
     #
     # Example:
     # ```
-    #  -> DatadogObjc (2.11.1)
+    #  -> DatadogInternal (2.11.1)
     #     - ERROR | [iOS] unknown: Encountered an unknown error (CocoaPods could not find compatible versions for pod "DatadogRUM":
     #   In Podfile:
-    #     DatadogObjc (from `/private/var/.../dd-sdk-ios/DatadogObjc.podspec`) was resolved to 2.11.1, which depends on
+    #     DatadogInternal (from `/private/var/.../dd-sdk-ios/DatadogInternal.podspec`) was resolved to 2.11.1, which depends on
     #       DatadogRUM (= 2.11.1)
     # ```
     # Ref.: https://github.com/CocoaPods/Molinillo/blob/1d62d7d5f448e79418716dc779a4909509ccda2a/lib/molinillo/errors.rb#L106

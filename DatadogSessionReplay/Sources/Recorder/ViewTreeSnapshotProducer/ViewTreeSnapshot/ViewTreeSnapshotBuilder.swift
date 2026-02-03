@@ -32,7 +32,8 @@ internal struct ViewTreeSnapshotBuilder {
             recorder: recorderContext,
             coordinateSpace: rootView,
             ids: idsGenerator,
-            webViewCache: webViewCache
+            webViewCache: webViewCache,
+            clip: rootView.bounds
         )
         let nodes = viewTreeRecorder.record(rootView, in: context)
         let snapshot = ViewTreeSnapshot(
@@ -47,34 +48,48 @@ internal struct ViewTreeSnapshotBuilder {
 }
 
 extension ViewTreeSnapshotBuilder {
-    init(additionalNodeRecorders: [NodeRecorder]) {
+    init(
+        additionalNodeRecorders: [NodeRecorder],
+        featureFlags: SessionReplay.Configuration.FeatureFlags
+    ) {
         self.init(
-            viewTreeRecorder: ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders() + additionalNodeRecorders),
+            viewTreeRecorder: ViewTreeRecorder(
+                nodeRecorders: createDefaultNodeRecorders(featureFlags: featureFlags) + additionalNodeRecorders
+            ),
             idsGenerator: NodeIDGenerator()
         )
     }
 }
 
 /// An arrays of default node recorders executed for the root view-tree hierarchy.
-internal func createDefaultNodeRecorders() -> [NodeRecorder] {
-    return [
-        UnsupportedViewRecorder(),
-        UIViewRecorder(),
-        UILabelRecorder(),
-        UIImageViewRecorder(),
-        UITextFieldRecorder(),
-        UITextViewRecorder(),
-        UISwitchRecorder(),
-        UISliderRecorder(),
-        UISegmentRecorder(),
-        UIStepperRecorder(),
-        UINavigationBarRecorder(),
-        UITabBarRecorder(),
-        UIPickerViewRecorder(),
-        UIDatePickerRecorder(),
-        WKWebViewRecorder(),
-        UIProgressViewRecorder(),
-        UIActivityIndicatorRecorder()
+internal func createDefaultNodeRecorders(featureFlags: SessionReplay.Configuration.FeatureFlags) -> [NodeRecorder] {
+    var recorders: [NodeRecorder] = [
+        UnsupportedViewRecorder(
+            identifier: UUID(),
+            featureFlags: featureFlags
+        ),
+        UIViewRecorder(identifier: UUID()),
+        UILabelRecorder(identifier: UUID()),
+        UIImageViewRecorder(identifier: UUID()),
+        UITextFieldRecorder(identifier: UUID()),
+        UITextViewRecorder(identifier: UUID()),
+        UISwitchRecorder(identifier: UUID()),
+        UISliderRecorder(identifier: UUID()),
+        UISegmentRecorder(identifier: UUID()),
+        UIStepperRecorder(identifier: UUID()),
+        UINavigationBarRecorder(identifier: UUID()),
+        UITabBarRecorder(identifier: UUID()),
+        UIPickerViewRecorder(identifier: UUID()),
+        UIDatePickerRecorder(identifier: UUID()),
+        WKWebViewRecorder(identifier: UUID()),
+        UIProgressViewRecorder(identifier: UUID()),
+        UIActivityIndicatorRecorder(identifier: UUID()),
     ]
+
+    if #available(iOS 13, tvOS 13, *) {
+        recorders.append(UIHostingViewRecorder(identifier: UUID()))
+    }
+
+    return recorders
 }
 #endif

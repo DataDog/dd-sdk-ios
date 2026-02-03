@@ -39,16 +39,24 @@ public enum WebViewTracking {
     public static func enable(
         webView: WKWebView,
         hosts: Set<String> = [],
-        logsSampleRate: Float = 100,
+        logsSampleRate: SampleRate = .maxSampleRate,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
-        enable(
-            tracking: webView.configuration.userContentController,
-            hosts: hosts,
-            hostsSanitizer: HostsSanitizer(),
-            logsSampleRate: logsSampleRate,
-            in: core
-        )
+        do {
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            try runOnMainThreadSync {
+                try enableOrThrow(
+                    tracking: webView.configuration.userContentController,
+                    hosts: hosts,
+                    hostsSanitizer: HostsSanitizer(),
+                    logsSampleRate: logsSampleRate,
+                    in: core
+                )
+            }
+        } catch let error {
+            consolePrint("\(error)", .error)
+        }
     }
 
     /// Disables Datadog iOS SDK and Datadog Browser SDK integration.
@@ -69,13 +77,19 @@ public enum WebViewTracking {
 
     static let jsCodePrefix = "/* DatadogEventBridge */"
 
-    static func enable(
+    static func enableOrThrow(
         tracking controller: WKUserContentController,
         hosts: Set<String>,
         hostsSanitizer: HostsSanitizing,
         logsSampleRate: Float,
         in core: DatadogCoreProtocol
-    ) {
+    ) throws {
+        guard !(core is NOPDatadogCore) else {
+            throw ProgrammerError(
+                description: "Datadog SDK must be initialized before calling `WebViewTracking.enable(webView:)`."
+            )
+        }
+
         let isTracking = controller.userScripts.contains { $0.source.starts(with: Self.jsCodePrefix) }
         guard !isTracking else {
             DD.logger.warn("`startTrackingDatadogEvents(core:hosts:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
@@ -107,11 +121,17 @@ public enum WebViewTracking {
             .joined(separator: ",")
 
         let sessionReplay = core.feature(
-            named: SessionReplayFeaturneName,
+            named: SessionReplayFeatureName,
             type: SessionReplayConfiguration.self
         )
 
-        let privacyLevel = sessionReplay?.privacyLevel ?? .mask
+        let privacyLevel = sessionReplay.map {
+            Self.determineWebViewPrivacyLevel(
+                textPrivacy: $0.textAndInputPrivacyLevel,
+                imagePrivacy: $0.imagePrivacyLevel,
+                touchPrivacy: $0.touchPrivacyLevel
+            )
+        } ?? .mask
 
         // Share native capabilities with Browser SDK
         let capabilities = sessionReplay != nil ? "\"records\"" : ""
@@ -142,6 +162,39 @@ public enum WebViewTracking {
             )
         )
     }
+
+    /// Conversion matrix from global privacy level to fine-grained privaly levels.
+    /// Although `SessionReplayPrivacyLevel` is deprecated on mobile,
+    /// it is still needed to configure the browser SDK for the web integration,
+    /// which currently doesn't support fine-grained priavcy options.
+    internal static func determineWebViewPrivacyLevel(
+            textPrivacy: TextAndInputPrivacyLevel,
+            imagePrivacy: ImagePrivacyLevel,
+            touchPrivacy: TouchPrivacyLevel
+        ) -> SessionReplayPrivacyLevel {
+            switch (textPrivacy, imagePrivacy, touchPrivacy) {
+            case (.maskSensitiveInputs, .maskNone, .show):
+                return .allow
+            case (.maskSensitiveInputs, .maskNone, .hide):
+                return .mask
+            case (.maskSensitiveInputs, .maskNonBundledOnly, _):
+                return .mask
+            case (.maskSensitiveInputs, .maskAll, _):
+                return .mask
+
+            case (.maskAllInputs, .maskNone, .show):
+                return .maskUserInput
+            case (.maskAllInputs, .maskNone, .hide):
+                return .mask
+            case (.maskAllInputs, .maskNonBundledOnly, _):
+                return .mask
+            case (.maskAllInputs, .maskAll, _):
+                return .mask
+
+            case (.maskAll, _, _):
+                return .mask
+            }
+        }
 #endif
 }
 
@@ -166,7 +219,7 @@ extension InternalExtension where ExtendedType == WebViewTracking {
     /// - Returns: A `MessageEmitter` instance
     public static func messageEmitter(
         in core: DatadogCoreProtocol,
-        logsSampleRate: Float = 100
+        logsSampleRate: SampleRate = .maxSampleRate
     ) -> AbstractMessageEmitter {
         return MessageEmitter(
             logsSampler: Sampler(samplingRate: logsSampleRate),

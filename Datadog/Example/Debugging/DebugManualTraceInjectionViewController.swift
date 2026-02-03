@@ -6,6 +6,7 @@
 
 import SwiftUI
 import DatadogTrace
+import DatadogInternal
 
 @available(iOS 14, *)
 internal class DebugManualTraceInjectionViewController: UIHostingController<DebugManualTraceInjectionView> {
@@ -16,24 +17,37 @@ internal class DebugManualTraceInjectionViewController: UIHostingController<Debu
 
 private var currentSession: URLSession? = nil
 
+extension TraceContextInjection {
+    func toString() -> String {
+        switch self {
+        case .all:
+            return "All"
+        case .sampled:
+            return "Sampled"
+        }
+    }
+}
+
 @available(iOS 14.0, *)
 internal struct DebugManualTraceInjectionView: View {
-    enum TraceHeaderType: String, CaseIterable {
+    enum TraceHeaderType: String, CaseIterable, Identifiable {
         case datadog = "Datadog"
         case w3c = "W3C"
         case b3Single = "B3-Single"
         case b3Multiple = "B3-Multiple"
+        
+        var id: String { rawValue }
     }
 
     @State private var spanName = "network request"
-    @State private var requestURL = "http://127.0.0.1:8000"
-    @State private var selectedTraceHeaderType: TraceHeaderType = .datadog
-    @State private var sampleRate: Float = 100.0
+    @State private var requestURL = "https://httpbin.org/get"
+    @State private var selectedTraceHeaderTypes: Set<TraceHeaderType> = [.datadog, .w3c]
+    @State private var selectedTraceContextInjection: TraceContextInjection = .sampled
     @State private var isRequestPending = false
 
     private let session: URLSession = URLSession(
         configuration: .ephemeral,
-        delegate: DDURLSessionDelegate(),
+        delegate: DummySessionDataDelegate(),
         delegateQueue: nil
     )
 
@@ -59,22 +73,18 @@ internal struct DebugManualTraceInjectionView: View {
                 Section(header: Text("Span name:")) {
                     TextField("", text: $spanName)
                 }
-                Picker("Trace header type:", selection: $selectedTraceHeaderType) {
-                    ForEach(TraceHeaderType.allCases, id: \.self) { headerType in
-                        Text(headerType.rawValue)
+                Picker("Trace context injection:", selection: $selectedTraceContextInjection) {
+                    ForEach(TraceContextInjection.allCases, id: \.self) { headerType in
+                        Text(headerType.toString())
                     }
                 }
                 .pickerStyle(.inline)
-                Section(header: Text("Trace sample Rate")) {
-                    Slider(
-                        value: $sampleRate,
-                        in: 0...100, step: 1,
-                        minimumValueLabel: Text("0"),
-                        maximumValueLabel: Text("100")
-                    ) {
-                        Text("Sample Rate")
-                    }
-                }
+                MultiSelector(
+                    label: Text("Trace header type:"),
+                    options: TraceHeaderType.allCases,
+                    optionToString: { $0.rawValue },
+                    selected: $selectedTraceHeaderTypes
+                )
             }
 
             Spacer()
@@ -101,42 +111,40 @@ internal struct DebugManualTraceInjectionView: View {
         }
 
         var request = URLRequest(url: url)
-        request.httpMethod = "POST"
+        request.httpMethod = "GET"
 
         let span = Tracer.shared().startRootSpan(operationName: spanName)
 
-        switch selectedTraceHeaderType {
-        case .datadog:
-            let writer = HTTPHeadersWriter(
-                samplingStrategy: .custom(sampleRate: sampleRate),
-                traceContextInjection: .all
-            )
-            Tracer.shared().inject(spanContext: span.context, writer: writer)
-            writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
-        case .w3c:
-            let writer = W3CHTTPHeadersWriter(
-                samplingStrategy: .custom(sampleRate: sampleRate),
-                tracestate: [:],
-                traceContextInjection: .all
-            )
-            Tracer.shared().inject(spanContext: span.context, writer: writer)
-            writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
-        case .b3Single:
-            let writer = B3HTTPHeadersWriter(
-                samplingStrategy: .custom(sampleRate: sampleRate),
-                injectEncoding: .single,
-                traceContextInjection: .all
-            )
-            Tracer.shared().inject(spanContext: span.context, writer: writer)
-            writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
-        case .b3Multiple:
-            let writer = B3HTTPHeadersWriter(
-                samplingStrategy: .custom(sampleRate: sampleRate),
-                injectEncoding: .multiple,
-                traceContextInjection: .all
-            )
-            Tracer.shared().inject(spanContext: span.context, writer: writer)
-            writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
+        for selectedTraceHeaderType in selectedTraceHeaderTypes {
+            switch selectedTraceHeaderType {
+            case .datadog:
+                let writer = HTTPHeadersWriter(
+                    traceContextInjection: selectedTraceContextInjection
+                )
+                Tracer.shared().inject(spanContext: span.context, writer: writer)
+                writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
+            case .w3c:
+                let writer = W3CHTTPHeadersWriter(
+                    tracestate: [:],
+                    traceContextInjection: selectedTraceContextInjection
+                )
+                Tracer.shared().inject(spanContext: span.context, writer: writer)
+                writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
+            case .b3Single:
+                let writer = B3HTTPHeadersWriter(
+                    injectEncoding: .single,
+                    traceContextInjection: selectedTraceContextInjection
+                )
+                Tracer.shared().inject(spanContext: span.context, writer: writer)
+                writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
+            case .b3Multiple:
+                let writer = B3HTTPHeadersWriter(
+                    injectEncoding: .multiple,
+                    traceContextInjection: selectedTraceContextInjection
+                )
+                Tracer.shared().inject(spanContext: span.context, writer: writer)
+                writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
+            }
         }
 
         send(request: request) {
@@ -147,7 +155,17 @@ internal struct DebugManualTraceInjectionView: View {
 
     private func send(request: URLRequest, completion: @escaping () -> Void) {
         isRequestPending = true
-        let task = session.dataTask(with: request) { _, _, _ in
+        let task = session.dataTask(with: request) { data, response, _ in
+            let httpResponse = response as! HTTPURLResponse
+            print("🚀 Request completed with status code: \(httpResponse.statusCode)")
+
+            // pretty print response
+            if let data = data {
+                let json = try? JSONSerialization.jsonObject(with: data, options: [])
+                if let json = json {
+                    print("🚀 Response: \(json)")
+                }
+            }
             completion()
             DispatchQueue.main.async { self.isRequestPending = false }
         }

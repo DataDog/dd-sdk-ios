@@ -58,8 +58,10 @@ public struct SpanEvent: Encodable {
     internal let origin: String?
     /// The sampling rate for the span (between 0 and 1)
     internal let samplingRate: Float
-    /// If the span is kept according to sampling rules
-    internal let isKept: Bool
+    /// The sampling priority of the span.
+    internal let samplingPriority: SamplingPriority
+    /// The mechanism that made the sampling priority decision.
+    internal let samplingDecisionMaker: SamplingMechanismType
 
     // MARK: - Meta
 
@@ -71,6 +73,10 @@ public struct SpanEvent: Encodable {
     public let networkConnectionInfo: NetworkConnectionInfo?
     /// The mobile carrier information from the moment the span was completed.
     public let mobileCarrierInfo: CarrierInfo?
+    /// Device information.
+    public let device: Device
+    /// Operating System information.
+    public let os: OperatingSystem
 
     public struct UserInfo {
         /// User ID, if any.
@@ -83,8 +89,20 @@ public struct SpanEvent: Encodable {
         public var extraInfo: [String: String]
     }
 
+    public struct AccountInfo {
+        /// Account ID
+        public let id: String
+        /// Name representing the account, if any.
+        public let name: String?
+        /// Account custom attributes, if any.
+        public var extraInfo: [String: String]
+    }
+
     /// Custom user information configured globally for the SDK.
     public var userInfo: UserInfo
+
+    /// Custom account information configured globally for the SDK.
+    public var accountInfo: AccountInfo?
 
     /// Tags associated with the span.
     public var tags: [String: String]
@@ -111,12 +129,14 @@ internal struct SpanEventEncoder {
         case startTime = "start"
         case duration
         case isError = "error"
+        case device = "meta.device" // Should be under `meta` to comply with the span schema
+        case os = "meta.os" // Should be under `meta` to comply with the span schema
 
         // MARK: - Metrics
 
         case isRootSpan = "metrics._top_level"
         case samplingPriority = "metrics._sampling_priority_v1"
-        case samplingRate = "_dd.agent_psr"
+        case samplingRate = "metrics._dd.agent_psr"
 
         // MARK: - Meta
 
@@ -128,9 +148,14 @@ internal struct SpanEventEncoder {
 
         case ptid = "meta._dd.p.tid"
 
+        case decisionMaker = "meta._dd.p.dm"
+
         case userId = "meta.usr.id"
         case userName = "meta.usr.name"
         case userEmail = "meta.usr.email"
+
+        case accountId = "meta.account.id"
+        case accountName = "meta.account.name"
 
         case networkReachability = "meta.network.client.reachability"
         case networkAvailableInterfaces = "meta.network.client.available_interfaces"
@@ -167,8 +192,8 @@ internal struct SpanEventEncoder {
         try container.encode(span.resource, forKey: .resource)
         try container.encode("custom", forKey: .type)
 
-        try container.encode(span.startTime.timeIntervalSince1970.toNanoseconds, forKey: .startTime)
-        try container.encode(span.duration.toNanoseconds, forKey: .duration)
+        try container.encode(span.startTime.timeIntervalSince1970.dd.toNanoseconds, forKey: .startTime)
+        try container.encode(span.duration.dd.toNanoseconds, forKey: .duration)
 
         let isError = span.isError ? 1 : 0
         try container.encode(isError, forKey: .isError)
@@ -186,22 +211,33 @@ internal struct SpanEventEncoder {
         if span.parentID == nil {
             try container.encode(1, forKey: .isRootSpan)
             try container.encode(span.samplingRate, forKey: .samplingRate)
-            try container.encode((span.isKept ? 1 : 0), forKey: .samplingPriority)
+            try container.encode(span.samplingPriority.rawValue, forKey: .samplingPriority)
+            if span.samplingPriority.isKept {
+                try container.encode("-\(span.samplingDecisionMaker.rawValue)", forKey: .decisionMaker)
+            }
         }
     }
 
     /// Encodes default `meta.*` attributes
     private func encodeDefaultMeta(_ span: SpanEvent, to container: inout KeyedEncodingContainer<StaticCodingKeys>) throws {
-        // NOTE: RUMM-299 only string values are supported for `meta.*` attributes
+        // NOTE: RUM-9494 only basic types (boolean, string, number) are supported for `meta.*` attributes
         try container.encode(span.source, forKey: .source)
         try container.encode(span.tracerVersion, forKey: .tracerVersion)
         try container.encode(span.applicationVersion, forKey: .applicationVersion)
 
-        try span.origin.ifNotNil { try container.encode($0, forKey: .origin) }
+        try span.origin.dd.ifNotNil { try container.encode($0, forKey: .origin) }
 
-        try span.userInfo.id.ifNotNil { try container.encode($0, forKey: .userId) }
-        try span.userInfo.name.ifNotNil { try container.encode($0, forKey: .userName) }
-        try span.userInfo.email.ifNotNil { try container.encode($0, forKey: .userEmail) }
+        try container.encode(span.device, forKey: .device)
+        try container.encode(span.os, forKey: .os)
+
+        try span.userInfo.id.dd.ifNotNil { try container.encode($0, forKey: .userId) }
+        try span.userInfo.name.dd.ifNotNil { try container.encode($0, forKey: .userName) }
+        try span.userInfo.email.dd.ifNotNil { try container.encode($0, forKey: .userEmail) }
+
+        if let accountInfo = span.accountInfo {
+            try container.encode(accountInfo.id, forKey: .accountId)
+            try accountInfo.name.dd.ifNotNil { try container.encode($0, forKey: .accountName) }
+        }
 
         if let networkConnectionInfo = span.networkConnectionInfo {
             try container.encode(networkConnectionInfo.reachability, forKey: .networkReachability)
@@ -241,12 +277,16 @@ internal struct SpanEventEncoder {
 
     /// Encodes `meta.*` attributes coming from user
     private func encodeCustomMeta(_ span: SpanEvent, to container: inout KeyedEncodingContainer<DynamicCodingKey>) throws {
-        // NOTE: RUMM-299 only string values are supported for `meta.*` attributes
+        // NOTE: RUM-9494 only basic types (boolean, string, number) are supported for `meta.*` attributes
         try span.userInfo.extraInfo.forEach {
             let metaKey = "meta.usr.\($0.key)"
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
         }
 
+        try span.accountInfo?.extraInfo.forEach {
+            let metaKey = "meta.account.\($0.key)"
+            try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
+        }
         try span.tags.forEach {
             let metaKey = "meta.\($0.key)"
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))

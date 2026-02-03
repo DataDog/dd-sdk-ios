@@ -61,7 +61,7 @@ public struct PullSnapshotsCommand: ParsableCommand {
     public init() {}
 
     public func run() throws {
-        let git: GitClient = options.dryRun ? NOPGitClient() : GitHubGitClient(ssh: ssh, branch: options.remoteBranch)
+        let git: GitClient = options.dryRun ? NOPGitClient() : BasicGitClient(ssh: ssh, branch: options.remoteBranch)
         try git.cloneIfNeeded(to: options.remoteRepoFolder)
         let remoteRepo = try RemoteRepo(options: options, git: git)
         let localRepo = try LocalRepo(options: options)
@@ -81,7 +81,7 @@ public struct PushSnapshotsCommand: ParsableCommand {
     public init() {}
 
     public func run() throws {
-        let git: GitClient = options.dryRun ? NOPGitClient() : GitHubGitClient(ssh: ssh, branch: options.remoteBranch)
+        let git: GitClient = options.dryRun ? NOPGitClient() : BasicGitClient(ssh: ssh, branch: options.remoteBranch)
         try git.cloneIfNeeded(to: options.remoteRepoFolder)
         let remoteRepo = try RemoteRepo(options: options, git: git)
         let localRepo = try LocalRepo(options: options)

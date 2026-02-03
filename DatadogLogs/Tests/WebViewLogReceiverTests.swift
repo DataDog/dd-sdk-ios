@@ -58,9 +58,9 @@ class WebViewLogReceiverTests: XCTestCase {
         // Given
         let messageReceiver = WebViewLogReceiver()
 
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send Event")
-        )
+        let expectation = expectation(description: "Send Event")
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         let value: String = .mockRandom()
 
@@ -97,11 +97,11 @@ class WebViewLogReceiverTests: XCTestCase {
                 env: environment,
                 version: applicationVersion,
                 serverTimeOffset: 123,
-                baggages: [
-                    "rum": .init([
-                        "application.id": "123456",
-                        "session.id": mockSessionID.uuidString.lowercased()
-                    ])
+                additionalContext: [
+                    RUMCoreContext(
+                        applicationID: "123456",
+                        sessionID: mockSessionID.uuidString.lowercased()
+                    )
                 ]
             )
         )
@@ -125,7 +125,7 @@ class WebViewLogReceiverTests: XCTestCase {
 
         // Then
         let expectedWebLogEvent: [String: Any] = [
-            "date": 1_635_932_927_012 + 123.toInt64Milliseconds,
+            "date": 1_635_932_927_012 + 123.dd.toInt64Milliseconds,
             "error": ["origin": "console"],
             "message": "console error: error",
             "application_id": "123456",
@@ -149,19 +149,20 @@ class WebViewLogReceiverTests: XCTestCase {
         let viewID: String = .mockRandom()
         let actionID: String = .mockRandom()
 
+        let expectation = expectation(description: "Send log")
         let core = PassthroughCoreMock(
             context: .mockWith(
-                baggages: [
-                    "rum": .init([
-                        "application.id": applicationID,
-                        "session.id": sessionID,
-                        "view.id": viewID,
-                        "user_action.id": actionID
-                    ])
+                additionalContext: [
+                    RUMCoreContext(
+                        applicationID: applicationID,
+                        sessionID: sessionID,
+                        viewID: viewID,
+                        userActionID: actionID
+                    )
                 ]
-            ),
-            expectation: expectation(description: "Send log")
+            )
         )
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
         XCTAssert(
@@ -188,10 +189,9 @@ class WebViewLogReceiverTests: XCTestCase {
         // Given
         let messageReceiver = WebViewLogReceiver()
         let telemetryReceiver = TelemetryReceiverMock()
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send log"),
-            messageReceiver: telemetryReceiver
-        )
+        let expectation = expectation(description: "Send log")
+        let core = PassthroughCoreMock(messageReceiver: telemetryReceiver)
+        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
         XCTAssert(
@@ -213,43 +213,5 @@ class WebViewLogReceiverTests: XCTestCase {
         XCTAssertNil(log["view.id"])
         XCTAssertNil(log["user_action.id"])
         XCTAssertTrue(telemetryReceiver.messages.isEmpty)
-    }
-
-    func testWhenRUMContextIsAvailable_withMalformedRUMContext_itSendsTelemetryError() throws {
-        // Given
-        let messageReceiver = WebViewLogReceiver()
-        let telemetryReceiver = TelemetryReceiverMock()
-        let core = PassthroughCoreMock(
-            context: .mockWith(
-                baggages: [
-                    "rum": .init("malformed RUM context")
-                ]
-            ),
-            expectation: expectation(description: "Send log"),
-            messageReceiver: telemetryReceiver
-        )
-
-        // When
-        XCTAssert(
-            messageReceiver.receive(
-                message: .webview(.log(["test": "value"])),
-                from: core
-            )
-        )
-
-        // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs = core.events(ofType: AnyEncodable.self)
-        XCTAssertEqual(logs.count, 1)
-
-        let log = try XCTUnwrap(logs.first?.value as? [String: Any])
-        XCTAssertNil(log["application_id"])
-        XCTAssertNil(log["session_id"])
-        XCTAssertNil(log["view.id"])
-        XCTAssertNil(log["user_action.id"])
-
-        let error = try XCTUnwrap(telemetryReceiver.messages.first?.asError)
-        XCTAssert(error.message.contains("Fails to decode RUM context from Logs in `WebViewLogReceiver` - typeMismatch"))
     }
 }

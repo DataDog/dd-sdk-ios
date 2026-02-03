@@ -16,17 +16,20 @@ internal final class FatalAppHangsHandler {
     private let processID: UUID
     /// Device date provider.
     private let dateProvider: DateProvider
+    private let uuidGenerator: RUMUUIDGenerator
 
     init(
         featureScope: FeatureScope,
         fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        uuidGenerator: RUMUUIDGenerator
     ) {
         self.featureScope = featureScope
         self.fatalErrorContext = fatalErrorContext
         self.processID = processID
         self.dateProvider = dateProvider
+        self.uuidGenerator = uuidGenerator
     }
 
     func startHang(hang: AppHang) {
@@ -42,7 +45,7 @@ internal final class FatalAppHangsHandler {
                 serverTimeOffset: context.serverTimeOffset,
                 lastRUMView: lastRUMView,
                 trackingConsent: context.trackingConsent,
-                appLaunchDate: context.launchTime?.launchDate
+                appLaunchDate: context.launchInfo.processLaunchDate
             )
             dataStore.setValue(fatalHang, forKey: .fatalAppHangKey)
         }
@@ -61,6 +64,7 @@ internal final class FatalAppHangsHandler {
     }
 
     func reportFatalAppHangIfFound() {
+        // Report pending app hang
         featureScope.rumDataStore.value(forKey: .fatalAppHangKey) { [weak self] (fatalHang: FatalAppHang?) in
             guard let fatalHang = fatalHang else {
                 DD.logger.debug("No pending App Hang found")
@@ -71,6 +75,9 @@ internal final class FatalAppHangsHandler {
             }
             self?.send(fatalHang: fatalHang)
         }
+
+        // Remove pending app hang
+        featureScope.rumDataStore.removeValue(forKey: .fatalAppHangKey)
     }
 
     private func send(fatalHang: FatalAppHang) {
@@ -98,6 +105,7 @@ internal final class FatalAppHangsHandler {
             let builder = FatalErrorBuilder(
                 context: context,
                 error: .hang,
+                errorUUID: self.uuidGenerator.generateUnique(),
                 errorDate: realErrorDate,
                 errorType: AppHangsMonitor.Constants.appHangErrorType,
                 errorMessage: AppHangsMonitor.Constants.appHangErrorMessage,
@@ -106,6 +114,7 @@ internal final class FatalAppHangsHandler {
                 errorBinaryImages: fatalHang.hang.backtraceResult.binaryImages?.toRUMDataFormat,
                 errorWasTruncated: fatalHang.hang.backtraceResult.wasTruncated,
                 errorMeta: nil,
+                additionalAttributes: nil,
                 timeSinceAppStart: timeSinceAppStart
             )
             let error = builder.createRUMError(with: fatalHang.lastRUMView)

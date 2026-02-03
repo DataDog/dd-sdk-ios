@@ -9,36 +9,49 @@ import Foundation
 import DatadogInternal
 
 /// Object is responsible for getting the RUM context, randomising the sampling rate,
-/// starting/stopping the recording scheduler as needed and propagating `has_replay` to other features.
+/// managing the recording state, starting/stopping the recording scheduler as needed,
+/// and propagating `has_replay` to other features.
+
 internal class RecordingCoordinator {
     let recorder: Recording
     let scheduler: Scheduler
     let sampler: Sampler
-    let privacy: PrivacyLevel
+    let textAndInputPrivacy: TextAndInputPrivacyLevel
+    let imagePrivacy: ImagePrivacyLevel
+    let touchPrivacy: TouchPrivacyLevel
     let srContextPublisher: SRContextPublisher
 
-    private var currentRUMContext: RUMContext? = nil
+    private var currentRUMContext: RUMCoreContext? = nil
     private var isSampled = false
+
+    /// `recordingEnabled` is used to track when the user 
+    /// has enabled or disabled the recording for Session Replay.
+    private var recordingEnabled = false
 
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
-    /// The sampling rate for internal telemetry of method call.
+    /// The sampling rate for internal telemetry of method calls.
     private let methodCallTelemetrySamplingRate: Float
 
     init(
         scheduler: Scheduler,
-        privacy: PrivacyLevel,
+        textAndInputPrivacy: TextAndInputPrivacyLevel,
+        imagePrivacy: ImagePrivacyLevel,
+        touchPrivacy: TouchPrivacyLevel,
         rumContextObserver: RUMContextObserver,
         srContextPublisher: SRContextPublisher,
         recorder: Recording,
         sampler: Sampler,
         telemetry: Telemetry,
+        startRecordingImmediately: Bool,
         methodCallTelemetrySamplingRate: Float = 0.1
     ) {
         self.recorder = recorder
         self.scheduler = scheduler
         self.sampler = sampler
-        self.privacy = privacy
+        self.textAndInputPrivacy = textAndInputPrivacy
+        self.imagePrivacy = imagePrivacy
+        self.touchPrivacy = touchPrivacy
         self.srContextPublisher = srContextPublisher
         self.telemetry = telemetry
         self.methodCallTelemetrySamplingRate = methodCallTelemetrySamplingRate
@@ -46,47 +59,86 @@ internal class RecordingCoordinator {
         srContextPublisher.setHasReplay(false)
 
         scheduler.schedule { [weak self] in self?.captureNextRecord() }
-        scheduler.start()
 
+        // Start recording immediately if specified.
+        if startRecordingImmediately {
+            startRecording()
+        }
+
+        // Observe changes in the RUM context.
         rumContextObserver.observe(on: scheduler.queue) { [weak self] in self?.onRUMContextChanged(rumContext: $0) }
     }
 
-    private func onRUMContextChanged(rumContext: RUMContext?) {
+    /// Enables recording based on user request.
+    func startRecording() {
+        scheduler.queue.run { [weak self] in
+            self?.recordingEnabled = true
+            self?.evaluateRecordingConditions()
+        }
+    }
+
+    /// Disables recording based on user request.
+    func stopRecording() {
+        scheduler.queue.run { [weak self] in
+            self?.recordingEnabled = false
+            self?.evaluateRecordingConditions()
+        }
+    }
+
+    // MARK: Private
+
+    /// Evaluates whether recording should start or stop based on user request and sampling.
+    private func evaluateRecordingConditions() {
+       if recordingEnabled && isSampled {
+           scheduler.start()
+       } else {
+           scheduler.stop()
+       }
+       updateHasReplay()
+   }
+
+    private func onRUMContextChanged(rumContext: RUMCoreContext?) {
         if currentRUMContext?.sessionID != rumContext?.sessionID || currentRUMContext == nil {
             isSampled = sampler.sample()
         }
 
         currentRUMContext = rumContext
 
-        if isSampled {
-            scheduler.start()
-        } else {
-            scheduler.stop()
-        }
-
-        srContextPublisher.setHasReplay(
-            isSampled == true && currentRUMContext?.viewID != nil
-        )
+        evaluateRecordingConditions()
     }
 
+    /// Updates the `has_replay` flag to indicate if recording is active.
+    private func updateHasReplay() {
+        /// `has_replay` is set to `true` only when the session is sampled
+        /// and  the user has enabled the recording.
+        let hasReplay = isSampled == true && recordingEnabled == true
+        srContextPublisher.setHasReplay(hasReplay)
+    }
+
+    /// Captures the next recording if conditions are met.
     private func captureNextRecord() {
+        /// We don't capture any snapshots if the RUM context has no view ID.
         guard let rumContext = currentRUMContext,
               let viewID = rumContext.viewID else {
             return
         }
 
         let recorderContext = Recorder.Context(
-            privacy: privacy,
+            textAndInputPrivacy: textAndInputPrivacy,
+            imagePrivacy: imagePrivacy,
+            touchPrivacy: touchPrivacy,
             applicationID: rumContext.applicationID,
             sessionID: rumContext.sessionID,
             viewID: viewID,
-            viewServerTimeOffset: rumContext.viewServerTimeOffset
+            viewServerTimeOffset: rumContext.viewServerTimeOffset,
+            date: Date(),
+            telemetry: telemetry
         )
 
         let methodCalledTrace = telemetry.startMethodCalled(
             operationName: MethodCallConstants.captureRecordOperationName,
             callerClass: MethodCallConstants.className,
-            samplingRate: methodCallTelemetrySamplingRate // Effectively 3% * 0.1% = 0.003% of calls
+            headSampleRate: methodCallTelemetrySamplingRate // Effectively 3% * 0.1% = 0.003% of calls
         )
 
         var isSuccessful = false
@@ -99,7 +151,7 @@ internal class RecordingCoordinator {
             // the framework is not built with `-fobjc-arc-exceptions` option.
             // We recover from the exception and stop the scheduler as a measure of
             // caution. The scheduler could start again at a next RUM context change.
-            scheduler.stop()
+            stopRecording()
         } catch {
             telemetry.error("[SR] Failed to take snapshot", error: error)
         }

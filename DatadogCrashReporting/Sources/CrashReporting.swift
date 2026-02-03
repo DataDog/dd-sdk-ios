@@ -19,36 +19,56 @@ import DatadogInternal
 ///
 /// Your crash reports appear in [Error Tracking](https://app.datadoghq.com/rum/error-tracking).
 public final class CrashReporting {
-    /// Initializes the Datadog Crash Reporter.
+    /// Initializes the Datadog Crash Reporter using the default
+    /// `KSCrash` plugin.
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
-        enable(with: PLCrashReporterPlugin(), in: core)
+        enable(with: try KSCrashPlugin(telemetry: core.telemetry), in: core)
     }
 
-    internal static func enable(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol) {
+    /// Initializes the Datadog Crash Reporter with a custom Crash Reporting Plugin.
+    ///
+    /// The custom plugin will be responsible for:
+    /// - Provide crash report
+    /// - Store context data associated with crashes
+    /// - Provide backtraces
+    public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default) {
         do {
-            let contextProvider = CrashContextCoreProvider()
-
-            let reporter = CrashReportingFeature(
-                crashReportingPlugin: plugin,
-                crashContextProvider: contextProvider,
-                sender: MessageBusSender(core: core),
-                messageReceiver: contextProvider,
-                telemetry: core.telemetry
-            )
-
-            try core.register(feature: reporter)
-
-            if let plcr = PLCrashReporterPlugin.thirdPartyCrashReporter {
-                try core.register(backtraceReporter: BacktraceReporter(reporter: plcr))
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            try runOnMainThreadSync {
+                try enableOrThrow(with: plugin(), in: core)
             }
-
-            reporter.sendCrashReportIfFound()
-
-            core.telemetry
-                .configuration(trackErrors: true)
-        } catch {
+        } catch let error {
             consolePrint("\(error)", .error)
         }
+    }
+
+    internal static func enableOrThrow(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol) throws {
+        guard !(core is NOPDatadogCore) else {
+            throw ProgrammerError(
+                description: "Datadog SDK must be initialized before calling `CrashReporting.enable()`."
+            )
+        }
+
+        let contextProvider = CrashContextCoreProvider()
+
+        let reporter = CrashReportingFeature(
+            crashReportingPlugin: plugin,
+            crashContextProvider: contextProvider,
+            sender: MessageBusSender(core: core),
+            messageReceiver: contextProvider,
+            telemetry: core.telemetry
+        )
+
+        try core.register(feature: reporter)
+
+        if let backtraceReporter = plugin.backtraceReporter {
+            try core.register(backtraceReporter: backtraceReporter)
+        }
+
+        reporter.sendCrashReportIfFound()
+
+        core.telemetry.configuration(trackErrors: true)
     }
 }
 

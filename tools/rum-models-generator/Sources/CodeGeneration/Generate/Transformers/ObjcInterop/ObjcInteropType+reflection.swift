@@ -61,7 +61,7 @@ extension ObjcInteropNestedClass: ObjcInteropReflectable {
     }
 }
 
-extension ObjcInteropEnum: ObjcInteropReflectable {
+extension ObjcInteropNestedEnum: ObjcInteropReflectable {
     private var parentClass: ObjcInteropClass {
         return parentProperty.owner
     }

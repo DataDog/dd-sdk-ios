@@ -34,5 +34,5 @@ done
 
 if [ -z "$1" ]; then usage; fi
 
-# Find all podspecs in dir and replace occurence of '"*"' in lines containing 's.version '.
+# Find all podspecs in dir and replace occurrence of '"*"' in lines containing 's.version '.
 find $DIRECTORY -maxdepth 1 -type f -name "*.podspec" -exec sed -i '' -e '/s\.version[[:space:]]/s/"[^"]*"/"'$1'"/' {} +

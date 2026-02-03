@@ -8,16 +8,17 @@
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
-    internal let identifier = UUID()
+    internal let identifier: UUID
 
     private let tintColorProvider: (UIImageView) -> UIColor?
-    private let shouldRecordImagePredicate: (UIImageView) -> Bool
+    private let shouldRecordImagePredicateOverride: ((UIImageView) -> Bool)?
     /// An option for overriding default semantics from parent recorder.
     var semanticsOverride: (UIImageView, ViewAttributes) -> NodeSemantics? = { imageView, _ in
         return imageView.isSystemShadow ? IgnoredElement(subtreeStrategy: .ignore) : nil
     }
 
     internal init(
+        identifier: UUID,
         tintColorProvider: @escaping (UIImageView) -> UIColor? = { imageView in
             if #available(iOS 13.0, *), let image = imageView.image {
                 return image.isTinted ? imageView.tintColor : nil
@@ -25,16 +26,11 @@ internal struct UIImageViewRecorder: NodeRecorder {
                 return nil
             }
         },
-        shouldRecordImagePredicate: @escaping (UIImageView) -> Bool = { imageView in
-            if #available(iOS 13.0, *), let image = imageView.image {
-                return image.isContextual || imageView.isSystemControlBackground
-            } else {
-                return false
-            }
-        }
+        shouldRecordImagePredicateOverride: ((UIImageView) -> Bool)? = nil
     ) {
+        self.identifier = identifier
         self.tintColorProvider = tintColorProvider
-        self.shouldRecordImagePredicate = shouldRecordImagePredicate
+        self.shouldRecordImagePredicateOverride = shouldRecordImagePredicateOverride
     }
 
     func semantics(
@@ -48,19 +44,24 @@ internal struct UIImageViewRecorder: NodeRecorder {
         if let semantics = semanticsOverride(imageView, attributes) {
             return semantics
         }
+
         guard attributes.hasAnyAppearance || imageView.image != nil else {
             return InvisibleElement.constant
         }
 
         let ids = context.ids.nodeIDs(2, view: imageView, nodeRecorder: self)
         let contentFrame = imageView.image.map {
-            attributes.frame.contentFrame(
+            attributes.frame.dd.contentFrame(
                 for: $0.size,
                 using: imageView.contentMode
             )
         }
 
-        let shouldRecordImage = shouldRecordImagePredicate(imageView)
+        let shouldRecordImage = if let shouldRecordImagePredicateOverride {
+            shouldRecordImagePredicateOverride(imageView)
+        } else {
+            attributes.resolveImagePrivacyLevel(in: context).shouldRecordImagePredicate(imageView)
+        }
         let imageResource = shouldRecordImage ? imageView.image.map { image in
             UIImageResource(image: image, tintColor: tintColorProvider(imageView))
         } : nil
@@ -70,8 +71,8 @@ internal struct UIImageViewRecorder: NodeRecorder {
             imageWireframeID: ids[1],
             attributes: attributes,
             contentFrame: contentFrame,
-            clipsToBounds: imageView.clipsToBounds,
-            imageResource: imageResource
+            imageResource: imageResource,
+            imagePrivacyLevel: context.recorder.imagePrivacy
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(
@@ -94,38 +95,16 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
 
     let contentFrame: CGRect?
 
-    let clipsToBounds: Bool
-
     let imageResource: UIImageResource?
 
-    private var clip: SRContentClip? {
-        guard let contentFrame = contentFrame else {
-            return nil
-        }
-        let top = max(relativeIntersectedRect.origin.y - contentFrame.origin.y, 0)
-        let left = max(relativeIntersectedRect.origin.x - contentFrame.origin.x, 0)
-        let bottom = max(contentFrame.height - (relativeIntersectedRect.height + top), 0)
-        let right = max(contentFrame.width - (relativeIntersectedRect.width + left), 0)
-        return SRContentClip(
-            bottom: Int64(withNoOverflow: bottom),
-            left: Int64(withNoOverflow: left),
-            right: Int64(withNoOverflow: right),
-            top: Int64(withNoOverflow: top)
-        )
-    }
-
-    private var relativeIntersectedRect: CGRect {
-        guard let contentFrame = contentFrame else {
-            return .zero
-        }
-        return attributes.frame.intersection(contentFrame)
-    }
+    let imagePrivacyLevel: ImagePrivacyLevel
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         var wireframes = [
             builder.createShapeWireframe(
                 id: wireframeID,
                 frame: attributes.frame,
+                clip: attributes.clip,
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,
                 backgroundColor: attributes.backgroundColor,
@@ -144,15 +123,16 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                     id: imageWireframeID,
                     resource: imageResource,
                     frame: contentFrame,
-                    clip: clipsToBounds ? clip : nil
+                    clip: attributes.clip
                 )
             )
         } else {
             wireframes.append(
                 builder.createPlaceholderWireframe(
                     id: imageWireframeID,
-                    frame: clipsToBounds ? relativeIntersectedRect : contentFrame,
-                    label: "Content Image"
+                    frame: attributes.clip.intersection(contentFrame), // = visible frame of the image
+                    clip: attributes.clip,
+                    label: imagePrivacyLevel == .maskNonBundledOnly ? "Content Image" : "Image"
                 )
             )
         }
@@ -206,6 +186,23 @@ fileprivate extension UIImageView {
         }
         let superViewType = "\(type(of: superview))"
         return superViewType == "_UIBarBackground"
+    }
+}
+
+fileprivate extension ImagePrivacyLevel {
+    var shouldRecordImagePredicate: (UIImageView) -> Bool {
+        switch self {
+        case .maskNone: return { _ in true }
+        case .maskNonBundledOnly: return { imageView in
+            if #available(iOS 13.0, *), let image = imageView.image {
+                return image.isContextual || imageView.isSystemControlBackground
+            } else {
+                return false
+            }
+        }
+        case .maskAll:
+            return { _ in false }
+        }
     }
 }
 #endif

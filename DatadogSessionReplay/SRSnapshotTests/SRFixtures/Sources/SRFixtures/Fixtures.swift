@@ -7,7 +7,11 @@
 import UIKit
 import SwiftUI
 
-public enum Fixture: CaseIterable {
+public protocol FixtureProtocol {
+    func instantiateViewController() -> UIViewController
+}
+
+public enum Fixture: FixtureProtocol, CaseIterable {
     case basicShapes
     case basicTexts
     case sliders
@@ -31,10 +35,10 @@ public enum Fixture: CaseIterable {
     /// Instantiated view controller is ``TimePickersCompactViewController``
     case timePickersCompact
     case images
-    case unsupportedViews
     /// Instantiated view controller is ``PopupsViewController``
     case popups
     case swiftUI
+    case symbols
     case navigationBars
     case navigationBarDefaultTranslucent
     case navigationBarDefaultNonTranslucent
@@ -84,15 +88,19 @@ public enum Fixture: CaseIterable {
             return UIStoryboard.datePickers.instantiateViewController(withIdentifier: "DatePickersCompact") // sharing the same VC with `datePickersCompact`
         case .images:
             return UIStoryboard.images.instantiateViewController(withIdentifier: "Images")
-        case .unsupportedViews:
-            return UIStoryboard.unsupportedViews.instantiateViewController(withIdentifier: "UnsupportedViews")
         case .popups:
             return UIStoryboard.basic.instantiateViewController(withIdentifier: "Popups")
         case .swiftUI:
-            if #available(iOS 13.0, *) {
-                return UIHostingController(rootView: Text("Hello SwiftUI"))
+            if #available(iOS 15.0, *) {
+                return UIHostingController(rootView: SwiftUIView())
             } else {
-                return ErrorViewController(message: "`.swiftUI` fixture is only available on iOS 13+")
+                return ErrorViewController(message: "`.swiftUI` fixture is only available on iOS 15+")
+            }
+        case .symbols:
+            if #available(iOS 15.0, *) {
+                return UIHostingController(rootView: SymbolsView())
+            } else {
+                return ErrorViewController(message: "`.symbols` fixture is only available on iOS 15+")
             }
         //- Navigation Bars
         case .navigationBars:
@@ -132,7 +140,6 @@ internal extension UIStoryboard {
     static var inputElements: UIStoryboard { UIStoryboard(name: "InputElements", bundle: .module) }
     static var datePickers: UIStoryboard { UIStoryboard(name: "InputElements-DatePickers", bundle: .module) }
     static var images: UIStoryboard { UIStoryboard(name: "Images", bundle: .module) }
-    static var unsupportedViews: UIStoryboard { UIStoryboard(name: "UnsupportedViews", bundle: .module) }
     static var navigationBars: UIStoryboard { UIStoryboard(name: "NavigationBars", bundle: .module) }
     static var tabbars: UIStoryboard { UIStoryboard(name: "Tabbars", bundle: .module) }
 }

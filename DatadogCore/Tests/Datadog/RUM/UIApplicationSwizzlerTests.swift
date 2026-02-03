@@ -5,13 +5,14 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogRUM
 
 // TODO: RUMM-2034 Remove this flag once we have a host application for tests
 #if !os(tvOS)
 
 class UIApplicationSwizzlerTests: XCTestCase {
-    private let handler = UIKitRUMUserActionsHandlerMock()
+    private let handler = RUMActionsHandlerMock()
     private lazy var swizzler = try! UIApplicationSwizzler(handler: handler)
 
     override func setUp() {

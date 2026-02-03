@@ -10,78 +10,47 @@ import TestUtilities
 @testable import DatadogCore
 
 class ApplicationStatePublisherTests: XCTestCase {
-    private let notificationCenter = NotificationCenter()
-
-    private let supportedNotifications = [
-        (name: UIApplication.didBecomeActiveNotification, expectedState: AppState.active),
-        (name: UIApplication.willResignActiveNotification, expectedState: AppState.inactive),
-        (name: UIApplication.didEnterBackgroundNotification, expectedState: AppState.background),
-        (name: UIApplication.willEnterForegroundNotification, expectedState: AppState.inactive),
-    ]
-
-    // MARK: - Handling UIApplication Notifications
-
-    func testWhenReceivingAppLifecycleNotification_itRecordsItsState() {
-        let expectation = expectation(description: "app state publisher publishes value")
+    func testWhenReceivingAppLifecycleNotification_itUpdatesStatesHistory() throws {
+        let date = Date()
+        let dateProvider = DateProviderMock(now: date)
+        let notificationCenter = NotificationCenter()
 
         // Given
         let publisher = ApplicationStatePublisher(
-            initialState: .mockRandom(),
-            dateProvider: SystemDateProvider(),
-            notificationCenter: notificationCenter
+            appStateHistory: .mockWith(initialState: .inactive, date: dateProvider.now),
+            notificationCenter: notificationCenter,
+            dateProvider: dateProvider
         )
 
-        // When
-        let notification = supportedNotifications.randomElement()!
+        var lastPublishedValue: AppStateHistory?
+        publisher.publish { lastPublishedValue = $0 }
 
-        publisher.publish { state in
-            // Then
-            XCTAssertEqual(
-                state.currentSnapshot.state,
-                notification.expectedState,
-                "It must record \(notification.expectedState) after receiving '\(notification.name)'"
-            )
-            expectation.fulfill()
-        }
+        // When / Then
+        dateProvider.now += 1
+        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        XCTAssertEqual(lastPublishedValue?.currentState, .inactive)
 
-        notificationCenter.post(name: notification.name, object: nil)
+        dateProvider.now += 1
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        XCTAssertEqual(lastPublishedValue?.currentState, .active)
 
-        waitForExpectations(timeout: 1)
-    }
+        dateProvider.now += 1
+        notificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+        XCTAssertEqual(lastPublishedValue?.currentState, .inactive)
 
-    // MARK: - Recording History
+        dateProvider.now += 1
+        notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        XCTAssertEqual(lastPublishedValue?.currentState, .background)
 
-    func testWhenReceivingStateChangeNotifications_itRecordsHistoryOfAppStates() {
-        let expectation = expectation(description: "app state publisher publishes values")
-        expectation.expectedFulfillmentCount = 100
+        let history = try XCTUnwrap(lastPublishedValue)
+        XCTAssertEqual(history.state(at: date), .inactive)
+        XCTAssertEqual(history.state(at: date + 1), .inactive)
+        XCTAssertEqual(history.state(at: date + 2), .active)
+        XCTAssertEqual(history.state(at: date + 3), .inactive)
+        XCTAssertEqual(history.state(at: date + 4), .background)
 
-        // Given
-        let publisher = ApplicationStatePublisher(
-            initialState: .mockRandom(),
-            dateProvider: RelativeDateProvider(startingFrom: .mockRandomInThePast(), advancingBySeconds: 1.0),
-            notificationCenter: notificationCenter
-        )
-
-        var receivedHistoryStates: [AppState?] = []
-        let expectedNotifications = (0..<expectation.expectedFulfillmentCount).map { _ in
-            supportedNotifications.randomElement()!
-        }
-
-        // When
-        publisher.publish { state in
-            receivedHistoryStates.append(state.currentSnapshot.state)
-            expectation.fulfill()
-        }
-
-        DispatchQueue.concurrentPerform(iterations: expectation.expectedFulfillmentCount) { iteration in
-            notificationCenter.post(name: expectedNotifications[iteration].name, object: nil)
-        }
-
-        waitForExpectations(timeout: 5)
-
-        // Then
-        let expectedHistoryStates = expectedNotifications.map { $0.expectedState }
-        XCTAssertEqual(receivedHistoryStates.count, expectedHistoryStates.count)
-        XCTAssertEqual(Set(receivedHistoryStates), Set(expectedHistoryStates), "It must record all app state changes")
+        XCTAssertNil(history.state(at: date - 1))
+        XCTAssertEqual(history.initialState, .inactive)
+        XCTAssertEqual(history.state(at: .distantFuture), .background)
     }
 }

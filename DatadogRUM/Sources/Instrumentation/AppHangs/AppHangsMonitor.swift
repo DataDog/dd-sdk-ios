@@ -14,9 +14,9 @@ internal final class AppHangsMonitor {
         /// The standardized `error.type` for RUM errors describing an app hang.
         static let appHangErrorType = "AppHang"
         /// The standardized `error.stack` when backtrace generation was not available.
-        static let appHangStackNotAvailableErrorMessage = "Stack trace was not generated because `DatadogCrashReporting` had not been enabled."
+        static let appHangStackNotAvailableErrorMessage = "Stack trace was not collected because `DatadogCrashReporting` had not been enabled."
         /// The standardized `error.stack` when backtrace generation failed due to an internal error.
-        static let appHangStackGenerationFailedErrorMessage = "Failed to generate stack trace. This is a known issue and we work on it."
+        static let appHangStackGenerationFailedErrorMessage = "Failed to collect the stack trace."
     }
 
     /// Watchdog thread that monitors the main queue for App Hangs.
@@ -33,6 +33,7 @@ internal final class AppHangsMonitor {
         backtraceReporter: BacktraceReporting,
         fatalErrorContext: FatalErrorContextNotifying,
         dateProvider: DateProvider,
+        uuidGenerator: RUMUUIDGenerator,
         processID: UUID
     ) {
         self.init(
@@ -46,7 +47,8 @@ internal final class AppHangsMonitor {
             ),
             fatalErrorContext: fatalErrorContext,
             processID: processID,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            uuidGenerator: uuidGenerator
         )
     }
 
@@ -55,7 +57,8 @@ internal final class AppHangsMonitor {
         watchdogThread: AppHangsObservingThread,
         fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        uuidGenerator: RUMUUIDGenerator
     ) {
         self.watchdogThread = watchdogThread
         self.nonFatalHangsHandler = NonFatalAppHangsHandler()
@@ -63,7 +66,8 @@ internal final class AppHangsMonitor {
             featureScope: featureScope,
             fatalErrorContext: fatalErrorContext,
             processID: processID,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            uuidGenerator: uuidGenerator
         )
     }
 

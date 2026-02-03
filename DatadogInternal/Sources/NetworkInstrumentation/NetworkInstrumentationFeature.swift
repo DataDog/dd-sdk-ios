@@ -7,7 +7,7 @@
 import Foundation
 
 /// The Network Instrumentation Feature that can be registered into a core if
-/// any hander is provided.
+/// any handler is provided.
 ///
 /// Usage:
 ///
@@ -29,7 +29,9 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     )
 
     /// A no-op message bus receiver.
-    internal let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    let messageReceiver: FeatureMessageReceiver
+
+    let networkContextProvider: NetworkContextProvider
 
     /// The list of registered handlers.
     ///
@@ -45,6 +47,14 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     ///
     /// The interceptions **must** be accessed using the `queue`.
     private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
+
+    init(
+        networkContextProvider: NetworkContextProvider,
+        messageReceiver: FeatureMessageReceiver
+    ) {
+        self.networkContextProvider = networkContextProvider
+        self.messageReceiver = messageReceiver
+    }
 
     /// Swizzles `URLSessionTaskDelegate`, `URLSessionDataDelegate`, and `URLSessionTask` methods
     /// to intercept `URLSessionTask` lifecycles.
@@ -78,7 +88,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 }
 
-                var injectedTraceContexts: [TraceContext]?
+                var injectedTraceContexts = [RequestInstrumentationContext]()
 
                 if let currentRequest = task.currentRequest {
                     let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
@@ -86,7 +96,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     injectedTraceContexts = traceContexts
                 }
 
-                self.intercept(task: task, with: injectedTraceContexts ?? [], additionalFirstPartyHosts: configuredFirstPartyHosts)
+                self.intercept(task: task, with: injectedTraceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts)
             }
         )
 
@@ -128,9 +138,28 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         let identifier = ObjectIdentifier(delegateClass)
         swizzlers.removeValue(forKey: identifier)
     }
+
+    private func removeGraphQLHeadersFromRequest(_ request: URLRequest) -> URLRequest {
+        var modifiedRequest = request
+
+        // Remove all GraphQL information
+        modifiedRequest.setValue(nil, forHTTPHeaderField: GraphQLHeaders.operationName)
+        modifiedRequest.setValue(nil, forHTTPHeaderField: GraphQLHeaders.operationType)
+        modifiedRequest.setValue(nil, forHTTPHeaderField: GraphQLHeaders.variables)
+        modifiedRequest.setValue(nil, forHTTPHeaderField: GraphQLHeaders.payload)
+
+        return modifiedRequest
+    }
 }
 
 extension NetworkInstrumentationFeature {
+    /// Helper structure that optionally contains a trace context and captured state, used to pass this
+    /// information between calls.
+    struct RequestInstrumentationContext {
+        let traceContext: TraceContext?
+        let capturedState: URLSessionHandlerCapturedState?
+    }
+
     /// Intercepts the provided request by injecting trace headers based on first-party hosts configuration.
     ///
     /// Only requests with URLs that match the list of first-party hosts have tracing headers injected.
@@ -140,7 +169,7 @@ extension NetworkInstrumentationFeature {
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
     /// - Returns: A tuple containing the modified request and the list of injected TraceContexts, one or none for each handler. If no trace is injected (e.g., due to sampling),
     ///            the list will be empty.
-    func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts?) -> (URLRequest, [TraceContext]) {
+    func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts?) -> (URLRequest, [RequestInstrumentationContext]) {
         let headerTypes = firstPartyHosts(with: additionalFirstPartyHosts)
             .tracingHeaderTypes(for: request.url)
 
@@ -148,17 +177,21 @@ extension NetworkInstrumentationFeature {
             return (request, [])
         }
 
+        let networkContext = self.networkContextProvider.currentNetworkContext
         var request = request
-        var traceContexts: [TraceContext] = [] // each handler can inject distinct trace context
+
+        // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
+        var instrumentationContexts: [RequestInstrumentationContext] = [] // each handler can inject distinct instrumentation context
         for handler in handlers {
-            let (nextRequest, nextTraceContext) = handler.modify(request: request, headerTypes: headerTypes)
+            let (nextRequest, nextTraceContext, capturedState) = handler.modify(request: request, headerTypes: headerTypes, networkContext: networkContext)
             request = nextRequest
-            if let nextTraceContext = nextTraceContext {
-                traceContexts.append(nextTraceContext)
-            }
+            instrumentationContexts.append(.init(traceContext: nextTraceContext, capturedState: capturedState))
         }
 
-        return (request, traceContexts)
+        // Remove GraphQL headers before returning the modified request
+        request = removeGraphQLHeadersFromRequest(request)
+
+        return (request, instrumentationContexts)
     }
 
     /// Intercepts the provided URLSession task by creating an interception object and notifying all handlers that the interception has started.
@@ -167,7 +200,7 @@ extension NetworkInstrumentationFeature {
     ///   - task: The URLSession task to intercept.
     ///   - injectedTraceContexts: The list of trace contexts injected into the task's request, one or none for each handler.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
-    func intercept(task: URLSessionTask, with injectedTraceContexts: [TraceContext], additionalFirstPartyHosts: FirstPartyHosts?) {
+    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?) {
         // In response to https://github.com/DataDog/dd-sdk-ios/issues/1638 capture the current request object on the
         // caller thread and freeze its attributes through `ImmutableRequest`. This is to avoid changing the request
         // object from multiple threads:
@@ -191,7 +224,7 @@ extension NetworkInstrumentationFeature {
 
             interception.register(request: request)
 
-            if let traceContext = injectedTraceContexts.first {
+            if let traceContext = instrumentationContexts.compactMap({ $0.traceContext }).first {
                 // ^ If multiple trace contexts were injected (one per each handler) take the first one. This mimics the implicit
                 // behaviour from before RUM-3470.
                 interception.register(trace: traceContext)
@@ -202,7 +235,13 @@ extension NetworkInstrumentationFeature {
             }
 
             self.interceptions[task] = interception
-            self.handlers.forEach { $0.interceptionDidStart(interception: interception) }
+            self.handlers
+                .forEach {
+                    $0.interceptionDidStart(
+                        interception: interception,
+                        capturedStates: instrumentationContexts.compactMap({ $0.capturedState })
+                    )
+                }
         }
     }
 

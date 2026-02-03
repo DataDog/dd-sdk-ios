@@ -7,6 +7,8 @@
 #if os(iOS)
 import XCTest
 @_spi(Internal)
+import TestUtilities
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 class UIImageViewWireframesBuilderTests: XCTestCase {
@@ -25,8 +27,8 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             imageWireframeID: imageWireframeID,
             attributes: ViewAttributes.mock(fixture: .visible(.someAppearance)),
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
-            clipsToBounds: true,
-            imageResource: .mockRandom()
+            imageResource: .mockRandom(),
+            imagePrivacyLevel: .maskNonBundledOnly
         )
 
         let wireframes = builder.buildWireframes(with: wireframesBuilder)
@@ -55,8 +57,8 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             imageWireframeID: placeholderWireframeID,
             attributes: ViewAttributes.mock(fixture: .visible(.someAppearance)),
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
-            clipsToBounds: true,
-            imageResource: nil
+            imageResource: nil,
+            imagePrivacyLevel: .maskNonBundledOnly
         )
 
         let wireframes = builder.buildWireframes(with: wireframesBuilder)

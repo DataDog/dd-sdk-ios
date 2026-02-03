@@ -18,8 +18,8 @@ internal struct LogsFeature: DatadogRemoteFeature {
 
     let backtraceReporter: BacktraceReporting?
 
-    @ReadWriteLock
-    private var attributes: [String: Encodable] = [:]
+    /// Global attributes attached to every log event.
+    let attributes: SynchronizedAttributes
 
     /// Time provider.
     let dateProvider: DateProvider
@@ -39,7 +39,6 @@ internal struct LogsFeature: DatadogRemoteFeature {
             ),
             messageReceiver: CombinedFeatureMessageReceiver(
                 LogMessageReceiver(logEventMapper: logEventMapper),
-                CrashLogReceiver(dateProvider: dateProvider, logEventMapper: logEventMapper),
                 WebViewLogReceiver()
             ),
             dateProvider: dateProvider,
@@ -59,17 +58,6 @@ internal struct LogsFeature: DatadogRemoteFeature {
         self.messageReceiver = messageReceiver
         self.dateProvider = dateProvider
         self.backtraceReporter = backtraceReporter
-    }
-
-    internal func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
-        _attributes.mutate { $0[key] = value }
-    }
-
-    internal func removeAttribute(forKey key: AttributeKey) {
-        _attributes.mutate { $0.removeValue(forKey: key) }
-    }
-
-    internal func getAttributes() -> [String: Encodable] {
-        return attributes
+        self.attributes = SynchronizedAttributes(attributes: [:])
     }
 }

@@ -5,6 +5,7 @@
  */
 
 import XCTest
+
 #if !os(tvOS)
 
 import DatadogInternal
@@ -14,12 +15,10 @@ import TestUtilities
 @testable import DatadogWebViewTracking
 
 class WebEventIntegrationTests: XCTestCase {
-    // swiftlint:disable implicitly_unwrapped_optional
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
-    private var controller: WKUserContentControllerMock!
-    // swiftlint:enable implicitly_unwrapped_optional
+    private var controller: WKUserContentControllerMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
-    override func setUp() {
+    override func setUpWithError() throws {
         core = DatadogCoreProxy(
             context: .mockWith(
                 env: "test",
@@ -29,8 +28,8 @@ class WebEventIntegrationTests: XCTestCase {
         )
 
         controller = WKUserContentControllerMock()
-        
-        WebViewTracking.enable(
+
+        try WebViewTracking.enableOrThrow(
             tracking: controller,
             hosts: [],
             hostsSanitizer: HostsSanitizer(),
@@ -39,8 +38,8 @@ class WebEventIntegrationTests: XCTestCase {
         )
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+        override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         controller = nil
     }
@@ -48,7 +47,7 @@ class WebEventIntegrationTests: XCTestCase {
     func testWebEventIntegration() throws {
         // Given
         let randomApplicationID: String = .mockRandom()
-        let randomUUID: UUID = .mockRandom()
+        let randomUUID: RUMUUID = .mockRandom()
 
         RUM.enable(with: .mockWith(applicationID: randomApplicationID) {
             $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: randomUUID)
@@ -61,7 +60,7 @@ class WebEventIntegrationTests: XCTestCase {
             "application": {
               "id": "xxx"
             },
-            "date": \(1635932927012),
+            "date": \(1_635_932_927_012),
             "service": "super",
             "session": {
               "id": "0110cab4-7471-480e-aa4e-7ce039ced355",
@@ -121,14 +120,15 @@ class WebEventIntegrationTests: XCTestCase {
         controller.flush()
 
         // Then
-        let expectedUUID = randomUUID.uuidString.lowercased()
+        let expectedUUID = randomUUID.toRUMDataFormat
         let rumMatcher = try XCTUnwrap(core.waitAndReturnRUMEventMatchers().last)
-        try rumMatcher.assertItFullyMatches(jsonString: """
+        try rumMatcher.assertItFullyMatches(
+            jsonString: """
         {
             "application": {
               "id": "\(randomApplicationID)"
             },
-            "date": \(1_635_932_927_012 + 123.toInt64Milliseconds),
+            "date": \(1_635_932_927_012 + 123.dd.toInt64Milliseconds),
             "service": "super",
             "session": {
               "id": "\(expectedUUID)",
@@ -177,7 +177,7 @@ class WebEventIntegrationTests: XCTestCase {
     func testWebTelemetryIntegration() throws {
         // Given
         let randomApplicationID: String = .mockRandom()
-        let randomUUID: UUID = .mockRandom()
+        let randomUUID: RUMUUID = .mockRandom()
 
         RUM.enable(with: .mockWith(applicationID: randomApplicationID) {
             $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: randomUUID)
@@ -233,12 +233,13 @@ class WebEventIntegrationTests: XCTestCase {
         controller.flush()
 
         // Then
-        let expectedUUID = randomUUID.uuidString.lowercased()
+        let expectedUUID = randomUUID.toRUMDataFormat
         let rumMatcher = try XCTUnwrap(core.waitAndReturnRUMEventMatchers().last)
-        try rumMatcher.assertItFullyMatches(jsonString: """
+        try rumMatcher.assertItFullyMatches(
+            jsonString: """
         {
           "type": "telemetry",
-          "date": \(1_712_069_357_432 + 123.toInt64Milliseconds),
+          "date": \(1_712_069_357_432 + 123.dd.toInt64Milliseconds),
           "service": "browser-rum-sdk",
           "version": "5.2.0-b93ed472a4f14fbf2bcd1bc2c9faacb4abbeed82",
           "source": "browser",

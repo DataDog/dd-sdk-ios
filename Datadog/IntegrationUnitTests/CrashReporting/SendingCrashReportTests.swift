@@ -16,9 +16,11 @@ import DatadogInternal
 /// - recording crash context data injected from SDK core and features like RUM.
 private class CrashReporterMock: CrashReportingPlugin {
     @ReadWriteLock
-    internal var pendingCrashReport: DDCrashReport?
+    var pendingCrashReport: DDCrashReport?
     @ReadWriteLock
-    internal var injectedContext: Data? = nil
+    var injectedContext: Data? = nil
+    /// Custom backtrace reporter injected to the plugin.
+    var injectedBacktraceReporter: BacktraceReporting?
 
     init(pendingCrashReport: DDCrashReport? = nil) {
         self.pendingCrashReport = pendingCrashReport
@@ -26,6 +28,7 @@ private class CrashReporterMock: CrashReportingPlugin {
 
     func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) { _ = completion(pendingCrashReport) }
     func inject(context: Data) { injectedContext = context }
+    var backtraceReporter: BacktraceReporting? { injectedBacktraceReporter }
 }
 
 /// Covers broad scenarios of sending Crash Reports.
@@ -37,40 +40,26 @@ class SendingCrashReportTests: XCTestCase {
         core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+    override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
 
-    func testWhenSDKStartsWithPendingCrashReport_itSendsItAsLogAndRUMEvent() throws {
+    func testWhenSDKStartsWithPendingCrashReport_itSendsItAsRUMEvent() throws {
         // Given
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted, // CR from the app session that has enabled data collection
             lastIsAppInForeground: true, // CR occurred while the app was in the foreground
-            lastRUMAttributes: GlobalRUMAttributes(attributes: mockRandomAttributes()),
-            lastLogAttributes: .init(mockRandomAttributes())
+            lastRUMAttributes: .mockRandom(),
+            lastLogAttributes: .mockRandom()
         )
         let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
+        let crashReportAttributes: [String: Encodable] = try XCTUnwrap(crashReport.additionalAttributes.dd.decode())
 
         // When
-        Logs.enable(with: .init(), in: core)
         RUM.enable(with: .init(applicationID: "rum-app-id"), in: core)
         CrashReporting.enable(with: CrashReporterMock(pendingCrashReport: crashReport), in: core)
-
-        // Then (an emergency log is sent)
-        let log = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: LogsFeature.name, ofType: LogEvent.self).first)
-        XCTAssertEqual(log.status, .emergency)
-        XCTAssertEqual(log.message, crashReport.message)
-        XCTAssertEqual(log.error?.message, crashReport.message)
-        XCTAssertEqual(log.error?.kind, crashReport.type)
-        XCTAssertEqual(log.error?.stack, crashReport.stack)
-        XCTAssertFalse(log.attributes.userAttributes.isEmpty)
-        DDAssertJSONEqual(log.attributes.userAttributes, crashContext.lastLogAttributes!)
-        XCTAssertNotNil(log.attributes.internalAttributes?[DDError.threads])
-        XCTAssertNotNil(log.attributes.internalAttributes?[DDError.binaryImages])
-        XCTAssertNotNil(log.attributes.internalAttributes?[DDError.meta])
-        XCTAssertNotNil(log.attributes.internalAttributes?[DDError.wasTruncated])
 
         // Then (RUMError is sent)
         let rumEvent = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self).first)
@@ -81,42 +70,8 @@ class SendingCrashReportTests: XCTestCase {
         XCTAssertNotNil(rumEvent.error.binaryImages)
         XCTAssertNotNil(rumEvent.error.meta)
         XCTAssertNotNil(rumEvent.error.wasTruncated)
-        DDAssertJSONEqual(rumEvent.context!.contextInfo, crashContext.lastRUMAttributes!)
-    }
-
-    func testWhenSendingCrashReportAsLog_itIsLinkedToTheRUMSessionThatHasCrashed() throws {
-        let crashReporter = CrashReporterMock()
-
-        // Given (RUM session)
-        Logs.enable(with: .init(), in: core)
-        RUM.enable(with: .init(applicationID: "rum-app-id"), in: core)
-        CrashReporting.enable(with: crashReporter, in: core)
-        RUMMonitor.shared(in: core).startView(key: "view-1", name: "FirstView")
-
-        let rumEvent = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMViewEvent.self).last)
-
-        // Flush async tasks in Crash Reporting feature (this is yet not a part of `core.flushAndTearDown()` today)
-        // TODO: RUM-2766 Stop core instance with completion
-        (core.get(feature: CrashReportingFeature.self)!.crashContextProvider as! CrashContextCoreProvider).flush()
-        core.flushAndTearDown()
-
-        // When (starting an SDK with pending crash report)
-        core = DatadogCoreProxy()
-
-        let crashReport: DDCrashReport = .mockRandomWith( // mock a CR with context injected from previous instance of the SDK
-            contextData: crashReporter.injectedContext!
-        )
-
-        Logs.enable(with: .init(), in: core)
-        RUM.enable(with: .init(applicationID: "rum-app-id"), in: core)
-        CrashReporting.enable(with: CrashReporterMock(pendingCrashReport: crashReport), in: core)
-
-        // Then (an emergency log is sent)
-        let log = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: LogsFeature.name, ofType: LogEvent.self).first)
-        XCTAssertEqual(log.status, .emergency)
-        XCTAssertEqual(log.message, crashReport.message)
-        XCTAssertEqual(log.attributes.internalAttributes?["application_id"] as? String, rumEvent.application.id)
-        XCTAssertEqual(log.attributes.internalAttributes?["session_id"] as? String, rumEvent.session.id)
-        XCTAssertEqual(log.attributes.internalAttributes?["view.id"] as? String, rumEvent.view.id)
+        let contextAttributes = try XCTUnwrap(rumEvent.context?.contextInfo)
+        let lastRUMAttributes = try XCTUnwrap(crashContext.lastRUMAttributes?.contextInfo)
+        DDAssertJSONEqual(contextAttributes, lastRUMAttributes.merging(crashReportAttributes) { $1 })
     }
 }

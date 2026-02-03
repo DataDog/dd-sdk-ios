@@ -8,9 +8,13 @@
 import UIKit
 
 internal struct UISegmentRecorder: NodeRecorder {
-    let identifier = UUID()
-    var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating = { context in
-        return context.recorder.privacy.inputAndOptionTextObfuscator
+    internal let identifier: UUID
+
+    init(identifier: UUID) {
+        self.identifier = identifier
+    }
+    var textObfuscator: (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating = { context, viewAttributes in
+        return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).inputAndOptionTextObfuscator
     }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
@@ -27,11 +31,11 @@ internal struct UISegmentRecorder: NodeRecorder {
         let builder = UISegmentWireframesBuilder(
             wireframeRect: attributes.frame,
             attributes: attributes,
-            textObfuscator: textObfuscator(context),
+            textObfuscator: textObfuscator(context, attributes),
             backgroundWireframeID: ids[0],
             segmentWireframeIDs: Array(ids[1..<ids.count]),
             segmentTitles: (0..<segment.numberOfSegments).map { segment.titleForSegment(at: $0) },
-            selectedSegmentIndex: context.recorder.privacy.shouldMaskInputElements ? nil : segment.selectedSegmentIndex,
+            selectedSegmentIndex: context.recorder.textAndInputPrivacy.shouldMaskInputElements ? nil : segment.selectedSegmentIndex,
             selectedSegmentTintColor: {
                 if #available(iOS 13.0, *) {
                     return segment.selectedSegmentTintColor
@@ -71,8 +75,7 @@ internal struct UISegmentWireframesBuilder: NodeWireframesBuilder {
         let background = builder.createShapeWireframe(
             id: backgroundWireframeID,
             frame: wireframeRect,
-            borderColor: nil,
-            borderWidth: nil,
+            clip: attributes.clip,
             backgroundColor: attributes.backgroundColor ?? SystemColors.tertiarySystemFill,
             cornerRadius: 8,
             opacity: attributes.alpha
@@ -99,6 +102,7 @@ internal struct UISegmentWireframesBuilder: NodeWireframesBuilder {
             return builder.createTextWireframe(
                 id: segmentWireframeIDs[idx],
                 frame: segmentRects[idx],
+                clip: attributes.clip,
                 text: textObfuscator.mask(text: segmentTitles[idx] ?? ""),
                 textFrame: segmentRects[idx],
                 textAlignment: .init(horizontal: .center, vertical: .center),

@@ -11,11 +11,11 @@ internal protocol StoragePerformancePreset {
     /// Maximum size of a single file (in bytes).
     /// Each feature (logging, tracing, ...) serializes its objects data to that file for later upload.
     /// If last written file is too big to append next data, new file is created.
-    var maxFileSize: UInt64 { get }
+    var maxFileSize: UInt32 { get }
     /// Maximum size of data directory (in bytes).
     /// Each feature uses separate directory.
     /// If this size is exceeded, the oldest files are deleted until this limit is met again.
-    var maxDirectorySize: UInt64 { get }
+    var maxDirectorySize: UInt32 { get }
     /// Maximum age qualifying given file for reuse (in seconds).
     /// If recently used file is younger than this, it is reused - otherwise: new file is created.
     var maxFileAgeForWrite: TimeInterval { get }
@@ -31,7 +31,7 @@ internal protocol StoragePerformancePreset {
     var maxObjectsInFile: Int { get }
     /// Maximum size of serialized object data (in bytes).
     /// If serialized object data exceeds this limit, it is skipped (not written to file and not uploaded).
-    var maxObjectSize: UInt64 { get }
+    var maxObjectSize: UInt32 { get }
 }
 
 internal extension StoragePerformancePreset {
@@ -51,13 +51,13 @@ internal extension StoragePerformancePreset {
 internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPerformancePreset {
     // MARK: - StoragePerformancePreset
 
-    let maxFileSize: UInt64
-    let maxDirectorySize: UInt64
+    let maxFileSize: UInt32
+    let maxDirectorySize: UInt32
     let maxFileAgeForWrite: TimeInterval
     let minFileAgeForRead: TimeInterval
     let maxFileAgeForRead: TimeInterval
     let maxObjectsInFile: Int
-    let maxObjectSize: UInt64
+    let maxObjectSize: UInt32
 
     // MARK: - UploadPerformancePreset
 
@@ -65,13 +65,16 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
     let minUploadDelay: TimeInterval
     let maxUploadDelay: TimeInterval
     let uploadDelayChangeRate: Double
+    let maxBatchesPerUpload: Int
+    let maxUploadJitter: TimeInterval
 }
 
 internal extension PerformancePreset {
     init(
         batchSize: Datadog.Configuration.BatchSize,
         uploadFrequency: Datadog.Configuration.UploadFrequency,
-        bundleType: BundleType
+        bundleType: BundleType,
+        batchProcessingLevel: Datadog.Configuration.BatchProcessingLevel
     ) {
         let meanFileAgeInSeconds: TimeInterval = {
             switch (bundleType, batchSize) {
@@ -113,26 +116,30 @@ internal extension PerformancePreset {
         self.init(
             meanFileAge: meanFileAgeInSeconds,
             minUploadDelay: minUploadDelayInSeconds,
-            uploadDelayFactors: uploadDelayFactors
+            uploadDelayFactors: uploadDelayFactors,
+            maxBatchesPerUpload: batchProcessingLevel.maxBatchesPerUpload
         )
     }
 
     init(
         meanFileAge: TimeInterval,
         minUploadDelay: TimeInterval,
-        uploadDelayFactors: (initial: Double, min: Double, max: Double, changeRate: Double)
+        uploadDelayFactors: (initial: Double, min: Double, max: Double, changeRate: Double),
+        maxBatchesPerUpload: Int
     ) {
-        self.maxFileSize = 4.MB.asUInt64()
-        self.maxDirectorySize = 512.MB.asUInt64()
+        self.maxFileSize = 4.MB.asUInt32()
+        self.maxDirectorySize = 512.MB.asUInt32()
         self.maxFileAgeForWrite = meanFileAge * 0.95 // 5% below the mean age
         self.minFileAgeForRead = meanFileAge * 1.05 //  5% above the mean age
         self.maxFileAgeForRead = 18.hours
         self.maxObjectsInFile = 500
-        self.maxObjectSize = 512.KB.asUInt64()
+        self.maxObjectSize = 512.KB.asUInt32()
         self.initialUploadDelay = minUploadDelay * uploadDelayFactors.initial
         self.minUploadDelay = minUploadDelay * uploadDelayFactors.min
         self.maxUploadDelay = minUploadDelay * uploadDelayFactors.max
         self.uploadDelayChangeRate = uploadDelayFactors.changeRate
+        self.maxBatchesPerUpload = maxBatchesPerUpload
+        self.maxUploadJitter = 1.0 // 1 second max jitter to avoid concurrent execution
     }
 
     func updated(with override: PerformancePresetOverride) -> PerformancePreset {
@@ -141,13 +148,15 @@ internal extension PerformancePreset {
             maxDirectorySize: maxDirectorySize,
             maxFileAgeForWrite: override.maxFileAgeForWrite ?? maxFileAgeForWrite,
             minFileAgeForRead: override.minFileAgeForRead ?? minFileAgeForRead,
-            maxFileAgeForRead: maxFileAgeForRead,
-            maxObjectsInFile: maxObjectsInFile,
+            maxFileAgeForRead: override.maxFileAgeForRead ?? maxFileAgeForRead,
+            maxObjectsInFile: override.maxObjectsInFile ?? maxObjectsInFile,
             maxObjectSize: override.maxObjectSize ?? maxObjectSize,
             initialUploadDelay: override.initialUploadDelay ?? initialUploadDelay,
             minUploadDelay: override.minUploadDelay ?? minUploadDelay,
             maxUploadDelay: override.maxUploadDelay ?? maxUploadDelay,
-            uploadDelayChangeRate: override.uploadDelayChangeRate ?? uploadDelayChangeRate
+            uploadDelayChangeRate: override.uploadDelayChangeRate ?? uploadDelayChangeRate,
+            maxBatchesPerUpload: maxBatchesPerUpload,
+            maxUploadJitter: maxUploadJitter
         )
     }
 }

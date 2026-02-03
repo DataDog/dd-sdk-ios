@@ -19,6 +19,8 @@ internal enum BatchMetric {
         case "tracing":         return "trace"
         case "session-replay":  return "sr"
         case "session-replay-resources":  return "sr-resources"
+        case "flags":           return "flags"
+        case "profiler":        return "profiler"
         default:                return nil
         }
     }
@@ -38,6 +40,9 @@ internal enum BatchDeletedMetric {
     static let name = "Batch Deleted"
     /// Metric type value.
     static let typeValue = "batch deleted"
+    /// The sample rate for this metric.
+    /// It is applied in addition to the telemetry sample rate (20% by default).
+    static let sampleRate: Float = 1.5 // 1.5%
     /// The key for uploader's delay options.
     static let uploaderDelayKey = "uploader_delay"
     /// The min delay of uploads for this track (in ms).
@@ -53,6 +58,11 @@ internal enum BatchDeletedMetric {
     static let batchRemovalReasonKey = "batch_removal_reason"
     /// If the batch was deleted in the background.
     static let inBackgroundKey = "in_background"
+    /// If the background tasks were enabled.
+    static let backgroundTasksEnabled = "background_tasks_enabled"
+
+    /// Count of pending batches left on track.
+    static let pendingBatches = "pending_batches"
 
     /// Allowed values for `batchRemovalReasonKey`.
     enum RemovalReason {
@@ -107,6 +117,9 @@ internal enum BatchClosedMetric {
     static let name = "Batch Closed"
     /// Metric type value.
     static let typeValue = "batch closed"
+    /// The sample rate for this metric.
+    /// It is applied in addition to the telemetry sample rate (20% by default).
+    static let sampleRate: Float = 1.5 // 1.5%
     /// The default duration since last write (in ms) after which the uploader considers the file to be "ready for upload".
     static let uploaderWindowKey = "uploader_window"
 

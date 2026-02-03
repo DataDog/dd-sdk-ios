@@ -16,16 +16,16 @@ class RequestBuilderTests: XCTestCase {
         .init(data: "event 3".utf8Data)
     ]
 
-    func testItCreatesPOSTRequest() {
+    func testItCreatesPOSTRequest() throws {
         // Given
         let builder = RequestBuilder(
             customIntakeURL: nil,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
 
         // When
-        let request = builder.request(for: mockEvents, with: .mockAny())
+        let request = try builder.request(for: mockEvents, with: .mockAny(), execution: .mockAny())
 
         // Then
         XCTAssertEqual(request.httpMethod, "POST")
@@ -35,13 +35,13 @@ class RequestBuilderTests: XCTestCase {
         // Given
         let builder = RequestBuilder(
             customIntakeURL: nil,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
 
         // When
         func url(for site: DatadogSite) -> String {
-            let request = builder.request(for: mockEvents, with: .mockWith(site: site))
+            let request = try! builder.request(for: mockEvents, with: .mockWith(site: site), execution: .mockAny())
             return request.url!.absoluteStringWithoutQuery!
         }
 
@@ -51,21 +51,22 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(url(for: .us5), "https://browser-intake-us5-datadoghq.com/api/v2/rum")
         XCTAssertEqual(url(for: .eu1), "https://browser-intake-datadoghq.eu/api/v2/rum")
         XCTAssertEqual(url(for: .ap1), "https://browser-intake-ap1-datadoghq.com/api/v2/rum")
+        XCTAssertEqual(url(for: .ap2), "https://browser-intake-ap2-datadoghq.com/api/v2/rum")
         XCTAssertEqual(url(for: .us1_fed), "https://browser-intake-ddog-gov.com/api/v2/rum")
     }
 
-    func testItSetsCustomIntakeURL() {
+    func testItSetsCustomIntakeURL() throws {
         // Given
         let randomURL: URL = .mockRandom()
         let builder = RequestBuilder(
             customIntakeURL: randomURL,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
 
         // When
         func url(for site: DatadogSite) -> String {
-            let request = builder.request(for: mockEvents, with: .mockWith(site: site))
+            let request = try! builder.request(for: mockEvents, with: .mockWith(site: site), execution: .mockAny())
             return request.url!.absoluteStringWithoutQuery!
         }
 
@@ -76,20 +77,23 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(url(for: .us5), expectedURL)
         XCTAssertEqual(url(for: .eu1), expectedURL)
         XCTAssertEqual(url(for: .ap1), expectedURL)
+        XCTAssertEqual(url(for: .ap2), expectedURL)
         XCTAssertEqual(url(for: .us1_fed), expectedURL)
     }
 
-    func testItSetsRUMQueryParameters() {
+    func testItSetsRUMQueryParameters() throws {
         let randomSource: String = .mockRandom(among: .alphanumerics)
         let randomVersion: String = .mockRandom(among: .decimalDigits)
         let randomService: String = .mockRandom(among: .alphanumerics)
         let randomEnv: String = .mockRandom(among: .alphanumerics)
         let randomSDKVersion: String = .mockRandom(among: .alphanumerics)
+        let randomAttempt: UInt = .mockRandom()
+        let randomStatus: Int = .mockRandom()
 
         // Given
         let builder = RequestBuilder(
             customIntakeURL: nil,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
         let context: DatadogContext = .mockWith(
@@ -99,39 +103,17 @@ class RequestBuilderTests: XCTestCase {
             source: randomSource,
             sdkVersion: randomSDKVersion
         )
+        let execution: ExecutionContext = .mockWith(previousResponseCode: randomStatus, attempt: randomAttempt)
 
         // When
-        let request = builder.request(for: mockEvents, with: context)
+        let request = try builder.request(for: mockEvents, with: context, execution: execution)
 
         // Then
-        XCTAssertEqual(
-            request.url?.query,
-            """
-            ddsource=\(randomSource)&ddtags=service:\(randomService),version:\(randomVersion),sdk_version:\(randomSDKVersion),env:\(randomEnv)
-            """
-        )
+        let expextedQuery = "ddsource=\(randomSource)&ddtags=retry_count:\(randomAttempt + 1),last_failure_status:\(randomStatus)"
+        XCTAssertEqual(request.url?.query, expextedQuery)
     }
 
-    func testItSetsVariantAsExtraQueryParameter() {
-        let randomVariant: String = .mockRandom(among: .alphanumerics)
-
-        // Given
-        let builder = RequestBuilder(
-            customIntakeURL: nil,
-            eventsFilter: .init(),
-            telemetry: NOPTelemetry()
-        )
-        let context: DatadogContext = .mockWith(variant: randomVariant)
-
-        // When
-        let request = builder.request(for: mockEvents, with: context)
-
-        // Then
-        let query = request.url?.query ?? ""
-        XCTAssertTrue(query.hasSuffix(",variant:\(randomVariant)"))
-    }
-
-    func testItSetsRUMHTTPHeaders() {
+    func testItSetsRUMHTTPHeaders() throws {
         let randomApplicationName: String = .mockRandom(among: .alphanumerics)
         let randomVersion: String = .mockRandom(among: .decimalDigits)
         let randomService: String = .mockRandom(among: .alphanumerics)
@@ -147,7 +129,7 @@ class RequestBuilderTests: XCTestCase {
         // Given
         let builder = RequestBuilder(
             customIntakeURL: nil,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
         let context: DatadogContext = .mockWith(
@@ -159,15 +141,15 @@ class RequestBuilderTests: XCTestCase {
             sdkVersion: randomSDKVersion,
             ciAppOrigin: randomOrigin,
             applicationName: randomApplicationName,
-            device: .mockWith(
-                name: randomDeviceName,
-                osName: randomDeviceOSName,
-                osVersion: randomDeviceOSVersion
+            device: .mockWith(name: randomDeviceName),
+            os: .mockWith(
+                name: randomDeviceOSName,
+                version: randomDeviceOSVersion
             )
         )
 
         // When
-        let request = builder.request(for: mockEvents, with: context)
+        let request = try builder.request(for: mockEvents, with: context, execution: .mockAny())
 
         // Then
         XCTAssertEqual(
@@ -184,16 +166,16 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
     }
 
-    func testItSetsHTTPBodyInExpectedFormat() {
+    func testItSetsHTTPBodyInExpectedFormat() throws {
         // Given
         let builder = RequestBuilder(
             customIntakeURL: nil,
-            eventsFilter: .init(),
+            eventsFilter: .init(telemetry: TelemetryMock()),
             telemetry: NOPTelemetry()
         )
 
         // When
-        let request = builder.request(for: mockEvents, with: .mockAny())
+        let request = try builder.request(for: mockEvents, with: .mockAny(), execution: .mockAny())
 
         // Then
         let decompressed = zlib.decode(request.httpBody!)!

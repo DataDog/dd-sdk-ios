@@ -6,9 +6,6 @@
 
 import Foundation
 
-@available(*, deprecated, renamed: "B3HTTPHeadersWriter")
-public typealias OTelHTTPHeadersWriter = B3HTTPHeadersWriter
-
 /// The `B3HTTPHeadersWriter` class facilitates the injection of trace propagation headers into network requests
 /// targeted at a backend expecting [B3 propagation format](https://github.com/openzipkin/b3-propagation).
 ///
@@ -57,8 +54,6 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     public private(set) var traceHeaderFields: [String: String] = [:]
 
-    private let samplingStrategy: TraceSamplingStrategy
-
     /// Defines whether the trace context should be injected into all requests or only sampled ones.
     private let traceContextInjection: TraceContextInjection
 
@@ -67,43 +62,12 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
 
     /// Initializes the headers writer.
     ///
-    /// - Parameter samplingRate: The sampling rate applied for headers injection.
     /// - Parameter injectEncoding: The B3 header encoding type, with `.single` as the default.
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public convenience init(
-        samplingRate: Float,
-        injectEncoding: InjectEncoding = .single
-    ) {
-        self.init(sampleRate: samplingRate, injectEncoding: injectEncoding)
-    }
-
-    /// Initializes the headers writer.
-    ///
-    /// - Parameter sampleRate: The sampling rate applied for headers injection, with 20% as the default.
-    /// - Parameter injectEncoding: The B3 header encoding type, with `.single` as the default.
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public convenience init(
-        sampleRate: Float = 20,
-        injectEncoding: InjectEncoding = .single
-    ) {
-        self.init(
-            samplingStrategy: .custom(sampleRate: sampleRate),
-            injectEncoding: injectEncoding,
-            traceContextInjection: .all
-        )
-    }
-
-    /// Initializes the headers writer.
-    ///
-    /// - Parameter samplingStrategy: The strategy for sampling trace propagation headers.
-    /// - Parameter injectEncoding: The B3 header encoding type, with `.single` as the default.
-    /// - Parameter traceContextInjection: The trace context injection strategy, with `.all` as the default.
+    /// - Parameter traceContextInjection: The trace context injection strategy, with `.sampled` as the default.
     public init(
-        samplingStrategy: TraceSamplingStrategy,
         injectEncoding: InjectEncoding = .single,
-        traceContextInjection: TraceContextInjection = .all
+        traceContextInjection: TraceContextInjection = .sampled
     ) {
-        self.samplingStrategy = samplingStrategy
         self.injectEncoding = injectEncoding
         self.traceContextInjection = traceContextInjection
     }
@@ -114,40 +78,38 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
     /// - Parameter spanID: The span ID.
     /// - Parameter parentSpanID: The parent span ID, if applicable.
     public func write(traceContext: TraceContext) {
-        let sampler = samplingStrategy.sampler(for: traceContext)
-        let sampled = sampler.sample()
-
         typealias Constants = B3HTTPHeaders.Constants
 
-        switch (traceContextInjection, sampled) {
-        case (.all, _), (.sampled, true):
-            switch injectEncoding {
-            case .multiple:
-                traceHeaderFields = [
-                    B3HTTPHeaders.Multiple.sampledField: sampled ? Constants.sampledValue : Constants.unsampledValue
-                ]
-
-                if sampled {
-                    traceHeaderFields[B3HTTPHeaders.Multiple.traceIDField] = String(traceContext.traceID, representation: .hexadecimal32Chars)
-                    traceHeaderFields[B3HTTPHeaders.Multiple.spanIDField] = String(traceContext.spanID, representation: .hexadecimal16Chars)
-                    traceHeaderFields[B3HTTPHeaders.Multiple.parentSpanIDField] = traceContext.parentSpanID.map { String($0, representation: .hexadecimal16Chars) }
-                }
-            case .single:
-                if sampled {
-                    traceHeaderFields[B3HTTPHeaders.Single.b3Field] = [
-                        String(traceContext.traceID, representation: .hexadecimal32Chars),
-                        String(traceContext.spanID, representation: .hexadecimal16Chars),
-                        sampled ? Constants.sampledValue : Constants.unsampledValue,
-                        traceContext.parentSpanID.map { String($0, representation: .hexadecimal16Chars) }
-                    ]
-                    .compactMap { $0 }
-                    .joined(separator: Constants.b3Separator)
-                } else {
-                    traceHeaderFields[B3HTTPHeaders.Single.b3Field] = Constants.unsampledValue
-                }
+        let sampled = traceContext.samplingPriority.isKept
+        let shouldInject: Bool = {
+            switch traceContextInjection {
+            case .all:      return true
+            case .sampled:  return sampled
             }
-        case (.sampled, false):
-            break
+        }()
+        guard shouldInject else {
+            return
+        }
+
+        switch injectEncoding {
+        case .multiple:
+            traceHeaderFields = [
+                B3HTTPHeaders.Multiple.sampledField: sampled ? Constants.sampledValue : Constants.unsampledValue,
+                B3HTTPHeaders.Multiple.traceIDField: String(traceContext.traceID, representation: .hexadecimal32Chars),
+                B3HTTPHeaders.Multiple.spanIDField: String(traceContext.spanID, representation: .hexadecimal16Chars),
+            ]
+            if let parentSpanId = traceContext.parentSpanID.map({ String($0, representation: .hexadecimal16Chars) }) {
+                traceHeaderFields[B3HTTPHeaders.Multiple.parentSpanIDField] = parentSpanId
+            }
+        case .single:
+            traceHeaderFields[B3HTTPHeaders.Single.b3Field] = [
+                String(traceContext.traceID, representation: .hexadecimal32Chars),
+                String(traceContext.spanID, representation: .hexadecimal16Chars),
+                sampled ? Constants.sampledValue : Constants.unsampledValue,
+                traceContext.parentSpanID.map { String($0, representation: .hexadecimal16Chars) }
+            ]
+            .compactMap { $0 }
+            .joined(separator: Constants.b3Separator)
         }
     }
 }

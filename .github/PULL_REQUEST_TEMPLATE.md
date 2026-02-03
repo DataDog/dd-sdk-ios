@@ -10,6 +10,5 @@ A brief description of implementation details of this PR.
 - [ ] Feature or bugfix MUST have appropriate tests (unit, integration)
 - [ ] Make sure each commit and the PR mention the Issue number or JIRA reference
 - [ ] Add CHANGELOG entry for user facing changes
-
-### Custom CI job configuration (optional)
-- [ ] Run unit tests for Session Replay
+- [ ] Add Objective-C interface for public APIs - see our [guidelines](https://datadoghq.atlassian.net/wiki/spaces/RUMP/pages/3157787243/RFC+-+Modular+Objective-C+Interface#Recommended-solution) (internal) 
+- [ ] Run `make api-surface` when adding new APIs

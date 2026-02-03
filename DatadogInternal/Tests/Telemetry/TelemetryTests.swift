@@ -109,32 +109,56 @@ class TelemetryTests: XCTestCase {
 
     func testSendingConfigurationTelemetry() throws {
         // When
-        telemetry.configuration(batchSize: 123, batchUploadFrequency: 456) // only some values
+        telemetry.configuration(backgroundTasksEnabled: true, batchSize: 123, batchUploadFrequency: 456) // only some values
 
         // Then
         let configuration = try XCTUnwrap(telemetry.messages.firstConfiguration())
         XCTAssertEqual(configuration.batchSize, 123)
         XCTAssertEqual(configuration.batchUploadFrequency, 456)
+        XCTAssertEqual(configuration.backgroundTasksEnabled, true)
     }
 
     // MARK: - Metric Telemetry
 
     func testSendingMetricTelemetry() throws {
         // When
-        telemetry.metric(name: "metric name", attributes: ["attribute": "value"])
+        telemetry.metric(name: "metric name", attributes: ["attribute": "value"], sampleRate: 4.21)
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.compactMap({ $0.asMetric }).first)
         XCTAssertEqual(metric.name, "metric name")
         XCTAssertEqual(metric.attributes as? [String: String], ["attribute": "value"])
+        XCTAssertEqual(metric.sampleRate, 4.21)
     }
 
-    func testStartingMethodCalledMetricTrace_whenSampled() throws {
-        XCTAssertNotNil(telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), samplingRate: 100))
+    func testMetricTelemetryDefaultSampleRate() throws {
+        // When
+        telemetry.metric(name: "metric name", attributes: [:])
+
+        // Then
+        let metric = try XCTUnwrap(telemetry.messages.compactMap({ $0.asMetric }).first)
+        XCTAssertEqual(metric.sampleRate, MetricTelemetry.defaultSampleRate)
     }
 
-    func testStartingMethodCalledMetricTrace_whenNotSampled() throws {
-        XCTAssertNil(telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), samplingRate: 0))
+    func testHeadSampleRateInMethodCalledMetric() throws {
+        XCTAssertNotNil(telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100))
+        XCTAssertNil(telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 0))
+    }
+
+    func testDefaultTailSampleRateInMethodCalledMetric() throws {
+        let metricTrace = telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
+        telemetry.stopMethodCalled(metricTrace, isSuccessful: .mockAny())
+
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: MethodCalledMetric.name))
+        XCTAssertEqual(metric.sampleRate, MetricTelemetry.defaultSampleRate)
+    }
+
+    func testTailSampleRateInMethodCalledMetric() throws {
+        let metricTrace = telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
+        telemetry.stopMethodCalled(metricTrace, isSuccessful: .mockAny(), tailSampleRate: 42.5)
+
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: MethodCalledMetric.name))
+        XCTAssertEqual(metric.sampleRate, 42.5)
     }
 
     func testTrackingMethodCallMetricTelemetry() throws {
@@ -143,19 +167,21 @@ class TelemetryTests: XCTestCase {
         let isSuccessful: Bool = .random()
 
         // When
-        let metricTrace = telemetry.startMethodCalled(operationName: operationName, callerClass: callerClass, samplingRate: 100)
+        let metricTrace = telemetry.startMethodCalled(operationName: operationName, callerClass: callerClass, headSampleRate: 100)
         Thread.sleep(forTimeInterval: 0.05)
         telemetry.stopMethodCalled(metricTrace, isSuccessful: isSuccessful)
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: MethodCalledMetric.name))
         XCTAssertEqual(metric.attributes[SDKMetricFields.typeKey] as? String, MethodCalledMetric.typeValue)
+        XCTAssertEqual(metric.attributes[SDKMetricFields.headSampleRate] as? SampleRate, 100)
         XCTAssertEqual(metric.attributes[MethodCalledMetric.operationName] as? String, operationName)
         XCTAssertEqual(metric.attributes[MethodCalledMetric.callerClass] as? String, callerClass)
         XCTAssertEqual(metric.attributes[MethodCalledMetric.isSuccessful] as? Bool, isSuccessful)
         let executionTime = try XCTUnwrap(metric.attributes[MethodCalledMetric.executionTime] as? Int64)
         XCTAssertGreaterThan(executionTime, 0)
-        XCTAssertLessThan(executionTime, TimeInterval(1).toInt64Nanoseconds)
+        XCTAssertLessThan(executionTime, TimeInterval(1).dd.toInt64Nanoseconds)
+        XCTAssertEqual(metric.sampleRate, MetricTelemetry.defaultSampleRate)
     }
 
     // MARK: - Integration with Core
@@ -173,10 +199,10 @@ class TelemetryTests: XCTestCase {
         core.telemetry.configuration(batchSize: 123)
         XCTAssertEqual(receiver.messages.lastTelemetry?.asConfiguration?.batchSize, 123)
 
-        core.telemetry.metric(name: "metric name", attributes: [:])
+        core.telemetry.metric(name: "metric name", attributes: [:], sampleRate: 15)
         XCTAssertEqual(receiver.messages.lastTelemetry?.asMetric?.name, "metric name")
 
-        let metricTrace = core.telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny())
+        let metricTrace = core.telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
         core.telemetry.stopMethodCalled(metricTrace)
         XCTAssertEqual(receiver.messages.lastTelemetry?.asMetric?.name, MethodCalledMetric.name)
     }

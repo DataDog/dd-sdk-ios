@@ -105,12 +105,8 @@ final class RUMUntrackedModalViewsAutoInstrumentationScenario: TestScenario {
         func rumView(for viewController: UIViewController) -> RUMView? {
             if let viewName = viewController.accessibilityLabel {
                 if viewController.modalPresentationStyle == .fullScreen {
-                    if #available(iOS 13, tvOS 13, *) {
-                        // Untracked on iOS/tvOS 13+ via isModalInPresentation
-                        return nil
-                    } else {
-                        return .init(name: viewName, isUntrackedModal: true)
-                    }
+                    // Untracked on iOS/tvOS 13+ via isModalInPresentation
+                    return nil
                 }
                 return .init(name: viewName)
             } else {
@@ -181,7 +177,7 @@ class RUMResourcesBaseScenario: URLSessionBaseScenario {
         config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
 
         switch setup.instrumentationMethod {
-        case .legacyWithFeatureFirstPartyHosts, .legacyInheritance, .legacyComposition, .delegateUsingFeatureFirstPartyHosts:
+        case .delegateUsingFeatureFirstPartyHosts:
             config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(
                     hosts: [
@@ -193,7 +189,7 @@ class RUMResourcesBaseScenario: URLSessionBaseScenario {
                 ),
                 resourceAttributesProvider: rumResourceAttributesProvider(request:response:data:error:)
             )
-        case .legacyWithAdditionalFirstyPartyHosts, .delegateWithAdditionalFirstyPartyHosts:
+        case .delegateWithAdditionalFirstPartyHosts:
             config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100), // hosts will be set through `DDURLSessionDelegate`
                 resourceAttributesProvider: rumResourceAttributesProvider(request:response:data:error:)
@@ -285,11 +281,10 @@ final class RUMStopSessionsScenario: TestScenario {
     }
 }
 
-@available(iOS 13, *)
 /// Scenario which presents `SwiftUI`-based hierarchy and navigates through
 /// its views and view controllers.
-final class RUMSwiftUIInstrumentationScenario: TestScenario {
-    static var storyboardName: String = "RUMSwiftUIInstrumentationScenario"
+final class RUMSwiftUIManualInstrumentationScenario: TestScenario {
+    static var storyboardName: String = "RUMSwiftUIManualInstrumentationScenario"
 
     private class Predicate: UIKitRUMViewsPredicate {
         let `default` = DefaultUIKitRUMViewsPredicate()
@@ -316,7 +311,102 @@ final class RUMSwiftUIInstrumentationScenario: TestScenario {
     }
 }
 
+/// Scenario that presents a UIKit view controller with buttons to trigger several alerts and action sheets,
+/// and a button that loads a similar SwiftUI based view with additional buttons for doing the same.
+///
+/// The idea is testing tracking on alerts and action sheets, both in UIKit and SwiftUI.
+final class RUMAlertScenario: TestScenario {
+    static var storyboardName: String = "RUMAlertScenario"
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        config.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
+        config.swiftUIViewsPredicate = SwiftUIPredicate()
+        config.swiftUIActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: false)
+        RUM.enable(with: config)
+    }
+}
+
+// MARK: SwiftUI Auto-instrumentation
+/// Scenarios which presents `SwiftUI`-based hierarchies and navigate through its views.
+/// It uses the RUM Swift auto-instrumentation (or mixed instrumentations).
+
+/// 1. Single hosting controller root view.
+@available(iOS 16.0, *)
+final class RUMSwiftUIAutoInstrumentationSingleRootViewScenario: TestScenario {
+    static var storyboardName: String = "RUMSwiftUIAutoInstrumentationSingleRootViewScenario"
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.swiftUIViewsPredicate = SwiftUIPredicate()
+        config.swiftUIActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
+        config.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
+        RUM.enable(with: config)
+    }
+}
+
+/// 2. Tabbar root view and multiple navigation scenario in each tab.
+final class RUMSwiftUIAutoInstrumentationRootTabbarScenario: TestScenario {
+    static var storyboardName: String = "RUMSwiftUIAutoInstrumentationRootTabbarScenario"
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.swiftUIViewsPredicate = SwiftUIPredicate()
+        config.swiftUIActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
+        RUM.enable(with: config)
+    }
+}
+
+/// 3. Single view with multiple action targets.
+@available(iOS 13, *)
+final class RUMSwiftUIAutoInstrumentationActionViewScenario: TestScenario {
+    static var storyboardName: String = "RUMSwiftUIAutoInstrumentationActionViewScenario"
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        config.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
+        config.swiftUIViewsPredicate = SwiftUIPredicate()
+        config.swiftUIActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
+        RUM.enable(with: config)
+    }
+}
+
+// TODO: RUM-9888 - Manual + Auto instrumentation scenario
+
+// MARK: - Feature Operations
+
+/// Scenario which tests Feature Operations API by starting, succeeding, and failing various operations.
+/// Each operation creates vital events that are sent to the server.
+final class RUMFeatureOperationsScenario: TestScenario {
+    static let storyboardName = "RUMFeatureOperationsScenario"
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        RUM.enable(with: config)
+    }
+}
+
 // MARK: - Helpers
+
+private class SwiftUIPredicate: SwiftUIRUMViewsPredicate {
+    let `default` = DefaultSwiftUIRUMViewsPredicate()
+
+    func rumView(for extractedViewName: String) -> DatadogRUM.RUMView? {
+        if extractedViewName == "RUMSessionEndView" {
+            return nil
+        }
+
+        return RUMView(name: extractedViewName)
+    }
+}
 
 private func rumResourceAttributesProvider(
     request: URLRequest,

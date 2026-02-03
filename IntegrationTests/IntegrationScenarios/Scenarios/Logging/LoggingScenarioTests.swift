@@ -5,6 +5,7 @@
  */
 
 import HTTPServerMock
+import TestUtilities
 import XCTest
 
 class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
@@ -62,7 +63,7 @@ class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
         ])
 
 
-        logMatchers.forEach { matcher in
+        try logMatchers.forEach { matcher in
             matcher.assertDate(matches: { Date().timeIntervalSince($0) < dataDeliveryTimeout * 2 })
             matcher.assertService(equals: "ui-tests-service-name")
             matcher.assertLoggerName(equals: "logger-name")
@@ -79,10 +80,12 @@ class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
             )
             matcher.assertHasArchitecture()
 
+            let sdkVersion: String = try matcher.value(forKeyPath: LogMatcher.JSONKey.loggerVersion)
+
             #if DEBUG
-            matcher.assertTags(equal: ["env:integration", "build_configuration:debug", "tag1:tag-value", "tag2", "tag3:added", "version:1.0"])
+            matcher.assertTags(equal: ["env:integration", "build_configuration:debug", "tag1:tag-value", "tag2", "tag3:added", "version:1.0", "service:ui-tests-service-name", "sdk_version:\(sdkVersion)"])
             #else
-            matcher.assertTags(equal: ["env:integration", "build_configuration:release", "tag1:tag-value", "tag2", "tag3:added", "version:1.0"])
+            matcher.assertTags(equal: ["env:integration", "build_configuration:release", "tag1:tag-value", "tag2", "tag3:added", "version:1.0", "service:ui-tests-service-name", "sdk_version:\(sdkVersion)"])
             #endif
 
             matcher.assertValue(

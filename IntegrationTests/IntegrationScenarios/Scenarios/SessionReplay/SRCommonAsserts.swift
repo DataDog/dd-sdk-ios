@@ -4,8 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import XCTest
 import HTTPServerMock
+import TestUtilities
+import XCTest
 
 /// A set of common assertions for all RUM tests.
 protocol SRCommonAsserts {
@@ -21,16 +22,15 @@ extension SRCommonAsserts {
         requests.forEach { request in
             XCTAssertEqual(request.httpMethod, "POST")
 
-            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309`
-            XCTAssertFalse(
-                request.path.contains("?"),
-                """
-                Request path must contain no query parameters.
-                ✉️ path: \(request.path)
-                """,
-                file: file,
-                line: line
-            )
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddtags=retry_count:1`
+            XCTAssertNotNil(request.path, file: file, line: line)
+            XCTAssertNotNil(request.queryItems)
+            XCTAssertEqual(request.queryItems!.count, 1)
+
+            let ddtags = request.queryItems?.ddtags()
+            XCTAssertNotNil(ddtags, file: file, line: line)
+            XCTAssertEqual(ddtags?.count, 1, file: file, line: line)
+            XCTAssertEqual(ddtags?["retry_count"], "1", file: file, line: line)
 
             let contentTypeRegex = #"^multipart/form-data; boundary=.*$"#
             XCTAssertEqual(request.httpHeaders["Content-Type"]?.matches(regex: contentTypeRegex), true, file: file, line: line)

@@ -32,6 +32,51 @@ public struct GeneratedCode {
         return try decorator.decorate(code: self)
     }
 
+    /// Sorts types alphabetically by name.
+    /// - Returns: a new schema with sorted types
+    ///
+    /// The resulting order is:
+    /// 1. Named types (structs, enums) sorted alphabetically by name
+    /// 2. Other types (primitives, etc.), preserving their original order
+    public func sortTypes() -> GeneratedCode {
+        var namedTypes: [SwiftType] = []
+        var otherTypes: [SwiftType] = []
+
+        // Separate types into named types and other types
+        for type in swiftTypes {
+            if type.typeName != nil {
+                namedTypes.append(type)
+            } else {
+                otherTypes.append(type)
+            }
+        }
+
+        // Sort named types alphabetically
+        namedTypes.sort { lhs, rhs in
+            let lhsName = lhs.typeName! // swiftlint:disable:this force_unwrapping
+            let rhsName = rhs.typeName! // swiftlint:disable:this force_unwrapping
+            return lhsName < rhsName
+        }
+
+        // Combine all types in the desired order
+        let sortedTypes = namedTypes + otherTypes
+
+        return GeneratedCode(swiftTypes: sortedTypes)
+    }
+
+    /// Skips list of types which should not be included in generated code.
+    /// - Parameter types: a set of type names to skip
+    /// - Returns: a new schema with skipped types.
+    public func skip(types typesToSkip: Set<String>) -> GeneratedCode {
+        let filteredTypes = swiftTypes.filter {
+            guard let typeName = $0.typeName else {
+                return true
+            }
+            return !typesToSkip.contains(typeName)
+        }
+        return GeneratedCode(swiftTypes: filteredTypes)
+    }
+
     /// Renders generated code with provided template.
     public func print(using template: OutputTemplate, and printer: CodePrinter) throws -> String {
         let codeText = try printer.print(code: self)

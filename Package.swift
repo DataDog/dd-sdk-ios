@@ -3,21 +3,16 @@
 import PackageDescription
 import Foundation
 
+let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment["DD_BENCHMARK"] != nil ?
+    [.define("DD_BENCHMARK")] : []
+
 let package = Package(
     name: "Datadog",
-    platforms: [
-        .iOS(.v12),
-        .tvOS(.v12),
-        .macOS(.v12)
-    ],
+    platforms: [.iOS(.v12), .tvOS(.v12), .macOS(.v12), .watchOS(.v7)],
     products: [
         .library(
             name: "DatadogCore",
             targets: ["DatadogCore"]
-        ),
-        .library(
-            name: "DatadogObjc",
-            targets: ["DatadogObjc"]
         ),
         .library(
             name: "DatadogLogs",
@@ -43,10 +38,18 @@ let package = Package(
             name: "DatadogWebViewTracking",
             targets: ["DatadogWebViewTracking"]
         ),
+        .library(
+            name: "DatadogFlags",
+            targets: ["DatadogFlags"]
+        ),
+        .library(
+            name: "DatadogProfiling",
+            targets: ["DatadogProfiling"]
+        ),
     ],
     dependencies: [
-        .package(url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.2"),
-        .package(url: "https://github.com/DataDog/opentelemetry-swift-packages.git", exact: "1.6.0")
+        .package(url: "https://github.com/kstenerud/KSCrash.git", from: "2.5.0"),
+        .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.3.0")),
     ],
     targets: [
         .target(
@@ -60,18 +63,7 @@ let package = Package(
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ],
-            swiftSettings: [.define("SPM_BUILD")]
-        ),
-        .target(
-            name: "DatadogObjc",
-            dependencies: [
-                .target(name: "DatadogCore"),
-                .target(name: "DatadogLogs"),
-                .target(name: "DatadogTrace"),
-                .target(name: "DatadogRUM"),
-                .target(name: "DatadogSessionReplay"),
-            ],
-            path: "DatadogObjc/Sources"
+            swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
         ),
         .target(
             name: "DatadogPrivate",
@@ -80,7 +72,8 @@ let package = Package(
 
         .target(
             name: "DatadogInternal",
-            path: "DatadogInternal/Sources"
+            path: "DatadogInternal/Sources",
+            swiftSettings: internalSwiftSettings
         ),
         .testTarget(
             name: "DatadogInternalTests",
@@ -111,7 +104,7 @@ let package = Package(
             name: "DatadogTrace",
             dependencies: [
                 .target(name: "DatadogInternal"),
-                .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-packages")
+                .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-core")
             ],
             path: "DatadogTrace/Sources"
         ),
@@ -148,7 +141,8 @@ let package = Package(
             name: "DatadogCrashReporting",
             dependencies: [
                 .target(name: "DatadogInternal"),
-                .product(name: "CrashReporter", package: "PLCrashReporter"),
+                .product(name: "Recording", package: "KSCrash"),
+                .product(name: "Filters", package: "KSCrash")
             ],
             path: "DatadogCrashReporting",
             sources: ["Sources"],
@@ -192,20 +186,75 @@ let package = Package(
                 .target(name: "DatadogSessionReplay"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogSessionReplay/Tests"
+            path: "DatadogSessionReplay/Tests",
+            resources: [
+                .process("Resources/Assets.xcassets")
+            ]
+        ),
+        
+        .target(
+            name: "DatadogProfiling",
+            dependencies: [
+                .target(name: "DatadogInternal"),
+                .target(name: "DatadogMachProfiler")
+            ],
+            path: "DatadogProfiling/Sources",
+            resources: [
+                .copy("Resources/PrivacyInfo.xcprivacy")
+            ],
+            swiftSettings: internalSwiftSettings
+        ),
+        .target(
+            name: "DatadogMachProfiler",
+            path: "DatadogProfiling/Mach",
+            cxxSettings: [.unsafeFlags(["-std=c++17"])]
+        ),
+        .testTarget(
+            name: "DatadogProfilingTests",
+            dependencies: [
+                .target(name: "DatadogMachProfiler"),
+                .target(name: "DatadogProfiling"),
+                .target(name: "TestUtilities"),
+            ],
+            path: "DatadogProfiling/Tests",
+            swiftSettings: [.interoperabilityMode(.Cxx)] + internalSwiftSettings
+        ),
+
+        .target(
+            name: "DatadogFlags",
+            dependencies: [
+                .target(name: "DatadogInternal"),
+            ],
+            path: "DatadogFlags/Sources"
+        ),
+        .testTarget(
+            name: "DatadogFlagsTests",
+            dependencies: [
+                .target(name: "DatadogFlags"),
+                .target(name: "TestUtilities"),
+            ],
+            path: "DatadogFlags/Tests"
         ),
 
         .target(
             name: "TestUtilities",
             dependencies: [
+                .target(name: "DatadogCore"),
+                .target(name: "DatadogPrivate"),
                 .target(name: "DatadogInternal"),
+                .target(name: "DatadogLogs"),
+                .target(name: "DatadogRUM"),
+                .target(name: "DatadogSessionReplay"),
+                .target(name: "DatadogTrace"),
+                .target(name: "DatadogCrashReporting"),
+                .target(name: "DatadogWebViewTracking"),
+                .target(name: "DatadogFlags")
             ],
-            path: "TestUtilities",
-            sources: ["Mocks", "Helpers", "Matchers"]
+            path: "TestUtilities/Sources",
+            swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
         )
     ]
 )
-
 
 // If the `DD_TEST_UTILITIES_ENABLED` development ENV is set, export additional utility packages.
 // To set this ENV for Xcode projects that fetch this package locally, use `open --env DD_TEST_UTILITIES_ENABLED path/to/<project or workspace>`.

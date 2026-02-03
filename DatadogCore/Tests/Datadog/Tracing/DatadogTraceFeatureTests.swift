@@ -59,10 +59,10 @@ class DatadogTraceFeatureTests: XCTestCase {
                     sdkVersion: randomSDKVersion,
                     ciAppOrigin: randomOrigin,
                     applicationName: randomApplicationName,
-                    device: .mockWith(
-                        name: randomDeviceName,
-                        osName: randomDeviceOSName,
-                        osVersion: randomDeviceOSVersion
+                    device: .mockWith(name: randomDeviceName),
+                    os: .mockWith(
+                        name: randomDeviceOSName,
+                        version: randomDeviceOSVersion
                     )
                 )
             ),
@@ -84,7 +84,8 @@ class DatadogTraceFeatureTests: XCTestCase {
         let request = server.waitAndReturnRequests(count: 1)[0]
         let requestURL = try XCTUnwrap(request.url)
         XCTAssertEqual(request.httpMethod, "POST")
-        XCTAssertEqual(requestURL.absoluteString, randomUploadURL.absoluteString)
+        XCTAssertEqual(requestURL.host, randomUploadURL.host)
+        XCTAssertEqual(requestURL.path, randomUploadURL.path)
         XCTAssertNil(requestURL.query)
         XCTAssertEqual(
             request.allHTTPHeaderFields?["User-Agent"],

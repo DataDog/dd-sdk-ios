@@ -75,7 +75,7 @@ attributes:
 custom_rules:
   todo_without_jira: # enforces that all TODO comments must be followed by JIRA reference
     name: "TODO without JIRA"
-    regex: "(TODO|TO DO|FIX|FIXME|FIX ME|todo)(?!:? (RUMM|RUM)-[0-9]{2,})" # "TODO: RUM-123", "TODO RUM-123", "FIX RUM-123", etc.
+    regex: "(TODO|TO DO|FIX|FIXME|FIX ME|todo)(?!:? (RUMM|RUM|FFL)-[0-9]{2,})" # "TODO: RUM-123", "TODO RUM-123", "FIX RUM-123", etc.
     match_kinds:
       - comment
     message: "All TODOs must be followed by JIRA reference, for example: \"TODO: RUM-123\""
@@ -163,7 +163,8 @@ included:
   - ../../DatadogSessionReplay/Sources
   - ../../DatadogCrashReporting/Sources
   - ../../DatadogWebViewTracking/Sources
-  - ../../DatadogObjc/Sources
+  - ../../DatadogFlags/Sources
+  - ../../DatadogProfiling/Sources
   - ../../Datadog/E2E
   - ../../tools/http-server-mock/Sources
   - ../../tools/api-surface/Sources

@@ -33,7 +33,8 @@ internal struct SpanEventBuilder {
         startTime: Date,
         finishTime: Date,
         samplingRate: Float,
-        isKept: Bool,
+        samplingPriority: SamplingPriority,
+        samplingDecisionMaker: SamplingMechanismType,
         tags: [String: Encodable],
         baggageItems: [String: String],
         logFields: [[String: Encodable]]
@@ -51,15 +52,11 @@ internal struct SpanEventBuilder {
 
         if bundleWithRUM {
             // Enrich with RUM context
-            do {
-                if let rum: RUMContext = try context.baggages[RUMContext.key]?.decode() {
-                    tags[SpanTags.rumApplicationID] = rum.applicationID
-                    tags[SpanTags.rumSessionID] = rum.sessionID
-                    tags[SpanTags.rumViewID] = rum.viewID
-                    tags[SpanTags.rumActionID] = rum.userActionID
-                }
-            } catch let error {
-                telemetry.error("Failed to decode RUM context for enriching span", error: error)
+            if let rum = context.additionalContext(ofType: RUMCoreContext.self) {
+                tags[SpanTags.rumApplicationID] = rum.applicationID
+                tags[SpanTags.rumSessionID] = rum.sessionID
+                tags[SpanTags.rumViewID] = rum.viewID
+                tags[SpanTags.rumActionID] = rum.userActionID
             }
         }
 
@@ -70,6 +67,18 @@ internal struct SpanEventBuilder {
             email: context.userInfo?.email,
             extraInfo: context.userInfo.map { castValuesToString($0.extraInfo) } ?? [:]
         )
+
+        // Transform account info to `SpanEvent.AccountInfo` representation
+        let spanEventAccountInfo: SpanEvent.AccountInfo?
+        if let accountInfo = context.accountInfo {
+            spanEventAccountInfo = SpanEvent.AccountInfo(
+                id: accountInfo.id,
+                name: accountInfo.name,
+                extraInfo: castValuesToString(accountInfo.extraInfo)
+            )
+        } else {
+            spanEventAccountInfo = nil
+        }
 
         let span = SpanEvent(
             traceID: traceID,
@@ -84,12 +93,16 @@ internal struct SpanEventBuilder {
             source: context.source,
             origin: context.ciAppOrigin,
             samplingRate: samplingRate,
-            isKept: isKept,
+            samplingPriority: samplingPriority,
+            samplingDecisionMaker: samplingDecisionMaker,
             tracerVersion: context.sdkVersion,
             applicationVersion: context.version,
             networkConnectionInfo: networkInfoEnabled ? context.networkConnectionInfo : nil,
             mobileCarrierInfo: networkInfoEnabled ? context.carrierInfo : nil,
+            device: context.normalizedDevice(addLocales: false),
+            os: context.os,
             userInfo: spanUserInfo,
+            accountInfo: spanEventAccountInfo,
             tags: tags
         )
 

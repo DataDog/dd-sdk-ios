@@ -25,7 +25,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockDecember15th2019At10AMUTC(),
             finishTime: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [
                 "foo": "bar",
                 "bizz": 123
@@ -66,7 +67,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [:],
             baggageItems: [:],
             logFields: []
@@ -89,7 +91,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [OTTags.error: true],
             baggageItems: [:],
             logFields: []
@@ -109,7 +112,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [OTTags.error: false],
             baggageItems: [:],
             logFields: []
@@ -133,7 +137,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [:],
             baggageItems: [:],
             logFields: [
@@ -155,7 +160,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [:],
             baggageItems: [:],
             logFields: [
@@ -189,7 +195,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [:],
             baggageItems: [:],
             logFields: [
@@ -217,7 +224,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [
                 "error": true
             ],
@@ -240,7 +248,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [
                 "error": false
             ],
@@ -267,7 +276,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [
                 SpanTags.resource: "custom resource name"
             ],
@@ -293,7 +303,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [
                 SpanTags.operation: "custom operation name"
             ],
@@ -319,7 +330,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [
                 SpanTags.service: "custom service name"
             ],
@@ -345,7 +357,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [
                 "tag-name": "tag value"
             ],
@@ -377,7 +390,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: 0.42,
-            isKept: true,
+            samplingPriority: .autoKeep,
+            samplingDecisionMaker: .agentRate,
             tags: [
                 "tag-name": "tag value"
             ],
@@ -391,7 +405,8 @@ class SpanEventBuilderTests: XCTestCase {
 
         // Then
         XCTAssertEqual(span.samplingRate, 0.42)
-        XCTAssertTrue(span.isKept)
+        XCTAssertTrue(span.samplingPriority.isKept)
+        XCTAssertEqual(span.samplingDecisionMaker, .agentRate)
     }
 
     func testBuildingDiscardedRootSpanWithSamplingRateSet() {
@@ -407,7 +422,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: 0.13,
-            isKept: false,
+            samplingPriority: .autoDrop,
+            samplingDecisionMaker: .agentRate,
             tags: [
                 "tag-name": "tag value"
             ],
@@ -421,7 +437,8 @@ class SpanEventBuilderTests: XCTestCase {
 
         // Then
         XCTAssertEqual(span.samplingRate, 0.13)
-        XCTAssertFalse(span.isKept)
+        XCTAssertFalse(span.samplingPriority.isKept)
+        XCTAssertEqual(span.samplingDecisionMaker, .agentRate)
     }
 
     // MARK: - Attributes Conversion
@@ -474,7 +491,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: createMockAttributes(),
             baggageItems: [:],
             logFields: []
@@ -506,7 +524,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [:],
             baggageItems: [:],
             logFields: []
@@ -534,7 +553,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [
                 "failing-tag": FailingEncodableMock(errorMessage: "Value cannot be encoded.")
             ],
@@ -595,7 +615,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [
                 DatadogTagKeys.spanLinks.rawValue: [spanLink]
             ],
@@ -617,11 +638,11 @@ class SpanEventBuilderTests: XCTestCase {
     func testWhenBundleWithRUMisEnabled_itCreatesSpanWithRUMContext() {
         // Given
         let rum = oneOf([
-            { RUMContext(applicationID: .mockRandom(), sessionID: .mockRandom(), viewID: .mockRandom(), userActionID: .mockRandom()) },
-            { RUMContext(applicationID: .mockRandom(), sessionID: .mockRandom(), viewID: .mockRandom(), userActionID: nil) },
-            { RUMContext(applicationID: .mockRandom(), sessionID: .mockRandom(), viewID: nil, userActionID: nil) }
+            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), viewID: .mockRandom(), userActionID: .mockRandom()) },
+            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), viewID: .mockRandom(), userActionID: nil) },
+            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), viewID: nil, userActionID: nil) }
         ])
-        let context: DatadogContext = .mockWith(baggages: [RUMContext.key: .init(rum)])
+        let context: DatadogContext = .mockWith(additionalContext: [rum])
 
         // When
         let builder: SpanEventBuilder = .mockWith(bundleWithRUM: true)
@@ -634,7 +655,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [:],
             baggageItems: [:],
             logFields: []
@@ -650,13 +672,13 @@ class SpanEventBuilderTests: XCTestCase {
 
     func testWhenBundleWithRUMisDisabled_itCreatesSpanWithNoRUMContext() {
         // Given
-        let rum = RUMContext(
+        let rum = RUMCoreContext(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
             viewID: .mockRandom(),
             userActionID: .mockRandom()
         )
-        let context: DatadogContext = .mockWith(baggages: [RUMContext.key: .init(rum)])
+        let context: DatadogContext = .mockWith(additionalContext: [rum])
 
         // When
         let builder: SpanEventBuilder = .mockWith(bundleWithRUM: false)
@@ -669,7 +691,8 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             samplingRate: .mockAny(),
-            isKept: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
             tags: [:],
             baggageItems: [:],
             logFields: []
@@ -680,33 +703,5 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertNil(span.tags[SpanTags.rumSessionID])
         XCTAssertNil(span.tags[SpanTags.rumViewID])
         XCTAssertNil(span.tags[SpanTags.rumActionID])
-    }
-
-    func testWhenBundleWithRUMisEnabledAndRUMBaggageIsMalformed_itSendsTelemetryError() throws {
-        let telemetry = TelemetryMock()
-
-        // Given
-        let context: DatadogContext = .mockWith(baggages: [RUMContext.key: .init("malformed RUM context")])
-
-        // When
-        let builder: SpanEventBuilder = .mockWith(bundleWithRUM: true, telemetry: telemetry)
-        _ = builder.createSpanEvent(
-            context: context,
-            traceID: .mockAny(),
-            spanID: .mockAny(),
-            parentSpanID: .mockAny(),
-            operationName: .mockAny(),
-            startTime: .mockAny(),
-            finishTime: .mockAny(),
-            samplingRate: .mockAny(),
-            isKept: .mockAny(),
-            tags: [:],
-            baggageItems: [:],
-            logFields: []
-        )
-
-        // Then
-        let error = try XCTUnwrap(telemetry.messages.firstError())
-        XCTAssertTrue(error.message.hasPrefix("Failed to decode RUM context for enriching span"))
     }
 }

@@ -32,12 +32,12 @@ internal final class ViewCache {
     ///   - ttl: The TTL of view ids in cache.
     ///   - capacity: The maximum number of ids to store.
     init(
-        dateProvider: DateProvider = SystemDateProvider(),
+        dateProvider: DateProvider,
         ttl: TimeInterval = 3.minutes,
         capacity: Int = 30
     ) {
         self.dateProvider = dateProvider
-        self.ttl = ttl.toInt64Milliseconds
+        self.ttl = ttl.dd.toInt64Milliseconds
         self.capacity = capacity
         self.views.reserveCapacity(capacity)
     }
@@ -84,7 +84,7 @@ internal final class ViewCache {
     }
 
     private func purge() {
-        let now = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let now = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
 
         _views.mutate {
             var views = $0.prefix(capacity)

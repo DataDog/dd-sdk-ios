@@ -8,18 +8,20 @@
 import UIKit
 
 internal class UILabelRecorder: NodeRecorder {
-    let identifier = UUID()
+    internal let identifier: UUID
 
     /// An option for customizing wireframes builder created by this recorder.
     var builderOverride: (UILabelWireframesBuilder) -> UILabelWireframesBuilder
-    var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating
+    var textObfuscator: (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating
 
     init(
+        identifier: UUID,
         builderOverride: @escaping (UILabelWireframesBuilder) -> UILabelWireframesBuilder = { $0 },
-        textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
-            return context.recorder.privacy.staticTextObfuscator
+        textObfuscator: @escaping (ViewTreeRecordingContext, ViewAttributes) -> TextObfuscating = { context, viewAttributes in
+            return viewAttributes.resolveTextAndInputPrivacyLevel(in: context).staticTextObfuscator
         }
     ) {
+        self.identifier = identifier
         self.builderOverride = builderOverride
         self.textObfuscator = textObfuscator
     }
@@ -43,7 +45,8 @@ internal class UILabelRecorder: NodeRecorder {
             textAlignment: label.textAlignment,
             font: label.font,
             fontScalingEnabled: label.adjustsFontSizeToFitWidth,
-            textObfuscator: textObfuscator(context)
+            truncationMode: SRTextStyle.TruncationMode(label.lineBreakMode),
+            textObfuscator: textObfuscator(context, attributes)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builderOverride(builder))
         return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
@@ -64,6 +67,8 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
     let font: UIFont?
     /// Flag that determines if font should be scaled
     var fontScalingEnabled: Bool
+    /// How text should be truncated when it overflows.
+    let truncationMode: SRTextStyle.TruncationMode?
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
 
@@ -76,11 +81,13 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
             builder.createTextWireframe(
                 id: wireframeID,
                 frame: wireframeRect,
+                clip: attributes.clip,
                 text: textObfuscator.mask(text: text),
                 textAlignment: .init(systemTextAlignment: textAlignment),
                 textColor: textColor,
                 font: font,
                 fontScalingEnabled: fontScalingEnabled,
+                truncationMode: truncationMode,
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,
                 backgroundColor: attributes.backgroundColor,

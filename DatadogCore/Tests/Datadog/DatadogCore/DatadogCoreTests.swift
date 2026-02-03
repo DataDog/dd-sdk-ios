@@ -78,6 +78,65 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 1, "It should send only one request")
     }
 
+    func testWhenWritingEventsWithPendingConsentThenGranted_itUploadsAllEvents() throws {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            performance: .combining(
+                storagePerformance: StoragePerformanceMock.readAllFiles,
+                uploadPerformance: UploadPerformanceMock.veryQuick
+            ),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+
+        let send2RequestsExpectation = expectation(description: "send 2 requests")
+        send2RequestsExpectation.expectedFulfillmentCount = 2
+
+        let requestBuilderSpy = FeatureRequestBuilderSpy()
+        requestBuilderSpy.onRequest = { _, _ in send2RequestsExpectation.fulfill() }
+
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
+
+        // When
+        let scope = core.scope(for: FeatureMock.self)
+        core.set(trackingConsent: .pending)
+        scope.eventWriteContext { context, writer in
+            XCTAssertEqual(context.trackingConsent, .pending)
+            writer.write(value: FeatureMock.Event(event: "pending"))
+        }
+
+        core.set(trackingConsent: .granted)
+        scope.eventWriteContext { context, writer in
+            XCTAssertEqual(context.trackingConsent, .granted)
+            writer.write(value: FeatureMock.Event(event: "granted"))
+        }
+
+        // Then
+        waitForExpectations(timeout: 2)
+
+        let uploadedEvents = requestBuilderSpy.requestParameters
+            .flatMap { $0.events }
+            .map { $0.data.utf8String }
+
+        XCTAssertEqual(
+            uploadedEvents,
+            [
+                #"{"event":"pending"}"#,
+                #"{"event":"granted"}"#
+            ],
+            "It should upload all events"
+        )
+        XCTAssertEqual(requestBuilderSpy.requestParameters.count, 2, "It should send 2 requests")
+    }
+
     func testWhenWritingEventsWithBypassingConsent_itUploadsAllEvents() throws {
         // Given
         let core = DatadogCore(
@@ -132,7 +191,7 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 1, "It should send only one request")
     }
 
-    func testWhenFeatureBaggageIsUpdated_thenNewValueIsImmediatellyAvailable() throws {
+    func testWhenFeatureAdditionalContextIsUpdated_thenNewValueIsImmediatellyAvailable() throws {
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -153,29 +212,32 @@ class DatadogCoreTests: XCTestCase {
         let scope = core.scope(for: FeatureMock.self)
 
         // When
-        let key = "key"
+        struct ContextMock: AdditionalContext {
+            static let key = "key"
+            let value: String
+        }
         let expectation1 = self.expectation(description: "retrieve context")
         let expectation2 = self.expectation(description: "retrieve context and event writer")
         expectation1.expectedFulfillmentCount = 2
         expectation2.expectedFulfillmentCount = 2
 
-        core.set(baggage: "baggage 1", forKey: key)
+        core.set(context: ContextMock(value: "value 1"))
         scope.context { context in
-            XCTAssertEqual(try! context.baggages[key]!.decode(type: String.self), "baggage 1")
+            XCTAssertEqual(context.additionalContext(ofType: ContextMock.self)?.value, "value 1")
             expectation1.fulfill()
         }
         scope.eventWriteContext { context, _ in
-            XCTAssertEqual(try! context.baggages[key]!.decode(type: String.self), "baggage 1")
+            XCTAssertEqual(context.additionalContext(ofType: ContextMock.self)?.value, "value 1")
             expectation2.fulfill()
         }
 
-        core.set(baggage: "baggage 2", forKey: key)
+        core.set(context: ContextMock(value: "value 1"))
         scope.context { context in
-            XCTAssertEqual(try! context.baggages[key]!.decode(type: String.self), "baggage 2")
+            XCTAssertEqual(context.additionalContext(ofType: ContextMock.self)?.value, "value 1")
             expectation1.fulfill()
         }
         scope.eventWriteContext { context, _ in
-            XCTAssertEqual(try! context.baggages[key]!.decode(type: String.self), "baggage 2")
+            XCTAssertEqual(context.additionalContext(ofType: ContextMock.self)?.value, "value 1")
             expectation2.fulfill()
         }
 
@@ -230,8 +292,8 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         let storage1 = core1.stores.values.first?.storage
-        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxObjectSize, 512.KB.asUInt64())
-        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxFileSize, 4.MB.asUInt64())
+        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxObjectSize, 512.KB.asUInt32())
+        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxFileSize, 4.MB.asUInt32())
 
         let storage2 = core2.stores.values.first?.storage
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
@@ -270,5 +332,204 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertNil(core.get(feature: FeatureMock.self))
         core.flush()
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 0, "It should not send any request")
+    }
+
+    func testItAppendsUserDataIfAnonymousIdentifierExists() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        core.set(anonymousId: "anonymous-id")
+        let userBefore = core.userInfoPublisher.current
+        XCTAssertEqual(userBefore.anonymousId, "anonymous-id")
+        XCTAssertNil(userBefore.id)
+        XCTAssertNil(userBefore.name)
+        XCTAssertNil(userBefore.email)
+
+        core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
+
+        let userAfter = core.userInfoPublisher.current
+        XCTAssertEqual(userAfter.anonymousId, "anonymous-id")
+        XCTAssertEqual(userAfter.id, "user-id")
+        XCTAssertEqual(userAfter.name, "user-name")
+        XCTAssertEqual(userAfter.email, "user-email")
+    }
+
+    func testItAppendsAnonymousIdentifierIfUserExists() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
+
+        let userBefore = core.userInfoPublisher.current
+        XCTAssertNil(userBefore.anonymousId)
+        XCTAssertEqual(userBefore.id, "user-id")
+        XCTAssertEqual(userBefore.name, "user-name")
+        XCTAssertEqual(userBefore.email, "user-email")
+
+        core.set(anonymousId: "anonymous-id")
+
+        let userAfter = core.userInfoPublisher.current
+        XCTAssertEqual(userAfter.anonymousId, "anonymous-id")
+        XCTAssertEqual(userAfter.id, "user-id")
+        XCTAssertEqual(userAfter.name, "user-name")
+        XCTAssertEqual(userAfter.email, "user-email")
+    }
+
+    func testItAppendsAccountDataAndUpdatesIt() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        let accountBefore = core.accountInfoPublisher.current
+        XCTAssertNil(accountBefore)
+
+        core.setAccountInfo(id: "account-id", name: "account-name")
+        let accountAfterInitialSet = core.accountInfoPublisher.current
+        XCTAssertNotNil(accountAfterInitialSet)
+        XCTAssertEqual(accountAfterInitialSet?.id, "account-id")
+        XCTAssertEqual(accountAfterInitialSet?.name, "account-name")
+
+        core.setAccountInfo(id: "account-id-2", name: "account-name-2")
+        let accountAfterUpdate = core.accountInfoPublisher.current
+        XCTAssertNotNil(accountAfterUpdate)
+        XCTAssertEqual(accountAfterUpdate?.id, "account-id-2")
+        XCTAssertEqual(accountAfterUpdate?.name, "account-name-2")
+    }
+
+    func testItUpdatesAccountExtraInfoWhileKeepingOriginalAccountInfo() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        let accountBefore = core.accountInfoPublisher.current
+        XCTAssertNil(accountBefore)
+
+        core.setAccountInfo(id: "account-id", name: "account-name")
+        let accountAfterInitialSet = core.accountInfoPublisher.current
+        XCTAssertNotNil(accountAfterInitialSet)
+        XCTAssertEqual(accountAfterInitialSet?.id, "account-id")
+        XCTAssertEqual(accountAfterInitialSet?.name, "account-name")
+
+        core.addAccountExtraInfo(["test": "test"])
+        let accountAfterAddExtraInfo = core.accountInfoPublisher.current
+        XCTAssertNotNil(accountAfterAddExtraInfo)
+        XCTAssertEqual(accountAfterAddExtraInfo?.id, "account-id")
+        XCTAssertEqual(accountAfterAddExtraInfo?.name, "account-name")
+    }
+
+    func testItClearsAccountInfo() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        let accountBefore = core.accountInfoPublisher.current
+        XCTAssertNil(accountBefore)
+
+        core.setAccountInfo(id: "account-id", name: "account-name")
+        let accountAfterInitialSet = core.accountInfoPublisher.current
+        XCTAssertNotNil(accountAfterInitialSet)
+        XCTAssertEqual(accountAfterInitialSet?.id, "account-id")
+        XCTAssertEqual(accountAfterInitialSet?.name, "account-name")
+
+        core.clearAccountInfo()
+        let accountAfterUpdate = core.accountInfoPublisher.current
+        XCTAssertNil(accountAfterUpdate)
+    }
+
+    func testItClearUserInfo() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        let userBefore = core.userInfoPublisher.current
+        XCTAssertNil(userBefore.id)
+        XCTAssertNil(userBefore.name)
+        XCTAssertNil(userBefore.email)
+
+        core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
+        let userAfterInitialSet = core.userInfoPublisher.current
+        XCTAssertEqual(userAfterInitialSet.id, "user-id")
+        XCTAssertEqual(userAfterInitialSet.name, "user-name")
+        XCTAssertEqual(userAfterInitialSet.email, "user-email")
+
+        core.clearUserInfo()
+        let userAfterUpdate = core.userInfoPublisher.current
+        XCTAssertNil(userAfterUpdate.id)
+        XCTAssertNil(userAfterUpdate.name)
+        XCTAssertNil(userAfterUpdate.email)
+    }
+
+    func testItClearsAnonymousIdentifier() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        core.set(anonymousId: "anonymous-id")
+        core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
+        core.set(anonymousId: nil)
+
+        let userAfter = core.userInfoPublisher.current
+        XCTAssertNil(userAfter.anonymousId)
+        XCTAssertEqual(userAfter.id, "user-id")
+        XCTAssertEqual(userAfter.name, "user-name")
+        XCTAssertEqual(userAfter.email, "user-email")
     }
 }

@@ -10,7 +10,7 @@ import DatadogInternal
 @testable import DatadogRUM
 
 class RUMMonitorConfigurationTests: XCTestCase {
-    private let userIno: UserInfo = .mockAny()
+    private let userInfo: UserInfo = .mockAny()
     private let networkConnectionInfo: NetworkConnectionInfo = .mockAny()
     private let carrierInfo: CarrierInfo = .mockAny()
 
@@ -23,17 +23,18 @@ class RUMMonitorConfigurationTests: XCTestCase {
                 env: "tests",
                 version: "1.2.3",
                 sdkVersion: "3.4.5",
-                userInfo: userIno,
+                userInfo: userInfo,
                 networkConnectionInfo: networkConnectionInfo,
                 carrierInfo: carrierInfo
             )
         )
-        defer { core.flushAndTearDown() }
+        defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
 
         RUM.enable(
             with: .init(
                 applicationID: "rum-123",
-                sessionSampleRate: 42.5
+                sessionSampleRate: 42.5,
+                trackAnonymousUser: false
             ),
             in: core
         )
@@ -42,7 +43,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
 
         let dependencies = monitor.scopes.dependencies
         monitor.featureScope.eventWriteContext { context, _ in
-            DDAssertReflectionEqual(context.userInfo, self.userIno)
+            DDAssertReflectionEqual(context.userInfo, self.userInfo)
             XCTAssertEqual(context.networkConnectionInfo, self.networkConnectionInfo)
             XCTAssertEqual(context.carrierInfo, self.carrierInfo)
 

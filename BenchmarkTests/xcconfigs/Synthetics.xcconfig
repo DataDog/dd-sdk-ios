@@ -1,0 +1,6 @@
+#include "Runner.xcconfig"
+
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = Apple Development: Simao Seica (35XV3565V6)
+DEVELOPMENT_TEAM = JKFCB4CN7C
+PROVISIONING_PROFILE_SPECIFIER = Datadog Benchmark Runner

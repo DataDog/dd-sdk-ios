@@ -38,7 +38,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         sut.update(viewEvent: viewEvent1)
 
         // monitor reveives the launch report
-        _ = sut.receive(message: .context(.mockAny()), from: NOPDatadogCore())
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
 
         // RUM view update after start
         let viewEvent2: RUMViewEvent = .mockRandom()
@@ -62,7 +62,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         sut.update(viewEvent: viewEvent3)
 
         // monitor reveives the launch report
-        _ = sut.receive(message: .context(.mockAny()), from: NOPDatadogCore())
+        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
 
         waitForExpectations(timeout: 1)
         XCTAssertEqual(reporter.sendParams?.viewEvent.view.id, viewEvent2.view.id)
@@ -81,13 +81,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         didCrash: Bool,
         didSend: XCTestExpectation
     ) {
-        let deviceInfo: DeviceInfo = .init(
-            name: .mockAny(),
-            model: .mockAny(),
-            osName: .mockAny(),
-            osVersion: .mockAny(),
-            osBuildNumber: .mockAny(),
-            architecture: .mockAny(),
+        let deviceInfo: DeviceInfo = .mockWith(
             isSimulator: isSimulator,
             vendorId: vendorId,
             isDebugging: false,
@@ -96,9 +90,9 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
 
         featureScope.contextMock.version = appVersion
         featureScope.contextMock.device = deviceInfo
-        featureScope.contextMock.baggages[LaunchReport.baggageKey] = .init(LaunchReport(didCrash: didCrash))
+        featureScope.contextMock.set(additionalContext: LaunchReport(didCrash: didCrash))
 
-        let appStateManager = WatchdogTerminationAppStateManager(
+        let appStateManager = AppStateManager(
             featureScope: featureScope,
             processId: processId,
             syntheticsEnvironment: false
@@ -111,7 +105,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         sut = WatchdogTerminationMonitor(
             appStateManager: appStateManager,
             checker: checker,
-            stroage: NOPDatadogCore().storage,
+            storage: NOPDatadogCore().storage,
             feature: featureScope,
             reporter: reporter
         )

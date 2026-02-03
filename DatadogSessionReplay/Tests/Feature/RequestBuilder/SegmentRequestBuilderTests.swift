@@ -9,11 +9,12 @@ import XCTest
 import DatadogInternal
 
 @_spi(Internal)
-@testable import DatadogSessionReplay
 @testable import TestUtilities
+@_spi(Internal)
+@testable import DatadogSessionReplay
 
 class SegmentRequestBuilderTests: XCTestCase {
-    private let rumContext: RUMContext = .mockRandom() // all records must reference the same RUM context
+    private let rumContext: RUMCoreContext = .mockRandom() // all records must reference the same RUM context
     private var mockEvents: [Event] {
         let records = [
             EnrichedRecord(context: .mockWith(rumContext: self.rumContext), records: .mockRandom(count: 5)),
@@ -28,7 +29,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When
-        let request = try builder.request(for: mockEvents, with: .mockAny())
+        let request = try builder.request(for: mockEvents, with: .mockAny(), execution: .mockAny())
 
         // Then
         XCTAssertEqual(request.httpMethod, "POST")
@@ -40,7 +41,7 @@ class SegmentRequestBuilderTests: XCTestCase {
 
         // When
         func url(for site: DatadogSite) throws -> String {
-            let request = try builder.request(for: mockEvents, with: .mockWith(site: site))
+            let request = try builder.request(for: mockEvents, with: .mockWith(site: site), execution: .mockAny())
             return request.url!.absoluteStringWithoutQuery!
         }
 
@@ -50,6 +51,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         XCTAssertEqual(try url(for: .us5), "https://browser-intake-us5-datadoghq.com/api/v2/replay")
         XCTAssertEqual(try url(for: .eu1), "https://browser-intake-datadoghq.eu/api/v2/replay")
         XCTAssertEqual(try url(for: .ap1), "https://browser-intake-ap1-datadoghq.com/api/v2/replay")
+        XCTAssertEqual(try url(for: .ap2), "https://browser-intake-ap2-datadoghq.com/api/v2/replay")
         XCTAssertEqual(try url(for: .us1_fed), "https://browser-intake-ddog-gov.com/api/v2/replay")
     }
 
@@ -60,7 +62,7 @@ class SegmentRequestBuilderTests: XCTestCase {
 
         // When
         func url(for site: DatadogSite) throws -> String {
-            let request = try builder.request(for: mockEvents, with: .mockWith(site: site))
+            let request = try builder.request(for: mockEvents, with: .mockWith(site: site), execution: .mockAny())
             return request.url!.absoluteStringWithoutQuery!
         }
 
@@ -71,19 +73,20 @@ class SegmentRequestBuilderTests: XCTestCase {
         XCTAssertEqual(try url(for: .us5), expectedURL)
         XCTAssertEqual(try url(for: .eu1), expectedURL)
         XCTAssertEqual(try url(for: .ap1), expectedURL)
+        XCTAssertEqual(try url(for: .ap2), expectedURL)
         XCTAssertEqual(try url(for: .us1_fed), expectedURL)
     }
 
-    func testItSetsNoQueryParameters() throws {
+    func testItSetsQueryParameters() throws {
         // Given
         let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
         let context: DatadogContext = .mockRandom()
 
         // When
-        let request = try builder.request(for: mockEvents, with: context)
+        let request = try builder.request(for: mockEvents, with: context, execution: .mockWith(previousResponseCode: nil, attempt: 0))
 
         // Then
-        XCTAssertEqual(request.url!.query, nil)
+        XCTAssertEqual(request.url!.query, "ddtags=retry_count:1")
     }
 
     func testItSetsHTTPHeaders() throws {
@@ -104,15 +107,15 @@ class SegmentRequestBuilderTests: XCTestCase {
             source: randomSource,
             sdkVersion: randomSDKVersion,
             applicationName: randomApplicationName,
-            device: .mockWith(
-                name: randomDeviceName,
-                osName: randomDeviceOSName,
-                osVersion: randomDeviceOSVersion
+            device: .mockWith(name: randomDeviceName),
+            os: .mockWith(
+                name: randomDeviceOSName,
+                version: randomDeviceOSVersion
             )
         )
 
         // When
-        let request = try builder.request(for: mockEvents, with: context)
+        let request = try builder.request(for: mockEvents, with: context, execution: .mockAny())
 
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
@@ -138,8 +141,8 @@ class SegmentRequestBuilderTests: XCTestCase {
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
 
-        let context0: RUMContext = .mockRandom()
-        let context1: RUMContext = .mockRandom()
+        let context0: RUMCoreContext = .mockRandom()
+        let context1: RUMCoreContext = .mockRandom()
         let events = try [
             EnrichedRecord(context: .mockWith(rumContext: context0), records: .mockRandom(count: 5)),
             EnrichedRecord(context: .mockWith(rumContext: context0), records: .mockRandom(count: 10)),
@@ -152,7 +155,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         }
 
         // When
-        let request = try builder.request(for: events, with: .mockWith(source: "ios"))
+        let request = try builder.request(for: events, with: .mockWith(source: "ios"), execution: .mockAny())
 
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
@@ -235,7 +238,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When, Then
-        XCTAssertThrowsError(try builder.request(for: [.mockWith(data: "abc".utf8Data)], with: .mockAny()))
+        XCTAssertThrowsError(try builder.request(for: [.mockWith(data: "abc".utf8Data)], with: .mockAny(), execution: .mockAny()))
     }
 
     func testWhenSourceIsInvalid_itSendsErrorTelemetry() throws {
@@ -244,7 +247,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: telemetry)
 
         // When
-        _ = try builder.request(for: mockEvents, with: .mockWith(source: "invalid source"))
+        _ = try builder.request(for: mockEvents, with: .mockWith(source: "invalid source"), execution: .mockAny())
 
         // Then
         XCTAssertTrue(

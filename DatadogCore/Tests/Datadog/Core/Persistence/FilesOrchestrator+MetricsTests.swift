@@ -38,7 +38,8 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             metricsData: FilesOrchestrator.MetricsData(
                 trackName: "track name",
                 consentLabel: "consent value",
-                uploaderPerformance: upload
+                uploaderPerformance: upload,
+                backgroundTasksEnabled: .mockAny()
             )
         )
     }
@@ -48,29 +49,37 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
     func testWhenReadableFileIsDeleted_itSendsBatchDeletedMetric() throws {
         // Given
         let orchestrator = createOrchestrator()
-        let file = try XCTUnwrap(orchestrator.getWritableFile(writeSize: 1) as? ReadableFile)
         let expectedBatchAge = storage.minFileAgeForRead + 1
 
-        // When:
-        // - wait and delete the file
+        // When: create 1 batch file
+        _ = try orchestrator.getWritableFile(writeSize: 1)
+
+        // When: wait and create 2nd batch file
+        dateProvider.advance(bySeconds: expectedBatchAge)
+        let file = try XCTUnwrap(orchestrator.getWritableFile(writeSize: 1) as? ReadableFile)
+
+        // When: wait and delete one
         dateProvider.advance(bySeconds: expectedBatchAge)
         orchestrator.delete(readableFile: file, deletionReason: .intakeCode(responseCode: 202))
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
-        DDAssertReflectionEqual(metric.attributes, [
+        DDAssertJSONEqual(metric.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
             "consent": "consent value",
             "uploader_delay": [
-                "min": upload.minUploadDelay.toMilliseconds,
-                "max": upload.maxUploadDelay.toMilliseconds
+                "min": upload.minUploadDelay.dd.toMilliseconds,
+                "max": upload.maxUploadDelay.dd.toMilliseconds
             ],
-            "uploader_window": storage.uploaderWindow.toMilliseconds,
+            "uploader_window": storage.uploaderWindow.dd.toMilliseconds,
             "in_background": false,
-            "batch_age": expectedBatchAge.toMilliseconds,
+            "background_tasks_enabled": false,
+            "batch_age": expectedBatchAge.dd.toMilliseconds,
             "batch_removal_reason": "intake-code-202",
+            "pending_batches": 1
         ])
+        XCTAssertEqual(metric.sampleRate, BatchDeletedMetric.sampleRate)
     }
 
     func testWhenObsoleteFileIsDeleted_itSendsBatchDeletedMetric() throws {
@@ -87,19 +96,22 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
-        DDAssertReflectionEqual(metric.attributes, [
+        DDAssertJSONEqual(metric.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
             "consent": "consent value",
             "uploader_delay": [
-                "min": upload.minUploadDelay.toMilliseconds,
-                "max": upload.maxUploadDelay.toMilliseconds
+                "min": upload.minUploadDelay.dd.toMilliseconds,
+                "max": upload.maxUploadDelay.dd.toMilliseconds
             ],
-            "uploader_window": storage.uploaderWindow.toMilliseconds,
+            "uploader_window": storage.uploaderWindow.dd.toMilliseconds,
             "in_background": false,
-            "batch_age": (storage.maxFileAgeForRead + 1).toMilliseconds,
+            "background_tasks_enabled": false,
+            "batch_age": (storage.maxFileAgeForRead + 1).dd.toMilliseconds,
             "batch_removal_reason": "obsolete",
+            "pending_batches": 0
         ])
+        XCTAssertEqual(metric.sampleRate, BatchDeletedMetric.sampleRate)
     }
 
     func testWhenDirectoryIsPurged_itSendsBatchDeletedMetrics() throws {
@@ -108,7 +120,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         // - write more data than allowed directory size limit
         storage.maxDirectorySize = 10 // 10 bytes
         let orchestrator = createOrchestrator()
-        let file = try orchestrator.getWritableFile(writeSize: storage.maxDirectorySize + 1)
+        let file = try orchestrator.getWritableFile(writeSize: storage.maxDirectorySize.asUInt64() + 1)
         try file.append(data: .mockRandom(ofSize: storage.maxDirectorySize + 1))
         let expectedBatchAge = storage.minFileAgeForRead + 1
 
@@ -119,19 +131,22 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
-        DDAssertReflectionEqual(metric.attributes, [
+        DDAssertJSONEqual(metric.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
             "consent": "consent value",
             "uploader_delay": [
-                "min": upload.minUploadDelay.toMilliseconds,
-                "max": upload.maxUploadDelay.toMilliseconds
+                "min": upload.minUploadDelay.dd.toMilliseconds,
+                "max": upload.maxUploadDelay.dd.toMilliseconds
             ],
-            "uploader_window": storage.uploaderWindow.toMilliseconds,
+            "uploader_window": storage.uploaderWindow.dd.toMilliseconds,
             "in_background": false,
-            "batch_age": expectedBatchAge.toMilliseconds,
+            "background_tasks_enabled": false,
+            "batch_age": expectedBatchAge.dd.toMilliseconds,
             "batch_removal_reason": "purged",
+            "pending_batches": 0
         ])
+        XCTAssertEqual(metric.sampleRate, BatchDeletedMetric.sampleRate)
     }
 
     // MARK: - "Batch Closed" Metric
@@ -165,10 +180,11 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "metric_type": "batch closed",
             "track": "track name",
             "consent": "consent value",
-            "uploader_window": storage.uploaderWindow.toMilliseconds,
+            "uploader_window": storage.uploaderWindow.dd.toMilliseconds,
             "batch_size": expectedWrites.reduce(0, +),
             "batch_events_count": expectedWrites.count,
-            "batch_duration": expectedWriteDelays.reduce(0, +).toMilliseconds
+            "batch_duration": expectedWriteDelays.reduce(0, +).dd.toMilliseconds
         ])
+        XCTAssertEqual(metric.sampleRate, BatchClosedMetric.sampleRate)
     }
 }

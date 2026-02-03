@@ -34,34 +34,12 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     public private(set) var traceHeaderFields: [String: String] = [:]
 
-    private let samplingStrategy: TraceSamplingStrategy
     private let traceContextInjection: TraceContextInjection
 
     /// Initializes the headers writer.
     ///
-    /// - Parameter samplingRate: The sampling rate applied for headers injection.
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public convenience init(samplingRate: Float) {
-        self.init(sampleRate: samplingRate)
-    }
-
-    /// Initializes the headers writer.
-    ///
-    /// - Parameter sampleRate: The sampling rate applied for headers injection, with 20% as the default.
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
-    public convenience init(sampleRate: Float = 20) {
-        self.init(samplingStrategy: .custom(sampleRate: sampleRate), traceContextInjection: .all)
-    }
-
-    /// Initializes the headers writer.
-    ///
-    /// - Parameter samplingStrategy: The strategy for sampling trace propagation headers.
     /// - Parameter traceContextInjection: The strategy for injecting trace context into requests.
-    public init(
-        samplingStrategy: TraceSamplingStrategy,
-        traceContextInjection: TraceContextInjection
-    ) {
-        self.samplingStrategy = samplingStrategy
+    public init(traceContextInjection: TraceContextInjection) {
         self.traceContextInjection = traceContextInjection
     }
 
@@ -71,19 +49,41 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     /// - Parameter spanID: The span ID.
     /// - Parameter parentSpanID: The parent span ID, if applicable.
     public func write(traceContext: TraceContext) {
-        let sampler = samplingStrategy.sampler(for: traceContext)
-        let sampled = sampler.sample()
+        typealias Constants = W3CHTTPHeaders.Constants
 
-        switch (traceContextInjection, sampled) {
-        case (.all, _), (.sampled, true):
-            traceHeaderFields = [
-                TracingHTTPHeaders.samplingPriorityField: sampled ? "1" : "0"
-            ]
-            traceHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceContext.traceID.idLo)
-            traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(traceContext.spanID, representation: .decimal)
-            traceHeaderFields[TracingHTTPHeaders.tagsField] = "_dd.p.tid=\(traceContext.traceID.idHiHex)"
-        case (.sampled, false):
-            break
+        let sampled = traceContext.samplingPriority.isKept
+        let shouldInject: Bool = {
+            switch traceContextInjection {
+            case .all:      return true
+            case .sampled:  return sampled
+            }
+        }()
+        guard shouldInject else {
+            return
+        }
+
+        traceHeaderFields = [
+            TracingHTTPHeaders.samplingPriorityField: "\(traceContext.samplingPriority.rawValue)"
+        ]
+        traceHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceContext.traceID.idLo)
+        traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(traceContext.spanID, representation: .decimal)
+        var tags = ["_dd.p.tid=\(traceContext.traceID.idHiHex)"]
+        if traceContext.samplingPriority.isKept {
+            tags.append("_dd.p.dm=-\(traceContext.samplingDecisionMaker.rawValue)")
+        }
+        traceHeaderFields[TracingHTTPHeaders.tagsField] = tags.joined(separator: ",")
+        var baggageItems: [String] = []
+        if let sessionId = traceContext.rumSessionId {
+            baggageItems.append("\(W3CHTTPHeaders.Constants.rumSessionBaggageKey)=\(sessionId)")
+        }
+        if let userId = traceContext.userId {
+            baggageItems.append("\(W3CHTTPHeaders.Constants.userBaggageKey)=\(userId)")
+        }
+        if let accountId = traceContext.accountId {
+            baggageItems.append("\(W3CHTTPHeaders.Constants.accountBaggageKey)=\(accountId)")
+        }
+        if baggageItems.isEmpty == false {
+            traceHeaderFields[W3CHTTPHeaders.baggage] = baggageItems.joined(separator: ",")
         }
     }
 }

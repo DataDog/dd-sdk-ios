@@ -71,15 +71,12 @@ final class OTelAttributeValueDatadogTests: XCTestCase {
             "key2": .string("value1"),
             "key3": .int(2),
             "key4": .double(3.0),
-            "key5": .stringArray(["value5", "value6"]),
-            "key6": .boolArray([true, false]),
-            "key7": .intArray([7, 8]),
-            "key8": .doubleArray([8.0, 9.0]),
+            "key5": .array(.init(values: [.string("value5"), .string("value6")])),
+            "key6": .array(.init(values: [.bool(true), .bool(false)])),
+            "key7": .array(.init(values: [.int(7), .int(8)])),
+            "key8": .array(.init(values: [.double(8.0), .double(9.0)])),
             "key9": .set(.init(labels: [:])),
-            "key10": .stringArray([]),
-            "key11": .boolArray([]),
-            "key12": .intArray([]),
-            "key13": .doubleArray([]),
+            "key10": .array(.init(values: [])),
         ]
 
         // When
@@ -102,9 +99,6 @@ final class OTelAttributeValueDatadogTests: XCTestCase {
             "key8.1": "9.0",
             "key9": "",
             "key10": "",
-            "key11": "",
-            "key12": "",
-            "key13": "",
         ]
         DDAssertDictionariesEqual(expectedTags, tags)
     }
@@ -121,10 +115,10 @@ final class OTelAttributeValueDatadogTests: XCTestCase {
             "key\(level)-1": .string("value1"),
             "key\(level)-2": .int(2),
             "key\(level)-3": .double(3.0),
-            "key\(level)-4": .stringArray(["value4", "value5"]),
-            "key\(level)-5": .boolArray([true, false]),
-            "key\(level)-6": .intArray([7, 8]),
-            "key\(level)-7": .doubleArray([7.0, 8.0]),
+            "key\(level)-4": .array(.init(values: [.string("value4"), .string("value5")])),
+            "key\(level)-5": .array(.init(values: [.bool(true), .bool(false)])),
+            "key\(level)-6": .array(.init(values: [.int(7), .int(8)])),
+            "key\(level)-7": .array(.init(values: [.double(7.0), .double(8.0)])),
             "key\(level)-8": .set(.init(labels: makeAttributes(level: level - 1)))
         ]
     }

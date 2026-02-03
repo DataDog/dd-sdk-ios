@@ -1,74 +1,24 @@
-all: env-check repo-setup templates
-.PHONY: env-check repo-setup clean templates \
+all: env-check repo-setup dependencies templates
+.PHONY: env-check repo-setup dependencies clean templates \
 		lint license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all \
 		ui-test ui-test-all ui-test-podinstall \
+		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-snapshot-tests-open \
 		tools-test \
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
-		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos \
+		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos spm-build-watchos \
+		e2e-upload \
+		benchmark-build benchmark-upload \
 		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
+		api-surface spi-docs-build \
+		profiling-protoc \
+		dogfood-shopist dogfood-datadog-app \
 		release-build release-validate release-publish-github \
-		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs release-publish-legacy-podspecs \
+		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs \
 		set-ci-secret
 
 REPO_ROOT := $(PWD)
 include tools/utils/common.mk
-
-define DD_SDK_TESTING_XCCONFIG_CI
-DD_TEST_RUNNER=1\n
-DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
-DD_SDK_SWIFT_TESTING_APIKEY=${DD_SDK_SWIFT_TESTING_APIKEY}\n
-DD_SDK_SWIFT_TESTING_ENV=ci\n
-DD_SDK_SWIFT_TESTING_APPLICATION_KEY=${DD_SDK_SWIFT_TESTING_APPLICATION_KEY}\n
-endef
-export DD_SDK_TESTING_XCCONFIG_CI
-
-define DD_SDK_BASE_XCCONFIG
-// Active compilation conditions - only enabled on local machine:\n
-// - DD_SDK_ENABLE_EXPERIMENTAL_APIS - enables APIs which are not available in released version of the SDK\n
-// - DD_SDK_COMPILED_FOR_TESTING - conditions the SDK code compiled for testing\n
-SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DD_SDK_ENABLE_EXPERIMENTAL_APIS DD_SDK_COMPILED_FOR_TESTING\n
-\n
-// To build only active architecture for all configurations. This gives us ~10% build time gain\n
-// in targets which do not use 'Debug' configuration.\n
-ONLY_ACTIVE_ARCH = YES\n
-endef
-export DD_SDK_BASE_XCCONFIG
-
-define DD_SDK_BASE_XCCONFIG_CI
-// To ensure no build time warnings slip in without being resolved, treat them as CI build errors:\n
-SWIFT_TREAT_WARNINGS_AS_ERRORS = YES\n
-\n
-// If running on CI. This value is injected to some targets through their `Info.plist`:\n
-IS_CI = true\n
-endef
-export DD_SDK_BASE_XCCONFIG_CI
-
-define DD_SDK_DATADOG_XCCONFIG_CI
-// Datadog secrets provisioning E2E tests data for 'Mobile - Integration' org:\n
-E2E_RUM_APPLICATION_ID=${E2E_RUM_APPLICATION_ID}\n
-E2E_DATADOG_CLIENT_TOKEN=${E2E_DATADOG_CLIENT_TOKEN}\n
-endef
-export DD_SDK_DATADOG_XCCONFIG_CI
-
-# Installs tools and dependencies with homebrew.
-# Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
-dependencies:
-		@echo "⚙️  Installing dependencies..."
-		@bundle install
-		@brew list swiftlint &>/dev/null || brew install swiftlint
-		@brew upgrade carthage
-		@carthage bootstrap --platform iOS,tvOS --use-xcframeworks
-		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
-		@brew list gh &>/dev/null || brew install gh
-ifeq (${ci}, true)
-		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
-		@echo $$DD_SDK_DATADOG_XCCONFIG_CI > xcconfigs/Datadog.local.xcconfig;
-ifndef DD_DISABLE_TEST_INSTRUMENTING
-		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
-endif
-
-endif
 
 # Default ENV for setting up the repo
 DEFAULT_ENV := dev
@@ -82,9 +32,17 @@ repo-setup:
 	@$(ECHO_TITLE) "make repo-setup ENV='$(ENV)'"
 	./tools/repo-setup/repo-setup.sh --env "$(ENV)"
 
+dependencies:
+	@$(ECHO_TITLE) "make dependencies"
+	./tools/repo-setup/carthage-bootstrap.sh
+
 clean:
 	@$(ECHO_TITLE) "make clean"
-	./tools/clean.sh
+	./tools/clean.sh --derived-data --pods --xcconfigs
+
+clean-carthage:
+	@$(ECHO_TITLE) "make clean-carthage"
+	./tools/clean.sh --carthage
 
 lint:
 	@$(ECHO_TITLE) "make lint"
@@ -104,14 +62,28 @@ DEFAULT_TVOS_OS := latest
 DEFAULT_TVOS_PLATFORM := tvOS Simulator
 DEFAULT_TVOS_DEVICE := Apple TV
 
+# Test env for running SR snapshot tests in local:
+DEFAULT_SR_SNAPSHOT_TESTS_OS := 17.5
+DEFAULT_SR_SNAPSHOT_TESTS_PLATFORM := iOS Simulator
+DEFAULT_SR_SNAPSHOT_TESTS_DEVICE := iPhone 15
+
+# Default location for deploying artifacts
+DEFAULT_ARTIFACTS_PATH := artifacts
+
+# Whether Test Visibility product is enabled by default
+DEFAULT_USE_TEST_VISIBILITY := 0
+
+SKIP_OBJC_TYPES ?= TelemetryUsageEvent
+
 # Run unit tests for specified SCHEME
 test:
 	@$(call require_param,SCHEME)
 	@$(call require_param,OS)
 	@$(call require_param,PLATFORM)
 	@$(call require_param,DEVICE)
-	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)'"
-	./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
+	@:$(eval USE_TEST_VISIBILITY ?= $(DEFAULT_USE_TEST_VISIBILITY))
+	@$(ECHO_TITLE) "make test SCHEME='$(SCHEME)' OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' USE_TEST_VISIBILITY='$(USE_TEST_VISIBILITY)'"
+	USE_TEST_VISIBILITY=$(USE_TEST_VISIBILITY) ./tools/test.sh --scheme "$(SCHEME)" --os "$(OS)" --platform "$(PLATFORM)" --device "$(DEVICE)"
 
 # Run unit tests for specified SCHEME using iOS Simulator
 test-ios:
@@ -131,6 +103,9 @@ test-ios-all:
 	@$(MAKE) test-ios SCHEME="DatadogTrace iOS"
 	@$(MAKE) test-ios SCHEME="DatadogCrashReporting iOS"
 	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking iOS"
+	@$(MAKE) test-ios SCHEME="DatadogFlags iOS"
+	@$(MAKE) test-ios SCHEME="DatadogProfiling iOS"
+	@$(MAKE) test-ios SCHEME="DatadogIntegrationTests iOS"
 
 # Run unit tests for specified SCHEME using tvOS Simulator
 test-tvos:
@@ -148,6 +123,9 @@ test-tvos-all:
 	@$(MAKE) test-tvos SCHEME="DatadogLogs tvOS"
 	@$(MAKE) test-tvos SCHEME="DatadogTrace tvOS"
 	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogFlags tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogProfiling tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests tvOS"
 
 # Run UI tests for specified TEST_PLAN
 ui-test:
@@ -174,6 +152,16 @@ ui-test-podinstall:
 tools-test:
 	@$(ECHO_TITLE) "make tools-test"
 	./tools/tools-test.sh
+
+# Run tests for issue handler tool
+issue-handler-test:
+	@$(ECHO_TITLE) "make issue-handler-test"
+	cd tools/issue_handler && ./run_tests.sh
+
+# Run integration tests for issue handler tool
+issue-handler-integration-test:
+	@$(ECHO_TITLE) "make issue-handler-integration-test"
+	cd tools/issue_handler && source venv/bin/activate && PYTHONPATH=. python integration_tests/test_analysis.py --issue 1
 
 # Run smoke tests
 smoke-test:
@@ -233,6 +221,13 @@ spm-build-tvos:
 spm-build-visionos:
 	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=visionOS"
 
+# Builds SPM package for watchOS
+spm-build-watchos:
+	# Build only compatible schemes for watchOS:
+	@$(MAKE) spm-build DESTINATION="generic/platform=watchOS" SCHEME="DatadogCore"
+	@$(MAKE) spm-build DESTINATION="generic/platform=watchOS" SCHEME="DatadogLogs"
+	@$(MAKE) spm-build DESTINATION="generic/platform=watchOS" SCHEME="DatadogTrace"
+
 # Builds SPM package for macOS (and Mac Catalyst)
 spm-build-macos:
 	# Whole package for Mac Catalyst:
@@ -243,16 +238,34 @@ spm-build-macos:
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogTrace"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
 
+# Builds a new version of the E2E app and publishes it to synthetics.
+e2e-upload:
+	@$(call require_param,ARTIFACTS_PATH)
+	@:$(eval DRY_RUN ?= 1)
+	@$(ECHO_TITLE) "make e2e-upload ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)'"
+	DRY_RUN=$(DRY_RUN) ./tools/e2e-build-upload.sh --artifacts-path "$(ARTIFACTS_PATH)"
+
+# Builds the Benchmark app.
+benchmark-build:
+	@$(ECHO_TITLE) "make benchmark-build"
+	@$(MAKE) -C BenchmarkTests build
+
+# Builds a new version of the Benchmark app and publishes it to synthetics.
+benchmark-upload:
+	@$(call require_param,ARTIFACTS_PATH)
+	@:$(eval DRY_RUN ?= 1)
+	@$(ECHO_TITLE) "make benchmark-upload ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)'"
+	DRY_RUN=$(DRY_RUN) ./tools/benchmark-build-upload.sh --artifacts-path "$(ARTIFACTS_PATH)"
+
+# Opens `BenchmarkTests` project with passing required ENV variables
+benchmark-tests-open:
+	@$(ECHO_TITLE) "make benchmark-tests-open"
+	@$(MAKE) -C BenchmarkTests open
+
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
 		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
 		@echo "OK 👌"
-
-open-sr-snapshot-tests:
-		@echo "⚙️  Opening SRSnapshotTests with DD_TEST_UTILITIES_ENABLED ..."
-		@pgrep -q Xcode && killall Xcode && echo "- Xcode killed" || echo "- Xcode not running"
-		@sleep 0.5 && echo "- launching" # Sleep, otherwise, if Xcode was running it often fails with "procNotFound: no eligible process with specified descriptor"
-		@open --env DD_TEST_UTILITIES_ENABLED ./DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace
 
 templates:
 	@$(ECHO_TITLE) "make templates"
@@ -263,13 +276,12 @@ models-generate:
 	@$(call require_param,PRODUCT) # 'rum' or 'sr'
 	@$(call require_param,GIT_REF)
 	@$(ECHO_TITLE) "make models-generate PRODUCT='$(PRODUCT)' GIT_REF='$(GIT_REF)'"
-	./tools/rum-models-generator/run.py generate $(PRODUCT) --git_ref=$(GIT_REF)
-
+	./tools/rum-models-generator/run.py generate $(PRODUCT) --git_ref=$(GIT_REF) --skip_objc $(SKIP_OBJC_TYPES)
 # Validate data models against https://github.com/DataDog/rum-events-format
 models-verify:
 	@$(call require_param,PRODUCT) # 'rum' or 'sr'
 	@$(ECHO_TITLE) "make models-verify PRODUCT='$(PRODUCT)'"
-	./tools/rum-models-generator/run.py verify $(PRODUCT)
+	./tools/rum-models-generator/run.py verify $(PRODUCT) --skip_objc $(SKIP_OBJC_TYPES)
 
 # Generate RUM data models
 rum-models-generate:
@@ -289,54 +301,105 @@ sr-models-generate:
 sr-models-verify:
 	@$(MAKE) models-verify PRODUCT="sr"
 
-sr-push-snapshots:
-		@echo "🎬 ↗️  Pushing SR snapshots to remote repo..."
-		@cd tools/sr-snapshots && swift run sr-snapshots push \
-			--local-folder ../../DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests/_snapshots_ \
-			--remote-folder ../../../dd-mobile-session-replay-snapshots \
-			--remote-branch "main"
+# Generate profiling protobuf-c files from pprof proto
+protoc-pprof:
+	@$(ECHO_TITLE) "protoc-pprof"
+	./tools/protoc-pprof.sh --proto-path DatadogProfiling/Protos/profile.proto --output-dir DatadogProfiling/Mach
 
-sr-pull-snapshots:
-		@echo "🎬 ↙️  Pulling SR snapshots from remote repo..."
-		@cd tools/sr-snapshots && swift run sr-snapshots pull \
-			--local-folder ../../DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests/_snapshots_ \
-			--remote-folder ../../../dd-mobile-session-replay-snapshots \
-			--remote-branch "main"
+# Pushes current SR snapshots to snapshots repo
+sr-snapshots-push:
+	@$(ECHO_TITLE) "make sr-snapshots-push"
+	./tools/sr-snapshot-test.sh --push
 
-# Generate api-surface files for Datadog and DatadogObjc.
+# Pulls SR snapshots from snapshots repo
+sr-snapshots-pull:
+	@$(ECHO_TITLE) "make sr-snapshots-pull"
+	./tools/sr-snapshot-test.sh --pull
+
+# Run Session Replay snapshot tests
+sr-snapshot-test:
+	@:$(eval OS ?= $(DEFAULT_SR_SNAPSHOT_TESTS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_SR_SNAPSHOT_TESTS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_SR_SNAPSHOT_TESTS_DEVICE))
+	@:$(eval ARTIFACTS_PATH ?= $(DEFAULT_ARTIFACTS_PATH))
+	@$(ECHO_TITLE) "make sr-snapshot-test OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
+	./tools/sr-snapshot-test.sh \
+		--test --os "$(OS)" --device "$(DEVICE)" --platform "$(PLATFORM)" --artifacts-path "$(ARTIFACTS_PATH)"
+
+# Opens `SRSnapshotTests` project with passing required ENV variables
+sr-snapshot-tests-open:
+	@$(ECHO_TITLE) "make sr-snapshot-tests-open"
+	./tools/sr-snapshot-test.sh --open-project
+
+# Define default paths for API output files
+SWIFT_OUTPUT_PATH ?= api-surface-swift
+OBJC_OUTPUT_PATH ?= api-surface-objc
+
+# Use different paths when running in CI
+ifeq ($(ENV),ci)
+  SWIFT_OUTPUT_PATH := api-surface-swift-generated
+  OBJC_OUTPUT_PATH := api-surface-objc-generated
+endif
+
+# Define the list of Datadog modules for API surface generation
+DATADOG_MODULES := DatadogCore DatadogLogs DatadogTrace DatadogRUM DatadogCrashReporting DatadogWebViewTracking DatadogSessionReplay DatadogFlags DatadogProfiling
+
+# Generate api-surface files for Datadog APIs
 api-surface:
-		@echo "Generating api-surface-swift"
-		@cd tools/api-surface && \
-			swift run api-surface spm \
-			--path ../../ \
-			--library-name DatadogCore \
-			--library-name DatadogLogs \
-			--library-name DatadogTrace \
-			--library-name DatadogRUM \
-			--library-name DatadogCrashReporting \
-			--library-name DatadogWebViewTracking \
-			--library-name DatadogSessionReplay \
-			> ../../api-surface-swift && \
-			cd -
+	@$(ECHO_TITLE) "make api-surface"
+	@echo "Generating api-surface-swift"
+	@cd tools/api-surface && \
+		swift run api-surface generate \
+		--path ../../ \
+		--language swift \
+		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
+		--output-file ../../$(SWIFT_OUTPUT_PATH)
 
-		@echo "Generating api-surface-objc"
-		@cd tools/api-surface && \
-			swift run api-surface spm \
-			--path ../../ \
-			--library-name DatadogObjc \
-			> ../../api-surface-objc && \
-			cd -
+	@echo "Generating api-surface-objc"
+	@cd tools/api-surface && \
+		swift run api-surface generate \
+		--path ../../ \
+		--language objc \
+		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
+		--output-file ../../$(OBJC_OUTPUT_PATH)
 
-# Generate Datadog monitors terraform definition for E2E tests:
-e2e-monitors-generate:
-		@echo "Deleting previous 'main.tf as it will be soon generated."
-		@rm -f tools/nightly-e2e-tests/monitors-gen/main.tf
-		@echo "Deleting previous Terraform state and backup as we don't need to track it."
-		@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate
-		@rm -f tools/nightly-e2e-tests/monitors-gen/terraform.tfstate.backup
-		@echo "⚙️  Generating 'main.tf':"
-		@./tools/nightly-e2e-tests/nightly_e2e.py generate-tf --tests-dir ../../Datadog/E2ETests
-		@echo "⚠️  Remember to delete all iOS monitors manually from Mobile-Integration org before running 'terraform apply'."
+# Verify API surface files for Datadog APIs
+api-surface-verify:
+	@$(ECHO_TITLE) "make api-surface-verify"
+	@echo "Verifying api-surface-swift"
+	@cd tools/api-surface && \
+		swift run api-surface verify \
+		--path ../../ \
+		--language swift \
+		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
+		--output-file /tmp/api-surface-swift-generated \
+		../../api-surface-swift
+
+	@echo "Verifying api-surface-objc"
+	@cd tools/api-surface && \
+		swift run api-surface verify \
+		--path ../../ \
+		--language objc \
+		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
+		--output-file /tmp/api-surface-objc-generated \
+		../../api-surface-objc
+
+# Builds API documentation using the same process as Swift Package Index.
+spi-docs-build:
+	@$(ECHO_TITLE) "make spi-docs-build"
+	./tools/doc-build.sh --spi-path .spi.yml
+
+# Creates dogfooding PR in shopist-ios
+dogfood-shopist:
+	@:$(eval DRY_RUN ?= 1)
+	@$(ECHO_TITLE) "make dogfood-shopist DRY_RUN='$(DRY_RUN)'"
+	DRY_RUN=$(DRY_RUN) ./tools/dogfooding/dogfood.sh --shopist
+
+# Creates dogfooding PR in datadog-ios
+dogfood-datadog-app:
+	@:$(eval DRY_RUN ?= 1)
+	@$(ECHO_TITLE) "make dogfood-datadog-app DRY_RUN='$(DRY_RUN)'"
+	DRY_RUN=$(DRY_RUN) ./tools/dogfooding/dogfood.sh --datadog-app
 
 # Builds release artifacts for given tag
 release-build:
@@ -387,15 +450,8 @@ release-publish-dependent-podspecs:
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSessionReplay.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCrashReporting.podspec"
 	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogWebViewTracking.podspec"
-
-# Publish legacy podspecs
-release-publish-legacy-podspecs:
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogObjc.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogAlamofireExtension.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDK.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKObjc.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKCrashReporting.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSDKAlamofireExtension.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogFlags.podspec"
+	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogProfiling.podspec"
 
 # Set ot update CI secrets
 set-ci-secret:
@@ -403,12 +459,9 @@ set-ci-secret:
 	@./tools/secrets/set-secret.sh
 
 bump:
-		@read -p "Enter version number: " version;  \
-		echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > DatadogCore/Sources/Versioning.swift; \
-		./tools/podspec_bump_version.sh $$version; \
-		git add . ; \
-		git commit -m "Bumped version to $$version"; \
-		echo Bumped version to $$version
-
-e2e-upload:
-		./tools/code-sign.sh -- $(MAKE) -C E2ETests
+	@read -p "Enter version number: " version;  \
+	echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > DatadogCore/Sources/Versioning.swift; \
+	./tools/podspec_bump_version.sh $$version; \
+	git add . ; \
+	git commit -m "Bumped version to $$version"; \
+	echo Bumped version to $$version

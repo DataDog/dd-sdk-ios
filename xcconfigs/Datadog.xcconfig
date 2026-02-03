@@ -7,10 +7,6 @@ DEVELOPMENT_TEAM[sdk=iphoneos*]=// use your own Development Team
 RUM_APPLICATION_ID=// use your own RUM Application ID obtained on datadoghq.com
 DATADOG_CLIENT_TOKEN=// use your own Client Token, generated for RUM_APPLICATION_ID
 
-// Datadog secrets for running E2E tests (nightly E2E tests)
-E2E_RUM_APPLICATION_ID=// use your own RUM Application ID obtained on datadoghq.com
-E2E_DATADOG_CLIENT_TOKEN=// use your own Client Token, generated for E2E_RUM_APPLICATION_ID
-
 CUSTOM_LOGS_URL=// Do NOT add https! example: foo.com/api/v2/logs
 CUSTOM_TRACE_URL=// Do NOT add https! example: foo.com/api/v2/spans
 CUSTOM_RUM_URL=// Do NOT add https! example: foo.com/api/v2/rum

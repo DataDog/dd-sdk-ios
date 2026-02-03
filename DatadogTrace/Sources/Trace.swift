@@ -20,10 +20,14 @@ public enum Trace {
         with configuration: Trace.Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         do {
-            try enableOrThrow(with: configuration, in: core)
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            try runOnMainThreadSync {
+                try enableOrThrow(with: configuration, in: core)
+            }
         } catch let error {
             consolePrint("\(error)", .error)
-       }
+        }
     }
 
     internal static func enableOrThrow(
@@ -39,19 +43,22 @@ public enum Trace {
         let trace = TraceFeature(in: core, configuration: configuration)
         try core.register(feature: trace)
 
+        // advertise the trace configuration through core context
+        core.set(context: TraceCoreContext.Configuration(sampleRate: configuration.sampleRate))
+
         // If `URLSession` tracking is configured, register `URLSessionHandler` to enable distributed tracing:
         if let firstPartyHostsTracing = configuration.urlSessionTracking?.firstPartyHostsTracing {
-            let distributedTraceSampler: Sampler
             let firstPartyHosts: FirstPartyHosts
             let traceContextInjection: TraceContextInjection
+            let tracingSampleRate: SampleRate
 
             switch firstPartyHostsTracing {
             case let .trace(hosts, sampleRate, injection):
-                distributedTraceSampler = Sampler(samplingRate: configuration.debugSDK ? 100 : sampleRate)
+                tracingSampleRate = sampleRate
                 firstPartyHosts = FirstPartyHosts(hosts)
                 traceContextInjection = injection
             case let .traceWithHeaders(hostsWithHeaders, sampleRate, injection):
-                distributedTraceSampler = Sampler(samplingRate: configuration.debugSDK ? 100 : sampleRate)
+                tracingSampleRate = sampleRate
                 firstPartyHosts = FirstPartyHosts(hostsWithHeaders)
                 traceContextInjection = injection
             }
@@ -59,7 +66,7 @@ public enum Trace {
             let urlSessionHandler = TracingURLSessionHandler(
                 tracer: trace.tracer,
                 contextReceiver: trace.contextReceiver,
-                distributedTraceSampler: distributedTraceSampler,
+                samplingRate: configuration.debugSDK ? 100 : tracingSampleRate,
                 firstPartyHosts: firstPartyHosts,
                 traceContextInjection: traceContextInjection
             )

@@ -19,7 +19,7 @@ internal final class CrashReportingFeature: DatadogFeature {
 
     /// An interface for accessing the `DDCrashReportingPlugin` from `DatadogCrashReporting`.
     let plugin: CrashReportingPlugin
-    /// Integration enabling sending crash reports as Logs or RUM Errors.
+    /// Integration enabling sending crash reports as RUM Errors.
     let sender: CrashReportSender
     /// Telemetry interface.
     let telemetry: Telemetry
@@ -57,9 +57,13 @@ internal final class CrashReportingFeature: DatadogFeature {
     func sendCrashReportIfFound() {
         queue.async {
             self.plugin.readPendingCrashReport { [weak self] crashReport in
-                guard let self = self, let availableCrashReport = crashReport else {
+                guard let self = self else {
+                    return false
+                }
+
+                guard let availableCrashReport = crashReport else {
                     DD.logger.debug("No pending Crash found")
-                     self?.sender.send(launch: .init(didCrash: false))
+                    self.sender.send(launch: .init(didCrash: false))
                     return false
                 }
 

@@ -7,10 +7,12 @@
 #if os(iOS)
 import XCTest
 @_spi(Internal)
+import TestUtilities
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 class UIDatePickerRecorderTests: XCTestCase {
-    private let recorder = UIDatePickerRecorder()
+    private let recorder = UIDatePickerRecorder(identifier: UUID())
     private let datePicker = UIDatePicker()
     private var viewAttributes: ViewAttributes = .mockAny()
 

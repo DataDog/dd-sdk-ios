@@ -35,6 +35,9 @@ internal protocol ReadableFile {
     /// Name of this file.
     var name: String { get }
 
+    /// Current size of this file.
+    func size() throws -> UInt64
+
     /// Creates InputStream for reading the available data from this file.
     func stream() throws -> InputStream
 
@@ -48,7 +51,7 @@ private enum FileError: Error {
 
 /// An immutable `struct` designed to provide optimized and thread safe interface for file manipulation.
 /// It doesn't own the file, which means the file presence is not guaranteed - the file can be deleted by OS at any time (e.g. due to memory pressure).
-internal struct File: WritableFile, ReadableFile, FileProtocol {
+internal struct File: WritableFile, ReadableFile, FileProtocol, Equatable {
     let url: URL
     let name: String
 

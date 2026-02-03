@@ -1,2 +1,0 @@
-// Add common settings from Datadog.xcconfig
-#include "../xcconfigs/Datadog.xcconfig"

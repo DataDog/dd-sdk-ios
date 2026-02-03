@@ -12,11 +12,11 @@ import Foundation
 public struct PerformancePresetOverride {
     /// Overrides the the maximum allowed file size in bytes.
     /// If not provided, the default value from the `PerformancePreset` object is used.
-    public let maxFileSize: UInt64?
+    public let maxFileSize: UInt32?
 
     /// Overrides the maximum allowed object size in bytes.
     /// If not provided, the default value from the `PerformancePreset` object is used.
-    public let maxObjectSize: UInt64?
+    public let maxObjectSize: UInt32?
 
     /// Overrides the maximum age qualifying given file for reuse (in seconds).
     /// If recently used file is younger than this, it is reused - otherwise: new file is created.
@@ -27,12 +27,20 @@ public struct PerformancePresetOverride {
     /// It has an arbitrary offset  (~0.5s) over `maxFileAgeForWrite` to ensure that no upload can start for the file being currently written.
     public let minFileAgeForRead: TimeInterval?
 
+    /// Maximum age qualifying given file for upload (in seconds).
+    /// Files older than this are considered obsolete and get deleted without uploading.
+    public let maxFileAgeForRead: TimeInterval?
+
+    /// Maximum number of serialized objects written to a single file.
+    /// If number of objects in recently used file reaches this limit, new file is created for new data.
+    public let maxObjectsInFile: Int?
+
     /// Overrides the initial upload delay (in seconds).
     /// At runtime, the upload interval starts with `initialUploadDelay` and then ranges from `minUploadDelay` to `maxUploadDelay` depending
     /// on delivery success or failure.
     public let initialUploadDelay: TimeInterval?
 
-    /// Overrides the mininum  interval of data upload (in seconds).
+    /// Overrides the minimum  interval of data upload (in seconds).
     public let minUploadDelay: TimeInterval?
 
     /// Overrides the maximum interval of data upload (in seconds).
@@ -43,20 +51,25 @@ public struct PerformancePresetOverride {
     public let uploadDelayChangeRate: Double?
 
     /// Initializes a new `PerformancePresetOverride` instance with the provided overrides.
-    ///
+    /// 
     /// - Parameters:
     ///   - maxFileSize: The maximum allowed file size in bytes, or `nil` to use the default value from `PerformancePreset`.
     ///   - maxObjectSize: The maximum allowed object size in bytes, or `nil` to use the default value from `PerformancePreset`.
     ///   - meanFileAge: The mean age qualifying a file for reuse, or `nil` to use the default value from `PerformancePreset`.
+    ///   - maxFileAgeForRead: Maximum age qualifying given file for upload (in seconds). Files older than this are considered obsolete and get deleted without uploading.
     ///   - uploadDelay: The configuration of time interval for data uploads (initial, minimum, maximum and change rate). Set `nil` to use the default value from `PerformancePreset`.
     public init(
-        maxFileSize: UInt64?,
-        maxObjectSize: UInt64?,
+        maxFileSize: UInt32? = nil,
+        maxObjectSize: UInt32? = nil,
         meanFileAge: TimeInterval? = nil,
+        maxFileAgeForRead: TimeInterval? = nil,
+        maxObjectsInFile: Int? = nil,
         uploadDelay: (initial: TimeInterval, range: Range<TimeInterval>, changeRate: Double)? = nil
     ) {
         self.maxFileSize = maxFileSize
         self.maxObjectSize = maxObjectSize
+        self.maxFileAgeForRead = maxFileAgeForRead
+        self.maxObjectsInFile = maxObjectsInFile
 
         if let meanFileAge = meanFileAge {
             // Following constants are the same as in `DatadogCore.PerformancePreset`

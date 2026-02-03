@@ -10,7 +10,7 @@ extension URLSessionTask: DatadogExtended {}
 extension DatadogExtension where ExtendedType: URLSessionTask {
     /// Overrides the current request of the ``URLSessionTask``.
     ///
-    /// The current request must be overriden before the task resumes.
+    /// The current request must be overridden before the task resumes.
     ///
     /// - Parameter request: The new request.
     func override(currentRequest request: URLRequest) {
@@ -21,7 +21,7 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
 
     /// Returns the delegate instance the task is reporting to.
     var delegate: URLSessionDelegate? {
-        if #available(iOS 15.0, tvOS 15.0, *), let delegate = type.delegate {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, *), let delegate = type.delegate {
             return delegate
         }
 

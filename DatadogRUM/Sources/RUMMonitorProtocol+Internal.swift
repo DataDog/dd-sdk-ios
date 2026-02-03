@@ -28,13 +28,14 @@ public struct DatadogInternalInterface {
     let monitor: RUMCommandSubscriber
 
     /// Adds a RUM error to the current view, allowing the addition of BinaryImages
-    /// which can be used to symbolicate stack traces that are not provided by PLCrashReporter
+    /// which can be used to symbolicate stack traces that are not provided by native Crash Reporting.
     internal func addError(
         at time: Date,
         message: String,
         type: String?,
         stack: String?,
         source: RUMInternalErrorSource,
+        globalAttributes: [AttributeKey: AttributeValue],
         attributes: [AttributeKey: AttributeValue],
         binaryImages: [BinaryImage]?
     ) {
@@ -48,7 +49,9 @@ public struct DatadogInternalInterface {
             threads: nil,
             binaryImages: binaryImages,
             isStackTraceTruncated: nil,
-            attributes: attributes
+            globalAttributes: globalAttributes,
+            attributes: attributes,
+            completionHandler: NOPCompletionHandler
         )
         monitor.process(command: addErrorCommand)
     }
@@ -63,7 +66,11 @@ public struct DatadogInternalInterface {
         duration: TimeInterval,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        let longTaskCommand = RUMAddLongTaskCommand(time: time, attributes: attributes, duration: duration)
+        let longTaskCommand = RUMAddLongTaskCommand(
+            time: time,
+            attributes: attributes,
+            duration: duration
+        )
         monitor.process(command: longTaskCommand)
     }
 
@@ -86,6 +93,25 @@ public struct DatadogInternalInterface {
             attributes: attributes
         )
         monitor.process(command: performanceMetric)
+    }
+
+    /// Add an internal view attribute. Internal view attributes are used by cross platform frameworks to determine the values
+    /// of certain internal metrics, including Flutter's First Build Complete metric. They are not propagated to other events
+    /// - Parameters:
+    ///   - time: the time of this command
+    ///   - key: the key for this attribute
+    ///   - value: the value of the attribute
+    public func setInternalViewAttribute(
+        at time: Date,
+        key: AttributeKey,
+        value: AttributeValue
+    ) {
+        let attributeCommand = RUMAddViewAttributesCommand(
+            time: time,
+            attributes: [key: value],
+            areInternalAttributes: true
+        )
+        monitor.process(command: attributeCommand)
     }
 
     /// Adds temporal metrics to given RUM resource.

@@ -5,7 +5,6 @@
  */
 
 import XCTest
-import TestUtilities
 import DatadogInternal
 import OpenTelemetryApi
 
@@ -13,6 +12,7 @@ import OpenTelemetryApi
 @testable import DatadogTrace
 @testable import DatadogRUM
 @testable import DatadogCore
+@testable import TestUtilities
 
 // swiftlint:disable multiline_arguments_brackets
 class LoggerTests: XCTestCase {
@@ -23,8 +23,8 @@ class LoggerTests: XCTestCase {
         core = DatadogCoreProxy()
     }
 
-    override func tearDown() {
-        core.flushAndTearDown()
+    override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
@@ -42,11 +42,16 @@ class LoggerTests: XCTestCase {
             device: .mockWith(
                 name: "Device Name",
                 model: "Model Name",
-                osName: "testOS",
-                osVersion: "1.0",
-                osBuildNumber: "FFFFFF",
-                architecture: "testArch"
-            )
+                architecture: "testArch",
+                logicalCpuCount: 4,
+                totalRam: 4_096
+            ),
+            os: .mockWith(
+                name: "testOS",
+                version: "1.0",
+                build: "FFFFFF"
+            ),
+            brightnessLevel: 0.5
         )
 
         let feature: LogsFeature = .mockWith(
@@ -58,14 +63,30 @@ class LoggerTests: XCTestCase {
         logger.debug("message")
 
         let logMatcher = try core.waitAndReturnLogMatchers()[0]
-        try logMatcher.assertItFullyMatches(jsonString: """
+
+        try logMatcher.assertItMatches(jsonString: """
         {
-          "status" : "debug",
-          "message" : "message",
-          "os": {
-            "build": "FFFFFF",
-            "name": "testOS",
-            "version": "1.0"
+          "status": "debug",
+          "message": "message",
+          "_dd": {
+            "device": {
+              "architecture": "testArch"
+            }
+          },
+          "device": {
+            "architecture": "testArch",
+            "battery_level": 0.5,
+            "brand": "Apple",
+            "brightness_level": 0.5,
+            "locale": "en-US",
+            "locales": ["en"],
+            "logical_cpu_count": 4,
+            "name": "Device Name",
+            "model": "Model Name",
+            "power_saving_mode": 0,
+            "time_zone": "Europe/Paris",
+            "total_ram": 4096,
+            "type": "other"
           },
           "service" : "default-service-name",
           "logger.name" : "com.datadoghq.ios-sdk",
@@ -74,17 +95,29 @@ class LoggerTests: XCTestCase {
           "date" : "2019-12-15T10:00:00.000Z",
           "version": "1.0.0",
           "build_version": "1",
-          "ddtags": "env:tests,version:1.0.0",
-          "_dd": {
-            "device": {
-              "brand": "Apple",
-              "name": "Device Name",
-              "model": "Model Name",
-              "architecture": "testArch"
-            }
+          "ddtags": "sdk_version:1.2.3,service:default-service-name,version:1.0.0,env:tests",
+          "os": {
+            "build": "FFFFFF",
+            "name": "testOS",
+            "version": "1.0",
+            "version_major": "1"
           }
         }
-        """)
+        """, usingCustomKeyComparators: [
+            "ddtags": { lhs, rhs, file, line in
+                guard let lhs = lhs as? String,
+                      let rhs = rhs as? String
+                else {
+                    XCTFail("ddTags values are not strings.", file: file, line: line)
+                    return
+                }
+
+                let lTags = Set(lhs.components(separatedBy: ","))
+                let rTags = Set(rhs.components(separatedBy: ","))
+
+                XCTAssertEqual(lTags, rTags, file: file, line: line)
+            }
+        ])
     }
 
     func testSendingLogWithCustomizedLogger() throws {
@@ -359,6 +392,55 @@ class LoggerTests: XCTestCase {
         logMatchers[3].assertUserInfo(equals: nil)
     }
 
+    // MARK: - Sending account info
+
+    func testSendingAccountInfo() throws {
+        core.context = .mockWith(
+            userInfo: .empty
+        )
+
+        let feature: LogsFeature = .mockAny()
+        try core.register(feature: feature)
+
+        let logger = Logger.create(in: core)
+
+        logger.debug("message with no account info")
+
+        core.context.accountInfo = AccountInfo(id: "abc-123", name: "Foo", extraInfo: [:])
+        logger.debug("message with account `id` and `name`")
+
+        core.context.accountInfo = AccountInfo(
+            id: "abc-123",
+            name: "Foo",
+            extraInfo: [
+                "str": "value",
+                "int": 11_235,
+                "bool": true
+            ]
+        )
+        logger.debug("message with account `id`, `name` and `extraInfo`")
+
+        core.context.accountInfo = nil
+        logger.debug("message with no account info")
+
+        let logMatchers = try core.waitAndReturnLogMatchers()
+        logMatchers[0].assertAccountInfo(equals: nil)
+
+        logMatchers[1].assertAccountInfo(equals: (id: "abc-123", name: "Foo"))
+
+        logMatchers[2].assertAccountInfo(
+            equals: (
+                id: "abc-123",
+                name: "Foo"
+            )
+        )
+        logMatchers[2].assertValue(forKey: "account.str", equals: "value")
+        logMatchers[2].assertValue(forKey: "account.int", equals: 11_235)
+        logMatchers[2].assertValue(forKey: "account.bool", equals: true)
+
+        logMatchers[3].assertAccountInfo(equals: nil)
+    }
+
     // MARK: - Sending carrier info
 
     func testSendingCarrierInfoWhenEnteringAndLeavingCellularServiceRange() throws {
@@ -547,8 +629,10 @@ class LoggerTests: XCTestCase {
 
     func testSendingTags() throws {
         core.context = .mockWith(
+            service: "default-service-name",
             env: "tests",
-            version: "1.2.3"
+            version: "1.2.3",
+            sdkVersion: "3.2.1"
         )
 
         let feature: LogsFeature = .mockAny()
@@ -578,16 +662,18 @@ class LoggerTests: XCTestCase {
         logger.info("info message 3")
 
         let logMatchers = try core.waitAndReturnLogMatchers()
-        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3"])
-        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3"])
-        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3"])
+        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3", "service:default-service-name", "sdk_version:3.2.1"])
+        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3", "service:default-service-name", "sdk_version:3.2.1"])
+        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3", "service:default-service-name", "sdk_version:3.2.1"])
     }
 
     func testSendingTagsWithVariant() throws {
         core.context = .mockWith(
+            service: "default-service-name",
             env: "tests",
             version: "1.2.3",
-            variant: "integration"
+            variant: "integration",
+            sdkVersion: "3.2.1"
         )
 
         let feature: LogsFeature = .mockAny()
@@ -617,9 +703,9 @@ class LoggerTests: XCTestCase {
         logger.info("info message 3")
 
         let logMatchers = try core.waitAndReturnLogMatchers()
-        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3", "variant:integration"])
-        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3", "variant:integration"])
-        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3", "variant:integration"])
+        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3", "variant:integration", "service:default-service-name", "sdk_version:3.2.1"])
+        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3", "variant:integration", "service:default-service-name", "sdk_version:3.2.1"])
+        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3", "variant:integration", "service:default-service-name", "sdk_version:3.2.1"])
     }
 
     // MARK: - Integration With RUM Feature
@@ -631,7 +717,7 @@ class LoggerTests: XCTestCase {
         try core.register(feature: logging)
 
         RUM.enable(
-            with: .mockWith { $0.sessionSampleRate = 100 },
+            with: .mockWith { $0.sessionSampleRate = .maxSampleRate },
             in: core
         )
 
@@ -986,7 +1072,7 @@ class LoggerTests: XCTestCase {
         )
         XCTAssertEqual(
             dd.logger.criticalLog?.error?.message,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
+            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.create()`."
         )
         XCTAssertTrue(logger is NOPLogger)
     }
@@ -1009,7 +1095,7 @@ class LoggerTests: XCTestCase {
         )
         XCTAssertEqual(
             dd.logger.criticalLog?.error?.message,
-            "🔥 Datadog SDK usage error: `Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
+            "🔥 Datadog SDK usage error: `Logger.create()` produces a non-functional logger because the `Logs` feature was not enabled."
         )
         XCTAssertTrue(logger is NOPLogger)
     }
