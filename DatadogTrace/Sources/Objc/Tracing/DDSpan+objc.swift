@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import DatadogInternal
+@preconcurrency import DatadogInternal
 
 @objc(DDSpanObjc)
 @objcMembers

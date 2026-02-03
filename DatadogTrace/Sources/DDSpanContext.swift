@@ -59,7 +59,7 @@ internal struct DDSpanContext: OTSpanContext {
 /// Baggage items are used to propagate span information from parent to child. This propagation is
 /// unidirectional and recursive, so the grandchild of a span `A` will contain the `A's` baggage items,
 /// but `A` won't contain items of its descendants.
-internal class BaggageItems {
+internal class BaggageItems: @unchecked Sendable {
     /// Baggage items of the parent `DDSpan` or`nil` for items of the root span.
     private let parent: BaggageItems?
 

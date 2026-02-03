@@ -10,6 +10,7 @@ import DatadogInternal
 
 @testable import DatadogTrace
 
+@MainActor
 class DDSpanTests: XCTestCase {
     // MARK: - Sending SpanEvent
 
