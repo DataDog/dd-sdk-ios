@@ -138,10 +138,10 @@ internal class RUMResourceScope: RUMScope {
         let graphqlOperationName: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationName)?.dd.decode()
         let graphqlPayload: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlPayload)?.dd.decode()
         let graphqlVariables: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlVariables)?.dd.decode()
-        let graphqlErrorsData: Data? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlErrors)?.dd.decode()
+        let graphqlErrorsString: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlErrors)?.dd.decode()
 
         // Parse GraphQL errors if present
-        let graphqlErrors = parseGraphQLErrors(from: graphqlErrorsData)
+        let graphqlErrors = parseGraphQLErrors(from: graphqlErrorsString)
 
         if
             let rawGraphqlOperationType: String = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationType)?.dd.decode(),
@@ -418,18 +418,24 @@ internal class RUMResourceScope: RUMScope {
         return duration.dd.toInt64Nanoseconds
     }
 
-    /// Decodes GraphQL errors from JSON data and returns them as RUM event errors
-    private func parseGraphQLErrors(from data: Data?) -> [RUMResourceEvent.Resource.Graphql.Errors]? {
-        guard let data else {
+    /// Decodes GraphQL errors from JSON string and returns them as RUM event errors
+    private func parseGraphQLErrors(from jsonString: String?) -> [RUMResourceEvent.Resource.Graphql.Errors]? {
+        guard let jsonString, !jsonString.isEmpty else {
+            return nil
+        }
+
+        guard let data = jsonString.data(using: .utf8) else {
+            DD.logger.debug("Failed to convert GraphQL errors string to UTF-8 data")
             return nil
         }
 
         do {
-            let response = try JSONDecoder().decode(GraphQLResponse.self, from: data)
+            let responseErrors = try JSONDecoder().decode([GraphQLResponseError].self, from: data)
 
-            guard let responseErrors = response.errors, !responseErrors.isEmpty else {
+            guard !responseErrors.isEmpty else {
                 return nil
             }
+
             let parsedErrors = responseErrors.map { error in
                 RUMResourceEvent.Resource.Graphql.Errors(
                     code: error.code,

@@ -20,12 +20,6 @@ internal struct GraphQLResponseHasErrors: Decodable {
     }
 }
 
-/// Full decoder for GraphQL response with errors array.
-/// Used when we need to extract the actual error details.
-internal struct GraphQLResponse: Decodable {
-    let errors: [GraphQLResponseError]?
-}
-
 /// Represents a GraphQL error in the response.
 ///
 /// Note: Some GraphQL implementations may include `code` at the error level (legacy pattern)
