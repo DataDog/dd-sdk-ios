@@ -24,6 +24,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     let makeRUMFlagEvaluationReporter: (any FeatureScope) -> any RUMFlagEvaluationReporting
     let performanceOverride: PerformancePresetOverride
     let issueReporter: IssueReporter
+    private let evaluationAggregator: EvaluationAggregator?
 
     init(
         configuration: Flags.Configuration,
@@ -51,7 +52,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
             )
         }
 
-        let evaluationAggregator: EvaluationAggregator? = configuration.trackEvaluations ? {
+        evaluationAggregator = configuration.trackEvaluations ? {
             var flushInterval = configuration.evaluationFlushInterval
             if flushInterval < Constants.minEvaluationFlushInterval {
                 DD.logger.warn("`Flags.Configuration.evaluationFlushInterval` cannot be less than \(Constants.minEvaluationFlushInterval)s. A value of \(Constants.minEvaluationFlushInterval)s will be used.")
@@ -84,5 +85,11 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         performanceOverride = PerformancePresetOverride(maxObjectsInFile: 50)
 
         issueReporter = IssueReporter.default(isGracefulModeEnabled: configuration.gracefulModeEnabled)
+    }
+}
+
+extension FlagsFeature: Flushable {
+    func flush() {
+        evaluationAggregator?.sendEvaluations()
     }
 }

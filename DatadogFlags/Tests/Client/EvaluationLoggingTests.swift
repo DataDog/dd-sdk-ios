@@ -377,31 +377,6 @@ class EvaluationLoggingTests: XCTestCase {
         XCTAssertEqual(featureScope.eventsWritten.count, 3, "Should auto-flush when maxAggregations reached")
     }
 
-    // EVALLOG.4: Shutdown flush when SDK stops
-    func testFlushesOnDeinit() throws {
-        throw XCTSkip("EVALLOG.4 compliance gap: deinit cannot flush due to exclusivity conflict with DatadogCore.stop()")
-
-        // Given
-        let featureScope = FeatureScopeMock()
-        var aggregator: EvaluationAggregator? = EvaluationAggregator(
-            dateProvider: DateProviderMock(now: .mockAny()),
-            featureScope: featureScope,
-            flushInterval: 60.0
-        )
-
-        // When
-        aggregator?.recordEvaluation(
-            for: "test-flag",
-            assignment: .mockAnyBoolean(),
-            evaluationContext: .mockAny(),
-            flagError: nil
-        )
-        aggregator = nil
-
-        // Then - Desired behavior: deinit should flush pending evaluations
-        XCTAssertEqual(featureScope.eventsWritten.count, 1, "Deinit should send pending evaluations")
-    }
-
     // MARK: - EVALLOG.5: Error Logging
 
     // EVALLOG.5: Errors logged as error.message and included in aggregation key
