@@ -219,8 +219,6 @@ extension Calendar {
 
 extension URL: AnyMockable, RandomMockable {
     public static func mockAny() -> URL {
-        // Use a non-Datadog URL to avoid being filtered by intake request checks
-        // Tests that specifically need to test Datadog URLs should use mockWith(url:)
         return URL(string: "https://www.example.com")!
     }
 

@@ -43,7 +43,7 @@ extension Trace {
         /// For capturing additional detailed timing breakdowns (DNS, SSL, TTFB, etc.), see
         /// `URLSessionInstrumentation.enableDurationBreakdown(with:in:)`.
         ///
-        /// Note: Automatic tracing involves swizzling `URLSession` and `URLSessionTask` methods.
+        /// Note: Automatic tracking involves swizzling `URLSession` and `URLSessionTask` methods.
         ///
         /// Default: `nil` - which means automatic tracing is not enabled by default.
         public var urlSessionTracking: URLSessionTracking?

@@ -148,10 +148,6 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         }
 
         if let httpResponse = interception.completion?.httpResponse {
-            // Prefer `metrics.responseSize`, but fallback to `responseSize` when metrics size is `nil` or 0
-            let metricsSize = interception.metrics?.responseSize ?? 0
-            let size = metricsSize > 0 ? metricsSize : interception.responseSize
-
             subscriber.process(
                 command: RUMStopResourceCommand(
                     resourceKey: interception.identifier.uuidString,
@@ -159,7 +155,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
                     attributes: combinedAttributes,
                     kind: RUMResourceType(response: httpResponse),
                     httpStatusCode: httpResponse.statusCode,
-                    size: size
+                    size: interception.mostAccurateResponseSize
                 )
             )
         }

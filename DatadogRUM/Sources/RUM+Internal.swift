@@ -80,7 +80,7 @@ extension InternalExtension where ExtendedType == RUM {
         urlSessionHandler.publish(to: rum.monitor)
         try core.register(urlSessionHandler: urlSessionHandler)
 
-        // Enable network tracking automatically (no delegate registration required)
+        // Enable automatic network tracking (no delegate registration required)
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
     }
 }

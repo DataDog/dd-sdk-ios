@@ -13,7 +13,7 @@ public enum TrackingMode {
     case automatic
 
     /// Registered delegate mode: tracks tasks with a delegate registered via `enableDurationBreakdown(with:)`.
-    /// Captures `URLSessionTaskMetrics` for detailed timing breakdown (DNS, SSL, TTFB, etc.).
+    /// Captures `URLSessionTaskMetrics` for detailed timing breakdown (DNS, SSL, TTFB, etc.) as well as the data via the delegate callback.
     case registeredDelegate
 }
 
@@ -82,6 +82,13 @@ public class URLSessionTaskInterception {
         return metrics?.fetch.end ?? endDate
     }
 
+    /// Returns the most accurate size available.
+    /// Prefers `metrics.responseSize`, but fallbacks to `responseSize` when metrics size is `nil` or 0
+    public var mostAccurateResponseSize: Int64? {
+        let metricsSize = metrics?.responseSize ?? 0
+        return metricsSize > 0 ? metricsSize : responseSize
+    }
+
     init(request: ImmutableRequest, isFirstParty: Bool, trackingMode: TrackingMode) {
         self.identifier = UUID()
         self.request = request
@@ -129,7 +136,6 @@ public class URLSessionTaskInterception {
         self.activeSpanContext = activeSpanContext
     }
 
-    /// Tells if the interception is done (mean: both metrics and completion were collected).
     func register(state: Int) {
         self.taskState = URLSessionTask.State(rawValue: state)
     }

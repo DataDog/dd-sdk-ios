@@ -362,7 +362,7 @@ extension NetworkInstrumentationFeature {
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
     /// - Returns: A tuple containing the modified request and the list of injected TraceContexts, one or none for each handler. If no trace is injected (e.g., due to sampling),
     ///            the list will be empty.
-    internal func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts?) -> (URLRequest, [RequestInstrumentationContext]) {
+    func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts?) -> (URLRequest, [RequestInstrumentationContext]) {
         let headerTypes = firstPartyHosts(with: additionalFirstPartyHosts)
             .tracingHeaderTypes(for: request.url)
 
@@ -394,7 +394,7 @@ extension NetworkInstrumentationFeature {
     ///   - injectedTraceContexts: The list of trace contexts injected into the task's request, one or none for each handler.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
     ///   - trackingMode: The tracking mode to use for this interception (automatic or registered delegate).
-    internal func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode) {
+    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode) {
         // In response to https://github.com/DataDog/dd-sdk-ios/issues/1638 capture the current request object on the
         // caller thread and freeze its attributes through `ImmutableRequest`. This is to avoid changing the request
         // object from multiple threads:
@@ -469,7 +469,7 @@ extension NetworkInstrumentationFeature {
     /// - Parameters:
     ///   - task: The task whose metrics have been collected.
     ///   - metrics: The collected metrics.
-    internal func task(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+    func task(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
                 return
@@ -494,7 +494,7 @@ extension NetworkInstrumentationFeature {
     /// - Parameters:
     ///   - task: The task that provided data.
     ///   - data: A data object containing the transferred data.
-    internal func task(_ task: URLSessionTask, didReceive data: Data) {
+    func task(_ task: URLSessionTask, didReceive data: Data) {
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
                 return
@@ -508,7 +508,7 @@ extension NetworkInstrumentationFeature {
     /// - Parameters:
     ///   - task: The task that has finished transferring data.
     ///   - error: If an error occurred, an error object indicating how the transfer failed, otherwise NULL.
-    internal func task(_ task: URLSessionTask, didCompleteWithError error: Error?) {
+    func task(_ task: URLSessionTask, didCompleteWithError error: Error?) {
         // Capture end time before entering the queue for more accurate timing.
         let endTime = Date()
 
@@ -548,7 +548,7 @@ extension NetworkInstrumentationFeature {
     /// - Parameters:
     ///   - task: The task whose state has changed.
     ///   - state: The new state of the task (maps to URLSessionTask.State: 0=running, 1=suspended, 2=canceling, 3=completed).
-    internal func task(_ task: URLSessionTask, didChangeToState state: Int) {
+    func task(_ task: URLSessionTask, didChangeToState state: Int) {
         // Capture end time before entering the queue for more accurate timing.
         let endTime = Date()
 
