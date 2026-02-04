@@ -118,6 +118,8 @@ public struct UsageTelemetry: SampledTelemetry {
         case addViewLoadingTime(ViewLoadingTime)
         /// addOperationStepVital API
         case addOperationStepVital(TelemetryUsageEvent.Telemetry.Usage.TelemetryCommonFeaturesUsage.AddOperationStepVital)
+        /// GraphQL request detected
+        case addGraphQLRequest
 
         /// Describes the properties of `addViewLoadingTime` usage telemetry.
         public struct ViewLoadingTime {

@@ -539,6 +539,9 @@ public struct RUMActionEvent: RUMDataModel {
                 /// Height of the target element (in pixels)
                 public let height: Int64?
 
+                /// Mobile-only: a globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate actions with mobile session replay wireframes.
+                public let permanentId: String?
+
                 /// CSS selector path of the target element
                 public let selector: String?
 
@@ -547,6 +550,7 @@ public struct RUMActionEvent: RUMDataModel {
 
                 public enum CodingKeys: String, CodingKey {
                     case height = "height"
+                    case permanentId = "permanent_id"
                     case selector = "selector"
                     case width = "width"
                 }
@@ -555,14 +559,17 @@ public struct RUMActionEvent: RUMDataModel {
                 ///
                 /// - Parameters:
                 ///   - height: Height of the target element (in pixels)
+                ///   - permanentId: Mobile-only: a globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate actions with mobile session replay wireframes.
                 ///   - selector: CSS selector path of the target element
                 ///   - width: Width of the target element (in pixels)
                 public init(
                     height: Int64? = nil,
+                    permanentId: String? = nil,
                     selector: String? = nil,
                     width: Int64? = nil
                 ) {
                     self.height = height
+                    self.permanentId = permanentId
                     self.selector = selector
                     self.width = width
                 }
@@ -6750,6 +6757,9 @@ public struct RUMViewEvent: RUMDataModel {
                 /// URL of the largest contentful paint element
                 public var resourceUrl: String?
 
+                /// Sub-parts of the LCP
+                public let subParts: SubParts?
+
                 /// CSS selector path of the largest contentful paint element
                 public let targetSelector: String?
 
@@ -6758,6 +6768,7 @@ public struct RUMViewEvent: RUMDataModel {
 
                 public enum CodingKeys: String, CodingKey {
                     case resourceUrl = "resource_url"
+                    case subParts = "sub_parts"
                     case targetSelector = "target_selector"
                     case timestamp = "timestamp"
                 }
@@ -6766,16 +6777,53 @@ public struct RUMViewEvent: RUMDataModel {
                 ///
                 /// - Parameters:
                 ///   - resourceUrl: URL of the largest contentful paint element
+                ///   - subParts: Sub-parts of the LCP
                 ///   - targetSelector: CSS selector path of the largest contentful paint element
                 ///   - timestamp: Time of the largest contentful paint, in ns since view start.
                 public init(
                     resourceUrl: String? = nil,
+                    subParts: SubParts? = nil,
                     targetSelector: String? = nil,
                     timestamp: Int64
                 ) {
                     self.resourceUrl = resourceUrl
+                    self.subParts = subParts
                     self.targetSelector = targetSelector
                     self.timestamp = timestamp
+                }
+
+                /// Sub-parts of the LCP
+                public struct SubParts: Codable {
+                    /// Time between first_byte and the loading start of the resource associated with the LCP
+                    public let loadDelay: Int64
+
+                    /// Time to takes to load the resource attached to the LCP
+                    public let loadTime: Int64
+
+                    /// Time between the LCP resource finishes loading and the LCP element is fully rendered
+                    public let renderDelay: Int64
+
+                    public enum CodingKeys: String, CodingKey {
+                        case loadDelay = "load_delay"
+                        case loadTime = "load_time"
+                        case renderDelay = "render_delay"
+                    }
+
+                    /// Sub-parts of the LCP
+                    ///
+                    /// - Parameters:
+                    ///   - loadDelay: Time between first_byte and the loading start of the resource associated with the LCP
+                    ///   - loadTime: Time to takes to load the resource attached to the LCP
+                    ///   - renderDelay: Time between the LCP resource finishes loading and the LCP element is fully rendered
+                    public init(
+                        loadDelay: Int64,
+                        loadTime: Int64,
+                        renderDelay: Int64
+                    ) {
+                        self.loadDelay = loadDelay
+                        self.loadTime = loadTime
+                        self.renderDelay = renderDelay
+                    }
                 }
             }
         }
@@ -10806,6 +10854,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                 case clearAccount(value: ClearAccount)
                 case addFeatureFlagEvaluation(value: AddFeatureFlagEvaluation)
                 case addOperationStepVital(value: AddOperationStepVital)
+                case graphQLRequest(value: GraphQLRequest)
 
                 // MARK: - Codable
 
@@ -10865,6 +10914,8 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     case .addFeatureFlagEvaluation(let value):
                         try container.encode(value)
                     case .addOperationStepVital(let value):
+                        try container.encode(value)
+                    case .graphQLRequest(let value):
                         try container.encode(value)
                     }
                 }
@@ -10975,6 +11026,10 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     }
                     if let value = try? container.decode(AddOperationStepVital.self) {
                         self = .addOperationStepVital(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(GraphQLRequest.self) {
+                        self = .graphQLRequest(value: value)
                         return
                     }
                     let error = DecodingError.Context(
@@ -11308,6 +11363,17 @@ public struct TelemetryUsageEvent: RUMDataModel {
                         case fail = "fail"
                     }
                 }
+
+                public struct GraphQLRequest: Codable {
+                    /// GraphQL request detected
+                    public let feature: String = "graphql-request"
+
+                    public enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+
+                    public init() { }
+                }
             }
 
             /// Schema of mobile specific features usage
@@ -11456,4 +11522,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/32918d999701fb7bfd876369e27ced77d6de1809
+// Generated from https://github.com/DataDog/rum-events-format/tree/6c939c467f255990d7941ce160e48823465e7780

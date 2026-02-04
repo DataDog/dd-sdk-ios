@@ -72,7 +72,8 @@ extension InternalExtension where ExtendedType == RUM {
         let urlSessionHandler = URLSessionRUMResourcesHandler(
             dateProvider: rumConfiguration.dateProvider,
             rumAttributesProvider: configuration.resourceAttributesProvider,
-            distributedTracing: distributedTracing
+            distributedTracing: distributedTracing,
+            telemetry: core.telemetry
         )
 
         // Connect URLSession instrumentation to RUM monitor:
