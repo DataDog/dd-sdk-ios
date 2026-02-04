@@ -50,7 +50,7 @@ class EvaluationLoggingTests: XCTestCase {
     // MARK: - EVALLOG.1: EVP Intake
 
     // EVALLOG.1: SDK must send evaluation events to EVP intake with application/json and batched schema
-    func testSendsToEVPIntakeWithBatchedJsonFormat() throws {
+    func testGivenEvaluationEvent_whenRequestBuilt_itSendsToEVPIntakeWithBatchedJsonFormat() throws {
         // Given
         let mockEvent = FlagEvaluationEvent(
             timestamp: 1_234_567_890,
@@ -111,7 +111,7 @@ class EvaluationLoggingTests: XCTestCase {
     // MARK: - EVALLOG.2: Log All Evaluations
 
     // EVALLOG.2: Log all evaluations when enabled, including defaults and errors (unlike exposure logging)
-    func testLogsAllEvaluationsRegardlessOfDoLog() throws {
+    func testGivenBothDoLogValues_whenEvaluating_itLogsAllEvaluations() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let aggregator = EvaluationAggregator(
@@ -142,7 +142,7 @@ class EvaluationLoggingTests: XCTestCase {
     }
 
     // EVALLOG.2: Log evaluation when provider is not ready (no context set)
-    func testLogsEvaluationWhenProviderNotReady() {
+    func testGivenProviderNotReady_whenEvaluating_itLogsEvaluationWithError() {
         // Given
         let evaluationLogger = EvaluationLoggerMock()
         let client = FlagsClient(
@@ -166,7 +166,7 @@ class EvaluationLoggingTests: XCTestCase {
     }
 
     // EVALLOG.2: Log evaluation when flag is not found
-    func testLogsEvaluationWhenFlagNotFound() {
+    func testGivenFlagNotFound_whenEvaluating_itLogsEvaluationWithError() {
         // Given
         let evaluationLogger = EvaluationLoggerMock()
         let client = FlagsClient(
@@ -194,7 +194,7 @@ class EvaluationLoggingTests: XCTestCase {
     }
 
     // EVALLOG.2: Log evaluation when type mismatch occurs
-    func testLogsEvaluationWhenTypeMismatch() {
+    func testGivenTypeMismatch_whenEvaluating_itLogsEvaluationWithError() {
         // Given
         let evaluationLogger = EvaluationLoggerMock()
         let client = FlagsClient(
@@ -230,7 +230,7 @@ class EvaluationLoggingTests: XCTestCase {
     }
 
     // EVALLOG.2: Verify no exposure logging for error cases (only evaluation logging)
-    func testNoExposureLoggingForErrorCases() {
+    func testGivenFlagNotFound_whenEvaluating_itLogsOnlyEvaluationNotExposure() {
         // Given
         let exposureLogger = ExposureLoggerMock()
         let evaluationLogger = EvaluationLoggerMock()
@@ -258,7 +258,7 @@ class EvaluationLoggingTests: XCTestCase {
     // MARK: - EVALLOG.3: Aggregation
 
     // EVALLOG.3: Aggregate evaluations by flag_key, variant_key, allocation_key, targeting_key, error_message, context
-    func testAggregatesByCompositeKey() throws {
+    func testGivenMultipleEvaluations_whenSameCompositeKey_itAggregates() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let aggregator = EvaluationAggregator(
@@ -293,7 +293,7 @@ class EvaluationLoggingTests: XCTestCase {
 
     // EVALLOG.3: Tracks evaluation count and first/last timestamps
     // EVALLOG.10: timestamp field equals first_evaluation
-    func testTracksAggregationFields() throws {
+    func testGivenMultipleEvaluations_whenAggregated_itTracksCountAndTimestamps() throws {
         // Given/When
         let (event, featureScope) = try recordAggregatedEvaluationWithTimeGaps()
 
@@ -310,7 +310,7 @@ class EvaluationLoggingTests: XCTestCase {
 
     // MARK: - EVALLOG.4: Event Buffering / Flushing
 
-    func testEvaluationFlushIntervalBelowMinimumIsClamped() throws {
+    func testGivenFlushIntervalBelowMinimum_whenEnabled_itClampsToMinimum() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -328,7 +328,7 @@ class EvaluationLoggingTests: XCTestCase {
         )
     }
 
-    func testEvaluationFlushIntervalAboveMaximumIsClamped() throws {
+    func testGivenFlushIntervalAboveMaximum_whenEnabled_itClampsToMaximum() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -347,7 +347,7 @@ class EvaluationLoggingTests: XCTestCase {
     }
 
     // EVALLOG.4: Size-based flush when aggregation map reaches limit
-    func testFlushesWhenAggregationMapReachesLimit() throws {
+    func testGivenAggregationMapAtLimit_whenRecordingEvaluation_itFlushes() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let aggregator = EvaluationAggregator(
@@ -380,7 +380,7 @@ class EvaluationLoggingTests: XCTestCase {
     // MARK: - EVALLOG.5: Error Logging
 
     // EVALLOG.5: Errors logged as error.message and included in aggregation key
-    func testLogsErrorMessageInAggregationKey() throws {
+    func testGivenDifferentErrors_whenAggregating_itCreatesSeparateAggregations() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let aggregator = EvaluationAggregator(
@@ -416,7 +416,7 @@ class EvaluationLoggingTests: XCTestCase {
     // MARK: - EVALLOG.6: Omit Empty Context
 
     // EVALLOG.6: Omit context.evaluation if targeting context contains only targetingKey
-    func testOmitsContextWhenOnlyTargetingKey() throws {
+    func testGivenOnlyTargetingKey_whenAggregated_itOmitsContext() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let aggregator = EvaluationAggregator(
@@ -444,7 +444,7 @@ class EvaluationLoggingTests: XCTestCase {
     }
 
     // EVALLOG.6: Include context.evaluation when targeting context has additional attributes
-    func testIncludesContextWhenAdditionalAttributes() throws {
+    func testGivenAdditionalAttributes_whenAggregated_itIncludesContext() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let aggregator = EvaluationAggregator(
@@ -486,7 +486,7 @@ class EvaluationLoggingTests: XCTestCase {
 
     // EVALLOG.7: Empty string "" is valid targeting key and must be included as targeting_key: ""
     // Note: Swift's String type is non-optional, so null/undefined targeting key doesn't apply.
-    func testKeepsEmptyStringTargetingKey() throws {
+    func testGivenEmptyStringTargetingKey_whenAggregated_itPreservesEmptyString() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let aggregator = EvaluationAggregator(
@@ -516,7 +516,7 @@ class EvaluationLoggingTests: XCTestCase {
     // MARK: - EVALLOG.8: Omit Undefined Optional Keys
 
     // EVALLOG.8: Omit variant.key, allocation.key when undefined (DEFAULT/ERROR reasons)
-    func testOmitsVariantAndAllocationForRuntimeDefaults() throws {
+    func testGivenRuntimeDefault_whenAggregated_itOmitsVariantAndAllocation() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let aggregator = EvaluationAggregator(
@@ -571,7 +571,7 @@ class EvaluationLoggingTests: XCTestCase {
     }
 
     // EVALLOG.8: Include variant.key, allocation.key when defined (normal evaluations)
-    func testIncludesVariantAndAllocationForNormalEvaluations() throws {
+    func testGivenNormalEvaluation_whenAggregated_itIncludesVariantAndAllocation() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let aggregator = EvaluationAggregator(
@@ -607,7 +607,7 @@ class EvaluationLoggingTests: XCTestCase {
     // MARK: - EVALLOG.9: Context Changes
 
     // EVALLOG.9: Different targeting contexts create separate events regardless of matching results
-    func testDifferentContextValuesCreateSeparateAggregations() throws {
+    func testGivenDifferentContextValues_whenAggregating_itCreatesSeparateAggregations() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let aggregator = EvaluationAggregator(
@@ -656,7 +656,7 @@ class EvaluationLoggingTests: XCTestCase {
     // MARK: - EVALLOG.11: Aggregation Period Lifecycle
 
     // EVALLOG.11: Aggregation period starts at first evaluation and ends at flush; subsequent evaluations start new periods
-    func testAggregationPeriodLifecycle() throws {
+    func testGivenFlush_whenNewEvaluationRecorded_itStartsNewPeriod() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let dateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
@@ -698,7 +698,7 @@ class EvaluationLoggingTests: XCTestCase {
 
     // EVALLOG.4: Default flush interval is 10s
     // EVALLOG.12: Evaluation logging must be enabled by default but may be disabled
-    func testDefaultConfigurationValues() throws {
+    func testGivenDefaultConfiguration_itHasCorrectValues() throws {
         let config = Flags.Configuration()
 
         // EVALLOG.4: Default flush interval
@@ -715,7 +715,7 @@ class EvaluationLoggingTests: XCTestCase {
     // MARK: - EVALLOG.13: Runtime Default Used
 
     // EVALLOG.13: runtime_default_used behavior for different reasons
-    func testRuntimeDefaultUsedBehavior() throws {
+    func testGivenDifferentReasons_whenAggregated_itSetsRuntimeDefaultUsedCorrectly() throws {
         // Given
         let featureScope = FeatureScopeMock()
         let aggregator = EvaluationAggregator(

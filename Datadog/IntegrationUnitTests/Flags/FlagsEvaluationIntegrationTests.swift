@@ -35,7 +35,7 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
     // MARK: - EVALLOG.4: Shutdown Flush
 
     /// EVALLOG.4: Evaluations are flushed when SDK shuts down via flushAndTearDown()
-    func testWhenSDKShutsDown_itFlushesPendingEvaluations() throws {
+    func testGivenPendingEvaluations_whenSDKShutsDown_itFlushes() throws {
         // Given
         let core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
         Flags.enable(with: .init(trackEvaluations: true), in: core)

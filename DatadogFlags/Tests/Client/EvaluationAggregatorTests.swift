@@ -16,7 +16,7 @@ class EvaluationAggregatorTests: XCTestCase {
 
     // MARK: - Implementation Details
 
-    func testSendEvaluationsClearsPendingAggregations() {
+    func testGivenPendingAggregations_whenSendEvaluations_itClearsPending() {
         // Given
         let aggregator = EvaluationAggregator(
             dateProvider: DateProviderMock(now: .mockAny()),
@@ -56,7 +56,7 @@ class EvaluationAggregatorTests: XCTestCase {
 
     // MARK: - Thread Safety
 
-    func testConcurrentSendEvaluationsAndRecord() {
+    func testGivenConcurrentAccess_whenRecordAndSend_itHandlesSafely() {
         // Given
         let aggregator = EvaluationAggregator(
             dateProvider: DateProviderMock(now: .mockAny()),
