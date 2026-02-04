@@ -1872,7 +1872,14 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // When
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
-        feature.intercept(task: .mockAny(), with: traceContexts, additionalFirstPartyHosts: nil, trackingMode: .mockRandom())
+
+        feature.intercept(
+            task: .mockAny(),
+            with: traceContexts.map { NetworkInstrumentationFeature.RequestInstrumentationContext(traceContext: $0, capturedState: nil) },
+            additionalFirstPartyHosts: nil,
+            trackingMode: .mockRandom()
+        )
+
         feature.flush()
 
         // Then

@@ -105,6 +105,8 @@ public enum WebViewTracking {
             )
         )
 
+        // Prevent fatal error: `Attempt to add script message handler with name 'DatadogEventBridge' when one already exists.`
+        controller.removeScriptMessageHandler(forName: bridgeName)
         controller.add(messageHandler, name: bridgeName)
 
         // WebKit installs message handlers with the given name format below

@@ -40,10 +40,7 @@ struct SessionReplaySwiftUIScenario: Scenario {
                 textAndInputPrivacyLevel: .maskSensitiveInputs,
                 imagePrivacyLevel: .maskNone,
                 touchPrivacyLevel: .show,
-                featureFlags: [
-                    .swiftui: true,
-                    .screenChangeScheduling: true
-                ]
+                featureFlags: [.swiftui: true]
             )
         )
 

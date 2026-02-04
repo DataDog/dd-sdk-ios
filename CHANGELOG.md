@@ -1,16 +1,25 @@
 # Unreleased
 
+- [IMPROVEMENT] Skip malformed Logs attributes individually instead of dropping the entire 
+  event, and log clear error messages. See [#2665][]
+
+# 3.6.1 / 02-02-2026
+
+- [FIX] Prevent crashes related to swapping the `__cxa_throw` function. See [#2661][]
+        
+# 3.6.0 / 28-01-2026
+
 - [FEATURE] Add `DatadogProfiling` module to profile app launches. See [#2654][]
 - [FEATURE] Automatic network instrumentation now tracks `URLSession` requests without requiring delegate registration. See [#2620][]
 - [FEATURE] Deprecate `URLSessionInstrumentation.enable(with:in:)` API in favor of `URLSessionInstrumentation.enableDurationBreakdown(with:in:)`. See [#2634][]
 - [IMPROVEMENT] Add `DDLogEventUserInfo.anonymousId` property in ObjC API. See [#2640][]
 - [FEATURE] Support manually keeping or dropping a trace. See [#2639][]
 
-# 3.5.1 / 23-01-2025
+# 3.5.1 / 23-01-2026
 
 - [FIX] Fix crash in App Hangs backtrace generation. See [#2647][]
 
-# 3.5.0 / 12-01-2025
+# 3.5.0 / 12-01-2026
 
 - [FEATURE] Report time to initial display (TTID). See [#2517][] [#2464][] 
 - [FEATURE] Add public API to report time to full display (TTFD). See [#2522][]
@@ -1035,6 +1044,9 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2654]: https://github.com/DataDog/dd-sdk-ios/pull/2654 
 [#2620]: https://github.com/DataDog/dd-sdk-ios/pull/2620
 [#2634]: https://github.com/DataDog/dd-sdk-ios/pull/2634
+[#2654]: https://github.com/DataDog/dd-sdk-ios/pull/2654
+[#2665]: https://github.com/DataDog/dd-sdk-ios/pull/2665
+[#2661]: https://github.com/DataDog/dd-sdk-ios/pull/2661
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

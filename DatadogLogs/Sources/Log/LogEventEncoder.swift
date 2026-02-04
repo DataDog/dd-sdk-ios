@@ -311,32 +311,53 @@ internal struct LogEventEncoder {
         }
 
         // Encode attributes...
+        // Individual attribute encoding failures are caught and logged, allowing the event to be sent
+        // with all successfully encoded attributes. This prevents a single malformed attribute from
+        // causing the entire event to be dropped.
         var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
 
         // 1. user info attributes
-        try log.userInfo.extraInfo.forEach {
-            let key = DynamicCodingKey("usr.\($0)")
-            try attributesContainer.encode(AnyEncodable($1), forKey: key)
+        log.userInfo.extraInfo.forEach { name, value in
+            let key = DynamicCodingKey("usr.\(name)")
+            attributesContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: key,
+                attributeName: name,
+                context: .userInfo
+            )
         }
 
         // 2. account info attributes
-        try log.accountInfo?.extraInfo.forEach {
-            let key = DynamicCodingKey("account.\($0)")
-            try attributesContainer.encode(AnyEncodable($1), forKey: key)
+        log.accountInfo?.extraInfo.forEach { name, value in
+            let key = DynamicCodingKey("account.\(name)")
+            attributesContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: key,
+                attributeName: name,
+                context: .accountInfo
+            )
         }
 
         // 3. user attributes
-        let encodableUserAttributes = Dictionary(
-            uniqueKeysWithValues: log.attributes.userAttributes.map { name, value in (name, AnyEncodable(value)) }
-        )
-        try encodableUserAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
+        log.attributes.userAttributes.forEach { name, value in
+            attributesContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .custom
+            )
+        }
 
         // 4. internal attributes
         if let internalAttributes = log.attributes.internalAttributes {
-            let encodableInternalAttributes = Dictionary(
-                uniqueKeysWithValues: internalAttributes.map { name, value in (name, AnyEncodable(value)) }
-            )
-            try encodableInternalAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
+            internalAttributes.forEach { name, value in
+                attributesContainer.encodeAttribute(
+                    AnyEncodable(value),
+                    forKey: DynamicCodingKey(name),
+                    attributeName: name,
+                    context: .internal
+                )
+            }
         }
 
         // Encode tags
