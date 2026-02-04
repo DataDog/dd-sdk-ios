@@ -41,6 +41,12 @@ public final class FlagsClient {
     /// Use this constant when you need to reference the default client by name.
     public static let defaultName = "default"
 
+    private enum EvaluationError {
+        static let providerNotReady = "PROVIDER_NOT_READY"
+        static let flagNotFound = "FLAG_NOT_FOUND"
+        static let typeMismatch = "TYPE_MISMATCH"
+    }
+
     private let repository: any FlagsRepositoryProtocol
     private let exposureLogger: any ExposureLogging
     private let evaluationLogger: any EvaluationLogging
@@ -213,7 +219,7 @@ extension FlagsClient: FlagsClientProtocol {
                 for: key,
                 assignment: defaultAssignment,
                 evaluationContext: .empty,
-                flagError: "PROVIDER_NOT_READY"
+                flagError: EvaluationError.providerNotReady
             )
             return FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
         }
@@ -223,7 +229,7 @@ extension FlagsClient: FlagsClientProtocol {
                 for: key,
                 assignment: defaultAssignment,
                 evaluationContext: context,
-                flagError: "FLAG_NOT_FOUND"
+                flagError: EvaluationError.flagNotFound
             )
             return FlagDetails(key: key, value: defaultValue, error: .flagNotFound)
         }
@@ -233,7 +239,7 @@ extension FlagsClient: FlagsClientProtocol {
                 for: key,
                 assignment: flagAssignment,
                 evaluationContext: context,
-                flagError: "TYPE_MISMATCH"
+                flagError: EvaluationError.typeMismatch
             )
             return FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
         }
