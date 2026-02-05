@@ -10,6 +10,7 @@ import QuartzCore
 
 // swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.URLSessionInstrumentation
+@_exported import enum DatadogInternal.TracingHeaderType
 @_exported import enum DatadogInternal.TraceContextInjection
 @_exported import struct DatadogInternal.RUMViewEvent
 @_exported import struct DatadogInternal.RUMResourceEvent
