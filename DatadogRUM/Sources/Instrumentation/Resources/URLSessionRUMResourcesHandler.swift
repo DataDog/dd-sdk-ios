@@ -77,14 +77,6 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
     // MARK: - DatadogURLSessionHandler
 
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
-        // Detect GraphQL requests by checking for GraphQL headers
-        let hasGraphQLHeaders = request.value(forHTTPHeaderField: GraphQLHeaders.operationName) != nil ||
-                                request.value(forHTTPHeaderField: GraphQLHeaders.operationType) != nil ||
-                                request.value(forHTTPHeaderField: GraphQLHeaders.variables) != nil ||
-                                request.value(forHTTPHeaderField: GraphQLHeaders.payload) != nil
-
-        let capturedState: URLSessionHandlerCapturedState? = hasGraphQLHeaders ? GraphQLRequestDetectedState() : nil
-
         let (modifiedRequest, traceContext, _) = distributedTracing?.modify(
             request: request,
             headerTypes: headerTypes,
@@ -92,6 +84,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             userId: networkContext?.userConfigurationContext?.id,
             accountId: networkContext?.accountConfigurationContext?.id
         ) ?? (request, nil, nil)
+
+        // Note: DistributedTracing.modify() currently returns nil for captured state.
+        // If this changes, we'll need to merge captured states instead of replacing.
+        let capturedState: URLSessionHandlerCapturedState? = modifiedRequest.hasGraphQLHeaders ? GraphQLRequestDetectedState() : nil
 
         return (modifiedRequest, traceContext, capturedState)
     }
@@ -102,7 +98,6 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
         // Check if GraphQL was detected in the captured states
         if capturedStates.contains(where: { $0 is GraphQLRequestDetectedState }) {
-            // Track GraphQL request usage (sampled at 15% by default)
             telemetry.send(telemetry: .usage(.init(
                 event: .addGraphQLRequest,
                 sampleRate: UsageTelemetry.defaultSampleRate
@@ -349,5 +344,14 @@ private extension HTTPURLResponse {
         }
         let message = "\(statusCode) " + HTTPURLResponse.localizedString(forStatusCode: statusCode)
         return NSError(domain: "HTTPURLResponse", code: statusCode, userInfo: [NSLocalizedDescriptionKey: message])
+    }
+}
+
+private extension URLRequest {
+    var hasGraphQLHeaders: Bool {
+        value(forHTTPHeaderField: GraphQLHeaders.operationName) != nil ||
+        value(forHTTPHeaderField: GraphQLHeaders.operationType) != nil ||
+        value(forHTTPHeaderField: GraphQLHeaders.variables) != nil ||
+        value(forHTTPHeaderField: GraphQLHeaders.payload) != nil
     }
 }
