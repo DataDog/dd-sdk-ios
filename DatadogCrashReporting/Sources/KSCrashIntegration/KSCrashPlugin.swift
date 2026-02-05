@@ -111,6 +111,10 @@ extension KSCrashConfiguration {
         config.monitors = [.signal, .cppException, .nsException, .system]
         config.reportStoreConfiguration.maxReportCount = 1
         config.reportStoreConfiguration.reportCleanupPolicy = .never
+        // Disable swapping the `__cxa_throw` function as it can cause process termination
+        // in some setups when C++ exceptions are thrown.
+        // See https://github.com/DataDog/dd-sdk-ios/issues/2659
+        config.enableSwapCxaThrow = false
         return config
     }
 }
