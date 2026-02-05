@@ -48,7 +48,7 @@
 - (void)testWorkflow {
     XCTestExpectation *expectation = [self expectationWithDescription:@"task completed"];
     DDURLSessionInstrumentationConfiguration *config = [[DDURLSessionInstrumentationConfiguration alloc] initWithDelegateClass:[MockDelegate class]];
-    [DDURLSessionInstrumentation enableWithConfiguration:config];
+    [DDURLSessionInstrumentation enableDurationBreakdownWith:config];
 
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
                                                           delegate:[MockDelegate new] delegateQueue:nil];

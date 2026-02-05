@@ -37,7 +37,7 @@ internal class StopCoreScenario: TestScenario {
             )
         )
 
-        URLSessionInstrumentation.enable(with: .init(delegateClass: CustomURLSessionDelegate.self))
+        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: CustomURLSessionDelegate.self))
     }
 }
 

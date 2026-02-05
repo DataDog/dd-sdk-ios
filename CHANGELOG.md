@@ -10,6 +10,8 @@
 # 3.6.0 / 28-01-2026
 
 - [FEATURE] Add `DatadogProfiling` module to profile app launches. See [#2654][]
+- [FEATURE] Automatic network instrumentation now tracks `URLSession` requests without requiring delegate registration. See [#2620][]
+- [FEATURE] Deprecate `URLSessionInstrumentation.enable(with:in:)` API in favor of `URLSessionInstrumentation.enableDurationBreakdown(with:in:)`. See [#2634][]
 - [IMPROVEMENT] Add `DDLogEventUserInfo.anonymousId` property in ObjC API. See [#2640][]
 - [FEATURE] Support manually keeping or dropping a trace. See [#2639][]
 
@@ -1038,7 +1040,9 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2633]: https://github.com/DataDog/dd-sdk-ios/pull/2633
 [#2647]: https://github.com/DataDog/dd-sdk-ios/pull/2647
 [#2640]: https://github.com/DataDog/dd-sdk-ios/pull/2640
-[#2639]: https://github.com/DataDog/dd-sdk-ios/pull/2639
+[#2639]: https://github.com/DataDog/dd-sdk-ios/pull/2639 
+[#2620]: https://github.com/DataDog/dd-sdk-ios/pull/2620
+[#2634]: https://github.com/DataDog/dd-sdk-ios/pull/2634
 [#2654]: https://github.com/DataDog/dd-sdk-ios/pull/2654
 [#2665]: https://github.com/DataDog/dd-sdk-ios/pull/2665
 [#2661]: https://github.com/DataDog/dd-sdk-ios/pull/2661

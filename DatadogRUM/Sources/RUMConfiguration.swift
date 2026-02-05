@@ -120,11 +120,10 @@ extension RUM {
 
         /// The configuration for automatic RUM resources tracking.
         ///
-        /// RUM resources tracking requires enabling `URLSessionInstrumentation`. See
-        /// ``URLSessionInstrumentation.enable(with:)`.
+        /// For capturing additional detailed timing breakdowns (DNS, SSL, TTFB, etc.), see
+        /// `URLSessionInstrumentation.enableDurationBreakdown(with:in:)`.
         ///
-        /// Note: Automatic RUM resources tracking involves swizzling the `URLSession`, `URLSessionTask` and
-        /// `URLSessionDataDelegate` methods.
+        /// Note: Automatic RUM resources tracking involves swizzling `URLSession` and `URLSessionTask` methods.
         ///
         /// Default: `nil` - which means automatic RUM resource tracking is not enabled by default.
         public var urlSessionTracking: URLSessionTracking?
