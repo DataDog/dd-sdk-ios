@@ -40,7 +40,7 @@ struct TraceScenario: Scenario {
             .tracerProvider
             .get(instrumentationName: "", instrumentationVersion: nil)
 
-        URLSessionInstrumentation.enable(
+        URLSessionInstrumentation.enableDurationBreakdown(
             with: .init(
                 delegateClass: DistributedTraceDelegate.self
             )

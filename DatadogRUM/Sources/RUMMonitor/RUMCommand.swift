@@ -555,7 +555,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     let isNetworkError: Bool
     /// Error stacktrace.
     let stack: String?
-    /// HTTP status code of the Ressource error.
+    /// HTTP status code of the Resource error.
     let httpStatusCode: Int?
     let missedEventType: SessionEndedMetric.MissedEventType? = .error
 

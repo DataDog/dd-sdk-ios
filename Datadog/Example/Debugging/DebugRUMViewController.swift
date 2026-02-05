@@ -138,7 +138,7 @@ class DebugRUMViewController: UIViewController {
 
     private lazy var instrumentedSession: URLSession = {
         class InstrumentedDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate {}
-        URLSessionInstrumentation.enable(with: .init(delegateClass: InstrumentedDelegate.self))
+        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: InstrumentedDelegate.self))
         return URLSession(configuration: .ephemeral, delegate: InstrumentedDelegate(), delegateQueue: .main)
     }()
 

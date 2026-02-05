@@ -1,7 +1,10 @@
 # Unreleased
 
 - [FEATURE] Add evaluation logging to `DatadogFlags` module. See [#2646][]
+- [FEATURE] Automatic network instrumentation now tracks `URLSession` requests without requiring delegate registration. See [#2620][]
+- [FEATURE] Deprecate `URLSessionInstrumentation.enable(with:in:)` API in favor of `URLSessionInstrumentation.enableDurationBreakdown(with:in:)`. See [#2634][]
 - [IMPROVEMENT] Skip malformed Logs attributes individually instead of dropping the entire event, and log clear error messages. See [#2665][]
+- [IMPROVEMENT] Expose public entities from `DatadogInternal` to prevent `DatadogInternal` imports in customer code. See [#2666][]
 
 # 3.6.1 / 02-02-2026
 
@@ -1034,15 +1037,18 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2599]: https://github.com/DataDog/dd-sdk-ios/pull/2599
 [#2612]: https://github.com/DataDog/dd-sdk-ios/pull/2612
 [#2614]: https://github.com/DataDog/dd-sdk-ios/pull/2614
+[#2620]: https://github.com/DataDog/dd-sdk-ios/pull/2620
 [#2631]: https://github.com/DataDog/dd-sdk-ios/pull/2631
 [#2633]: https://github.com/DataDog/dd-sdk-ios/pull/2633
-[#2647]: https://github.com/DataDog/dd-sdk-ios/pull/2647
+[#2634]: https://github.com/DataDog/dd-sdk-ios/pull/2634
+[#2639]: https://github.com/DataDog/dd-sdk-ios/pull/2639
 [#2640]: https://github.com/DataDog/dd-sdk-ios/pull/2640
 [#2646]: https://github.com/DataDog/dd-sdk-ios/pull/2646
-[#2639]: https://github.com/DataDog/dd-sdk-ios/pull/2639
+[#2647]: https://github.com/DataDog/dd-sdk-ios/pull/2647
 [#2654]: https://github.com/DataDog/dd-sdk-ios/pull/2654
-[#2665]: https://github.com/DataDog/dd-sdk-ios/pull/2665
 [#2661]: https://github.com/DataDog/dd-sdk-ios/pull/2661
+[#2665]: https://github.com/DataDog/dd-sdk-ios/pull/2665
+[#2665]: https://github.com/DataDog/dd-sdk-ios/pull/2666
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

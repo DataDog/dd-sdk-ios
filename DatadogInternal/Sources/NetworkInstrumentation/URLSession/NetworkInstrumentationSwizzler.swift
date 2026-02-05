@@ -12,6 +12,7 @@ internal final class NetworkInstrumentationSwizzler {
     let urlSessionTaskSwizzler: URLSessionTaskSwizzler
     let urlSessionTaskDelegateSwizzler: URLSessionTaskDelegateSwizzler
     let urlSessionDataDelegateSwizzler: URLSessionDataDelegateSwizzler
+    let urlSessionTaskStateSwizzler: URLSessionTaskStateSwizzler
 
     init() {
         let lock = NSRecursiveLock()
@@ -19,6 +20,7 @@ internal final class NetworkInstrumentationSwizzler {
         urlSessionTaskSwizzler = URLSessionTaskSwizzler(lock: lock)
         urlSessionTaskDelegateSwizzler = URLSessionTaskDelegateSwizzler(lock: lock)
         urlSessionDataDelegateSwizzler = URLSessionDataDelegateSwizzler(lock: lock)
+        urlSessionTaskStateSwizzler = URLSessionTaskStateSwizzler(lock: lock)
     }
 
     /// Swizzles `URLSession.dataTask(with:completionHandler:)` methods (with `URL` and `URLRequest`).
@@ -39,7 +41,7 @@ internal final class NetworkInstrumentationSwizzler {
         try urlSessionTaskSwizzler.swizzle(interceptResume: interceptResume)
     }
 
-    /// Swizzles  methods:
+    /// Swizzles methods:
     /// - `URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:)`
     /// - `URLSessionTaskDelegate.urlSession(_:task:didCompleteWithError:)`
     func swizzle(
@@ -54,8 +56,7 @@ internal final class NetworkInstrumentationSwizzler {
         )
     }
 
-    /// Swizzles  methods:
-    /// - `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)`
+    /// Swizzles `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)` method.
     func swizzle(
         delegateClass: URLSessionDataDelegate.Type,
         interceptDidReceive: @escaping (URLSession, URLSessionDataTask, Data) -> Void
@@ -66,11 +67,19 @@ internal final class NetworkInstrumentationSwizzler {
         )
     }
 
+    /// Swizzles `URLSessionTask.setState:` method.
+    func swizzle(
+        interceptSetState: @escaping (URLSessionTask, Int) -> Void
+    ) throws {
+        try urlSessionTaskStateSwizzler.swizzle(interceptSetState: interceptSetState)
+    }
+
     /// Unswizzles all.
     func unswizzle() {
         urlSessionSwizzler.unswizzle()
         urlSessionTaskSwizzler.unswizzle()
         urlSessionTaskDelegateSwizzler.unswizzle()
         urlSessionDataDelegateSwizzler.unswizzle()
+        urlSessionTaskStateSwizzler.unswizzle()
     }
 }

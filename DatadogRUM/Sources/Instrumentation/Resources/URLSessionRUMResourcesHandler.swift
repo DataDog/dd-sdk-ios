@@ -36,7 +36,7 @@ internal struct DistributedTracing {
 internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RUMCommandPublisher {
     /// The date provider
     let dateProvider: DateProvider
-    /// DistributedTracing
+    /// Distributed Tracing
     let distributedTracing: DistributedTracing?
     /// Attributes-providing callback.
     /// It is configured by the user and should be used to associate additional RUM attributes with intercepted RUM Resource.
@@ -155,7 +155,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
                     attributes: combinedAttributes,
                     kind: RUMResourceType(response: httpResponse),
                     httpStatusCode: httpResponse.statusCode,
-                    size: interception.metrics?.responseSize
+                    size: interception.mostAccurateResponseSize
                 )
             )
         }
