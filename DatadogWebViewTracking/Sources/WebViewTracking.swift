@@ -7,8 +7,8 @@
 import Foundation
 import DatadogInternal
 
-#if os(tvOS)
-#warning("Datadog WebView Tracking does not support tvOS")
+#if !canImport(WebKit)
+#warning("Datadog WebView Tracking is not supported on this platform.")
 #else
 import WebKit
 #endif
@@ -24,7 +24,7 @@ import WebKit
 /// - Scope the root cause of latency to web pages or native components in mobile applications
 /// - Support users that have difficulty loading web pages on mobile devices
 public enum WebViewTracking {
-#if !os(tvOS)
+#if canImport(WebKit)
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session.
     /// 
     /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified
