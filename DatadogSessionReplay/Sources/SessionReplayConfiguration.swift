@@ -107,7 +107,8 @@ extension SessionReplay.Configuration {
     public enum FeatureFlag: String {
         /// SwiftUI Recording
         case swiftui
-        /// Capture only when the screen changes
+
+        @available(*, deprecated, message: "Screen change scheduling is now the default and always enabled. This flag has no effect.")
         case screenChangeScheduling
     }
 }
@@ -117,7 +118,6 @@ extension SessionReplay.Configuration.FeatureFlags {
     public static var defaults: Self {
         [
             .swiftui: false,
-            .screenChangeScheduling: false,
         ]
     }
 
