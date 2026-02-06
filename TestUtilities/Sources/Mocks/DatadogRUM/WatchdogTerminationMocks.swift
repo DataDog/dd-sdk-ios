@@ -90,6 +90,7 @@ public final class WatchdogTerminationReporterMock: WatchdogTerminationReporting
     }
 }
 
+#if !os(watchOS)
 extension WatchdogTerminationReporter: RandomMockable {
     public static func mockRandom() -> Self {
         .init(
@@ -99,6 +100,7 @@ extension WatchdogTerminationReporter: RandomMockable {
         )
     }
 }
+#endif
 
 extension WatchdogTerminationChecker: RandomMockable {
     public static func mockRandom() -> WatchdogTerminationChecker {
@@ -131,6 +133,7 @@ extension RUMDataStore: RandomMockable {
     }
 }
 
+#if !os(watchOS)
 extension WatchdogTerminationMonitor: RandomMockable {
     public static func mockRandom() -> WatchdogTerminationMonitor {
         return .init(
@@ -142,6 +145,7 @@ extension WatchdogTerminationMonitor: RandomMockable {
         )
     }
 }
+#endif
 
 extension LaunchReport: RandomMockable {
     public static func mockRandom() -> DatadogInternal.LaunchReport {

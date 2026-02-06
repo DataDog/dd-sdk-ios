@@ -4,8 +4,34 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if canImport(UIKit)
+
 import UIKit
+
+#if os(watchOS)
+
+import WatchKit
+
+public class UIDeviceMock: WKInterfaceDevice {
+    override public var model: String { _model }
+    override public var systemName: String { _systemName }
+    override public var systemVersion: String { _systemVersion }
+
+    private var _model: String
+    private var _systemName: String
+    private var _systemVersion: String
+
+    public init(
+        model: String = .mockAny(),
+        systemName: String = .mockAny(),
+        systemVersion: String = .mockAny()
+    ) {
+        self._model = model
+        self._systemName = systemName
+        self._systemVersion = systemVersion
+    }
+}
+
+#else
 
 public class UIDeviceMock: UIDevice {
     override public var model: String { _model }
@@ -85,8 +111,6 @@ extension UIDevice.BatteryState: AnyMockable {
         return .full
     }
 }
-#endif
-
 #endif
 
 extension UIEvent {
@@ -319,3 +343,5 @@ extension UIImage: RandomMockable {
         return UIImage(cgImage: cgImage) as! Self
     }
 }
+
+#endif
