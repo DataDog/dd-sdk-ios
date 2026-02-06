@@ -47,7 +47,7 @@ internal struct SpanEventBuilder {
         tags = baggageItems
 
         // Add regular tags (prefer regular tags over baggate items)
-        let regularTags = castValuesToString(tagsReducer.reducedSpanTags)
+        let regularTags = castValuesToString(tagsReducer.reducedSpanTags, context: .custom)
         tags.merge(regularTags) { _, regularTag in regularTag }
 
         if bundleWithRUM {
@@ -65,7 +65,7 @@ internal struct SpanEventBuilder {
             id: context.userInfo?.id,
             name: context.userInfo?.name,
             email: context.userInfo?.email,
-            extraInfo: context.userInfo.map { castValuesToString($0.extraInfo) } ?? [:]
+            extraInfo: context.userInfo.map { castValuesToString($0.extraInfo, context: .userInfo) } ?? [:]
         )
 
         // Transform account info to `SpanEvent.AccountInfo` representation
@@ -74,7 +74,7 @@ internal struct SpanEventBuilder {
             spanEventAccountInfo = SpanEvent.AccountInfo(
                 id: accountInfo.id,
                 name: accountInfo.name,
-                extraInfo: castValuesToString(accountInfo.extraInfo)
+                extraInfo: castValuesToString(accountInfo.extraInfo, context: .accountInfo)
             )
         } else {
             spanEventAccountInfo = nil
@@ -120,7 +120,7 @@ internal struct SpanEventBuilder {
     /// * it will convert `1` integer value to `"1"` JSON string value
     /// * it will convert `true` boolean value to `"true"` JSON string value
     /// * it will convert `Person(name: "foo")` encodable struct to `"{\"name\": \"foo\"}"` JSON string value
-    private func castValuesToString(_ dictionary: [String: Encodable]) -> [String: String] {
+    private func castValuesToString(_ dictionary: [String: Encodable], context: AttributeEncodingContext = .custom) -> [String: String] {
         var casted: [String: String] = [:]
 
         dictionary.forEach { key, value in
@@ -171,9 +171,7 @@ internal struct SpanEventBuilder {
                     }
                 } catch let error {
                     DD.logger.error(
-                        """
-                        Failed to convert span `Encodable` attribute to `String`. The value of `\(key)` will not be sent.
-                        """,
+                        "Failed to encode \(context.errorMessagePrefix)attribute '\(key)' to `String`. This attribute will be dropped from the span.",
                         error: error
                     )
                 }

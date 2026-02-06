@@ -544,6 +544,7 @@ class SpanEventBuilderTests: XCTestCase {
         let builder: SpanEventBuilder = .mockAny()
 
         // When
+        let errorMessage = "Value cannot be encoded."
         let span = builder.createSpanEvent(
             context: .mockAny(),
             traceID: .mockAny(),
@@ -556,7 +557,7 @@ class SpanEventBuilderTests: XCTestCase {
             samplingPriority: .mockAny(),
             samplingDecisionMaker: .mockAny(),
             tags: [
-                "failing-tag": FailingEncodableMock(errorMessage: "Value cannot be encoded.")
+                "failing-tag": FailingEncodableMock(errorMessage: errorMessage)
             ],
             baggageItems: [:],
             logFields: []
@@ -567,10 +568,10 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertEqual(
             dd.logger.errorLog?.message,
             """
-            Failed to convert span `Encodable` attribute to `String`. The value of `failing-tag` will not be sent.
+            Failed to encode attribute \'failing-tag\' to `String`. This attribute will be dropped from the span.
             """
         )
-        XCTAssertEqual(dd.logger.errorLog?.error?.message, "Value cannot be encoded.")
+        XCTAssertEqual(dd.logger.errorLog?.error?.message, errorMessage)
     }
 
     func testBuildingSpanWhenSpanLinkIsPresentInTags() {
