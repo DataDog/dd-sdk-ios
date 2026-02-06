@@ -12,7 +12,7 @@ internal struct FlagsEvaluationFeature: DatadogRemoteFeature {
 
     let requestBuilder: any FeatureRequestBuilder
     let messageReceiver: any FeatureMessageReceiver
-    let performanceOverride: PerformancePresetOverride
+    let performanceOverride: PerformancePresetOverride?
 
     init(
         customIntakeURL: URL?,
