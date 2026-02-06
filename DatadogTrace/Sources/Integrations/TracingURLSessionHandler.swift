@@ -184,7 +184,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         // Check if GraphQL was detected in the captured state
-        if capturedState?.hasGraphQLHeaders == true {
+        // Only send telemetry if the request is not already tracked by RUM (to avoid duplicates)
+        if interception.origin != "rum",
+           let capturedState = capturedState,
+           capturedState.hasGraphQLHeaders {
             telemetry.send(telemetry: .usage(.init(
                 event: .addGraphQLRequest,
                 sampleRate: UsageTelemetry.defaultSampleRate
@@ -364,14 +367,5 @@ private extension HTTPURLResponse {
         }
         let message = "\(statusCode) " + HTTPURLResponse.localizedString(forStatusCode: statusCode)
         return NSError(domain: "HTTPURLResponse", code: statusCode, userInfo: [NSLocalizedDescriptionKey: message])
-    }
-}
-
-private extension URLRequest {
-    var hasGraphQLHeaders: Bool {
-        value(forHTTPHeaderField: GraphQLHeaders.operationName) != nil ||
-        value(forHTTPHeaderField: GraphQLHeaders.operationType) != nil ||
-        value(forHTTPHeaderField: GraphQLHeaders.variables) != nil ||
-        value(forHTTPHeaderField: GraphQLHeaders.payload) != nil
     }
 }

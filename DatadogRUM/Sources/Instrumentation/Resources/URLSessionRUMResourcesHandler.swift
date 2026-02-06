@@ -34,12 +34,15 @@ internal struct DistributedTracing {
 }
 
 internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RUMCommandPublisher {
-    /// Captured state indicating that a GraphQL request was detected
-    struct GraphQLRequestDetectedState: URLSessionHandlerCapturedState { }
+    /// Captured state for RUM URL session handler
+    struct RUMURLSessionHandlerCapturedState: URLSessionHandlerCapturedState {
+        /// Whether GraphQL headers were detected in the request
+        let hasGraphQLHeaders: Bool
+    }
 
     /// The date provider
     let dateProvider: DateProvider
-    /// DistributedTracing
+    /// Distributed Tracing
     let distributedTracing: DistributedTracing?
     /// Attributes-providing callback.
     /// It is configured by the user and should be used to associate additional RUM attributes with intercepted RUM Resource.
@@ -87,7 +90,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
         // Note: DistributedTracing.modify() currently returns nil for captured state.
         // If this changes, we'll need to merge captured states instead of replacing.
-        let capturedState: URLSessionHandlerCapturedState? = modifiedRequest.hasGraphQLHeaders ? GraphQLRequestDetectedState() : nil
+        let capturedState: URLSessionHandlerCapturedState? = modifiedRequest.hasGraphQLHeaders ? RUMURLSessionHandlerCapturedState(hasGraphQLHeaders: true) : nil
 
         return (modifiedRequest, traceContext, capturedState)
     }
@@ -97,7 +100,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         interception.register(origin: "rum")
 
         // Check if GraphQL was detected in the captured states
-        if capturedStates.contains(where: { $0 is GraphQLRequestDetectedState }) {
+        if let capturedState = capturedStates.compactMap({ $0 as? RUMURLSessionHandlerCapturedState }).first,
+           capturedState.hasGraphQLHeaders {
             telemetry.send(telemetry: .usage(.init(
                 event: .addGraphQLRequest,
                 sampleRate: UsageTelemetry.defaultSampleRate
@@ -344,14 +348,5 @@ private extension HTTPURLResponse {
         }
         let message = "\(statusCode) " + HTTPURLResponse.localizedString(forStatusCode: statusCode)
         return NSError(domain: "HTTPURLResponse", code: statusCode, userInfo: [NSLocalizedDescriptionKey: message])
-    }
-}
-
-private extension URLRequest {
-    var hasGraphQLHeaders: Bool {
-        value(forHTTPHeaderField: GraphQLHeaders.operationName) != nil ||
-        value(forHTTPHeaderField: GraphQLHeaders.operationType) != nil ||
-        value(forHTTPHeaderField: GraphQLHeaders.variables) != nil ||
-        value(forHTTPHeaderField: GraphQLHeaders.payload) != nil
     }
 }
