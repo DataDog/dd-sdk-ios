@@ -2,6 +2,7 @@
 #include "mach_sampling_profiler.h"
 
 #ifdef __APPLE__
+#if !TARGET_OS_WATCH
 
 extern "C" {
 
@@ -57,4 +58,5 @@ int profiler_is_running(const profiler_t* profiler) {
 
 } // extern "C"
 
+#endif // !TARGET_OS_WATCH
 #endif // __APPLE__

@@ -7,21 +7,17 @@
 #ifndef DD_PROFILER_PROFILER_H_
 #define DD_PROFILER_PROFILER_H_
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
+#if !TARGET_OS_WATCH
+
 #include <stdint.h>
 #include <sys/types.h>
 #include <mach/mach.h>
 #include <pthread.h>
 #include <pthread/qos.h>
-
-#ifdef __cplusplus
-
-namespace dd::profiler {
-// Forward declaration
-    class mach_sampling_profiler;
-}
-
-extern "C" {
-#endif
 
 /**
  * Structure representing a binary image loaded in memory.
@@ -108,15 +104,6 @@ static const sampling_config_t SAMPLING_CONFIG_DEFAULT = {
 };
 
 /**
- * Opaque handle to a profiler instance
- */
-#ifdef __cplusplus
-typedef dd::profiler::mach_sampling_profiler profiler_t;
-#else
-typedef struct profiler profiler_t;
-#endif
-
-/**
  * Callback type for receiving stack traces.
  * This is called whenever a batch of stack traces is captured.
  *
@@ -125,6 +112,25 @@ typedef struct profiler profiler_t;
  * @param ctx Context pointer passed during profiler creation
  */
 typedef void (*stack_trace_callback_t)(const stack_trace_t* traces, size_t count, void* ctx);
+
+#ifdef __cplusplus
+
+namespace dd::profiler {
+// Forward declaration
+    class mach_sampling_profiler;
+}
+
+extern "C" {
+#endif
+
+/**
+ * Opaque handle to a profiler instance
+ */
+#ifdef __cplusplus
+typedef dd::profiler::mach_sampling_profiler profiler_t;
+#else
+typedef struct profiler profiler_t;
+#endif
 
 /**
  * Sets the main thread pthread identifier.
@@ -183,5 +189,7 @@ int profiler_is_running(const profiler_t* profiler);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // !TARGET_OS_WATCH
 
 #endif // DD_PROFILER_PROFILER_H_

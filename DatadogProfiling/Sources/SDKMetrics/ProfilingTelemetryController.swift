@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import Foundation
 import DatadogInternal
 
@@ -39,3 +41,5 @@ internal final class ProfilingTelemetryController {
         telemetry.metric(name: metric.metricName, attributes: metricAttributes, sampleRate: sampleRate)
     }
 }
+
+#endif // !os(watchOS)

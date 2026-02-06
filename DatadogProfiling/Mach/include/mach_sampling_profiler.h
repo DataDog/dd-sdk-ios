@@ -10,6 +10,8 @@
 #include "mach_profiler.h"
 
 #ifdef __APPLE__
+#include <TargetConditionals.h>
+#if !TARGET_OS_WATCH
 
 #include <atomic>
 #include <mutex>
@@ -126,5 +128,6 @@ private:
 
 } // namespace dd::profiler
 
+#endif // !TARGET_OS_WATCH
 #endif // __APPLE__
 #endif // DD_PROFILER_MACH_SAMPLING_PROFILER_H_ 
