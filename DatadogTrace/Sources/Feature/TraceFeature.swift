@@ -16,6 +16,9 @@ internal final class TraceFeature: DatadogRemoteFeature {
     let tracer: DatadogTracer
     let contextReceiver: ContextMessageReceiver
 
+    /// Allows overriding certain performance presets if needed. Default is nil.
+    let performanceOverride: PerformancePresetOverride?
+
     init(
         in core: DatadogCoreProtocol,
         configuration: Trace.Configuration
@@ -46,6 +49,7 @@ internal final class TraceFeature: DatadogRemoteFeature {
                 telemetry: core.telemetry
             )
         )
+        self.performanceOverride = nil
 
         // Send configuration telemetry:
         core.telemetry.configuration(useTracing: true)

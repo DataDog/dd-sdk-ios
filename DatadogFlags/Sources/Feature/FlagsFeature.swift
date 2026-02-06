@@ -16,7 +16,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     let clientRegistry: FlagsClientRegistry
     let makeExposureLogger: (any FeatureScope) -> any ExposureLogging
     let makeRUMFlagEvaluationReporter: (any FeatureScope) -> any RUMFlagEvaluationReporting
-    let performanceOverride: PerformancePresetOverride
+    let performanceOverride: PerformancePresetOverride?
     let issueReporter: IssueReporter
 
     init(

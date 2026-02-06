@@ -14,6 +14,7 @@ private struct RemoteFeatureMock: DatadogRemoteFeature {
 
     var requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     var messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    var performanceOverride: DatadogInternal.PerformancePresetOverride?
 }
 
 private struct FeatureMock: DatadogFeature {

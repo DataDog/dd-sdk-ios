@@ -24,6 +24,9 @@ internal struct LogsFeature: DatadogRemoteFeature {
     /// Time provider.
     let dateProvider: DateProvider
 
+    /// Allows overriding certain performance presets if needed. Default is nil.
+    let performanceOverride: PerformancePresetOverride?
+
     init(
         logEventMapper: LogEventMapper?,
         dateProvider: DateProvider,
@@ -59,5 +62,6 @@ internal struct LogsFeature: DatadogRemoteFeature {
         self.dateProvider = dateProvider
         self.backtraceReporter = backtraceReporter
         self.attributes = SynchronizedAttributes(attributes: [:])
+        self.performanceOverride = nil
     }
 }
