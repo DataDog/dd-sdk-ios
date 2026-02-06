@@ -1307,10 +1307,13 @@ public enum Flags
         public var customFlagsHeaders: [String: String]?
         public var customExposureEndpoint: URL?
         public var trackExposures: Bool
+        public var customEvaluationEndpoint: URL?
+        public var trackEvaluations: Bool
+        public var evaluationFlushInterval: TimeInterval
         public var rumIntegrationEnabled: Bool
-        public init(gracefulModeEnabled: Bool = true,customFlagsEndpoint: URL? = nil,customFlagsHeaders: [String: String]? = nil,customExposureEndpoint: URL? = nil,trackExposures: Bool = true,rumIntegrationEnabled: Bool = true)
+        public init(gracefulModeEnabled: Bool = true,customFlagsEndpoint: URL? = nil,customFlagsHeaders: [String: String]? = nil,customExposureEndpoint: URL? = nil,trackExposures: Bool = true,customEvaluationEndpoint: URL? = nil,trackEvaluations: Bool = true,evaluationFlushInterval: TimeInterval = 10.0,rumIntegrationEnabled: Bool = true)
     public static func enable(with configuration: Flags.Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default)
-public enum AnyValue: Equatable
+public enum AnyValue: Equatable, Hashable
     case string(String)
     case bool(Bool)
     case int(Int)
@@ -1318,6 +1321,8 @@ public enum AnyValue: Equatable
     case dictionary([String: AnyValue])
     case array([AnyValue])
     case null
+[?] extension AnyValue
+    public func hash(into hasher: inout Hasher)
 [?] extension AnyValue: Codable
     public init(from decoder: Decoder) throws
     public func encode(to encoder: Encoder) throws

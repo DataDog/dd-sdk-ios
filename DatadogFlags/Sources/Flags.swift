@@ -70,6 +70,25 @@ public enum Flags {
         /// Default: `true`.
         public var trackExposures: Bool
 
+        /// Custom server url for sending Flags evaluation data.
+        ///
+        /// Default: `nil`.
+        public var customEvaluationEndpoint: URL?
+
+        /// Enables evaluation logging via the dedicated evaluations intake endpoint.
+        ///
+        /// When enabled, all flag evaluations are aggregated and sent to the evaluations endpoint for operational monitoring.
+        ///
+        /// Default: `true`.
+        public var trackEvaluations: Bool
+
+        /// The interval at which aggregated evaluation data is flushed to the server.
+        ///
+        /// Values are clamped to a minimum of 1 second and maximum of 60 seconds.
+        ///
+        /// Default: `10.0` seconds.
+        public var evaluationFlushInterval: TimeInterval
+
         /// Enables the RUM integration.
         ///
         /// When enabled, flag evaluation events are sent to RUM for correlation with user sessions.
@@ -85,6 +104,9 @@ public enum Flags {
         ///   - customFlagsHeaders: Additional HTTP headers for requests to `customFlagsEndpoint`. Default: `nil`.
         ///   - customExposureEndpoint: Custom server URL for sending exposure data. Default: `nil`.
         ///   - trackExposures: Enables exposure logging to the exposures intake endpoint. Default: `true`.
+        ///   - customEvaluationEndpoint: Custom server URL for sending evaluation data. Default: `nil`.
+        ///   - trackEvaluations: Enables evaluation logging to the evaluations intake endpoint. Default: `true`.
+        ///   - evaluationFlushInterval: The interval for flushing aggregated evaluation data. Default: `10.0` seconds.
         ///   - rumIntegrationEnabled: Enables the RUM integration for flag evaluations. Default: `true`.
         public init(
             gracefulModeEnabled: Bool = true,
@@ -92,6 +114,9 @@ public enum Flags {
             customFlagsHeaders: [String: String]? = nil,
             customExposureEndpoint: URL? = nil,
             trackExposures: Bool = true,
+            customEvaluationEndpoint: URL? = nil,
+            trackEvaluations: Bool = true,
+            evaluationFlushInterval: TimeInterval = 10.0,
             rumIntegrationEnabled: Bool = true
         ) {
             self.gracefulModeEnabled = gracefulModeEnabled
@@ -99,6 +124,9 @@ public enum Flags {
             self.customFlagsHeaders = customFlagsHeaders
             self.customExposureEndpoint = customExposureEndpoint
             self.trackExposures = trackExposures
+            self.customEvaluationEndpoint = customEvaluationEndpoint
+            self.trackEvaluations = trackEvaluations
+            self.evaluationFlushInterval = evaluationFlushInterval
             self.rumIntegrationEnabled = rumIntegrationEnabled
         }
     }
@@ -153,10 +181,19 @@ public enum Flags {
             )
         }
 
+        if configuration.trackEvaluations {
+            let evaluationFeature = FlagsEvaluationFeature(
+                customIntakeURL: configuration.customEvaluationEndpoint,
+                telemetry: core.telemetry
+            )
+            try core.register(feature: evaluationFeature)
+        }
+
         let featureScope = core.scope(for: FlagsFeature.self) // safe to obtain scope before feature registration; scope is lazily evaluated
         let feature = FlagsFeature(
             configuration: configuration,
-            featureScope: featureScope
+            featureScope: featureScope,
+            core: core
         )
         try core.register(feature: feature)
     }
