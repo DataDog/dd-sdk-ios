@@ -14,13 +14,13 @@ import Foundation
 ///   This includes the SDK-managed keys: "session.id", "user.id" and "account.id".
 /// - The formatted output is deterministic: keys are sorted lexicographically to stabilize header ordering
 ///   (useful for debugging).
-internal struct BaggageHeaderMerger {
+public struct BaggageHeaderMerger {
     /// Merges two baggage header values, with new values taking precedence over existing ones.
     /// - Parameters:
     ///   - previousHeader: The existing baggage header value
     ///   - newHeader: The new baggage header value to merge
     /// - Returns: A merged baggage header value
-    static func merge(previousHeader: String, with newHeader: String) -> String {
+    public static func merge(previousHeader: String, with newHeader: String) -> String {
         guard previousHeader != newHeader else {
             return previousHeader
         }
@@ -79,3 +79,4 @@ internal struct BaggageHeaderMerger {
         return (key: key, value: value)
     }
 }
+

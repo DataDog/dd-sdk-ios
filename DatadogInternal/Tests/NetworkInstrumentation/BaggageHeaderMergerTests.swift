@@ -5,8 +5,7 @@
  */
 
 import XCTest
-import TestUtilities
-@testable import DatadogRUM
+@testable import DatadogInternal
 
 class BaggageHeaderMergerTests: XCTestCase {
     // MARK: - Basic Functionality Tests
@@ -337,3 +336,5 @@ class BaggageHeaderMergerTests: XCTestCase {
         return dict
     }
 }
+
+
