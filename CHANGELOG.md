@@ -3,6 +3,7 @@
 - [FEATURE] Add evaluation logging to `DatadogFlags` module. See [#2646][]
 - [FEATURE] Automatic network instrumentation now tracks `URLSession` requests without requiring delegate registration. See [#2620][]
 - [FEATURE] Deprecate `URLSessionInstrumentation.enable(with:in:)` API in favor of `URLSessionInstrumentation.enableDurationBreakdown(with:in:)`. See [#2634][]
+- [FEATURE] Session Replay now captures only when the screen changes, reducing work while the app is idle.
 - [IMPROVEMENT] Skip malformed Logs attributes individually instead of dropping the entire event, and log clear error messages. See [#2665][]
 - [IMPROVEMENT] Expose public entities from `DatadogInternal` to prevent `DatadogInternal` imports in customer code. See [#2666][]
 

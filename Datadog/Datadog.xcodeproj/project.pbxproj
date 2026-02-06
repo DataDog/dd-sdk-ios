@@ -685,7 +685,6 @@
 		61054E9E2A6EE10B00AAA894 /* Queue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E582A6EE10A00AAA894 /* Queue.swift */; };
 		61054E9F2A6EE10B00AAA894 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E592A6EE10A00AAA894 /* Errors.swift */; };
 		61054EA02A6EE10B00AAA894 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E5A2A6EE10A00AAA894 /* Colors.swift */; };
-		61054EA12A6EE10B00AAA894 /* MainThreadScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E5C2A6EE10A00AAA894 /* MainThreadScheduler.swift */; };
 		61054EA22A6EE10B00AAA894 /* Scheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E5D2A6EE10A00AAA894 /* Scheduler.swift */; };
 		61054F952A6EE1BA00AAA894 /* SessionReplayConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F3D2A6EE1B900AAA894 /* SessionReplayConfigurationTests.swift */; };
 		61054F972A6EE1BA00AAA894 /* UIImage+SessionReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F402A6EE1B900AAA894 /* UIImage+SessionReplayTests.swift */; };
@@ -694,7 +693,6 @@
 		61054F9A2A6EE1BA00AAA894 /* CFType+SafetyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F432A6EE1B900AAA894 /* CFType+SafetyTests.swift */; };
 		61054F9B2A6EE1BA00AAA894 /* QueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F442A6EE1B900AAA894 /* QueueTests.swift */; };
 		61054F9C2A6EE1BA00AAA894 /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F452A6EE1B900AAA894 /* SwiftExtensionsTests.swift */; };
-		61054F9D2A6EE1BA00AAA894 /* MainThreadSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F472A6EE1B900AAA894 /* MainThreadSchedulerTests.swift */; };
 		61054F9E2A6EE1BA00AAA894 /* SessionReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F482A6EE1B900AAA894 /* SessionReplayTests.swift */; };
 		61054F9F2A6EE1BA00AAA894 /* RecordsWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F4A2A6EE1BA00AAA894 /* RecordsWriterTests.swift */; };
 		61054FA02A6EE1BA00AAA894 /* SRCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F4B2A6EE1BA00AAA894 /* SRCompressionTests.swift */; };
@@ -3095,7 +3093,6 @@
 		61054E582A6EE10A00AAA894 /* Queue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Queue.swift; sourceTree = "<group>"; };
 		61054E592A6EE10A00AAA894 /* Errors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
 		61054E5A2A6EE10A00AAA894 /* Colors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
-		61054E5C2A6EE10A00AAA894 /* MainThreadScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainThreadScheduler.swift; sourceTree = "<group>"; };
 		61054E5D2A6EE10A00AAA894 /* Scheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scheduler.swift; sourceTree = "<group>"; };
 		61054F3D2A6EE1B900AAA894 /* SessionReplayConfigurationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayConfigurationTests.swift; sourceTree = "<group>"; };
 		61054F402A6EE1B900AAA894 /* UIImage+SessionReplayTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+SessionReplayTests.swift"; sourceTree = "<group>"; };
@@ -3104,7 +3101,6 @@
 		61054F432A6EE1B900AAA894 /* CFType+SafetyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CFType+SafetyTests.swift"; sourceTree = "<group>"; };
 		61054F442A6EE1B900AAA894 /* QueueTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QueueTests.swift; sourceTree = "<group>"; };
 		61054F452A6EE1B900AAA894 /* SwiftExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensionsTests.swift; sourceTree = "<group>"; };
-		61054F472A6EE1B900AAA894 /* MainThreadSchedulerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainThreadSchedulerTests.swift; sourceTree = "<group>"; };
 		61054F482A6EE1B900AAA894 /* SessionReplayTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayTests.swift; sourceTree = "<group>"; };
 		61054F4A2A6EE1BA00AAA894 /* RecordsWriterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordsWriterTests.swift; sourceTree = "<group>"; };
 		61054F4B2A6EE1BA00AAA894 /* SRCompressionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRCompressionTests.swift; sourceTree = "<group>"; };
@@ -5197,7 +5193,6 @@
 			isa = PBXGroup;
 			children = (
 				5B7448432EFBBF00003E622C /* ScreenChangeScheduler.swift */,
-				61054E5C2A6EE10A00AAA894 /* MainThreadScheduler.swift */,
 				61054E5D2A6EE10A00AAA894 /* Scheduler.swift */,
 			);
 			path = Schedulers;
@@ -5222,7 +5217,6 @@
 			isa = PBXGroup;
 			children = (
 				5B7448452EFBC7D8003E622C /* ScreenChangeSchedulerTests.swift */,
-				61054F472A6EE1B900AAA894 /* MainThreadSchedulerTests.swift */,
 			);
 			path = Schedulers;
 			sourceTree = "<group>";
@@ -9987,7 +9981,6 @@
 				61054E6B2A6EE10A00AAA894 /* CFType+Safety.swift in Sources */,
 				61054E852A6EE10A00AAA894 /* UISegmentRecorder.swift in Sources */,
 				61054E982A6EE10A00AAA894 /* RecordsBuilder.swift in Sources */,
-				61054EA12A6EE10B00AAA894 /* MainThreadScheduler.swift in Sources */,
 				5B9CB9E52E41FD60005485E6 /* Drawing.swift in Sources */,
 				61054E7C2A6EE10A00AAA894 /* UINavigationBarRecorder.swift in Sources */,
 				5B7448442EFBBF07003E622C /* ScreenChangeScheduler.swift in Sources */,
@@ -10128,7 +10121,6 @@
 				61054F9C2A6EE1BA00AAA894 /* SwiftExtensionsTests.swift in Sources */,
 				61054FA72A6EE1BA00AAA894 /* NodesFlattenerTests.swift in Sources */,
 				5B74483E2EFB0C79003E622C /* TestTimeProvider.swift in Sources */,
-				61054F9D2A6EE1BA00AAA894 /* MainThreadSchedulerTests.swift in Sources */,
 				61054FAA2A6EE1BA00AAA894 /* UIView+SessionReplayTests.swift in Sources */,
 				61054FA52A6EE1BA00AAA894 /* RecordsBuilderTests.swift in Sources */,
 				61054FD02A6EE1BA00AAA894 /* SRContextPublisherTests.swift in Sources */,
