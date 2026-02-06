@@ -79,9 +79,9 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             sampleRate: newSpanElements.sampleRate,
             samplingPriority: newSpanElements.samplingPriority,
             samplingDecisionMaker: newSpanElements.samplingDecisionMaker,
-            rumSessionId: contextReceiver.context.rumContext?.sessionID,
-            userId: contextReceiver.context.userInfo?.id,
-            accountId: contextReceiver.context.accountInfo?.id
+            rumSessionId: networkContext?.rumContext?.sessionID ?? contextReceiver.context.rumContext?.sessionID,
+            userId: networkContext?.userConfigurationContext?.id ?? contextReceiver.context.userInfo?.id,
+            accountId: networkContext?.accountConfigurationContext?.id ?? contextReceiver.context.accountInfo?.id
         )
 
         var request = request
@@ -111,10 +111,21 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             writer.write(traceContext: injectedSpanContext)
 
             writer.traceHeaderFields.forEach { field, value in
-                // do not overwrite existing header
-                if request.value(forHTTPHeaderField: field) == nil {
+                if field.lowercased() == W3CHTTPHeaders.baggage.lowercased() {
+                    // Handle baggage header merging
+                    if let existingValue = request.value(forHTTPHeaderField: field) {
+                        let mergedValue = BaggageHeaderMerger.merge(previousHeader: existingValue, with: value)
+                        request.setValue(mergedValue, forHTTPHeaderField: field)
+                    } else {
+                        request.setValue(value, forHTTPHeaderField: field)
+                    }
                     hasSetAnyHeader = true
-                    request.setValue(value, forHTTPHeaderField: field)
+                } else {
+                    // do not overwrite existing header
+                    if request.value(forHTTPHeaderField: field) == nil {
+                        hasSetAnyHeader = true
+                        request.setValue(value, forHTTPHeaderField: field)
+                    }
                 }
             }
         }
