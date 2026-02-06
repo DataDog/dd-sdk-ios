@@ -45,6 +45,8 @@ internal final class VitalInfoSampler {
         get {
             #if swift(>=5.9) && os(visionOS)
             return 120.0 // Hardcoded to enable VisionOS compilation
+            #elseif os(watchOS)
+            return 60.0 // Default refresh rate for watchOS
             #else
             return Double(UIScreen.main.maximumFramesPerSecond)
             #endif

@@ -7,25 +7,11 @@
 import TestUtilities
 import XCTest
 import UIKit
+
 @testable import DatadogRUM
 
 class ViewIdentifierTests: XCTestCase {
     // MARK: - Comparing identifiables
-
-    func testGivenTwoUIViewControllers_whenComparingTheirRUMViewIdentity_itEqualsOnlyForTheSameInstance() {
-        // Given
-        let vc1 = createMockView(viewControllerClassName: .mockRandom(among: .alphanumerics))
-        let vc2 = createMockView(viewControllerClassName: .mockRandom(among: .alphanumerics))
-
-        // When
-        let identity1 = ViewIdentifier(vc1)
-        let identity2 = ViewIdentifier(vc2)
-
-        // Then
-        XCTAssertTrue(identity1 == ViewIdentifier(vc1))
-        XCTAssertTrue(identity2 == ViewIdentifier(vc2))
-        XCTAssertFalse(identity1 == identity2)
-    }
 
     func testGivenTwoStringKeys_whenComparingTheirRUMViewIdentity_itEqualsOnlyForTheSameInstance() {
         // Given
@@ -42,6 +28,22 @@ class ViewIdentifierTests: XCTestCase {
         XCTAssertFalse(identity1 == identity2)
     }
 
+    #if !os(watchOS)
+    func testGivenTwoUIViewControllers_whenComparingTheirRUMViewIdentity_itEqualsOnlyForTheSameInstance() {
+        // Given
+        let vc1 = createMockView(viewControllerClassName: .mockRandom(among: .alphanumerics))
+        let vc2 = createMockView(viewControllerClassName: .mockRandom(among: .alphanumerics))
+
+        // When
+        let identity1 = ViewIdentifier(vc1)
+        let identity2 = ViewIdentifier(vc2)
+
+        // Then
+        XCTAssertTrue(identity1 == ViewIdentifier(vc1))
+        XCTAssertTrue(identity2 == ViewIdentifier(vc2))
+        XCTAssertFalse(identity1 == identity2)
+    }
+
     func testGivenTwoRUMViewIdentitiesOfDifferentKind_whenComparing_theyDoNotEqual() {
         // Given
         let vc = createMockView(viewControllerClassName: .mockRandom(among: .alphanumerics))
@@ -54,4 +56,6 @@ class ViewIdentifierTests: XCTestCase {
         // Then
         XCTAssertFalse(identity1 == identity2)
     }
+    #endif
 }
+

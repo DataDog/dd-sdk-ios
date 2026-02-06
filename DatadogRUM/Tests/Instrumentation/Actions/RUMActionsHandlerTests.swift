@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -505,3 +507,5 @@ private class MockUIKitRUMActionsPredicate: UITouchRUMActionsPredicate & UIPress
         return rumAction(targetView: targetView)
     }
 }
+
+#endif

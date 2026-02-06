@@ -20,6 +20,7 @@ import DatadogInternal
 public extension RUMMonitorProtocol {
     // MARK: - views
 
+    #if !os(watchOS)
     /// Starts RUM view.
     /// - Parameters:
     ///   - viewController: the instance of `UIViewController` representing this view.
@@ -43,6 +44,7 @@ public extension RUMMonitorProtocol {
     ) {
         stopView(viewController: viewController, attributes: attributes)
     }
+    #endif
 
     /// Starts RUM view.
     /// - Parameters:

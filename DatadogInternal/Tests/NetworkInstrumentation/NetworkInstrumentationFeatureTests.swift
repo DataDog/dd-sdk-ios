@@ -205,7 +205,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
     func testRegisteredDelegate_capturesMetricsForAsyncDataFromURL() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -246,7 +246,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
     func testRegisteredDelegate_capturesMetricsForAsyncDataWithSessionDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -287,7 +287,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
     func testRegisteredDelegate_capturesMetricsForAsyncDataWithPerTaskDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -328,7 +328,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
     func testRegisteredDelegate_capturesMetricsForAsyncUploadWithPerTaskDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -369,7 +369,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
     func testRegisteredDelegate_capturesMetricsForAsyncUploadWithSessionDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -410,7 +410,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
     func testRegisteredDelegate_capturesMetricsForAsyncDataTaskWithURLRequest() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -846,7 +846,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
-    @available(iOS 13.0, *)
+    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
     func testAutomaticMode_tracksAsyncUploadTasks() async throws {
         guard #available(iOS 16, tvOS 16, *) else {
             return
@@ -996,7 +996,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testGivenBothModesEnabled_whenPerTaskDelegate_itUsesCorrectTrackingMode() throws {
         // pre iOS 15 cannot set delegate per task
-        guard #available(iOS 15, tvOS 15, *) else {
+        guard #available(iOS 15, tvOS 15, watchOS 8, *) else {
             return
         }
 
@@ -1089,7 +1089,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 15, tvOS 15, *)
+    @available(iOS 15, tvOS 15, watchOS 8, *)
     func testGivenBothModesEnabled_whenRegisteredDelegateWithCompletionHandler_itCapturesMetricsAndData() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1125,7 +1125,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 15, tvOS 15, *)
+    @available(iOS 15, tvOS 15, watchOS 8, *)
     func testGivenBothModesEnabled_whenRegisteredDelegateWithoutCompletionHandler_itCapturesMetricsAndData() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1161,7 +1161,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 15, tvOS 15, *)
+    @available(iOS 15, tvOS 15, watchOS 8, *)
     func testGivenBothModesEnabled_whenUnregisteredDelegateWithCompletionHandler_itUsesAutomaticMode() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1199,7 +1199,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
-    @available(iOS 15, tvOS 15, *)
+    @available(iOS 15, tvOS 15, watchOS 8, *)
     func testGivenBothModesEnabled_whenUnregisteredDelegateWithoutCompletionHandler_itUsesAutomaticMode() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1307,6 +1307,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
+    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
     func testGivenBothModesEnabled_whenUsingAsyncAPI_itCapturesAllValues() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -1371,7 +1372,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testGivenBothModesEnabled_whenUsingDownloadTask_itUsesCorrectTrackingMode() throws {
         // pre iOS 15 cannot set delegate per task
-        guard #available(iOS 15, tvOS 15, *) else {
+        guard #available(iOS 15, tvOS 15, watchOS 8, *) else {
             return
         }
 
@@ -1706,6 +1707,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
     func testGivenRegisteredDelegate_whenUsingAsyncAPI_itCapturesAllValues() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -2147,7 +2149,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testGivenBothModesEnabled_whenUsingDelegateSubclass_itOnlyProcessesWithRegisteredDelegate() throws {
         // pre iOS 15 cannot set delegate per task
-        guard #available(iOS 15, tvOS 15, *) else {
+        guard #available(iOS 15, tvOS 15, watchOS 8, *) else {
             return
         }
 

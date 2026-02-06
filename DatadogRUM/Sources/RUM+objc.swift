@@ -9,6 +9,7 @@ import UIKit
 @_spi(objc)
 import DatadogInternal
 
+#if !os(watchOS)
 internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
     let objcPredicate: objc_UIKitRUMViewsPredicate
 
@@ -156,6 +157,7 @@ public protocol objc_UIPressRUMActionsPredicate: AnyObject {
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
     func rumAction(press type: UIPress.PressType, targetView: UIView) -> objc_RUMAction?
 }
+#endif
 
 @objc(DDRUMErrorSource)
 @_spi(objc)
@@ -377,6 +379,7 @@ public class objc_RUMConfiguration: NSObject {
         get { swiftConfig.telemetrySampleRate }
     }
 
+    #if !os(watchOS)
     public var uiKitViewsPredicate: objc_UIKitRUMViewsPredicate? {
         set { swiftConfig.uiKitViewsPredicate = newValue.map { UIKitRUMViewsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.uiKitViewsPredicate as? UIKitRUMViewsPredicateBridge)?.objcPredicate  }
@@ -396,6 +399,7 @@ public class objc_RUMConfiguration: NSObject {
         set { swiftConfig.swiftUIActionsPredicate = newValue.map { SwiftUIRUMActionsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.swiftUIActionsPredicate as? SwiftUIRUMActionsPredicateBridge)?.objcPredicate }
     }
+    #endif
 
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking) {
         swiftConfig.urlSessionTracking = tracking.swiftConfig
@@ -542,6 +546,7 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.removeViewAttributes(forKeys: keys)
     }
 
+    #if !os(watchOS)
     public func startView(
         viewController: UIViewController,
         name: String?,
@@ -556,6 +561,7 @@ public class objc_RUMMonitor: NSObject {
     ) {
         swiftRUMMonitor.stopView(viewController: viewController, attributes: attributes.dd.swiftAttributes)
     }
+    #endif
 
     public func startView(
         key: String,

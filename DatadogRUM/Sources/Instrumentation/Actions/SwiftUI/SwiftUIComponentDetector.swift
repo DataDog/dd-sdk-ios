@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import Foundation
 import UIKit
 import DatadogInternal
@@ -105,3 +107,6 @@ extension UIView: TypeDescribing {
         return String(describing: type(of: self))
     }
 }
+
+#endif
+

@@ -13,6 +13,7 @@ internal protocol AccessibilityReading {
     var state: AccessibilityInfo { get }
 }
 
+#if !os(watchOS)
 @available(iOS 13.0, tvOS 13.0, *)
 internal final class AccessibilityReader: AccessibilityReading {
     @ReadWriteLock
@@ -264,3 +265,15 @@ internal final class AccessibilityReader: AccessibilityReading {
         return state
     }
 }
+#else
+// No-op implementation for watchOS where UIAccessibility APIs are unavailable
+internal final class AccessibilityReader: AccessibilityReading {
+    var state: AccessibilityInfo {
+        return AccessibilityInfo()
+    }
+    
+    init(notificationCenter: NotificationCenter) {
+        // No-op on watchOS
+    }
+}
+#endif

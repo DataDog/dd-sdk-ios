@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import SwiftUI
 @testable import DatadogRUM
@@ -158,3 +160,5 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         }
     }
 }
+
+#endif

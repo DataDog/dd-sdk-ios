@@ -22,8 +22,10 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
         )
 
         // When & Then (no crash)
+        #if !os(watchOS)
         monitor.startView(viewController: mockView)
         monitor.stopView(viewController: mockView)
+        #endif
         monitor.startView(key: "view-key")
         monitor.stopView(key: "view-key")
         monitor.addError(message: .mockAny())
