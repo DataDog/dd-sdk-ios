@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import Foundation
 import DatadogInternal
 import UIKit
@@ -186,3 +187,4 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         memoryWarningMonitor?.reporter.publish(to: subscriber)
     }
 }
+#endif

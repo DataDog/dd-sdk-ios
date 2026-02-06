@@ -27,6 +27,7 @@ internal protocol RenderLoopObserver {
     func unregister(_ renderLoopReader: RenderLoopReader)
 }
 
+#if !os(watchOS)
 /// A class reading information from the display vsync.
 internal class DisplayLinker {
     @ReadWriteLock
@@ -112,3 +113,25 @@ extension DisplayLinker: RenderLoopObserver {
         renderLoopReaders.removeAll { $0 === renderLoopReader }
     }
 }
+#else
+
+/// No-op implementation for watchOS where CADisplayLink is unavailable
+internal class DisplayLinker {
+    init(
+        notificationCenter: NotificationCenter,
+        frameInfoProviderFactory: @escaping (Any, Selector) -> FrameInfoProvider = { target, selector in NOPFrameInfoProvider(target: target, selector: selector) }
+    ) {
+        // No-op on watchOS
+    }
+}
+
+extension DisplayLinker: RenderLoopObserver {
+    func register(_ renderLoopReader: RenderLoopReader) {
+        // No-op on watchOS
+    }
+
+    func unregister(_ renderLoopReader: RenderLoopReader) {
+        // No-op on watchOS
+    }
+}
+#endif

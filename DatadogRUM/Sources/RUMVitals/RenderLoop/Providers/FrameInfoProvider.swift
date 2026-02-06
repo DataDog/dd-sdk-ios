@@ -5,7 +5,9 @@
  */
 
 import Foundation
+#if !os(watchOS)
 import UIKit
+#endif
 
 /// Facade for `CADisplayLink` to provide frame timestamps & device information
 /// It decouple FPS calculation from `CADisplayLink` implementation.
@@ -40,6 +42,7 @@ extension FrameInfoProvider {
     }
 }
 
+#if !os(watchOS)
 extension CADisplayLink: FrameInfoProvider {
     var maximumDeviceFramesPerSecond: Int {
         #if swift(>=5.9) && os(visionOS)
@@ -55,3 +58,24 @@ extension CADisplayLink: FrameInfoProvider {
 
     var nextFrameTimestamp: CFTimeInterval { targetTimestamp }
 }
+#else
+
+/// No-op implementation of FrameInfoProvider
+internal final class NOPFrameInfoProvider: FrameInfoProvider {
+    var currentFrameTimestamp: CFTimeInterval { 0 }
+    var nextFrameTimestamp: CFTimeInterval { 0 }
+    var maximumDeviceFramesPerSecond: Int { 60 }
+
+    required init(target: Any, selector: Selector) {
+        // no-op
+    }
+
+    func add(to runloop: RunLoop, forMode mode: RunLoop.Mode) {
+        // no-op
+    }
+
+    func invalidate() {
+        // no-op
+    }
+}
+#endif

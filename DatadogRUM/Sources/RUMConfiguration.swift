@@ -6,7 +6,9 @@
 
 import Foundation
 import DatadogInternal
+#if !os(watchOS)
 import QuartzCore
+#endif
 
 // swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.URLSessionInstrumentation
@@ -61,6 +63,7 @@ extension RUM {
         /// Default: `100.0`.
         public var sessionSampleRate: Float
 
+        #if !os(watchOS)
         /// The predicate for automatically tracking `UIViewControllers` as RUM views.
         ///
         /// RUM will query this predicate for each `UIViewController` presented in the app. The predicate implementation
@@ -71,8 +74,12 @@ extension RUM {
         /// Note: Automatic RUM views tracking involves swizzling the `UIViewController` lifecycle methods.
         ///
         /// Default: `nil` - which means automatic RUM view tracking for UIKit is not enabled by default.
+        ///
+        /// - Important: This feature is unavailable on watchOS. Use manual view tracking with `startView(key:name:attributes:)` instead.
         public var uiKitViewsPredicate: UIKitRUMViewsPredicate?
+        #endif
 
+        #if !os(watchOS)
         /// The predicate for automatically tracking `UITouch` events as RUM actions.
         ///
         /// RUM will query this predicate for each `UIView` that the user interacts with. The predicate implementation
@@ -85,8 +92,12 @@ extension RUM {
         /// Note: Automatic RUM action tracking involves swizzling the `UIApplication.sendEvent(_:)` method.
         ///
         /// Default: `nil` - which means automatic RUM action tracking for UIKit is not enabled by default.
+        ///
+        /// - Important: This feature is unavailable on watchOS. Use manual action tracking with `addAction(type:name:attributes:)` instead.
         public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
+        #endif
 
+        #if !os(watchOS)
         /// The predicate for automatically tracking SwiftUI views as RUM views.
         ///
         /// RUM will query this predicate for each SwiftUI view detected through hosting controllers. The SDK extracts
@@ -99,9 +110,13 @@ extension RUM {
         /// Note: Automatic SwiftUI view tracking involves swizzling the `UIViewController` lifecycle methods of hosting controllers.
         ///
         /// Default: `nil` - which means automatic RUM view tracking for SwiftUI is not enabled by default.
+        ///
+        /// - Important: This feature is unavailable on watchOS. Use manual view tracking with `startView(key:name:attributes:)` instead.
         @available(*, message: "This API is experimental and may change in future releases")
         public var swiftUIViewsPredicate: SwiftUIRUMViewsPredicate?
+        #endif
 
+        #if !os(watchOS)
         /// The predicate for automatically tracking `UITouch` events as RUM actions.
         ///
         /// RUM will query this predicate for each view that the user interacts with. The predicate implementation
@@ -114,10 +129,12 @@ extension RUM {
         /// Note: Automatic RUM action tracking involves swizzling the `UIApplication.sendEvent(_:)` method.
         ///
         /// Default: `nil` - which means automatic RUM action tracking for SwiftUI is not enabled by default.
-
+        ///
+        /// - Important: This feature is unavailable on watchOS. Use manual action tracking with `addAction(type:name:attributes:)` instead.
         @available(*, message: "This API is experimental and may change in future releases")
         @available(*, message: "This API has different behavior on iOS 18 vs iOS 17 and below - component detection is more precise on iOS 18+")
         public var swiftUIActionsPredicate: SwiftUIRUMActionsPredicate?
+        #endif
 
         /// The configuration for automatic RUM resources tracking.
         ///
@@ -379,7 +396,14 @@ extension RUM {
         /// The default notification center used for subscribing to app lifecycle events and system notifications.
         internal var notificationCenter: NotificationCenter = .default
         /// The factory to create the frame info provider. Defaults to the `CADisplayLink`.
+        #if os(watchOS)
+        internal var frameInfoProviderFactory: (Any, Selector) -> FrameInfoProvider = { target, selector in
+            // CADisplayLink is unavailable on watchOS, so we provide a no-op implementation
+            NOPFrameInfoProvider(target: target, selector: selector)
+        }
+        #else
         internal var frameInfoProviderFactory: (Any, Selector) -> FrameInfoProvider = { CADisplayLink(target: $0, selector: $1) }
+        #endif
         /// The bundle object that contains the current executable.
         internal var bundle: Bundle = .main
 
@@ -438,10 +462,10 @@ extension RUM.Configuration {
     /// - Parameters:
     ///   - applicationID: The RUM application identifier.
     ///   - sessionSampleRate: The sampling rate for RUM sessions. Must be a value between `0` and `100`. Default: `100`.
-    ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `UIKit` as RUM views. Default: `nil`.
-    ///   - uiKitActionsPredicate: The UIKit predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
-    ///   - swiftUIViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `SwiftUI` as RUM views. Default: `nil`.
-    ///   - swiftUIActionsPredicate: The SwiftUI predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
+    ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `UIKit` as RUM views. Default: `nil`. **Unavailable on watchOS.**
+    ///   - uiKitActionsPredicate: The UIKit predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`. **Unavailable on watchOS.**
+    ///   - swiftUIViewsPredicate: The predicate for automatically tracking `UIViewControllers` in `SwiftUI` as RUM views. Default: `nil`. **Unavailable on watchOS.**
+    ///   - swiftUIActionsPredicate: The SwiftUI predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`. **Unavailable on watchOS.**
     ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
     ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
     ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
@@ -466,6 +490,12 @@ extension RUM.Configuration {
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
     ///   - featureFlags: Experimental feature flags.
+    /// 
+    /// - Note: On watchOS, automatic UIKit and SwiftUI view/action tracking is unavailable. The predicate parameters will be ignored.
+    ///   Use manual tracking APIs instead:
+    ///   - `RUMMonitor.shared().startView(key:name:attributes:)` for view tracking
+    ///   - `RUMMonitor.shared().addAction(type:name:attributes:)` for action tracking
+    #if !os(watchOS)
     public init(
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,
@@ -525,6 +555,59 @@ extension RUM.Configuration {
         self.collectAccessibility = collectAccessibility
         self.featureFlags = featureFlags
     }
+    #else
+    public init(
+        applicationID: String,
+        sessionSampleRate: SampleRate = .maxSampleRate,
+        urlSessionTracking: URLSessionTracking? = nil,
+        trackFrustrations: Bool = true,
+        trackBackgroundEvents: Bool = false,
+        longTaskThreshold: TimeInterval? = 0.1,
+        appHangThreshold: TimeInterval? = nil,
+        trackWatchdogTerminations: Bool = false,
+        vitalsUpdateFrequency: VitalsFrequency? = .average,
+        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
+        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
+        viewEventMapper: RUM.ViewEventMapper? = nil,
+        resourceEventMapper: RUM.ResourceEventMapper? = nil,
+        actionEventMapper: RUM.ActionEventMapper? = nil,
+        errorEventMapper: RUM.ErrorEventMapper? = nil,
+        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
+        onSessionStart: RUM.SessionListener? = nil,
+        customEndpoint: URL? = nil,
+        trackAnonymousUser: Bool = true,
+        trackMemoryWarnings: Bool = true,
+        trackSlowFrames: Bool = true,
+        telemetrySampleRate: SampleRate = 20,
+        collectAccessibility: Bool = false,
+        featureFlags: FeatureFlags = .defaults
+    ) {
+        self.applicationID = applicationID
+        self.sessionSampleRate = sessionSampleRate
+        self.urlSessionTracking = urlSessionTracking
+        self.trackFrustrations = trackFrustrations
+        self.trackBackgroundEvents = trackBackgroundEvents
+        self.longTaskThreshold = longTaskThreshold
+        self.appHangThreshold = appHangThreshold
+        self.vitalsUpdateFrequency = vitalsUpdateFrequency
+        self.networkSettledResourcePredicate = networkSettledResourcePredicate
+        self.nextViewActionPredicate = nextViewActionPredicate
+        self.viewEventMapper = viewEventMapper
+        self.resourceEventMapper = resourceEventMapper
+        self.actionEventMapper = actionEventMapper
+        self.errorEventMapper = errorEventMapper
+        self.longTaskEventMapper = longTaskEventMapper
+        self.onSessionStart = onSessionStart
+        self.customEndpoint = customEndpoint
+        self.trackAnonymousUser = trackAnonymousUser
+        self.trackWatchdogTerminations = trackWatchdogTerminations
+        self.trackMemoryWarnings = trackMemoryWarnings
+        self.trackSlowFrames = trackSlowFrames
+        self.telemetrySampleRate = telemetrySampleRate
+        self.collectAccessibility = collectAccessibility
+        self.featureFlags = featureFlags
+    }
+    #endif
 }
 
 extension RUM.Configuration: InternalExtended {}

@@ -28,12 +28,14 @@ private struct RUMDebugInfo {
 }
 
 internal class RUMDebugging {
+    #if !os(watchOS)
     /// An overlay view renderd on top of the app content. It is created lazily on first draw.
     private var canvas: UIView? = nil
+    #endif
 
     // MARK: - Initialization
 
-    #if !os(tvOS) && !(swift(>=5.9) && os(visionOS))
+    #if !os(tvOS) && !os(watchOS) && !(swift(>=5.9) && os(visionOS))
     init() {
         DispatchQueue.main.async {
             UIDevice.current.beginGeneratingDeviceOrientationNotifications()
@@ -65,15 +67,13 @@ internal class RUMDebugging {
     }
 
     deinit {
-        DispatchQueue.main.async { [weak canvas] in
-            canvas?.removeFromSuperview()
-        }
     }
     #endif
 
     // MARK: - Internal
 
     func debug(applicationScope: RUMApplicationScope) {
+        #if !os(watchOS)
         // `RUMDebugInfo` must be created on the caller thread.
         let debugInfo = RUMDebugInfo(applicationScope: applicationScope)
 
@@ -81,10 +81,12 @@ internal class RUMDebugging {
             // `RUMDebugInfo` rendering must be called on the main thread.
             self.renderOnMainThread(rumDebugInfo: debugInfo)
         }
+        #endif
     }
 
     // MARK: - Private
 
+    #if !os(watchOS)
     private func renderOnMainThread(rumDebugInfo: RUMDebugInfo) {
         if canvas == nil {
             canvas = RUMDebugView(frame: .zero)
@@ -124,8 +126,10 @@ internal class RUMDebugging {
     private func updateLayout() {
         canvas?.subviews.forEach { $0.setNeedsLayout() }
     }
+    #endif
 }
 
+#if !os(watchOS)
 internal class RUMViewOutline: RUMDebugView {
     private struct Constants {
         static let activeViewColor = #colorLiteral(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922, alpha: 1)
@@ -199,3 +203,4 @@ internal class RUMDebugView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 }
+#endif

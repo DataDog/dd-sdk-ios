@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import Testing
 import UIKit
 import TestUtilities
@@ -277,3 +279,5 @@ struct UIKitExtensionsTests {
         #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertActionView }).count == numberOfActionButtons + buttonCountOffset)
     }
 }
+
+#endif

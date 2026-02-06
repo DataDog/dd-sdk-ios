@@ -17,7 +17,9 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let monitor: Monitor
 
+    #if !os(watchOS)
     let instrumentation: RUMInstrumentation
+    #endif
 
     let configuration: RUM.Configuration
 
@@ -199,6 +201,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             )
         }
 
+        #if !os(watchOS)
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
@@ -218,6 +221,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             memoryWarningMonitor: memoryWarningMonitor,
             uuidGenerator: configuration.uuidGenerator
         )
+        #endif
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
             eventsFilter: RUMViewEventsFilter(telemetry: core.telemetry),
@@ -268,7 +272,9 @@ internal final class RUMFeature: DatadogRemoteFeature {
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
 
         // Forward instrumentation calls to monitor:
+        #if !os(watchOS)
         instrumentation.publish(to: monitor)
+        #endif
 
         // Initialize anonymous identifier manager
         self.anonymousIdentifierManager = AnonymousIdentifierManager(
@@ -277,6 +283,17 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
 
         // Send configuration telemetry:
+        #if !os(watchOS)
+        let swiftUIViewTrackingEnabled = configuration.swiftUIViewsPredicate != nil
+        let swiftUIActionTrackingEnabled = configuration.swiftUIActionsPredicate != nil
+        let trackNativeViews = configuration.uiKitViewsPredicate != nil
+        let trackUserInteractions = configuration.uiKitActionsPredicate != nil
+        #else
+        let swiftUIViewTrackingEnabled = false
+        let swiftUIActionTrackingEnabled = false
+        let trackNativeViews = false
+        let trackUserInteractions = false
+        #endif
 
         core.telemetry.configuration(
             appHangThreshold: configuration.appHangThreshold?.dd.toInt64Milliseconds,
@@ -286,15 +303,15 @@ internal final class RUMFeature: DatadogRemoteFeature {
             telemetrySampleRate: Int64.ddWithNoOverflow(configuration.debugSDK ? 100 : configuration.telemetrySampleRate),
             tnsTimeThresholdMs: (configuration.networkSettledResourcePredicate as? TimeBasedTNSResourcePredicate)?.threshold.dd.toInt64Milliseconds,
             traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64.ddWithNoOverflow($0.sampleRate) },
-            swiftUIViewTrackingEnabled: configuration.swiftUIViewsPredicate != nil,
-            swiftUIActionTrackingEnabled: configuration.swiftUIActionsPredicate != nil,
+            swiftUIViewTrackingEnabled: swiftUIViewTrackingEnabled,
+            swiftUIActionTrackingEnabled: swiftUIActionTrackingEnabled,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             trackLongTask: configuration.longTaskThreshold != nil,
             trackNativeLongTasks: configuration.longTaskThreshold != nil,
-            trackNativeViews: configuration.uiKitViewsPredicate != nil,
+            trackNativeViews: trackNativeViews,
             trackNetworkRequests: configuration.urlSessionTracking != nil,
-            trackUserInteractions: configuration.uiKitActionsPredicate != nil,
+            trackUserInteractions: trackUserInteractions,
             useFirstPartyHosts: configuration.urlSessionTracking?.firstPartyHostsTracing != nil
         )
 
@@ -308,7 +325,9 @@ extension RUMFeature: Flushable {
     ///
     /// **blocks the caller thread**
     func flush() {
+        #if !os(watchOS)
         instrumentation.appHangs?.flush()
+        #endif
     }
 }
 

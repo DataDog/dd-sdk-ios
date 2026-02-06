@@ -29,8 +29,10 @@ class NOPMonitorTests: XCTestCase {
         noop.addViewAttributes(mockRandomAttributes())
         noop.removeViewAttribute(forKey: .mockAny())
         noop.removeViewAttributes(forKeys: .mockAny())
+        #if !os(watchOS)
         noop.startView(viewController: mockView)
         noop.stopView(viewController: mockView)
+        #endif
         noop.startView(key: "view-key")
         noop.stopView(key: "view-key")
         noop.addTiming(name: .mockAny())
