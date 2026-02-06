@@ -1,7 +1,7 @@
 #include "mach_sampling_profiler.h"
 #include "ctor_profiler.h"
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include <dlfcn.h>
 #include <thread>
@@ -649,4 +649,4 @@ void init_safe_read_handlers_for_testing(void) {
 
 } // extern "C"
 
-#endif // __APPLE__ 
+#endif // __APPLE__ && !TARGET_OS_WATCH

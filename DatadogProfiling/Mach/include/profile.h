@@ -23,6 +23,10 @@
 #ifndef DD_PROFILER_PROFILE_H_
 #define DD_PROFILER_PROFILE_H_
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#if !TARGET_OS_WATCH
+
 #include "mach_profiler.h"
 #include <string>
 #include <unordered_map>
@@ -242,5 +246,8 @@ private:
 };
 
 } // namespace dd::profiler
+
+#endif // !TARGET_OS_WATCH
+#endif // __APPLE__
 
 #endif // DD_PROFILER_PROFILE_H_

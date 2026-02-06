@@ -7,6 +7,9 @@
 import Foundation
 import DatadogInternal
 
+#if os(watchOS)
+#warning("Datadog Profiling is not supported on watchOS.")
+#else
 // swiftlint:disable duplicate_imports
 #if swift(>=6.0)
 internal import DatadogMachProfiler
@@ -16,7 +19,7 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 /// Main entry point for Datadog profiling functionality.
-/// 
+///
 /// The `Profiling` provides static methods to configure, enable profiling.
 /// It captures performance data in pprof format and sends it to Datadog for analysis.
 public enum Profiling {
@@ -49,3 +52,4 @@ public enum Profiling {
         core.set(context: ProfilingContext(status: .current))
     }
 }
+#endif

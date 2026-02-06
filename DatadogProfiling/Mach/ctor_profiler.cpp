@@ -7,6 +7,7 @@
 #include "ctor_profiler.h"
 
 #ifdef __APPLE__
+#if !TARGET_OS_WATCH
 
 #include "profile.h"
 #include "mach_sampling_profiler.h"
@@ -326,4 +327,5 @@ void ctor_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t
 }
 #endif
 
+#endif // !TARGET_OS_WATCH
 #endif // __APPLE__

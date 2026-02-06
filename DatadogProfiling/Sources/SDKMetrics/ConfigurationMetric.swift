@@ -5,6 +5,8 @@
  */
 
 import Foundation
+
+#if !os(watchOS)
 // swiftlint:disable duplicate_imports
 #if swift(>=6.0)
 internal import DatadogMachProfiler
@@ -12,12 +14,25 @@ internal import DatadogMachProfiler
 @_implementationOnly import DatadogMachProfiler
 #endif
 // swiftlint:enable duplicate_imports
+#endif
 
 /// Tracks the profiling configuration to be added to telemetry metrics.
 internal final class ConfigurationMetric {
     internal enum Constants {
         /// Namespace for bundling the profiling configuration.
         static let configurationKey = "profiling_config"
+        
+        #if !os(watchOS)
+        static let defaultBufferSize = Int(SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE)
+        static let defaultStackDepth = Int(SAMPLING_CONFIG_DEFAULT_STACK_DEPTH)
+        static let defaultThreadCount = Int(SAMPLING_CONFIG_DEFAULT_THREAD_COUNT)
+        static let defaultSamplingFrequency = Int(SAMPLING_CONFIG_DEFAULT_INTERVAL_HZ)
+        #else
+        static let defaultBufferSize = 10000
+        static let defaultStackDepth = 128
+        static let defaultThreadCount = 100
+        static let defaultSamplingFrequency = 101
+        #endif
     }
 
     /// Max number of samples of the profile.
@@ -30,10 +45,10 @@ internal final class ConfigurationMetric {
     let samplingFrequency: Int
 
     init(
-        bufferSize: Int = Int(SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE),
-        stackDepth: Int = Int(SAMPLING_CONFIG_DEFAULT_STACK_DEPTH),
-        threadCoverage: Int = Int(SAMPLING_CONFIG_DEFAULT_THREAD_COUNT),
-        samplingFrequency: Int = Int(SAMPLING_CONFIG_DEFAULT_INTERVAL_HZ)
+        bufferSize: Int = Constants.defaultBufferSize,
+        stackDepth: Int = Constants.defaultStackDepth,
+        threadCoverage: Int = Constants.defaultThreadCount,
+        samplingFrequency: Int = Constants.defaultSamplingFrequency
     ) {
         self.bufferSize = bufferSize
         self.stackDepth = stackDepth

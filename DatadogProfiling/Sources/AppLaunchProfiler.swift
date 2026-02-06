@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import Foundation
 import DatadogInternal
 
@@ -165,3 +167,5 @@ extension ProfilingContext.Status {
         }
     }
 }
+
+#endif // !os(watchOS)

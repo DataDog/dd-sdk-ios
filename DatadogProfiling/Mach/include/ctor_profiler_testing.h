@@ -9,6 +9,10 @@
 
 #include "ctor_profiler.h"
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#if !TARGET_OS_WATCH
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -47,5 +51,8 @@ void ctor_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t
 #ifdef __cplusplus
 }
 #endif
+
+#endif // !TARGET_OS_WATCH
+#endif // __APPLE__
 
 #endif // DD_PROFILER_CTOR_PROFILER_TESTING_H_

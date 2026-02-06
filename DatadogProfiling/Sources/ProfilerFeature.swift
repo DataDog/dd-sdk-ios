@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import Foundation
 import DatadogInternal
 
@@ -57,3 +59,5 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         }
     }
 }
+
+#endif // !os(watchOS)

@@ -7,6 +7,10 @@
 #ifndef DD_PROFILER_CTOR_PROFILER_H_
 #define DD_PROFILER_CTOR_PROFILER_H_
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#if !TARGET_OS_WATCH
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -78,8 +82,6 @@
  * 
  * All functions are thread-safe and can be called from any thread.
  */
-
-#ifdef __APPLE__
 
 // UserDefaults constants centralized for Profiling
 #define DD_PROFILING_USER_DEFAULTS_SUITE_NAME "com.datadoghq.ios-sdk.profiling"
@@ -230,5 +232,7 @@ void ctor_profiler_destroy(void);
 }
 #endif
 
+#endif // !TARGET_OS_WATCH
 #endif // __APPLE__
+
 #endif // DD_PROFILER_CTOR_PROFILER_H_

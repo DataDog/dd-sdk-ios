@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import DatadogInternal
 import TestUtilities
@@ -31,3 +33,5 @@ class ProfilingTest: XCTestCase {
         XCTAssertEqual(context.status, .running)
     }
 }
+
+#endif
