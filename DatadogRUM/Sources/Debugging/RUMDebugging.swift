@@ -5,10 +5,10 @@
  */
 
 import Foundation
-import UIKit
+import SwiftUI
 import DatadogInternal
 
-private struct RUMDebugInfo {
+fileprivate struct RUMDebugInfo {
     struct View {
         let name: String
         let isActive: Bool
@@ -28,48 +28,26 @@ private struct RUMDebugInfo {
 }
 
 internal class RUMDebugging {
-    /// An overlay view renderd on top of the app content. It is created lazily on first draw.
-    private var canvas: UIView? = nil
-
+    /// An overlay window that renders on top of the app content. It is created lazily on first draw.
+    #if os(iOS) || os(tvOS) || os(visionOS)
+    private var overlayWindow: UIWindow?
+    private var hostingController: UIHostingController<RUMDebugView>?
+    #endif
+    
     // MARK: - Initialization
 
-    #if !os(tvOS) && !(swift(>=5.9) && os(visionOS))
     init() {
-        DispatchQueue.main.async {
-            UIDevice.current.beginGeneratingDeviceOrientationNotifications()
-        }
-
-        NotificationCenter.default
-            .addObserver(
-                self,
-                selector: #selector(RUMDebugging.updateLayout),
-                name: UIDevice.orientationDidChangeNotification,
-                object: nil
-        )
+        // No device orientation notifications needed for SwiftUI
     }
 
     deinit {
-        DispatchQueue.main.async { [weak canvas] in
-            canvas?.removeFromSuperview()
-            UIDevice.current.endGeneratingDeviceOrientationNotifications()
+        #if os(iOS) || os(tvOS) || os(visionOS)
+        DispatchQueue.main.async { [weak overlayWindow] in
+            overlayWindow?.isHidden = true
+            overlayWindow?.rootViewController = nil
         }
-
-        NotificationCenter.default.removeObserver(
-            self,
-            name: UIDevice.orientationDidChangeNotification,
-            object: nil
-        )
+        #endif
     }
-    #else
-    init() {
-    }
-
-    deinit {
-        DispatchQueue.main.async { [weak canvas] in
-            canvas?.removeFromSuperview()
-        }
-    }
-    #endif
 
     // MARK: - Internal
 
@@ -86,116 +64,103 @@ internal class RUMDebugging {
     // MARK: - Private
 
     private func renderOnMainThread(rumDebugInfo: RUMDebugInfo) {
-        if canvas == nil {
-            canvas = RUMDebugView(frame: .zero)
-            canvas?.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        #if os(iOS) || os(tvOS) || os(visionOS)
+        // Create or update the hosting controller with the new debug view
+        let debugView = RUMDebugView(debugInfo: rumDebugInfo)
+        
+        if let existingController = hostingController {
+            existingController.rootView = debugView
+        } else {
+            hostingController = UIHostingController(rootView: debugView)
+            hostingController?.view.backgroundColor = .clear
         }
-
-        guard let canvas = canvas else {
-            return
+        
+        // Create overlay window if needed
+        if overlayWindow == nil, let windowScene = UIApplication.dd.managedShared?.connectedScenes.first as? UIWindowScene {
+            let window = UIWindow(windowScene: windowScene)
+            window.windowLevel = .alert + 1
+            window.backgroundColor = .clear
+            window.isUserInteractionEnabled = false
+            overlayWindow = window
         }
-
-        canvas.subviews.forEach { view in
-            view.removeFromSuperview()
+        
+        // Set up the window if not already configured
+        if let window = overlayWindow, window.rootViewController == nil {
+            window.rootViewController = hostingController
+            window.isHidden = false
         }
+        #elseif os(watchOS)
+        // watchOS doesn't support overlay windows in the same way
+        // Debug information would need to be presented differently on watchOS
+        // This is a platform limitation
+        #endif
+    }
+}
 
-        let viewOutlines: [RUMViewOutline] = zip(rumDebugInfo.views, 0..<rumDebugInfo.views.count)
-            .map { viewInfo, stackIndex in
-                RUMViewOutline(
-                    viewInfo: viewInfo,
-                    stack: (index: stackIndex, total: rumDebugInfo.views.count)
+/// SwiftUI view that displays a single RUM view outline with its status label
+internal struct RUMViewOutlineView: View {
+    private struct Constants {
+        static let activeViewColor = Color(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922)
+        static let inactiveViewColor = Color(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238)
+        static let labelHeight: CGFloat = 16
+    }
+    
+    fileprivate let viewInfo: RUMDebugInfo.View
+    let stackIndex: Int
+    let stackTotal: Int
+    
+    private var stackOffset: CGFloat {
+        CGFloat(stackIndex) * Constants.labelHeight
+    }
+    
+    private var labelBackgroundColor: Color {
+        viewInfo.isActive ? Constants.activeViewColor : Constants.inactiveViewColor
+    }
+    
+    private var opacity: Double {
+        pow(0.75, Double(stackTotal - stackIndex))
+    }
+    
+    var body: some View {
+        GeometryReader { geometry in
+            VStack {
+                Spacer()
+                HStack {
+                    Text(viewInfo.name)
+                        .font(.system(size: Constants.labelHeight * 0.8, weight: .semibold, design: .monospaced))
+                        .foregroundColor(.white)
+                    Text(" # ")
+                        .font(.system(size: Constants.labelHeight * 0.5, weight: .regular, design: .monospaced))
+                        .foregroundColor(.white)
+                    Text(viewInfo.isActive ? "ACTIVE" : "INACTIVE")
+                        .font(.system(size: Constants.labelHeight * 0.5, weight: .regular, design: .monospaced))
+                        .foregroundColor(.white)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: Constants.labelHeight)
+                .background(labelBackgroundColor)
+                .opacity(opacity)
+                .offset(y: -stackOffset)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+/// SwiftUI container view for RUM debugging overlay
+internal struct RUMDebugView: View {
+    fileprivate let debugInfo: RUMDebugInfo
+    
+    var body: some View {
+        ZStack {
+            ForEach(0..<debugInfo.views.count, id: \.self) { index in
+                RUMViewOutlineView(
+                    viewInfo: debugInfo.views[index],
+                    stackIndex: index,
+                    stackTotal: debugInfo.views.count
                 )
             }
-
-        viewOutlines.forEach { view in
-            view.frame = canvas.frame
-            view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            canvas.addSubview(view)
         }
-        if canvas.superview == nil,
-           let someWindow = UIApplication.dd.managedShared?.windows.first(where: { $0.isKeyWindow }) {
-            canvas.frame.size = someWindow.bounds.size
-            someWindow.addSubview(canvas)
-        }
-        canvas.superview?.bringSubviewToFront(canvas)
-    }
-
-    @objc
-    private func updateLayout() {
-        canvas?.subviews.forEach { $0.setNeedsLayout() }
-    }
-}
-
-internal class RUMViewOutline: RUMDebugView {
-    private struct Constants {
-        static let activeViewColor = #colorLiteral(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922, alpha: 1)
-        static let inactiveViewColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
-        static let labelHeight: CGFloat = 16
-
-        static let viewNameTextAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.8, weight: .semibold),
-            .foregroundColor: UIColor.white,
-        ]
-        static let viewDetailsTextAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.5, weight: .regular),
-            .foregroundColor: UIColor.white,
-        ]
-    }
-
-    private let label: UILabel
-    private let stackOffset: CGFloat
-
-    fileprivate init(viewInfo: RUMDebugInfo.View, stack: (index: Int, total: Int)) {
-        self.label = UILabel(frame: .zero)
-        self.stackOffset = CGFloat(stack.index) * Constants.labelHeight
-
-        let viewName = viewInfo.name
-        let separator = " # "
-        let viewDetails = (viewInfo.isActive ? "ACTIVE" : "INACTIVE")
-        let labelText = "\(viewName)\(separator)\(viewDetails)"
-        let labelAttributedText = NSMutableAttributedString(string: labelText)
-        let labelBackgroundColor = viewInfo.isActive ? Constants.activeViewColor : Constants.inactiveViewColor
-
-        labelAttributedText.setAttributes(
-            Constants.viewNameTextAttributes,
-            range: NSRange(location: 0, length: viewName.count)
-        )
-
-        labelAttributedText.setAttributes(
-            Constants.viewDetailsTextAttributes,
-            range: NSRange(location: viewName.count, length: separator.count + viewDetails.count)
-        )
-
-        label.attributedText = labelAttributedText
-        label.textAlignment = .center
-        label.backgroundColor = labelBackgroundColor
-        label.alpha = CGFloat(pow(0.75, Double(stack.total - stack.index)))
-
-        super.init(frame: .zero)
-
-        addSubview(label)
-    }
-
-    override func layoutSubviews() {
-        let safeAreaBounds = bounds.inset(by: safeAreaInsets)
-        label.frame = .init(
-            x: bounds.minX,
-            y: safeAreaBounds.maxY - stackOffset - Constants.labelHeight,
-            width: bounds.width,
-            height: Constants.labelHeight
-        )
-    }
-}
-
-internal class RUMDebugView: UIView {
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        self.backgroundColor = .clear
-        self.isUserInteractionEnabled = false
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        .allowsHitTesting(false)
     }
 }
