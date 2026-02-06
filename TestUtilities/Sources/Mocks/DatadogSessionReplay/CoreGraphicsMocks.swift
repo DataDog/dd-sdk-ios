@@ -5,7 +5,9 @@
  */
 
 import CoreGraphics
+#if !os(watchOS)
 import UIKit
+#endif
 
 extension CGFloat: AnyMockable, RandomMockable {
     public static func mockAny() -> CGFloat {
@@ -91,6 +93,7 @@ extension CGSize: AnyMockable, RandomMockable {
     }
 }
 
+#if !os(watchOS)
 extension CGColor: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
         return UIColor.mockAny().cgColor as! Self
@@ -100,3 +103,4 @@ extension CGColor: AnyMockable, RandomMockable {
         return UIColor.mockRandom().cgColor as! Self
     }
 }
+#endif
