@@ -336,5 +336,3 @@ class BaggageHeaderMergerTests: XCTestCase {
         return dict
     }
 }
-
-

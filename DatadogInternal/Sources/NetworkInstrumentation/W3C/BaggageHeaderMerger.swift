@@ -79,4 +79,3 @@ public struct BaggageHeaderMerger {
         return (key: key, value: value)
     }
 }
-
