@@ -13,11 +13,55 @@
 
 #include <atomic>
 #include <mutex>
-#include <mach/mach.h>
-#include <mach/thread_act.h>
-#include <mach/thread_info.h>
 #include <vector>
-#include <pthread.h>
+
+/**
+ * Default sampling configuration with safe default values.
+ * For C++ use only. Use sampling_config_get_default() from Swift.
+ */
+static const sampling_config_t SAMPLING_CONFIG_DEFAULT = {
+    SAMPLING_CONFIG_DEFAULT_INTERVAL_NS,  // sampling_interval_nanos
+    0,                                       // profile_current_thread_only
+    SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE,     // max_buffer_size
+    SAMPLING_CONFIG_DEFAULT_STACK_DEPTH,     // max_stack_depth
+    SAMPLING_CONFIG_DEFAULT_THREAD_COUNT,    // max_thread_count
+    QOS_CLASS_USER_INTERACTIVE               // qos_class
+};
+
+/**
+ * Callback type for receiving stack traces.
+ * This is called whenever a batch of stack traces is captured.
+ *
+ * @param traces Array of captured stack traces
+ * @param count Number of traces in the array
+ * @param ctx Context pointer passed during profiler creation
+ */
+typedef void (*stack_trace_callback_t)(const stack_trace_t* traces, size_t count, void* ctx);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * Sets the main thread pthread identifier.
+ *
+ * This function should be called from the main thread early in the process lifecycle.
+ *
+ * @param thread The pthread identifier for the main thread
+ */
+void set_main_thread(pthread_t thread);
+
+/**
+ * Pre-caches binary image information for all currently loaded images.
+ *
+ * This can be called early in the process lifecycle to avoid repetitive
+ * lookups during profiling.
+ */
+void profiler_cache_binary_images(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 namespace dd::profiler {
 

@@ -4,21 +4,115 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#ifndef DD_PROFILER_PROFILER_H_
-#define DD_PROFILER_PROFILER_H_
+#ifndef DD_PROFILER_MACH_PROFILER_H_
+#define DD_PROFILER_MACH_PROFILER_H_
 
 #include <stdint.h>
 #include <sys/types.h>
-#include <mach/mach.h>
+#include <stdbool.h>
 #include <pthread.h>
 #include <pthread/qos.h>
+#include <mach/mach.h>
+#include <mach/thread_act.h>
+#include <mach/thread_info.h>
+
+/**
+ * @file mach_profiler.h
+ * @brief Mach-based profiler for application launch and continuous performance analysis
+ * 
+ * This profiler automatically starts during the earliest phase of application startup
+ * by using GCC/Clang's __attribute__((constructor)) mechanism. It provides 101 Hz
+ * sampling of stack traces from process initialization until manually stopped.
+ * 
+ * # Automatic Startup
+ * 
+ * The profiler automatically checks if the profiling was enabled before, and starts it if so.
+ * No manual initialization is required.
+ * 
+ * # Profiling Characteristics
+ * 
+ * - **Timing**: Starts via __attribute__((constructor(65535))) - very early in process lifecycle
+ * - **Sampling Rate**: 101 Hz (~9.9ms intervals) - optimized for launch profiling without performance impact
+ * - **Buffer Size**: 10,000 samples to capture entire launch phase
+ * - **Stack Depth**: 64 frames maximum per trace
+ * - **Thread Coverage**: All threads in the process
+ *
+ * # Usage Example
+ * 
+ * ```c
+ * #include "mach_profiler.h"
+ * 
+ * // Profiling starts automatically if enabled before
+ *
+ * int main(int argc, char* argv[]) {
+ *     // Your app initialization...
+ *     
+ *     // Stop profiling when launch phase is complete
+ *     if (profiler_is_active()) {
+ *         profiler_stop();
+ *     }
+ *     
+ *     // Continue with normal app execution...
+ *     return 0;
+ * }
+ * ```
+ * 
+ * # Swift Integration
+ * 
+ * This API is designed for Swift interoperability:
+ * 
+ * ```swift
+ * import DatadogProfiling
+ * 
+ * func applicationDidFinishLaunching() {
+ *     // Stop constructor profiling when app launch is complete
+ *     if profiler_is_active() != 0 {
+ *         profiler_stop()
+ *     }
+ * }
+ * ```
+ * 
+ * # Performance Considerations
+ * 
+ * - Profiling starts right before main()
+ * - Uses 101 Hz sampling frequency - provides good resolution without impacting launch performance
+ * - Automatically stops when profiler_stop() is called
+ * - No overhead when the feature is disabled
+ * - Designed to have minimal impact on application launch time and user experience
+ * 
+ * # Thread Safety
+ * 
+ * All functions are thread-safe and can be called from any thread.
+ */
+
+#ifdef __APPLE__
+
+// UserDefaults constants centralized for Profiling
+#define DD_PROFILING_USER_DEFAULTS_SUITE_NAME "com.datadoghq.ios-sdk.profiling"
+#define DD_PROFILING_IS_ENABLED_KEY "is_profiling_enabled"
+#define DD_PROFILING_SAMPLE_RATE_KEY "profiling_sample_rate"
+
+/**
+ * Default sampling configuration values.
+ */
+/// Sampling frequency. Default to ~101 Hz (1/101 seconds ≈ 9.9ms)
+#define SAMPLING_CONFIG_DEFAULT_FREQUENCY_HZ    101     // 101 Hz
+/// Sampling interval. Default to 9.9ms
+#define SAMPLING_CONFIG_DEFAULT_INTERVAL_NS     9900990 // ~101 Hz (1/101 seconds ≈ 9.9ms)
+/// Max buffer size of samples. It is a larger buffer to delay stack aggregation.
+#define SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE     100000
+/// Max frames per trace.
+#define SAMPLING_CONFIG_DEFAULT_STACK_DEPTH     128
+/// Max threads count.
+#define SAMPLING_CONFIG_DEFAULT_THREAD_COUNT    100
+
 
 #ifdef __cplusplus
-
 namespace dd::profiler {
-// Forward declaration
-    class mach_sampling_profiler;
-}
+
+class profile;
+
+} // namespace dd::profiler
 
 extern "C" {
 #endif
@@ -81,116 +175,143 @@ typedef struct sampling_config {
     qos_class_t qos_class;
 } sampling_config_t;
 
-/**
- * Default sampling configuration values.
- */
-/// Sampling frequency. Default to ~101 Hz (1/101 seconds ≈ 9.9ms)
-#define SAMPLING_CONFIG_DEFAULT_FREQUENCY_HZ    101     // 101 Hz
-/// Sampling interval. Default to 9.9ms
-#define SAMPLING_CONFIG_DEFAULT_INTERVAL_NS     9900990 // ~101 Hz (1/101 seconds ≈ 9.9ms)
-/// Max buffer size of samples. It is a larger buffer to delay stack aggregation.
-#define SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE     100000
-/// Max frames per trace.
-#define SAMPLING_CONFIG_DEFAULT_STACK_DEPTH     128
-/// Max threads count.
-#define SAMPLING_CONFIG_DEFAULT_THREAD_COUNT    100
 
 /**
- * Default sampling configuration with safe default values.
- * For C++ use only. Use sampling_config_get_default() from Swift.
+ * Checks if profiling is enabled in UserDefaults.
+ *
+ * Reads the profiling enabled state from UserDefaults suite to determine
+ * if the profiling feature was previously enabled via Profiling.enable().
+ *
+ * @return true if profiling is enabled, false otherwise
+ *
+ * @note Reads from suite "com.datadoghq.ios-sdk" with key "is_profiling_enabled"
+ * @note Returns false if the key doesn't exist or on read errors
  */
-static const sampling_config_t SAMPLING_CONFIG_DEFAULT = {
-    SAMPLING_CONFIG_DEFAULT_INTERVAL_NS,  // sampling_interval_nanos
-    0,                                       // profile_current_thread_only
-    SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE,     // max_buffer_size
-    SAMPLING_CONFIG_DEFAULT_STACK_DEPTH,     // max_stack_depth
-    SAMPLING_CONFIG_DEFAULT_THREAD_COUNT,    // max_thread_count
-    QOS_CLASS_USER_INTERACTIVE               // qos_class
-};
+bool is_profiling_enabled();
 
 /**
- * Opaque handle to a profiler instance
+ * Deletes the profiling defaults from UserDefaults.
+ *
+ * Removes the profiling enabled state, allowing the session to start with a clean state.
+ */
+void delete_profiling_defaults();
+
+/**
+ * Status codes for constructor profiler operations
+ */
+typedef enum {
+    PROFILER_STATUS_NOT_CREATED = 0,       ///< Profiler was not created
+    PROFILER_STATUS_NOT_STARTED = 1,       ///< Profiler was never started
+    PROFILER_STATUS_RUNNING = 2,           ///< Profiler is currently running
+    PROFILER_STATUS_STOPPED = 3,           ///< Profiler was stopped manually
+    PROFILER_STATUS_TIMEOUT = 4,           ///< Profiler was stopped due to timeout
+    PROFILER_STATUS_PREWARMED = 5,         ///< Profiler was not started due to prewarming
+    PROFILER_STATUS_SAMPLED_OUT = 6,       ///< Profiler was not started due to sample rate
+    PROFILER_STATUS_ALLOCATION_FAILED = 7, ///< Memory allocation failed
+    PROFILER_STATUS_ALREADY_STARTED = 8,   ///< Failed to start profiler because it is already started
+} profiler_status_t;
+
+/**
+ * Opaque handle to a constructor profile instance
  */
 #ifdef __cplusplus
-typedef dd::profiler::mach_sampling_profiler profiler_t;
+typedef dd::profiler::profile profiler_profile_t;
 #else
-typedef struct profiler profiler_t;
+typedef struct profile profiler_profile_t;
 #endif
 
-/**
- * Callback type for receiving stack traces.
- * This is called whenever a batch of stack traces is captured.
- *
- * @param traces Array of captured stack traces
- * @param count Number of traces in the array
- * @param ctx Context pointer passed during profiler creation
- */
-typedef void (*stack_trace_callback_t)(const stack_trace_t* traces, size_t count, void* ctx);
 
 /**
- * Sets the main thread pthread identifier.
+ * @brief Gets the current status of the constructor profiler
  *
- * This function should be called from the main thread early in the process lifecycle.
+ * This function provides detailed information about the profiler's current state,
+ * including why it may not have started or why it stopped.
  *
- * @param thread The pthread identifier for the main thread
+ * @return Current profiler status code
+ *
+ * # Swift Usage Example
+ *
+ * ```swift
+ * import DatadogProfiling
+ *
+ * let status = profiler_get_status()
+ * switch status {
+ * case PROFILER_STATUS_ACTIVE:
+ *     print("Profiler is running")
+ * case PROFILER_STATUS_PREWARMED:
+ *     print("Profiler was not started due to app prewarming")
+ * case PROFILER_STATUS_LOW_SAMPLE_RATE:
+ *     print("Profiler was not started due to low sample rate")
+ * default:
+ *     print("Profiler status: \(status)")
+ * }
+ * ```
  */
-void set_main_thread(pthread_t thread);
+profiler_status_t profiler_get_status(void);
 
 /**
- * Pre-caches binary image information for all currently loaded images.
+ * @brief Starts profiling if it's currently stopped or ignored otherwise.
  *
- * This can be called early in the process lifecycle to avoid repetitive
- * lookups during profiling.
+ *
+ * After calling this function, `profiler_get_status()` will return `PROFILER_STATUS_RUNNING`.
+ *
+ * @note Safe to call multiple times - subsequent calls are no-ops
  */
-void profiler_cache_binary_images(void);
+void profiler_start(void);
 
 /**
- * Creates a profiler instance.
+ * @brief Stops constructor-based profiling if it's currently running.
  *
- * Uses fixed intervals for consistent sampling behavior.
+ * After calling this function, `profiler_get_status()` will return `PROFILER_STATUS_STOPPED`.
  *
- * @param config The base sampling configuration (can be NULL for defaults)
- * @param callback The callback to receive stack traces
- * @param ctx Context pointer to pass to the callback
- * @return Handle to the profiler instance or NULL on error
+ * @note Safe to call multiple times - subsequent calls are no-ops
+ * @note Safe to call even if profiling was never started
+ * 
+ * @warning Once stopped, constructor profiling cannot be restarted in the same process
+ * 
  */
-profiler_t* profiler_create(
-    const sampling_config_t* config,
-    stack_trace_callback_t callback,
-    void* ctx);
+void profiler_stop(void);
 
 /**
- * Destroys a profiler instance.
- *
- * @param profiler Handle to the profiler instance
+ * @brief Retrieves the aggregated profile data from constructor profiling
+ * 
+ * Returns a typed handle to the profile data collected during constructor-based
+ * profiling. This data contains deduplicated stack traces, binary mappings, and
+ * sample metadata that can be serialized for analysis.
+ * 
+ * @param cleanup If true, the profile data will be removed from the profiler and subsequent calls will return NULL.
+ * @return Typed handle to profile data, or NULL if:
+ *         - Profiling was never started
+ *         - No samples were collected
+ *         - Profile data has been destroyed
+ * 
+ * @note The returned handle remains valid until destroyed
+ * @note This function can be called before or after stopping the profiler
+ * @note The profile data accumulates all samples from constructor start to stop
+ * 
+ * @see `profiler_stop()`, `profiler_destroy()`
  */
-void profiler_destroy(profiler_t* profiler);
+profiler_profile_t* profiler_get_profile(bool cleanup);
 
 /**
- * Starts the profiler.
+ * @brief Destroys the constructor profiler data and frees all associated memory
  *
- * @param profiler Handle to the profiler instance
- * @return 1 if successfully started, 0 otherwise
- */
-int profiler_start(profiler_t* profiler);
-
-/**
- * Stops the profiler.
+ * This function should be called when the profile data is no longer needed
+ * to free memory resources. After calling this function, `profiler_get_profile()`
+ * will return NULL.
  *
- * @param profiler Handle to the profiler instance
- */
-void profiler_stop(profiler_t* profiler);
-
-/**
- * Checks if the profiler is currently running.
+ * @note Safe to call multiple times - subsequent calls are no-ops
+ * @note Safe to call even if profiling was never started
  *
- * @param profiler Handle to the profiler instance
- * @return 1 if running, 0 otherwise
+ * @warning After calling this function, any previously returned profile handles become invalid
+ *
+ * @see `profiler_get_profile()`
  */
-int profiler_is_running(const profiler_t* profiler);
+void profiler_destroy(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DD_PROFILER_PROFILER_H_
+#endif // __APPLE__
+#endif // DD_PROFILER_MACH_PROFILER_H_

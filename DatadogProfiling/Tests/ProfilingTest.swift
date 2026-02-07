@@ -16,8 +16,8 @@ class ProfilingTest: XCTestCase {
         // Given
         let configuration = Profiling.Configuration(customEndpoint: .mockRandom())
         let core = SingleFeatureCoreMock<ProfilerFeature>()
-        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
-        defer { ctor_profiler_destroy() }
+        profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        defer { profiler_destroy() }
 
         // When
         Profiling.enable(with: configuration, in: core)

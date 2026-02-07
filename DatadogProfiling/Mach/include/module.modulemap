@@ -1,6 +1,5 @@
 module DatadogMachProfiler {
   header "mach_profiler.h"
-  header "ctor_profiler.h"
   header "dd_pprof.h"
   export *
 
@@ -18,7 +17,7 @@ module DatadogMachProfiler {
   }
 
   explicit module Testing {
-      header "ctor_profiler_testing.h"
+      header "mach_profiler_testing.h"
       header "safe_read_testing.h"
       export *
   }

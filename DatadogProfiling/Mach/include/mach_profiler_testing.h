@@ -4,17 +4,17 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#ifndef DD_PROFILER_CTOR_PROFILER_TESTING_H_
-#define DD_PROFILER_CTOR_PROFILER_TESTING_H_
+#ifndef DD_PROFILER_MACH_PROFILER_TESTING_H_
+#define DD_PROFILER_MACH_PROFILER_TESTING_H_
 
-#include "ctor_profiler.h"
+#include "mach_profiler.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * @brief Manually starts constructor profiling for testing purposes
+ * @brief Manually starts profiling for testing purposes
  *
  * This function bypasses the automatic constructor-based startup mechanism and allows
  * manual control over profiling for testing scenarios.
@@ -34,18 +34,18 @@ extern "C" {
  *                   - Timeout checking occurs during sample processing
  *
  * @note Safe to call multiple times - destroys existing instance before creating new one
- * @note Check `ctor_profiler_get_status()` for detailed status after calling
+ * @note Check `profiler_get_status()` for detailed status after calling
  * @note Designed for unit tests, integration tests, and development builds
  *
  * @warning FOR TESTING USE ONLY - Not intended for production environments
  * @warning May impact application performance if used inappropriately
  *
- * @see `ctor_profiler_get_status()`, `ctor_profiler_stop()`, `ctor_profiler_get_profile()`
+ * @see `profiler_get_status()`, `profiler_stop()`, `profiler_get_profile()`
  */
-void ctor_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns);
+void profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // DD_PROFILER_CTOR_PROFILER_TESTING_H_
+#endif // DD_PROFILER_MACH_PROFILER_TESTING_H_

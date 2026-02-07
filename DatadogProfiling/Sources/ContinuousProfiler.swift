@@ -54,15 +54,15 @@ internal final class ContinuousProfiler: FeatureMessageReceiver {
     func sendProfile() {
         print("*******************************handling continuous profiling \(Date())")
 
-        let profileStatus = ctor_profiler_get_status()
-        guard profileStatus == CTOR_PROFILER_STATUS_RUNNING else {
+        let profileStatus = profiler_get_status()
+        guard profileStatus == PROFILER_STATUS_RUNNING else {
             print("+++++++++++++++profiling status\(profileStatus)")
             return
         }
 
         featureScope.set(context: ProfilingContext(status: .current))
 
-        guard let profile = ctor_profiler_get_profile(true) else {
+        guard let profile = profiler_get_profile(true) else {
 
             print("+++++++++++++++no profile")
             return

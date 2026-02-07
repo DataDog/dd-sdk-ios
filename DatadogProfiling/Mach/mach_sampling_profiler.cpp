@@ -1,5 +1,5 @@
 #include "mach_sampling_profiler.h"
-#include "ctor_profiler.h"
+#include "mach_profiler.h"
 
 #ifdef __APPLE__
 
@@ -67,6 +67,8 @@ static constexpr uint32_t MAX_LOAD_COMMAND_SIZE = 0x10000;  // 64KB max per load
 
 static constexpr size_t PTHREAD_THREAD_NAME_MAX = 64;
 
+extern "C" {
+
 // Main thread pthread identifier for comparison
 static pthread_t g_main_pthread = NULL;
 
@@ -125,9 +127,6 @@ static void safe_read_signal_handler(int sig, siginfo_t* info, void* context) {
  *
  * @param thread The pthread identifier for the main thread
  */
-void set_main_thread(pthread_t thread) {
-    g_main_pthread = thread;
-}
 
 /**
  * Install signal handlers for safe memory reading.
@@ -471,6 +470,8 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
     }
 }
 
+} // extern "C"
+
 namespace dd::profiler {
 
 /**
@@ -681,9 +682,13 @@ void mach_sampling_profiler::flush_buffer() {
     }
 }
 
-} // namespace dd:profiler
+} // namespace dd::profiler
 
 extern "C" {
+
+void set_main_thread(pthread_t thread) {
+    g_main_pthread = thread;
+}
 
 void safe_read_memory_for_testing(void* addr, void* buffer, size_t size) {
     safe_read_memory(addr, buffer, size);
