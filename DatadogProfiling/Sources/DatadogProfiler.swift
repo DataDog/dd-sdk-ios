@@ -16,11 +16,14 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 internal final class DatadogProfiler: CustomProfiler {
+    private let isContinuousProfiling: Bool
     private let telemetryController: ProfilingTelemetryController
 
     init(
-        telemetryController: ProfilingTelemetryController = .init()
+        isContinuousProfiling: Bool,
+        telemetryController: ProfilingTelemetryController
     ) {
+        self.isContinuousProfiling = isContinuousProfiling
         self.telemetryController = telemetryController
 
         print("*******************************init custom profiling \(Date())")
@@ -98,7 +101,7 @@ public static func stop(in core: DatadogCoreProtocol) {
                     "language:swift",
                     "format:pprof",
                     "remote_symbols:yes",
-                    "operation:\(Operation.continuousProfiling)"
+                    "operation:\(ProfilingOperation.continuousProfiling)"
                 ].joined(separator: ","),
                 additionalAttributes: [:]
             )

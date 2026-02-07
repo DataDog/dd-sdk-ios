@@ -23,9 +23,9 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
     let requestBuilder: FeatureRequestBuilder
 
     let messageReceiver: FeatureMessageReceiver
-
-    let continuousProfiler: ContinuousProfiler?
     let customProfiler: CustomProfiler
+
+    let isContinuousProfiling: Bool
 
     let telemetryController: ProfilingTelemetryController
 
@@ -37,27 +37,42 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         core: DatadogCoreProtocol,
         configuration: Profiling.Configuration,
         requestBuilder: FeatureRequestBuilder,
-        messageReceiver: FeatureMessageReceiver,
         telemetryController: ProfilingTelemetryController,
         userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
     ) {
         self.requestBuilder = requestBuilder
-        self.messageReceiver = messageReceiver
         self.telemetryController = telemetryController
 
-        self.customProfiler = DatadogProfiler()
-        self.continuousProfiler = configuration.continuousProfiling ? ContinuousProfiler(core: core) : nil
+        self.isContinuousProfiling = Sampler(
+            samplingRate: configuration.debugSDK ? .maxSampleRate : configuration.continuous.sampleRate
+        ).sample()
+
+        var messageReceivers: [FeatureMessageReceiver] = [
+            AppLaunchProfiler(
+                isContinuousProfiling: isContinuousProfiling,
+                telemetryController: telemetryController
+            )
+        ]
+        if isContinuousProfiling {
+            messageReceivers.append(ContinuousProfiler(core: core, telemetryController: telemetryController))
+        }
+
+        self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
+        self.customProfiler = DatadogProfiler(
+            isContinuousProfiling: isContinuousProfiling,
+            telemetryController: telemetryController
+        )
 
         setProfilingEnabled(in: userDefaults)
-        let sampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
-        set(sampleRate: sampleRate, in: userDefaults)
+        let sampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunch.sampleRate
+        setAppLaunch(sampleRate: sampleRate, in: userDefaults)
     }
 
     private func setProfilingEnabled(in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
         userDefaults.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
     }
 
-    private func set(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
+    private func setAppLaunch(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
         let previousSampleRate = userDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate
 
         // Profiling will use the lowest sample rate

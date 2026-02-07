@@ -226,7 +226,7 @@ private extension RUMAppLaunchManager {
             context[RUMContextAttributes.IDs.viewName] = [activeView.viewName]
         }
 
-        dependencies.featureScope.send(message: .payload(ProfilerStop(context: context)))
+        dependencies.featureScope.send(message: .payload(TTIDMessage(context: context)))
     }
 }
 

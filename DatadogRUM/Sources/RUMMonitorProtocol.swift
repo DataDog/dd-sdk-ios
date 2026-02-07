@@ -284,10 +284,12 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - attributes: custom attributes to attach to this operation
+    ///   - profiling: enable profiling
     func startFeatureOperation(
         name: String,
         operationKey: String?,
-        attributes: [AttributeKey: AttributeValue]
+        attributes: [AttributeKey: AttributeValue],
+        profiling: ProfilingOption
     )
 
     /// Completes a Feature successfully.

@@ -15,11 +15,7 @@ internal import DatadogMachProfiler
 #endif
 // swiftlint:enable duplicate_imports
 
-internal final class ContinuousProfiler {
-    /// Shared counter to track pending `AppLaunchProfiler`s from handling the `ProfilerStop` message
-    private static var pendingInstances: Int = 0
-    private static let lock = NSLock()
-
+internal final class ContinuousProfiler: FeatureMessageReceiver {
     private let featureScope: FeatureScope
     private let telemetryController: ProfilingTelemetryController
 
@@ -30,7 +26,6 @@ internal final class ContinuousProfiler {
         telemetryController: ProfilingTelemetryController = .init(),
         frequency: TimeInterval = TimeInterval(30)
     ) {
-        Self.registerInstance()
         self.featureScope = core.scope(for: ProfilerFeature.self)
         self.telemetryController = telemetryController
 
@@ -48,8 +43,12 @@ internal final class ContinuousProfiler {
         self.timer = timer
     }
 
-    deinit {
-        Self.unregisterInstance()
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        guard case let .payload(cmd as TTIDMessage) = message else {
+            return false
+        }
+
+        return false
     }
 
     func sendProfile() {
@@ -103,7 +102,7 @@ internal final class ContinuousProfiler {
                     "language:swift",
                     "format:pprof",
                     "remote_symbols:yes",
-                    "operation:\(Operation.continuousProfiling)"
+                    "operation:\(ProfilingOperation.continuousProfiling)"
                 ].joined(separator: ","),
                 additionalAttributes: [:]
             )
@@ -113,51 +112,4 @@ internal final class ContinuousProfiler {
             writer.write(value: pprof, metadata: event)
         }
     }
-}
-
-// MARK: - Handle AppLaunchProfiler instances
-
-private extension ContinuousProfiler {
-    /// Registers the `AppLaunchProfiler` to handle the `ProfilerStop` message.
-    static func registerInstance() {
-        lock.lock()
-        defer { lock.unlock() }
-
-        pendingInstances += 1
-    }
-
-    /// Decrements the pending instance counter and destroys the profiler when all instances are done.
-    static func unregisterInstance() {
-        lock.lock()
-        defer { lock.unlock() }
-
-        pendingInstances -= 1
-        if pendingInstances <= 0 {
-            ctor_profiler_destroy()
-        }
-    }
-}
-
-// MARK: - Testing funcs
-
-extension ContinuousProfiler {
-    /// Returns the current pending instances count.
-    static var currentPendingInstances: Int {
-        lock.lock()
-        defer { lock.unlock() }
-        return pendingInstances
-    }
-
-    /// Resets the pending instances counter.
-    static func resetPendingInstances() {
-        lock.lock()
-        defer { lock.unlock() }
-        pendingInstances = 0
-    }
-}
-
-enum Operation: String, CaseIterable {
-    case appLaunch = "launch"
-    case continuousProfiling = "continuous"
-    case customProfiling = "custom"
 }

@@ -21,7 +21,7 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
     private static var appLaunchProfile: OpaquePointer?
     private static let lock = NSLock()
 
-    private let isContinuousProfilingActive: Bool
+    private let isContinuousProfiling: Bool
     private let telemetryController: ProfilingTelemetryController
 
     init(
@@ -29,12 +29,12 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
         telemetryController: ProfilingTelemetryController = .init()
     ) {
         Self.registerInstance()
-        self.isContinuousProfilingActive = isContinuousProfiling
+        self.isContinuousProfiling = isContinuousProfiling
         self.telemetryController = telemetryController
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(cmd as ProfilerStop) = message else {
+        guard case let .payload(cmd as TTIDMessage) = message else {
             return false
         }
 
@@ -51,7 +51,7 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
             return false
         }
 
-        if isContinuousProfilingActive == false {
+        if isContinuousProfiling == false {
             ctor_profiler_stop()
         }
         core.set(context: ProfilingContext(status: .current))
@@ -95,7 +95,7 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                     "language:swift",
                     "format:pprof",
                     "remote_symbols:yes",
-                    "operation:\(Operation.appLaunch)"
+                    "operation:\(ProfilingOperation.appLaunch)"
                 ].joined(separator: ","),
                 additionalAttributes: cmd.context
             )

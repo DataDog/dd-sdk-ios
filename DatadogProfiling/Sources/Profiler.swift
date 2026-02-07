@@ -48,14 +48,14 @@ public class Profiler {
 }
 
 public protocol CustomProfiler {
-    /// /// Starts a profiling session.
+    /// Starts a profiling session.
     ///
     /// Begins capturing performance data using the configured profiler. The session
     /// will continue until `stop()` is called.
     ///
     static func start()
 
-    /// /// Starts a profiling session.
+    /// Starts a profiling session.
     ///
     /// Begins capturing performance data using the configured profiler. The session
     /// will continue until `stop()` is called.

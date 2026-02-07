@@ -14,14 +14,14 @@ extension Profiling {
         /// If `nil`, the default Datadog endpoint will be used.
         public var customEndpoint: URL?
 
-        /// The sampling rate for App Launch Profiling.
+        /// Application launch profiling option.
         ///
-        /// It must be a number between 0.0 and 100.0, where 0 means no profiles will be collected.
+        /// Default: Option enabled with `5.0%` sample rate.
+        public var applicationLaunch: ProfilingOption
+        /// Continuous profiling option.
         ///
-        /// Default: `5.0`.
-        public var applicationLaunchSampleRate: SampleRate
-
-        public var continuousProfiling: Bool = true
+        /// Default: Option disabled.
+        public var continuous: ProfilingOption
 
         // MARK: - Internal
 
@@ -33,10 +33,12 @@ extension Profiling {
         ///   - sampleRate: The sampling rate for Profiling.
         public init(
             customEndpoint: URL? = nil,
-            applicationLaunchSampleRate: SampleRate = 5
+            applicationLaunch: ProfilingOption = .enabled(sampleRate: 5.0),
+            continuous: ProfilingOption = .disabled
         ) {
             self.customEndpoint = customEndpoint
-            self.applicationLaunchSampleRate = applicationLaunchSampleRate
+            self.applicationLaunch = applicationLaunch
+            self.continuous = continuous
         }
     }
 }

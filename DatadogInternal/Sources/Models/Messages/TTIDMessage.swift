@@ -38,7 +38,7 @@ import Foundation
 /// linking the profile data with other telemetry data (RUM, logs, traces).
 ///
 /// This context is included as additional attributes in the final profile event.
-public struct ProfilerStop {
+public struct TTIDMessage {
     /// Correlation context to include with the profile submission.
     ///
     /// This context contains identifiers and correlation IDs that are merged
