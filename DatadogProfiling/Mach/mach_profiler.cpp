@@ -12,11 +12,9 @@
 #include "mach_sampling_profiler.h"
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <cstdlib>
-#include <cstring>
 #include <random>
-#include <mutex>
-#include <pthread.h>
+
+static constexpr int64_t PROFILER_TIMEOUT_NS = 60000000000ULL; // 60 seconds
 
 namespace dd::profiler { class mach_profiler; }
 
@@ -154,8 +152,9 @@ public:
 
     mach_profiler(
         double sample_rate = 0.0,
-        bool is_prewarming = false
-    ) : sample_rate(sample_rate), is_prewarming(is_prewarming) {}
+        bool is_prewarming = false,
+        int64_t timeout_ns = PROFILER_TIMEOUT_NS
+    ) : sample_rate(sample_rate), is_prewarming(is_prewarming), timeout_ns(timeout_ns) {}
 
     ~mach_profiler() {
         if (profiler) delete profiler;
@@ -248,6 +247,7 @@ private:
     profile* profile = nullptr;
     double sample_rate = 0.0;
     bool is_prewarming = false;
+    int64_t timeout_ns = PROFILER_TIMEOUT_NS; // 60 seconds default
 
     /**
      * Internal helper to create a fresh profile aggregator.
@@ -282,6 +282,10 @@ private:
 
         // Check for timeout after adding samples
         int64_t duration_ns = profile->end_timestamp() - profile->start_timestamp();
+        if (duration_ns > profiler->timeout_ns) {
+            profiler->stop();
+            profiler->status = PROFILER_STATUS_TIMEOUT;
+        }
     }
 };
 

@@ -106,7 +106,6 @@
 /// Max threads count.
 #define SAMPLING_CONFIG_DEFAULT_THREAD_COUNT    100
 
-
 #ifdef __cplusplus
 namespace dd::profiler {
 
