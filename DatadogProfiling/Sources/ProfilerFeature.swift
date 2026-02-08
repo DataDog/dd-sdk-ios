@@ -59,6 +59,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
         self.customProfiler = DatadogProfiler(
+            core: core,
             isContinuousProfiling: isContinuousProfiling,
             telemetryController: telemetryController
         )

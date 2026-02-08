@@ -346,7 +346,7 @@ extern "C" {
 
 void profiler_start(void) {
     std::lock_guard<std::mutex> lock(g_mach_profiler_mutex);
-    if (mach_profiler) mach_profiler->start();
+    if (mach_profiler && mach_profiler->status != PROFILER_STATUS_RUNNING) mach_profiler->start();
 }
 
 void profiler_stop(void) {

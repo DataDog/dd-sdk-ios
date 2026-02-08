@@ -15,100 +15,96 @@ internal import DatadogMachProfiler
 #endif
 // swiftlint:enable duplicate_imports
 
-internal final class DatadogProfiler: CustomProfiler {
+internal final class DatadogProfiler: ProfilingWriter {
     private let isContinuousProfiling: Bool
-    private let telemetryController: ProfilingTelemetryController
+    let telemetryController: ProfilingTelemetryController
+    let featureScope: FeatureScope
+    let operation: ProfilingOperation = .customProfiling
+
+    private var profilingOperations: Set<String> = []
 
     init(
+        core: DatadogCoreProtocol,
         isContinuousProfiling: Bool,
         telemetryController: ProfilingTelemetryController
     ) {
+        self.featureScope = core.scope(for: ProfilerFeature.self)
         self.isContinuousProfiling = isContinuousProfiling
         self.telemetryController = telemetryController
 
         print("*******************************init custom profiling \(Date())")
     }
+}
 
-    public static func start() {
-        Self.start(currentThreadOnly: false, in: CoreRegistry.default)
+extension DatadogProfiler: CustomProfiler {
+    func start(
+        name: String,
+        operationKey: String?,
+        currentThreadOnly: Bool,
+        attributes: [DatadogInternal.AttributeKey : any DatadogInternal.AttributeValue],
+        sampleRate: DatadogInternal.SampleRate
+    ) {
+        if Sampler(samplingRate: sampleRate).sample() {
+
+            // attention I need to out this thread safe
+            profilingOperations.insert("\(name),\(operationKey)")
+            featureScope.send(
+                message: .payload(
+                    StartProfilingMessage(
+                        name: name,
+                        operationKey: operationKey,
+                        attributes: attributes
+                    )
+                )
+            )
+
+            if isContinuousProfiling == false {
+                profiler_start()
+            }
+        }
     }
 
-    public static func start(currentThreadOnly: Bool, in core: DatadogCoreProtocol) {
-        let featureScope = core.scope(for: ProfilerFeature.self)
-        profiler_start()
-    }
+    func stop(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        let profilingContext = ProfilingContext(status: .current)
+        featureScope.set(context: profilingContext)
 
-    public static func stop() {
-        Self.stop(in: CoreRegistry.default)
-    }
+        profilingOperations.remove("\(name),\(operationKey)")
 
-/// Stops the current profiling session and uploads the captured data.
-///
-/// This method stops the profiler, captures the performance data, creates a profile event
-/// with appropriate metadata (including RUM context if available), and sends it to Datadog.
-///
-/// - Parameter core: The Datadog core instance to use. Defaults to the default core.
-public static func stop(in core: DatadogCoreProtocol) {
-        let featureScope = core.scope(for: ProfilerFeature.self)
-
-        print("*******************************handling custom profiling \(Date())")
-
-        let profileStatus = profiler_get_status()
-        guard profileStatus == PROFILER_STATUS_RUNNING else {
-            print("+++++++++++++++profiling status\(profileStatus)")
+        guard profilingOperations.isEmpty else {
+            // There are still profiling operations running
             return
         }
 
-        featureScope.set(context: ProfilingContext(status: .current))
+        if self.isContinuousProfiling == false {
+            profiler_stop()
+        }
 
         guard let profile = profiler_get_profile(true) else {
-
             print("+++++++++++++++no profile")
             return
         }
 
-        var data: UnsafeMutablePointer<UInt8>?
-        let start = dd_pprof_get_start_timestamp_s(profile)
-        let end = dd_pprof_get_end_timestamp_s(profile)
-        let duration = (end - start).dd.toInt64Nanoseconds
-        let size = dd_pprof_serialize(profile, &data)
+        writeProfilingEvent(with: profile, from: featureScope)
 
-        guard let data else {
-            return
+        // Notify SDK Features
+        var failureReason: String?
+        if case let .error(reason: reason) = profilingContext.status {
+            failureReason = reason.rawValue
         }
-
-        print("+++++++++++++++\(end - start) ++++++++ \(size)")
-
-        let pprof = Data(bytes: data, count: size)
-        dd_pprof_free_serialized_data(data)
-
-        featureScope.eventWriteContext { context, writer in
-            let event = ProfileEvent(
-                family: "ios",
-                runtime: "ios",
-                version: "4",
-                start: Date(timeIntervalSince1970: start),
-                end: Date(timeIntervalSince1970: end),
-                attachments: [ProfileEvent.Constants.wallFilename],
-                tags: [
-                    "service:\(context.service)",
-                    "version:\(context.version)",
-                    "sdk_version:\(context.sdkVersion)",
-                    "profiler_version:\(context.sdkVersion)",
-                    "runtime_version:\(context.os.version)",
-                    "env:\(context.env)",
-                    "source:\(context.source)",
-                    "language:swift",
-                    "format:pprof",
-                    "remote_symbols:yes",
-                    "operation:\(ProfilingOperation.continuousProfiling)"
-                ].joined(separator: ","),
-                additionalAttributes: [:]
+        
+        featureScope.send(
+            message: .payload(
+                StopProfilingMessage(
+                    name: name,
+                    operationKey: operationKey,
+                    failureReason: failureReason,
+                    attributes: attributes
+                )
             )
-
-            print("*******************************Writing continuous profile")
-
-            writer.write(value: pprof, metadata: event)
-        }
+        )
     }
 }

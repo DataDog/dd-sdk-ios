@@ -15,14 +15,15 @@ internal import DatadogMachProfiler
 #endif
 // swiftlint:enable duplicate_imports
 
-internal final class AppLaunchProfiler: FeatureMessageReceiver {
+internal final class AppLaunchProfiler: FeatureMessageReceiver, ProfilingWriter {
     /// Shared counter to track pending `AppLaunchProfiler`s from handling the `ProfilerStop` message
     private static var pendingInstances: Int = 0
     private static var appLaunchProfile: OpaquePointer?
     private static let lock = NSLock()
 
+    let telemetryController: ProfilingTelemetryController
+    let operation: ProfilingOperation = .appLaunch
     private let isContinuousProfiling: Bool
-    private let telemetryController: ProfilingTelemetryController
 
     init(
         isContinuousProfiling: Bool,
@@ -62,49 +63,7 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
             return false
         }
 
-        var data: UnsafeMutablePointer<UInt8>?
-        let start = dd_pprof_get_start_timestamp_s(profile)
-        let end = dd_pprof_get_end_timestamp_s(profile)
-        let duration = (end - start).dd.toInt64Nanoseconds
-        let size = dd_pprof_serialize(profile, &data)
-
-        guard let data else {
-            telemetryController.send(metric: AppLaunchMetric.noData)
-            return false
-        }
-
-        let pprof = Data(bytes: data, count: size)
-        dd_pprof_free_serialized_data(data)
-
-        core.scope(for: ProfilerFeature.self).eventWriteContext { context, writer in
-            let event = ProfileEvent(
-                family: "ios",
-                runtime: "ios",
-                version: "4",
-                start: Date(timeIntervalSince1970: start),
-                end: Date(timeIntervalSince1970: end),
-                attachments: [ProfileEvent.Constants.wallFilename],
-                tags: [
-                    "service:\(context.service)",
-                    "version:\(context.version)",
-                    "sdk_version:\(context.sdkVersion)",
-                    "profiler_version:\(context.sdkVersion)",
-                    "runtime_version:\(context.os.version)",
-                    "env:\(context.env)",
-                    "source:\(context.source)",
-                    "language:swift",
-                    "format:pprof",
-                    "remote_symbols:yes",
-                    "operation:\(ProfilingOperation.appLaunch)"
-                ].joined(separator: ","),
-                additionalAttributes: cmd.context
-            )
-
-            print("*******************************Writing TTID")
-
-            writer.write(value: pprof, metadata: event)
-            self.telemetryController.send(metric: AppLaunchMetric(status: .init(profileStatus), durationNs: duration, fileSize: Int64(size)))
-        }
+        self.writeProfilingEvent(with: profile, from: core.scope(for: ProfilerFeature.self))
 
         return true
     }

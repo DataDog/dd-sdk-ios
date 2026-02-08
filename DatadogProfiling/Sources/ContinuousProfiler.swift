@@ -16,18 +16,22 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 internal final class ContinuousProfiler: FeatureMessageReceiver {
-    private let featureScope: FeatureScope
-    private let telemetryController: ProfilingTelemetryController
+    let telemetryController: ProfilingTelemetryController
+    let featureScope: FeatureScope
+    let operation: ProfilingOperation = .continuousProfiling
 
+    private let profilingConditions: ProfilingConditions
     private var timer: Timer?
 
     init(
         core: DatadogCoreProtocol,
         telemetryController: ProfilingTelemetryController = .init(),
+        profilingConditions: ProfilingConditions = .init(),
         frequency: TimeInterval = TimeInterval(30)
     ) {
         self.featureScope = core.scope(for: ProfilerFeature.self)
         self.telemetryController = telemetryController
+        self.profilingConditions = profilingConditions
 
         print("*******************************init continuous profiling \(Date())")
 
@@ -50,66 +54,37 @@ internal final class ContinuousProfiler: FeatureMessageReceiver {
 
         return false
     }
+}
+
+extension ContinuousProfiler: ProfilingWriter {
 
     func sendProfile() {
         print("*******************************handling continuous profiling \(Date())")
 
-        let profileStatus = profiler_get_status()
-        guard profileStatus == PROFILER_STATUS_RUNNING else {
-            print("+++++++++++++++profiling status\(profileStatus)")
-            return
-        }
+        featureScope.context { context in
+            let profilingContext = ProfilingContext(status: .current)
+            self.featureScope.set(context: profilingContext)
 
-        featureScope.set(context: ProfilingContext(status: .current))
+            let canProfile = self.profilingConditions.canProfileApplication(with: context)
 
-        guard let profile = profiler_get_profile(true) else {
+            switch profilingContext.status {
+            case .stopped:
+                if canProfile {
+                    profiler_start()
+                }
+            case .running:
+                if canProfile == false {
+                    profiler_stop()
+                }
 
-            print("+++++++++++++++no profile")
-            return
-        }
+                guard let profile = profiler_get_profile(true) else {
+                    print("+++++++++++++++no profile")
+                    return
+                }
 
-        var data: UnsafeMutablePointer<UInt8>?
-        let start = dd_pprof_get_start_timestamp_s(profile)
-        let end = dd_pprof_get_end_timestamp_s(profile)
-        let duration = (end - start).dd.toInt64Nanoseconds
-        let size = dd_pprof_serialize(profile, &data)
-
-        guard let data else {
-            return
-        }
-
-        print("+++++++++++++++\(end - start) ++++++++ \(size)")
-
-        let pprof = Data(bytes: data, count: size)
-        dd_pprof_free_serialized_data(data)
-
-        featureScope.eventWriteContext { context, writer in
-            let event = ProfileEvent(
-                family: "ios",
-                runtime: "ios",
-                version: "4",
-                start: Date(timeIntervalSince1970: start),
-                end: Date(timeIntervalSince1970: end),
-                attachments: [ProfileEvent.Constants.wallFilename],
-                tags: [
-                    "service:\(context.service)",
-                    "version:\(context.version)",
-                    "sdk_version:\(context.sdkVersion)",
-                    "profiler_version:\(context.sdkVersion)",
-                    "runtime_version:\(context.os.version)",
-                    "env:\(context.env)",
-                    "source:\(context.source)",
-                    "language:swift",
-                    "format:pprof",
-                    "remote_symbols:yes",
-                    "operation:\(ProfilingOperation.continuousProfiling)"
-                ].joined(separator: ","),
-                additionalAttributes: [:]
-            )
-
-            print("*******************************Writing continuous profile")
-
-            writer.write(value: pprof, metadata: event)
+                self.writeProfilingEvent(with: profile, from: self.featureScope)
+            default: break
+            }
         }
     }
 }

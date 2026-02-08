@@ -53,41 +53,52 @@ public protocol CustomProfiler {
     /// Begins capturing performance data using the configured profiler. The session
     /// will continue until `stop()` is called.
     ///
-    static func start()
-
-    /// Starts a profiling session.
-    ///
-    /// Begins capturing performance data using the configured profiler. The session
-    /// will continue until `stop()` is called.
-    ///
     /// - Parameters:
+    ///   - name: the name of the profiling operation (e.g., `login_flow`)
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - currentThreadOnly: If `true`, profiles only the current thread.
-    ///   - core: The Datadog core instance to use. Defaults to the default core.
-    static func start(currentThreadOnly: Bool, in core: DatadogCoreProtocol)
+    ///   - attributes: custom attributes to attach to this operation
+    ///   - sampleRate: The sample rate . Defaults to the default core.
+    func start(
+        name: String,
+        operationKey: String?,
+        currentThreadOnly: Bool,
+        attributes: [AttributeKey: AttributeValue],
+        sampleRate: SampleRate
+    )
 
-    static func stop()
-    static func stop(in core: DatadogCoreProtocol)
+    /// Stops the Profiling session.
+    /// - Parameters:
+    ///   - name: the name of the operation (e.g., `login_flow`)
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startFeatureOperation`
+    ///   - attributes: custom attributes to attach to this operation
+    func stop(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue]
+    )
 }
 
-
 internal class DDNoopProfiler: CustomProfiler {
-    static func start(currentThreadOnly: Bool, in core: any DatadogInternal.DatadogCoreProtocol) {
+    func start(
+        name: String,
+        operationKey: String?,
+        currentThreadOnly: Bool,
+        attributes: [AttributeKey: AttributeValue],
+        sampleRate: SampleRate
+    ) {
         warn()
     }
 
-    static func start() {
+    func stop(
+        name: String,
+        operationKey: String?,
+        attributes: [DatadogInternal.AttributeKey : any AttributeValue]
+    ) {
         warn()
     }
 
-    static func stop() {
-        warn()
-    }
-
-    static func stop(in core: any DatadogInternal.DatadogCoreProtocol) {
-        warn()
-    }
-
-    private static func warn() {
+    private func warn() {
         DD.logger.warn(
             """
             The `Profiler.shared()` was called but `Profiling` is not initialised. 
