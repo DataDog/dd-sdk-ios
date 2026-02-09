@@ -605,10 +605,13 @@ class RemoteLoggerTests: XCTestCase {
             backtraceReporter: BacktraceReporterMock()
         )
 
-        // When
+        // When - test various non-encodable types (closures are most common from telemetry)
+        let closure1: (NSArray) -> Void = { _ in }
+        let closure2: () -> Void = { }
         logger.addAttribute(forKey: "valid", value: "test")
-        logger.addAttribute(forKey: "invalid1", value: AnyEncodable(NSObject()))
-        logger.addAttribute(forKey: "invalid2", value: AnyEncodable(NSObject()))
+        logger.addAttribute(forKey: "onComplete", value: AnyEncodable(closure1))
+        logger.addAttribute(forKey: "callback", value: AnyEncodable(closure2))
+        logger.addAttribute(forKey: "custom_object", value: AnyEncodable(NSObject()))
         logger.info("Test message")
 
         // Then - encode to trigger error handling
@@ -623,13 +626,14 @@ class RemoteLoggerTests: XCTestCase {
 
         // Event sent with only valid attribute
         XCTAssertEqual(jsonObject["valid"] as? String, "test")
-        XCTAssertNil(jsonObject["invalid1"])
-        XCTAssertNil(jsonObject["invalid2"])
+        XCTAssertNil(jsonObject["onComplete"])
+        XCTAssertNil(jsonObject["callback"])
+        XCTAssertNil(jsonObject["custom_object"])
 
         // And all errors logged
         XCTAssertEqual(
             dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute") }.count,
-            2
+            3
         )
     }
 
@@ -674,46 +678,5 @@ class RemoteLoggerTests: XCTestCase {
             dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute") }.count,
             2
         )
-    }
-
-    func testWhenClosurePassedAsAttribute_itSkipsClosureAndSendsEvent() throws {
-        // Given
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
-
-        let logger = RemoteLogger(
-            featureScope: featureScope,
-            globalAttributes: .mockAny(),
-            configuration: .mockAny(),
-            dateProvider: RelativeDateProvider(),
-            rumContextIntegration: false,
-            activeSpanIntegration: false,
-            backtraceReporter: BacktraceReporterMock()
-        )
-
-        // When
-        let closure: (NSArray) -> Void = { _ in }
-        logger.addAttribute(forKey: "valid_data", value: ["item1", "item2"])
-        logger.addAttribute(forKey: "onComplete", value: AnyEncodable(closure))  // Closure - most common prod error
-        logger.info("Test message")
-
-        // Then - encode to trigger error handling
-        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
-        XCTAssertEqual(logs.count, 1)
-
-        let log = try XCTUnwrap(logs.first)
-        XCTAssertEqual(log.message, "Test message")
-
-        // Encode to JSON
-        let jsonData = try JSONEncoder().encode(log)
-        let jsonObject = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
-
-        // Event sent without the closure attribute
-        XCTAssertNotNil(jsonObject["valid_data"])
-        XCTAssertNil(jsonObject["onComplete"])
-
-        // And error logged mentioning the block
-        let errorLog = try XCTUnwrap(dd.logger.errorLog)
-        XCTAssertTrue(errorLog.message.contains("Failed to encode attribute 'onComplete'"))
     }
 }
