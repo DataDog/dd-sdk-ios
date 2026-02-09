@@ -24,3 +24,6 @@ __pycache__
 
 # CI job artifacts
 artifacts/
+
+# AI files
+.claude/settings.local.json
