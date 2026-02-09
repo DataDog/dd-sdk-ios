@@ -543,10 +543,26 @@ class SpanEventBuilderTests: XCTestCase {
 
         let builder: SpanEventBuilder = .mockAny()
 
-        // When
+        // When - test all three contexts: custom (tags), userInfo, accountInfo
         let errorMessage = "Value cannot be encoded."
         let span = builder.createSpanEvent(
-            context: .mockAny(),
+            context: .mockWith(
+                userInfo: .init(
+                    id: .mockRandom(),
+                    name: .mockRandom(),
+                    email: .mockRandom(),
+                    extraInfo: [
+                        "failing-user-info": FailingEncodableMock(errorMessage: errorMessage)
+                    ]
+                ),
+                accountInfo: .init(
+                    id: .mockRandom(),
+                    name: .mockRandom(),
+                    extraInfo: [
+                        "failing-account-info": FailingEncodableMock(errorMessage: errorMessage)
+                    ]
+                )
+            ),
             traceID: .mockAny(),
             spanID: .mockAny(),
             parentSpanID: .mockAny(),
@@ -563,15 +579,32 @@ class SpanEventBuilderTests: XCTestCase {
             logFields: []
         )
 
-        // Then
+        // Then - all attributes skipped
         XCTAssertNil(span.tags["failing-tag"])
-        XCTAssertEqual(
-            dd.logger.errorLog?.message,
-            """
-            Failed to encode attribute \'failing-tag\' to `String`. This attribute will be dropped from the span.
-            """
-        )
-        XCTAssertEqual(dd.logger.errorLog?.error?.message, errorMessage)
+        XCTAssertNil(span.userInfo.extraInfo["failing-user-info"])
+        XCTAssertNil(span.accountInfo?.extraInfo["failing-account-info"])
+
+        // And all errors logged with correct context
+        let errorLogs = dd.logger.errorLogs
+        XCTAssertEqual(errorLogs.count, 3)
+
+        // Custom context (tags) - no prefix
+        XCTAssertTrue(errorLogs.contains { log in
+            log.message == "Failed to encode attribute 'failing-tag' to `String`. This attribute will be dropped from the span." &&
+            log.error?.message == errorMessage
+        })
+
+        // UserInfo context - "user info " prefix
+        XCTAssertTrue(errorLogs.contains { log in
+            log.message == "Failed to encode user info attribute 'failing-user-info' to `String`. This attribute will be dropped from the span." &&
+            log.error?.message == errorMessage
+        })
+
+        // AccountInfo context - "account " prefix
+        XCTAssertTrue(errorLogs.contains { log in
+            log.message == "Failed to encode account attribute 'failing-account-info' to `String`. This attribute will be dropped from the span." &&
+            log.error?.message == errorMessage
+        })
     }
 
     func testBuildingSpanWhenSpanLinkIsPresentInTags() {
