@@ -247,6 +247,10 @@ public class objc_RUMActionEventDDActionTarget: NSObject {
         root.swiftModel.dd.action!.target!.height as NSNumber?
     }
 
+    public var permanentId: String? {
+        root.swiftModel.dd.action!.target!.permanentId
+    }
+
     public var selector: String? {
         root.swiftModel.dd.action!.target!.selector
     }
@@ -7519,12 +7523,39 @@ public class objc_RUMViewEventViewPerformanceLCP: NSObject {
         get { root.swiftModel.view.performance!.lcp!.resourceUrl }
     }
 
+    public var subParts: objc_RUMViewEventViewPerformanceLCPSubParts? {
+        root.swiftModel.view.performance!.lcp!.subParts != nil ? objc_RUMViewEventViewPerformanceLCPSubParts(root: root) : nil
+    }
+
     public var targetSelector: String? {
         root.swiftModel.view.performance!.lcp!.targetSelector
     }
 
     public var timestamp: NSNumber {
         root.swiftModel.view.performance!.lcp!.timestamp as NSNumber
+    }
+}
+
+@objc(DDRUMViewEventViewPerformanceLCPSubParts)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewEventViewPerformanceLCPSubParts: NSObject {
+    internal let root: objc_RUMViewEvent
+
+    internal init(root: objc_RUMViewEvent) {
+        self.root = root
+    }
+
+    public var loadDelay: NSNumber {
+        root.swiftModel.view.performance!.lcp!.subParts!.loadDelay as NSNumber
+    }
+
+    public var loadTime: NSNumber {
+        root.swiftModel.view.performance!.lcp!.subParts!.loadTime as NSNumber
+    }
+
+    public var renderDelay: NSNumber {
+        root.swiftModel.view.performance!.lcp!.subParts!.renderDelay as NSNumber
     }
 }
 
@@ -12051,4 +12082,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/32918d999701fb7bfd876369e27ced77d6de1809
+// Generated from https://github.com/DataDog/rum-events-format/tree/6c939c467f255990d7941ce160e48823465e7780

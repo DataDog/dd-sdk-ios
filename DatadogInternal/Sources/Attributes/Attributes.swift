@@ -181,6 +181,16 @@ public struct GraphQLHeaders {
     public static let payload: String = "_dd-custom-header-graph-ql-payload"
 }
 
+extension URLRequest {
+    /// Whether this request contains GraphQL headers indicating a GraphQL request.
+    public var hasGraphQLHeaders: Bool {
+        value(forHTTPHeaderField: GraphQLHeaders.operationName) != nil ||
+        value(forHTTPHeaderField: GraphQLHeaders.operationType) != nil ||
+        value(forHTTPHeaderField: GraphQLHeaders.variables) != nil ||
+        value(forHTTPHeaderField: GraphQLHeaders.payload) != nil
+    }
+}
+
 public struct LaunchArguments {
     /// Each product should consider this argument to offer simple debugging experience. 
     /// For example, if this flag is present it can use no sampling.

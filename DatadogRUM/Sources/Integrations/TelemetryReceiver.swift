@@ -375,6 +375,8 @@ private extension TelemetryUsageEvent.Telemetry.Usage {
                     )
                 )
             )
+        case .addGraphQLRequest:
+            self = .telemetryCommonFeaturesUsage(value: .graphQLRequest(value: .init()))
         }
     }
 }

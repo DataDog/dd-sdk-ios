@@ -35,7 +35,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             firstPartyHosts: .init([
                 "www.example.com": [.datadog]
             ]),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
     }
 
@@ -51,7 +52,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
 
         // When
@@ -99,7 +101,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
 
         // When
@@ -155,7 +158,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: 0,
             firstPartyHosts: .init(),
-            traceContextInjection: .sampled
+            traceContextInjection: .sampled,
+            telemetry: NOPTelemetry()
         )
 
         // When
@@ -196,7 +200,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
 
         let span = tracer.startRootSpan(operationName: "root")
@@ -248,7 +253,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
 
         let span = tracer.startRootSpan(operationName: "root")
@@ -301,7 +307,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
 
         let span = tracer.startRootSpan(operationName: "root")
@@ -354,7 +361,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: 0,
             firstPartyHosts: .init(),
-            traceContextInjection: .sampled
+            traceContextInjection: .sampled,
+            telemetry: NOPTelemetry()
         )
 
         let span = tracer.startRootSpan(operationName: "root")
@@ -629,7 +637,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: receiver,
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
 
         core.context.applicationStateHistory = .mockAppInForeground()

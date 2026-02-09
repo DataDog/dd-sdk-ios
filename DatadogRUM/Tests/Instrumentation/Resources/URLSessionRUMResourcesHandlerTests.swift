@@ -15,12 +15,14 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
     private func createHandler(
         rumAttributesProvider: RUM.ResourceAttributesProvider? = nil,
-        distributedTracing: DistributedTracing? = nil
+        distributedTracing: DistributedTracing? = nil,
+        telemetry: Telemetry = NOPTelemetry()
     ) -> URLSessionRUMResourcesHandler {
         let handler = URLSessionRUMResourcesHandler(
             dateProvider: dateProvider,
             rumAttributesProvider: rumAttributesProvider,
-            distributedTracing: distributedTracing
+            distributedTracing: distributedTracing,
+            telemetry: telemetry
         )
         handler.publish(to: commandSubscriber)
         return handler

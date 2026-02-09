@@ -40,7 +40,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             firstPartyHosts: .init([
                 "www.example.com": [.datadog]
             ]),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
     }
 

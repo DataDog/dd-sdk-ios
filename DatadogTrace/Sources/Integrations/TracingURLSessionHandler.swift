@@ -18,6 +18,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
         /// The active span at the time of request instrumentation, if any, `nil` otherwise.
         let activeSpan: OTSpan?
+        /// Whether GraphQL headers were detected in the request
+        let hasGraphQLHeaders: Bool
     }
 
     /// Integration with Core Context.
@@ -28,6 +30,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     let samplingRate: SampleRate
     /// Trace context injection configuration to determine whether the trace context should be injected or not.
     let traceContextInjection: TraceContextInjection
+    /// Telemetry interface for tracking SDK usage
+    let telemetry: Telemetry
 
     weak var tracer: DatadogTracer?
 
@@ -49,13 +53,15 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         contextReceiver: ContextMessageReceiver,
         samplingRate: SampleRate,
         firstPartyHosts: FirstPartyHosts,
-        traceContextInjection: TraceContextInjection
+        traceContextInjection: TraceContextInjection,
+        telemetry: Telemetry
     ) {
         self.tracer = tracer
         self.contextReceiver = contextReceiver
         self.samplingRate = samplingRate
         self.firstPartyHosts = firstPartyHosts
         self.traceContextInjection = traceContextInjection
+        self.telemetry = telemetry
     }
 
     func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
@@ -140,10 +146,18 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
          Read the comment in interceptionDidStart(…) to know how this information propagates.
          */
 
+        // Detect GraphQL requests by checking for GraphQL headers
+        let hasGraphQLHeaders = request.hasGraphQLHeaders
+
+        // Return captured state with both active span and GraphQL detection
+        let capturedState: URLSessionHandlerCapturedState? = (tracer.activeSpan != nil || hasGraphQLHeaders)
+            ? TracingURLSessionHandlerCapturedState(activeSpan: tracer.activeSpan, hasGraphQLHeaders: hasGraphQLHeaders)
+            : nil
+
         return (
             request,
             hasSetAnyHeader ? injectedSpanContext : nil,
-            tracer.activeSpan.map { TracingURLSessionHandlerCapturedState(activeSpan: $0) }
+            capturedState
         )
     }
 
@@ -163,8 +177,21 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
          span is used.
          */
         // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
-        capturedStates.compactMap({ ($0 as? TracingURLSessionHandlerCapturedState)?.activeSpan }).first.map {
+        let capturedState = capturedStates.compactMap({ $0 as? TracingURLSessionHandlerCapturedState }).first
+
+        capturedState?.activeSpan.map {
             interception.register(activeSpanContext: $0.context)
+        }
+
+        // Check if GraphQL was detected in the captured state
+        // Only send telemetry if the request is not already tracked by RUM (to avoid duplicates)
+        if interception.origin != "rum",
+           let capturedState = capturedState,
+           capturedState.hasGraphQLHeaders {
+            telemetry.send(telemetry: .usage(.init(
+                event: .addGraphQLRequest,
+                sampleRate: UsageTelemetry.defaultSampleRate
+            )))
         }
     }
 

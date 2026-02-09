@@ -34,6 +34,12 @@ internal struct DistributedTracing {
 }
 
 internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RUMCommandPublisher {
+    /// Captured state for RUM URL session handler
+    struct RUMURLSessionHandlerCapturedState: URLSessionHandlerCapturedState {
+        /// Whether GraphQL headers were detected in the request
+        let hasGraphQLHeaders: Bool
+    }
+
     /// The date provider
     let dateProvider: DateProvider
     /// Distributed Tracing
@@ -41,6 +47,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
     /// Attributes-providing callback.
     /// It is configured by the user and should be used to associate additional RUM attributes with intercepted RUM Resource.
     let rumAttributesProvider: RUM.ResourceAttributesProvider?
+    /// Telemetry interface for tracking SDK usage
+    let telemetry: Telemetry
 
     /// First party hosts defined by the user.
     var firstPartyHosts: FirstPartyHosts {
@@ -52,11 +60,13 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
     init(
         dateProvider: DateProvider,
         rumAttributesProvider: RUM.ResourceAttributesProvider?,
-        distributedTracing: DistributedTracing?
+        distributedTracing: DistributedTracing?,
+        telemetry: Telemetry
     ) {
         self.dateProvider = dateProvider
         self.rumAttributesProvider = rumAttributesProvider
         self.distributedTracing = distributedTracing
+        self.telemetry = telemetry
     }
 
     // MARK: - Internal
@@ -70,18 +80,33 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
     // MARK: - DatadogURLSessionHandler
 
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
-        distributedTracing?.modify(
+        let (modifiedRequest, traceContext, _) = distributedTracing?.modify(
             request: request,
             headerTypes: headerTypes,
             rumSessionId: networkContext?.rumContext?.sessionID,
             userId: networkContext?.userConfigurationContext?.id,
             accountId: networkContext?.accountConfigurationContext?.id
         ) ?? (request, nil, nil)
+
+        // Note: DistributedTracing.modify() currently returns nil for captured state.
+        // If this changes, we'll need to merge captured states instead of replacing.
+        let capturedState: URLSessionHandlerCapturedState? = modifiedRequest.hasGraphQLHeaders ? RUMURLSessionHandlerCapturedState(hasGraphQLHeaders: true) : nil
+
+        return (modifiedRequest, traceContext, capturedState)
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
         let url = interception.request.url?.absoluteString ?? "unknown_url"
         interception.register(origin: "rum")
+
+        // Check if GraphQL was detected in the captured states
+        if let capturedState = capturedStates.compactMap({ $0 as? RUMURLSessionHandlerCapturedState }).first,
+           capturedState.hasGraphQLHeaders {
+            telemetry.send(telemetry: .usage(.init(
+                event: .addGraphQLRequest,
+                sampleRate: UsageTelemetry.defaultSampleRate
+            )))
+        }
 
         subscriber?.process(
             command: RUMStartResourceCommand(
