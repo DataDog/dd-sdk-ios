@@ -210,24 +210,17 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             return nil
         }
 
-        // Fast check: does the response contain an "errors" key?
-        guard let result = try? JSONDecoder().decode(GraphQLResponseHasErrors.self, from: data),
-              result.hasErrors else {
+        guard let response = try? JSONDecoder().decode(GraphQLResponse.self, from: data),
+              let errors = response.errors,
+              !errors.isEmpty else {
             return nil
         }
 
-        // Extract just the errors array from the response
         do {
-            let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-            guard let errorsArray = json?["errors"] else {
-                return nil
-            }
-
-            // Convert just the errors array back to JSON string
-            let errorsData = try JSONSerialization.data(withJSONObject: errorsArray)
+            let errorsData = try JSONEncoder().encode(errors)
             return String(data: errorsData, encoding: .utf8)
         } catch {
-            DD.logger.debug("Failed to extract GraphQL errors array: \(error)")
+            DD.logger.debug("Failed to encode GraphQL errors array: \(error)")
             return nil
         }
     }

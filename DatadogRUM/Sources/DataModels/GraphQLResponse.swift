@@ -8,16 +8,10 @@ import Foundation
 
 // MARK: - GraphQL Response Models
 
-/// Lightweight decoder to check if a GraphQL response contains errors.
-/// Only checks for the presence of the "errors" key without decoding the entire array.
-internal struct GraphQLResponseHasErrors: Decodable {
-    let hasErrors: Bool
-    private enum CodingKeys: String, CodingKey { case errors }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        hasErrors = container.contains(.errors)
-    }
+/// Represents a GraphQL response containing errors.
+/// The data field is intentionally omitted to avoid decoding potentially large response payloads.
+internal struct GraphQLResponse: Codable {
+    let errors: [GraphQLResponseError]?
 }
 
 /// Represents a GraphQL error in the response.
@@ -25,7 +19,7 @@ internal struct GraphQLResponseHasErrors: Decodable {
 /// Note: Some GraphQL implementations may include `code` at the error level (legacy pattern)
 /// instead of within `extensions.code`. Both locations are supported for compatibility.
 /// Reference: https://spec.graphql.org/September2025/#note-5c13b
-internal struct GraphQLResponseError: Decodable {
+internal struct GraphQLResponseError: Codable {
     let message: String
     let locations: [GraphQLResponseErrorLocation]?
     let path: [GraphQLResponsePathElement]?
@@ -49,21 +43,22 @@ internal struct GraphQLResponseError: Decodable {
 
     /// GraphQL error extensions. Only the `code` field is extracted as it's the most commonly used.
     /// The GraphQL spec allows any additional fields in extensions, but we focus on error codes.
-    struct Extensions: Decodable {
+    struct Extensions: Codable {
         let code: String?
     }
 }
 
 /// Represents a location in a GraphQL query where an error occurred.
-internal struct GraphQLResponseErrorLocation: Decodable {
+internal struct GraphQLResponseErrorLocation: Codable {
     let line: Int
     let column: Int
 }
 
 /// Represents an element in the path to a field that caused an error.
-internal enum GraphQLResponsePathElement: Decodable {
+internal enum GraphQLResponsePathElement: Codable {
     case string(String)
     case int(Int)
+
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         if let intValue = try? container.decode(Int.self) {
@@ -75,6 +70,16 @@ internal enum GraphQLResponsePathElement: Decodable {
                 in: container,
                 debugDescription: "Path element must be string or int"
             )
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .string(let value):
+            try container.encode(value)
+        case .int(let value):
+            try container.encode(value)
         }
     }
 }
