@@ -10,6 +10,7 @@
 
 #include "profile.h"
 #include "profile_pprof_packer.h"
+#include "binary_image_resolver.h"
 
 // C interface implementation
 extern "C" {
@@ -44,10 +45,19 @@ void dd_pprof_free_serialized_data(uint8_t* data) {
     if (data) free(data);
 }
 
-void dd_pprof_callback(const stack_trace_t* traces, size_t count, void* ctx) {
+void dd_pprof_callback(stack_trace_t* traces, size_t count, void* ctx) {
     dd_pprof_t* profile = static_cast<dd_pprof_t*>(ctx);
     if (profile && traces && count > 0) {
+        // Resolve binary images in-place
+        dd::profiler::resolve_stack_trace_frames(traces, count, nullptr);
         dd_pprof_add_samples(profile, traces, count);
+
+        // Free image data we allocated
+        for (size_t i = 0; i < count; i++) {
+            for (uint32_t j = 0; j < traces[i].frame_count; j++) {
+                binary_image_destroy(&traces[i].frames[j].image);
+            }
+        }
     }
 }
 
