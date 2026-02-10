@@ -11,7 +11,6 @@
 #include <TargetConditionals.h>
 #if !TARGET_OS_WATCH
 
-#include <stdint.h>
 #include <stdbool.h>
 
 /**

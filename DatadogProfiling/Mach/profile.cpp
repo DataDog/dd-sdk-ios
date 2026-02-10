@@ -24,9 +24,7 @@
 
 #include "profile.h"
 
-#ifdef __APPLE__
-#include <TargetConditionals.h>
-#if !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include <time.h>
 
@@ -277,6 +275,6 @@ uint32_t profile::intern_location(const location_t& location) {
 }
 
 } // namespace dd::profiler
-#endif // !TARGET_OS_WATCH
-#endif // __APPLE__
+
+#endif // __APPLE__ && !TARGET_OS_WATCH
 

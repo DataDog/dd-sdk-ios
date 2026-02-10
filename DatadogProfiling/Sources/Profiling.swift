@@ -7,9 +7,8 @@
 import Foundation
 import DatadogInternal
 
-#if os(watchOS)
-#warning("Datadog Profiling is not supported on watchOS.")
-#else
+#if !os(watchOS)
+
 // swiftlint:disable duplicate_imports
 #if swift(>=6.0)
 internal import DatadogMachProfiler
@@ -52,4 +51,5 @@ public enum Profiling {
         core.set(context: ProfilingContext(status: .current))
     }
 }
+
 #endif

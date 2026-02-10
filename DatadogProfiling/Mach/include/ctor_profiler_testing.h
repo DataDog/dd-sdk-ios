@@ -7,11 +7,11 @@
 #ifndef DD_PROFILER_CTOR_PROFILER_TESTING_H_
 #define DD_PROFILER_CTOR_PROFILER_TESTING_H_
 
-#include "ctor_profiler.h"
-
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #if !TARGET_OS_WATCH
+
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

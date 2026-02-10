@@ -23,9 +23,7 @@
 
 #include "profile_pprof_packer.h"
 
-#ifdef __APPLE__
-#include <TargetConditionals.h>
-#if !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include "profile.h"
 #include "profile.pb-c.h"
@@ -307,6 +305,5 @@ void perftools__profiles__profile__add_samples(const std::vector<sample_t>& samp
 }
 
 } // namespace dd::profiler
-#endif // !TARGET_OS_WATCH
-#endif // __APPLE__
 
+#endif // __APPLE__ && !TARGET_OS_WATCH

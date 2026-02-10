@@ -6,9 +6,7 @@
 
 #include "dd_pprof.h"
 
-#ifdef __APPLE__
-#include <TargetConditionals.h>
-#if !TARGET_OS_WATCH
+#if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include "profile.h"
 #include "profile_pprof_packer.h"
@@ -66,6 +64,5 @@ double dd_pprof_get_end_timestamp_s(dd_pprof_t* profile) {
 }
 
 } // extern "C"
-#endif // !TARGET_OS_WATCH
-#endif // __APPLE__
 
+#endif // __APPLE__ && !TARGET_OS_WATCH

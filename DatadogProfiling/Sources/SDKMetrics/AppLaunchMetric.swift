@@ -4,10 +4,10 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
-
 import Foundation
 import DatadogInternal
+
+#if !os(watchOS)
 
 /// Tracks app launch profiling telemetry and exports attributes under the "Profiling App Launch" metric.
 internal final class AppLaunchMetric {
@@ -96,4 +96,4 @@ extension AppLaunchMetric {
     }
 }
 
-#endif // !os(watchOS)
+#endif

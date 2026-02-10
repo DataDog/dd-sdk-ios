@@ -9,8 +9,6 @@
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
-#endif
-
 #if !TARGET_OS_WATCH
 
 #include <stdint.h>
@@ -191,5 +189,6 @@ int profiler_is_running(const profiler_t* profiler);
 #endif
 
 #endif // !TARGET_OS_WATCH
+#endif // __APPLE__
 
 #endif // DD_PROFILER_PROFILER_H_

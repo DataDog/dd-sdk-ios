@@ -4,10 +4,10 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
-
 import Foundation
 import DatadogInternal
+
+#if !os(watchOS)
 
 // swiftlint:disable duplicate_imports
 #if swift(>=6.0)
@@ -168,4 +168,4 @@ extension ProfilingContext.Status {
     }
 }
 
-#endif // !os(watchOS)
+#endif

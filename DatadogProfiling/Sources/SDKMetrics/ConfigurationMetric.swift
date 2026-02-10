@@ -6,6 +6,8 @@
 
 import Foundation
 
+#if !os(watchOS)
+
 // swiftlint:disable duplicate_imports
 #if swift(>=6.0)
 internal import DatadogMachProfiler
@@ -59,3 +61,5 @@ extension ConfigurationMetric: Encodable {
         case samplingFrequency = "sampling_frequency"
     }
 }
+
+#endif

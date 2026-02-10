@@ -4,10 +4,10 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
-
 import Foundation
 import DatadogInternal
+
+#if !os(watchOS)
 
 internal final class ProfilingTelemetryController {
     /// The default sample rate for "Profiling App Launch" metric (20%),
@@ -42,4 +42,4 @@ internal final class ProfilingTelemetryController {
     }
 }
 
-#endif // !os(watchOS)
+#endif

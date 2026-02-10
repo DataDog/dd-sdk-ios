@@ -8,6 +8,7 @@ import Foundation
 import DatadogInternal
 
 #if !os(watchOS)
+
 extension Profiling {
     /// Configuration options for the profiling feature.
     public struct Configuration {
@@ -39,4 +40,5 @@ extension Profiling {
         }
     }
 }
+
 #endif
