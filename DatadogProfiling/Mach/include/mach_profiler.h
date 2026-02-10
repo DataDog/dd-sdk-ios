@@ -15,63 +15,28 @@
 #include <mach/mach.h>
 #include <mach/thread_act.h>
 #include <mach/thread_info.h>
+#include "symbolication.h"
 
 /**
  * @file mach_profiler.h
- * @brief Mach-based profiler for application launch and continuous performance analysis
+ * @brief Mach-based profiler for application performance analysis
  * 
- * This profiler automatically starts during the earliest phase of application startup
- * by using GCC/Clang's __attribute__((constructor)) mechanism. It provides 101 Hz
- * sampling of stack traces from process initialization until manually stopped.
+ * This profiler provides high-frequency sampling of stack traces across all threads.
+ * It can start automatically during the earliest phase of application startup
+ * (via constructor attribute) or be controlled manually.
  * 
- * # Automatic Startup
+ * # Startup
  * 
- * The profiler automatically checks if the profiling was enabled before, and starts it if so.
- * No manual initialization is required.
+ * The profiler can automatically check if profiling was enabled in a previous session
+ * and start capturing data immediately.
  * 
  * # Profiling Characteristics
  * 
- * - **Timing**: Starts via __attribute__((constructor(65535))) - very early in process lifecycle
- * - **Sampling Rate**: 101 Hz (~9.9ms intervals) - optimized for launch profiling without performance impact
- * - **Buffer Size**: 10,000 samples to capture entire launch phase
- * - **Stack Depth**: 64 frames maximum per trace
+ * - **Sampling Rate**: 101 Hz (~9.9ms intervals) - optimized for performance
+ * - **Buffer Size**: 100,000 samples
+ * - **Stack Depth**: 128 frames maximum per trace
  * - **Thread Coverage**: All threads in the process
  *
- * # Usage Example
- * 
- * ```c
- * #include "mach_profiler.h"
- * 
- * // Profiling starts automatically if enabled before
- *
- * int main(int argc, char* argv[]) {
- *     // Your app initialization...
- *     
- *     // Stop profiling when launch phase is complete
- *     if (profiler_is_active()) {
- *         profiler_stop();
- *     }
- *     
- *     // Continue with normal app execution...
- *     return 0;
- * }
- * ```
- * 
- * # Swift Integration
- * 
- * This API is designed for Swift interoperability:
- * 
- * ```swift
- * import DatadogProfiling
- * 
- * func applicationDidFinishLaunching() {
- *     // Stop constructor profiling when app launch is complete
- *     if profiler_is_active() != 0 {
- *         profiler_stop()
- *     }
- * }
- * ```
- * 
  * # Performance Considerations
  * 
  * - Profiling starts right before main()
@@ -117,18 +82,6 @@ extern "C" {
 #endif
 
 /**
- * Structure representing a binary image loaded in memory.
- */
-typedef struct binary_image {
-    /** Base address where the image is loaded */
-    uint64_t load_address;
-    /** UUID of the binary */
-    uuid_t uuid;
-    /** Filename of the binary */
-    const char* filename;
-} binary_image_t;
-
-/**
  * Represents a single stack frame in a profile.
  */
 typedef struct stack_frame {
@@ -172,6 +125,8 @@ typedef struct sampling_config {
     uint32_t max_thread_count;  // default: 100
     /** QoS class for the sampling thread */
     qos_class_t qos_class;
+    /** Thread to ignore during sampling (e.g. the resolver thread) */
+    pthread_t ignore_thread;
 } sampling_config_t;
 
 
@@ -221,7 +176,7 @@ typedef struct profile profiler_profile_t;
 
 
 /**
- * @brief Gets the current status of the constructor profiler
+ * @brief Gets the current status of the profiler
  *
  * This function provides detailed information about the profiler's current state,
  * including why it may not have started or why it stopped.
@@ -235,12 +190,12 @@ typedef struct profile profiler_profile_t;
  *
  * let status = profiler_get_status()
  * switch status {
- * case PROFILER_STATUS_ACTIVE:
+ * case PROFILER_STATUS_RUNNING:
  *     print("Profiler is running")
  * case PROFILER_STATUS_PREWARMED:
  *     print("Profiler was not started due to app prewarming")
- * case PROFILER_STATUS_LOW_SAMPLE_RATE:
- *     print("Profiler was not started due to low sample rate")
+ * case PROFILER_STATUS_SAMPLED_OUT:
+ *     print("Profiler was not started due to sample rate")
  * default:
  *     print("Profiler status: \(status)")
  * }
@@ -251,7 +206,6 @@ profiler_status_t profiler_get_status(void);
 /**
  * @brief Starts profiling if it's currently stopped or ignored otherwise.
  *
- *
  * After calling this function, `profiler_get_status()` will return `PROFILER_STATUS_RUNNING`.
  *
  * @note Safe to call multiple times - subsequent calls are no-ops
@@ -259,41 +213,37 @@ profiler_status_t profiler_get_status(void);
 void profiler_start(void);
 
 /**
- * @brief Stops constructor-based profiling if it's currently running.
+ * @brief Stops profiling if it's currently running.
  *
  * After calling this function, `profiler_get_status()` will return `PROFILER_STATUS_STOPPED`.
  *
  * @note Safe to call multiple times - subsequent calls are no-ops
  * @note Safe to call even if profiling was never started
- * 
- * @warning Once stopped, constructor profiling cannot be restarted in the same process
- * 
  */
 void profiler_stop(void);
 
 /**
- * @brief Retrieves the aggregated profile data from constructor profiling
+ * @brief Retrieves the aggregated profile data
  * 
- * Returns a typed handle to the profile data collected during constructor-based
- * profiling. This data contains deduplicated stack traces, binary mappings, and
- * sample metadata that can be serialized for analysis.
+ * Returns a typed handle to the profile data collected. This data contains
+ * deduplicated stack traces, binary mappings, and sample metadata that 
+ * can be serialized for analysis.
  * 
- * @param cleanup If true, the profile data will be removed from the profiler and subsequent calls will return NULL.
+ * @param cleanup If true, the current profile data will be cleared and a new segment started.
  * @return Typed handle to profile data, or NULL if:
  *         - Profiling was never started
  *         - No samples were collected
  *         - Profile data has been destroyed
  * 
- * @note The returned handle remains valid until destroyed
+ * @note The returned handle remains valid until destroyed via `profiler_destroy()`
  * @note This function can be called before or after stopping the profiler
- * @note The profile data accumulates all samples from constructor start to stop
  * 
  * @see `profiler_stop()`, `profiler_destroy()`
  */
 profiler_profile_t* profiler_get_profile(bool cleanup);
 
 /**
- * @brief Destroys the constructor profiler data and frees all associated memory
+ * @brief Destroys the profiler data and frees all associated memory
  *
  * This function should be called when the profile data is no longer needed
  * to free memory resources. After calling this function, `profiler_get_profile()`

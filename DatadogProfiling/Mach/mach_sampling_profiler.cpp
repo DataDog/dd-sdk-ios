@@ -3,7 +3,6 @@
 
 #ifdef __APPLE__
 
-#include <dlfcn.h>
 #include <thread>
 #include <string.h>
 #include <stdlib.h>
@@ -13,52 +12,17 @@
 #include <mach/thread_act.h>
 #include <mach/thread_status.h>
 #include <mach/machine/thread_state.h>
-#include <mach-o/loader.h>
-#include <mach-o/dyld.h>
-#include <algorithm>
 
 // Address validation constants and macros
 //
 // These values define the valid range for user-space addresses on 64-bit systems:
-//
-// MIN_USERSPACE_ADDR (0x1000):
-//   - Corresponds to the typical page size (4KB)
-//   - Helps avoid null pointer dereference regions (0x0 - 0xFFF)
-//   - Based on standard virtual memory layouts where the first page is unmapped
-//   - Reference: mach/vm_param.h, typical VM_MIN_ADDRESS values
-//
-// MAX_USERSPACE_ADDR (0x7FFFFFFFF000ULL):
-//   - Upper limit for user-space addresses on 64-bit ARM64/x86_64
-//   - On ARM64: user space typically occupies 0x0 - 0x7FFFFFFFF000
-//   - On x86_64: similar layout with kernel space starting around 0x8000000000000000
-//   - This leaves the upper address space for kernel/system use
-//   - Reference: ARM64 memory layout documentation, x86_64 canonical addressing
 //
 // FRAME_POINTER_ALIGN (8 bytes):
 //   - 64-bit systems require 8-byte alignment for pointers
 //   - Stack frame pointers must be properly aligned to avoid bus errors
 //   - Reference: ARM64/x86_64 ABI specifications
 
-static constexpr uintptr_t MIN_USERSPACE_ADDR = 0x1000ULL;          // 4KB - avoid null deref region
-static constexpr uintptr_t MAX_USERSPACE_ADDR = 0x7FFFFFFFF000ULL;  // ~128TB - max user space on 64-bit
-static constexpr uintptr_t FRAME_POINTER_ALIGN = 0x7ULL;            // 8-byte alignment mask
-
-// Mach-O validation constants
-//
-// MAX_LOAD_COMMANDS (1000):
-//   - Reasonable upper bound for number of load commands in a Mach-O file
-//   - Typical executables have 20-50 load commands, complex ones may have ~100
-//   - 1000 is a generous safety limit to catch corrupted/malicious headers
-//   - Reference: Analysis of real-world Mach-O files, otool output observations
-//
-// MAX_LOAD_COMMAND_SIZE (0x10000 = 64KB):
-//   - Maximum size for a single load command
-//   - Most load commands are < 1KB, largest (like LC_CODE_SIGNATURE) rarely exceed 16KB
-//   - 64KB provides safety margin while preventing massive buffer overruns
-//   - Reference: mach-o/loader.h specifications, real-world observations
-
-static constexpr uint32_t MAX_LOAD_COMMANDS = 1000;         // Generous upper bound for ncmds
-static constexpr uint32_t MAX_LOAD_COMMAND_SIZE = 0x10000;  // 64KB max per load command
+static const uintptr_t FRAME_POINTER_ALIGN = 0x7ULL;            // 8-byte alignment mask
 
 // Thread name buffer size
 //
@@ -71,15 +35,6 @@ extern "C" {
 
 // Main thread pthread identifier for comparison
 static pthread_t g_main_pthread = NULL;
-
-struct library_image_t {
-    uintptr_t start_addr;
-    uintptr_t end_addr;
-    binary_image_t info;
-};
-
-static std::vector<library_image_t> g_image_libraries;
-static std::mutex g_image_libraries_mutex;
 
 // Safe memory read using signal handling
 // Thread-local storage for signal-based safe memory reading
@@ -150,143 +105,11 @@ static void init_safe_read_handlers() {
 }
 
 /**
- * Validates if an address is within reasonable user-space bounds.
- * Rejects null pointers, kernel addresses, and other invalid ranges.
- */
-static constexpr bool is_valid_userspace_addr(uintptr_t addr) {
-    return addr >= MIN_USERSPACE_ADDR && addr <= MAX_USERSPACE_ADDR;
-}
-
-/**
  * Validates if a frame pointer is valid: within user-space bounds and properly aligned.
  * Frame pointers must be 8-byte aligned on 64-bit systems.
  */
-static constexpr bool is_valid_frame_pointer(uintptr_t fp) {
+static inline bool is_valid_frame_pointer(uintptr_t fp) {
     return is_valid_userspace_addr(fp) && (fp & FRAME_POINTER_ALIGN) == 0;
-}
-
-/**
- * Validates if the number of load commands in a Mach-O header is reasonable.
- * Rejects empty files and suspiciously large command counts.
- */
-static constexpr bool is_valid_load_command_count(uint32_t ncmds) {
-    return ncmds > 0 && ncmds <= MAX_LOAD_COMMANDS;
-}
-
-/**
- * Validates if a load command size is within acceptable bounds.
- * Prevents buffer overruns from malformed command sizes.
- */
-static constexpr bool is_valid_load_command_size(uint32_t cmdsize) {
-    return cmdsize >= sizeof(struct load_command) && cmdsize <= MAX_LOAD_COMMAND_SIZE;
-}
-
-/**
- * Initializes a binary image structure to safe defaults.
- *
- * @param[out] info The binary image structure to initialize
- * @return true if initialization succeeded, false on null pointer
- */
-bool binary_image_init(binary_image_t* info) {
-    if (!info) return false;
-    memset(info->uuid, 0, sizeof(uuid_t));
-    info->load_address = 0;
-    info->filename = nullptr;
-    return true;
-}
-
-/**
- * Destroys a binary image structure, freeing any memory allocated by that struct
- * but not the image struct itself.
- *
- * @param info The binary image structure to destroy
- */
-void binary_image_destroy(binary_image_t* info) {
-    if (!info) return;
-    
-    if (info->filename) {
-        free((void*)info->filename);
-        info->filename = nullptr;
-    }
-    memset(info->uuid, 0, sizeof(uuid_t));
-    info->load_address = 0;
-}
-
-/**
- * Looks up binary image information for a program counter address.
- *
- * @param[out] info The binary image structure to populate (must be initialized with binary_image_init)
- * @param pc The program counter address to get image info for
- * @return true if binary image was found and info populated, false otherwise
- */
-bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
-    if (!info) return false;
-    
-    // Validate the PC address - it should be a reasonable user-space address
-    uintptr_t addr = (uintptr_t)pc;
-    if (!is_valid_userspace_addr(addr)) return false;
-
-    // Try cache first
-    {
-        std::lock_guard<std::mutex> lock(g_image_libraries_mutex);
-        if (!g_image_libraries.empty()) {
-            auto it = std::upper_bound(g_image_libraries.begin(), g_image_libraries.end(), addr,
-                [](uintptr_t val, const library_image_t& entry) {
-                    return val < entry.start_addr;
-                });
-            
-            if (it != g_image_libraries.begin()) {
-                --it;
-                if (addr >= it->start_addr && addr < it->end_addr) {
-                    info->load_address = it->info.load_address;
-                    memcpy(info->uuid, it->info.uuid, sizeof(uuid_t));
-                    if (it->info.filename) {
-                        info->filename = strdup(it->info.filename);
-                    }
-                    return true;
-                }
-            }
-        }
-    }
-    
-    // Fallback for libraries loaded after cache or if cache is empty
-    Dl_info dl_info;
-    if (dladdr(pc, &dl_info) == 0) return false;
-    if (!is_valid_userspace_addr((uintptr_t)dl_info.dli_fbase)) return false;
-
-    // Copy filename if available
-    if (dl_info.dli_fname) {
-        size_t fname_len = strlen(dl_info.dli_fname) + 1;
-        char* fname = (char*)malloc(fname_len);
-        if (fname) {
-            strcpy(fname, dl_info.dli_fname);
-            info->filename = fname;
-        }
-    }
-
-    // Get UUID from the image
-    const struct mach_header_64* header = (const struct mach_header_64*)dl_info.dli_fbase;
-    if (!header || header->magic != MH_MAGIC_64) return false;
-    // Validate ncmds to prevent reading too far
-    if (!is_valid_load_command_count(header->ncmds)) return false;
-
-    const struct load_command* cmd = (const struct load_command*)(header + 1);
-    for (uint32_t i = 0; i < header->ncmds; ++i) {
-        // Validate command size to prevent buffer overruns
-        if (!is_valid_load_command_size(cmd->cmdsize)) break;
-        
-        if (cmd->cmd == LC_UUID) {
-            const struct uuid_command* uuid_cmd = (const struct uuid_command*)cmd;
-            if (cmd->cmdsize >= sizeof(struct uuid_command)) {
-                memcpy(info->uuid, uuid_cmd->uuid, sizeof(uuid_t));
-                info->load_address = (uintptr_t)dl_info.dli_fbase;
-                return true;
-            }
-        }
-        cmd = (const struct load_command*)((char*)cmd + cmd->cmdsize);
-    }
-
-    return false;
 }
 
 /**
@@ -567,43 +390,28 @@ void mach_sampling_profiler::stop_sampling() {
  *
  * @param thread The thread to sample
  * @param interval_nanos The actual sampling interval in nanoseconds for this sample
+ * @param[out] out_trace The stack trace to fill
+ * @return true if a valid trace was captured
  */
-void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_nanos) {
-    stack_trace_t trace;
-    if (!stack_trace_init(&trace, config.max_stack_depth, interval_nanos)) return;
+bool mach_sampling_profiler::capture_stack_trace(thread_t thread, uint64_t interval_nanos, stack_trace_t& out_trace) {
+    void *fp, *pc = nullptr;
+    if (!thread_get_frame_pointers(thread, &fp, &pc)) return false;
+
+    if (!stack_trace_init(&out_trace, config.max_stack_depth, interval_nanos)) return false;
 
     // Get thread info
-    stack_trace_get_thread_info(&trace, thread);
+    stack_trace_get_thread_info(&out_trace, thread);
 
     if (thread_suspend(thread) == KERN_SUCCESS) {
-        // CRITICAL: Thread is suspended - avoid operations that could deadlock
-        //
-        // The suspended thread may be holding system locks (memory allocator, pthread, etc).
-        // If we try to acquire these same locks while the thread is suspended, we'll deadlock.
-        //
-        // Specifically avoid:
-        // - Memory allocations (new, malloc) - memory allocator locks
-        // - System calls that acquire locks - they may be held by suspended thread
-        // - pthread functions - they share locks with system APIs
-        stack_trace_sample_thread(&trace, thread, config.max_stack_depth);
+        stack_trace_sample_thread(&out_trace, thread, config.max_stack_depth);
         thread_resume(thread);
     }
 
-    if (trace.frame_count > 0) {
-        bool should_flush = false;
-        {
-            std::lock_guard<std::mutex> lock(buffer_mutex);
-            sample_buffer.push_back(trace);
-            if (sample_buffer.size() >= config.max_buffer_size) {
-                should_flush = true;
-            }
-        }
-        if (should_flush) {
-            printf("flushing the buffer");
-            flush_buffer();
-        }
+    if (out_trace.frame_count > 0) {
+        return true;
     } else {
-        stack_trace_destroy(&trace);
+        stack_trace_destroy(&out_trace);
+        return false;
     }
 }
 
@@ -611,53 +419,75 @@ void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_na
  * Main sampling loop that collects stack traces from threads.
  */
 void mach_sampling_profiler::main() {
+    std::vector<stack_trace_t> cycle_buffer;
+    cycle_buffer.reserve(config.max_thread_count > 0 ? config.max_thread_count : 64);
+
     while (running) {
-        // Sampling interval in nanoseconds
         uint64_t interval_nanos = config.sampling_interval_nanos;
+        cycle_buffer.clear();
 
         if (config.profile_current_thread_only) {
-            sample_thread(pthread_mach_thread_np(target_thread), interval_nanos);
+            stack_trace_t trace;
+            if (capture_stack_trace(pthread_mach_thread_np(target_thread), interval_nanos, trace)) {
+                cycle_buffer.push_back(trace);
+            }
         } else {
             thread_act_array_t threads;
             mach_msg_type_number_t count;
             
-            if (task_threads(mach_task_self(), &threads, &count) != KERN_SUCCESS) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                continue;
+            if (task_threads(mach_task_self(), &threads, &count) == KERN_SUCCESS) {
+                for (mach_msg_type_number_t i = 0; i < count; i++) {
+                    if (!running) break;
+                    if (config.max_thread_count != 0 && i > config.max_thread_count) break;
+                    if (threads[i] == pthread_mach_thread_np(pthread_self())) continue;
+                    if (config.ignore_thread && threads[i] == pthread_mach_thread_np(config.ignore_thread)) continue;
+                    
+                    stack_trace_t trace;
+                    if (capture_stack_trace(threads[i], interval_nanos, trace)) {
+                        cycle_buffer.push_back(trace);
+                    }
+                }
+
+                for (mach_msg_type_number_t i = 0; i < count; i++) {
+                    mach_port_deallocate(mach_task_self(), threads[i]);
+                }
+                vm_deallocate(mach_task_self(), (vm_address_t)threads, count * sizeof(thread_t));
             }
-
-            for (mach_msg_type_number_t i = 0; i < count; i++) {
-                if (!running) break;
-
-                // Stop sampling if we've reached the configured thread limit
-                if (config.max_thread_count != 0 && i > config.max_thread_count) break;
-                
-                // Skip the sampling thread itself
-                if (threads[i] == pthread_mach_thread_np(pthread_self())) continue;
-                
-                sample_thread(threads[i], interval_nanos);
-            }
-
-            // Clean up thread references
-            for (mach_msg_type_number_t i = 0; i < count; i++) {
-                mach_port_deallocate(mach_task_self(), threads[i]);
-            }
-
-            vm_deallocate(mach_task_self(), (vm_address_t)threads, count * sizeof(thread_t));
         }
 
-        // Sleep for the same interval we recorded
+        // Batch push to shared buffer - only ONE lock acquisition per cycle
+        if (!cycle_buffer.empty()) {
+            bool should_flush = false;
+            if (pthread_mutex_trylock(buffer_mutex.native_handle()) == 0) {
+                for (auto& trace : cycle_buffer) {
+                    sample_buffer.push_back(trace);
+                }
+                if (sample_buffer.size() >= config.max_buffer_size) {
+                    should_flush = true;
+                }
+                pthread_mutex_unlock(buffer_mutex.native_handle());
+            } else {
+                // If contested, we must clean up the cycle traces to avoid leaks
+                for (auto& trace : cycle_buffer) {
+                    stack_trace_destroy(&trace);
+                }
+            }
+            
+            if (should_flush) {
+                flush_buffer(false); // Async/Non-blocking flush from sampling cycle
+            }
+        }
+
         std::this_thread::sleep_for(std::chrono::nanoseconds(interval_nanos));
     }
     
-    // Flush any remaining samples
-    flush_buffer();
+    flush_buffer(true); // Blocking flush on stop
 }
 
 /**
  * Flushes the sample buffer by calling the callback with collected traces.
  */
-void mach_sampling_profiler::flush_buffer() {
+void mach_sampling_profiler::flush_buffer(bool blocking) {
     std::vector<stack_trace_t> traces_to_flush;
     {
         std::lock_guard<std::mutex> lock(buffer_mutex);
@@ -665,21 +495,9 @@ void mach_sampling_profiler::flush_buffer() {
         traces_to_flush.swap(sample_buffer);
     }
 
-    // Fill in binary image information for all frames using the cache
-    for (auto& trace : traces_to_flush) {
-        for (uint32_t i = 0; i < trace.frame_count; i++) {
-            auto& frame = trace.frames[i];
-            binary_image_init(&frame.image);
-            binary_image_lookup_pc(&frame.image, (void*)frame.instruction_ptr);
-        }
-    }
-
-    callback(traces_to_flush.data(), traces_to_flush.size(), ctx);
-
-    // Free allocated frame memory and binary image data
-    for (auto& trace : traces_to_flush) {
-        stack_trace_destroy(&trace);
-    }
+    // Hand off the traces to the callback. The callback now owns these traces
+    // and is responsible for calling stack_trace_destroy on each one.
+    callback(traces_to_flush, blocking, ctx);
 }
 
 } // namespace dd::profiler
@@ -696,55 +514,6 @@ void safe_read_memory_for_testing(void* addr, void* buffer, size_t size) {
 
 void init_safe_read_handlers_for_testing(void) {
     init_safe_read_handlers();
-}
-
-void profiler_cache_binary_images(void) {
-    std::lock_guard<std::mutex> lock(g_image_libraries_mutex);
-    if (!g_image_libraries.empty()) return;
-
-    uint32_t count = _dyld_image_count();
-    for (uint32_t i = 0; i < count; i++) {
-        const struct mach_header_64* header = (const struct mach_header_64*)_dyld_get_image_header(i);
-        if (!header || header->magic != MH_MAGIC_64) continue;
-
-        uintptr_t slide = _dyld_get_image_vmaddr_slide(i);
-        uintptr_t low_addr = UINTPTR_MAX;
-        uintptr_t high_addr = 0;
-        uuid_t uuid = {0};
-        bool found_uuid = false;
-
-        const struct load_command* cmd = (const struct load_command*)(header + 1);
-        for (uint32_t j = 0; j < header->ncmds; j++) {
-            if (cmd->cmd == LC_SEGMENT_64) {
-                const struct segment_command_64* seg = (const struct segment_command_64*)cmd;
-                uintptr_t seg_start = slide + seg->vmaddr;
-                uintptr_t seg_end = seg_start + seg->vmsize;
-                if (seg_start < low_addr) low_addr = seg_start;
-                if (seg_end > high_addr) high_addr = seg_end;
-            } else if (cmd->cmd == LC_UUID) {
-                const struct uuid_command* uuid_cmd = (const struct uuid_command*)cmd;
-                memcpy(uuid, uuid_cmd->uuid, sizeof(uuid_t));
-                found_uuid = true;
-            }
-            cmd = (const struct load_command*)((char*)cmd + cmd->cmdsize);
-        }
-
-        if (found_uuid && low_addr != UINTPTR_MAX) {
-            library_image_t entry;
-            binary_image_init(&entry.info);
-            entry.start_addr = low_addr;
-            entry.end_addr = high_addr;
-            entry.info.load_address = (uint64_t)header;
-            memcpy(entry.info.uuid, uuid, sizeof(uuid_t));
-            const char* name = _dyld_get_image_name(i);
-            if (name) entry.info.filename = strdup(name);
-            g_image_libraries.push_back(entry);
-        }
-    }
-
-    std::sort(g_image_libraries.begin(), g_image_libraries.end(), [](const library_image_t& a, const library_image_t& b) {
-        return a.start_addr < b.start_addr;
-    });
 }
 
 } // extern "C"

@@ -25,18 +25,19 @@ static const sampling_config_t SAMPLING_CONFIG_DEFAULT = {
     SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE,     // max_buffer_size
     SAMPLING_CONFIG_DEFAULT_STACK_DEPTH,     // max_stack_depth
     SAMPLING_CONFIG_DEFAULT_THREAD_COUNT,    // max_thread_count
-    QOS_CLASS_USER_INTERACTIVE               // qos_class
+    QOS_CLASS_USER_INTERACTIVE,              // qos_class
+    NULL                                     // ignore_thread
 };
 
 /**
  * Callback type for receiving stack traces.
  * This is called whenever a batch of stack traces is captured.
  *
- * @param traces Array of captured stack traces
- * @param count Number of traces in the array
+ * @param traces Vector of captured stack traces. The callback takes ownership.
+ * @param blocking If true, the callback must block until the resolver is ready.
  * @param ctx Context pointer passed during profiler creation
  */
-typedef void (*stack_trace_callback_t)(const stack_trace_t* traces, size_t count, void* ctx);
+typedef void (*stack_trace_callback_t)(std::vector<stack_trace_t>& traces, bool blocking, void* ctx);
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,12 +53,12 @@ extern "C" {
 void set_main_thread(pthread_t thread);
 
 /**
- * Pre-caches binary image information for all currently loaded images.
- *
- * This can be called early in the process lifecycle to avoid repetitive
- * lookups during profiling.
+ * Destroys the frames of a stack trace, freeing any memory allocated by that struct
+ * but not the image struct itself.
+ * 
+ * @param trace Pointer to stack trace to clean up (can be nullptr)
  */
-void profiler_cache_binary_images(void);
+void stack_trace_destroy(stack_trace_t* trace);
 
 #ifdef __cplusplus
 }
@@ -104,13 +105,20 @@ public:
 
     /**
      * @brief Flushes the current sample buffer to the callback
+     * @param blocking If true, blocks until the callback accepts the data
      */
-    void flush_buffer();
+    void flush_buffer(bool blocking = false);
 
     /**
      * @brief Atomic flag indicating if profiling is currently running
      */
     std::atomic<bool> running;
+
+    /**
+     * @brief Gets the thread handle for the sampling thread
+     * @return The pthread_t handle
+     */
+    pthread_t get_sampling_thread() const { return sampling_thread; }
 
 protected:
     /**
@@ -153,8 +161,10 @@ protected:
      * 
      * @param thread The thread to sample
      * @param interval_nanos The actual sampling interval in nanoseconds for this sample
+     * @param[out] out_trace The stack trace to fill
+     * @return true if a valid trace was captured
      */
-    void sample_thread(thread_t thread, uint64_t interval_nanos);
+    bool capture_stack_trace(thread_t thread, uint64_t interval_nanos, stack_trace_t& out_trace);
 
 private:
     /**

@@ -13,6 +13,11 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <random>
+#include <mutex>
+#include <pthread.h>
+#include <queue>
+#include <atomic>
+#include <unordered_map>
 
 static constexpr int64_t PROFILER_TIMEOUT_NS = 60000000000ULL; // 60 seconds
 
@@ -154,16 +159,22 @@ public:
         double sample_rate = 0.0,
         bool is_prewarming = false,
         int64_t timeout_ns = PROFILER_TIMEOUT_NS
-    ) : sample_rate(sample_rate), is_prewarming(is_prewarming), timeout_ns(timeout_ns) {}
+    ) : sample_rate(sample_rate), is_prewarming(is_prewarming), timeout_ns(timeout_ns) {
+        pthread_mutex_init(&resolver_mutex, nullptr);
+        pthread_cond_init(&resolver_cv, nullptr);
+    }
 
     ~mach_profiler() {
+        stop();
+        stop_resolver();
         if (profiler) delete profiler;
         if (profile) delete profile;
+        pthread_mutex_destroy(&resolver_mutex);
+        pthread_cond_destroy(&resolver_cv);
     }
 
     /**
-     * Start the profiler using constructor configuration.
-     * 
+     * Start the profiler.
      */
     void start() {
         if (is_thread_sanitizer_enabled()) {
@@ -184,19 +195,28 @@ public:
             return;
         }
 
+        // Start resolver thread first
+        if (!start_resolver()) {
+            status = PROFILER_STATUS_ALLOCATION_FAILED;
+            return;
+        }
+
         // Create profile aggregator
         if (!create_profile()) {
+            stop_resolver();
             return;
         }
 
         // Configure profiler
         sampling_config_t config = SAMPLING_CONFIG_DEFAULT;
         config.sampling_interval_nanos = SAMPLING_CONFIG_DEFAULT_INTERVAL_NS;
+        config.ignore_thread = resolver_thread;
 
         profiler = new mach_sampling_profiler(&config, callback, this);
         if (!profiler) {
             delete profile;
             profile = nullptr;
+            stop_resolver();
             status = PROFILER_STATUS_ALLOCATION_FAILED;
             return;
         }
@@ -207,6 +227,7 @@ public:
             delete profile;
             profiler = nullptr;
             profile = nullptr;
+            stop_resolver();
             status = PROFILER_STATUS_ALREADY_STARTED;
             return;
         }
@@ -232,13 +253,21 @@ public:
      */
     profile* get_profile(bool cleanup = false) {
         if (profiler) {
-            profiler->flush_buffer();
+            profiler->flush_buffer(true); // Blocking flush from get_profile
         }
+
+        // Always wait for resolver to catch up to ensure all captured samples are processed
+        flush_resolver();
+
+        // Lock to safely handle the profile pointer swap
+        pthread_mutex_lock(&resolver_mutex);
         dd::profiler::profile* p = profile;
         if (cleanup) {
             profile = nullptr;
-            create_profile();
+            create_profile_internal(); // Private method without locking
         }
+        pthread_mutex_unlock(&resolver_mutex);
+        
         return p;
     }
 
@@ -247,7 +276,131 @@ private:
     profile* profile = nullptr;
     double sample_rate = 0.0;
     bool is_prewarming = false;
-    int64_t timeout_ns = PROFILER_TIMEOUT_NS; // 60 seconds default
+    int64_t timeout_ns = PROFILER_TIMEOUT_NS;
+
+    // Background resolver for symbolication
+    pthread_t resolver_thread;
+    pthread_mutex_t resolver_mutex;
+    pthread_cond_t resolver_cv;
+    std::queue<std::vector<stack_trace_t>> resolver_queue;
+    std::atomic<bool> resolver_running{false};
+    std::atomic<bool> processing_batch{false};
+    std::unordered_map<uint64_t, binary_image_t> batch_cache;
+
+    bool start_resolver() {
+        if (resolver_running) return true;
+        resolver_running = true;
+        
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        // Use higher priority for resolver to avoid priority inversion when holding dyld lock
+        pthread_attr_set_qos_class_np(&attr, QOS_CLASS_USER_INITIATED, 0);
+        
+        if (pthread_create(&resolver_thread, &attr, resolver_thread_entry, this) != 0) {
+            resolver_running = false;
+            pthread_attr_destroy(&attr);
+            return false;
+        }
+        pthread_attr_destroy(&attr);
+        return true;
+    }
+
+    void stop_resolver() {
+        if (!resolver_running) return;
+        resolver_running = false;
+        
+        pthread_mutex_lock(&resolver_mutex);
+        pthread_cond_signal(&resolver_cv);
+        pthread_mutex_unlock(&resolver_mutex);
+        
+        pthread_join(resolver_thread, nullptr);
+    }
+
+    void flush_resolver() {
+        pthread_mutex_lock(&resolver_mutex);
+        while (!resolver_queue.empty() || processing_batch) {
+            pthread_cond_wait(&resolver_cv, &resolver_mutex);
+        }
+        pthread_mutex_unlock(&resolver_mutex);
+    }
+
+    static void* resolver_thread_entry(void* arg) {
+        pthread_setname_np("com.datadoghq.profiler.resolver");
+        static_cast<mach_profiler*>(arg)->resolver_loop();
+        return nullptr;
+    }
+
+    void resolver_loop() {
+        while (resolver_running || !resolver_queue.empty()) {
+            std::vector<stack_trace_t> batch;
+            
+            pthread_mutex_lock(&resolver_mutex);
+            while (resolver_queue.empty() && resolver_running) {
+                pthread_cond_wait(&resolver_cv, &resolver_mutex);
+            }
+            
+            if (!resolver_queue.empty()) {
+                batch = std::move(resolver_queue.front());
+                resolver_queue.pop();
+                processing_batch = true; // Signal we are busy
+            }
+            pthread_mutex_unlock(&resolver_mutex);
+
+            if (batch.empty()) continue;
+
+            // Reuse map to avoid re-allocations
+            batch_cache.clear();
+
+            // Resolve and add to profile
+            for (auto& trace : batch) {
+                for (uint32_t j = 0; j < trace.frame_count; j++) {
+                    auto& frame = trace.frames[j];
+                    
+                    auto cached = batch_cache.find(frame.instruction_ptr);
+                    if (cached != batch_cache.end()) {
+                        binary_image_init(&frame.image);
+                        frame.image.load_address = cached->second.load_address;
+                        memcpy(frame.image.uuid, cached->second.uuid, sizeof(uuid_t));
+                        if (cached->second.filename) {
+                            frame.image.filename = strdup(cached->second.filename);
+                        }
+                    } else {
+                        binary_image_init(&frame.image);
+                        if (binary_image_lookup_pc(&frame.image, (void*)frame.instruction_ptr)) {
+                            // Cache the result for this batch
+                            binary_image_t entry;
+                            entry.load_address = frame.image.load_address;
+                            memcpy(entry.uuid, frame.image.uuid, sizeof(uuid_t));
+                            entry.filename = frame.image.filename ? strdup(frame.image.filename) : nullptr;
+                            batch_cache[frame.instruction_ptr] = entry;
+                        }
+                    }
+                }
+            }
+
+            pthread_mutex_lock(&resolver_mutex);
+            if (profile) {
+                profile->add_samples(batch.data(), batch.size());
+            }
+            pthread_mutex_unlock(&resolver_mutex);
+
+            // Clean up traces
+            for (auto& trace : batch) {
+                stack_trace_destroy(&trace);
+            }
+
+            // Clean up filenames in persistent batch cache
+            for (auto& pair : batch_cache) {
+                if (pair.second.filename) free((void*)pair.second.filename);
+            }
+
+            // Signal we are done with this batch and notify waiting threads
+            pthread_mutex_lock(&resolver_mutex);
+            processing_batch = false;
+            pthread_cond_broadcast(&resolver_cv);
+            pthread_mutex_unlock(&resolver_mutex);
+        }
+    }
 
     /**
      * Internal helper to create a fresh profile aggregator.
@@ -255,6 +408,14 @@ private:
      * @return true if successful, false on allocation failure
      */
     bool create_profile() {
+        pthread_mutex_lock(&resolver_mutex);
+        bool result = create_profile_internal();
+        pthread_mutex_unlock(&resolver_mutex);
+        return result;
+    }
+
+private:
+    bool create_profile_internal() {
         // Create profile aggregator
         profile = new dd::profiler::profile(SAMPLING_CONFIG_DEFAULT_INTERVAL_NS);
         if (!profile) {
@@ -265,26 +426,45 @@ private:
     }
 
     /**
-     * Static callback function to handle collected stack traces
+     * Static callback function to handle collected stack traces.
+     * Called from the high-priority sampling thread.
      *
-     * @param traces Array of captured stack traces
-     * @param count Number of traces in the array
-     * @param ctx Context pointer to mach_profiler instance
+     * @param traces Vector of captured stack traces.
+     * @param ctx Context pointer to mach_profiler instance.
      */
-    static void callback(const stack_trace_t* traces, size_t count, void* ctx) {
-        if (!traces || count == 0 || !ctx) return;
+    static void callback(std::vector<stack_trace_t>& traces, bool blocking, void* ctx) {
+        if (traces.empty() || !ctx) return;
 
         mach_profiler* profiler = static_cast<mach_profiler*>(ctx);
 
-        dd::profiler::profile* profile = profiler->profile;
-        if (!profile) return;
-        profile->add_samples(traces, count);
+        if (!blocking) {
+            // Use trylock to avoid deadlock if sampling thread suspends a thread holding the lock
+            if (pthread_mutex_trylock(&profiler->resolver_mutex) == 0) {
+                profiler->resolver_queue.push(std::move(traces));
+                pthread_cond_signal(&profiler->resolver_cv);
+                pthread_mutex_unlock(&profiler->resolver_mutex);
+            } else {
+                // Drop samples if lock is contested to ensure sampling thread never blocks
+                for (auto& trace : traces) {
+                    stack_trace_destroy(&trace);
+                }
+            }
+        } else {
+            // If blocking is requested (e.g. from get_profile), we MUST wait
+            // to ensure no data is lost during the flush.
+            pthread_mutex_lock(&profiler->resolver_mutex);
+            profiler->resolver_queue.push(std::move(traces));
+            pthread_cond_signal(&profiler->resolver_cv);
+            pthread_mutex_unlock(&profiler->resolver_mutex);
+        }
 
-        // Check for timeout after adding samples
-        int64_t duration_ns = profile->end_timestamp() - profile->start_timestamp();
-        if (duration_ns > profiler->timeout_ns) {
-            profiler->stop();
-            profiler->status = PROFILER_STATUS_TIMEOUT;
+        // Check for timeout
+        if (profiler->profile) {
+            int64_t duration_ns = profiler->profile->end_timestamp() - profiler->profile->start_timestamp();
+            if (duration_ns > profiler->timeout_ns) {
+                profiler->stop();
+                profiler->status = PROFILER_STATUS_TIMEOUT;
+            }
         }
     }
 };
