@@ -18,8 +18,6 @@
 #include <mach/thread_act.h>
 #include <mach/thread_status.h>
 #include <mach/machine/thread_state.h>
-#include <mach-o/loader.h>
-#include <mach-o/dyld.h>
 
 // Address validation constants and macros
 //
@@ -46,23 +44,6 @@
 static constexpr uintptr_t MIN_USERSPACE_ADDR = 0x1000ULL;          // 4KB - avoid null deref region
 static constexpr uintptr_t MAX_USERSPACE_ADDR = 0x7FFFFFFFF000ULL;  // ~128TB - max user space on 64-bit
 static constexpr uintptr_t FRAME_POINTER_ALIGN = 0x7ULL;            // 8-byte alignment mask
-
-// Mach-O validation constants
-//
-// MAX_LOAD_COMMANDS (1000):
-//   - Reasonable upper bound for number of load commands in a Mach-O file
-//   - Typical executables have 20-50 load commands, complex ones may have ~100
-//   - 1000 is a generous safety limit to catch corrupted/malicious headers
-//   - Reference: Analysis of real-world Mach-O files, otool output observations
-//
-// MAX_LOAD_COMMAND_SIZE (0x10000 = 64KB):
-//   - Maximum size for a single load command
-//   - Most load commands are < 1KB, largest (like LC_CODE_SIGNATURE) rarely exceed 16KB
-//   - 64KB provides safety margin while preventing massive buffer overruns
-//   - Reference: mach-o/loader.h specifications, real-world observations
-
-static constexpr uint32_t MAX_LOAD_COMMANDS = 1000;         // Generous upper bound for ncmds
-static constexpr uint32_t MAX_LOAD_COMMAND_SIZE = 0x10000;  // 64KB max per load command
 
 // Thread name buffer size
 //
@@ -162,105 +143,6 @@ static constexpr bool is_valid_frame_pointer(uintptr_t fp) {
 }
 
 /**
- * Validates if the number of load commands in a Mach-O header is reasonable.
- * Rejects empty files and suspiciously large command counts.
- */
-static constexpr bool is_valid_load_command_count(uint32_t ncmds) {
-    return ncmds > 0 && ncmds <= MAX_LOAD_COMMANDS;
-}
-
-/**
- * Validates if a load command size is within acceptable bounds.
- * Prevents buffer overruns from malformed command sizes.
- */
-static constexpr bool is_valid_load_command_size(uint32_t cmdsize) {
-    return cmdsize >= sizeof(struct load_command) && cmdsize <= MAX_LOAD_COMMAND_SIZE;
-}
-
-/**
- * Initializes a binary image structure to safe defaults.
- *
- * @param[out] info The binary image structure to initialize
- * @return true if initialization succeeded, false on null pointer
- */
-bool binary_image_init(binary_image_t* info) {
-    if (!info) return false;
-    memset(info->uuid, 0, sizeof(uuid_t));
-    info->load_address = 0;
-    info->filename = nullptr;
-    return true;
-}
-
-/**
- * Destroys a binary image structure, freeing any memory allocated by that struct
- * but not the image struct itself.
- *
- * @param info The binary image structure to destroy
- */
-void binary_image_destroy(binary_image_t* info) {
-    if (!info) return;
-    
-    if (info->filename) {
-        free((void*)info->filename);
-        info->filename = nullptr;
-    }
-    memset(info->uuid, 0, sizeof(uuid_t));
-    info->load_address = 0;
-}
-
-/**
- * Looks up binary image information for a program counter address.
- *
- * @param[out] info The binary image structure to populate (must be initialized with binary_image_init)
- * @param pc The program counter address to get image info for
- * @return true if binary image was found and info populated, false otherwise
- */
-bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
-    if (!info) return false;
-    
-    // Validate the PC address - it should be a reasonable user-space address
-    if (!is_valid_userspace_addr((uintptr_t)pc)) return false;
-    
-    Dl_info dl_info;
-    if (dladdr(pc, &dl_info) == 0) return false;
-    if (!is_valid_userspace_addr((uintptr_t)dl_info.dli_fbase)) return false;
-
-    // Copy filename if available
-    if (dl_info.dli_fname) {
-        size_t fname_len = strlen(dl_info.dli_fname) + 1;
-        char* fname = (char*)malloc(fname_len);
-        if (fname) {
-            strcpy(fname, dl_info.dli_fname);
-            info->filename = fname;
-        }
-    }
-
-    // Get UUID from the image
-    const struct mach_header_64* header = (const struct mach_header_64*)dl_info.dli_fbase;
-    if (!header || header->magic != MH_MAGIC_64) return false;
-    // Validate ncmds to prevent reading too far
-    if (!is_valid_load_command_count(header->ncmds)) return false;
-
-    const struct load_command* cmd = (const struct load_command*)(header + 1);
-    for (uint32_t i = 0; i < header->ncmds; ++i) {
-        // Validate command size to prevent buffer overruns
-        if (!is_valid_load_command_size(cmd->cmdsize)) break;
-        
-        if (cmd->cmd == LC_UUID) {
-            const struct uuid_command* uuid_cmd = (const struct uuid_command*)cmd;
-            if (cmd->cmdsize >= sizeof(struct uuid_command)) {
-                memcpy(info->uuid, uuid_cmd->uuid, sizeof(uuid_t));
-                info->load_address = (uintptr_t)dl_info.dli_fbase;
-                return true;
-            }
-        }
-        cmd = (const struct load_command*)((char*)cmd + cmd->cmdsize);
-    }
-
-    return false;
-}
-
-/**
  * Initializes a stack trace with allocated frames.
  * 
  * @param trace Pointer to stack trace to initialize
@@ -280,14 +162,13 @@ bool stack_trace_init(stack_trace_t* trace, uint32_t max_depth, uint64_t interva
 }
 
 /**
- * Destroys the frames of a stack trace, freeing any memory allocated by that struct
- * but not the image struct itself.
+ * Destroys a stack trace, freeing the thread name and frames array.
  * 
  * @param trace Pointer to stack trace to clean up (can be nullptr)
  */
 void stack_trace_destroy(stack_trace_t* trace) {
     if (!trace) return;
-    
+
     // Free thread name if allocated
     if (trace->thread_name) {
         free((void*)trace->thread_name);
@@ -295,10 +176,6 @@ void stack_trace_destroy(stack_trace_t* trace) {
     }
     
     if (trace->frames) {
-        // Clean up binary image data for each frame
-        for (uint32_t i = 0; i < trace->frame_count; i++) {
-            binary_image_destroy(&trace->frames[i].image);
-        }
         free(trace->frames);
         trace->frames = nullptr;
     }
@@ -621,15 +498,7 @@ void mach_sampling_profiler::main() {
 void mach_sampling_profiler::flush_buffer() {
     if (sample_buffer.empty()) return;
 
-    // Fill in binary image information for all frames
-    for (auto& trace : sample_buffer) {
-        for (uint32_t i = 0; i < trace.frame_count; i++) {
-            auto& frame = trace.frames[i];
-            binary_image_init(&frame.image);
-            binary_image_lookup_pc(&frame.image, (void*)frame.instruction_ptr);
-        }
-    }
-
+    // Deliver raw traces to the callback. Binary image resolution is the consumer's responsibility
     callback(sample_buffer.data(), sample_buffer.size(), ctx);
 
     // Free allocated frame memory and binary image data
