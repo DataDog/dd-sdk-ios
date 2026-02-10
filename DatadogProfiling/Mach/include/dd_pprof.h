@@ -75,15 +75,17 @@ size_t dd_pprof_serialize(dd_pprof_t* profile, uint8_t** data);
 void dd_pprof_free_serialized_data(uint8_t* data);
 
 /**
- * Callback function that forwards stack traces to a dd_pprof_t instance.
+ * Callback function that resolves binary images and forwards stack traces
+ * to a dd_pprof_t instance.
  * 
+ * Performs full Mach-O header parsing for image resolution (no cache).
  * Use this with profiler_create() by passing your dd_pprof_t instance as the ctx parameter.
  * 
  * Example:
  *   dd_pprof_t* profile = dd_pprof_create(1000000);
  *   profiler_t* profiler = profiler_create(&config, dd_pprof_callback, profile);
  */
-void dd_pprof_callback(const stack_trace_t* traces, size_t count, void* ctx);
+void dd_pprof_callback(stack_trace_t* traces, size_t count, void* ctx);
 
 /**
  * Get profile start timestamp in seconds since Unix epoch
