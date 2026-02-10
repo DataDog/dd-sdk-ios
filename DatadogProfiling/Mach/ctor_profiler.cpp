@@ -10,6 +10,7 @@
 
 #include "profile.h"
 #include "mach_sampling_profiler.h"
+#include "binary_image_resolver.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <cstdlib>
@@ -162,6 +163,7 @@ public:
     ~ctor_profiler() {
         if (profiler) delete profiler;
         if (profile) delete profile;
+        if (image_cache) delete image_cache;
     }
 
     /**
@@ -207,12 +209,24 @@ public:
             return;
         }
 
+        // Create and populate the binary image cache early, before sampling starts.
+        // This pre-loads binary image metadata (UUID, filename) for all currently
+        // loaded images and watches for new ones via dyld notifications.
+        image_cache = new binary_image_cache();
+        // if cache allocation/start fails, keep profiling running
+        if (!image_cache || !image_cache->start()) {
+            delete image_cache;
+            image_cache = nullptr;
+        }
+
         status = CTOR_PROFILER_STATUS_RUNNING;
         if (!profiler->start_sampling()) {
             delete profiler;
             delete profile;
+            delete image_cache;
             profiler = nullptr;
             profile = nullptr;
+            image_cache = nullptr;
             status = CTOR_PROFILER_STATUS_ALREADY_STARTED;
             return;
         }
@@ -234,25 +248,42 @@ public:
 private:
     mach_sampling_profiler* profiler = nullptr;
     profile* profile = nullptr;
+    binary_image_cache* image_cache = nullptr;
     double sample_rate = 0.0;
     bool is_prewarming = false;
     int64_t timeout_ns = CTOR_PROFILER_TIMEOUT_NS; // 5 seconds default
 
     /**
-     * Static callback function to handle collected stack traces
+     * Static callback function to handle collected stack traces.
+     *
+     * Resolves binary image information for each frame using the
+     * cached image data, then adds the samples to the profile.
      *
      * @param traces Array of captured stack traces
      * @param count Number of traces in the array
      * @param ctx Context pointer to ctor_profiler instance
      */
-    static void callback(const stack_trace_t* traces, size_t count, void* ctx) {
+    static void callback(stack_trace_t* traces, size_t count, void* ctx) {
         if (!traces || count == 0 || !ctx) return;
 
         ctor_profiler* profiler = static_cast<ctor_profiler*>(ctx);
 
+        // Resolve binary images in-place before adding to the profile
+        resolve_stack_trace_frames(traces, count, profiler->image_cache);
+
         dd::profiler::profile* profile = profiler->profile;
+        if (profile) {
+            profile->add_samples(traces, count);
+        }
+
+        // Free image data we allocated during frame resolution.
+        for (size_t i = 0; i < count; i++) {
+            for (uint32_t j = 0; j < traces[i].frame_count; j++) {
+                binary_image_destroy(&traces[i].frames[j].image);
+            }
+        }
+
         if (!profile) return;
-        profile->add_samples(traces, count);
 
         // Check for timeout after adding samples
         int64_t duration_ns = profile->end_timestamp() - profile->start_timestamp();
