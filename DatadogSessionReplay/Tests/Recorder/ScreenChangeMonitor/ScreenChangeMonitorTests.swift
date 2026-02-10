@@ -12,9 +12,9 @@ import XCTest
 
 @MainActor
 final class ScreenChangeMonitorTests: XCTestCase {
-    private let testTimeProvider = TestTimeProvider(now: 0)
+    private let testTimerScheduler = TestTimerScheduler(now: 0)
     // swiftlint:disable:next implicitly_unwrapped_optional
-    private var screenChangeMonitor: ScreenChangeMonitor<TestTimeProvider>!
+    private var screenChangeMonitor: ScreenChangeMonitor!
     private var snapshots: [CALayerChangeSnapshot] = []
 
     override func setUp() async throws {
@@ -22,7 +22,7 @@ final class ScreenChangeMonitorTests: XCTestCase {
 
         screenChangeMonitor = try ScreenChangeMonitor(
             minimumDeliveryInterval: 0.1,
-            timeProvider: testTimeProvider
+            timerScheduler: testTimerScheduler
         ) { [weak self] snapshot in
             self?.snapshots.append(snapshot)
         }
@@ -38,9 +38,9 @@ final class ScreenChangeMonitorTests: XCTestCase {
         let layer = CALayer()
 
         // when
-        testTimeProvider.advance(to: 0.01)
+        testTimerScheduler.advance(to: 0.01)
         layer.display() // ignored
-        testTimeProvider.advance(to: 1.00)
+        testTimerScheduler.advance(to: 1.00)
 
         // then
         XCTAssertEqual(snapshots.count, 0, "Should ignore layer changes before calling start()")
@@ -48,9 +48,9 @@ final class ScreenChangeMonitorTests: XCTestCase {
         // when
         screenChangeMonitor.start()
 
-        testTimeProvider.advance(to: 1.01)
+        testTimerScheduler.advance(to: 1.01)
         layer.display()
-        testTimeProvider.advance(to: 1.20)
+        testTimerScheduler.advance(to: 1.20)
 
         // then
         XCTAssertEqual(snapshots.count, 1)
@@ -62,9 +62,9 @@ final class ScreenChangeMonitorTests: XCTestCase {
         // when
         screenChangeMonitor.stop()
 
-        testTimeProvider.advance(to: 2.00)
+        testTimerScheduler.advance(to: 2.00)
         layer.display()
-        testTimeProvider.advance(to: 3.00)
+        testTimerScheduler.advance(to: 3.00)
 
         // then
         XCTAssertEqual(snapshots.count, 0, "Should ignore layer changes after calling stop()")

@@ -573,15 +573,16 @@
 		5B5B8CC32E8C0E9100A6740E /* FlagsClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */; };
 		5B5B8CC52E8C14B900A6740E /* FlagsClientRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CC42E8C14B200A6740E /* FlagsClientRegistry.swift */; };
 		5B5B8CC62E8C14B900A6740E /* FlagsClientRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CC42E8C14B200A6740E /* FlagsClientRegistry.swift */; };
+		5B69166B2F3B823B0074A909 /* TimerScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B69166A2F3B82340074A909 /* TimerScheduler.swift */; };
+		5B69166D2F3B854C0074A909 /* TimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B69166C2F3B85480074A909 /* TimeSource.swift */; };
+		5B69166F2F3B89060074A909 /* TestTimerScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B69166E2F3B88FE0074A909 /* TestTimerScheduler.swift */; };
 		5B74482F2EFAB819003E622C /* CALayerSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448282EFAB819003E622C /* CALayerSwizzler.swift */; };
 		5B7448302EFAB819003E622C /* CALayerChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448292EFAB819003E622C /* CALayerChange.swift */; };
 		5B7448312EFAB819003E622C /* CALayerChangeAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74482A2EFAB819003E622C /* CALayerChangeAggregator.swift */; };
 		5B7448322EFAB819003E622C /* ScreenChangeMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74482C2EFAB819003E622C /* ScreenChangeMonitor.swift */; };
 		5B7448332EFAB819003E622C /* CALayerChangeSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74482B2EFAB819003E622C /* CALayerChangeSnapshot.swift */; };
-		5B7448342EFAB819003E622C /* TimeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74482D2EFAB819003E622C /* TimeProvider.swift */; };
 		5B7448372EFAED99003E622C /* CALayerSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448362EFAED91003E622C /* CALayerSwizzlerTests.swift */; };
 		5B74483C2EFAEFC3003E622C /* CALayerObserverMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74483B2EFAEFC3003E622C /* CALayerObserverMock.swift */; };
-		5B74483E2EFB0C79003E622C /* TestTimeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74483D2EFB0C75003E622C /* TestTimeProvider.swift */; };
 		5B7448402EFB0F7E003E622C /* CALayerChangeAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74483F2EFB0F7A003E622C /* CALayerChangeAggregatorTests.swift */; };
 		5B7448422EFBB77E003E622C /* ScreenChangeMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448412EFBB777003E622C /* ScreenChangeMonitorTests.swift */; };
 		5B7448442EFBBF07003E622C /* ScreenChangeScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448432EFBBF00003E622C /* ScreenChangeScheduler.swift */; };
@@ -2996,15 +2997,16 @@
 		5B5B8CBE2E8BDB0D00A6740E /* FlagsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsData.swift; sourceTree = "<group>"; };
 		5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientProtocol.swift; sourceTree = "<group>"; };
 		5B5B8CC42E8C14B200A6740E /* FlagsClientRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientRegistry.swift; sourceTree = "<group>"; };
+		5B69166A2F3B82340074A909 /* TimerScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerScheduler.swift; sourceTree = "<group>"; };
+		5B69166C2F3B85480074A909 /* TimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSource.swift; sourceTree = "<group>"; };
+		5B69166E2F3B88FE0074A909 /* TestTimerScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTimerScheduler.swift; sourceTree = "<group>"; };
 		5B7448282EFAB819003E622C /* CALayerSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerSwizzler.swift; sourceTree = "<group>"; };
 		5B7448292EFAB819003E622C /* CALayerChange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChange.swift; sourceTree = "<group>"; };
 		5B74482A2EFAB819003E622C /* CALayerChangeAggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChangeAggregator.swift; sourceTree = "<group>"; };
 		5B74482B2EFAB819003E622C /* CALayerChangeSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChangeSnapshot.swift; sourceTree = "<group>"; };
 		5B74482C2EFAB819003E622C /* ScreenChangeMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenChangeMonitor.swift; sourceTree = "<group>"; };
-		5B74482D2EFAB819003E622C /* TimeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeProvider.swift; sourceTree = "<group>"; };
 		5B7448362EFAED91003E622C /* CALayerSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerSwizzlerTests.swift; sourceTree = "<group>"; };
 		5B74483B2EFAEFC3003E622C /* CALayerObserverMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerObserverMock.swift; sourceTree = "<group>"; };
-		5B74483D2EFB0C75003E622C /* TestTimeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTimeProvider.swift; sourceTree = "<group>"; };
 		5B74483F2EFB0F7A003E622C /* CALayerChangeAggregatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChangeAggregatorTests.swift; sourceTree = "<group>"; };
 		5B7448412EFBB777003E622C /* ScreenChangeMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenChangeMonitorTests.swift; sourceTree = "<group>"; };
 		5B7448432EFBBF00003E622C /* ScreenChangeScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenChangeScheduler.swift; sourceTree = "<group>"; };
@@ -4847,12 +4849,13 @@
 		5B74482E2EFAB819003E622C /* ScreenChangeMonitor */ = {
 			isa = PBXGroup;
 			children = (
+				5B69166C2F3B85480074A909 /* TimeSource.swift */,
+				5B69166A2F3B82340074A909 /* TimerScheduler.swift */,
 				5B7448282EFAB819003E622C /* CALayerSwizzler.swift */,
 				5B7448292EFAB819003E622C /* CALayerChange.swift */,
 				5B74482A2EFAB819003E622C /* CALayerChangeAggregator.swift */,
 				5B74482B2EFAB819003E622C /* CALayerChangeSnapshot.swift */,
 				5B74482C2EFAB819003E622C /* ScreenChangeMonitor.swift */,
-				5B74482D2EFAB819003E622C /* TimeProvider.swift */,
 			);
 			path = ScreenChangeMonitor;
 			sourceTree = "<group>";
@@ -4860,7 +4863,7 @@
 		5B7448352EFAED6F003E622C /* ScreenChangeMonitor */ = {
 			isa = PBXGroup;
 			children = (
-				5B74483D2EFB0C75003E622C /* TestTimeProvider.swift */,
+				5B69166E2F3B88FE0074A909 /* TestTimerScheduler.swift */,
 				5B74483B2EFAEFC3003E622C /* CALayerObserverMock.swift */,
 				5B7448362EFAED91003E622C /* CALayerSwizzlerTests.swift */,
 				5B74483F2EFB0F7A003E622C /* CALayerChangeAggregatorTests.swift */,
@@ -9979,6 +9982,7 @@
 				61054E962A6EE10A00AAA894 /* Diff+SRWireframes.swift in Sources */,
 				61054E672A6EE10A00AAA894 /* Recorder.swift in Sources */,
 				61054E6B2A6EE10A00AAA894 /* CFType+Safety.swift in Sources */,
+				5B69166D2F3B854C0074A909 /* TimeSource.swift in Sources */,
 				61054E852A6EE10A00AAA894 /* UISegmentRecorder.swift in Sources */,
 				61054E982A6EE10A00AAA894 /* RecordsBuilder.swift in Sources */,
 				5B9CB9E52E41FD60005485E6 /* Drawing.swift in Sources */,
@@ -10012,6 +10016,7 @@
 				61054E6D2A6EE10A00AAA894 /* CGRect+SessionReplay.swift in Sources */,
 				D274FD1C2CBFEF6D005270B5 /* CGSize+SessionReplay.swift in Sources */,
 				61054E942A6EE10A00AAA894 /* TextObfuscator.swift in Sources */,
+				5B69166B2F3B823B0074A909 /* TimerScheduler.swift in Sources */,
 				A7B932FE2B1F6A0A00AE6477 /* SRDataModels+UIKit.swift in Sources */,
 				61054E862A6EE10A00AAA894 /* UnsupportedViewRecorder.swift in Sources */,
 				5B0A9B8D2E3BBB4500A8131C /* GraphicsFilter+Reflection.swift in Sources */,
@@ -10043,7 +10048,6 @@
 				5B7448312EFAB819003E622C /* CALayerChangeAggregator.swift in Sources */,
 				5B7448322EFAB819003E622C /* ScreenChangeMonitor.swift in Sources */,
 				5B7448332EFAB819003E622C /* CALayerChangeSnapshot.swift in Sources */,
-				5B7448342EFAB819003E622C /* TimeProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10102,6 +10106,7 @@
 				962D72C52CF7806300F86EF0 /* GraphicsImageReflectionTests.swift in Sources */,
 				61054FA32A6EE1BA00AAA894 /* Diff+SRWireframesTests.swift in Sources */,
 				96867B9B2D0883DD004AE0BC /* ColorReflectionTests.swift in Sources */,
+				5B69166F2F3B89060074A909 /* TestTimerScheduler.swift in Sources */,
 				61054FAF2A6EE1BA00AAA894 /* ViewTreeRecordingContextTests.swift in Sources */,
 				61054FB92A6EE1BA00AAA894 /* UINavigationBarRecorderTests.swift in Sources */,
 				61054FA62A6EE1BA00AAA894 /* SnapshotProcessorTests.swift in Sources */,
@@ -10120,7 +10125,6 @@
 				5B7448372EFAED99003E622C /* CALayerSwizzlerTests.swift in Sources */,
 				61054F9C2A6EE1BA00AAA894 /* SwiftExtensionsTests.swift in Sources */,
 				61054FA72A6EE1BA00AAA894 /* NodesFlattenerTests.swift in Sources */,
-				5B74483E2EFB0C79003E622C /* TestTimeProvider.swift in Sources */,
 				61054FAA2A6EE1BA00AAA894 /* UIView+SessionReplayTests.swift in Sources */,
 				61054FA52A6EE1BA00AAA894 /* RecordsBuilderTests.swift in Sources */,
 				61054FD02A6EE1BA00AAA894 /* SRContextPublisherTests.swift in Sources */,
