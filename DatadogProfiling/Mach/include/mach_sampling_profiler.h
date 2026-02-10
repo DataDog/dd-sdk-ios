@@ -26,8 +26,9 @@ namespace dd::profiler {
 /**
  * @brief Mach-based sampling profiler
  * 
- * Provides fixed-interval sampling for consistent profiling behavior.
- * Can be extended for statistical variations.
+ * A pure sampling engine. Collects raw stack frames at a configured interval
+ * and delivers them to the callback. Binary image resolution is the
+ * responsibility of the callback consumer.
  */
 class mach_sampling_profiler {
 public:

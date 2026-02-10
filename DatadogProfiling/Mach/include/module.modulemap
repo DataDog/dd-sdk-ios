@@ -6,6 +6,7 @@ module DatadogMachProfiler {
 
   explicit module Cxx {
       requires cplusplus
+      header "binary_image_resolver.h"
       header "mach_sampling_profiler.h"
       header "profile.h"
       header "profile_pprof_packer.h"
