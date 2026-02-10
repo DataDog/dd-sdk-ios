@@ -7,6 +7,7 @@
 - [IMPROVEMENT] Skip malformed Logs attributes individually instead of dropping the entire event, and log clear error messages. See [#2665][]
 - [IMPROVEMENT] Improve span attribute encoding error messages to include attribute name and context. See [#2676][]
 - [IMPROVEMENT] Expose public entities from `DatadogInternal` to prevent `DatadogInternal` imports in customer code. See [#2666][]
+- [FIX] Propagate feature flags to RUM error and view events for crashes, fatal app hangs, and watchdog terminations.
 
 # 3.6.1 / 02-02-2026
 
