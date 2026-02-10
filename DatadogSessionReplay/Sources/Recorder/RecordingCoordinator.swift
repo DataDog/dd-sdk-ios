@@ -28,6 +28,9 @@ internal class RecordingCoordinator {
     /// has enabled or disabled the recording for Session Replay.
     private var recordingEnabled = false
 
+    /// Prevents nested capture re-entrancy on the main thread.
+    private var isCapturing = false
+
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
     /// The sampling rate for internal telemetry of method calls.
@@ -117,10 +120,19 @@ internal class RecordingCoordinator {
 
     /// Captures the next recording if conditions are met.
     private func captureNextRecord() {
+        guard !isCapturing else {
+            return
+        }
+
         /// We don't capture any snapshots if the RUM context has no view ID.
         guard let rumContext = currentRUMContext,
               let viewID = rumContext.viewID else {
             return
+        }
+
+        isCapturing = true
+        defer {
+            isCapturing = false
         }
 
         let recorderContext = Recorder.Context(

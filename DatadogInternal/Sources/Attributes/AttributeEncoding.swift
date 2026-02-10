@@ -17,7 +17,7 @@ public enum AttributeEncodingContext {
     /// Internal SDK attribute
     case `internal`
 
-    var errorMessagePrefix: String {
+    public var errorMessagePrefix: String {
         switch self {
         case .custom:
             return ""

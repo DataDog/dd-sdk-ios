@@ -6,6 +6,17 @@
 
 import Foundation
 
+/// Defines the tracking mode for network instrumentation.
+public enum TrackingMode {
+    /// Automatic mode: tracks all tasks without requiring delegate registration.
+    /// Does not capture detailed timing data.
+    case automatic
+
+    /// Registered delegate mode: tracks tasks with a delegate registered via `enableDurationBreakdown(with:)`.
+    /// Captures `URLSessionTaskMetrics` for detailed timing breakdown (DNS, SSL, TTFB, etc.) as well as the data via the delegate callback.
+    case registeredDelegate
+}
+
 public class URLSessionTaskInterception {
     /// An identifier uniquely identifying the task interception across all `URLSessions`.
     public let identifier: UUID
@@ -14,10 +25,31 @@ public class URLSessionTaskInterception {
     public private(set) var request: ImmutableRequest
     /// Tells if the `request` is send to a 1st party host.
     public let isFirstPartyRequest: Bool
+    /// The tracking mode for this interception (automatic or registered delegate).
+    internal let trackingMode: TrackingMode
     /// Task metrics collected during this interception.
     public private(set) var metrics: ResourceMetrics?
-    /// Task data received during this interception. Can be `nil` if task completed with error.
+    /// Task data received during this interception.
+    ///
+    /// Data is collected in:
+    /// - Registered delegate mode: via `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)` swizzling
+    /// - Automatic mode: via completion handler swizzling (only for tasks with completion handlers)
+    ///
+    /// Can be `nil` if:
+    /// - Task completed with error
+    /// - Task has no completion handler in automatic mode (e.g., async/await, tasks without handlers)
+    /// - Task is a download task (data is saved to file instead of captured in memory)
     public private(set) var data: Data?
+    /// Response size in bytes received during this interception.
+    ///
+    /// This is captured via `task.countOfBytesReceived` and serves as a fallback when `metrics.responseSize` is unavailable.
+    ///
+    /// Priority for response size:
+    /// 1. `metrics.responseSize` - Most accurate, from `URLSessionTaskMetrics` (only available with registered delegate)
+    /// 2. `responseSize` - Fallback from `task.countOfBytesReceived` (available in both modes)
+    ///
+    /// Available even when data is not captured (e.g., for tasks without completion handlers in automatic mode).
+    public private(set) var responseSize: Int64?
     /// Task completion collected during this interception.
     public private(set) var completion: ResourceCompletion?
     /// Trace context injected to request headers. Can be `nil` if the trace was not sampled or if modifying
@@ -29,11 +61,39 @@ public class URLSessionTaskInterception {
     public private(set) var origin: String?
     /// Keeps the active span context that may exist when this interception is created.
     public private(set) var activeSpanContext: SpanContext?
+    /// Task state tracked via `setState:` swizzling.
+    internal var taskState: URLSessionTask.State?
 
-    init(request: ImmutableRequest, isFirstParty: Bool) {
+    /// Approximate start time captured in Automatic mode when interception begins.
+    public private(set) var startDate: Date?
+
+    /// Approximate end time captured in Automatic mode when interception completes.
+    internal var endDate: Date?
+
+    /// Returns the most accurate start time available.
+    /// Prefers `URLSessionTaskMetrics` timing (registered delegate mode) over approximate timing (automatic mode).
+    public var fetchStartDate: Date? {
+        return metrics?.fetch.start ?? startDate
+    }
+
+    /// Returns the most accurate end time available.
+    /// Prefers `URLSessionTaskMetrics` timing (registered delegate mode) over approximate timing (automatic mode).
+    public var fetchEndDate: Date? {
+        return metrics?.fetch.end ?? endDate
+    }
+
+    /// Returns the most accurate size available.
+    /// Prefers `metrics.responseSize`, but fallbacks to `responseSize` when metrics size is `nil` or 0
+    public var mostAccurateResponseSize: Int64? {
+        let metricsSize = metrics?.responseSize ?? 0
+        return metricsSize > 0 ? metricsSize : responseSize
+    }
+
+    init(request: ImmutableRequest, isFirstParty: Bool, trackingMode: TrackingMode) {
         self.identifier = UUID()
         self.request = request
         self.isFirstPartyRequest = isFirstParty
+        self.trackingMode = trackingMode
     }
 
     func register(metrics: ResourceMetrics) {
@@ -76,9 +136,39 @@ public class URLSessionTaskInterception {
         self.activeSpanContext = activeSpanContext
     }
 
-    /// Tells if the interception is done (mean: both metrics and completion were collected).
+    func register(state: Int) {
+        self.taskState = URLSessionTask.State(rawValue: state)
+    }
+
+    func register(responseSize: Int64) {
+        self.responseSize = responseSize
+    }
+
+    func register(startDate: Date) {
+        self.startDate = startDate
+    }
+
+    func register(endDate: Date) {
+        self.endDate = endDate
+    }
+
+    /// Tells if the interception is done.
+    ///
+    /// The completion criteria depends on the tracking mode:
+    /// - Automatic mode: Task is done when we have completion OR task state indicates completion.
+    /// - Registered delegate mode: Task is done when we have BOTH metrics AND completion.
+    ///   We must wait for metrics to ensure detailed timing data is captured.
     public var isDone: Bool {
-        metrics != nil && completion != nil
+        switch trackingMode {
+        case .automatic:
+            // In automatic mode, complete as soon as we have completion or state completion
+            let isStateComplete = taskState == .completed
+            return completion != nil || isStateComplete
+        case .registeredDelegate:
+            // Registered delegate mode: wait for both metrics AND completion
+            // to ensure we capture detailed timing data
+            return completion != nil && metrics != nil
+        }
     }
 }
 

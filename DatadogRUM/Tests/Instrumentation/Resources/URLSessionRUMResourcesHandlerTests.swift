@@ -15,12 +15,14 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
     private func createHandler(
         rumAttributesProvider: RUM.ResourceAttributesProvider? = nil,
-        distributedTracing: DistributedTracing? = nil
+        distributedTracing: DistributedTracing? = nil,
+        telemetry: Telemetry = NOPTelemetry()
     ) -> URLSessionRUMResourcesHandler {
         let handler = URLSessionRUMResourcesHandler(
             dateProvider: dateProvider,
             rumAttributesProvider: rumAttributesProvider,
-            distributedTracing: distributedTracing
+            distributedTracing: distributedTracing,
+            telemetry: telemetry
         )
         handler.publish(to: commandSubscriber)
         return handler
@@ -492,7 +494,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             url: .mockRandom(),
             httpMethod: ["GET", "POST", "PUT", "DELETE"].randomElement()!
         )
-        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random(), trackingMode: .mockRandom())
         XCTAssertNil(taskInterception.trace)
 
         // When
@@ -527,7 +529,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .mockRandom())
         taskInterception.register(trace: TraceContext(
             traceID: 100,
             spanID: 200,
@@ -562,7 +564,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .mockRandom())
         let resourceMetrics: ResourceMetrics = .mockAny()
         taskInterception.register(metrics: resourceMetrics)
         let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
@@ -589,6 +591,48 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize)
     }
 
+    func testGivenTaskInterceptionWithZeroMetricsSize_whenInterceptionCompletes_itFallsBackToResponseSize() throws {
+        let receiveCommands = expectation(description: "Receive 2 RUM commands")
+        receiveCommands.expectedFulfillmentCount = 2
+        var commandsReceived: [RUMCommand] = []
+        commandSubscriber.onCommandReceived = { command in
+            commandsReceived.append(command)
+            receiveCommands.fulfill()
+        }
+
+        // Given
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .registeredDelegate)
+
+        // Create metrics with responseSize = 0
+        let resourceMetrics = ResourceMetrics.mockWith(responseSize: 0)
+        taskInterception.register(metrics: resourceMetrics)
+
+        // Set responseSize from countOfBytesReceived
+        taskInterception.register(responseSize: 10)
+
+        let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
+        taskInterception.register(response: response, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let resourceMetricsCommand = try XCTUnwrap(commandsReceived[0] as? RUMAddResourceMetricsCommand)
+        XCTAssertEqual(resourceMetricsCommand.resourceKey, taskInterception.identifier.uuidString)
+        DDAssertReflectionEqual(resourceMetricsCommand.metrics, taskInterception.metrics)
+
+        let resourceStopCommand = try XCTUnwrap(commandsReceived[1] as? RUMStopResourceCommand)
+        XCTAssertEqual(resourceStopCommand.resourceKey, taskInterception.identifier.uuidString)
+        XCTAssertEqual(resourceStopCommand.kind, RUMResourceType(response: response))
+        XCTAssertEqual(resourceStopCommand.httpStatusCode, 200)
+
+        // Verify fallback to responseSize when metrics.responseSize is 0
+        XCTAssertEqual(resourceStopCommand.size, 10, "Should fallback to interception.responseSize when metrics.responseSize is 0")
+        XCTAssertNotEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize, "Should not use metrics.responseSize when it is 0")
+    }
+
     func testGivenTaskInterceptionWithMetricsAndError_whenInterceptionCompletes_itStopsRUMResourceWithErrorAndMetrics() throws {
         let receiveCommands = expectation(description: "Receive 2 RUM commands")
         receiveCommands.expectedFulfillmentCount = 2
@@ -599,7 +643,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .mockRandom())
         let taskError = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
         let resourceMetrics: ResourceMetrics = .mockAny()
         taskInterception.register(metrics: resourceMetrics)
@@ -655,7 +699,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // When
-        let taskInterception = URLSessionTaskInterception(request: mockRequest, isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: mockRequest, isFirstParty: .random(), trackingMode: .mockRandom())
         taskInterception.register(nextData: mockData)
         taskInterception.register(metrics: .mockAny())
         taskInterception.register(response: mockResponse, error: nil)
@@ -691,7 +735,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // When
-        let taskInterception = URLSessionTaskInterception(request: mockRequest, isFirstParty: .random())
+        let taskInterception = URLSessionTaskInterception(request: mockRequest, isFirstParty: .random(), trackingMode: .mockRandom())
         taskInterception.register(metrics: .mockAny())
         taskInterception.register(response: nil, error: mockError)
         handler.interceptionDidComplete(interception: taskInterception)
@@ -998,7 +1042,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
         let immutableRequest = ImmutableRequest(request: mockRequest)
-        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false, trackingMode: .mockRandom())
 
         // Register trace context with GraphQL attributes
         let traceContext = TraceContext(
@@ -1047,7 +1091,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let mockRequest: URLRequest = .mockWith(url: "https://graphql.example.com/api")
         let immutableRequest = ImmutableRequest(request: mockRequest)
-        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false, trackingMode: .mockRandom())
 
         // Register trace context with GraphQL attributes
         let traceContext = TraceContext(
@@ -1137,7 +1181,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         """
 
         let immutableRequest = ImmutableRequest(request: mockRequest)
-        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false, trackingMode: .mockRandom())
         let response: HTTPURLResponse = .mockWith(statusCode: 200, mimeType: "application/json")
         taskInterception.register(nextData: responseWithErrors.data(using: .utf8)!)
         taskInterception.register(response: response, error: nil)
@@ -1177,7 +1221,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         """
 
         let immutableRequest = ImmutableRequest(request: mockRequest)
-        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false)
+        let taskInterception = URLSessionTaskInterception(request: immutableRequest, isFirstParty: false, trackingMode: .mockRandom())
         let nonJSONResponse: HTTPURLResponse = .mockWith(statusCode: 200, mimeType: "text/html")
         taskInterception.register(nextData: responseWithErrors.data(using: .utf8)!)
         taskInterception.register(response: nonJSONResponse, error: nil)

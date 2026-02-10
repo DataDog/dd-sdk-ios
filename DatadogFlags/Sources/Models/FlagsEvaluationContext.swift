@@ -28,6 +28,9 @@ import Foundation
 /// client.setEvaluationContext(context)
 /// ```
 public struct FlagsEvaluationContext: Equatable, Codable {
+    /// An empty evaluation context used for evaluation logging when no context has been set (PROVIDER_NOT_READY).
+    static let empty = FlagsEvaluationContext(targetingKey: "", attributes: [:])
+
     /// The unique identifier used for targeting this user or session.
     ///
     /// This is typically a user ID, session ID, or device ID. The targeting key is used

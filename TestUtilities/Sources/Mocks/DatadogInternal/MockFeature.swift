@@ -12,6 +12,7 @@ internal class MockFeature: DatadogRemoteFeature {
 
     var messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     var requestBuilder: FeatureRequestBuilder = MockRequestBuilder()
+    var performanceOverride: PerformancePresetOverride?
 }
 
 internal class MockRequestBuilder: FeatureRequestBuilder {

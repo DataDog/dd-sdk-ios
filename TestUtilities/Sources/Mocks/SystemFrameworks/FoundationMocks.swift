@@ -219,7 +219,7 @@ extension Calendar {
 
 extension URL: AnyMockable, RandomMockable {
     public static func mockAny() -> URL {
-        return URL(string: "https://www.datadoghq.com")!
+        return URL(string: "https://www.example.com")!
     }
 
     public static func mockWith(pathComponent: String) -> URL {

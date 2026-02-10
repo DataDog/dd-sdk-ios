@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 import DatadogInternal
 
 @testable import DatadogRUM
@@ -41,11 +42,6 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
             with: config,
             in: core
         )
-
-        URLSessionInstrumentation.enable(
-            with: URLSessionInstrumentation.Configuration(delegateClass: SessionDataDelegateMock.self),
-            in: core
-        )
     }
 
     override func tearDownWithError() throws {
@@ -56,7 +52,11 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
     func testParentSpanPropagation() throws {
         let expectation = expectation(description: "request completes")
         // Given
-        let request: URLRequest = .mockWith(url: "https://www.example.com")
+        URLSessionInstrumentation.enableDurationBreakdown(
+            with: URLSessionInstrumentation.Configuration(delegateClass: SessionDataDelegateMock.self),
+            in: core
+        )
+        let request: URLRequest = .mockWith(url: .mockAny())
         let span = Tracer.shared(in: core).startRootSpan(operationName: "root")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
         let session = server.getInterceptedURLSession(delegate: SessionDataDelegateMock())
@@ -74,6 +74,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 1)
         let matchers = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(matchers.count, 2)
 
         let matcher1 = try XCTUnwrap(matchers.first)
         try XCTAssertEqual(matcher1.operationName(), "root")
@@ -113,7 +114,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
             in: core
         )
 
-        URLSessionInstrumentation.enable(
+        URLSessionInstrumentation.enableDurationBreakdown(
             with: .init(
                 delegateClass: InstrumentedSessionDelegate.self
             ),
@@ -125,14 +126,14 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
             delegate: InstrumentedSessionDelegate(),
             delegateQueue: nil
         )
-        var request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
+        var request = URLRequest(url: .mockAny())
         request.httpMethod = "GET"
 
         let task = session.dataTask(with: request)
         task.resume()
 
         wait(for: [providerExpectation], timeout: 10)
-        XCTAssertTrue(providerDataCount > 0)
+        XCTAssertTrue(providerDataCount > 0, "Data should be available with registered delegate")
     }
 
     func testResourceAttributesProvider_givenURLSessionDataTaskRequestWithCompletionHandler() {
@@ -161,7 +162,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
             in: core
         )
 
-        URLSessionInstrumentation.enable(
+        URLSessionInstrumentation.enableDurationBreakdown(
             with: .init(
                 delegateClass: InstrumentedSessionDelegate.self
             ),
@@ -173,25 +174,22 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
             delegate: InstrumentedSessionDelegate(),
             delegateQueue: nil
         )
-        let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
+        let request = URLRequest(url: .mockAny())
 
         let taskExpectation = self.expectation(description: "task completed")
         var taskInfo: (resp: URLResponse?, data: Data?, err: Error?)?
 
-        let task = session.dataTask(with: request) { resp, data, err in
-            taskInfo = (data, resp, err)
+        let task = session.dataTask(with: request) { data, resp, err in
+            taskInfo = (resp, data, err)
             taskExpectation.fulfill()
         }
         task.resume()
 
         wait(for: [providerExpectation, taskExpectation], timeout: 10)
         XCTAssertEqual(providerInfo?.resp, taskInfo?.resp)
-        XCTAssertEqual(providerInfo?.data, taskInfo?.data)
+        XCTAssertEqual(providerInfo?.data, taskInfo?.data, "Data should be available with completion handler")
         XCTAssertEqual(providerInfo?.err as? NSError, taskInfo?.err as? NSError)
     }
 
-    class InstrumentedSessionDelegate: NSObject, URLSessionDataDelegate {
-        func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        }
-    }
+    private class InstrumentedSessionDelegate: NSObject, URLSessionDataDelegate {}
 }

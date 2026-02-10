@@ -174,6 +174,26 @@ class RecordingCoordinatorTests: XCTestCase {
         XCTAssertEqual(metric.name, "Method Called")
     }
 
+    func test_whenCaptureReenters_itSkipsNestedCapture() {
+        // Given
+        var didTriggerReentry = false
+        recordingMock.captureNextRecordClosure = { _ in
+            guard !didTriggerReentry else {
+                return
+            }
+
+            didTriggerReentry = true
+            self.scheduler.start()
+        }
+        prepareRecordingCoordinator()
+
+        // When
+        rumContextObserver.notify(rumContext: .mockRandom())
+
+        // Then
+        XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 1)
+    }
+
     // MARK: StartRecordingImmediately Initialization Tests
 
     func test_whenStartRecordingImmediatelyIsDefault_itShouldRecord() throws {

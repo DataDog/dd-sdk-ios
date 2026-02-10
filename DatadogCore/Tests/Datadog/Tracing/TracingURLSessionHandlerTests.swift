@@ -40,7 +40,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             firstPartyHosts: .init([
                 "www.example.com": [.datadog]
             ]),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
     }
 
@@ -57,7 +58,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         // Given
         let request: ImmutableRequest = .mockWith(httpMethod: "POST")
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
         interception.register(metrics: .mockAny())
         interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
 
@@ -85,7 +86,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
             httpMethod: "GET"
         )
         let error = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
         interception.register(response: nil, error: error)
         interception.register(
             metrics: .mockWith(
@@ -154,7 +155,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         // Given
         let request: ImmutableRequest = .mockWith(httpMethod: "GET")
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
         interception.register(response: .mockResponseWith(statusCode: 404), error: nil)
         interception.register(
             metrics: .mockWith(

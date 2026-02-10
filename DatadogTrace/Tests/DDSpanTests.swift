@@ -207,4 +207,90 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(context.samplingDecision.samplingPriority, .manualDrop)
         XCTAssertEqual(context.samplingDecision.decisionMaker, .manual)
     }
+
+    // MARK: - Attribute Encoding Error Handling
+
+    /// These tests use `AnyEncodable` to wrap non-`Encodable` types, simulating real production scenarios.
+    /// There are 2 possible use-cases:
+    /// - **ObjC APIs** (primary production path): Customers use ObjC APIs like `startSpan(_:tags:)` which accepts `NSDictionary`.
+    ///   SDK automatically wraps non-String/URL values in `AnyEncodable`, losing type safety. Telemetry shows this is the dominant error path.
+    /// - **Swift APIs with manual wrapping**: Swift API requires `Encodable`, but customers can explicitly wrap non-encodable
+    ///   types using `AnyEncodable(value)` to bypass compile-time checks.
+
+    func testWhenMultipleSpanTagsFailToEncode_itSkipsAllMalformedTags() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.startSpan(operationName: "test operation")
+
+        // When - test various non-encodable types (closures are most common from telemetry)
+        let closure1: (NSArray) -> Void = { _ in }
+        let closure2: () -> Void = { }
+        span.setTag(key: "valid_tag", value: "test_value")
+        span.setTag(key: "onComplete", value: AnyEncodable(closure1))
+        span.setTag(key: "callback", value: AnyEncodable(closure2))
+        span.setTag(key: "custom_object", value: AnyEncodable(NSObject()))
+        span.finish()
+
+        // Then
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(events.count, 1)
+
+        let spanEvent = try XCTUnwrap(events.first?.spans.first)
+
+        // Encode to JSON to trigger attribute encoding
+        let jsonData = try JSONEncoder().encode(spanEvent)
+        let jsonObject = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
+
+        // Span sent with only valid tag
+        XCTAssertEqual(jsonObject["meta.valid_tag"] as? String, "test_value")
+        XCTAssertNil(jsonObject["meta.onComplete"])
+        XCTAssertNil(jsonObject["meta.callback"])
+        XCTAssertNil(jsonObject["meta.custom_object"])
+
+        // And all errors logged
+        XCTAssertEqual(
+            dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute") }.count,
+            3
+        )
+    }
+
+    func testWhenOnlyMalformedSpanTagsAdded_itSendsSpanWithoutCustomTags() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.startSpan(operationName: "test operation")
+
+        // When
+        span.setTag(key: "invalid_tag1", value: AnyEncodable(NSObject()))
+        span.setTag(key: "invalid_tag2", value: AnyEncodable(NSObject()))
+        span.finish()
+
+        // Then
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(events.count, 1)
+
+        let spanEvent = try XCTUnwrap(events.first?.spans.first)
+        XCTAssertEqual(spanEvent.operationName, "test operation")
+
+        // Encode to JSON
+        let jsonData = try JSONEncoder().encode(spanEvent)
+        let jsonObject = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
+
+        // Span still sent, just without custom tags
+        XCTAssertNil(jsonObject["meta.invalid_tag1"])
+        XCTAssertNil(jsonObject["meta.invalid_tag2"])
+
+        // And errors logged
+        XCTAssertEqual(
+            dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute") }.count,
+            2
+        )
+    }
 }

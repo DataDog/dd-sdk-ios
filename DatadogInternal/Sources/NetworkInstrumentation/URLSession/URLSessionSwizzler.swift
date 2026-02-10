@@ -155,11 +155,11 @@ internal final class URLSessionSwizzler {
                             didReceive(task, data)
                         }
 
-                        completionHandler(data, response, error)
-
                         if let task = _task { // sanity check, should always succeed
                             interceptCompletion(task, data, error)
                         }
+
+                        completionHandler(data, response, error)
                     }
                     _task = task
                     _task?.dd.hasCompletion = true
