@@ -105,11 +105,16 @@ static const sampling_config_t SAMPLING_CONFIG_DEFAULT = {
  * Callback type for receiving stack traces.
  * This is called whenever a batch of stack traces is captured.
  *
- * @param traces Array of captured stack traces
+ * Traces are delivered with raw instruction pointers only — binary image
+ * information (UUID, filename) is **not** resolved. The callback is free
+ * to resolve frames in-place (e.g., via `resolve_stack_trace_frames`)
+ * before further processing.
+ *
+ * @param traces Mutable array of captured stack traces
  * @param count Number of traces in the array
  * @param ctx Context pointer passed during profiler creation
  */
-typedef void (*stack_trace_callback_t)(const stack_trace_t* traces, size_t count, void* ctx);
+typedef void (*stack_trace_callback_t)(stack_trace_t* traces, size_t count, void* ctx);
 
 #ifdef __cplusplus
 
