@@ -14,23 +14,19 @@
 import QuartzCore
 
 internal final class CALayerChangeAggregator {
+    var handler: ((CALayerChangeset) -> Void)?
+
     private let minimumDeliveryInterval: TimeInterval
     private let timerScheduler: any TimerScheduler
-    private let handler: (CALayerChangeset) -> Void
 
     private var isRunning = false
     private var pendingChanges: [ObjectIdentifier: CALayerChange] = [:]
     private var lastDeliveryTime: TimeInterval?
     private var scheduledDelivery: (any ScheduledTimer)?
 
-    init(
-        minimumDeliveryInterval: TimeInterval,
-        timerScheduler: any TimerScheduler,
-        handler: @escaping (CALayerChangeset) -> Void
-    ) {
+    init(minimumDeliveryInterval: TimeInterval, timerScheduler: any TimerScheduler) {
         self.minimumDeliveryInterval = minimumDeliveryInterval
         self.timerScheduler = timerScheduler
-        self.handler = handler
     }
 
     deinit {
@@ -114,7 +110,7 @@ internal final class CALayerChangeAggregator {
         pendingChanges.removeAll()
         lastDeliveryTime = now
 
-        if !changes.isEmpty {
+        if !changes.isEmpty, let handler {
             handler(changes)
         }
     }

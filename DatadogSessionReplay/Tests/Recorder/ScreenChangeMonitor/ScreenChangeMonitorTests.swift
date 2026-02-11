@@ -23,7 +23,9 @@ final class ScreenChangeMonitorTests: XCTestCase {
         screenChangeMonitor = try ScreenChangeMonitor(
             minimumDeliveryInterval: 0.1,
             timerScheduler: testTimerScheduler
-        ) { [weak self] changeset in
+        )
+
+        screenChangeMonitor.handler = { [weak self] changeset in
             self?.changes.append(changeset)
         }
     }

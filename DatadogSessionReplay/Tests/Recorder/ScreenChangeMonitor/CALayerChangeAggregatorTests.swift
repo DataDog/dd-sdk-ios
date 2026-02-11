@@ -23,7 +23,8 @@ final class CALayerChangeAggregatorTests: XCTestCase {
         layerChangeAggregator = CALayerChangeAggregator(
             minimumDeliveryInterval: 0.1,
             timerScheduler: testTimerScheduler
-        ) { [weak self] changeset in
+        )
+        layerChangeAggregator.handler = { [weak self] changeset in
             self?.changes.append(changeset)
         }
     }
