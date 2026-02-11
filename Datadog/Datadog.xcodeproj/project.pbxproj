@@ -580,7 +580,7 @@
 		5B7448302EFAB819003E622C /* CALayerChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448292EFAB819003E622C /* CALayerChange.swift */; };
 		5B7448312EFAB819003E622C /* CALayerChangeAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74482A2EFAB819003E622C /* CALayerChangeAggregator.swift */; };
 		5B7448322EFAB819003E622C /* ScreenChangeMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74482C2EFAB819003E622C /* ScreenChangeMonitor.swift */; };
-		5B7448332EFAB819003E622C /* CALayerChangeSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74482B2EFAB819003E622C /* CALayerChangeSnapshot.swift */; };
+		5B7448332EFAB819003E622C /* CALayerChangeset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74482B2EFAB819003E622C /* CALayerChangeset.swift */; };
 		5B7448372EFAED99003E622C /* CALayerSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448362EFAED91003E622C /* CALayerSwizzlerTests.swift */; };
 		5B74483C2EFAEFC3003E622C /* CALayerObserverMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74483B2EFAEFC3003E622C /* CALayerObserverMock.swift */; };
 		5B7448402EFB0F7E003E622C /* CALayerChangeAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74483F2EFB0F7A003E622C /* CALayerChangeAggregatorTests.swift */; };
@@ -610,6 +610,7 @@
 		5BB294C12E83E02900CAA44B /* ExposureLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294BF2E83E02100CAA44B /* ExposureLogger.swift */; };
 		5BBDF1C32E97B33800670CEB /* FallbackFlagsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBDF1C22E97B33300670CEB /* FallbackFlagsClient.swift */; };
 		5BBDF1C42E97B33800670CEB /* FallbackFlagsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBDF1C22E97B33300670CEB /* FallbackFlagsClient.swift */; };
+		5BC91D472F3CA22800D0241D /* CALayerReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC91D462F3CA22100D0241D /* CALayerReference.swift */; };
 		5BCBC0CD2DF85B6A0094DCC2 /* SessionReplayPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */; };
 		5BD6C6562E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */; };
 		5BD6C6572E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */; };
@@ -3003,7 +3004,7 @@
 		5B7448282EFAB819003E622C /* CALayerSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerSwizzler.swift; sourceTree = "<group>"; };
 		5B7448292EFAB819003E622C /* CALayerChange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChange.swift; sourceTree = "<group>"; };
 		5B74482A2EFAB819003E622C /* CALayerChangeAggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChangeAggregator.swift; sourceTree = "<group>"; };
-		5B74482B2EFAB819003E622C /* CALayerChangeSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChangeSnapshot.swift; sourceTree = "<group>"; };
+		5B74482B2EFAB819003E622C /* CALayerChangeset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChangeset.swift; sourceTree = "<group>"; };
 		5B74482C2EFAB819003E622C /* ScreenChangeMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenChangeMonitor.swift; sourceTree = "<group>"; };
 		5B7448362EFAED91003E622C /* CALayerSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerSwizzlerTests.swift; sourceTree = "<group>"; };
 		5B74483B2EFAEFC3003E622C /* CALayerObserverMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerObserverMock.swift; sourceTree = "<group>"; };
@@ -3026,6 +3027,7 @@
 		5BB294BC2E82E66200CAA44B /* FlagValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagValue.swift; sourceTree = "<group>"; };
 		5BB294BF2E83E02100CAA44B /* ExposureLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureLogger.swift; sourceTree = "<group>"; };
 		5BBDF1C22E97B33300670CEB /* FallbackFlagsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackFlagsClient.swift; sourceTree = "<group>"; };
+		5BC91D462F3CA22100D0241D /* CALayerReference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerReference.swift; sourceTree = "<group>"; };
 		5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayPrivacyView.swift; sourceTree = "<group>"; };
 		5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRepository.swift; sourceTree = "<group>"; };
 		5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilder.swift; sourceTree = "<group>"; };
@@ -4851,10 +4853,11 @@
 			children = (
 				5B69166C2F3B85480074A909 /* TimeSource.swift */,
 				5B69166A2F3B82340074A909 /* TimerScheduler.swift */,
+				5BC91D462F3CA22100D0241D /* CALayerReference.swift */,
 				5B7448282EFAB819003E622C /* CALayerSwizzler.swift */,
 				5B7448292EFAB819003E622C /* CALayerChange.swift */,
 				5B74482A2EFAB819003E622C /* CALayerChangeAggregator.swift */,
-				5B74482B2EFAB819003E622C /* CALayerChangeSnapshot.swift */,
+				5B74482B2EFAB819003E622C /* CALayerChangeset.swift */,
 				5B74482C2EFAB819003E622C /* ScreenChangeMonitor.swift */,
 			);
 			path = ScreenChangeMonitor;
@@ -10035,6 +10038,7 @@
 				D29A470F2D2ED6410092BC79 /* Int64+SessionReplay.swift in Sources */,
 				61054E842A6EE10A00AAA894 /* UITabBarRecorder.swift in Sources */,
 				61054E682A6EE10A00AAA894 /* PrivacyLevel.swift in Sources */,
+				5BC91D472F3CA22800D0241D /* CALayerReference.swift in Sources */,
 				D22442C52CA301DA002E71E4 /* UIColor+SessionReplay.swift in Sources */,
 				61054E8E2A6EE10A00AAA894 /* SRContextPublisher.swift in Sources */,
 				61054E732A6EE10A00AAA894 /* WindowTouchSnapshotProducer.swift in Sources */,
@@ -10047,7 +10051,7 @@
 				5B7448302EFAB819003E622C /* CALayerChange.swift in Sources */,
 				5B7448312EFAB819003E622C /* CALayerChangeAggregator.swift in Sources */,
 				5B7448322EFAB819003E622C /* ScreenChangeMonitor.swift in Sources */,
-				5B7448332EFAB819003E622C /* CALayerChangeSnapshot.swift in Sources */,
+				5B7448332EFAB819003E622C /* CALayerChangeset.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

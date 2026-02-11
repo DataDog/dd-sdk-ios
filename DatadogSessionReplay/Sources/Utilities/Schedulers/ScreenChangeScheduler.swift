@@ -53,8 +53,8 @@ internal final class ScreenChangeScheduler: Scheduler {
                 let monitor = try ScreenChangeMonitor(
                     minimumDeliveryInterval: self.minimumInterval,
                     timerScheduler: self.timerScheduler
-                ) { [weak self] snapshot in
-                    self?.screenDidChange(snapshot)
+                ) { [weak self] changes in
+                    self?.screenDidChange(changes)
                 }
                 monitor.start()
                 self.monitor = monitor
@@ -74,9 +74,9 @@ internal final class ScreenChangeScheduler: Scheduler {
         }
     }
 
-    private func screenDidChange(_ snapshot: CALayerChangeSnapshot) {
+    private func screenDidChange(_ changes: CALayerChangeset) {
         // ScreenChangeMonitor notifies on the main thread
-        DD.logger.debug("Screen changed: \(snapshot)")
+        DD.logger.debug("Screen changed: \(changes)")
         operations.forEach { $0() }
     }
 }

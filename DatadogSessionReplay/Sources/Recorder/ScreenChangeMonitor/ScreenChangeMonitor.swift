@@ -7,10 +7,10 @@
 // MARK: - Overview
 //
 // Coordinates observation of `CALayer` activity for screen updates. Swizzles
-// `CALayer` to observe changes and aggregates them into time-windowed snapshots
+// `CALayer` to observe changes and aggregates them into time-windowed changesets
 // delivered via the provided handler.
 //
-// Call `start()` to begin observing and receiving snapshots; call
+// Call `start()` to begin observing and receiving changesets; call
 // `stop()` to end observation and clear pending state.
 
 #if os(iOS)
@@ -23,7 +23,7 @@ internal final class ScreenChangeMonitor {
     init(
         minimumDeliveryInterval: TimeInterval,
         timerScheduler: any TimerScheduler = .dispatchSource,
-        handler: @escaping (CALayerChangeSnapshot) -> Void
+        handler: @escaping (CALayerChangeset) -> Void
     ) throws {
         self.layerChangeAggregator = CALayerChangeAggregator(
             minimumDeliveryInterval: minimumDeliveryInterval,

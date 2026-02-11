@@ -15,7 +15,7 @@
 #if os(iOS)
 import QuartzCore
 
-internal struct CALayerChange: Equatable {
+internal struct CALayerChange: Sendable, Equatable {
     enum Aspect: Int8, CaseIterable {
         case display
         case draw
@@ -34,7 +34,7 @@ internal struct CALayerChange: Equatable {
         }
     }
 
-    weak var layer: CALayer?
+    var layer: CALayerReference
     var aspects: Aspect.Set
 }
 #endif
