@@ -187,9 +187,11 @@ UI Tests:
 
 SR Snapshot Tests:
   stage: ui-test
-  rules: 
+  rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   variables:
     PLATFORM: "iOS Simulator"
     IOS_OS: "17.5"
