@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import XCTest
 import DatadogInternal
 import DatadogMachProfiler
@@ -288,3 +289,4 @@ final class CTorProfilerTests: XCTestCase {
         wait(for: [expectation], timeout: 0.1)
     }
 }
+#endif // !os(watchOS)

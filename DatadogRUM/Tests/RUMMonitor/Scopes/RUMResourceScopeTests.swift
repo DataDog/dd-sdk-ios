@@ -1544,46 +1544,29 @@ class RUMResourceScopeTests: XCTestCase {
             httpMethod: .post
         )
 
-        let graphQLResponseJSON = """
-        {
-          "errors": [
-            {
-              "message": "Book not found",
-              "locations": [
-                { "line": 2, "column": 7 },
-                { "line": 5, "column": 12 }
-              ],
-              "path": ["library", "book", "1234"],
-              "extensions": {
-                "code": "NOT_FOUND",
-                "timestamp": "2024-01-15T10:00:00Z"
-              }
-            },
-            {
-              "message": "Unauthorized access to user profile",
-              "locations": [{ "line": 10, "column": 3 }],
-              "path": ["user", "profile"],
-              "extensions": {
-                "code": "UNAUTHORIZED"
-              }
-            }
-          ],
-          "data": {
-            "library": {
-              "book": null
-            },
-            "user": null,
-            "firstShip": "3001",
-            "secondShip": null,
-            "launch": [
-              {
-                "id": "1",
-                "status": null
-              }
+        let graphQLErrorsJSON = """
+        [
+          {
+            "message": "Book not found",
+            "locations": [
+              { "line": 2, "column": 7 },
+              { "line": 5, "column": 12 }
             ],
-            "oldField": "some value"
+            "path": ["library", "book", "1234"],
+            "extensions": {
+              "code": "NOT_FOUND",
+              "timestamp": "2024-01-15T10:00:00Z"
+            }
+          },
+          {
+            "message": "Unauthorized access to user profile",
+            "locations": [{ "line": 10, "column": 3 }],
+            "path": ["user", "profile"],
+            "extensions": {
+              "code": "UNAUTHORIZED"
+            }
           }
-        }
+        ]
         """
 
         // When
@@ -1593,7 +1576,7 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: "/graphql",
                     time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
                     attributes: [
-                        CrossPlatformAttributes.graphqlErrors: graphQLResponseJSON.data(using: .utf8)!,
+                        CrossPlatformAttributes.graphqlErrors: graphQLErrorsJSON,
                         CrossPlatformAttributes.graphqlOperationType: "query",
                         CrossPlatformAttributes.graphqlOperationName: "GetBookAndUser"
                     ],
@@ -1664,7 +1647,7 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: "/graphql",
                     time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
                     attributes: [
-                        CrossPlatformAttributes.graphqlErrors: "{ invalid json }".data(using: .utf8)!,
+                        CrossPlatformAttributes.graphqlErrors: "{ invalid json }",
                         CrossPlatformAttributes.graphqlOperationType: "query"
                     ],
                     kind: .xhr,
@@ -1694,10 +1677,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         let emptyErrorsJSON = """
-        {
-            "errors": [],
-            "data": null
-        }
+        []
         """
 
         // When
@@ -1707,7 +1687,7 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: "/graphql",
                     time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
                     attributes: [
-                        CrossPlatformAttributes.graphqlErrors: emptyErrorsJSON.data(using: .utf8)!,
+                        CrossPlatformAttributes.graphqlErrors: emptyErrorsJSON,
                         CrossPlatformAttributes.graphqlOperationType: "query"
                     ],
                     kind: .xhr,
