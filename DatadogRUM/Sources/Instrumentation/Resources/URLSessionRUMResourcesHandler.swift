@@ -157,8 +157,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         }
 
         // Extract GraphQL errors from response if present
-        if let errorsData = extractGraphQLErrorsIfPresent(from: interception) {
-            combinedAttributes[CrossPlatformAttributes.graphqlErrors] = errorsData
+        if let errorsString = extractGraphQLErrorsIfPresent(from: interception) {
+            combinedAttributes[CrossPlatformAttributes.graphqlErrors] = errorsString
         }
 
         if let resourceMetrics = interception.metrics {
@@ -200,9 +200,9 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         }
     }
 
-    /// Extracts GraphQL errors from JSON response if present.
+    /// Extracts GraphQL errors from JSON response if present and returns them as a JSON string.
     /// Only the errors array is extracted to avoid storing potentially large response data fields.
-    private func extractGraphQLErrorsIfPresent(from interception: URLSessionTaskInterception) -> Data? {
+    private func extractGraphQLErrorsIfPresent(from interception: URLSessionTaskInterception) -> String? {
         guard let data = interception.data,
               let httpResponse = interception.completion?.httpResponse,
               let mimeType = httpResponse.mimeType,
@@ -210,13 +210,19 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             return nil
         }
 
-        // Fast check: does the response contain an "errors" key?
-        guard let result = try? JSONDecoder().decode(GraphQLResponseHasErrors.self, from: data),
-              result.hasErrors else {
+        guard let response = try? JSONDecoder().decode(GraphQLResponse.self, from: data),
+              let errors = response.errors,
+              !errors.isEmpty else {
             return nil
         }
 
-        return data
+        do {
+            let errorsData = try JSONEncoder().encode(errors)
+            return String(data: errorsData, encoding: .utf8)
+        } catch {
+            DD.logger.debug("Failed to encode GraphQL errors array: \(error)")
+            return nil
+        }
     }
 }
 

@@ -1194,9 +1194,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
         XCTAssertNotNil(attributes[CrossPlatformAttributes.graphqlErrors])
-        let errorsData = try XCTUnwrap(attributes[CrossPlatformAttributes.graphqlErrors] as? Data)
-        let errorsJSON = try XCTUnwrap(String(data: errorsData, encoding: .utf8))
-        XCTAssertTrue(errorsJSON.contains("Not found"))
+        let errorsString = try XCTUnwrap(attributes[CrossPlatformAttributes.graphqlErrors] as? String)
+        XCTAssertTrue(errorsString.contains("Not found"))
     }
 
     func testGivenGraphQLResponseWithNonJSONContentType_whenInterceptionCompletes_itDoesNotParseErrors() throws {
