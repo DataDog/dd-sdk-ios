@@ -616,6 +616,7 @@
 		5BC91D452F3C9E3400D0241D /* LayerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC91D442F3C9E2E00D0241D /* LayerProvider.swift */; };
 		5BC91D472F3CA22800D0241D /* CALayerReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC91D462F3CA22100D0241D /* CALayerReference.swift */; };
 		5BC91D492F3CB54100D0241D /* LayerRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC91D482F3CB53A00D0241D /* LayerRecording.swift */; };
+		5BC91D4B2F3E15CC00D0241D /* RecordingComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC91D4A2F3E15C700D0241D /* RecordingComponents.swift */; };
 		5BCBC0CD2DF85B6A0094DCC2 /* SessionReplayPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */; };
 		5BD6C6562E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */; };
 		5BD6C6572E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */; };
@@ -3038,6 +3039,7 @@
 		5BC91D442F3C9E2E00D0241D /* LayerProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerProvider.swift; sourceTree = "<group>"; };
 		5BC91D462F3CA22100D0241D /* CALayerReference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerReference.swift; sourceTree = "<group>"; };
 		5BC91D482F3CB53A00D0241D /* LayerRecording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerRecording.swift; sourceTree = "<group>"; };
+		5BC91D4A2F3E15C700D0241D /* RecordingComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingComponents.swift; sourceTree = "<group>"; };
 		5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayPrivacyView.swift; sourceTree = "<group>"; };
 		5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRepository.swift; sourceTree = "<group>"; };
 		5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilder.swift; sourceTree = "<group>"; };
@@ -5137,6 +5139,7 @@
 		61054E3B2A6EE10A00AAA894 /* Feature */ = {
 			isa = PBXGroup;
 			children = (
+				5BC91D4A2F3E15C700D0241D /* RecordingComponents.swift */,
 				A73A54972B16406900E1F7E3 /* ResourcesFeature.swift */,
 				61054E3C2A6EE10A00AAA894 /* SessionReplayFeature.swift */,
 				61054E3E2A6EE10A00AAA894 /* RUMContextReceiver.swift */,
@@ -10047,6 +10050,7 @@
 				5B69166B2F3B823B0074A909 /* TimerScheduler.swift in Sources */,
 				A7B932FE2B1F6A0A00AE6477 /* SRDataModels+UIKit.swift in Sources */,
 				61054E862A6EE10A00AAA894 /* UnsupportedViewRecorder.swift in Sources */,
+				5BC91D4B2F3E15CC00D0241D /* RecordingComponents.swift in Sources */,
 				5B0A9B8D2E3BBB4500A8131C /* GraphicsFilter+Reflection.swift in Sources */,
 				61054E882A6EE10A00AAA894 /* ViewTreeRecordingContext.swift in Sources */,
 				D2AD1CCC2CE4AE9800106C74 /* UIHostingViewRecorder.swift in Sources */,
