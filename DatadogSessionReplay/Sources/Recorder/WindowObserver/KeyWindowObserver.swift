@@ -26,8 +26,9 @@ internal class KeyWindowObserver: AppWindowObserver {
     private func findONiOS13AndLater() -> UIWindow? {
         return UIApplication.managedShared?
             .connectedScenes
-            .flatMap { ($0 as? UIWindowScene)?.windows ?? [] }
-            .first { $0.isKeyWindow }
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow)
     }
 }
 
