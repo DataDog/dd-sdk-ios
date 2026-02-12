@@ -91,6 +91,10 @@ extension LayerTreeRecordingCoordinator: FeatureMessageReceiver {
 @available(iOS 13.0, tvOS 13.0, *)
 extension LayerTreeRecordingCoordinator {
     private func onRUMContextChanged(_ rumContext: RUMCoreContext?) {
+        guard self.rumContext != rumContext else {
+            return
+        }
+
         if self.rumContext?.sessionID != rumContext?.sessionID || self.rumContext == nil {
             isSampled = sampler.sample()
         }
