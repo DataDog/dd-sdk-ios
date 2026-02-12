@@ -9,17 +9,20 @@ import Foundation
 
 @testable import DatadogSessionReplay
 
-final class TestTimeProvider: TimeProvider {
+final class TestTimerScheduler: TimerScheduler {
+    private class Timer: ScheduledTimer {
+        var isCancelled = false
+
+        func cancel() {
+            isCancelled = true
+        }
+    }
+
     private struct ScheduledItem {
         let id: UUID
         let dueTime: TimeInterval
-        let task: Task
+        let timer: Timer
         let action: () -> Void
-    }
-
-    final class Task: TimeProviderTask {
-        fileprivate var isCancelled = false
-        func cancel() { isCancelled = true }
     }
 
     private(set) var now: TimeInterval
@@ -29,20 +32,20 @@ final class TestTimeProvider: TimeProvider {
         self.now = now
     }
 
-    func schedule(after delay: TimeInterval, _ action: @escaping () -> Void) -> Task {
-        precondition(delay >= 0)
+    func schedule(after interval: TimeInterval, _ action: @escaping () -> Void) -> any ScheduledTimer {
+        precondition(interval >= 0)
 
-        let task = Task()
+        let timer = Timer()
         let item = ScheduledItem(
             id: UUID(),
-            dueTime: now + delay,
-            task: task,
+            dueTime: now + interval,
+            timer: timer,
             action: action
         )
         queue.append(item)
         queue.sort { $0.dueTime < $1.dueTime }
 
-        return task
+        return timer
     }
 
     func advance(by delta: TimeInterval) {
@@ -59,7 +62,7 @@ final class TestTimeProvider: TimeProvider {
     private func runDueTasks() {
         while let first = queue.first, first.dueTime <= now {
             queue.removeFirst()
-            guard !first.task.isCancelled else { continue }
+            guard !first.timer.isCancelled else { continue }
             first.action()
         }
     }

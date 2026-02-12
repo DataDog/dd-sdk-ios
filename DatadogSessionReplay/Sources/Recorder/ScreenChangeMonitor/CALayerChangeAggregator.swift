@@ -13,23 +13,23 @@
 #if os(iOS)
 import QuartzCore
 
-internal final class CALayerChangeAggregator<T: TimeProvider> {
+internal final class CALayerChangeAggregator {
     private let minimumDeliveryInterval: TimeInterval
-    private let timeProvider: T
+    private let timerScheduler: any TimerScheduler
     private let handler: (CALayerChangeSnapshot) -> Void
 
     private var isRunning = false
     private var pendingChanges: [ObjectIdentifier: CALayerChange] = [:]
     private var lastDeliveryTime: TimeInterval?
-    private var scheduledDelivery: T.Task?
+    private var scheduledDelivery: (any ScheduledTimer)?
 
     init(
         minimumDeliveryInterval: TimeInterval,
-        timeProvider: T,
+        timerScheduler: any TimerScheduler,
         handler: @escaping (CALayerChangeSnapshot) -> Void
     ) {
         self.minimumDeliveryInterval = minimumDeliveryInterval
-        self.timeProvider = timeProvider
+        self.timerScheduler = timerScheduler
         self.handler = handler
     }
 
@@ -43,7 +43,7 @@ internal final class CALayerChangeAggregator<T: TimeProvider> {
         }
 
         isRunning = true
-        lastDeliveryTime = timeProvider.now
+        lastDeliveryTime = timerScheduler.now
     }
 
     func stop() {
@@ -77,7 +77,7 @@ internal final class CALayerChangeAggregator<T: TimeProvider> {
     }
 
     private func scheduleDeliveryIfNeeded() {
-        let now = timeProvider.now
+        let now = timerScheduler.now
 
         // This should not happen with the current start()/stop() semantics, it is purely defensive.
         guard let last = lastDeliveryTime else {
@@ -98,13 +98,13 @@ internal final class CALayerChangeAggregator<T: TimeProvider> {
     }
 
     private func scheduleDelivery(after delay: TimeInterval) {
-        scheduledDelivery = timeProvider.schedule(after: delay) { [weak self] in
+        scheduledDelivery = timerScheduler.schedule(after: delay) { [weak self] in
             guard let self else {
                 return
             }
 
             self.scheduledDelivery = nil
-            self.deliverPendingChanges(self.timeProvider.now)
+            self.deliverPendingChanges(self.timerScheduler.now)
         }
     }
 
