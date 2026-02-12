@@ -14,9 +14,23 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2DA2355298D57AA00C6C7E6"
-               BuildableName = "DatadogInternal.framework"
-               BlueprintName = "DatadogInternal tvOS"
+               BlueprintIdentifier = "5BA8C2EC2E784B3C00B1DA80"
+               BuildableName = "DatadogFlags.framework"
+               BlueprintName = "DatadogFlags"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "5BF228272E795D6500D79E8A"
+               BuildableName = "DatadogFlagsTests.xctest"
+               BlueprintName = "DatadogFlagsTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +46,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D2DA2355298D57AA00C6C7E6"
-            BuildableName = "DatadogInternal.framework"
-            BlueprintName = "DatadogInternal tvOS"
+            BlueprintIdentifier = "5BA8C2EC2E784B3C00B1DA80"
+            BuildableName = "DatadogFlags.framework"
+            BlueprintName = "DatadogFlags"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -183,9 +197,9 @@
       <CodeCoverageTargets>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D2DA2355298D57AA00C6C7E6"
-            BuildableName = "DatadogInternal.framework"
-            BlueprintName = "DatadogInternal tvOS"
+            BlueprintIdentifier = "5BA8C2EC2E784B3C00B1DA80"
+            BuildableName = "DatadogFlags.framework"
+            BlueprintName = "DatadogFlags"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
@@ -194,9 +208,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2DA23AD298D59DC00C6C7E6"
-               BuildableName = "DatadogInternalTests tvOS.xctest"
-               BlueprintName = "DatadogInternalTests tvOS"
+               BlueprintIdentifier = "5BF228272E795D6500D79E8A"
+               BuildableName = "DatadogFlagsTests.xctest"
+               BlueprintName = "DatadogFlagsTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -222,9 +236,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D2DA2355298D57AA00C6C7E6"
-            BuildableName = "DatadogInternal.framework"
-            BlueprintName = "DatadogInternal tvOS"
+            BlueprintIdentifier = "5BA8C2EC2E784B3C00B1DA80"
+            BuildableName = "DatadogFlags.framework"
+            BlueprintName = "DatadogFlags"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

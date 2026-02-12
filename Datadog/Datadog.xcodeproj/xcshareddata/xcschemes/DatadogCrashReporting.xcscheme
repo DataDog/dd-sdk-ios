@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2CB6FBA27C5348200A62B57"
+               BlueprintIdentifier = "61B7885325C180CB002675B5"
                BuildableName = "DatadogCrashReporting.framework"
-               BlueprintName = "DatadogCrashReporting tvOS"
+               BlueprintName = "DatadogCrashReporting"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -33,9 +33,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D2CB6FBA27C5348200A62B57"
+            BlueprintIdentifier = "61B7885325C180CB002675B5"
             BuildableName = "DatadogCrashReporting.framework"
-            BlueprintName = "DatadogCrashReporting tvOS"
+            BlueprintName = "DatadogCrashReporting"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -190,9 +190,9 @@
       <CodeCoverageTargets>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D2CB6FBA27C5348200A62B57"
+            BlueprintIdentifier = "61B7885325C180CB002675B5"
             BuildableName = "DatadogCrashReporting.framework"
-            BlueprintName = "DatadogCrashReporting tvOS"
+            BlueprintName = "DatadogCrashReporting"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
@@ -201,9 +201,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2CB6FD327C5352300A62B57"
-               BuildableName = "DatadogCrashReportingTests tvOS.xctest"
-               BlueprintName = "DatadogCrashReportingTests tvOS"
+               BlueprintIdentifier = "61B7885B25C180CB002675B5"
+               BuildableName = "DatadogCrashReportingTests.xctest"
+               BlueprintName = "DatadogCrashReportingTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -229,9 +229,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D2CB6FBA27C5348200A62B57"
+            BlueprintIdentifier = "61B7885325C180CB002675B5"
             BuildableName = "DatadogCrashReporting.framework"
-            BlueprintName = "DatadogCrashReporting tvOS"
+            BlueprintName = "DatadogCrashReporting"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

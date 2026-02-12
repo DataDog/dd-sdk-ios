@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D257953D298ABA65008A1BE5"
                BuildableName = "TestUtilities.framework"
-               BlueprintName = "TestUtilities iOS"
+               BlueprintName = "TestUtilities"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1420"
+   LastUpgradeVersion = "1410"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,23 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2C1A53329C4F2DF00946C31"
-               BuildableName = "DatadogTrace.framework"
-               BlueprintName = "DatadogTrace tvOS"
+               BlueprintIdentifier = "61133B81242393DE00786299"
+               BuildableName = "DatadogCore.framework"
+               BlueprintName = "DatadogCore"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "61133B8A242393DE00786299"
+               BuildableName = "DatadogCoreTests.xctest"
+               BlueprintName = "DatadogCoreTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -27,17 +41,24 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "NO"
+      enableThreadSanitizer = "YES"
       codeCoverageEnabled = "YES"
       onlyGenerateCoverageForSpecifiedTargets = "YES">
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D2C1A53329C4F2DF00946C31"
-            BuildableName = "DatadogTrace.framework"
-            BlueprintName = "DatadogTrace tvOS"
+            BlueprintIdentifier = "61133B81242393DE00786299"
+            BuildableName = "DatadogCore.framework"
+            BlueprintName = "DatadogCore"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "IS_RUNNING_UNIT_TESTS"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "DD_TEST_RUNNER"
@@ -183,9 +204,9 @@
       <CodeCoverageTargets>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D2C1A53329C4F2DF00946C31"
-            BuildableName = "DatadogTrace.framework"
-            BlueprintName = "DatadogTrace tvOS"
+            BlueprintIdentifier = "61133B81242393DE00786299"
+            BuildableName = "DatadogCore.framework"
+            BlueprintName = "DatadogCore"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
@@ -194,9 +215,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2C1A55B29C4F2E800946C31"
-               BuildableName = "DatadogTraceTests tvOS.xctest"
-               BlueprintName = "DatadogTraceTests tvOS"
+               BlueprintIdentifier = "61133B8A242393DE00786299"
+               BuildableName = "DatadogCoreTests.xctest"
+               BlueprintName = "DatadogCoreTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -222,9 +243,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D2C1A53329C4F2DF00946C31"
-            BuildableName = "DatadogTrace.framework"
-            BlueprintName = "DatadogTrace tvOS"
+            BlueprintIdentifier = "61133B81242393DE00786299"
+            BuildableName = "DatadogCore.framework"
+            BlueprintName = "DatadogCore"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
