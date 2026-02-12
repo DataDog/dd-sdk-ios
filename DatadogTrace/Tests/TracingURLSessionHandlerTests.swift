@@ -851,7 +851,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: TelemetryMock()
         )
 
         var request = URLRequest.mockWith(url: "https://www.example.com")
@@ -886,7 +887,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: TelemetryMock()
         )
 
         var request = URLRequest.mockWith(url: "https://www.example.com")
@@ -921,7 +923,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: TelemetryMock()
         )
 
         var request = URLRequest.mockWith(url: "https://www.example.com")
@@ -972,7 +975,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: TelemetryMock()
         )
 
         let request = URLRequest.mockWith(url: "https://www.example.com")
