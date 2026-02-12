@@ -160,32 +160,16 @@ internal class RUMResourceScope: RUMScope {
         if let metrics = resourceMetrics {
             resourceStartTime = metrics.fetch.start
             resourceDuration = metrics.fetch.end.timeIntervalSince(metrics.fetch.start)
-            size = metrics.responseBodySize?.decoded ?? command.size
+            let metricsSize = metrics.responseBodySize?.decoded ?? 0
+            size = metricsSize > 0 ? metricsSize : command.size
         } else {
             resourceStartTime = resourceLoadingStartTime
             resourceDuration = command.time.timeIntervalSince(resourceLoadingStartTime)
             size = command.size
         }
 
-        let encodedBodySize: Int64? = {
-            guard let metrics = resourceMetrics else {
-                return nil
-            }
-            let requestEncoded = metrics.requestBodySize?.encoded ?? 0
-            let responseEncoded = metrics.responseBodySize?.encoded ?? 0
-            let total = requestEncoded + responseEncoded
-            return total > 0 ? total : nil
-        }()
-
-        let decodedBodySize: Int64? = {
-            guard let metrics = resourceMetrics else {
-                return nil
-            }
-            let requestDecoded = metrics.requestBodySize?.decoded ?? 0
-            let responseDecoded = metrics.responseBodySize?.decoded ?? 0
-            let total = requestDecoded + responseDecoded
-            return total > 0 ? total : nil
-        }()
+        let encodedBodySize = resourceMetrics?.responseBodySize?.encoded
+        let decodedBodySize = resourceMetrics?.responseBodySize?.decoded
 
         // Write resource event
         let resourceEvent = RUMResourceEvent(

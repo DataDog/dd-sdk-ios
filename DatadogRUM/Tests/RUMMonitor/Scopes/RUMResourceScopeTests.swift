@@ -1051,7 +1051,6 @@ class RUMResourceScopeTests: XCTestCase {
                     start: resourceFetchStart,
                     end: resourceFetchStart.addingTimeInterval(10)
                 ),
-                requestBodySize: (encoded: 512, decoded: 1_024),
                 responseBodySize: (encoded: 1_536, decoded: 2_048)
             )
         )
@@ -1077,10 +1076,8 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        // encodedBodySize = request encoded (512) + response encoded (1536) = 2048
-        XCTAssertEqual(event.resource.encodedBodySize, 2_048, "Encoded body size should aggregate request and response")
-        // decodedBodySize = request decoded (1024) + response decoded (2048) = 3072
-        XCTAssertEqual(event.resource.decodedBodySize, 3_072, "Decoded body size should aggregate request and response")
+        XCTAssertEqual(event.resource.encodedBodySize, 1_536, "Encoded body size should match response encoded size")
+        XCTAssertEqual(event.resource.decodedBodySize, 2_048, "Decoded body size should match response decoded size")
     }
 
     func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {

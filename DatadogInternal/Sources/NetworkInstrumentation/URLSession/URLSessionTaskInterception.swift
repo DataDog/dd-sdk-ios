@@ -228,11 +228,6 @@ public struct ResourceMetrics {
     /// Properties of the download phase for the resource.
     public let download: DateInterval?
 
-    /// The size of the request body.
-    /// - `encoded`: Size after encoding/compression, as transmitted.
-    /// - `decoded`: Size before encoding/compression.
-    public let requestBodySize: (encoded: Int64, decoded: Int64)?
-
     /// The size of the response body.
     /// - `encoded`: Size as received, before decoding/decompression.
     /// - `decoded`: Size after decoding/decompression.
@@ -246,7 +241,6 @@ public struct ResourceMetrics {
         ssl: DateInterval?,
         firstByte: DateInterval?,
         download: DateInterval?,
-        requestBodySize: (encoded: Int64, decoded: Int64)? = nil,
         responseBodySize: (encoded: Int64, decoded: Int64)? = nil
     ) {
         self.fetch = fetch
@@ -256,7 +250,6 @@ public struct ResourceMetrics {
         self.ssl = ssl
         self.firstByte = firstByte
         self.download = download
-        self.requestBodySize = requestBodySize
         self.responseBodySize = responseBodySize
     }
 }
@@ -298,7 +291,6 @@ extension ResourceMetrics {
         var ssl: DateInterval? = nil
         var firstByte: DateInterval? = nil
         var download: DateInterval? = nil
-        var requestBodySize: (encoded: Int64, decoded: Int64)? = nil
         var responseBodySize: (encoded: Int64, decoded: Int64)? = nil
 
         if let mainTransaction = mainTransaction {
@@ -328,12 +320,9 @@ extension ResourceMetrics {
             }
 
             if #available(iOS 13.0, tvOS 13, *) {
-                let requestEncoded = mainTransaction.countOfRequestBodyBytesSent
-                let requestDecoded = mainTransaction.countOfRequestBodyBytesBeforeEncoding
                 let responseEncoded = mainTransaction.countOfResponseBodyBytesReceived
                 let responseDecoded = mainTransaction.countOfResponseBodyBytesAfterDecoding
 
-                requestBodySize = (encoded: requestEncoded, decoded: requestDecoded)
                 responseBodySize = (encoded: responseEncoded, decoded: responseDecoded)
             }
         }
@@ -346,7 +335,6 @@ extension ResourceMetrics {
             ssl: ssl,
             firstByte: firstByte,
             download: download,
-            requestBodySize: requestBodySize,
             responseBodySize: responseBodySize
         )
     }
