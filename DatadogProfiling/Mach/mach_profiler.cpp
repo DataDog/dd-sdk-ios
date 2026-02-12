@@ -1,7 +1,13 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
 #include "mach_profiler.h"
 #include "mach_sampling_profiler.h"
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !TARGET_OS_WATCH
 
 extern "C" {
 
@@ -57,4 +63,4 @@ int profiler_is_running(const profiler_t* profiler) {
 
 } // extern "C"
 
-#endif // __APPLE__
+#endif // __APPLE__ && !TARGET_OS_WATCH

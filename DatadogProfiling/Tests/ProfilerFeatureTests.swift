@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import DatadogInternal
 import DatadogMachProfiler
@@ -107,3 +109,5 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
     }
 }
+
+#endif // !os(watchOS)

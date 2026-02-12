@@ -7,6 +7,8 @@
 import Foundation
 import DatadogInternal
 
+#if !os(watchOS)
+
 // swiftlint:disable duplicate_imports
 #if swift(>=6.0)
 internal import DatadogMachProfiler
@@ -165,3 +167,5 @@ extension ProfilingContext.Status {
         }
     }
 }
+
+#endif
