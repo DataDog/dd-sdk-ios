@@ -12,7 +12,6 @@ DD_IOS_SECRETS_PATH_PREFIX='kv/aws/arn:aws:iam::486234852809:role/ci-dd-sdk-ios/
 # Full description of secrets is available at https://datadoghq.atlassian.net/wiki/x/cIEB4w (internal)
 # Keep this list and Confluence page up-to-date with every secret that is added to the list.
 DD_IOS_SECRET__TEST_SECRET="test.secret"
-DD_IOS_SECRET__GH_CLI_TOKEN="gh.cli.token"
 DD_IOS_SECRET__CP_TRUNK_TOKEN="cocoapods.trunk.token"
 DD_IOS_SECRET__SSH_KEY="ssh.key"
 DD_IOS_SECRET__TEST_VISIBILITY_API_KEY="test.visibility.api.key"
@@ -33,7 +32,6 @@ DD_IOS_SECRET__GITHUB_APP_PRIVATE_KEY="gh.app.private.key"
 idx=0
 declare -A DD_IOS_SECRETS
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__TEST_SECRET | test secret to see if things work, free to change but not delete"
-DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__GH_CLI_TOKEN | GitHub token to authenticate 'gh' cli (https://cli.github.com/)"
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__CP_TRUNK_TOKEN | Cocoapods token to authenticate 'pod trunk' operations (https://guides.cocoapods.org/terminal/commands.html)"
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__SSH_KEY | SSH key to authenticate 'git clone git@github.com:...' operations"
 DD_IOS_SECRETS[$((idx++))]="$DD_IOS_SECRET__TEST_VISIBILITY_API_KEY | The Datadog API key used to upload the test results to Test Visibility product (https://docs.datadoghq.com/tests/setup/swift)."
