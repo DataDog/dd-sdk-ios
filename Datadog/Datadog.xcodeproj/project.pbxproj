@@ -16081,7 +16081,7 @@
 			repositoryURL = "https://github.com/DataDog/dd-sdk-swift-testing.git";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 2.6.3;
+				minimumVersion = 2.6.6;
 			};
 		};
 		D22689B72EB12C3100875E44 /* XCRemoteSwiftPackageReference "KSCrash" */ = {
