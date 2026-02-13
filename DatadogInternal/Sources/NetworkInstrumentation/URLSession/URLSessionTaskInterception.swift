@@ -42,10 +42,10 @@ public class URLSessionTaskInterception {
     public private(set) var data: Data?
     /// Response size in bytes received during this interception.
     ///
-    /// This is captured via `task.countOfBytesReceived` and serves as a fallback when `metrics.responseSize` is unavailable.
+    /// This is captured via `task.countOfBytesReceived` and serves as a fallback when `metrics.responseBodySize?.decoded` is unavailable.
     ///
     /// Priority for response size:
-    /// 1. `metrics.responseSize` - Most accurate, from `URLSessionTaskMetrics` (only available with registered delegate)
+    /// 1. `metrics.responseBodySize?.decoded` - Most accurate, from `URLSessionTaskMetrics` (only available with registered delegate)
     /// 2. `responseSize` - Fallback from `task.countOfBytesReceived` (available in both modes)
     ///
     /// Available even when data is not captured (e.g., for tasks without completion handlers in automatic mode).
@@ -82,10 +82,11 @@ public class URLSessionTaskInterception {
         return metrics?.fetch.end ?? endDate
     }
 
-    /// Returns the most accurate size available.
-    /// Prefers `metrics.responseSize`, but fallbacks to `responseSize` when metrics size is `nil` or 0
+    /// Returns the most accurate response size available.
+    /// Prefers `metrics.responseBodySize?.decoded` (from URLSessionTaskMetrics in registered delegate mode),
+    /// but falls back to `responseSize` (from task.countOfBytesReceived in automatic mode) when metrics are unavailable.
     public var mostAccurateResponseSize: Int64? {
-        let metricsSize = metrics?.responseSize ?? 0
+        let metricsSize = metrics?.responseBodySize?.decoded ?? 0
         return metricsSize > 0 ? metricsSize : responseSize
     }
 
@@ -227,8 +228,10 @@ public struct ResourceMetrics {
     /// Properties of the download phase for the resource.
     public let download: DateInterval?
 
-    /// The size of data delivered to delegate or completion handler.
-    public let responseSize: Int64?
+    /// The size of the response body.
+    /// - `encoded`: Size as received, before decoding/decompression.
+    /// - `decoded`: Size after decoding/decompression.
+    public let responseBodySize: (encoded: Int64, decoded: Int64)?
 
     public init(
         fetch: DateInterval,
@@ -238,7 +241,7 @@ public struct ResourceMetrics {
         ssl: DateInterval?,
         firstByte: DateInterval?,
         download: DateInterval?,
-        responseSize: Int64?
+        responseBodySize: (encoded: Int64, decoded: Int64)? = nil
     ) {
         self.fetch = fetch
         self.redirection = redirection
@@ -247,7 +250,7 @@ public struct ResourceMetrics {
         self.ssl = ssl
         self.firstByte = firstByte
         self.download = download
-        self.responseSize = responseSize
+        self.responseBodySize = responseBodySize
     }
 }
 
@@ -288,7 +291,7 @@ extension ResourceMetrics {
         var ssl: DateInterval? = nil
         var firstByte: DateInterval? = nil
         var download: DateInterval? = nil
-        var responseSize: Int64? = nil
+        var responseBodySize: (encoded: Int64, decoded: Int64)? = nil
 
         if let mainTransaction = mainTransaction {
             if let dnsStart = mainTransaction.domainLookupStartDate,
@@ -317,7 +320,10 @@ extension ResourceMetrics {
             }
 
             if #available(iOS 13.0, tvOS 13, *) {
-                responseSize = mainTransaction.countOfResponseBodyBytesAfterDecoding
+                let responseEncoded = mainTransaction.countOfResponseBodyBytesReceived
+                let responseDecoded = mainTransaction.countOfResponseBodyBytesAfterDecoding
+
+                responseBodySize = (encoded: responseEncoded, decoded: responseDecoded)
             }
         }
 
@@ -329,7 +335,7 @@ extension ResourceMetrics {
             ssl: ssl,
             firstByte: firstByte,
             download: download,
-            responseSize: responseSize
+            responseBodySize: responseBodySize
         )
     }
 }

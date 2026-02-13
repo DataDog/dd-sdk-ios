@@ -606,7 +606,7 @@ extension NetworkInstrumentationFeature {
             return
         }
 
-        let metricsSize = metrics.responseSize ?? 0
+        let metricsSize = metrics.responseBodySize?.decoded ?? 0
         let responseSize = metricsSize > 0 ? metricsSize : task.countOfBytesReceived
 
         if responseSize > 0 {
