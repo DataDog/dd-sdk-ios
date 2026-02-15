@@ -107,11 +107,11 @@ extension LayerSnapshot {
             isAxisAligned: layer.transform.isAxisAligned,
             opacity: layer.opacity,
             isHidden: layer.isHidden,
-            backgroundColor: layer.backgroundColor,
+            backgroundColor: layer.backgroundColor?.safeCast,
             hasContents: layer.contents != nil,
             cornerRadius: layer.cornerRadius,
             borderWidth: layer.borderWidth,
-            borderColor: layer.borderColor,
+            borderColor: layer.borderColor?.safeCast,
             masksToBounds: layer.masksToBounds,
             hasMask: layer.mask != nil,
             children: children

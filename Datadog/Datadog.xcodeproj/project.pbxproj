@@ -591,6 +591,8 @@
 		5B870BD82F41CE10008106A5 /* CALayerReplayIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BD72F41CE04008106A5 /* CALayerReplayIDTests.swift */; };
 		5B870BDA2F41D3E5008106A5 /* LayerSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BD92F41D3E0008106A5 /* LayerSnapshot.swift */; };
 		5B870BDC2F41D878008106A5 /* LayerSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BDB2F41D875008106A5 /* LayerSnapshotTests.swift */; };
+		5B870BDE2F41DE65008106A5 /* LayerSnapshot+Visibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BDD2F41DE5C008106A5 /* LayerSnapshot+Visibility.swift */; };
+		5B870BE02F41E0EE008106A5 /* LayerSnapshotVisibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BDF2F41E0E5008106A5 /* LayerSnapshotVisibilityTests.swift */; };
 		5B9565FC2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
 		5B9565FD2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
 		5B9B20C52E460A0600C95B6C /* ShapeResourceBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */; };
@@ -3026,6 +3028,8 @@
 		5B870BD72F41CE04008106A5 /* CALayerReplayIDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerReplayIDTests.swift; sourceTree = "<group>"; };
 		5B870BD92F41D3E0008106A5 /* LayerSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshot.swift; sourceTree = "<group>"; };
 		5B870BDB2F41D875008106A5 /* LayerSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotTests.swift; sourceTree = "<group>"; };
+		5B870BDD2F41DE5C008106A5 /* LayerSnapshot+Visibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LayerSnapshot+Visibility.swift"; sourceTree = "<group>"; };
+		5B870BDF2F41E0E5008106A5 /* LayerSnapshotVisibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotVisibilityTests.swift; sourceTree = "<group>"; };
 		5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagDetails.swift; sourceTree = "<group>"; };
 		5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilderTests.swift; sourceTree = "<group>"; };
 		5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRepresentable.swift; sourceTree = "<group>"; };
@@ -4898,8 +4902,9 @@
 		5B870BD62F41CDEF008106A5 /* LayerTreeRecorder */ = {
 			isa = PBXGroup;
 			children = (
-				5B870BDB2F41D875008106A5 /* LayerSnapshotTests.swift */,
 				5B870BD72F41CE04008106A5 /* CALayerReplayIDTests.swift */,
+				5B870BDB2F41D875008106A5 /* LayerSnapshotTests.swift */,
+				5B870BDF2F41E0E5008106A5 /* LayerSnapshotVisibilityTests.swift */,
 			);
 			path = LayerTreeRecorder;
 			sourceTree = "<group>";
@@ -4951,6 +4956,7 @@
 				5BC91D442F3C9E2E00D0241D /* LayerProvider.swift */,
 				5BC91D422F3C9AED00D0241D /* LayerRecorder.swift */,
 				5B870BD92F41D3E0008106A5 /* LayerSnapshot.swift */,
+				5B870BDD2F41DE5C008106A5 /* LayerSnapshot+Visibility.swift */,
 				5BC91D402F3C8DF300D0241D /* LayerTreeRecordingCoordinator.swift */,
 				5BC91D012F3C8B9600D0241D /* RecordingController.swift */,
 			);
@@ -10042,6 +10048,7 @@
 				962C41A72CA431370050B747 /* SessionReplayPrivacyOverrides.swift in Sources */,
 				61054E772A6EE10A00AAA894 /* ViewTreeRecorder.swift in Sources */,
 				61054E9E2A6EE10B00AAA894 /* Queue.swift in Sources */,
+				5B870BDE2F41DE65008106A5 /* LayerSnapshot+Visibility.swift in Sources */,
 				61054E6A2A6EE10A00AAA894 /* UIView+SessionReplay.swift in Sources */,
 				962D72BF2CF7538800F86EF0 /* CGImage+SessionReplay.swift in Sources */,
 				96F25A832CC7EA4400459567 /* UIView+SessionReplayPrivacyOverrides+objc.swift in Sources */,
@@ -10172,6 +10179,7 @@
 				61054FA62A6EE1BA00AAA894 /* SnapshotProcessorTests.swift in Sources */,
 				61054FB72A6EE1BA00AAA894 /* UISegmentRecorderTests.swift in Sources */,
 				5B74483C2EFAEFC3003E622C /* CALayerObserverMock.swift in Sources */,
+				5B870BE02F41E0EE008106A5 /* LayerSnapshotVisibilityTests.swift in Sources */,
 				96E863722C9C547B0023BF78 /* SessionReplayOverrideTests.swift in Sources */,
 				A7D9528C2B28C18D004C79B1 /* ResourceProcessorTests.swift in Sources */,
 				61054FCF2A6EE1BA00AAA894 /* RUMContextReceiverTests.swift in Sources */,

@@ -31,10 +31,28 @@ internal actor LayerRecorder: LayerRecording {
 @available(iOS 13.0, tvOS 13.0, *)
 extension LayerRecorder {
     private func record(_ changes: CALayerChangeset, context: LayerRecordingContext) async {
-        // 1. [main thread] Capture layer tree snapshot
+        guard
+            let snapshot = await LayerSnapshot(using: layerProvider),
+            let visibleSnapshot = snapshot.removingInvisible()
+        else {
+            // There is nothing visible yet
+            return
+        }
+
         // 2. Optimize and flatten layer tree snapshots
         // 3. [main thread] Render layer bitmaps
         // 4. Process layer tree snapshots
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension LayerSnapshot {
+    @MainActor
+    fileprivate init?(using layerProvider: any LayerProvider) {
+        guard let rootLayer = layerProvider.rootLayer else {
+            return nil
+        }
+        self.init(from: rootLayer)
     }
 }
 #endif
