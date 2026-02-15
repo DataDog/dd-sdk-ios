@@ -5,8 +5,8 @@
  */
 
 #if os(iOS)
-import QuartzCore
 import Foundation
+import QuartzCore
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
