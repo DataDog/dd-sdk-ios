@@ -33,7 +33,9 @@ extension LayerRecorder {
     private func record(_ changes: CALayerChangeset, context: LayerRecordingContext) async {
         guard
             let snapshot = await LayerSnapshot(using: layerProvider),
-            let visibleSnapshot = snapshot.removingInvisible()
+            let targetSnapshots = snapshot
+                .removingInvisible()?
+                .flattened()
         else {
             // There is nothing visible yet
             return

@@ -13,7 +13,7 @@ import QuartzCore
 @MainActor
 struct LayerSnapshotTests {
     @available(iOS 13.0, tvOS 13.0, *)
-    private enum Fixtures {
+    enum Fixtures {
         static var anyImage: CGImage {
             let colorSpace = CGColorSpaceCreateDeviceRGB()
             let context = CGContext(
