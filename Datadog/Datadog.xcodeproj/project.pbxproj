@@ -587,6 +587,8 @@
 		5B7448422EFBB77E003E622C /* ScreenChangeMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448412EFBB777003E622C /* ScreenChangeMonitorTests.swift */; };
 		5B7448442EFBBF07003E622C /* ScreenChangeScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448432EFBBF00003E622C /* ScreenChangeScheduler.swift */; };
 		5B7448462EFBC7E5003E622C /* ScreenChangeSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448452EFBC7D8003E622C /* ScreenChangeSchedulerTests.swift */; };
+		5B870BD52F41CB77008106A5 /* CALayer+ReplayID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BD42F41CB75008106A5 /* CALayer+ReplayID.swift */; };
+		5B870BD82F41CE10008106A5 /* CALayerReplayIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BD72F41CE04008106A5 /* CALayerReplayIDTests.swift */; };
 		5B9565FC2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
 		5B9565FD2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
 		5B9B20C52E460A0600C95B6C /* ShapeResourceBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */; };
@@ -3018,6 +3020,8 @@
 		5B7448412EFBB777003E622C /* ScreenChangeMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenChangeMonitorTests.swift; sourceTree = "<group>"; };
 		5B7448432EFBBF00003E622C /* ScreenChangeScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenChangeScheduler.swift; sourceTree = "<group>"; };
 		5B7448452EFBC7D8003E622C /* ScreenChangeSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenChangeSchedulerTests.swift; sourceTree = "<group>"; };
+		5B870BD42F41CB75008106A5 /* CALayer+ReplayID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CALayer+ReplayID.swift"; sourceTree = "<group>"; };
+		5B870BD72F41CE04008106A5 /* CALayerReplayIDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerReplayIDTests.swift; sourceTree = "<group>"; };
 		5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagDetails.swift; sourceTree = "<group>"; };
 		5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilderTests.swift; sourceTree = "<group>"; };
 		5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRepresentable.swift; sourceTree = "<group>"; };
@@ -4887,6 +4891,14 @@
 			path = ScreenChangeMonitor;
 			sourceTree = "<group>";
 		};
+		5B870BD62F41CDEF008106A5 /* LayerTreeRecorder */ = {
+			isa = PBXGroup;
+			children = (
+				5B870BD72F41CE04008106A5 /* CALayerReplayIDTests.swift */,
+			);
+			path = LayerTreeRecorder;
+			sourceTree = "<group>";
+		};
 		5BA8C30E2E7859EC00B1DA80 /* DatadogFlags */ = {
 			isa = PBXGroup;
 			children = (
@@ -4929,6 +4941,7 @@
 		5BC91D002F3C8B7C00D0241D /* LayerTreeRecorder */ = {
 			isa = PBXGroup;
 			children = (
+				5B870BD42F41CB75008106A5 /* CALayer+ReplayID.swift */,
 				5BC91D482F3CB53A00D0241D /* LayerRecording.swift */,
 				5BC91D442F3C9E2E00D0241D /* LayerProvider.swift */,
 				5BC91D422F3C9AED00D0241D /* LayerRecorder.swift */,
@@ -4994,6 +5007,7 @@
 		61054E022A6EE0DB00AAA894 /* DatadogSessionReplayTests */ = {
 			isa = PBXGroup;
 			children = (
+				5B870BD62F41CDEF008106A5 /* LayerTreeRecorder */,
 				61054F882A6EE1BA00AAA894 /* Feature */,
 				61054F922A6EE1BA00AAA894 /* Helpers */,
 				5B3AF8A82E4B3A7F009E5375 /* Models */,
@@ -10084,6 +10098,7 @@
 				5BC91D022F3C8B9B00D0241D /* RecordingController.swift in Sources */,
 				5B7448322EFAB819003E622C /* ScreenChangeMonitor.swift in Sources */,
 				5B7448332EFAB819003E622C /* CALayerChangeset.swift in Sources */,
+				5B870BD52F41CB77008106A5 /* CALayer+ReplayID.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10094,6 +10109,7 @@
 				D28ABFD32CEB87C600623F27 /* UIHostingViewRecorderTests.swift in Sources */,
 				969B3B232C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift in Sources */,
 				960B26C32D075BD200D7196F /* DisplayListReflectionTests.swift in Sources */,
+				5B870BD82F41CE10008106A5 /* CALayerReplayIDTests.swift in Sources */,
 				61054FD42A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift in Sources */,
 				61054FB52A6EE1BA00AAA894 /* UISliderRecorderTests.swift in Sources */,
 				5B9B20C52E460A0600C95B6C /* ShapeResourceBuilderTests.swift in Sources */,
