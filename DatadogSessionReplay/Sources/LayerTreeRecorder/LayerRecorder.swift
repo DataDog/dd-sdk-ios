@@ -4,6 +4,15 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Actor entry point for layer-tree recording.
+//
+// It serializes recording work and intentionally drops new scheduling requests while
+// a capture task is in flight to avoid re-entrancy. The current pipeline scaffolding
+// captures a snapshot, removes invisible branches, flattens the tree, and culls fully
+// obscured layers before moving to rendering/processing stages.
+
 #if os(iOS)
 import Foundation
 

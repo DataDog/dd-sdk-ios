@@ -4,6 +4,14 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Shared control surface for Session Replay recording coordinators.
+//
+// This protocol keeps `SessionReplayFeature` independent from the concrete recording
+// strategy (view-tree or layer-tree) while exposing common lifecycle and privacy/sampling
+// state used in feature orchestration.
+
 #if os(iOS)
 import Foundation
 import DatadogInternal

@@ -46,9 +46,28 @@ extension LayerSnapshotTests {
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test
-    func removingObscuredBasicCases() {
-        #expect([LayerSnapshot]().removingObscured(in: Fixtures.viewportRect).isEmpty)
-        #expect([Fixtures.opaqueSnapshot(replayID: 1)].removingObscured(in: Fixtures.viewportRect).count == 1)
+    func removingObscuredReturnsEmptyForEmptyInput() {
+        // given
+        let snapshots: [LayerSnapshot] = []
+
+        // when
+        let result = snapshots.removingObscured(in: Fixtures.viewportRect)
+
+        // then
+        #expect(result.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
+    func removingObscuredKeepsSingleLayer() {
+        // given
+        let snapshots = [Fixtures.opaqueSnapshot(replayID: 1)]
+
+        // when
+        let result = snapshots.removingObscured(in: Fixtures.viewportRect)
+
+        // then
+        #expect(result.count == 1)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

@@ -4,6 +4,14 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Visibility pruning for captured layer snapshots.
+//
+// This pass removes clearly invisible branches and empty structural containers while
+// preserving nodes that can still contribute visible content through themselves or
+// descendants.
+
 #if os(iOS)
 import Foundation
 import CoreGraphics

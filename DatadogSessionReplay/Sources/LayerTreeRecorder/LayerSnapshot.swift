@@ -4,6 +4,14 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Immutable representation of a captured `CALayer` hierarchy.
+//
+// The snapshot is built on the main actor and stores the geometry, styling and identity
+// metadata required by downstream optimization and rendering passes. It also computes
+// deterministic path components and propagates clip intersections through the subtree.
+
 #if os(iOS)
 @preconcurrency import CoreGraphics
 import Foundation

@@ -16,6 +16,15 @@ extension LayerSnapshot {
     }
 }
 
+// MARK: - Overview
+//
+// Removes flattened layer snapshots that are fully obscured by opaque content in front.
+//
+// Culling runs front-to-back and keeps only layers that may still contribute visually.
+// To keep the hot path efficient on dense trees, opaque coverage is tracked in a simple
+// spatial index (`OpaqueFrameIndex`) using vertical bands plus a global bucket for
+// large frames.
+
 @available(iOS 13.0, tvOS 13.0, *)
 extension Array where Element == LayerSnapshot {
     func removingObscured(in viewportRect: CGRect) -> [LayerSnapshot] {

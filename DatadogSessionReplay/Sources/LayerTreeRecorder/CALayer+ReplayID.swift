@@ -4,6 +4,15 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Provides stable replay identifiers for `CALayer` instances.
+//
+// IDs are lazily assigned and stored on each layer through associated objects, so
+// once assigned they remain stable for that layer's lifetime. ID generation is
+// configurable through a task-local generator to make tests deterministic, while
+// production defaults to an auto-incrementing generator with wraparound.
+
 #if os(iOS)
 import Foundation
 import QuartzCore

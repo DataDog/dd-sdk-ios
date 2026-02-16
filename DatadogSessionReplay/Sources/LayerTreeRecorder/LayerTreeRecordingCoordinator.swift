@@ -4,6 +4,14 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Main-actor coordinator for the layer-tree recording strategy.
+//
+// It combines RUM context updates, replay sampling, and start/stop lifecycle control to
+// decide when recording is active. When active, it forwards batched screen changes from
+// `ScreenChangeMonitor` to `LayerRecorder` with per-capture context metadata.
+
 #if os(iOS)
 import Foundation
 import DatadogInternal

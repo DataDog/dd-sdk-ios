@@ -4,6 +4,14 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Flattens the snapshot tree into a linear rendering list.
+//
+// Nodes that render content are emitted in parent-before-children order. Siblings are
+// traversed by ascending `zPosition`; equal z-order keeps capture sibling order through
+// Swift stable sort semantics.
+
 #if os(iOS)
 import Foundation
 
