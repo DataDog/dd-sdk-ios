@@ -34,6 +34,7 @@ internal final class RUMViewsHandler {
     /// The current date provider.
     private let dateProvider: DateProvider
 
+    #if !os(watchOS)
     /// `UIKit` view predicate. `nil` if `UIKit` auto-instrumentations is
     /// disabled.
     private let uiKitPredicate: UIKitRUMViewsPredicate?
@@ -50,6 +51,7 @@ internal final class RUMViewsHandler {
     /// - `.didEnterBackgroundNotification`
     /// - `.willEnterForegroundNotification`
     private weak var notificationCenter: NotificationCenter?
+    #endif
 
     /// The RUM Command subscriber responsible for processing
     /// this publisher's commands.
@@ -64,6 +66,7 @@ internal final class RUMViewsHandler {
     /// if the last item disappears.
     private var stack: [View] = []
 
+    #if !os(watchOS)
     /// Creates a new `SwiftUI.View` handler to publish RUM view commands.
     /// - Parameters:
     ///   - dateProvider: The current date provider.
@@ -110,6 +113,14 @@ internal final class RUMViewsHandler {
             object: nil
         )
     }
+    #else
+    /// Creates a new `SwiftUI.View` handler to publish RUM view commands on watchOS.
+    /// - Parameters:
+    ///   - dateProvider: The current date provider.
+    init(dateProvider: DateProvider) {
+        self.dateProvider = dateProvider
+    }
+    #endif
 
     func publish(to subscriber: RUMCommandSubscriber) {
         self.subscriber = subscriber
@@ -195,6 +206,7 @@ internal final class RUMViewsHandler {
         )
     }
 
+    #if !os(watchOS)
     @objc
     private func applicationDidEnterBackground() {
         if let current = stack.last {
@@ -222,9 +234,11 @@ internal final class RUMViewsHandler {
             )
         )
     }
+    #endif
 }
 
 // MARK: - UIViewControllerHandler
+#if !os(watchOS)
 extension RUMViewsHandler: UIViewControllerHandler {
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
         let identity = ViewIdentifier(viewController)
@@ -265,6 +279,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
         remove(identity: ViewIdentifier(viewController))
     }
 }
+#endif
 
 // MARK: - SwiftUIViewHandler
 extension RUMViewsHandler: SwiftUIViewHandler {

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import UIKit
 
 internal extension UIViewController {
@@ -66,3 +67,4 @@ internal extension UIView {
         return true
     }
 }
+#endif

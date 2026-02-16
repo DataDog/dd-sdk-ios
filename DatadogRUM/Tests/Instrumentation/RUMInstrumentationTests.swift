@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import TestUtilities
 @testable import DatadogInternal
@@ -324,3 +326,4 @@ internal func DDAssertActiveSwizzlings(_ expectedSwizzledSelectors: [String], fi
         }
     }
 }
+#endif
