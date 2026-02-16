@@ -128,6 +128,7 @@ public struct DatadogInternalInterface {
     ///   - firstByte: properties of the TTFB phase for the resource.
     ///   - download: properties of the download phase for the resource.
     ///   - responseBodySize: the response body sizes (encoded: received bytes, decoded: decompressed bytes).
+    ///   - requestBodySize: the request body sizes (encoded: sent bytes, decoded: original bytes before encoding).
     ///   - attributes: attributes to process along with this call
     public func addResourceMetrics(
         at time: Date,
@@ -140,6 +141,7 @@ public struct DatadogInternalInterface {
         firstByte: (start: Date, end: Date)?,
         download: (start: Date, end: Date)?,
         responseBodySize: (encoded: Int64, decoded: Int64)? = nil,
+        requestBodySize: (encoded: Int64, decoded: Int64)? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
         monitor.process(
@@ -155,7 +157,8 @@ public struct DatadogInternalInterface {
                     ssl: ResourceMetrics.DateInterval.create(start: ssl?.start, end: ssl?.end),
                     firstByte: ResourceMetrics.DateInterval.create(start: firstByte?.start, end: firstByte?.end),
                     download: ResourceMetrics.DateInterval.create(start: download?.start, end: download?.end),
-                    responseBodySize: responseBodySize
+                    responseBodySize: responseBodySize,
+                    requestBodySize: requestBodySize
                 )
             )
         )

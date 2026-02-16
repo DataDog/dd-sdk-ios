@@ -57,6 +57,7 @@ internal extension RUMViewEvent.Source {
         case .roku: return .roku
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
+        case .electron: return .electron
         }
     }
 }
