@@ -19,7 +19,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
     // MARK: - Main Components
 
     /// Orchestrates the process of capturing next snapshots on the main thread.
-    let recordingCoordinator: RecordingCoordinator
+    let recordingCoordinator: any RecordingController
 
     // MARK: - Initialization
 
@@ -27,63 +27,20 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) throws {
-        let processorsQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.processors", qos: .utility)
-        // The telemetry queue targets the processors queue with a lower qos.
-        let telemetryQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.telemetry", qos: .background, target: processorsQueue)
-
-        let telemetry = SessionReplayTelemetry(
-            telemetry: core.telemetry,
-            queue: telemetryQueue
+        let recordingComponents = try RecordingComponents(
+            core: core,
+            configuration: configuration
         )
 
-        let resourceProcessor = ResourceProcessor(
-            queue: processorsQueue,
-            resourcesWriter: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
-        )
-
-        let snapshotProcessor = SnapshotProcessor(
-            queue: processorsQueue,
-            recordWriter: RecordWriter(core: core),
-            resourceProcessor: resourceProcessor,
-            srContextPublisher: SRContextPublisher(core: core),
-            telemetry: telemetry
-        )
-
-        let recorder = try Recorder(
-            snapshotProcessor: snapshotProcessor,
-            additionalNodeRecorders: configuration._additionalNodeRecorders,
-            featureFlags: configuration.featureFlags
-        )
-
-        let scheduler = try ScreenChangeScheduler(minimumInterval: 0.1, telemetry: telemetry)
-        let contextReceiver = RUMContextReceiver()
-
-        self.messageReceiver = CombinedFeatureMessageReceiver([
-            contextReceiver,
-            WebViewRecordReceiver(
-                scope: core.scope(for: SessionReplayFeature.self)
-            )
-        ])
-
-        self.textAndInputPrivacyLevel = configuration.textAndInputPrivacyLevel
-        self.imagePrivacyLevel = configuration.imagePrivacyLevel
-        self.touchPrivacyLevel = configuration.touchPrivacyLevel
-
-        self.recordingCoordinator = RecordingCoordinator(
-            scheduler: scheduler,
-            textAndInputPrivacy: configuration.textAndInputPrivacyLevel,
-            imagePrivacy: configuration.imagePrivacyLevel,
-            touchPrivacy: configuration.touchPrivacyLevel,
-            rumContextObserver: contextReceiver,
-            srContextPublisher: SRContextPublisher(core: core),
-            recorder: recorder,
-            sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate),
-            telemetry: telemetry,
-            startRecordingImmediately: configuration.startRecordingImmediately
-        )
         self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry
+        )
+        self.messageReceiver = CombinedFeatureMessageReceiver(
+            [
+                recordingComponents.messageReceiver,
+                WebViewRecordReceiver(scope: core.scope(for: SessionReplayFeature.self))
+            ]
         )
         self.performanceOverride = PerformancePresetOverride(
             maxFileSize: SessionReplay.maxObjectSize,
@@ -96,6 +53,10 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
                 changeRate: 0.75 // vs 0.1 with `uploadFrequency: .frequent`
             )
         )
+        self.textAndInputPrivacyLevel = configuration.textAndInputPrivacyLevel
+        self.imagePrivacyLevel = configuration.imagePrivacyLevel
+        self.touchPrivacyLevel = configuration.touchPrivacyLevel
+        self.recordingCoordinator = recordingComponents.recordingCoordinator
     }
 
     func startRecording() {

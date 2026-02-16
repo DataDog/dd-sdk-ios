@@ -610,7 +610,13 @@
 		5BB294C12E83E02900CAA44B /* ExposureLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294BF2E83E02100CAA44B /* ExposureLogger.swift */; };
 		5BBDF1C32E97B33800670CEB /* FallbackFlagsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBDF1C22E97B33300670CEB /* FallbackFlagsClient.swift */; };
 		5BBDF1C42E97B33800670CEB /* FallbackFlagsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBDF1C22E97B33300670CEB /* FallbackFlagsClient.swift */; };
+		5BC91D022F3C8B9B00D0241D /* RecordingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC91D012F3C8B9600D0241D /* RecordingController.swift */; };
+		5BC91D412F3C8DFB00D0241D /* LayerTreeRecordingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC91D402F3C8DF300D0241D /* LayerTreeRecordingCoordinator.swift */; };
+		5BC91D432F3C9AF500D0241D /* LayerRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC91D422F3C9AED00D0241D /* LayerRecorder.swift */; };
+		5BC91D452F3C9E3400D0241D /* LayerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC91D442F3C9E2E00D0241D /* LayerProvider.swift */; };
 		5BC91D472F3CA22800D0241D /* CALayerReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC91D462F3CA22100D0241D /* CALayerReference.swift */; };
+		5BC91D492F3CB54100D0241D /* LayerRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC91D482F3CB53A00D0241D /* LayerRecording.swift */; };
+		5BC91D4B2F3E15CC00D0241D /* RecordingComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC91D4A2F3E15C700D0241D /* RecordingComponents.swift */; };
 		5BCBC0CD2DF85B6A0094DCC2 /* SessionReplayPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */; };
 		5BD6C6562E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */; };
 		5BD6C6572E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */; };
@@ -3027,7 +3033,13 @@
 		5BB294BC2E82E66200CAA44B /* FlagValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagValue.swift; sourceTree = "<group>"; };
 		5BB294BF2E83E02100CAA44B /* ExposureLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureLogger.swift; sourceTree = "<group>"; };
 		5BBDF1C22E97B33300670CEB /* FallbackFlagsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackFlagsClient.swift; sourceTree = "<group>"; };
+		5BC91D012F3C8B9600D0241D /* RecordingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingController.swift; sourceTree = "<group>"; };
+		5BC91D402F3C8DF300D0241D /* LayerTreeRecordingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerTreeRecordingCoordinator.swift; sourceTree = "<group>"; };
+		5BC91D422F3C9AED00D0241D /* LayerRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerRecorder.swift; sourceTree = "<group>"; };
+		5BC91D442F3C9E2E00D0241D /* LayerProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerProvider.swift; sourceTree = "<group>"; };
 		5BC91D462F3CA22100D0241D /* CALayerReference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerReference.swift; sourceTree = "<group>"; };
+		5BC91D482F3CB53A00D0241D /* LayerRecording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerRecording.swift; sourceTree = "<group>"; };
+		5BC91D4A2F3E15C700D0241D /* RecordingComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingComponents.swift; sourceTree = "<group>"; };
 		5BCBC0CC2DF85AFE0094DCC2 /* SessionReplayPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayPrivacyView.swift; sourceTree = "<group>"; };
 		5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRepository.swift; sourceTree = "<group>"; };
 		5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilder.swift; sourceTree = "<group>"; };
@@ -4914,6 +4926,18 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		5BC91D002F3C8B7C00D0241D /* LayerTreeRecorder */ = {
+			isa = PBXGroup;
+			children = (
+				5BC91D482F3CB53A00D0241D /* LayerRecording.swift */,
+				5BC91D442F3C9E2E00D0241D /* LayerProvider.swift */,
+				5BC91D422F3C9AED00D0241D /* LayerRecorder.swift */,
+				5BC91D402F3C8DF300D0241D /* LayerTreeRecordingCoordinator.swift */,
+				5BC91D012F3C8B9600D0241D /* RecordingController.swift */,
+			);
+			path = LayerTreeRecorder;
+			sourceTree = "<group>";
+		};
 		5BD6C6542E8AC5D800F5D2CC /* Client */ = {
 			isa = PBXGroup;
 			children = (
@@ -4957,6 +4981,7 @@
 				96F25A812CC7EA4300459567 /* UIView+SessionReplayPrivacyOverrides+objc.swift */,
 				61054E3B2A6EE10A00AAA894 /* Feature */,
 				61054E482A6EE10A00AAA894 /* Processor */,
+				5BC91D002F3C8B7C00D0241D /* LayerTreeRecorder */,
 				61054E0D2A6EE10A00AAA894 /* Recorder */,
 				61054E132A6EE10A00AAA894 /* Utilities */,
 				A7B932F62B1F6A0A00AE6477 /* Models */,
@@ -5114,6 +5139,7 @@
 		61054E3B2A6EE10A00AAA894 /* Feature */ = {
 			isa = PBXGroup;
 			children = (
+				5BC91D4A2F3E15C700D0241D /* RecordingComponents.swift */,
 				A73A54972B16406900E1F7E3 /* ResourcesFeature.swift */,
 				61054E3C2A6EE10A00AAA894 /* SessionReplayFeature.swift */,
 				61054E3E2A6EE10A00AAA894 /* RUMContextReceiver.swift */,
@@ -9968,6 +9994,7 @@
 				61054E6C2A6EE10A00AAA894 /* SystemColors.swift in Sources */,
 				61054E812A6EE10A00AAA894 /* UIStepperRecorder.swift in Sources */,
 				61054E632A6EE10A00AAA894 /* SessionReplayConfiguration.swift in Sources */,
+				5BC91D492F3CB54100D0241D /* LayerRecording.swift in Sources */,
 				61054E702A6EE10A00AAA894 /* TouchSnapshotProducer.swift in Sources */,
 				D2C5D52B2B84F6AB00B63F36 /* WebViewRecordReceiver.swift in Sources */,
 				61054E652A6EE10A00AAA894 /* AppWindowObserver.swift in Sources */,
@@ -10003,6 +10030,7 @@
 				61054E9A2A6EE10A00AAA894 /* NodesFlattener.swift in Sources */,
 				61054E662A6EE10A00AAA894 /* KeyWindowObserver.swift in Sources */,
 				61054E972A6EE10A00AAA894 /* Diff.swift in Sources */,
+				5BC91D432F3C9AF500D0241D /* LayerRecorder.swift in Sources */,
 				61054E6E2A6EE10A00AAA894 /* RecordingCoordinator.swift in Sources */,
 				61054E9F2A6EE10B00AAA894 /* Errors.swift in Sources */,
 				5BF7B51F2E44F7D300E0B772 /* ShapeResource.swift in Sources */,
@@ -10022,12 +10050,14 @@
 				5B69166B2F3B823B0074A909 /* TimerScheduler.swift in Sources */,
 				A7B932FE2B1F6A0A00AE6477 /* SRDataModels+UIKit.swift in Sources */,
 				61054E862A6EE10A00AAA894 /* UnsupportedViewRecorder.swift in Sources */,
+				5BC91D4B2F3E15CC00D0241D /* RecordingComponents.swift in Sources */,
 				5B0A9B8D2E3BBB4500A8131C /* GraphicsFilter+Reflection.swift in Sources */,
 				61054E882A6EE10A00AAA894 /* ViewTreeRecordingContext.swift in Sources */,
 				D2AD1CCC2CE4AE9800106C74 /* UIHostingViewRecorder.swift in Sources */,
 				D2BCB2A12B7B8107005C2AAB /* WKWebViewRecorder.swift in Sources */,
 				61054E712A6EE10A00AAA894 /* TouchSnapshot.swift in Sources */,
 				61054E8A2A6EE10A00AAA894 /* WindowViewTreeSnapshotProducer.swift in Sources */,
+				5BC91D452F3C9E3400D0241D /* LayerProvider.swift in Sources */,
 				61054E7A2A6EE10A00AAA894 /* UIImageViewRecorder.swift in Sources */,
 				A7B932FC2B1F6A0A00AE6477 /* SRDataModels.swift in Sources */,
 				A795069C2B974C8200AC4814 /* SessionReplay+objc.swift in Sources */,
@@ -10037,6 +10067,7 @@
 				D233E7D42E4628EF00E7CFDE /* SegmentJSON.swift in Sources */,
 				D29A470F2D2ED6410092BC79 /* Int64+SessionReplay.swift in Sources */,
 				61054E842A6EE10A00AAA894 /* UITabBarRecorder.swift in Sources */,
+				5BC91D412F3C8DFB00D0241D /* LayerTreeRecordingCoordinator.swift in Sources */,
 				61054E682A6EE10A00AAA894 /* PrivacyLevel.swift in Sources */,
 				5BC91D472F3CA22800D0241D /* CALayerReference.swift in Sources */,
 				D22442C52CA301DA002E71E4 /* UIColor+SessionReplay.swift in Sources */,
@@ -10050,6 +10081,7 @@
 				5B74482F2EFAB819003E622C /* CALayerSwizzler.swift in Sources */,
 				5B7448302EFAB819003E622C /* CALayerChange.swift in Sources */,
 				5B7448312EFAB819003E622C /* CALayerChangeAggregator.swift in Sources */,
+				5BC91D022F3C8B9B00D0241D /* RecordingController.swift in Sources */,
 				5B7448322EFAB819003E622C /* ScreenChangeMonitor.swift in Sources */,
 				5B7448332EFAB819003E622C /* CALayerChangeset.swift in Sources */,
 			);
