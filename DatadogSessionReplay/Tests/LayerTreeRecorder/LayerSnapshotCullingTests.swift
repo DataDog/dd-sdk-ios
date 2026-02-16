@@ -12,6 +12,8 @@ import QuartzCore
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension LayerSnapshotTests.Fixtures {
+    static let viewportRect = CGRect(x: 0, y: 0, width: 100, height: 100)
+
     static func opaqueSnapshot(
         replayID: Int64 = 0,
         frame: CGRect = CGRect(x: 0, y: 0, width: 100, height: 100)
@@ -45,8 +47,8 @@ extension LayerSnapshotTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test
     func removingObscuredBasicCases() {
-        #expect([LayerSnapshot]().removingObscured().isEmpty)
-        #expect([Fixtures.opaqueSnapshot(replayID: 1)].removingObscured().count == 1)
+        #expect([LayerSnapshot]().removingObscured(in: Fixtures.viewportRect).isEmpty)
+        #expect([Fixtures.opaqueSnapshot(replayID: 1)].removingObscured(in: Fixtures.viewportRect).count == 1)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -58,7 +60,7 @@ extension LayerSnapshotTests {
         let top = Fixtures.opaqueSnapshot(replayID: 3)
 
         // when
-        let result = [bottom, middle, top].removingObscured()
+        let result = [bottom, middle, top].removingObscured(in: Fixtures.viewportRect)
 
         // then
         #expect(result.map(\.replayID) == [3])
@@ -72,7 +74,7 @@ extension LayerSnapshotTests {
         let front = Fixtures.opaqueSnapshot(replayID: 2, frame: CGRect(x: 50, y: 0, width: 100, height: 100))
 
         // when
-        let result = [back, front].removingObscured()
+        let result = [back, front].removingObscured(in: Fixtures.viewportRect)
 
         // then
         #expect(result.count == 2)
@@ -86,7 +88,7 @@ extension LayerSnapshotTests {
         let right = Fixtures.opaqueSnapshot(replayID: 2, frame: CGRect(x: 100, y: 0, width: 100, height: 100))
 
         // when
-        let result = [left, right].removingObscured()
+        let result = [left, right].removingObscured(in: Fixtures.viewportRect)
 
         // then
         #expect(result.count == 2)
@@ -101,7 +103,7 @@ extension LayerSnapshotTests {
         let layer3 = Fixtures.opaqueSnapshot(replayID: 3, frame: CGRect(x: 200, y: 0, width: 100, height: 100))
 
         // when
-        let result = [layer1, layer2, layer3].removingObscured()
+        let result = [layer1, layer2, layer3].removingObscured(in: Fixtures.viewportRect)
 
         // then
         #expect(result.map(\.replayID) == [1, 2, 3])
@@ -122,10 +124,26 @@ extension LayerSnapshotTests {
         )
 
         // when
-        let result = [back, front].removingObscured()
+        let result = [back, front].removingObscured(in: Fixtures.viewportRect)
 
         // then
         #expect(result.map(\.replayID) == [1, 2])
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
+    func removingObscuredUsesGlobalIndexBucketForLargeOpaqueFrames() {
+        // given
+        let viewportRect = CGRect(x: 0, y: 0, width: 100, height: 1_000)
+        let back = Fixtures.opaqueSnapshot(replayID: 1, frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        // This frame spans > 8 bands (band height is 64), so it should go to the global bucket
+        let front = Fixtures.opaqueSnapshot(replayID: 2, frame: CGRect(x: 0, y: 0, width: 100, height: 900))
+
+        // when
+        let result = [back, front].removingObscured(in: viewportRect)
+
+        // then
+        #expect(result.map(\.replayID) == [2])
     }
 }
 #endif

@@ -38,7 +38,7 @@ extension LayerRecorder {
             let targetSnapshots = snapshot
                 .removingInvisible()?
                 .flattened()
-                .removingObscured(),
+                .removingObscured(in: snapshot.clipRect),
             !targetSnapshots.isEmpty
         else {
             // There is nothing visible yet

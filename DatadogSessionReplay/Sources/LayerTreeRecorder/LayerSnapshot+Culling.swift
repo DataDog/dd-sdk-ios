@@ -18,12 +18,28 @@ extension LayerSnapshot {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension Array where Element == LayerSnapshot {
-    func removingObscured() -> [LayerSnapshot] {
+    func removingObscured(in viewportRect: CGRect) -> [LayerSnapshot] {
         guard !isEmpty else {
             return self
         }
 
-        var opaqueFrames: [CGRect] = []
+        guard !viewportRect.isInfinite, !viewportRect.isNull, !viewportRect.isEmpty else {
+            return self
+        }
+
+        var index = OpaqueFrameIndex(viewport: viewportRect)
+
+        return removingObscured { frame in
+            index.contains(frame)
+        } onVisibleOpaqueFrame: { frame in
+            index.insert(frame)
+        }
+    }
+
+    private func removingObscured(
+        isFrameObscured: (CGRect) -> Bool,
+        onVisibleOpaqueFrame: (CGRect) -> Void
+    ) -> [LayerSnapshot] {
         var result: [LayerSnapshot] = []
         result.reserveCapacity(count)
 
@@ -36,25 +52,96 @@ extension Array where Element == LayerSnapshot {
                 continue
             }
 
-            // Skip layers fully contained by an opaque layer in front
-            let isObscured = opaqueFrames.contains {
-                $0.contains(visibleFrame)
-            }
-
-            guard !isObscured else {
+            guard !isFrameObscured(visibleFrame) else {
                 continue
             }
 
             result.append(snapshot)
 
-            // Record frame if this layer can occlude
             if snapshot.isOpaque {
-                opaqueFrames.append(visibleFrame)
+                onVisibleOpaqueFrame(visibleFrame)
             }
         }
 
         // Restore back-to-front order
         return result.reversed()
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+private struct OpaqueFrameIndex {
+    private let viewport: CGRect
+    private let bandHeight: CGFloat
+    private let maxBandsPerFrame: Int
+    private var frames: [CGRect] = []
+    private var globalFrameIndices: [Int] = []
+    private var bandFrameIndices: [[Int]]
+
+    init(viewport: CGRect, bandHeight: CGFloat = 64, maxBandsPerFrame: Int = 8) {
+        self.viewport = viewport.standardized
+        self.bandHeight = max(1, bandHeight)
+        self.maxBandsPerFrame = max(1, maxBandsPerFrame)
+
+        let bandsCount = max(1, Int(ceil(self.viewport.height / self.bandHeight)))
+        self.bandFrameIndices = Array(repeating: [], count: bandsCount)
+    }
+
+    mutating func insert(_ frame: CGRect) {
+        guard let visibleFrame = visibleInViewport(frame) else {
+            return
+        }
+
+        let frameIndex = frames.count
+        frames.append(visibleFrame)
+
+        let bandRange = bandRange(for: visibleFrame)
+        let coveredBands = bandRange.upperBound - bandRange.lowerBound + 1
+
+        if coveredBands > maxBandsPerFrame {
+            globalFrameIndices.append(frameIndex)
+            return
+        }
+
+        for band in bandRange {
+            bandFrameIndices[band].append(frameIndex)
+        }
+    }
+
+    func contains(_ frame: CGRect) -> Bool {
+        guard let visibleFrame = visibleInViewport(frame) else {
+            return false
+        }
+
+        // Check large frames first since they can occlude any viewport region.
+        for frameIndex in globalFrameIndices where frames[frameIndex].contains(visibleFrame) {
+            return true
+        }
+
+        for band in bandRange(for: visibleFrame) {
+            for frameIndex in bandFrameIndices[band] where frames[frameIndex].contains(visibleFrame) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private func visibleInViewport(_ frame: CGRect) -> CGRect? {
+        let visibleFrame = frame.intersection(viewport)
+        guard !visibleFrame.isNull, !visibleFrame.isEmpty else {
+            return nil
+        }
+        return visibleFrame
+    }
+
+    private func bandRange(for frame: CGRect) -> ClosedRange<Int> {
+        let minBand = Int(floor((frame.minY - viewport.minY) / bandHeight))
+        let maxBand = Int(floor((frame.maxY - CGFloat.ulpOfOne - viewport.minY) / bandHeight))
+
+        let clampedMinBand = max(0, minBand)
+        let clampedMaxBand = min(bandFrameIndices.count - 1, maxBand)
+
+        return clampedMinBand...clampedMaxBand
     }
 }
 #endif
