@@ -10,7 +10,8 @@
 //
 // The snapshot is built on the main actor and stores the geometry, styling and identity
 // metadata required by downstream optimization and rendering passes. It also computes
-// deterministic path components and propagates clip intersections through the subtree.
+// deterministic path components, propagates clip intersections and resolves cumulative
+// opacity through the subtree.
 
 #if os(iOS)
 @preconcurrency import CoreGraphics
@@ -34,6 +35,7 @@ internal struct LayerSnapshot: Sendable, Equatable {
     let isAxisAligned: Bool
 
     let opacity: Float
+    let resolvedOpacity: Float
     let isHidden: Bool
     let backgroundColor: CGColor?
     let hasContents: Bool
@@ -59,7 +61,8 @@ extension LayerSnapshot {
             from: root,
             in: root,
             pathComponents: [root.pathComponent(0)],
-            clipRect: root.bounds
+            clipRect: root.bounds,
+            parentOpacity: 1.0
         )
     }
 
@@ -68,9 +71,12 @@ extension LayerSnapshot {
         from layer: CALayer,
         in rootLayer: CALayer,
         pathComponents: [String],
-        clipRect: CGRect
+        clipRect: CGRect,
+        parentOpacity: Float
     ) {
         let frame = layer.convert(layer.bounds, to: rootLayer)
+        let opacity = layer.opacity
+        let resolvedOpacity = parentOpacity * opacity
 
         let nextClipRect: CGRect
         if layer.masksToBounds {
@@ -99,7 +105,8 @@ extension LayerSnapshot {
                 from: sublayer,
                 in: rootLayer,
                 pathComponents: pathComponents + [pathComponent],
-                clipRect: nextClipRect
+                clipRect: nextClipRect,
+                parentOpacity: resolvedOpacity
             )
 
             children.append(snapshot)
@@ -113,7 +120,8 @@ extension LayerSnapshot {
             clipRect: clipRect,
             zPosition: layer.zPosition,
             isAxisAligned: layer.transform.isAxisAligned,
-            opacity: layer.opacity,
+            opacity: opacity,
+            resolvedOpacity: resolvedOpacity,
             isHidden: layer.isHidden,
             backgroundColor: layer.backgroundColor?.safeCast,
             hasContents: layer.contents != nil,

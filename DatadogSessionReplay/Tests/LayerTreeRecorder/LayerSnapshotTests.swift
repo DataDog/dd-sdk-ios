@@ -212,8 +212,28 @@ struct LayerSnapshotTests {
 
         // then
         #expect(snapshot.opacity == 0.5)
+        #expect(snapshot.resolvedOpacity == 0.5)
         #expect(snapshot.isHidden == true)
         #expect(snapshot.backgroundColor != nil)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
+    func resolvesNestedOpacity() {
+        // given
+        let rootLayer = CALayer()
+        rootLayer.opacity = 0.5
+
+        let childLayer = CALayer()
+        childLayer.opacity = 0.5
+        rootLayer.addSublayer(childLayer)
+
+        // when
+        let snapshot = LayerSnapshot(from: rootLayer)
+
+        // then
+        #expect(snapshot.resolvedOpacity == 0.5)
+        #expect(snapshot.children[0].resolvedOpacity == 0.25)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

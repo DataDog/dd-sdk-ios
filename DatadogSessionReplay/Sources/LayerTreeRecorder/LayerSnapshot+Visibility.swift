@@ -19,7 +19,7 @@ import CoreGraphics
 @available(iOS 13.0, tvOS 13.0, *)
 extension LayerSnapshot {
     var isVisible: Bool {
-        !isHidden && opacity != 0 && !frame.isEmpty && frame.intersects(clipRect)
+        !isHidden && resolvedOpacity != 0 && !frame.isEmpty && frame.intersects(clipRect)
     }
 
     var rendersContent: Bool {

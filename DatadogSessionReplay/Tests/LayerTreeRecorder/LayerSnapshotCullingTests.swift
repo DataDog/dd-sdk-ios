@@ -39,6 +39,7 @@ extension LayerSnapshotTests {
         #expect(!Fixtures.snapshot(backgroundColor: translucent).isOpaque)
         #expect(!Fixtures.snapshot(backgroundColor: nil).isOpaque)
         #expect(!Fixtures.snapshot(opacity: 0.9, backgroundColor: opaque).isOpaque)
+        #expect(!Fixtures.snapshot(opacity: 1.0, resolvedOpacity: 0.9, backgroundColor: opaque).isOpaque)
         #expect(!Fixtures.snapshot(backgroundColor: opaque, cornerRadius: 8).isOpaque)
         #expect(!Fixtures.snapshot(backgroundColor: opaque, hasMask: true).isOpaque)
         #expect(!Fixtures.snapshot(isAxisAligned: false, backgroundColor: opaque).isOpaque)
@@ -163,6 +164,27 @@ extension LayerSnapshotTests {
 
         // then
         #expect(result.map(\.replayID) == [2])
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
+    func removingObscuredKeepsBackgroundWhenFrontSnapshotHasTranslucentAncestor() {
+        // given
+        let back = Fixtures.opaqueSnapshot(replayID: 1, frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        let front = Fixtures.snapshot(
+            replayID: 2,
+            frame: CGRect(x: 0, y: 0, width: 100, height: 100),
+            opacity: 1.0,
+            resolvedOpacity: 0.5,
+            backgroundColor: CGColor(red: 1, green: 0, blue: 0, alpha: 1.0),
+            hasContents: true
+        )
+
+        // when
+        let result = [back, front].removingObscured(in: Fixtures.viewportRect)
+
+        // then
+        #expect(result.map(\.replayID) == [1, 2])
     }
 }
 #endif

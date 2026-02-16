@@ -11,7 +11,7 @@ import CoreGraphics
 @available(iOS 13.0, tvOS 13.0, *)
 extension LayerSnapshot {
     var isOpaque: Bool {
-        backgroundColor?.alpha == 1.0 && opacity == 1.0 &&
+        backgroundColor?.alpha == 1.0 && resolvedOpacity == 1.0 &&
         !hasMask && cornerRadius == 0 && isAxisAligned
     }
 }
