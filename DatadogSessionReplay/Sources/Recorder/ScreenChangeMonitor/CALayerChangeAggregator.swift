@@ -6,31 +6,27 @@
 
 // MARK: - Overview
 //
-// Aggregates observed `CALayer` changes over time and delivers snapshots at a
+// Aggregates observed `CALayer` changes over time and delivers them at a
 // minimum interval. Records which aspects changed per layer and invokes a
-// handler with a `CALayerChangeSnapshot` for batching, correlation, and reporting.
+// handler with a `CALayerChangeset` for batching, correlation, and reporting.
 
 #if os(iOS)
 import QuartzCore
 
 internal final class CALayerChangeAggregator {
+    var handler: ((CALayerChangeset) -> Void)?
+
     private let minimumDeliveryInterval: TimeInterval
     private let timerScheduler: any TimerScheduler
-    private let handler: (CALayerChangeSnapshot) -> Void
 
     private var isRunning = false
     private var pendingChanges: [ObjectIdentifier: CALayerChange] = [:]
     private var lastDeliveryTime: TimeInterval?
     private var scheduledDelivery: (any ScheduledTimer)?
 
-    init(
-        minimumDeliveryInterval: TimeInterval,
-        timerScheduler: any TimerScheduler,
-        handler: @escaping (CALayerChangeSnapshot) -> Void
-    ) {
+    init(minimumDeliveryInterval: TimeInterval, timerScheduler: any TimerScheduler) {
         self.minimumDeliveryInterval = minimumDeliveryInterval
         self.timerScheduler = timerScheduler
-        self.handler = handler
     }
 
     deinit {
@@ -70,7 +66,7 @@ internal final class CALayerChangeAggregator {
             layerChange.aspects.insert(aspect)
             pendingChanges[id] = layerChange
         } else {
-            pendingChanges[id] = CALayerChange(layer: layer, aspects: aspect)
+            pendingChanges[id] = CALayerChange(layer: .init(layer), aspects: aspect)
         }
 
         scheduleDeliveryIfNeeded()
@@ -109,14 +105,13 @@ internal final class CALayerChangeAggregator {
     }
 
     private func deliverPendingChanges(_ now: TimeInterval) {
-        let snapshot = CALayerChangeSnapshot(pendingChanges)
-            .removingDeallocatedLayers()
+        let changes = CALayerChangeset(pendingChanges)
 
         pendingChanges.removeAll()
         lastDeliveryTime = now
 
-        if !snapshot.isEmpty {
-            handler(snapshot)
+        if !changes.isEmpty, let handler {
+            handler(changes)
         }
     }
 }

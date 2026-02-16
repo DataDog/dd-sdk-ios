@@ -17,9 +17,9 @@ final class ScreenChangeSchedulerTests: XCTestCase {
     // swiftlint:disable:next implicitly_unwrapped_optional
     private var screenChangeScheduler: ScreenChangeScheduler!
 
-    override func setUp() {
-        super.setUp()
-        screenChangeScheduler = ScreenChangeScheduler(
+    override func setUp() async throws {
+        try await super.setUp()
+        screenChangeScheduler = try ScreenChangeScheduler(
             minimumInterval: 0.1,
             telemetry: telemetryMock,
             timerScheduler: testTimerScheduler

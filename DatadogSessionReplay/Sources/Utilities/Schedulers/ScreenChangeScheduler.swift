@@ -20,21 +20,28 @@ import DatadogInternal
 internal final class ScreenChangeScheduler: Scheduler {
     let queue: Queue = MainQueue()
 
-    private let minimumInterval: TimeInterval
-    private let telemetry: Telemetry
-    private let timerScheduler: any TimerScheduler
-
-    private var monitor: ScreenChangeMonitor?
+    private let monitor: ScreenChangeMonitor
     private var operations: [() -> Void] = []
 
-    init(
+    convenience init(
         minimumInterval: TimeInterval,
         telemetry: Telemetry,
         timerScheduler: any TimerScheduler = .dispatchSource
-    ) {
-        self.minimumInterval = minimumInterval
-        self.telemetry = telemetry
-        self.timerScheduler = timerScheduler
+    ) throws {
+        try self.init(
+            monitor: ScreenChangeMonitor(
+                minimumDeliveryInterval: minimumInterval,
+                timerScheduler: timerScheduler
+            )
+        )
+    }
+
+    init(monitor: ScreenChangeMonitor) {
+        self.monitor = monitor
+
+        monitor.handler = { [weak self] changes in
+            self?.screenDidChange(changes)
+        }
     }
 
     func schedule(operation: @escaping () -> Void) {
@@ -45,38 +52,19 @@ internal final class ScreenChangeScheduler: Scheduler {
 
     func start() {
         queue.run {
-            guard self.monitor == nil else {
-                return // already started
-            }
-
-            do {
-                let monitor = try ScreenChangeMonitor(
-                    minimumDeliveryInterval: self.minimumInterval,
-                    timerScheduler: self.timerScheduler
-                ) { [weak self] snapshot in
-                    self?.screenDidChange(snapshot)
-                }
-                monitor.start()
-                self.monitor = monitor
-            } catch {
-                self.telemetry.error("[SR] Could not create ScreenChangeMonitor", error: error)
-            }
+            self.monitor.start()
         }
     }
 
     func stop() {
         queue.run {
-            guard let monitor = self.monitor else {
-                return
-            }
-            monitor.stop()
-            self.monitor = nil
+            self.monitor.stop()
         }
     }
 
-    private func screenDidChange(_ snapshot: CALayerChangeSnapshot) {
+    private func screenDidChange(_ changes: CALayerChangeset) {
         // ScreenChangeMonitor notifies on the main thread
-        DD.logger.debug("Screen changed: \(snapshot)")
+        DD.logger.debug("Screen changed: \(changes)")
         operations.forEach { $0() }
     }
 }
