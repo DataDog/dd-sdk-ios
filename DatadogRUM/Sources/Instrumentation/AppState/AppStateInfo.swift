@@ -56,6 +56,7 @@ extension AppStateInfo: CustomDebugStringConvertible {
         - appVersion: \(appVersion)
         - osVersion: \(osVersion)
         - systemBootTime: \(systemBootTime)
+        - appLaunchTime: \(appLaunchTime)
         - isDebugging: \(isDebugging)
         - wasTerminated: \(wasTerminated)
         - isActive: \(isActive)

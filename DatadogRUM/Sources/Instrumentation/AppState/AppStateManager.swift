@@ -8,21 +8,24 @@ import Foundation
 import DatadogInternal
 
 internal protocol AppStateManaging {
-    /// The app state information of the last application run.
-    var previousAppStateInfo: AppStateInfo? { get }
-    /// Deletes the app state from the data store.
-    func deleteAppState()
     /// Updates the app state based on the given application state.
     func updateAppState(state: AppState)
+    /// Returns the previous app state via `completion` callback.
+    func previousAppStateInfo(completion: @escaping (AppStateInfo?) -> Void)
     /// Builds the current app state.
     func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void)
-    /// Builds the current app state and stores it in the data store.
-    func storeCurrentAppState()
 }
 
 /// Manages the app state changes observed during application lifecycle events such as application start, resume and termination.
 internal final class AppStateManager: AppStateManaging {
-    let featureScope: FeatureScope
+    private static let defaultQueue = DispatchQueue(
+        label: "com.datadoghq.app-state-manager",
+        qos: .utility
+    )
+
+    private let featureScope: FeatureScope
+    private let initialStateGroup = DispatchGroup()
+    private let initialStateQueue: DispatchQueue
 
     /// The last app state observed during application lifecycle events.
     @ReadWriteLock
@@ -30,7 +33,7 @@ internal final class AppStateManager: AppStateManaging {
 
     /// The app state information of the last application run.
     @ReadWriteLock
-    private(set) var previousAppStateInfo: AppStateInfo?
+    private var previousAppStateInfo: AppStateInfo?
 
     /// The process identifier of the app whose state is being monitored.
     let processId: UUID
@@ -41,26 +44,24 @@ internal final class AppStateManager: AppStateManaging {
     init(
         featureScope: FeatureScope,
         processId: UUID,
-        syntheticsEnvironment: Bool
+        syntheticsEnvironment: Bool,
+        queue: DispatchQueue = AppStateManager.defaultQueue
     ) {
         self.featureScope = featureScope
         self.processId = processId
         self.syntheticsEnvironment = syntheticsEnvironment
+        self.initialStateQueue = queue
 
         start()
     }
 
     private func start() {
+        initialStateGroup.enter()
         self.readAppState { [weak self] in
             self?.previousAppStateInfo = $0
             self?.storeCurrentAppState()
+            self?.initialStateGroup.leave()
         }
-    }
-
-    /// Deletes the app state from the data store.
-    func deleteAppState() {
-        DD.logger.debug("Deleting app state from data store")
-        featureScope.rumDataStore.removeValue(forKey: .appStateKey)
     }
 
     /// Updates the app state based on the given application state.
@@ -78,16 +79,16 @@ internal final class AppStateManager: AppStateManaging {
         }
         switch state {
         case .active:
-            updateAppState { state in
-                state?.isActive = true
+            updateAppState { stateInfo in
+                stateInfo?.isActive = true
             }
         case .inactive, .background:
-            updateAppState { state in
-                state?.isActive = false
+            updateAppState { stateInfo in
+                stateInfo?.isActive = false
             }
         case .terminated:
-            updateAppState { state in
-                state?.wasTerminated = true
+            updateAppState { stateInfo in
+                stateInfo?.wasTerminated = true
             }
         }
         lastAppState = state
@@ -96,11 +97,21 @@ internal final class AppStateManager: AppStateManaging {
     /// Updates the app state in the data store with the given block.
     /// - Parameter block: The block to update the app state.
     private func updateAppState(block: @escaping (inout AppStateInfo?) -> Void) {
-        featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
-            var appState = appState
-            block(&appState)
-            DD.logger.debug("Updating app state in data store")
-            self.featureScope.rumDataStore.setValue(appState, forKey: .appStateKey)
+        onInitialStateLoaded { [weak self] in
+            self?.featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
+                var appState = appState
+                block(&appState)
+                DD.logger.debug("Updating app state in data store")
+                self?.featureScope.rumDataStore.setValue(appState, forKey: .appStateKey)
+            }
+        }
+    }
+
+    /// Returns the previous app state via `completion` block.
+    /// - Parameter completion: The completion block called with the previous app state.
+    func previousAppStateInfo(completion: @escaping (AppStateInfo?) -> Void) {
+        onInitialStateLoaded { [weak self] in
+            completion(self?.previousAppStateInfo)
         }
     }
 
@@ -139,5 +150,21 @@ internal final class AppStateManager: AppStateManaging {
             DD.logger.debug("Reading app state from data store.")
             completion(state)
         }
+    }
+
+    /// Runs `completion` once initial state completes.
+    private func onInitialStateLoaded(_ completion: @escaping () -> Void) {
+        initialStateGroup.notify(queue: initialStateQueue, execute: completion)
+    }
+}
+
+// MARK: - Testing funcs
+
+extension AppStateManager {
+    /// Deletes the app state from the data store.
+    /// Used for testing only.
+    func deleteAppState() {
+        DD.logger.debug("Deleting app state from data store")
+        featureScope.rumDataStore.removeValue(forKey: .appStateKey)
     }
 }
