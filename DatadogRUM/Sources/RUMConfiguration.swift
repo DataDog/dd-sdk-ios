@@ -295,12 +295,14 @@ extension RUM {
         /// Default: `true`.
         public var trackAnonymousUser: Bool
 
+        #if !os(watchOS)
         /// Enables the collection of memory warnings.
         ///
         /// When enabled, all the memory warnings are reported as RUM Errors.
         ///
         /// Default: `true`.
         public var trackMemoryWarnings: Bool
+        #endif
 
         /// Enables the collection of slow frames (view hitches).
         ///
@@ -396,12 +398,7 @@ extension RUM {
         /// The default notification center used for subscribing to app lifecycle events and system notifications.
         internal var notificationCenter: NotificationCenter = .default
         /// The factory to create the frame info provider. Defaults to the `CADisplayLink`.
-        #if os(watchOS)
-        internal var frameInfoProviderFactory: (Any, Selector) -> FrameInfoProvider = { target, selector in
-            // CADisplayLink is unavailable on watchOS, so we provide a no-op implementation
-            NOPFrameInfoProvider(target: target, selector: selector)
-        }
-        #else
+        #if !os(watchOS)
         internal var frameInfoProviderFactory: (Any, Selector) -> FrameInfoProvider = { CADisplayLink(target: $0, selector: $1) }
         #endif
         /// The bundle object that contains the current executable.
@@ -576,7 +573,6 @@ extension RUM.Configuration {
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
         trackAnonymousUser: Bool = true,
-        trackMemoryWarnings: Bool = true,
         trackSlowFrames: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
@@ -601,7 +597,6 @@ extension RUM.Configuration {
         self.customEndpoint = customEndpoint
         self.trackAnonymousUser = trackAnonymousUser
         self.trackWatchdogTerminations = trackWatchdogTerminations
-        self.trackMemoryWarnings = trackMemoryWarnings
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility

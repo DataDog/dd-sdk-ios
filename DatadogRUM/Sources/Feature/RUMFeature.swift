@@ -81,12 +81,21 @@ internal final class RUMFeature: DatadogRemoteFeature {
             watchdogTermination = monitor
         }
 
+        var renderLoopObserver: RenderLoopObserver? = nil
         var accessibilityReader: AccessibilityReading? = nil
-        if  #available(iOS 13.0, tvOS 13.0, *), configuration.collectAccessibility {
+
+        let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
+
+        #if !os(watchOS)
+        if #available(iOS 13.0, tvOS 13.0, *), configuration.collectAccessibility {
              accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenter)
         }
 
-        let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
+        renderLoopObserver = DisplayLinker(
+            notificationCenter: configuration.notificationCenter,
+            frameInfoProviderFactory: configuration.frameInfoProviderFactory
+        )
+        #endif
 
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
@@ -119,10 +128,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     return nil
                 }
             }(),
-            renderLoopObserver: DisplayLinker(
-                notificationCenter: configuration.notificationCenter,
-                frameInfoProviderFactory: configuration.frameInfoProviderFactory
-            ),
+            renderLoopObserver: renderLoopObserver,
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
                 configuration.trackSlowFrames
@@ -192,6 +198,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         firstFrameReader.publish(to: monitor)
         dependencies.renderLoopObserver?.register(firstFrameReader)
 
+        #if !os(watchOS)
         var memoryWarningMonitor: MemoryWarningMonitor?
         if configuration.trackMemoryWarnings {
             let memoryWarningReporter = MemoryWarningReporter()
@@ -201,7 +208,6 @@ internal final class RUMFeature: DatadogRemoteFeature {
             )
         }
 
-        #if !os(watchOS)
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,

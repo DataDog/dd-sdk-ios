@@ -399,6 +399,11 @@ public class objc_RUMConfiguration: NSObject {
         set { swiftConfig.swiftUIActionsPredicate = newValue.map { SwiftUIRUMActionsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.swiftUIActionsPredicate as? SwiftUIRUMActionsPredicateBridge)?.objcPredicate }
     }
+
+    public var trackMemoryWarnings: Bool {
+        set { swiftConfig.trackMemoryWarnings = newValue }
+        get { swiftConfig.trackMemoryWarnings }
+    }
     #endif
 
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking) {
@@ -483,11 +488,6 @@ public class objc_RUMConfiguration: NSObject {
     public var trackAnonymousUser: Bool {
         set { swiftConfig.trackAnonymousUser = newValue }
         get { swiftConfig.trackAnonymousUser }
-    }
-
-    public var trackMemoryWarnings: Bool {
-        set { swiftConfig.trackMemoryWarnings = newValue }
-        get { swiftConfig.trackMemoryWarnings }
     }
 }
 
