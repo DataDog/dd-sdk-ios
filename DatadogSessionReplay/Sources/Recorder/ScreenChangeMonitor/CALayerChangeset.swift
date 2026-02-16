@@ -28,7 +28,7 @@ internal struct CALayerChangeset: Sendable, Equatable {
         guard
             let identifier = layer.identifier,
             let change = changes[identifier],
-            change.layer == layer // ObjectIdentifier is only valid during the lifetime of an instance
+            change.layer.identifier == identifier // ObjectIdentifier is only valid during the lifetime of an instance
         else {
             return nil
         }
