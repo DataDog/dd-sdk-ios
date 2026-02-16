@@ -205,13 +205,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testRegisteredDelegate_capturesMetricsForAsyncDataFromURL() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
@@ -246,13 +242,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testRegisteredDelegate_capturesMetricsForAsyncDataWithSessionDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
@@ -287,13 +279,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testRegisteredDelegate_capturesMetricsForAsyncDataWithPerTaskDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
@@ -328,13 +316,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testRegisteredDelegate_capturesMetricsForAsyncUploadWithPerTaskDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
@@ -369,13 +353,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testRegisteredDelegate_capturesMetricsForAsyncUploadWithSessionDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
@@ -410,12 +390,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testRegisteredDelegate_capturesMetricsForAsyncDataTaskWithURLRequest() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         let server = ServerMock(
@@ -846,12 +823,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
-    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testAutomaticMode_tracksAsyncUploadTasks() async throws {
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
         // Given - Enable automatic mode
@@ -1307,12 +1280,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
-    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testGivenBothModesEnabled_whenUsingAsyncAPI_itCapturesAllValues() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         notifyInterceptionDidStart.expectedFulfillmentCount = 2
@@ -1706,13 +1676,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual((completion.error as? NSError)?.code, 123, "Should capture correct error code")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
-    @available(iOS 13.0, tvOS 13.0, watchOS 8.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testGivenRegisteredDelegate_whenUsingAsyncAPI_itCapturesAllValues() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         notifyInterceptionDidStart.expectedFulfillmentCount = 2
