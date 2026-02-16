@@ -34,24 +34,6 @@ internal struct CALayerChangeset: Sendable, Equatable {
         }
         return change.aspects
     }
-
-    mutating func merge(_ other: CALayerChangeset) {
-        changes.merge(other.changes) {
-            // ObjectIdentifier is only valid during the lifetime of an instance
-            guard $0.layer == $1.layer else {
-                return $1
-            }
-            return CALayerChange(layer: $1.layer, aspects: $0.aspects.union($1.aspects))
-        }
-    }
-
-    mutating func removeDeallocatedLayers() {
-        changes = changes.filter(\.value.layer.isAlive)
-    }
-
-    mutating func removeAll() {
-        changes.removeAll()
-    }
 }
 
 extension CALayerChangeset: CustomStringConvertible {

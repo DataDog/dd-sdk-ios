@@ -20,10 +20,6 @@ internal struct CALayerReference: @unchecked Sendable {
         layer.map(ObjectIdentifier.init)
     }
 
-    var isAlive: Bool {
-        layer != nil
-    }
-
     var `class`: AnyClass? {
         layer.map {
             type(of: $0)
