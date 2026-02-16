@@ -588,7 +588,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.attributes.count, 0)
         XCTAssertEqual(resourceStopCommand.kind, RUMResourceType(response: response))
         XCTAssertEqual(resourceStopCommand.httpStatusCode, 200)
-        XCTAssertEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize)
+        XCTAssertEqual(resourceStopCommand.size, taskInterception.metrics?.responseBodySize?.decoded)
     }
 
     func testGivenTaskInterceptionWithZeroMetricsSize_whenInterceptionCompletes_itFallsBackToResponseSize() throws {
@@ -603,8 +603,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .registeredDelegate)
 
-        // Create metrics with responseSize = 0
-        let resourceMetrics = ResourceMetrics.mockWith(responseSize: 0)
+        // Create metrics with responseBodySize.decoded = 0
+        let resourceMetrics = ResourceMetrics.mockWith(responseBodySize: (encoded: 0, decoded: 0))
         taskInterception.register(metrics: resourceMetrics)
 
         // Set responseSize from countOfBytesReceived
@@ -628,9 +628,9 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.kind, RUMResourceType(response: response))
         XCTAssertEqual(resourceStopCommand.httpStatusCode, 200)
 
-        // Verify fallback to responseSize when metrics.responseSize is 0
-        XCTAssertEqual(resourceStopCommand.size, 10, "Should fallback to interception.responseSize when metrics.responseSize is 0")
-        XCTAssertNotEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize, "Should not use metrics.responseSize when it is 0")
+        // Verify fallback to responseSize when metrics.responseBodySize?.decoded is 0
+        XCTAssertEqual(resourceStopCommand.size, 10, "Should fallback to interception.responseSize when metrics.responseBodySize?.decoded is 0")
+        XCTAssertNotEqual(resourceStopCommand.size, taskInterception.metrics?.responseBodySize?.decoded, "Should not use metrics.responseBodySize?.decoded when it is 0")
     }
 
     func testGivenTaskInterceptionWithMetricsAndError_whenInterceptionCompletes_itStopsRUMResourceWithErrorAndMetrics() throws {

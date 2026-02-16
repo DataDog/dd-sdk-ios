@@ -673,6 +673,7 @@ extension URLSessionTaskTransactionMetrics {
         let responseEndDate = end
 
         let countOfResponseBodyBytesAfterDecoding: Int64 = .random(in: 512..<1_024)
+        let countOfResponseBodyBytesReceived: Int64 = .random(in: 256..<512)
 
         return URLSessionTaskTransactionMetricsMock(
             resourceFetchType: resourceFetchType,
@@ -686,7 +687,8 @@ extension URLSessionTaskTransactionMetrics {
             requestStartDate: requestStartDate,
             responseStartDate: responseStartDate,
             responseEndDate: responseEndDate,
-            countOfResponseBodyBytesAfterDecoding: countOfResponseBodyBytesAfterDecoding
+            countOfResponseBodyBytesAfterDecoding: countOfResponseBodyBytesAfterDecoding,
+            countOfResponseBodyBytesReceived: countOfResponseBodyBytesReceived
         )
     }
 
@@ -703,7 +705,7 @@ extension URLSessionTaskTransactionMetrics {
         requestStartDate: Date? = nil,
         responseStartDate: Date? = nil,
         responseEndDate: Date? = nil,
-        countOfResponseBodyBytesAfterDecoding: Int64 = 0
+        responseBodySize: (encoded: Int64, decoded: Int64) = (encoded: 0, decoded: 0)
     ) -> URLSessionTaskTransactionMetrics {
         return URLSessionTaskTransactionMetricsMock(
             resourceFetchType: resourceFetchType,
@@ -717,7 +719,8 @@ extension URLSessionTaskTransactionMetrics {
             requestStartDate: requestStartDate,
             responseStartDate: responseStartDate,
             responseEndDate: responseEndDate,
-            countOfResponseBodyBytesAfterDecoding: countOfResponseBodyBytesAfterDecoding
+            countOfResponseBodyBytesAfterDecoding: responseBodySize.decoded,
+            countOfResponseBodyBytesReceived: responseBodySize.encoded
         )
     }
 }
@@ -788,6 +791,15 @@ private class URLSessionTaskTransactionMetricsMock: URLSessionTaskTransactionMet
     private let _countOfResponseBodyBytesAfterDecoding: Int64
     override var countOfResponseBodyBytesAfterDecoding: Int64 { _countOfResponseBodyBytesAfterDecoding }
 
+    private let _countOfRequestBodyBytesBeforeEncoding: Int64
+    override var countOfRequestBodyBytesBeforeEncoding: Int64 { _countOfRequestBodyBytesBeforeEncoding }
+
+    private let _countOfRequestBodyBytesSent: Int64
+    override var countOfRequestBodyBytesSent: Int64 { _countOfRequestBodyBytesSent }
+
+    private let _countOfResponseBodyBytesReceived: Int64
+    override var countOfResponseBodyBytesReceived: Int64 { _countOfResponseBodyBytesReceived }
+
     init(
         resourceFetchType: URLSessionTaskMetrics.ResourceFetchType,
         fetchStartDate: Date?,
@@ -800,7 +812,10 @@ private class URLSessionTaskTransactionMetricsMock: URLSessionTaskTransactionMet
         requestStartDate: Date?,
         responseStartDate: Date?,
         responseEndDate: Date?,
-        countOfResponseBodyBytesAfterDecoding: Int64
+        countOfResponseBodyBytesAfterDecoding: Int64 = 0,
+        countOfRequestBodyBytesBeforeEncoding: Int64 = 0,
+        countOfRequestBodyBytesSent: Int64 = 0,
+        countOfResponseBodyBytesReceived: Int64 = 0
     ) {
         self._resourceFetchType = resourceFetchType
         self._fetchStartDate = fetchStartDate
@@ -814,5 +829,8 @@ private class URLSessionTaskTransactionMetricsMock: URLSessionTaskTransactionMet
         self._responseStartDate = responseStartDate
         self._responseEndDate = responseEndDate
         self._countOfResponseBodyBytesAfterDecoding = countOfResponseBodyBytesAfterDecoding
+        self._countOfRequestBodyBytesBeforeEncoding = countOfRequestBodyBytesBeforeEncoding
+        self._countOfRequestBodyBytesSent = countOfRequestBodyBytesSent
+        self._countOfResponseBodyBytesReceived = countOfResponseBodyBytesReceived
     }
 }
