@@ -5,7 +5,7 @@
  */
 
 import Foundation
-#if !os(tvOS)
+#if canImport(WebKit)
 import WebKit
 
 @testable import DatadogWebViewTracking
