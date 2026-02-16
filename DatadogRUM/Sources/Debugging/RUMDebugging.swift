@@ -66,13 +66,13 @@ internal class RUMDebugging {
     }
     #else
     init() { }
-    #endif
 
-    #if !os(watchOS)
     deinit {
+        #if !os(watchOS)
         DispatchQueue.main.async { [weak canvas] in
             canvas?.removeFromSuperview()
         }
+        #endif
     }
     #endif
 
