@@ -595,6 +595,8 @@
 		5B870BE02F41E0EE008106A5 /* LayerSnapshotVisibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BDF2F41E0E5008106A5 /* LayerSnapshotVisibilityTests.swift */; };
 		5B870BE22F423DD8008106A5 /* LayerSnapshot+Flattening.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BE12F423DCB008106A5 /* LayerSnapshot+Flattening.swift */; };
 		5B870BE42F42404D008106A5 /* LayerSnapshotFlatteningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BE32F424044008106A5 /* LayerSnapshotFlatteningTests.swift */; };
+		5B870BE62F43311B008106A5 /* LayerSnapshot+Culling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BE52F433110008106A5 /* LayerSnapshot+Culling.swift */; };
+		5B870BE82F433286008106A5 /* LayerSnapshotCullingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BE72F43327F008106A5 /* LayerSnapshotCullingTests.swift */; };
 		5B9565FC2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
 		5B9565FD2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
 		5B9B20C52E460A0600C95B6C /* ShapeResourceBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */; };
@@ -3034,6 +3036,8 @@
 		5B870BDF2F41E0E5008106A5 /* LayerSnapshotVisibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotVisibilityTests.swift; sourceTree = "<group>"; };
 		5B870BE12F423DCB008106A5 /* LayerSnapshot+Flattening.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LayerSnapshot+Flattening.swift"; sourceTree = "<group>"; };
 		5B870BE32F424044008106A5 /* LayerSnapshotFlatteningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotFlatteningTests.swift; sourceTree = "<group>"; };
+		5B870BE52F433110008106A5 /* LayerSnapshot+Culling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LayerSnapshot+Culling.swift"; sourceTree = "<group>"; };
+		5B870BE72F43327F008106A5 /* LayerSnapshotCullingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotCullingTests.swift; sourceTree = "<group>"; };
 		5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagDetails.swift; sourceTree = "<group>"; };
 		5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilderTests.swift; sourceTree = "<group>"; };
 		5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRepresentable.swift; sourceTree = "<group>"; };
@@ -4906,10 +4910,11 @@
 		5B870BD62F41CDEF008106A5 /* LayerTreeRecorder */ = {
 			isa = PBXGroup;
 			children = (
-				5B870BE32F424044008106A5 /* LayerSnapshotFlatteningTests.swift */,
 				5B870BD72F41CE04008106A5 /* CALayerReplayIDTests.swift */,
 				5B870BDB2F41D875008106A5 /* LayerSnapshotTests.swift */,
 				5B870BDF2F41E0E5008106A5 /* LayerSnapshotVisibilityTests.swift */,
+				5B870BE32F424044008106A5 /* LayerSnapshotFlatteningTests.swift */,
+				5B870BE72F43327F008106A5 /* LayerSnapshotCullingTests.swift */,
 			);
 			path = LayerTreeRecorder;
 			sourceTree = "<group>";
@@ -4963,6 +4968,7 @@
 				5B870BD92F41D3E0008106A5 /* LayerSnapshot.swift */,
 				5B870BDD2F41DE5C008106A5 /* LayerSnapshot+Visibility.swift */,
 				5B870BE12F423DCB008106A5 /* LayerSnapshot+Flattening.swift */,
+				5B870BE52F433110008106A5 /* LayerSnapshot+Culling.swift */,
 				5BC91D402F3C8DF300D0241D /* LayerTreeRecordingCoordinator.swift */,
 				5BC91D012F3C8B9600D0241D /* RecordingController.swift */,
 			);
@@ -10021,6 +10027,7 @@
 				5B0A9B8B2E3BB98E00A8131C /* GraphicsFilter.swift in Sources */,
 				D218B0462D072C8400E3F82C /* SessionReplayTelemetry.swift in Sources */,
 				61054E782A6EE10A00AAA894 /* UIDatePickerRecorder.swift in Sources */,
+				5B870BE62F43311B008106A5 /* LayerSnapshot+Culling.swift in Sources */,
 				61054E822A6EE10A00AAA894 /* UILabelRecorder.swift in Sources */,
 				A73A54982B16406900E1F7E3 /* ResourcesFeature.swift in Sources */,
 				61054E6C2A6EE10A00AAA894 /* SystemColors.swift in Sources */,
@@ -10167,6 +10174,7 @@
 				61054F952A6EE1BA00AAA894 /* SessionReplayConfigurationTests.swift in Sources */,
 				61054FAC2A6EE1BA00AAA894 /* CGRect+SessionReplayTests.swift in Sources */,
 				D218B0482D072CF300E3F82C /* SessionReplayTelemetryTests.swift in Sources */,
+				5B870BE82F433286008106A5 /* LayerSnapshotCullingTests.swift in Sources */,
 				D21331C12D132F0600E4A6A1 /* SwiftUIWireframesBuilderTests.swift in Sources */,
 				61054FA42A6EE1BA00AAA894 /* DiffTests.swift in Sources */,
 				61054FA02A6EE1BA00AAA894 /* SRCompressionTests.swift in Sources */,

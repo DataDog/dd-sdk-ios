@@ -32,18 +32,22 @@ internal actor LayerRecorder: LayerRecording {
 extension LayerRecorder {
     private func record(_ changes: CALayerChangeset, context: LayerRecordingContext) async {
         guard
+            // Capture layer tree snapshot
             let snapshot = await LayerSnapshot(using: layerProvider),
+            // Prune, flatten and cull layer snapshots
             let targetSnapshots = snapshot
                 .removingInvisible()?
                 .flattened()
+                .removingObscured(),
+            !targetSnapshots.isEmpty
         else {
             // There is nothing visible yet
             return
         }
 
-        // 2. Optimize and flatten layer tree snapshots
-        // 3. [main thread] Render layer bitmaps
-        // 4. Process layer tree snapshots
+        // Pending stages:
+        // - Render layer bitmaps
+        // - Process layer tree snapshots
     }
 }
 

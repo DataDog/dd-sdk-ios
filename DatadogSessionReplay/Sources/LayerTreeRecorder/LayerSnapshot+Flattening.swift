@@ -6,7 +6,6 @@
 
 #if os(iOS)
 import Foundation
-import CoreGraphics
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension LayerSnapshot {
