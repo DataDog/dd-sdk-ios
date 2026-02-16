@@ -8,6 +8,7 @@ import Foundation
 import UIKit
 import DatadogInternal
 
+#if !os(watchOS)
 private struct RUMDebugInfo {
     struct View {
         let name: String
@@ -26,6 +27,7 @@ private struct RUMDebugInfo {
             .map { View(scope: $0) }
     }
 }
+#endif
 
 internal class RUMDebugging {
     #if !os(watchOS)
@@ -35,7 +37,7 @@ internal class RUMDebugging {
 
     // MARK: - Initialization
 
-    #if !os(tvOS) && !os(watchOS) && !(swift(>=5.9) && os(visionOS))
+    #if os(iOS)
     init() {
         DispatchQueue.main.async {
             UIDevice.current.beginGeneratingDeviceOrientationNotifications()
@@ -63,10 +65,14 @@ internal class RUMDebugging {
         )
     }
     #else
-    init() {
-    }
+    init() { }
+    #endif
 
+    #if !os(watchOS)
     deinit {
+        DispatchQueue.main.async { [weak canvas] in
+            canvas?.removeFromSuperview()
+        }
     }
     #endif
 
