@@ -24,9 +24,14 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     private var events: [(event: Encodable, metadata: Encodable?, bypassConsent: Bool)] = []
     @ReadWriteLock
     private var messages: [FeatureMessage] = []
+    public let dataStore: DataStore
 
-    public init(context: DatadogContext = .mockAny()) {
+    public init(
+        context: DatadogContext = .mockAny(),
+        dataStore: DataStore = DataStoreMock()
+    ) {
         self.contextMock = context
+        self.dataStore = dataStore
     }
 
     public func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
@@ -36,8 +41,6 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     public func context(_ block: @escaping (DatadogContext) -> Void) {
         block(contextMock)
     }
-
-    public var dataStore: DataStore { dataStoreMock }
 
     public var telemetry: Telemetry { telemetryMock }
 
@@ -73,7 +76,12 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     // swiftlint:enable function_default_parameter_at_end
 
     /// Retrieve data written in Data Store.
-    public let dataStoreMock = DataStoreMock()
+    public var dataStoreMock: DataStoreMock {
+        guard let dataStoreMock = dataStore as? DataStoreMock else {
+            preconditionFailure("FeatureScopeMock initialized with a non-DataStoreMock store")
+        }
+        return dataStoreMock
+    }
 
     /// Retrieve telemetries sent to Telemetry endpoint.
     public let telemetryMock = TelemetryMock()
