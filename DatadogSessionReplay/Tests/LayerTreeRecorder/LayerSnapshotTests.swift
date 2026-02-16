@@ -238,6 +238,24 @@ struct LayerSnapshotTests {
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test
+    func propagatesAncestorMaskToDescendants() {
+        // given
+        let rootLayer = CALayer()
+        rootLayer.mask = CALayer()
+
+        let childLayer = CALayer()
+        rootLayer.addSublayer(childLayer)
+
+        // when
+        let snapshot = LayerSnapshot(from: rootLayer)
+
+        // then
+        #expect(snapshot.hasMask)
+        #expect(snapshot.children[0].hasMask)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
     func capturesShapeProperties() {
         // given
         let layer = CALayer()

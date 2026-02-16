@@ -62,7 +62,8 @@ extension LayerSnapshot {
             in: root,
             pathComponents: [root.pathComponent(0)],
             clipRect: root.bounds,
-            parentOpacity: 1.0
+            parentOpacity: 1.0,
+            parentHasMask: false
         )
     }
 
@@ -72,11 +73,13 @@ extension LayerSnapshot {
         in rootLayer: CALayer,
         pathComponents: [String],
         clipRect: CGRect,
-        parentOpacity: Float
+        parentOpacity: Float,
+        parentHasMask: Bool
     ) {
         let frame = layer.convert(layer.bounds, to: rootLayer)
         let opacity = layer.opacity
         let resolvedOpacity = parentOpacity * opacity
+        let hasMask = parentHasMask || layer.mask != nil
 
         let nextClipRect: CGRect
         if layer.masksToBounds {
@@ -106,7 +109,8 @@ extension LayerSnapshot {
                 in: rootLayer,
                 pathComponents: pathComponents + [pathComponent],
                 clipRect: nextClipRect,
-                parentOpacity: resolvedOpacity
+                parentOpacity: resolvedOpacity,
+                parentHasMask: hasMask
             )
 
             children.append(snapshot)
@@ -129,7 +133,7 @@ extension LayerSnapshot {
             borderWidth: layer.borderWidth,
             borderColor: layer.borderColor?.safeCast,
             masksToBounds: layer.masksToBounds,
-            hasMask: layer.mask != nil,
+            hasMask: hasMask,
             children: children
         )
     }
