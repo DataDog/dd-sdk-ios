@@ -45,17 +45,10 @@ class GeneratingBacktraceTests: XCTestCase {
             backtrace.stack.contains("XCTest"),
             "Backtrace stack should include at least one frame from `XCTest` image"
         )
-        #if os(iOS)
         XCTAssertTrue(
-            backtrace.binaryImages.contains(where: { $0.libraryName == "DatadogIntegrationTests iOS" }),
-            "Backtrace should include the image for `DatadogCoreTests iOS`"
+            backtrace.binaryImages.contains(where: { $0.libraryName == "DatadogIntegrationTests" }),
+            "Backtrace should include the image for `DatadogCoreTests`"
         )
-        #elseif os(tvOS)
-        XCTAssertTrue(
-            backtrace.binaryImages.contains(where: { $0.libraryName == "DatadogIntegrationTests tvOS" }),
-            "Backtrace should include the image for `DatadogCoreTests tvOS`"
-        )
-        #endif
         XCTAssertTrue(
             // Assert on prefix as it is `XCTestCore` on iOS 15+ and `XCTest` earlier:
             backtrace.binaryImages.contains(where: { $0.libraryName.hasPrefix("XCTest") }),

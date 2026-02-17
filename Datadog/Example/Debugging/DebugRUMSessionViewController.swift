@@ -8,7 +8,7 @@ import SwiftUI
 import DatadogRUM
 import DatadogTrace
 
-@available(iOS 13, *)
+@available(iOS 13, tvOS 13, *)
 internal class DebugRUMSessionViewController: UIHostingController<DebugRUMSessionView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: DebugRUMSessionView())
@@ -22,7 +22,7 @@ private enum SessionItemType {
     case error
 }
 
-@available(iOS 13.0, *)
+@available(iOS 13, tvOS 13, *)
 private class DebugRUMSessionViewModel: ObservableObject {
     struct SessionItem: Identifiable {
         let label: String
@@ -196,7 +196,7 @@ private class DebugRUMSessionViewModel: ObservableObject {
     }
 }
 
-@available(iOS 13.0, *)
+@available(iOS 13, tvOS 13, *)
 internal struct DebugRUMSessionView: View {
     @ObservedObject private var viewModel = DebugRUMSessionViewModel()
 
@@ -289,7 +289,7 @@ internal struct DebugRUMSessionView: View {
     }
 }
 
-@available(iOS 13.0, *)
+@available(iOS 13, tvOS 13, *)
 private struct FormItemView: View {
     let title: String
     let placeholder: String
@@ -309,17 +309,15 @@ private struct FormItemView: View {
             TextField(placeholder, text: $value)
                 .font(.system(size: 12))
                 .padding(4)
-                .background(Color(UIColor.secondarySystemFill))
                 .cornerRadius(4)
         }
         .padding(4)
-        .background(Color(UIColor.systemFill))
         .foregroundColor(Color.secondary)
         .cornerRadius(4)
     }
 }
 
-@available(iOS 13.0, *)
+@available(iOS 13, tvOS 13, *)
 private struct SessionItemView: View {
     let item: DebugRUMSessionViewModel.SessionItem
 
@@ -340,7 +338,6 @@ private struct SessionItemView: View {
             }
             .padding(4)
             .frame(maxWidth: .infinity)
-            .background(Color(UIColor.systemFill))
             .foregroundColor(Color.secondary)
             .cornerRadius(4)
 
@@ -371,7 +368,7 @@ private struct SessionItemView: View {
 
 // MARK - Preview
 
-@available(iOS 13.0, *)
+@available(iOS 13, tvOS 13, *)
 struct DebugRUMSessionViewController_Previews: PreviewProvider {
     static var previews: some View {
         Group {

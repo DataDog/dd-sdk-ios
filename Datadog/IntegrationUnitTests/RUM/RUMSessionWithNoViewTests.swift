@@ -31,6 +31,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
     /// ```
     /// [BG:Background] --> [FG:(no view)]
     /// ```
+    @available(tvOS, unavailable)
     func prewarmedSessionWithResourceThatBecameActive(
         resourceStartAfter: TimeInterval,
         resourceDuration: TimeInterval,
@@ -65,6 +66,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
 
     // MARK: - Session in foreground with no view
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundOrPrewarmedSessionThatBecameActive_whenEventsAreTracked() throws {
         // Given
         let given1 = backgroundSessionWithResourceThatBecameActive(resourceStartAfter: dt1, resourceDuration: dt2)
@@ -102,6 +104,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
 
     // MARK: - Session in background with no view
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundOrPrewarmedSession_whenEventsAreTracked() throws {
         // Given
         // - BET disabled

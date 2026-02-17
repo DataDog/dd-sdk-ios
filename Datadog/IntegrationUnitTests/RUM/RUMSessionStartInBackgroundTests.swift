@@ -20,8 +20,10 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
 
     // MARK: - OS Prewarm Launch
 
+    @available(tvOS, unavailable)
     private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate) }
 
+    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenNoEventIsTracked() throws {
         // Given
         let given1 = enableRUM(osPrewarmLaunch)
@@ -39,6 +41,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenEventAreTracked() throws {
         // Given
         // - BET disabled
@@ -78,6 +81,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenLongTasksAreTracked() throws {
         // Given
         let given1 = enableRUM(osPrewarmLaunch)
@@ -116,6 +120,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenEventAreTracked() throws {
         // Given
         // - BET disabled

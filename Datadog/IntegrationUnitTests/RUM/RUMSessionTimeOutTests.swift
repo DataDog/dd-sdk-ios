@@ -356,6 +356,7 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
 
     // MARK: - Background session "time out" → track in background
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_whenItTimesOut_andNextEventIsTrackedInBackground() throws {
         // Given
         let given1 = backgroundSession()
@@ -384,6 +385,7 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andNextEventIsTrackedInBackground() throws {
         // Given
         // - BET enabled
@@ -453,6 +455,7 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
 
     // MARK: - Background session "time out" → track in foreground
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_whenItTimesOut_andNextEventIsTrackedInForeground() throws {
         // Given
         let given1 = backgroundSession()
@@ -495,6 +498,7 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andNextEventIsTrackedInForeground() throws {
         // Given
         // - BET enabled
@@ -535,6 +539,7 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_whenItTimesOut_andViewIsTrackedInForeground() throws {
         // Given
         let given1 = backgroundSession { $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate() }
@@ -577,6 +582,7 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andViewIsTrackedInForeground() throws {
         // Given
         // - BET enabled

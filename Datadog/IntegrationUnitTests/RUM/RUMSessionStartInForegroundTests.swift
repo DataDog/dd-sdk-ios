@@ -480,8 +480,10 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     // MARK: - OS Prewarm Launch
 
+    @available(tvOS, unavailable)
     private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate) }
 
+    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenNoEventIsTracked() throws {
         // Given
         let given1 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch)
@@ -521,6 +523,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenManualViewIsTracked() throws {
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
@@ -585,6 +588,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenAutomaticViewIsTracked() throws {
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
@@ -651,6 +655,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenActionsAreTracked() throws {
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
@@ -711,6 +716,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenResourceIsTracked() throws {
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
@@ -769,6 +775,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenLongTasksAreTracked() throws {
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
@@ -832,6 +839,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
     private var backgroundLaunch: AppRunner.ProcessLaunchType { .backgroundLaunch(processLaunchDate: processLaunchDate) }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenNoEventIsTracked() throws {
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
@@ -871,6 +879,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenManualViewIsTracked() throws {
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
@@ -934,6 +943,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenAutomaticViewIsTracked() throws {
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
@@ -1000,6 +1010,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenActionsAreTracked() throws {
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
@@ -1060,6 +1071,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenResourceIsTracked() throws {
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
@@ -1118,6 +1130,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenLongTasksAreTracked() throws {
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)

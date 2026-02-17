@@ -406,6 +406,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
 
     // MARK: - Background session "stop" → track in background
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_whenItIsStopped_andNextEventIsTrackedInBackground() throws {
         // Given
         let given1 = backgroundSession()
@@ -434,6 +435,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andActionIsTrackedInBackground() throws {
         // Given
         // - BET enabled
@@ -474,6 +476,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andOtherEventsAreTrackedInBackground() throws {
         // Given
         // - BET enabled
@@ -510,6 +513,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
 
     // MARK: - Background session "stop" → track in foreground
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_whenItIsStopped_andNextEventIsTrackedInForeground() throws {
         // Given
         let given1 = backgroundSession()
@@ -542,6 +546,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andNextEventIsTrackedInForeground() throws {
         // Given
         // - BET enabled
@@ -601,6 +606,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_whenItIsStopped_andViewIsTrackedInForeground() throws {
         // Given
         let given1 = backgroundSession { $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate() }
@@ -643,6 +649,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
         }
     }
 
+    @available(tvOS, unavailable)
     func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andViewIsTrackedInForeground() throws {
         // Given
         // - BET enabled
