@@ -105,7 +105,7 @@ test-ios-all:
 	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking"
 	@$(MAKE) test-ios SCHEME="DatadogFlags"
 	@$(MAKE) test-ios SCHEME="DatadogProfiling"
-	@$(MAKE) test-ios SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-ios SCHEME="DatadogIntegrationTests iOS"
 
 # Run unit tests for specified SCHEME using tvOS Simulator
 test-tvos:
@@ -125,7 +125,7 @@ test-tvos-all:
 	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting"
 	@$(MAKE) test-tvos SCHEME="DatadogFlags"
 	@$(MAKE) test-tvos SCHEME="DatadogProfiling"
-	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests"
+	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests tvOS"
 
 # Run UI tests for specified TEST_PLAN
 ui-test:
