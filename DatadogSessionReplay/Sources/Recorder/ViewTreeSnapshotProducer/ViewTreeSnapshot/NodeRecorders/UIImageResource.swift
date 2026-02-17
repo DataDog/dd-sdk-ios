@@ -8,7 +8,7 @@
 import UIKit
 import DatadogInternal
 
-internal struct UIImageResource {
+internal struct UIImageResource: Sendable {
     private let image: UIImage
     private let tintColor: UIColor?
 
