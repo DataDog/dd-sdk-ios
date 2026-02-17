@@ -233,6 +233,11 @@ public struct ResourceMetrics {
     /// - `decoded`: Size after decoding/decompression.
     public let responseBodySize: (encoded: Int64, decoded: Int64)?
 
+    /// The size of the request body.
+    /// - `encoded`: Size after encoding (sent over the network).
+    /// - `decoded`: Size before encoding (original content size).
+    public let requestBodySize: (encoded: Int64, decoded: Int64)?
+
     public init(
         fetch: DateInterval,
         redirection: DateInterval?,
@@ -241,7 +246,8 @@ public struct ResourceMetrics {
         ssl: DateInterval?,
         firstByte: DateInterval?,
         download: DateInterval?,
-        responseBodySize: (encoded: Int64, decoded: Int64)? = nil
+        responseBodySize: (encoded: Int64, decoded: Int64)? = nil,
+        requestBodySize: (encoded: Int64, decoded: Int64)? = nil
     ) {
         self.fetch = fetch
         self.redirection = redirection
@@ -251,6 +257,7 @@ public struct ResourceMetrics {
         self.firstByte = firstByte
         self.download = download
         self.responseBodySize = responseBodySize
+        self.requestBodySize = requestBodySize
     }
 }
 
@@ -292,6 +299,7 @@ extension ResourceMetrics {
         var firstByte: DateInterval? = nil
         var download: DateInterval? = nil
         var responseBodySize: (encoded: Int64, decoded: Int64)? = nil
+        var requestBodySize: (encoded: Int64, decoded: Int64)? = nil
 
         if let mainTransaction = mainTransaction {
             if let dnsStart = mainTransaction.domainLookupStartDate,
@@ -324,6 +332,10 @@ extension ResourceMetrics {
                 let responseDecoded = mainTransaction.countOfResponseBodyBytesAfterDecoding
 
                 responseBodySize = (encoded: responseEncoded, decoded: responseDecoded)
+
+                let requestEncoded = mainTransaction.countOfRequestBodyBytesSent
+                let requestDecoded = mainTransaction.countOfRequestBodyBytesBeforeEncoding
+                requestBodySize = (encoded: requestEncoded, decoded: requestDecoded)
             }
         }
 
@@ -335,7 +347,8 @@ extension ResourceMetrics {
             ssl: ssl,
             firstByte: firstByte,
             download: download,
-            responseBodySize: responseBodySize
+            responseBodySize: responseBodySize,
+            requestBodySize: requestBodySize
         )
     }
 }

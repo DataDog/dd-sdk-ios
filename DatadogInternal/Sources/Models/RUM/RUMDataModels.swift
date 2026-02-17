@@ -929,6 +929,7 @@ public struct RUMActionEvent: RUMDataModel {
             case roku = "roku"
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
+            case electron = "electron"
         }
 
         /// Attributes of the view's container
@@ -1043,6 +1044,7 @@ public struct RUMActionEvent: RUMDataModel {
         case roku = "roku"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
     }
 
     /// Stream properties
@@ -1671,6 +1673,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case roku = "roku"
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
+            case electron = "electron"
         }
 
         /// Attributes of the view's container
@@ -2337,6 +2340,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case roku = "roku"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
     }
 
     /// Stream properties
@@ -2945,6 +2949,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case roku = "roku"
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
+            case electron = "electron"
         }
 
         /// Attributes of the view's container
@@ -3246,6 +3251,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case roku = "roku"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
     }
 
     /// Stream properties
@@ -3744,6 +3750,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case roku = "roku"
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
+            case electron = "electron"
         }
 
         /// Attributes of the view's container
@@ -3819,7 +3826,7 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Connect phase properties
         public let connect: Connect?
 
-        /// Size in octet of the resource after removing any applied encoding
+        /// Size in octet of the response body after removing any applied encoding
         public let decodedBodySize: Int64?
 
         /// Delivery type of the resource
@@ -3834,7 +3841,7 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Duration of the resource
         public let duration: Int64?
 
-        /// Size in octet of the resource before removing any applied content encodings
+        /// Size in octet of the response body before removing any applied content encodings
         public let encodedBodySize: Int64?
 
         /// First Byte phase properties
@@ -3861,6 +3868,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Render blocking status of the resource
         public let renderBlockingStatus: RenderBlockingStatus?
 
+        /// Request properties
+        public let request: Request?
+
         /// Size in octet of the resource response body
         public let size: Int64?
 
@@ -3870,7 +3880,7 @@ public struct RUMResourceEvent: RUMDataModel {
         /// HTTP status code of the resource
         public let statusCode: Int64?
 
-        /// Size in octet of the fetched resource
+        /// Size in octet of the fetched response resource
         public let transferSize: Int64?
 
         /// Resource type
@@ -3898,6 +3908,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case provider = "provider"
             case redirect = "redirect"
             case renderBlockingStatus = "render_blocking_status"
+            case request = "request"
             case size = "size"
             case ssl = "ssl"
             case statusCode = "status_code"
@@ -3911,12 +3922,12 @@ public struct RUMResourceEvent: RUMDataModel {
         ///
         /// - Parameters:
         ///   - connect: Connect phase properties
-        ///   - decodedBodySize: Size in octet of the resource after removing any applied encoding
+        ///   - decodedBodySize: Size in octet of the response body after removing any applied encoding
         ///   - deliveryType: Delivery type of the resource
         ///   - dns: DNS phase properties
         ///   - download: Download phase properties
         ///   - duration: Duration of the resource
-        ///   - encodedBodySize: Size in octet of the resource before removing any applied content encodings
+        ///   - encodedBodySize: Size in octet of the response body before removing any applied content encodings
         ///   - firstByte: First Byte phase properties
         ///   - graphql: GraphQL requests parameters
         ///   - id: UUID of the resource
@@ -3925,10 +3936,11 @@ public struct RUMResourceEvent: RUMDataModel {
         ///   - provider: The provider for this resource
         ///   - redirect: Redirect phase properties
         ///   - renderBlockingStatus: Render blocking status of the resource
+        ///   - request: Request properties
         ///   - size: Size in octet of the resource response body
         ///   - ssl: SSL phase properties
         ///   - statusCode: HTTP status code of the resource
-        ///   - transferSize: Size in octet of the fetched resource
+        ///   - transferSize: Size in octet of the fetched response resource
         ///   - type: Resource type
         ///   - url: URL of the resource
         ///   - worker: Worker phase properties
@@ -3948,6 +3960,7 @@ public struct RUMResourceEvent: RUMDataModel {
             provider: Provider? = nil,
             redirect: Redirect? = nil,
             renderBlockingStatus: RenderBlockingStatus? = nil,
+            request: Request? = nil,
             size: Int64? = nil,
             ssl: SSL? = nil,
             statusCode: Int64? = nil,
@@ -3971,6 +3984,7 @@ public struct RUMResourceEvent: RUMDataModel {
             self.provider = provider
             self.redirect = redirect
             self.renderBlockingStatus = renderBlockingStatus
+            self.request = request
             self.size = size
             self.ssl = ssl
             self.statusCode = statusCode
@@ -4351,6 +4365,33 @@ public struct RUMResourceEvent: RUMDataModel {
             case nonBlocking = "non-blocking"
         }
 
+        /// Request properties
+        public struct Request: Codable {
+            /// Size in octet of the request body before any encoding
+            public let decodedBodySize: Int64?
+
+            /// Size in octet of the request body sent over the network (after encoding)
+            public let encodedBodySize: Int64?
+
+            public enum CodingKeys: String, CodingKey {
+                case decodedBodySize = "decoded_body_size"
+                case encodedBodySize = "encoded_body_size"
+            }
+
+            /// Request properties
+            ///
+            /// - Parameters:
+            ///   - decodedBodySize: Size in octet of the request body before any encoding
+            ///   - encodedBodySize: Size in octet of the request body sent over the network (after encoding)
+            public init(
+                decodedBodySize: Int64? = nil,
+                encodedBodySize: Int64? = nil
+            ) {
+                self.decodedBodySize = decodedBodySize
+                self.encodedBodySize = encodedBodySize
+            }
+        }
+
         /// SSL phase properties
         public struct SSL: Codable {
             /// Duration in ns of the resource ssl phase
@@ -4465,6 +4506,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case roku = "roku"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
     }
 
     /// Stream properties
@@ -5331,6 +5373,7 @@ public struct RUMViewEvent: RUMDataModel {
             case roku = "roku"
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
+            case electron = "electron"
         }
 
         /// Attributes of the view's container
@@ -5549,6 +5592,7 @@ public struct RUMViewEvent: RUMDataModel {
         case roku = "roku"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
     }
 
     /// Stream properties
@@ -6723,6 +6767,9 @@ public struct RUMViewEvent: RUMDataModel {
                 /// Longest duration in ns between an interaction and the next paint
                 public let duration: Int64
 
+                /// Sub-parts of the INP
+                public let subParts: SubParts?
+
                 /// CSS selector path of the interacted element for the INP interaction
                 public let targetSelector: String?
 
@@ -6731,6 +6778,7 @@ public struct RUMViewEvent: RUMDataModel {
 
                 public enum CodingKeys: String, CodingKey {
                     case duration = "duration"
+                    case subParts = "sub_parts"
                     case targetSelector = "target_selector"
                     case timestamp = "timestamp"
                 }
@@ -6739,16 +6787,53 @@ public struct RUMViewEvent: RUMDataModel {
                 ///
                 /// - Parameters:
                 ///   - duration: Longest duration in ns between an interaction and the next paint
+                ///   - subParts: Sub-parts of the INP
                 ///   - targetSelector: CSS selector path of the interacted element for the INP interaction
                 ///   - timestamp: Time of the start of the INP interaction, in ns since view start.
                 public init(
                     duration: Int64,
+                    subParts: SubParts? = nil,
                     targetSelector: String? = nil,
                     timestamp: Int64? = nil
                 ) {
                     self.duration = duration
+                    self.subParts = subParts
                     self.targetSelector = targetSelector
                     self.timestamp = timestamp
+                }
+
+                /// Sub-parts of the INP
+                public struct SubParts: Codable {
+                    /// Time from the start of the input event to the start of the processing of the event
+                    public let inputDelay: Int64
+
+                    /// Rendering time happening after processing
+                    public let presentationDelay: Int64
+
+                    /// Event handler execution time
+                    public let processingTime: Int64
+
+                    public enum CodingKeys: String, CodingKey {
+                        case inputDelay = "input_delay"
+                        case presentationDelay = "presentation_delay"
+                        case processingTime = "processing_time"
+                    }
+
+                    /// Sub-parts of the INP
+                    ///
+                    /// - Parameters:
+                    ///   - inputDelay: Time from the start of the input event to the start of the processing of the event
+                    ///   - presentationDelay: Rendering time happening after processing
+                    ///   - processingTime: Event handler execution time
+                    public init(
+                        inputDelay: Int64,
+                        presentationDelay: Int64,
+                        processingTime: Int64
+                    ) {
+                        self.inputDelay = inputDelay
+                        self.presentationDelay = presentationDelay
+                        self.processingTime = processingTime
+                    }
                 }
             }
 
@@ -7365,6 +7450,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
             case roku = "roku"
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
+            case electron = "electron"
         }
 
         /// Attributes of the view's container
@@ -7479,6 +7565,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
         case roku = "roku"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
     }
 
     /// Stream properties
@@ -7987,6 +8074,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
             case roku = "roku"
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
+            case electron = "electron"
         }
 
         /// Attributes of the view's container
@@ -8101,6 +8189,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
         case roku = "roku"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
     }
 
     /// Stream properties
@@ -8569,6 +8658,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
             case roku = "roku"
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
+            case electron = "electron"
         }
 
         /// Attributes of the view's container
@@ -8683,6 +8773,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
         case roku = "roku"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
     }
 
     /// Stream properties
@@ -9003,6 +9094,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         case reactNative = "react-native"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
     }
 
     /// The telemetry configuration information
@@ -9835,6 +9927,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             public enum SessionPersistence: String, Codable {
                 case localStorage = "local-storage"
                 case cookie = "cookie"
+                case memory = "memory"
             }
 
             /// The opt-in configuration to add trace context
@@ -10133,6 +10226,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
         case reactNative = "react-native"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
     }
 
     /// The telemetry log information
@@ -10420,6 +10514,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case reactNative = "react-native"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
     }
 
     /// The telemetry log information
@@ -10743,6 +10838,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
         case reactNative = "react-native"
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
     }
 
     /// The telemetry usage information
@@ -11522,4 +11618,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/6c939c467f255990d7941ce160e48823465e7780
+// Generated from https://github.com/DataDog/rum-events-format/tree/df49e999b2444a66f3c37089db42e3c20ca5538d

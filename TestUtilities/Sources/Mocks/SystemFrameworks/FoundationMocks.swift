@@ -673,6 +673,8 @@ extension URLSessionTaskTransactionMetrics {
         let responseEndDate = end
 
         let countOfResponseBodyBytesAfterDecoding: Int64 = .random(in: 512..<1_024)
+        let countOfRequestBodyBytesBeforeEncoding: Int64 = .random(in: 256..<512)
+        let countOfRequestBodyBytesSent: Int64 = .random(in: 128..<256)
         let countOfResponseBodyBytesReceived: Int64 = .random(in: 256..<512)
 
         return URLSessionTaskTransactionMetricsMock(
@@ -688,6 +690,8 @@ extension URLSessionTaskTransactionMetrics {
             responseStartDate: responseStartDate,
             responseEndDate: responseEndDate,
             countOfResponseBodyBytesAfterDecoding: countOfResponseBodyBytesAfterDecoding,
+            countOfRequestBodyBytesBeforeEncoding: countOfRequestBodyBytesBeforeEncoding,
+            countOfRequestBodyBytesSent: countOfRequestBodyBytesSent,
             countOfResponseBodyBytesReceived: countOfResponseBodyBytesReceived
         )
     }
@@ -705,7 +709,8 @@ extension URLSessionTaskTransactionMetrics {
         requestStartDate: Date? = nil,
         responseStartDate: Date? = nil,
         responseEndDate: Date? = nil,
-        responseBodySize: (encoded: Int64, decoded: Int64) = (encoded: 0, decoded: 0)
+        responseBodySize: (encoded: Int64, decoded: Int64) = (encoded: 0, decoded: 0),
+        requestBodySize: (encoded: Int64, decoded: Int64) = (encoded: 0, decoded: 0)
     ) -> URLSessionTaskTransactionMetrics {
         return URLSessionTaskTransactionMetricsMock(
             resourceFetchType: resourceFetchType,
@@ -720,6 +725,8 @@ extension URLSessionTaskTransactionMetrics {
             responseStartDate: responseStartDate,
             responseEndDate: responseEndDate,
             countOfResponseBodyBytesAfterDecoding: responseBodySize.decoded,
+            countOfRequestBodyBytesBeforeEncoding: requestBodySize.decoded,
+            countOfRequestBodyBytesSent: requestBodySize.encoded,
             countOfResponseBodyBytesReceived: responseBodySize.encoded
         )
     }

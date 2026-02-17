@@ -171,6 +171,13 @@ internal class RUMResourceScope: RUMScope {
         let encodedBodySize = resourceMetrics?.responseBodySize?.encoded
         let decodedBodySize = resourceMetrics?.responseBodySize?.decoded
 
+        let request: RUMResourceEvent.Resource.Request? = resourceMetrics?.requestBodySize.map { size in
+            .init(
+                decodedBodySize: size.decoded,
+                encodedBodySize: size.encoded
+            )
+        }
+
         // Write resource event
         let resourceEvent = RUMResourceEvent(
             dd: .init(
@@ -245,6 +252,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 renderBlockingStatus: nil,
+                request: request,
                 size: size ?? 0,
                 ssl: resourceMetrics?.ssl.map { metric in
                     .init(

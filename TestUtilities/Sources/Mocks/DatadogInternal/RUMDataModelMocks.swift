@@ -396,6 +396,7 @@ extension RUMResourceEvent: RandomMockable {
                 ),
                 redirect: .init(duration: .mockRandom(), start: .mockRandom()),
                 renderBlockingStatus: nil,
+                request: Bool.random() ? .init(decodedBodySize: .mockRandom(), encodedBodySize: .mockRandom()) : nil,
                 size: .mockRandom(),
                 ssl: .init(duration: .mockRandom(), start: .mockRandom()),
                 statusCode: .mockRandom(),
