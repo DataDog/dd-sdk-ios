@@ -227,19 +227,20 @@ class TracingURLSessionHandlerTests: XCTestCase {
         )
         let message = FeatureMessage.context(fakeContext)
         _ = handler.contextReceiver.receive(message: message, from: core)
+        let networkContextSessionId = "abcdef01-2345-6789-abcd-ef0123456789"
         let (modifiedRequest, _, _) = handler.modify(
             request: request,
             headerTypes: [.datadog, .tracecontext, .b3, .b3multi],
             networkContext: NetworkContext(
                 rumContext: .init(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: networkContextSessionId
                 )
             )
         )
-
-        XCTAssertEqual(
-            modifiedRequest.allHTTPHeaderFields,
+        let resultingHeaders = try XCTUnwrap(modifiedRequest.allHTTPHeaderFields)
+        DDAssertDictionariesEqual(
+            resultingHeaders,
             [
                 "traceparent": "00-000000000000000a0000000000000064-0000000000000064-01",
                 "X-B3-SpanId": "0000000000000064",
@@ -248,7 +249,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "b3": "000000000000000a0000000000000064-0000000000000064-1",
                 "x-datadog-trace-id": "100",
                 "x-datadog-tags": "_dd.p.tid=a,_dd.p.dm=-1",
-                "baggage": "session.id=\(fakeSessionId)",
+                "baggage": "session.id=\(networkContextSessionId)",
                 "tracestate": "dd=p:0000000000000064;s:1;t.dm:-1",
                 "x-datadog-parent-id": "100",
                 "x-datadog-sampling-priority": "1"

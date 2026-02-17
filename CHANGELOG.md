@@ -7,6 +7,7 @@
 - [IMPROVEMENT] Skip malformed Logs attributes individually instead of dropping the entire event, and log clear error messages. See [#2665][]
 - [IMPROVEMENT] Improve span attribute encoding error messages to include attribute name and context. See [#2676][]
 - [IMPROVEMENT] Expose public entities from `DatadogInternal` to prevent `DatadogInternal` imports in customer code. See [#2666][]
+- [FIX] Merge W3C baggage headers and propagate networkContext in `TracingURLSessionHandler`. See [#2683][]
 
 # 3.6.1 / 02-02-2026
 
@@ -1052,6 +1053,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2665]: https://github.com/DataDog/dd-sdk-ios/pull/2665
 [#2665]: https://github.com/DataDog/dd-sdk-ios/pull/2666
 [#2676]: https://github.com/DataDog/dd-sdk-ios/pull/2676
+[#2683]: https://github.com/DataDog/dd-sdk-ios/pull/2678
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

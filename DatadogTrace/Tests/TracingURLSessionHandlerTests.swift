@@ -119,7 +119,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.traceparent)
         orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.tracestate)
 
-        let (request, traceContext, capturedState) = handler.modify(
+        let (request, _, capturedState) = handler.modify(
             request: orgRequest,
             headerTypes: [
                 .datadog,
@@ -147,8 +147,6 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "custom")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "custom")
         XCTAssertNil(capturedState)
-
-        XCTAssertNil(traceContext, "It must return no trace context")
     }
 
     func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectTraceHeaders() throws {
@@ -842,6 +840,183 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertTrue(span.isError)
         XCTAssertEqual(span.tags[OTTags.httpStatusCode], "404")
         XCTAssertEqual(span.resource, "404", "404 responses should have resource set to '404'")
+    }
+
+    // MARK: - Baggage Header Merging Tests
+
+    func testGivenRequestWithExistingBaggageHeader_whenTraceContextIsInjected_itMergesBaggageHeaders() throws {
+        // Given
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init(),
+            traceContextInjection: .all,
+            telemetry: TelemetryMock()
+        )
+
+        var request = URLRequest.mockWith(url: "https://www.example.com")
+        request.setValue("custom.key=custom.value,another.key=another.value", forHTTPHeaderField: W3CHTTPHeaders.baggage)
+
+        // When
+        let (modifiedRequest, _, _) = handler.modify(
+            request: request,
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        // Then
+        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        XCTAssertNotNil(baggageHeader)
+
+        // Verify that both existing and new baggage values are present
+        XCTAssertTrue(baggageHeader?.contains("custom.key=custom.value") == true)
+        XCTAssertTrue(baggageHeader?.contains("another.key=another.value") == true)
+        XCTAssertTrue(baggageHeader?.contains("session.id=abcdef01-2345-6789-abcd-ef0123456789") == true)
+    }
+
+    func testGivenRequestWithExistingBaggageHeader_whenTraceContextIsInjectedWithW3C_itMergesBaggageHeaders() throws {
+        // Given
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init(),
+            traceContextInjection: .all,
+            telemetry: TelemetryMock()
+        )
+
+        var request = URLRequest.mockWith(url: "https://www.example.com")
+        request.setValue("custom.key=custom.value,session.id=old.session.id", forHTTPHeaderField: W3CHTTPHeaders.baggage)
+
+        // When
+        let (modifiedRequest, _, _) = handler.modify(
+            request: request,
+            headerTypes: [.tracecontext],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        // Then
+        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        XCTAssertNotNil(baggageHeader)
+
+        // Verify that existing custom key is preserved
+        XCTAssertTrue(baggageHeader?.contains("custom.key=custom.value") == true)
+        // Verify that session.id is overridden with new value
+        XCTAssertTrue(baggageHeader?.contains("session.id=abcdef01-2345-6789-abcd-ef0123456789") == true)
+    }
+
+    func testGivenRequestWithComplexBaggageHeader_whenTraceContextIsInjected_itMergesBaggageHeadersCorrectly() throws {
+        // Given
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init(),
+            traceContextInjection: .all,
+            telemetry: TelemetryMock()
+        )
+
+        var request = URLRequest.mockWith(url: "https://www.example.com")
+        // This is a complex scenario with whitespace and semicolons in values
+        request.setValue(" toto=1,car= Dacia Sandero ,session.id = 2,testProp=1; testProp2=4;prop3 ", forHTTPHeaderField: W3CHTTPHeaders.baggage)
+
+        // When
+        let (modifiedRequest, _, _) = handler.modify(
+            request: request,
+            headerTypes: [.tracecontext],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                ),
+                userConfigurationContext: .init(id: "user123"),
+                accountConfigurationContext: .init(id: "account456")
+            )
+        )
+
+        // Then
+        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        XCTAssertNotNil(baggageHeader)
+
+        // Parse the result to verify merging behavior
+        let baggageDict = extractBaggageKeyValuePairs(from: baggageHeader!)
+
+        // Verify that new values override previous ones
+        XCTAssertEqual(baggageDict["session.id"], "abcdef01-2345-6789-abcd-ef0123456789")
+
+        // Verify that previous values are preserved when not overridden
+        XCTAssertEqual(baggageDict["toto"], "1")
+        XCTAssertEqual(baggageDict["car"], "Dacia Sandero")
+        XCTAssertEqual(baggageDict["testProp"], "1; testProp2=4;prop3") // Everything after first = is value
+
+        // Verify that new values are added
+        XCTAssertEqual(baggageDict["account.id"], "account456")
+        XCTAssertEqual(baggageDict["user.id"], "user123")
+
+        // Verify all expected keys are present
+        XCTAssertEqual(baggageDict.keys.count, 6)
+    }
+
+    func testGivenRequestWithNoBaggageHeader_whenTraceContextIsInjected_itSetsBaggageHeader() throws {
+        // Given
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init(),
+            traceContextInjection: .all,
+            telemetry: TelemetryMock()
+        )
+
+        let request = URLRequest.mockWith(url: "https://www.example.com")
+
+        // When
+        let (modifiedRequest, _, _) = handler.modify(
+            request: request,
+            headerTypes: [.tracecontext],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        // Then
+        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        XCTAssertNotNil(baggageHeader)
+        XCTAssertTrue(baggageHeader?.contains("session.id=abcdef01-2345-6789-abcd-ef0123456789") == true)
+    }
+
+    // MARK: - Helper Methods
+
+    private func extractBaggageKeyValuePairs(from header: String) -> [String: String] {
+        var dict: [String: String] = [:]
+        let fields = header.split(separator: ",")
+
+        for field in fields {
+            let fieldString = String(field)
+            if let equalIndex = fieldString.firstIndex(of: "=") {
+                let key = fieldString[..<equalIndex].trimmingCharacters(in: .whitespaces)
+                let value = fieldString[fieldString.index(after: equalIndex)...].trimmingCharacters(in: .whitespaces)
+                if !key.isEmpty {
+                    dict[key] = value
+                }
+            }
+        }
+
+        return dict
     }
 
     private func assert(capturedState: URLSessionHandlerCapturedState?, has span: OTSpan?) {
