@@ -66,20 +66,20 @@ build_xcframework() {
     if [[ $platform == *"iOS"* ]]; then
         echo_info "▸ Archive $product iOS"
 
-        archive "$product iOS" "generic/platform=iOS" "$ARCHIVES_TEMP_OUTPUT/$product/ios"
+        archive "$product" "generic/platform=iOS" "$ARCHIVES_TEMP_OUTPUT/$product/ios"
         xcoptions+=(-archive "$ARCHIVES_TEMP_OUTPUT/$product/ios.xcarchive" -framework "$product.framework")
 
-        archive "$product iOS" "generic/platform=iOS Simulator" "$ARCHIVES_TEMP_OUTPUT/$product/ios-simulator"
+        archive "$product" "generic/platform=iOS Simulator" "$ARCHIVES_TEMP_OUTPUT/$product/ios-simulator"
         xcoptions+=(-archive "$ARCHIVES_TEMP_OUTPUT/$product/ios-simulator.xcarchive" -framework "$product.framework")
     fi
 
     if [[ $platform == *"tvOS"* ]]; then
         echo_info "▸ Archive $product tvOS"
 
-        archive "$product tvOS" "generic/platform=tvOS" "$ARCHIVES_TEMP_OUTPUT/$product/tvos"
+        archive "$product" "generic/platform=tvOS" "$ARCHIVES_TEMP_OUTPUT/$product/tvos"
         xcoptions+=(-archive "$ARCHIVES_TEMP_OUTPUT/$product/tvos.xcarchive" -framework "$product.framework")
 
-        archive "$product tvOS" "generic/platform=tvOS Simulator" "$ARCHIVES_TEMP_OUTPUT/$product/tvos-simulator"
+        archive "$product" "generic/platform=tvOS Simulator" "$ARCHIVES_TEMP_OUTPUT/$product/tvos-simulator"
         xcoptions+=(-archive "$ARCHIVES_TEMP_OUTPUT/$product/tvos-simulator.xcarchive" -framework "$product.framework")
     fi
 
