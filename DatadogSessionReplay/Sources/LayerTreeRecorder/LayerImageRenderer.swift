@@ -34,8 +34,18 @@ internal enum LayerImageError: Error {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
+internal protocol LayerImageRendering {
+    func renderImages(
+        for snapshots: [LayerSnapshot],
+        changes: CALayerChangeset,
+        rootLayer: CALayerReference,
+        timeoutInterval: TimeInterval
+    ) async -> [Int64: LayerImageRenderer.Result]
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
 @MainActor
-internal final class LayerImageRenderer {
+internal final class LayerImageRenderer: LayerImageRendering {
     private enum Constants {
         static let yieldThreshold: TimeInterval = 0.008
     }
@@ -61,7 +71,7 @@ internal final class LayerImageRenderer {
         for snapshots: [LayerSnapshot],
         changes: CALayerChangeset,
         rootLayer: CALayerReference,
-        timeout: TimeInterval
+        timeoutInterval: TimeInterval
     ) async -> [Int64: Result] {
         let startTime = timeSource.now
 
@@ -87,7 +97,7 @@ internal final class LayerImageRenderer {
 
             // Stop rendering when the time budget is exhausted and mark the
             // remaining candidates as timed out
-            if Task.isCancelled || (now - startTime) >= timeout {
+            if Task.isCancelled || (now - startTime) >= timeoutInterval {
                 firstUnprocessedIndex = index
                 break
             }
