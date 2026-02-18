@@ -3869,7 +3869,10 @@ public struct RUMResourceEvent: RUMDataModel {
         public let renderBlockingStatus: RenderBlockingStatus?
 
         /// Request properties
-        public let request: Request?
+        public var request: Request?
+
+        /// Response properties
+        public var response: Response?
 
         /// Size in octet of the resource response body
         public let size: Int64?
@@ -3909,6 +3912,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case redirect = "redirect"
             case renderBlockingStatus = "render_blocking_status"
             case request = "request"
+            case response = "response"
             case size = "size"
             case ssl = "ssl"
             case statusCode = "status_code"
@@ -3937,6 +3941,7 @@ public struct RUMResourceEvent: RUMDataModel {
         ///   - redirect: Redirect phase properties
         ///   - renderBlockingStatus: Render blocking status of the resource
         ///   - request: Request properties
+        ///   - response: Response properties
         ///   - size: Size in octet of the resource response body
         ///   - ssl: SSL phase properties
         ///   - statusCode: HTTP status code of the resource
@@ -3961,6 +3966,7 @@ public struct RUMResourceEvent: RUMDataModel {
             redirect: Redirect? = nil,
             renderBlockingStatus: RenderBlockingStatus? = nil,
             request: Request? = nil,
+            response: Response? = nil,
             size: Int64? = nil,
             ssl: SSL? = nil,
             statusCode: Int64? = nil,
@@ -3985,6 +3991,7 @@ public struct RUMResourceEvent: RUMDataModel {
             self.redirect = redirect
             self.renderBlockingStatus = renderBlockingStatus
             self.request = request
+            self.response = response
             self.size = size
             self.ssl = ssl
             self.statusCode = statusCode
@@ -4373,9 +4380,13 @@ public struct RUMResourceEvent: RUMDataModel {
             /// Size in octet of the request body sent over the network (after encoding)
             public let encodedBodySize: Int64?
 
+            /// HTTP headers of the resource request
+            public var headers: Headers?
+
             public enum CodingKeys: String, CodingKey {
                 case decodedBodySize = "decoded_body_size"
                 case encodedBodySize = "encoded_body_size"
+                case headers = "headers"
             }
 
             /// Request properties
@@ -4383,12 +4394,65 @@ public struct RUMResourceEvent: RUMDataModel {
             /// - Parameters:
             ///   - decodedBodySize: Size in octet of the request body before any encoding
             ///   - encodedBodySize: Size in octet of the request body sent over the network (after encoding)
+            ///   - headers: HTTP headers of the resource request
             public init(
                 decodedBodySize: Int64? = nil,
-                encodedBodySize: Int64? = nil
+                encodedBodySize: Int64? = nil,
+                headers: Headers? = nil
             ) {
                 self.decodedBodySize = decodedBodySize
                 self.encodedBodySize = encodedBodySize
+                self.headers = headers
+            }
+
+            /// HTTP headers of the resource request
+            public struct Headers: Codable {
+                public var headersInfo: [String: String]
+
+                /// HTTP headers of the resource request
+                ///
+                /// - Parameters:
+                ///   - headersInfo:
+                public init(
+                    headersInfo: [String: String]
+                ) {
+                    self.headersInfo = headersInfo
+                }
+            }
+        }
+
+        /// Response properties
+        public struct Response: Codable {
+            /// HTTP headers of the resource response
+            public var headers: Headers?
+
+            public enum CodingKeys: String, CodingKey {
+                case headers = "headers"
+            }
+
+            /// Response properties
+            ///
+            /// - Parameters:
+            ///   - headers: HTTP headers of the resource response
+            public init(
+                headers: Headers? = nil
+            ) {
+                self.headers = headers
+            }
+
+            /// HTTP headers of the resource response
+            public struct Headers: Codable {
+                public var headersInfo: [String: String]
+
+                /// HTTP headers of the resource response
+                ///
+                /// - Parameters:
+                ///   - headersInfo:
+                public init(
+                    headersInfo: [String: String]
+                ) {
+                    self.headersInfo = headersInfo
+                }
             }
         }
 
@@ -4567,6 +4631,46 @@ public struct RUMResourceEvent: RUMDataModel {
             self.name = name
             self.referrer = referrer
             self.url = url
+        }
+    }
+}
+
+extension RUMResourceEvent.Resource.Request.Headers {
+    public func encode(to encoder: Encoder) throws {
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try headersInfo.forEach {
+            try dynamicContainer.encode($1, forKey: DynamicCodingKey($0))
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode other properties into [String: String] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.headersInfo = [:]
+
+        try dynamicContainer.allKeys.forEach {
+            self.headersInfo[$0.stringValue] = try dynamicContainer.decode(String.self, forKey: $0)
+        }
+    }
+}
+
+extension RUMResourceEvent.Resource.Response.Headers {
+    public func encode(to encoder: Encoder) throws {
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try headersInfo.forEach {
+            try dynamicContainer.encode($1, forKey: DynamicCodingKey($0))
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode other properties into [String: String] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        self.headersInfo = [:]
+
+        try dynamicContainer.allKeys.forEach {
+            self.headersInfo[$0.stringValue] = try dynamicContainer.decode(String.self, forKey: $0)
         }
     }
 }
@@ -11618,4 +11722,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/df49e999b2444a66f3c37089db42e3c20ca5538d
+// Generated from https://github.com/DataDog/rum-events-format/tree/302e837c3d49b38587fa58ef16f9aaa7d79be455
