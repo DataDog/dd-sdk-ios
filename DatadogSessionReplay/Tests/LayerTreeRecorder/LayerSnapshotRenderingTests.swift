@@ -14,7 +14,7 @@ import Testing
 extension LayerSnapshotTests.Fixtures {
     static let rootBounds = CGRect(x: 0, y: 0, width: 200, height: 300)
 
-    static func rootLayer() -> CALayer {
+    static var rootLayer: CALayer {
         let root = CALayer()
         root.bounds = rootBounds
         return root
@@ -36,9 +36,9 @@ extension LayerSnapshotTests.Fixtures {
 extension LayerSnapshotTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test
-    func throwsMissingLayerWhenSnapshotReferenceIsDeallocated() {
+    func missingLayerWhenSnapshotReferenceIsDeallocated() {
         // given
-        let rootLayer = Fixtures.rootLayer()
+        let rootLayer = Fixtures.rootLayer
 
         let snapshot: LayerSnapshot = {
             var layer: CALayer? = CALayer()
@@ -63,9 +63,9 @@ extension LayerSnapshotTests {
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test
-    func throwsInvalidRectWhenVisibleRectIsEmpty() {
+    func invalidRectWhenVisibleRectIsEmpty() {
         // given
-        let rootLayer = Fixtures.rootLayer()
+        let rootLayer = Fixtures.rootLayer
         let layer = CALayer()
         layer.bounds = CGRect(x: 0, y: 0, width: 50, height: 50)
         rootLayer.addSublayer(layer)
@@ -90,7 +90,7 @@ extension LayerSnapshotTests {
     @Test
     func plainLayerWithoutContentsOrChangesDoesNotNeedRenderOnFirstAppearance() throws {
         // given
-        let rootLayer = Fixtures.rootLayer()
+        let rootLayer = Fixtures.rootLayer
         let layer = CALayer()
         layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
         rootLayer.addSublayer(layer)
@@ -119,7 +119,7 @@ extension LayerSnapshotTests {
     @Test
     func plainLayerWithContentsNeedsRenderOnFirstAppearance() throws {
         // given
-        let rootLayer = Fixtures.rootLayer()
+        let rootLayer = Fixtures.rootLayer
         let layer = CALayer()
         layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
         rootLayer.addSublayer(layer)
@@ -148,7 +148,7 @@ extension LayerSnapshotTests {
     @Test
     func layerSubclassWithoutChangesDoesNotNeedRenderAfterFirstAppearance() throws {
         // given
-        let rootLayer = Fixtures.rootLayer()
+        let rootLayer = Fixtures.rootLayer
         let layer = CATextLayer()
         layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
         rootLayer.addSublayer(layer)
@@ -175,7 +175,7 @@ extension LayerSnapshotTests {
     @Test
     func layerSubclassWithDisplayChangeNeedsRender() throws {
         // given
-        let rootLayer = Fixtures.rootLayer()
+        let rootLayer = Fixtures.rootLayer
         let layer = CATextLayer()
         layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
         rootLayer.addSublayer(layer)
@@ -203,7 +203,7 @@ extension LayerSnapshotTests {
     @Test
     func partialImageNeedsRenderWhenVisibleRectLeavesCachedRect() throws {
         // given
-        let rootLayer = Fixtures.rootLayer()
+        let rootLayer = Fixtures.rootLayer
         let layer = CALayer()
         layer.bounds = CGRect(x: 0, y: 0, width: 400, height: 120)
         layer.position = CGPoint(x: 200, y: 60)

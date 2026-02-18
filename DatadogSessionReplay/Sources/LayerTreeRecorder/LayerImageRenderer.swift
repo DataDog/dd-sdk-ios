@@ -30,7 +30,7 @@ internal final class LayerImage: Sendable {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-internal enum LayerImageError: Error {
+internal enum LayerImageError: Error, Equatable {
     case timedOut
     case discarded
 }
