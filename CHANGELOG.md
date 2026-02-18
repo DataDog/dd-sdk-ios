@@ -1,5 +1,7 @@
 # Unreleased
 
+# 3.7.0 / 18-02-2026
+
 - [FEATURE] Add evaluation logging to `DatadogFlags` module. See [#2646][]
 - [FEATURE] Automatic network instrumentation now tracks `URLSession` requests without requiring delegate registration. See [#2620][]
 - [FEATURE] Deprecate `URLSessionInstrumentation.enable(with:in:)` API in favor of `URLSessionInstrumentation.enableDurationBreakdown(with:in:)`. See [#2634][]
