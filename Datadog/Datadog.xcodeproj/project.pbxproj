@@ -400,6 +400,10 @@
 		261255882E2167E40015042B /* BaggageHeaderMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255862E2167E40015042B /* BaggageHeaderMerger.swift */; };
 		2612558A2E2167F10015042B /* BaggageHeaderMergerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255892E2167F10015042B /* BaggageHeaderMergerTests.swift */; };
 		2612558B2E2167F10015042B /* BaggageHeaderMergerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255892E2167F10015042B /* BaggageHeaderMergerTests.swift */; };
+		261255912E2167E40015042B /* HeaderProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255902E2167E40015042B /* HeaderProcessor.swift */; };
+		261255922E2167E40015042B /* HeaderProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255902E2167E40015042B /* HeaderProcessor.swift */; };
+		261255942E2167F10015042B /* HeaderProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255932E2167F10015042B /* HeaderProcessorTests.swift */; };
+		261255952E2167F10015042B /* HeaderProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255932E2167F10015042B /* HeaderProcessorTests.swift */; };
 		265496D32D81C5B10094B6E2 /* RUMAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 265496D22D81C5AE0094B6E2 /* RUMAccount.swift */; };
 		265496D42D81C5B10094B6E2 /* RUMAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 265496D22D81C5AE0094B6E2 /* RUMAccount.swift */; };
 		266BFA5E2D6F4E31003041A5 /* AccountInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 266BFA5D2D6F4E2A003041A5 /* AccountInfoPublisherTests.swift */; };
@@ -2907,6 +2911,8 @@
 		1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugOTelTracingViewController.swift; sourceTree = "<group>"; };
 		261255862E2167E40015042B /* BaggageHeaderMerger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaggageHeaderMerger.swift; sourceTree = "<group>"; };
 		261255892E2167F10015042B /* BaggageHeaderMergerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaggageHeaderMergerTests.swift; sourceTree = "<group>"; };
+		261255902E2167E40015042B /* HeaderProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderProcessor.swift; sourceTree = "<group>"; };
+		261255932E2167F10015042B /* HeaderProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderProcessorTests.swift; sourceTree = "<group>"; };
 		265496D22D81C5AE0094B6E2 /* RUMAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAccount.swift; sourceTree = "<group>"; };
 		266BFA5D2D6F4E2A003041A5 /* AccountInfoPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountInfoPublisherTests.swift; sourceTree = "<group>"; };
 		2671348C2D688ACD0048CB54 /* AccountInfoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountInfoPublisher.swift; sourceTree = "<group>"; };
@@ -5903,10 +5909,19 @@
 		613F23EF252B1287006CD2D7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				261255972E2167F10015042B /* HeaderCapture */,
 				261255892E2167F10015042B /* BaggageHeaderMergerTests.swift */,
 				D2BCB12129D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests.swift */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		261255972E2167F10015042B /* HeaderCapture */ = {
+			isa = PBXGroup;
+			children = (
+				261255932E2167F10015042B /* HeaderProcessorTests.swift */,
+			);
+			path = HeaderCapture;
 			sourceTree = "<group>";
 		};
 		6141014C251A577D00E3C2D9 /* Actions */ = {
@@ -6054,10 +6069,19 @@
 		6157FA5C252767B3009A8A3B /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				261255962E2167E40015042B /* HeaderCapture */,
 				261255862E2167E40015042B /* BaggageHeaderMerger.swift */,
 				D2BCB11E29D30AF000737A9A /* URLSessionRUMResourcesHandler.swift */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		261255962E2167E40015042B /* HeaderCapture */ = {
+			isa = PBXGroup;
+			children = (
+				261255902E2167E40015042B /* HeaderProcessor.swift */,
+			);
+			path = HeaderCapture;
 			sourceTree = "<group>";
 		};
 		615950EC291C057D00470E0C /* Integrations */ = {
@@ -10539,6 +10563,7 @@
 				D23F8E7629DDCD28001CFAE8 /* RUMConnectivityInfoProvider.swift in Sources */,
 				D23F8E7729DDCD28001CFAE8 /* UIKitRUMViewsPredicate.swift in Sources */,
 				261255882E2167E40015042B /* BaggageHeaderMerger.swift in Sources */,
+				261255912E2167E40015042B /* HeaderProcessor.swift in Sources */,
 				9629FFDE2D81C317008DFE39 /* SwiftUIViewPath.swift in Sources */,
 				111201C12E93C13000375DA3 /* AppStateManager.swift in Sources */,
 				111201C22E93C13000375DA3 /* AppStateInfo.swift in Sources */,
@@ -10609,6 +10634,7 @@
 				D23F8EAE29DDCD38001CFAE8 /* DDTAssertValidRUMUUID.swift in Sources */,
 				D23F8EAF29DDCD38001CFAE8 /* RUMScopeTests.swift in Sources */,
 				2612558A2E2167F10015042B /* BaggageHeaderMergerTests.swift in Sources */,
+				261255942E2167F10015042B /* HeaderProcessorTests.swift in Sources */,
 				A7E6EA842D314A9B00997201 /* AnonymousIdentifierManagerTests.swift in Sources */,
 				D23F8EB029DDCD38001CFAE8 /* SessionReplayDependencyTests.swift in Sources */,
 				61C713B72A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */,
@@ -11032,6 +11058,7 @@
 				D29A9F5829DD85BB005C54A4 /* RUMConnectivityInfoProvider.swift in Sources */,
 				D29A9F5E29DD85BB005C54A4 /* UIKitRUMViewsPredicate.swift in Sources */,
 				261255872E2167E40015042B /* BaggageHeaderMerger.swift in Sources */,
+				261255922E2167E40015042B /* HeaderProcessor.swift in Sources */,
 				9629FFDF2D81C317008DFE39 /* SwiftUIViewPath.swift in Sources */,
 				111201C32E93C13000375DA3 /* AppStateManager.swift in Sources */,
 				111201C42E93C13000375DA3 /* AppStateInfo.swift in Sources */,
@@ -11101,6 +11128,7 @@
 				D29A9FCC29DDBCC5005C54A4 /* DDTAssertValidRUMUUID.swift in Sources */,
 				D29A9FB329DDB483005C54A4 /* RUMScopeTests.swift in Sources */,
 				2612558B2E2167F10015042B /* BaggageHeaderMergerTests.swift in Sources */,
+				261255952E2167F10015042B /* HeaderProcessorTests.swift in Sources */,
 				A7E6EA852D314A9B00997201 /* AnonymousIdentifierManagerTests.swift in Sources */,
 				D29A9FAE29DDB483005C54A4 /* SessionReplayDependencyTests.swift in Sources */,
 				61C713B62A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */,
