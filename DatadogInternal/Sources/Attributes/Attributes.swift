@@ -145,8 +145,8 @@ public struct CrossPlatformAttributes {
     public static let graphqlVariables = "_dd.graphql.variables"
 
     /// Custom attribute passed when completing GraphQL RUM resources that contain errors in the response.
-    /// It sets the GraphQL errors from the response body as JSON data.
-    /// Expects `Data` value.
+    /// It sets the GraphQL errors array as a JSON string.
+    /// Expects `String` value containing a JSON array of errors.
     public static let graphqlErrors = "_dd.graphql.errors"
 
     /// Override the `source_type` of errors reported by the native crash handler. This is used on
@@ -179,6 +179,16 @@ public struct GraphQLHeaders {
 
     /// HTTP header name for GraphQL payload.
     public static let payload: String = "_dd-custom-header-graph-ql-payload"
+}
+
+extension URLRequest {
+    /// Whether this request contains GraphQL headers indicating a GraphQL request.
+    public var hasGraphQLHeaders: Bool {
+        value(forHTTPHeaderField: GraphQLHeaders.operationName) != nil ||
+        value(forHTTPHeaderField: GraphQLHeaders.operationType) != nil ||
+        value(forHTTPHeaderField: GraphQLHeaders.variables) != nil ||
+        value(forHTTPHeaderField: GraphQLHeaders.payload) != nil
+    }
 }
 
 public struct LaunchArguments {

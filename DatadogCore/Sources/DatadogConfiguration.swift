@@ -7,6 +7,11 @@
 import Foundation
 import DatadogInternal
 
+@_exported import class DatadogInternal.CoreRegistry
+@_exported import class DatadogInternal.HTTPHeadersWriter
+@_exported import class DatadogInternal.B3HTTPHeadersWriter
+@_exported import class DatadogInternal.W3CHTTPHeadersWriter
+
 extension Datadog {
     /// Configuration of Datadog SDK.
     public struct Configuration {

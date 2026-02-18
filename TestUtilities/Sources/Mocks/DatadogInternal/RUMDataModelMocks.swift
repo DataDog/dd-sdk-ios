@@ -241,7 +241,8 @@ extension RUMViewEvent: RandomMockable {
         viewTimeSpent: Int64 = .mockRandom(),
         viewURL: String = .mockRandom(),
         crashCount: Int64? = nil,
-        hasReplay: Bool? = nil
+        hasReplay: Bool? = nil,
+        featureFlags: RUMViewEvent.FeatureFlags? = nil
     ) -> RUMViewEvent {
         return RUMViewEvent(
             dd: .init(
@@ -268,6 +269,7 @@ extension RUMViewEvent: RandomMockable {
             ddtags: .mockRandomDDTags(),
             device: .mockRandom(),
             display: nil,
+            featureFlags: featureFlags,
             os: .mockRandom(),
             privacy: nil,
             service: .mockRandom(),
@@ -396,6 +398,7 @@ extension RUMResourceEvent: RandomMockable {
                 ),
                 redirect: .init(duration: .mockRandom(), start: .mockRandom()),
                 renderBlockingStatus: nil,
+                request: Bool.random() ? .init(decodedBodySize: .mockRandom(), encodedBodySize: .mockRandom()) : nil,
                 size: .mockRandom(),
                 ssl: .init(duration: .mockRandom(), start: .mockRandom()),
                 statusCode: .mockRandom(),

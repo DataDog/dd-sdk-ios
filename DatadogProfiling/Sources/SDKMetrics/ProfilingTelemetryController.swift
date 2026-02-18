@@ -7,6 +7,8 @@
 import Foundation
 import DatadogInternal
 
+#if !os(watchOS)
+
 internal final class ProfilingTelemetryController {
     /// The default sample rate for "Profiling App Launch" metric (20%),
     /// applied in addition to the Profiling feature sample rate (10% by default).
@@ -39,3 +41,5 @@ internal final class ProfilingTelemetryController {
         telemetry.metric(name: metric.metricName, attributes: metricAttributes, sampleRate: sampleRate)
     }
 }
+
+#endif

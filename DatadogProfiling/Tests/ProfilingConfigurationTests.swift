@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import DatadogProfiling
 
@@ -18,3 +20,5 @@ final class ProfilingConfigurationTests: XCTestCase {
         XCTAssertEqual(config.applicationLaunchSampleRate, 5)
     }
 }
+
+#endif

@@ -35,7 +35,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             firstPartyHosts: .init([
                 "www.example.com": [.datadog]
             ]),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
     }
 
@@ -51,7 +52,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
 
         // When
@@ -99,7 +101,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
 
         // When
@@ -155,7 +158,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: 0,
             firstPartyHosts: .init(),
-            traceContextInjection: .sampled
+            traceContextInjection: .sampled,
+            telemetry: NOPTelemetry()
         )
 
         // When
@@ -196,7 +200,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
 
         let span = tracer.startRootSpan(operationName: "root")
@@ -248,7 +253,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
 
         let span = tracer.startRootSpan(operationName: "root")
@@ -301,7 +307,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
 
         let span = tracer.startRootSpan(operationName: "root")
@@ -354,7 +361,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: ContextMessageReceiver(),
             samplingRate: 0,
             firstPartyHosts: .init(),
-            traceContextInjection: .sampled
+            traceContextInjection: .sampled,
+            telemetry: NOPTelemetry()
         )
 
         let span = tracer.startRootSpan(operationName: "root")
@@ -401,7 +409,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let interception = URLSessionTaskInterception(
             request: .mockAny(),
-            isFirstParty: true
+            isFirstParty: true,
+            trackingMode: .registeredDelegate
         )
         interception.register(response: .mockAny(), error: nil)
         interception.register(
@@ -447,7 +456,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         // Given
         let request: ImmutableRequest = .mockWith(httpMethod: "POST")
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
         interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
         interception.register(
             metrics: .mockWith(
@@ -483,8 +492,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
-        let incompleteInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true)
-        // `incompleteInterception` has no metrics and no completion
+        let incompleteInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .registeredDelegate)
+        // With duration breakdown, interception is incomplete without both metrics and completion
 
         // When
         handler.interceptionDidComplete(interception: incompleteInterception)
@@ -494,13 +503,13 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertTrue(core.events.isEmpty)
     }
 
-    func testGivenThirdPartyInterception_whenInterceptionCompletes_itDoesNotSendTheSpan() throws {
+    func testGivenThirdPartyInterception_withRegisteredDelegate_itDoesNotSendTheSpan() throws {
         let expectation = expectation(description: "Do not send span")
         expectation.isInverted = true
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
-        // Given
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: false)
+        // Given - with duration breakdown
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: false, trackingMode: .registeredDelegate)
         interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
@@ -519,17 +528,66 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertTrue(core.events.isEmpty)
     }
 
-    func testRUM2APMInterception_whenInterceptionCompletes_itDoesNotSendTheSpan() throws {
+    func testGivenThirdPartyInterception_inAutomaticMode_itDoesNotSendTheSpan() throws {
         let expectation = expectation(description: "Do not send span")
         expectation.isInverted = true
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
-        // Given
+        // Given - automatic mode
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: false, trackingMode: .automatic)
+        interception.register(response: .mockAny(), error: nil)
+        interception.register(startDate: .mockDecember15th2019At10AMUTC())
+        interception.register(endDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertTrue(core.events.isEmpty)
+    }
+
+    func testRUM2APMInterception_withRegisteredDelegate_itDoesNotSendTheSpan() throws {
+        let expectation = expectation(description: "Do not send span")
+        expectation.isInverted = true
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // Given - with duration breakdown
         let request: ImmutableRequest = .mockWith(
             allHTTPHeaderFields: [TracingHTTPHeaders.originField: "rum"]
         )
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: false)
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: false, trackingMode: .registeredDelegate)
         interception.register(response: .mockAny(), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertTrue(core.events.isEmpty)
+    }
+
+    func testRUM2APMInterception_inAutomaticMode_itDoesNotSendTheSpan() throws {
+        let expectation = expectation(description: "Do not send span")
+        expectation.isInverted = true
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // Given - automatic mode
+        let request: ImmutableRequest = .mockWith(
+            allHTTPHeaderFields: [TracingHTTPHeaders.originField: "rum"]
+        )
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: false, trackingMode: .automatic)
+        interception.register(response: .mockAny(), error: nil)
+        interception.register(startDate: .mockDecember15th2019At10AMUTC())
+        interception.register(endDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
 
         // When
         handler.interceptionDidComplete(interception: interception)
@@ -544,7 +602,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true)
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .registeredDelegate)
         interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
@@ -579,12 +637,13 @@ class TracingURLSessionHandlerTests: XCTestCase {
             contextReceiver: receiver,
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
-            traceContextInjection: .all
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
         )
 
         core.context.applicationStateHistory = .mockAppInForeground()
 
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true)
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .registeredDelegate)
         interception.register(response: .mockAny(), error: nil)
         interception.register(
             metrics: .mockWith(
@@ -600,6 +659,189 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5)
+    }
+
+    // MARK: - Automatic Mode Support
+
+    func testGivenAutomaticModeInterception_withApproximateTiming_itCreatesSpan() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // Given
+        let interception = URLSessionTaskInterception(
+            request: .mockWith(httpMethod: "GET"),
+            isFirstParty: true,
+            trackingMode: .automatic // Using automatic mode (no URLSessionTaskMetrics)
+        )
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        // Register approximate timing (simulating what NetworkInstrumentationFeature does)
+        interception.register(startDate: .mockDecember15th2019At10AMUTC())
+        interception.register(endDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 3))
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertEqual(span.operationName, "urlsession.request")
+        XCTAssertFalse(span.isError)
+        XCTAssertEqual(span.duration, 3, accuracy: 0.1, "Span duration should be approximately 3 seconds")
+        XCTAssertEqual(span.tags[OTTags.httpMethod], "GET")
+        XCTAssertEqual(span.tags[OTTags.httpStatusCode], "200")
+    }
+
+    func testGivenAutomaticModeInterception_withSpanContext_itUsesInjectedSpanContext() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+        let sampleRate: Float = .mockRandom(min: 1, max: 100)
+        let samplingDecision = SamplingDecision.autoKept()
+
+        // Given
+        let interception = URLSessionTaskInterception(
+            request: .mockAny(),
+            isFirstParty: true,
+            trackingMode: .automatic
+        )
+        interception.register(response: .mockAny(), error: nil)
+        interception.register(startDate: .mockDecember15th2019At10AMUTC())
+        interception.register(endDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
+        interception.register(trace: TraceContext(
+            traceID: 300,
+            spanID: 400,
+            parentSpanID: nil,
+            sampleRate: sampleRate,
+            samplingPriority: samplingDecision.samplingPriority,
+            samplingDecisionMaker: samplingDecision.decisionMaker,
+            rumSessionId: nil
+        ))
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertEqual(String(span.traceID, representation: .decimal), "300")
+        XCTAssertEqual(String(span.spanID, representation: .decimal), "400")
+        XCTAssertEqual(span.samplingRate, sampleRate / 100)
+    }
+
+    func testGivenAutomaticModeInterception_withoutTiming_itDoesNotCreateSpan() throws {
+        let expectation = expectation(description: "Do not send span")
+        expectation.isInverted = true
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // Given
+        let interception = URLSessionTaskInterception(
+            request: .mockAny(),
+            isFirstParty: true,
+            trackingMode: .automatic
+        )
+        interception.register(response: .mockAny(), error: nil)
+        // Note: No startDate or endDate registered
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertTrue(core.events.isEmpty)
+    }
+
+    func testGivenRegisteredDelegate_whenBothTimingsAvailable_itPrefersMetricsTiming() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // Given
+        let metricsStart = Date.mockDecember15th2019At10AMUTC()
+        let metricsEnd = metricsStart.addingTimeInterval(2.5) // 2.5s duration (accurate)
+        let approxStart = metricsStart.addingTimeInterval(0.1) // 100ms later
+        let approxEnd = metricsEnd.addingTimeInterval(0.15) // 150ms later
+
+        let interception = URLSessionTaskInterception(
+            request: .mockAny(),
+            isFirstParty: true,
+            trackingMode: .registeredDelegate
+        )
+        interception.register(response: .mockAny(), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(start: metricsStart, end: metricsEnd)
+            )
+        )
+        // Also register approximate timing (simulating dual capture)
+        interception.register(startDate: approxStart)
+        interception.register(endDate: approxEnd)
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        // Should use metrics timing (2.5s), not approximate timing (~2.55s)
+        XCTAssertEqual(span.duration, 2.5, accuracy: 0.01, "Should use accurate metrics timing")
+    }
+
+    func testGivenAutomaticModeInterception_withError_itEncodesErrorInSpan() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // Given
+        let mockError = NSError(domain: "test", code: -1, userInfo: [NSLocalizedDescriptionKey: "Network error"])
+        let interception = URLSessionTaskInterception(
+            request: .mockWith(httpMethod: "POST"),
+            isFirstParty: true,
+            trackingMode: .automatic
+        )
+        interception.register(response: nil, error: mockError)
+        interception.register(startDate: .mockDecember15th2019At10AMUTC())
+        interception.register(endDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertTrue(span.isError)
+        XCTAssertEqual(span.tags[OTTags.httpMethod], "POST")
+    }
+
+    func testGivenAutomaticModeInterception_with4xxError_itEncodesClientErrorInSpan() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // Given
+        let interception = URLSessionTaskInterception(
+            request: .mockAny(),
+            isFirstParty: true,
+            trackingMode: .automatic
+        )
+        interception.register(response: .mockResponseWith(statusCode: 404), error: nil)
+        interception.register(startDate: .mockDecember15th2019At10AMUTC())
+        interception.register(endDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.2))
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertTrue(span.isError)
+        XCTAssertEqual(span.tags[OTTags.httpStatusCode], "404")
+        XCTAssertEqual(span.resource, "404", "404 responses should have resource set to '404'")
     }
 
     private func assert(capturedState: URLSessionHandlerCapturedState?, has span: OTSpan?) {

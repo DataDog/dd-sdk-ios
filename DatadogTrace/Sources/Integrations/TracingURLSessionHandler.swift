@@ -18,6 +18,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
         /// The active span at the time of request instrumentation, if any, `nil` otherwise.
         let activeSpan: OTSpan?
+        /// Whether GraphQL headers were detected in the request
+        let hasGraphQLHeaders: Bool
     }
 
     /// Integration with Core Context.
@@ -28,6 +30,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     let samplingRate: SampleRate
     /// Trace context injection configuration to determine whether the trace context should be injected or not.
     let traceContextInjection: TraceContextInjection
+    /// Telemetry interface for tracking SDK usage
+    let telemetry: Telemetry
 
     weak var tracer: DatadogTracer?
 
@@ -49,13 +53,15 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         contextReceiver: ContextMessageReceiver,
         samplingRate: SampleRate,
         firstPartyHosts: FirstPartyHosts,
-        traceContextInjection: TraceContextInjection
+        traceContextInjection: TraceContextInjection,
+        telemetry: Telemetry
     ) {
         self.tracer = tracer
         self.contextReceiver = contextReceiver
         self.samplingRate = samplingRate
         self.firstPartyHosts = firstPartyHosts
         self.traceContextInjection = traceContextInjection
+        self.telemetry = telemetry
     }
 
     func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
@@ -140,10 +146,18 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
          Read the comment in interceptionDidStart(…) to know how this information propagates.
          */
 
+        // Detect GraphQL requests by checking for GraphQL headers
+        let hasGraphQLHeaders = request.hasGraphQLHeaders
+
+        // Return captured state with both active span and GraphQL detection
+        let capturedState: URLSessionHandlerCapturedState? = (tracer.activeSpan != nil || hasGraphQLHeaders)
+            ? TracingURLSessionHandlerCapturedState(activeSpan: tracer.activeSpan, hasGraphQLHeaders: hasGraphQLHeaders)
+            : nil
+
         return (
             request,
             hasSetAnyHeader ? injectedSpanContext : nil,
-            tracer.activeSpan.map { TracingURLSessionHandlerCapturedState(activeSpan: $0) }
+            capturedState
         )
     }
 
@@ -163,8 +177,21 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
          span is used.
          */
         // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
-        capturedStates.compactMap({ ($0 as? TracingURLSessionHandlerCapturedState)?.activeSpan }).first.map {
+        let capturedState = capturedStates.compactMap({ $0 as? TracingURLSessionHandlerCapturedState }).first
+
+        capturedState?.activeSpan.map {
             interception.register(activeSpanContext: $0.context)
+        }
+
+        // Check if GraphQL was detected in the captured state
+        // Only send telemetry if the request is not already tracked by RUM (to avoid duplicates)
+        if interception.origin != "rum",
+           let capturedState = capturedState,
+           capturedState.hasGraphQLHeaders {
+            telemetry.send(telemetry: .usage(.init(
+                event: .addGraphQLRequest,
+                sampleRate: UsageTelemetry.defaultSampleRate
+            )))
         }
     }
 
@@ -173,7 +200,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             interception.isFirstPartyRequest, // `Span` should be only send for 1st party requests
             interception.origin != "rum", // if that request was tracked as RUM resource, the RUM backend will create the span on our behalf
             let tracer = tracer,
-            let resourceMetrics = interception.metrics,
+            let startTime = interception.fetchStartDate,
+            let endTime = interception.fetchEndDate,
             let resourceCompletion = interception.completion
         else {
             return
@@ -220,7 +248,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             span = tracer.startSpan(
                 spanContext: context,
                 operationName: "urlsession.request",
-                startTime: resourceMetrics.fetch.start
+                startTime: startTime
             )
         } else if Sampler(samplingRate: samplingRate).sample() {
             // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
@@ -242,7 +270,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             span = tracer.startSpan(
                 spanContext: context,
                 operationName: "urlsession.request",
-                startTime: resourceMetrics.fetch.start
+                startTime: startTime
             )
         } else {
             return
@@ -278,16 +306,16 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         if let history = contextReceiver.context.applicationStateHistory {
-            let fetchDuration = resourceMetrics.fetch.start...resourceMetrics.fetch.end
+            let fetchDuration = startTime...endTime
             let foregroundDuration = history.foregroundDuration(during: fetchDuration)
             span.setTag(key: SpanTags.foregroundDuration, value: foregroundDuration.dd.toNanoseconds)
 
-            let didStartInBackground = history.state(at: resourceMetrics.fetch.start) == .background
-            let doesEndInBackground = history.state(at: resourceMetrics.fetch.end) == .background
+            let didStartInBackground = history.state(at: startTime) == .background
+            let doesEndInBackground = history.state(at: endTime) == .background
             span.setTag(key: SpanTags.isBackground, value: didStartInBackground || doesEndInBackground)
         }
 
-        span.finish(at: resourceMetrics.fetch.end)
+        span.finish(at: endTime)
     }
 
     /// Creates a helper struct with collected elements from a possible parent span context.

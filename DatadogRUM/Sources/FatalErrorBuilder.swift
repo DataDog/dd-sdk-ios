@@ -119,6 +119,7 @@ internal struct FatalErrorBuilder {
                 type: errorType,
                 wasTruncated: errorWasTruncated
             ),
+            featureFlags: lastRUMView.featureFlags.map { .init(featureFlagsInfo: $0.featureFlagsInfo) },
             freeze: nil, // `@error.freeze.duration` is not yet supported for fatal App Hangs
             os: lastRUMView.os,
             service: lastRUMView.service,
@@ -167,6 +168,7 @@ internal struct FatalErrorBuilder {
             ddtags: context.ddTags,
             device: original.device,
             display: original.display,
+            featureFlags: original.featureFlags,
             os: original.os,
             privacy: original.privacy,
             service: original.service,

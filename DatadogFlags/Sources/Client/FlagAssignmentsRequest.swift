@@ -36,6 +36,10 @@ extension URLRequest {
                 name: context.env,
                 datadogEnvironment: context.env
             ),
+            source: FlagAssignmentsRequestBody.Source(
+                sdkName: "dd-sdk-ios",
+                sdkVersion: context.sdkVersion
+            ),
             subject: FlagAssignmentsRequestBody.Subject(
                 targetingKey: evaluationContext.targetingKey,
                 targetingAttributes: evaluationContext.attributes
@@ -70,7 +74,18 @@ internal struct FlagAssignmentsRequestBody {
         let datadogEnvironment: String
     }
 
+    struct Source: Encodable {
+        private enum CodingKeys: String, CodingKey {
+            case sdkName = "sdk_name"
+            case sdkVersion = "sdk_version"
+        }
+
+        let sdkName: String
+        let sdkVersion: String
+    }
+
     let environment: Environment
+    let source: Source
     let subject: Subject
 }
 
@@ -81,6 +96,7 @@ extension FlagAssignmentsRequestBody: Encodable {
         case attributes
         case flags
         case environment = "env"
+        case source
         case subject
     }
 
@@ -92,6 +108,7 @@ extension FlagAssignmentsRequestBody: Encodable {
 
         var attributesContainer = dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
         try attributesContainer.encode(environment, forKey: .environment)
+        try attributesContainer.encode(source, forKey: .source)
         try attributesContainer.encode(subject, forKey: .subject)
     }
 }

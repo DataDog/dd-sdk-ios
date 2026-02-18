@@ -107,7 +107,7 @@ class RUMInternalProxyTests: XCTestCase {
             ssl: ssl,
             firstByte: firstByte,
             download: download,
-            responseSize: 42
+            responseBodySize: (encoded: 30, decoded: 42)
         )
 
         monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))

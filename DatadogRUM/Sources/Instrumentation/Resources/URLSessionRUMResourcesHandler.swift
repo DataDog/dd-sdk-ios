@@ -34,13 +34,21 @@ internal struct DistributedTracing {
 }
 
 internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RUMCommandPublisher {
+    /// Captured state for RUM URL session handler
+    struct RUMURLSessionHandlerCapturedState: URLSessionHandlerCapturedState {
+        /// Whether GraphQL headers were detected in the request
+        let hasGraphQLHeaders: Bool
+    }
+
     /// The date provider
     let dateProvider: DateProvider
-    /// DistributedTracing
+    /// Distributed Tracing
     let distributedTracing: DistributedTracing?
     /// Attributes-providing callback.
     /// It is configured by the user and should be used to associate additional RUM attributes with intercepted RUM Resource.
     let rumAttributesProvider: RUM.ResourceAttributesProvider?
+    /// Telemetry interface for tracking SDK usage
+    let telemetry: Telemetry
 
     /// First party hosts defined by the user.
     var firstPartyHosts: FirstPartyHosts {
@@ -52,11 +60,13 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
     init(
         dateProvider: DateProvider,
         rumAttributesProvider: RUM.ResourceAttributesProvider?,
-        distributedTracing: DistributedTracing?
+        distributedTracing: DistributedTracing?,
+        telemetry: Telemetry
     ) {
         self.dateProvider = dateProvider
         self.rumAttributesProvider = rumAttributesProvider
         self.distributedTracing = distributedTracing
+        self.telemetry = telemetry
     }
 
     // MARK: - Internal
@@ -70,18 +80,33 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
     // MARK: - DatadogURLSessionHandler
 
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
-        distributedTracing?.modify(
+        let (modifiedRequest, traceContext, _) = distributedTracing?.modify(
             request: request,
             headerTypes: headerTypes,
             rumSessionId: networkContext?.rumContext?.sessionID,
             userId: networkContext?.userConfigurationContext?.id,
             accountId: networkContext?.accountConfigurationContext?.id
         ) ?? (request, nil, nil)
+
+        // Note: DistributedTracing.modify() currently returns nil for captured state.
+        // If this changes, we'll need to merge captured states instead of replacing.
+        let capturedState: URLSessionHandlerCapturedState? = modifiedRequest.hasGraphQLHeaders ? RUMURLSessionHandlerCapturedState(hasGraphQLHeaders: true) : nil
+
+        return (modifiedRequest, traceContext, capturedState)
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
         let url = interception.request.url?.absoluteString ?? "unknown_url"
         interception.register(origin: "rum")
+
+        // Check if GraphQL was detected in the captured states
+        if let capturedState = capturedStates.compactMap({ $0 as? RUMURLSessionHandlerCapturedState }).first,
+           capturedState.hasGraphQLHeaders {
+            telemetry.send(telemetry: .usage(.init(
+                event: .addGraphQLRequest,
+                sampleRate: UsageTelemetry.defaultSampleRate
+            )))
+        }
 
         subscriber?.process(
             command: RUMStartResourceCommand(
@@ -132,8 +157,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         }
 
         // Extract GraphQL errors from response if present
-        if let errorsData = extractGraphQLErrorsIfPresent(from: interception) {
-            combinedAttributes[CrossPlatformAttributes.graphqlErrors] = errorsData
+        if let errorsString = extractGraphQLErrorsIfPresent(from: interception) {
+            combinedAttributes[CrossPlatformAttributes.graphqlErrors] = errorsString
         }
 
         if let resourceMetrics = interception.metrics {
@@ -155,7 +180,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
                     attributes: combinedAttributes,
                     kind: RUMResourceType(response: httpResponse),
                     httpStatusCode: httpResponse.statusCode,
-                    size: interception.metrics?.responseSize
+                    size: interception.mostAccurateResponseSize
                 )
             )
         }
@@ -175,9 +200,9 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         }
     }
 
-    /// Extracts GraphQL errors from JSON response if present.
+    /// Extracts GraphQL errors from JSON response if present and returns them as a JSON string.
     /// Only the errors array is extracted to avoid storing potentially large response data fields.
-    private func extractGraphQLErrorsIfPresent(from interception: URLSessionTaskInterception) -> Data? {
+    private func extractGraphQLErrorsIfPresent(from interception: URLSessionTaskInterception) -> String? {
         guard let data = interception.data,
               let httpResponse = interception.completion?.httpResponse,
               let mimeType = httpResponse.mimeType,
@@ -185,13 +210,19 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             return nil
         }
 
-        // Fast check: does the response contain an "errors" key?
-        guard let result = try? JSONDecoder().decode(GraphQLResponseHasErrors.self, from: data),
-              result.hasErrors else {
+        guard let response = try? JSONDecoder().decode(GraphQLResponse.self, from: data),
+              let errors = response.errors,
+              !errors.isEmpty else {
             return nil
         }
 
-        return data
+        do {
+            let errorsData = try JSONEncoder().encode(errors)
+            return String(data: errorsData, encoding: .utf8)
+        } catch {
+            DD.logger.debug("Failed to encode GraphQL errors array: \(error)")
+            return nil
+        }
     }
 }
 

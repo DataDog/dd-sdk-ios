@@ -8,14 +8,24 @@ import Foundation
 
 /// An entry point to enable URLSession instrumentation.
 public enum URLSessionInstrumentation {
-    /// Enables URLSession instrumentation.
+    /// Enables duration breakdown capture for URLSession tasks.
+    ///
+    /// This method is optional. Automatic network tracking is already enabled by default when RUM or Trace is initialized with `urlSessionTracking` configuration.
+    /// Duration breakdown provides additional detailed timing information captured from `URLSessionTaskMetrics` (including DNS, Connection, SSL, First Byte, Download).
+    ///
+    /// Note: This involves swizzling `URLSessionDataDelegate` methods to capture `URLSessionTaskMetrics`.
     ///
     /// - Parameters:
     ///   - configuration: Configuration of the feature.
     ///   - core: The instance of Datadog SDK to enable URLSession instrumentation in (global instance by default).
-    public static func enable(with configuration: URLSessionInstrumentation.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) {
+    public static func enableDurationBreakdown(with configuration: URLSessionInstrumentation.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) {
         do {
             try enableOrThrow(with: configuration, in: core)
+
+            core.telemetry.debug(
+                id: "URLSessionInstrumentation:enableDurationBreakdown",
+                message: "URLSession duration breakdown enabled " + isFirstPartyHostsTracing(for: configuration)
+            )
         } catch let error {
             consolePrint("\(error)", .error)
 
@@ -25,7 +35,31 @@ public enum URLSessionInstrumentation {
         }
     }
 
-    internal static func enableOrThrow(with configuration: URLSessionInstrumentation.Configuration, in core: DatadogCoreProtocol) throws {
+    /// Enables URLSession instrumentation.
+    ///
+    /// - Parameters:
+    ///   - configuration: Configuration of the feature.
+    ///   - core: The instance of Datadog SDK to enable URLSession instrumentation in (global instance by default).
+    @available(*, deprecated, renamed: "enableDurationBreakdown(with:in:)", message: "Use enableDurationBreakdown(with:in:) instead.")
+    public static func enable(with configuration: URLSessionInstrumentation.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) {
+        do {
+            try enableOrThrow(with: configuration, in: core)
+
+            core.telemetry.debug(
+                id: "URLSessionInstrumentation:enable",
+                message: "URLSession duration breakdown enabled " + isFirstPartyHostsTracing(for: configuration) + " (deprecated API)"
+            )
+        } catch let error {
+            consolePrint("\(error)", .error)
+
+            if error is InternalError { // SDK error, send to telemetry
+                core.telemetry.error(error)
+            }
+        }
+    }
+
+    @_spi(Internal)
+    public static func enableOrThrow(with configuration: URLSessionInstrumentation.Configuration?, in core: DatadogCoreProtocol) throws {
         guard let feature = core.get(feature: NetworkInstrumentationFeature.self) else {
             throw ProgrammerError(description: "URLSession tracking must be enabled before enabling URLSessionInstrumentation using either RUM or Trace feature.")
         }
@@ -56,20 +90,30 @@ public enum URLSessionInstrumentation {
 
         feature.unbind(delegateClass: delegateClass)
     }
+
+    /* Helper */
+    private static func isFirstPartyHostsTracing(for configuration: URLSessionInstrumentation.Configuration) -> String {
+        return configuration.firstPartyHostsTracing != nil ? "(with FPH Tracing configured)" : "(without FPH Tracing configured)"
+    }
 }
 
 extension URLSessionInstrumentation {
-    /// Configuration of URLSession instrumentation.
+    /// Configuration for duration breakdown capture.
+    ///
+    /// Duration breakdown captures detailed timing by swizzling delegate methods to access `URLSessionTaskMetrics`.
     public struct Configuration {
         /// The delegate class to be used to swizzle URLSessionTaskDelegate & URLSessionDataDelegate methods.
+        ///
+        /// This enables capturing `URLSessionTaskMetrics` for detailed timing information (DNS, SSL, TTFB, etc.)
+        /// and response data via delegate methods.
         public var delegateClass: URLSessionDataDelegate.Type
 
         /// Additional first party hosts to consider in the interception.
         public var firstPartyHostsTracing: FirstPartyHostsTracing?
 
-        /// Configuration of URLSession instrumentation.
+        /// Configuration for duration breakdown capture.
         /// - Parameters:
-        ///   - delegate: The delegate class to be used to swizzle URLSessionTaskDelegate & URLSessionDataDelegate methods.
+        ///   - delegateClass: The delegate class to be used to swizzle URLSessionTaskDelegate & URLSessionDataDelegate methods.
         ///   - firstPartyHostsTracing: Additional first party hosts to consider in the interception.
         public init(delegateClass: URLSessionDataDelegate.Type, firstPartyHostsTracing: FirstPartyHostsTracing? = nil) {
             self.delegateClass = delegateClass

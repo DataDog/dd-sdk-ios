@@ -12,9 +12,9 @@ import XCTest
 
 @MainActor
 final class CALayerChangeAggregatorTests: XCTestCase {
-    private let testTimeProvider = TestTimeProvider(now: 0)
+    private let testTimerScheduler = TestTimerScheduler(now: 0)
     // swiftlint:disable:next implicitly_unwrapped_optional
-    private var layerChangeAggregator: CALayerChangeAggregator<TestTimeProvider>!
+    private var layerChangeAggregator: CALayerChangeAggregator!
     private var snapshots: [CALayerChangeSnapshot] = []
 
     override func setUp() {
@@ -22,7 +22,7 @@ final class CALayerChangeAggregatorTests: XCTestCase {
 
         layerChangeAggregator = CALayerChangeAggregator(
             minimumDeliveryInterval: 0.1,
-            timeProvider: testTimeProvider
+            timerScheduler: testTimerScheduler
         ) { [weak self] snapshot in
             self?.snapshots.append(snapshot)
         }
@@ -49,10 +49,10 @@ final class CALayerChangeAggregatorTests: XCTestCase {
         // when
         layerChangeAggregator.start()
 
-        testTimeProvider.advance(to: 0.016)
+        testTimerScheduler.advance(to: 0.016)
         layerChangeAggregator.layerDidDisplay(layer)
 
-        testTimeProvider.advance(to: 0.032)
+        testTimerScheduler.advance(to: 0.032)
         layerChangeAggregator.layerDidDraw(layer, in: context)
         layerChangeAggregator.layerDidLayoutSublayers(layer)
 
@@ -60,7 +60,7 @@ final class CALayerChangeAggregatorTests: XCTestCase {
         XCTAssertEqual(snapshots.count, 0, "Should not have delivered a snapshot yet")
 
         // when
-        testTimeProvider.advance(to: 0.1)
+        testTimerScheduler.advance(to: 0.1)
 
         // then
         XCTAssertEqual(snapshots.count, 1)
@@ -79,20 +79,20 @@ final class CALayerChangeAggregatorTests: XCTestCase {
         // when
         layerChangeAggregator.start()
 
-        testTimeProvider.advance(to: 0.02)
+        testTimerScheduler.advance(to: 0.02)
         layerChangeAggregator.layerDidDisplay(layer)
 
         // then
         XCTAssertEqual(snapshots.count, 0, "Should not have delivered a snapshot yet")
 
         // when
-        testTimeProvider.advance(to: 0.1)
+        testTimerScheduler.advance(to: 0.1)
 
         // then
         XCTAssertEqual(snapshots.count, 1)
 
         // when
-        testTimeProvider.advance(to: 0.5)
+        testTimerScheduler.advance(to: 0.5)
         layerChangeAggregator.layerDidLayoutSublayers(layer)
 
         // then
@@ -118,13 +118,13 @@ final class CALayerChangeAggregatorTests: XCTestCase {
         // when
         layerChangeAggregator.start()
 
-        testTimeProvider.advance(to: 0.01)
+        testTimerScheduler.advance(to: 0.01)
         layerChangeAggregator.layerDidDisplay(layerA)
 
-        testTimeProvider.advance(to: 0.02)
+        testTimerScheduler.advance(to: 0.02)
         layerChangeAggregator.layerDidLayoutSublayers(layerB)
 
-        testTimeProvider.advance(to: 0.1)
+        testTimerScheduler.advance(to: 0.1)
 
         // then
         XCTAssertEqual(snapshots.count, 1)
@@ -142,7 +142,7 @@ final class CALayerChangeAggregatorTests: XCTestCase {
     func testNoSnapshotsWhenNoChangesOccur() {
         // when
         layerChangeAggregator.start()
-        testTimeProvider.advance(to: 10.0) // time passes, but no changes
+        testTimerScheduler.advance(to: 10.0) // time passes, but no changes
 
         // then
         XCTAssertTrue(snapshots.isEmpty)
@@ -153,9 +153,9 @@ final class CALayerChangeAggregatorTests: XCTestCase {
         let layer = CALayer()
 
         // when
-        testTimeProvider.advance(to: 0.01)
+        testTimerScheduler.advance(to: 0.01)
         layerChangeAggregator.layerDidDisplay(layer) // ignored
-        testTimeProvider.advance(to: 1.0)
+        testTimerScheduler.advance(to: 1.0)
 
         // then
         XCTAssertTrue(snapshots.isEmpty)
@@ -163,9 +163,9 @@ final class CALayerChangeAggregatorTests: XCTestCase {
         // when
         layerChangeAggregator.start()
 
-        testTimeProvider.advance(to: 1.01)
+        testTimerScheduler.advance(to: 1.01)
         layerChangeAggregator.layerDidDisplay(layer) // accepted and delivered
-        testTimeProvider.advance(to: 1.1)
+        testTimerScheduler.advance(to: 1.1)
 
         // then
         XCTAssertEqual(snapshots.count, 1)
@@ -173,9 +173,9 @@ final class CALayerChangeAggregatorTests: XCTestCase {
         // when
         layerChangeAggregator.stop()
 
-        testTimeProvider.advance(to: 2.000)
+        testTimerScheduler.advance(to: 2.000)
         layerChangeAggregator.layerDidLayoutSublayers(layer) // ignored
-        testTimeProvider.advance(to: 2.500)
+        testTimerScheduler.advance(to: 2.500)
 
         // then
         XCTAssertEqual(snapshots.count, 1)

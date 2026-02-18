@@ -7,6 +7,8 @@
 import Foundation
 import DatadogInternal
 
+#if !os(watchOS)
+
 // swiftlint:disable duplicate_imports
 #if swift(>=6.0)
 internal import DatadogMachProfiler
@@ -26,7 +28,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
     /// Setting max-file-age to minimum will force creating a batch per profile.
     /// It is necessary as the profiling intake only accepts one profile per request.
-    let performanceOverride = PerformancePresetOverride(maxFileSize: .min)
+    let performanceOverride: PerformancePresetOverride? = PerformancePresetOverride(maxFileSize: .min)
 
     init(
         requestBuilder: FeatureRequestBuilder,
@@ -57,3 +59,5 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         }
     }
 }
+
+#endif

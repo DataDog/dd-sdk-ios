@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(tvOS)
+#if canImport(WebKit)
 
 import XCTest
 import WebKit
@@ -134,7 +134,7 @@ class WebViewTrackingTests: XCTestCase {
 
         let initialUserScriptCount = controller.userScripts.count
 
-        let multipleTimes = 5
+        let multipleTimes = Int.random(in: 1...5)
         try (0..<multipleTimes).forEach { _ in
             try WebViewTracking.enableOrThrow(
                 tracking: controller,
@@ -159,6 +159,51 @@ class WebViewTrackingTests: XCTestCase {
         )
     }
 
+    func testWhenAddingMessageHandlerMultipleTimes_afterExternalRemovalOfUserScripts_itHandlesCorrectlyTheInstrumentation() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        let core = PassthroughCoreMock()
+        let configuration = WKWebViewConfiguration()
+        let controller = configuration.userContentController
+        let webView = WKWebView(frame: .zero, configuration: configuration)
+
+        WebViewTracking.enable(webView: webView, in: core)
+
+        XCTAssertEqual(controller.userScripts.count, 1)
+        // Simulates external code wiping user scripts.
+        controller.removeAllUserScripts()
+        XCTAssertTrue(controller.userScripts.isEmpty)
+
+        WebViewTracking.enable(webView: webView, in: core)
+
+        XCTAssertEqual(controller.userScripts.count, 1)
+        XCTAssertEqual(dd.logger.warnLogs.count, 0)
+    }
+
+    func testWhenStoppingTracking_itCanBeEnabledAgain() throws {
+        let core = PassthroughCoreMock()
+        let controller = DDUserContentController()
+        let configuration = WKWebViewConfiguration()
+        configuration.userContentController = controller
+        let webview = WKWebView(frame: .zero, configuration: configuration)
+
+        WebViewTracking.enable(webView: webview,in: core)
+
+        XCTAssertEqual(controller.userScripts.count, 1)
+        XCTAssertEqual(controller.messageHandlers.count, 1)
+
+        WebViewTracking.disable(webView: webview)
+
+        XCTAssertEqual(controller.userScripts.count, 0)
+        XCTAssertEqual(controller.messageHandlers.count, 0)
+
+        WebViewTracking.enable(webView: webview,in: core)
+
+        XCTAssertEqual(controller.userScripts.count, 1)
+        XCTAssertEqual(controller.messageHandlers.count, 1)
+    }
+
     func testWhenStoppingTracking_itKeepsNonDatadogComponents() throws {
         let core = PassthroughCoreMock()
         let controller = DDUserContentController()
@@ -171,7 +216,7 @@ class WebViewTrackingTests: XCTestCase {
             in: core
         )
 
-        let componentCount = 10
+        let componentCount = Int.random(in: 1...10)
         for i in 0..<componentCount {
             let userScript = WKUserScript(
                 source: String.mockRandom(),

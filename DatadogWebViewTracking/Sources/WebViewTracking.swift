@@ -7,9 +7,7 @@
 import Foundation
 import DatadogInternal
 
-#if os(tvOS)
-#warning("Datadog WebView Tracking does not support tvOS")
-#else
+#if canImport(WebKit)
 import WebKit
 #endif
 
@@ -24,7 +22,7 @@ import WebKit
 /// - Scope the root cause of latency to web pages or native components in mobile applications
 /// - Support users that have difficulty loading web pages on mobile devices
 public enum WebViewTracking {
-#if !os(tvOS)
+#if canImport(WebKit)
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session.
     /// 
     /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified
@@ -105,6 +103,8 @@ public enum WebViewTracking {
             )
         )
 
+        // Prevent fatal error: `Attempt to add script message handler with name 'DatadogEventBridge' when one already exists.`
+        controller.removeScriptMessageHandler(forName: bridgeName)
         controller.add(messageHandler, name: bridgeName)
 
         // WebKit installs message handlers with the given name format below

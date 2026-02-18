@@ -131,6 +131,9 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.ssl)
         XCTAssertNil(event.resource.firstByte)
         XCTAssertNil(event.resource.download)
+        XCTAssertNil(event.resource.decodedBodySize)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.request)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.traceId, "64")
@@ -143,6 +146,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResourceInCITest_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -225,6 +230,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.ciTest?.testExecutionId, fakeCiTestId)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResourceInSyntheticsTest_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -309,6 +316,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.synthetics?.testId, fakeSyntheticsTestId)
         XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResourceWithSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -338,6 +347,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.traceId, "64")
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.rulePsr, 0.42)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResourceWithoutSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -363,6 +374,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.dd.traceId)
         XCTAssertNil(event.dd.spanId)
         XCTAssertNil(event.dd.rulePsr)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenConfiguredSoruce_whenResourceLoadingEnds_itSendsResourceEventWithCorrecSource() throws {
@@ -402,6 +415,8 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.source, .init(rawValue: customSource))
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithNegativeDuration_itSendsResourceEventWithPositiveDuration() throws {
@@ -468,6 +483,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEventWithCustomSpanAndTraceId() throws {
@@ -533,6 +550,8 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
@@ -939,7 +958,8 @@ class RUMResourceScopeTests: XCTestCase {
                     start: resourceFetchStart.addingTimeInterval(9),
                     end: resourceFetchStart.addingTimeInterval(10)
                 ),
-                responseSize: 2_048
+                responseBodySize: (encoded: 1_500, decoded: 2_048),
+                requestBodySize: (encoded: 512, decoded: 1_024)
             )
         )
 
@@ -991,6 +1011,10 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.resource.firstByte?.duration, 1_000_000_000)
         XCTAssertEqual(event.resource.download?.start, 9_000_000_000)
         XCTAssertEqual(event.resource.download?.duration, 1_000_000_000)
+        XCTAssertEqual(event.resource.encodedBodySize, 1_500)
+        XCTAssertEqual(event.resource.decodedBodySize, 2_048)
+        XCTAssertEqual(event.resource.request?.encodedBodySize, 512)
+        XCTAssertEqual(event.resource.request?.decodedBodySize, 1_024)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.source, .ios)
@@ -1000,6 +1024,65 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+    }
+
+    func testGivenStartedResource_whenResourceReceivesMetricsWithRequestAndResponseBodySizes_itAggregatesThemInSentResourceEvent() throws {
+        guard #available(iOS 13, tvOS 13, *) else {
+            return
+        }
+
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        let resourceFetchStart = Date()
+        let metricsCommand = RUMAddResourceMetricsCommand(
+            resourceKey: "/resource/1",
+            time: currentTime,
+            attributes: [:],
+            metrics: .mockWith(
+                fetch: .init(
+                    start: resourceFetchStart,
+                    end: resourceFetchStart.addingTimeInterval(10)
+                ),
+                responseBodySize: (encoded: 1_536, decoded: 2_048)
+            )
+        )
+
+        XCTAssertTrue(scope.process(command: metricsCommand, context: context, writer: writer))
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: [:],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.resource.encodedBodySize, 1_536, "Encoded body size should match response encoded size")
+        XCTAssertEqual(event.resource.decodedBodySize, 2_048, "Decoded body size should match response decoded size")
     }
 
     func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {
@@ -1100,6 +1183,8 @@ class RUMResourceScopeTests: XCTestCase {
         let providerDomain = try XCTUnwrap(event.resource.provider?.domain)
         XCTAssertEqual(providerType, .firstParty)
         XCTAssertEqual(providerDomain, "firstparty.com")
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedThirdartyResource_whenResourceLoadingEnds_itSendsResourceEventWithoutResourceProvider() throws {
@@ -1130,6 +1215,8 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertNil(event.resource.provider)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.decodedBodySize)
     }
 
     func testGivenStartedFirstPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithFirstPartyProvider() throws {
@@ -1544,46 +1631,29 @@ class RUMResourceScopeTests: XCTestCase {
             httpMethod: .post
         )
 
-        let graphQLResponseJSON = """
-        {
-          "errors": [
-            {
-              "message": "Book not found",
-              "locations": [
-                { "line": 2, "column": 7 },
-                { "line": 5, "column": 12 }
-              ],
-              "path": ["library", "book", "1234"],
-              "extensions": {
-                "code": "NOT_FOUND",
-                "timestamp": "2024-01-15T10:00:00Z"
-              }
-            },
-            {
-              "message": "Unauthorized access to user profile",
-              "locations": [{ "line": 10, "column": 3 }],
-              "path": ["user", "profile"],
-              "extensions": {
-                "code": "UNAUTHORIZED"
-              }
-            }
-          ],
-          "data": {
-            "library": {
-              "book": null
-            },
-            "user": null,
-            "firstShip": "3001",
-            "secondShip": null,
-            "launch": [
-              {
-                "id": "1",
-                "status": null
-              }
+        let graphQLErrorsJSON = """
+        [
+          {
+            "message": "Book not found",
+            "locations": [
+              { "line": 2, "column": 7 },
+              { "line": 5, "column": 12 }
             ],
-            "oldField": "some value"
+            "path": ["library", "book", "1234"],
+            "extensions": {
+              "code": "NOT_FOUND",
+              "timestamp": "2024-01-15T10:00:00Z"
+            }
+          },
+          {
+            "message": "Unauthorized access to user profile",
+            "locations": [{ "line": 10, "column": 3 }],
+            "path": ["user", "profile"],
+            "extensions": {
+              "code": "UNAUTHORIZED"
+            }
           }
-        }
+        ]
         """
 
         // When
@@ -1593,7 +1663,7 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: "/graphql",
                     time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
                     attributes: [
-                        CrossPlatformAttributes.graphqlErrors: graphQLResponseJSON.data(using: .utf8)!,
+                        CrossPlatformAttributes.graphqlErrors: graphQLErrorsJSON,
                         CrossPlatformAttributes.graphqlOperationType: "query",
                         CrossPlatformAttributes.graphqlOperationName: "GetBookAndUser"
                     ],
@@ -1664,7 +1734,7 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: "/graphql",
                     time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
                     attributes: [
-                        CrossPlatformAttributes.graphqlErrors: "{ invalid json }".data(using: .utf8)!,
+                        CrossPlatformAttributes.graphqlErrors: "{ invalid json }",
                         CrossPlatformAttributes.graphqlOperationType: "query"
                     ],
                     kind: .xhr,
@@ -1694,10 +1764,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         let emptyErrorsJSON = """
-        {
-            "errors": [],
-            "data": null
-        }
+        []
         """
 
         // When
@@ -1707,7 +1774,7 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: "/graphql",
                     time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
                     attributes: [
-                        CrossPlatformAttributes.graphqlErrors: emptyErrorsJSON.data(using: .utf8)!,
+                        CrossPlatformAttributes.graphqlErrors: emptyErrorsJSON,
                         CrossPlatformAttributes.graphqlOperationType: "query"
                     ],
                     kind: .xhr,

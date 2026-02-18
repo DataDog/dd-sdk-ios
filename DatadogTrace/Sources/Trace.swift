@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// An entry point to Datadog Trace feature.
@@ -68,10 +69,16 @@ public enum Trace {
                 contextReceiver: trace.contextReceiver,
                 samplingRate: configuration.debugSDK ? 100 : tracingSampleRate,
                 firstPartyHosts: firstPartyHosts,
-                traceContextInjection: traceContextInjection
+                traceContextInjection: traceContextInjection,
+                telemetry: core.telemetry
             )
 
             try core.register(urlSessionHandler: urlSessionHandler)
+
+            // Enable automatic network tracking as the foundation for duration breakdown.
+            // Distributed tracing benefits from duration breakdown (enabled separately via URLSessionInstrumentation.enableDurationBreakdown)
+            // to capture accurate timing from URLSessionTaskMetrics.
+            try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
         }
     }
 }

@@ -17,20 +17,24 @@
 import Foundation
 import DatadogInternal
 
-internal final class ScreenChangeScheduler<T: TimeProvider>: Scheduler {
+internal final class ScreenChangeScheduler: Scheduler {
     let queue: Queue = MainQueue()
 
     private let minimumInterval: TimeInterval
     private let telemetry: Telemetry
-    private let timeProvider: T
+    private let timerScheduler: any TimerScheduler
 
-    private var monitor: ScreenChangeMonitor<T>?
+    private var monitor: ScreenChangeMonitor?
     private var operations: [() -> Void] = []
 
-    init(minimumInterval: TimeInterval, telemetry: Telemetry, timeProvider: T) {
+    init(
+        minimumInterval: TimeInterval,
+        telemetry: Telemetry,
+        timerScheduler: any TimerScheduler = .dispatchSource
+    ) {
         self.minimumInterval = minimumInterval
         self.telemetry = telemetry
-        self.timeProvider = timeProvider
+        self.timerScheduler = timerScheduler
     }
 
     func schedule(operation: @escaping () -> Void) {
@@ -48,7 +52,7 @@ internal final class ScreenChangeScheduler<T: TimeProvider>: Scheduler {
             do {
                 let monitor = try ScreenChangeMonitor(
                     minimumDeliveryInterval: self.minimumInterval,
-                    timeProvider: self.timeProvider
+                    timerScheduler: self.timerScheduler
                 ) { [weak self] snapshot in
                     self?.screenDidChange(snapshot)
                 }
@@ -74,12 +78,6 @@ internal final class ScreenChangeScheduler<T: TimeProvider>: Scheduler {
         // ScreenChangeMonitor notifies on the main thread
         DD.logger.debug("Screen changed: \(snapshot)")
         operations.forEach { $0() }
-    }
-}
-
-extension ScreenChangeScheduler where T == LiveTimeProvider {
-    convenience init(minimumInterval: TimeInterval, telemetry: Telemetry) {
-        self.init(minimumInterval: minimumInterval, telemetry: telemetry, timeProvider: .live())
     }
 }
 #endif

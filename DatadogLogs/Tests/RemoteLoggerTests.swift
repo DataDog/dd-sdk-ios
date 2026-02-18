@@ -580,4 +580,103 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertNil(log.attributes.internalAttributes?["dd.span_id"])
         XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
     }
+
+    // MARK: - Attribute Encoding Error Handling
+
+    /// These tests use `AnyEncodable` to wrap non-`Encodable` types, simulating real production scenarios.
+    /// There are 2 possible use-cases:
+    /// - **ObjC APIs** (primary production path): Customers use ObjC APIs like `addAttribute(forKey:value:)` which accepts `Any`.
+    ///   SDK automatically wraps values in `AnyEncodable`, losing type safety. Telemetry shows this is the dominant error path.
+    /// - **Swift APIs with manual wrapping**: Swift API requires `Encodable`, but customers can explicitly wrap non-encodable
+    ///   types using `AnyEncodable(value)` to bypass compile-time checks.
+
+    func testWhenMultipleAttributesFailToEncode_itSkipsAllMalformedAttributes() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
+        )
+
+        // When - test various non-encodable types (closures are most common from telemetry)
+        let closure1: (NSArray) -> Void = { _ in }
+        let closure2: () -> Void = { }
+        logger.addAttribute(forKey: "valid", value: "test")
+        logger.addAttribute(forKey: "onComplete", value: AnyEncodable(closure1))
+        logger.addAttribute(forKey: "callback", value: AnyEncodable(closure2))
+        logger.addAttribute(forKey: "custom_object", value: AnyEncodable(NSObject()))
+        logger.info("Test message")
+
+        // Then - encode to trigger error handling
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 1)
+
+        let log = try XCTUnwrap(logs.first)
+
+        // Encode to JSON
+        let jsonData = try JSONEncoder().encode(log)
+        let jsonObject = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
+
+        // Event sent with only valid attribute
+        XCTAssertEqual(jsonObject["valid"] as? String, "test")
+        XCTAssertNil(jsonObject["onComplete"])
+        XCTAssertNil(jsonObject["callback"])
+        XCTAssertNil(jsonObject["custom_object"])
+
+        // And all errors logged
+        XCTAssertEqual(
+            dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute") }.count,
+            3
+        )
+    }
+
+    func testWhenOnlyMalformedAttributesAdded_itSendsEventWithoutCustomAttributes() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
+        )
+
+        // When
+        logger.addAttribute(forKey: "invalid1", value: AnyEncodable(NSObject()))
+        logger.addAttribute(forKey: "invalid2", value: AnyEncodable(NSObject()))
+        logger.info("Test message")
+
+        // Then - encode to trigger error handling
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 1)
+
+        let log = try XCTUnwrap(logs.first)
+        XCTAssertEqual(log.message, "Test message")
+
+        // Encode to JSON
+        let jsonData = try JSONEncoder().encode(log)
+        let jsonObject = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
+
+        // Event still sent, just without custom attributes (all were malformed)
+        XCTAssertEqual(jsonObject["message"] as? String, "Test message")
+        XCTAssertNil(jsonObject["invalid1"])
+        XCTAssertNil(jsonObject["invalid2"])
+
+        // And errors logged
+        XCTAssertEqual(
+            dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute") }.count,
+            2
+        )
+    }
 }

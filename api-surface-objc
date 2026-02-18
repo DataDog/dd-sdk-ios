@@ -69,6 +69,7 @@ public final class objc_URLSessionInstrumentationFirstPartyHostsTracing: NSObjec
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>])
     public init(hosts: Set<String>)
 public final class objc_URLSessionInstrumentation: NSObject
+    public static func enableDurationBreakdown(with configuration: objc_URLSessionInstrumentationConfiguration)
     public static func enable(configuration: objc_URLSessionInstrumentationConfiguration)
     public static func disable(delegateClass: URLSessionDataDelegate.Type)
 
@@ -389,6 +390,7 @@ public class objc_RUMActionEventDDActionPosition: NSObject
     public var y: NSNumber
 public class objc_RUMActionEventDDActionTarget: NSObject
     public var height: NSNumber?
+    public var permanentId: String?
     public var selector: String?
     public var width: NSNumber?
 public class objc_RUMActionEventDDConfiguration: NSObject
@@ -498,6 +500,7 @@ public enum objc_RUMActionEventContainerSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMActionEventContainerView: NSObject
     public var id: String
 public class objc_RUMActionEventRUMEventAttributes: NSObject
@@ -554,6 +557,7 @@ public enum objc_RUMActionEventSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMActionEventStream: NSObject
     public var id: String
 public class objc_RUMActionEventRUMSyntheticsTest: NSObject
@@ -684,6 +688,7 @@ public enum objc_RUMErrorEventContainerSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMErrorEventContainerView: NSObject
     public var id: String
 public class objc_RUMErrorEventRUMEventAttributes: NSObject
@@ -871,6 +876,7 @@ public enum objc_RUMErrorEventSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMErrorEventStream: NSObject
     public var id: String
 public class objc_RUMErrorEventRUMSyntheticsTest: NSObject
@@ -1016,6 +1022,7 @@ public enum objc_RUMLongTaskEventContainerSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMLongTaskEventContainerView: NSObject
     public var id: String
 public class objc_RUMLongTaskEventRUMEventAttributes: NSObject
@@ -1107,6 +1114,7 @@ public enum objc_RUMLongTaskEventSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMLongTaskEventStream: NSObject
     public var id: String
 public class objc_RUMLongTaskEventRUMSyntheticsTest: NSObject
@@ -1239,6 +1247,7 @@ public enum objc_RUMResourceEventContainerSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMResourceEventContainerView: NSObject
     public var id: String
 public class objc_RUMResourceEventRUMEventAttributes: NSObject
@@ -1293,6 +1302,7 @@ public class objc_RUMResourceEventResource: NSObject
     public var provider: objc_RUMResourceEventResourceProvider?
     public var redirect: objc_RUMResourceEventResourceRedirect?
     public var renderBlockingStatus: objc_RUMResourceEventResourceRenderBlockingStatus
+    public var request: objc_RUMResourceEventResourceRequest?
     public var size: NSNumber?
     public var ssl: objc_RUMResourceEventResourceSSL?
     public var statusCode: NSNumber?
@@ -1378,6 +1388,9 @@ public enum objc_RUMResourceEventResourceRenderBlockingStatus: Int
     case none
     case blocking
     case nonBlocking
+public class objc_RUMResourceEventResourceRequest: NSObject
+    public var decodedBodySize: NSNumber?
+    public var encodedBodySize: NSNumber?
 public class objc_RUMResourceEventResourceSSL: NSObject
     public var duration: NSNumber
     public var start: NSNumber
@@ -1414,6 +1427,7 @@ public enum objc_RUMResourceEventSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMResourceEventStream: NSObject
     public var id: String
 public class objc_RUMResourceEventRUMSyntheticsTest: NSObject
@@ -1572,6 +1586,7 @@ public enum objc_RUMViewEventContainerSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMViewEventContainerView: NSObject
     public var id: String
 public class objc_RUMViewEventRUMEventAttributes: NSObject
@@ -1644,6 +1659,7 @@ public enum objc_RUMViewEventSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMViewEventStream: NSObject
     public var bitrate: NSNumber?
     public var completionPercent: NSNumber?
@@ -1814,12 +1830,22 @@ public class objc_RUMViewEventViewPerformanceFID: NSObject
     public var timestamp: NSNumber
 public class objc_RUMViewEventViewPerformanceINP: NSObject
     public var duration: NSNumber
+    public var subParts: objc_RUMViewEventViewPerformanceINPSubParts?
     public var targetSelector: String?
     public var timestamp: NSNumber?
+public class objc_RUMViewEventViewPerformanceINPSubParts: NSObject
+    public var inputDelay: NSNumber
+    public var presentationDelay: NSNumber
+    public var processingTime: NSNumber
 public class objc_RUMViewEventViewPerformanceLCP: NSObject
     public var resourceUrl: String?
+    public var subParts: objc_RUMViewEventViewPerformanceLCPSubParts?
     public var targetSelector: String?
     public var timestamp: NSNumber
+public class objc_RUMViewEventViewPerformanceLCPSubParts: NSObject
+    public var loadDelay: NSNumber
+    public var loadTime: NSNumber
+    public var renderDelay: NSNumber
 public class objc_RUMViewEventViewResource: NSObject
     public var count: NSNumber
 public class objc_RUMViewEventViewSlowFrames: NSObject
@@ -1945,6 +1971,7 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMVitalAppLaunchEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalAppLaunchEventRUMEventAttributes: NSObject
@@ -2001,6 +2028,7 @@ public enum objc_RUMVitalAppLaunchEventSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMVitalAppLaunchEventStream: NSObject
     public var id: String
 public class objc_RUMVitalAppLaunchEventRUMSyntheticsTest: NSObject
@@ -2139,6 +2167,7 @@ public enum objc_RUMVitalDurationEventContainerSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMVitalDurationEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalDurationEventRUMEventAttributes: NSObject
@@ -2195,6 +2224,7 @@ public enum objc_RUMVitalDurationEventSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMVitalDurationEventStream: NSObject
     public var id: String
 public class objc_RUMVitalDurationEventRUMSyntheticsTest: NSObject
@@ -2322,6 +2352,7 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMVitalOperationStepEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalOperationStepEventRUMEventAttributes: NSObject
@@ -2378,6 +2409,7 @@ public enum objc_RUMVitalOperationStepEventSource: Int
     case roku
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_RUMVitalOperationStepEventStream: NSObject
     public var id: String
 public class objc_RUMVitalOperationStepEventRUMSyntheticsTest: NSObject
@@ -2445,6 +2477,7 @@ public enum objc_TelemetryConfigurationEventSource: Int
     case reactNative
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_TelemetryConfigurationEventTelemetry: NSObject
     public var configuration: objc_TelemetryConfigurationEventTelemetryConfiguration
     public var device: objc_TelemetryConfigurationEventTelemetryRUMTelemetryDevice?
@@ -2565,6 +2598,7 @@ public enum objc_TelemetryConfigurationEventTelemetryConfigurationSessionPersist
     case none
     case localStorage
     case cookie
+    case memory
 public enum objc_TelemetryConfigurationEventTelemetryConfigurationTraceContextInjection: Int
     case none
     case all
@@ -2631,6 +2665,7 @@ public enum objc_TelemetryDebugEventSource: Int
     case reactNative
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_TelemetryDebugEventTelemetry: NSObject
     public var device: objc_TelemetryDebugEventTelemetryRUMTelemetryDevice?
     public var message: String
@@ -2683,6 +2718,7 @@ public enum objc_TelemetryErrorEventSource: Int
     case reactNative
     case unity
     case kotlinMultiplatform
+    case electron
 public class objc_TelemetryErrorEventTelemetry: NSObject
     public var device: objc_TelemetryErrorEventTelemetryRUMTelemetryDevice?
     public var error: objc_TelemetryErrorEventTelemetryError?

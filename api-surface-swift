@@ -490,7 +490,7 @@ public struct DatadogInternalInterface
     public func addLongTask(at time: Date,duration: TimeInterval,attributes: [AttributeKey: AttributeValue] = [:])
     public func updatePerformanceMetric(at time: Date,metric: PerformanceMetric,value: Double,attributes: [AttributeKey: AttributeValue] = [:])
     public func setInternalViewAttribute(at time: Date,key: AttributeKey,value: AttributeValue)
-    public func addResourceMetrics(at time: Date,resourceKey: String,fetch: (start: Date, end: Date),redirection: (start: Date, end: Date)?,dns: (start: Date, end: Date)?,connect: (start: Date, end: Date)?,ssl: (start: Date, end: Date)?,firstByte: (start: Date, end: Date)?,download: (start: Date, end: Date)?,responseSize: Int64?,attributes: [AttributeKey: AttributeValue] = [:])
+    public func addResourceMetrics(at time: Date,resourceKey: String,fetch: (start: Date, end: Date),redirection: (start: Date, end: Date)?,dns: (start: Date, end: Date)?,connect: (start: Date, end: Date)?,ssl: (start: Date, end: Date)?,firstByte: (start: Date, end: Date)?,download: (start: Date, end: Date)?,responseBodySize: (encoded: Int64, decoded: Int64)? = nil,requestBodySize: (encoded: Int64, decoded: Int64)? = nil,attributes: [AttributeKey: AttributeValue] = [:])
 public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
 public typealias RUMFeatureOperationFailureReason = RUMVitalOperationStepEvent.Vital.FailureReason
 public enum RUMActionType
@@ -1307,10 +1307,13 @@ public enum Flags
         public var customFlagsHeaders: [String: String]?
         public var customExposureEndpoint: URL?
         public var trackExposures: Bool
+        public var customEvaluationEndpoint: URL?
+        public var trackEvaluations: Bool
+        public var evaluationFlushInterval: TimeInterval
         public var rumIntegrationEnabled: Bool
-        public init(gracefulModeEnabled: Bool = true,customFlagsEndpoint: URL? = nil,customFlagsHeaders: [String: String]? = nil,customExposureEndpoint: URL? = nil,trackExposures: Bool = true,rumIntegrationEnabled: Bool = true)
+        public init(gracefulModeEnabled: Bool = true,customFlagsEndpoint: URL? = nil,customFlagsHeaders: [String: String]? = nil,customExposureEndpoint: URL? = nil,trackExposures: Bool = true,customEvaluationEndpoint: URL? = nil,trackEvaluations: Bool = true,evaluationFlushInterval: TimeInterval = 10.0,rumIntegrationEnabled: Bool = true)
     public static func enable(with configuration: Flags.Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default)
-public enum AnyValue: Equatable
+public enum AnyValue: Equatable, Hashable
     case string(String)
     case bool(Bool)
     case int(Int)
@@ -1318,6 +1321,8 @@ public enum AnyValue: Equatable
     case dictionary([String: AnyValue])
     case array([AnyValue])
     case null
+[?] extension AnyValue
+    public func hash(into hasher: inout Hasher)
 [?] extension AnyValue: Codable
     public init(from decoder: Decoder) throws
     public func encode(to encoder: Encoder) throws
