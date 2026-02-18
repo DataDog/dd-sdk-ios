@@ -70,10 +70,20 @@ extension InternalExtension where ExtendedType == RUM {
             distributedTracing = nil
         }
 
+        let headerProcessor: HeaderProcessor? = {
+            switch configuration.trackResourceHeaders {
+            case .disabled:
+                return nil
+            case .defaults, .custom:
+                return HeaderProcessor(config: configuration.trackResourceHeaders)
+            }
+        }()
+
         let urlSessionHandler = URLSessionRUMResourcesHandler(
             dateProvider: rumConfiguration.dateProvider,
             rumAttributesProvider: configuration.resourceAttributesProvider,
             distributedTracing: distributedTracing,
+            headerProcessor: headerProcessor,
             telemetry: core.telemetry
         )
 

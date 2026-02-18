@@ -4867,6 +4867,10 @@ public class objc_RUMResourceEventResource: NSObject {
         root.swiftModel.resource.request != nil ? objc_RUMResourceEventResourceRequest(root: root) : nil
     }
 
+    public var response: objc_RUMResourceEventResourceResponse? {
+        root.swiftModel.resource.response != nil ? objc_RUMResourceEventResourceResponse(root: root) : nil
+    }
+
     public var size: NSNumber? {
         root.swiftModel.resource.size as NSNumber?
     }
@@ -5325,6 +5329,57 @@ public class objc_RUMResourceEventResourceRequest: NSObject {
 
     public var encodedBodySize: NSNumber? {
         root.swiftModel.resource.request!.encodedBodySize as NSNumber?
+    }
+
+    public var headers: objc_RUMResourceEventResourceRequestHeaders? {
+        root.swiftModel.resource.request!.headers != nil ? objc_RUMResourceEventResourceRequestHeaders(root: root) : nil
+    }
+}
+
+@objc(DDRUMResourceEventResourceRequestHeaders)
+@objcMembers
+@_spi(objc)
+public class objc_RUMResourceEventResourceRequestHeaders: NSObject {
+    internal let root: objc_RUMResourceEvent
+
+    internal init(root: objc_RUMResourceEvent) {
+        self.root = root
+    }
+
+    public var headersInfo: [String: String] {
+        set { root.swiftModel.resource.request!.headers!.headersInfo = newValue }
+        get { root.swiftModel.resource.request!.headers!.headersInfo }
+    }
+}
+
+@objc(DDRUMResourceEventResourceResponse)
+@objcMembers
+@_spi(objc)
+public class objc_RUMResourceEventResourceResponse: NSObject {
+    internal let root: objc_RUMResourceEvent
+
+    internal init(root: objc_RUMResourceEvent) {
+        self.root = root
+    }
+
+    public var headers: objc_RUMResourceEventResourceResponseHeaders? {
+        root.swiftModel.resource.response!.headers != nil ? objc_RUMResourceEventResourceResponseHeaders(root: root) : nil
+    }
+}
+
+@objc(DDRUMResourceEventResourceResponseHeaders)
+@objcMembers
+@_spi(objc)
+public class objc_RUMResourceEventResourceResponseHeaders: NSObject {
+    internal let root: objc_RUMResourceEvent
+
+    internal init(root: objc_RUMResourceEvent) {
+        self.root = root
+    }
+
+    public var headersInfo: [String: String] {
+        set { root.swiftModel.resource.response!.headers!.headersInfo = newValue }
+        get { root.swiftModel.resource.response!.headers!.headersInfo }
     }
 }
 
@@ -12192,4 +12247,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/df49e999b2444a66f3c37089db42e3c20ca5538d
+// Generated from https://github.com/DataDog/rum-events-format/tree/302e837c3d49b38587fa58ef16f9aaa7d79be455
