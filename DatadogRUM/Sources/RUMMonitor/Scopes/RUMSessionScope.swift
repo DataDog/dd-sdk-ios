@@ -43,6 +43,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
     }
 
+    /// Phase 1 prototype: Memory timeseries collector for session-scoped memory sampling
+    private var memoryCollector: MemoryTimeseriesCollector?
+
     /// Information about the application state since `RUM.enable()` was called.
     private let applicationState: RUMApplicationState
     /// Feature Operation manager for processing Feature Operation commands.
@@ -152,6 +155,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         // Update fatal error context with recent RUM session state:
         dependencies.fatalErrorContext.sessionState = state
+
+        // Phase 1 prototype: Start memory timeseries collection for this session
+        self.memoryCollector = MemoryTimeseriesCollector(
+            sessionID: sessionUUID,
+            reader: VitalMemoryReader()
+        )
+        self.memoryCollector?.start()
     }
 
     /// Creates a new Session upon expiration of the previous one.
@@ -216,10 +226,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         if hasTimedOut(currentTime: command.time) {
             endReason = .timeOut
+            memoryCollector?.stop()
+            memoryCollector = nil
             return false // end this session (no longer keep the session scope)
         }
         if hasExpired(currentTime: command.time) {
             endReason = .maxDuration
+            memoryCollector?.stop()
+            memoryCollector = nil
             return false // end this session (no longer keep the session scope)
         }
 
@@ -231,6 +245,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             // Make sure sessions end even if they are not sampled
             if command is RUMStopSessionCommand {
                 endReason = .stopAPI
+                memoryCollector?.stop()
+                memoryCollector = nil
                 return false // end this session (no longer keep the session scope)
             }
 
@@ -243,6 +259,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             case _ as RUMStopSessionCommand:
                 dependencies.sessionEndedMetric.trackWasStopped(sessionID: self.context.sessionID)
                 endReason = .stopAPI
+                memoryCollector?.stop()
+                memoryCollector = nil
                 deactivating = true
 
             case let startApplicationCommand as RUMApplicationStartCommand:
