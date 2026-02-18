@@ -16,12 +16,14 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
     private func createHandler(
         rumAttributesProvider: RUM.ResourceAttributesProvider? = nil,
         distributedTracing: DistributedTracing? = nil,
+        headerProcessor: HeaderProcessor? = nil,
         telemetry: Telemetry = NOPTelemetry()
     ) -> URLSessionRUMResourcesHandler {
         let handler = URLSessionRUMResourcesHandler(
             dateProvider: dateProvider,
             rumAttributesProvider: rumAttributesProvider,
             distributedTracing: distributedTracing,
+            headerProcessor: headerProcessor,
             telemetry: telemetry
         )
         handler.publish(to: commandSubscriber)
@@ -1232,6 +1234,137 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         XCTAssertNil(stopResourceCommand?.attributes[CrossPlatformAttributes.graphqlErrors])
+    }
+
+    // MARK: - Header Capture Tests
+
+    func testWhenHeaderCaptureEnabled_itAddsHeaderAttributesToStopCommand() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        let handler = createHandler(
+            headerProcessor: HeaderProcessor(config: .defaults)
+        )
+
+        var mockRequest: URLRequest = .mockWith(url: "https://example.com/api")
+        mockRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        mockRequest.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+
+        let immutableRequest = ImmutableRequest(request: mockRequest)
+        let taskInterception = URLSessionTaskInterception(
+            request: immutableRequest,
+            isFirstParty: false,
+            trackingMode: .mockRandom()
+        )
+
+        let response = HTTPURLResponse(
+            url: .mockAny(),
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: [
+                "Content-Type": "text/html",
+                "Cache-Control": "max-age=3600",
+                "ETag": "\"abc123\""
+            ]
+        )!
+        taskInterception.register(response: response, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
+        let requestHeaders = try XCTUnwrap(attributes[CrossPlatformAttributes.resourceRequestHeaders] as? [String: String])
+        let responseHeaders = try XCTUnwrap(attributes[CrossPlatformAttributes.resourceResponseHeaders] as? [String: String])
+
+        XCTAssertEqual(requestHeaders.first(where: { $0.key.lowercased() == "content-type" })?.value, "application/json")
+        XCTAssertEqual(requestHeaders.first(where: { $0.key.lowercased() == "cache-control" })?.value, "no-cache")
+        XCTAssertEqual(responseHeaders.first(where: { $0.key.lowercased() == "content-type" })?.value, "text/html")
+        XCTAssertEqual(responseHeaders.first(where: { $0.key.lowercased() == "cache-control" })?.value, "max-age=3600")
+        XCTAssertEqual(responseHeaders.first(where: { $0.key.lowercased() == "etag" })?.value, "\"abc123\"")
+    }
+
+    func testWhenHeaderCaptureDisabled_itDoesNotAddHeaderAttributes() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        var mockRequest: URLRequest = .mockWith(url: "https://example.com/api")
+        mockRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let immutableRequest = ImmutableRequest(request: mockRequest)
+        let taskInterception = URLSessionTaskInterception(
+            request: immutableRequest,
+            isFirstParty: false,
+            trackingMode: .mockRandom()
+        )
+
+        let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
+        taskInterception.register(response: response, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
+        XCTAssertNil(attributes[CrossPlatformAttributes.resourceRequestHeaders])
+        XCTAssertNil(attributes[CrossPlatformAttributes.resourceResponseHeaders])
+    }
+
+    func testWhenHeaderCaptureEnabled_andNoMatchingHeaders_itDoesNotAddEmptyAttributes() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        let handler = createHandler(
+            headerProcessor: HeaderProcessor(config: .custom([.matchHeaders(["x-custom-header"])]))
+        )
+
+        var mockRequest: URLRequest = .mockWith(url: "https://example.com/api")
+        mockRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let immutableRequest = ImmutableRequest(request: mockRequest)
+        let taskInterception = URLSessionTaskInterception(
+            request: immutableRequest,
+            isFirstParty: false,
+            trackingMode: .mockRandom()
+        )
+
+        let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
+        taskInterception.register(response: response, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
+        XCTAssertNil(attributes[CrossPlatformAttributes.resourceRequestHeaders])
+        XCTAssertNil(attributes[CrossPlatformAttributes.resourceResponseHeaders])
     }
 
     // MARK: - Helper Methods

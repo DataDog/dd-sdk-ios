@@ -1792,4 +1792,113 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(graphql.errors)
         XCTAssertNil(graphql.errorCount)
     }
+
+    // MARK: - Header Capture Tests
+
+    func testWhenStopCommandContainsRequestHeaders_itPopulatesResourceRequestHeaders() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/api/data",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/data",
+            httpMethod: .get
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/api/data",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    attributes: [
+                        CrossPlatformAttributes.resourceRequestHeaders: ["content-type": "application/json", "cache-control": "no-cache"]
+                    ],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        let request = try XCTUnwrap(event.resource.request)
+        let headers = try XCTUnwrap(request.headers)
+        XCTAssertEqual(headers.headersInfo["content-type"], "application/json")
+        XCTAssertEqual(headers.headersInfo["cache-control"], "no-cache")
+    }
+
+    func testWhenStopCommandContainsResponseHeaders_itPopulatesResourceResponseHeaders() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/api/data",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/data",
+            httpMethod: .get
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/api/data",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    attributes: [
+                        CrossPlatformAttributes.resourceResponseHeaders: ["content-type": "text/html", "etag": "\"abc\""]
+                    ],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        let response = try XCTUnwrap(event.resource.response)
+        let headers = try XCTUnwrap(response.headers)
+        XCTAssertEqual(headers.headersInfo["content-type"], "text/html")
+        XCTAssertEqual(headers.headersInfo["etag"], "\"abc\"")
+    }
+
+    func testWhenStopCommandHasNoHeaders_requestAndResponseAreUnaffected() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/api/data",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/data",
+            httpMethod: .get
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/api/data",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    attributes: [:],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertNil(event.resource.request)
+        XCTAssertNil(event.resource.response)
+    }
 }

@@ -49,6 +49,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
     let rumAttributesProvider: RUM.ResourceAttributesProvider?
     /// Telemetry interface for tracking SDK usage
     let telemetry: Telemetry
+    /// Header processor for capturing HTTP headers.
+    let headerProcessor: HeaderProcessor?
 
     /// First party hosts defined by the user.
     var firstPartyHosts: FirstPartyHosts {
@@ -61,11 +63,13 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         dateProvider: DateProvider,
         rumAttributesProvider: RUM.ResourceAttributesProvider?,
         distributedTracing: DistributedTracing?,
+        headerProcessor: HeaderProcessor?,
         telemetry: Telemetry
     ) {
         self.dateProvider = dateProvider
         self.rumAttributesProvider = rumAttributesProvider
         self.distributedTracing = distributedTracing
+        self.headerProcessor = headerProcessor
         self.telemetry = telemetry
     }
 
@@ -159,6 +163,24 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         // Extract GraphQL errors from response if present
         if let errorsString = extractGraphQLErrorsIfPresent(from: interception) {
             combinedAttributes[CrossPlatformAttributes.graphqlErrors] = errorsString
+        }
+
+        // Capture HTTP headers if configured
+        if let headerProcessor {
+            // RUM-14563: Accessing allHTTPHeaderFields is safe here because the interception
+            // is complete and the request is no longer being mutated.
+            // swiftlint:disable:next unsafe_all_http_header_fields
+            let requestHeaders = interception.request.unsafeOriginal.allHTTPHeaderFields
+            let headers = headerProcessor.process(
+                requestHeaders: requestHeaders,
+                responseHeaders: interception.completion?.httpResponse?.allHeaderFields
+            )
+            if !headers.request.isEmpty {
+                combinedAttributes[CrossPlatformAttributes.resourceRequestHeaders] = headers.request
+            }
+            if !headers.response.isEmpty {
+                combinedAttributes[CrossPlatformAttributes.resourceResponseHeaders] = headers.response
+            }
         }
 
         if let resourceMetrics = interception.metrics {
