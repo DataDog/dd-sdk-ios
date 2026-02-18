@@ -11,6 +11,7 @@
 // The renderer receives captured snapshots, selects image candidates, and returns
 // either rendered/reused layer images or timeout markers. It keeps a cache of
 // rendered images and their last captured local rect to avoid unnecessary renders.
+// Rendering failures are surfaced as discarded snapshots.
 
 #if os(iOS)
 import Foundation
@@ -31,6 +32,7 @@ internal final class LayerImage: Sendable {
 @available(iOS 13.0, tvOS 13.0, *)
 internal enum LayerImageError: Error {
     case timedOut
+    case discarded
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
@@ -106,6 +108,8 @@ internal final class LayerImageRenderer: LayerImageRendering {
 
             if let image = renderImage(for: snapshot, changes: changes, rootLayer: rootLayer) {
                 results[snapshot.replayID] = .success(image)
+            } else {
+                results[snapshot.replayID] = .failure(.discarded)
             }
 
             if now - lastYieldTime >= Constants.yieldThreshold {
@@ -184,7 +188,7 @@ internal final class LayerImageRenderer: LayerImageRendering {
             images.removeObject(forKey: snapshot.replayID as NSNumber)
             return nil
         } catch {
-            // Rendering errors are intentionally skipped
+            // Rendering errors are mapped to discarded snapshots by the caller.
             return nil
         }
     }
