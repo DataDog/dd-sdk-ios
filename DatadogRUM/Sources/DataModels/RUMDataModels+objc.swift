@@ -2261,7 +2261,7 @@ public enum objc_RUMErrorEventErrorHandling: Int {
     case unhandled
 }
 
-@objc(DDRUMErrorEventErrorMeta)
+@objc(DDRUMErrorEventErrorMetaInfo)
 @objcMembers
 @_spi(objc)
 public class objc_RUMErrorEventErrorMeta: NSObject {
