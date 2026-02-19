@@ -12,6 +12,7 @@
 #if !TARGET_OS_WATCH
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <sys/types.h>
 #include <mach/mach.h>
 #include <pthread.h>
@@ -116,11 +117,17 @@ static const sampling_config_t SAMPLING_CONFIG_DEFAULT = {
  */
 typedef void (*stack_trace_callback_t)(stack_trace_t* traces, size_t count, void* ctx);
 
+// UserDefaults constants centralized for Profiling
+#define DD_PROFILING_USER_DEFAULTS_SUITE_NAME "com.datadoghq.ios-sdk.profiling"
+#define DD_PROFILING_IS_ENABLED_KEY "is_profiling_enabled"
+#define DD_PROFILING_SAMPLE_RATE_KEY "profiling_sample_rate"
+
 #ifdef __cplusplus
 
 namespace dd::profiler {
-// Forward declaration
+// Forward declarations
     class mach_sampling_profiler;
+    class profile;
 }
 
 extern "C" {
@@ -188,6 +195,118 @@ void profiler_stop(profiler_t* profiler);
  * @return 1 if running, 0 otherwise
  */
 int profiler_is_running(const profiler_t* profiler);
+
+// MARK: - DD Profiler (auto-start) API
+
+/**
+ * Checks if profiling is enabled in UserDefaults.
+ *
+ * Reads the profiling enabled state from UserDefaults suite to determine
+ * if the profiling feature was previously enabled via Profiling.enable().
+ *
+ * @return true if profiling is enabled, false otherwise
+ *
+ * @note Reads from suite "com.datadoghq.ios-sdk" with key "is_profiling_enabled"
+ * @note Returns false if the key doesn't exist or on read errors
+ */
+bool is_profiling_enabled(void);
+
+/**
+ * Deletes the profiling defaults from UserDefaults.
+ *
+ * Removes the profiling enabled state, allowing the session to start with a clean state.
+ */
+void delete_profiling_defaults(void);
+
+/**
+ * Status codes for the dd profiler operations
+ */
+typedef enum {
+    DD_PROFILER_STATUS_NOT_CREATED = 0,       ///< Profiler was not created
+    DD_PROFILER_STATUS_NOT_STARTED = 1,       ///< Profiler was never started
+    DD_PROFILER_STATUS_RUNNING = 2,           ///< Profiler is currently running
+    DD_PROFILER_STATUS_STOPPED = 3,           ///< Profiler was stopped manually
+    DD_PROFILER_STATUS_TIMEOUT = 4,           ///< Profiler was stopped due to timeout
+    DD_PROFILER_STATUS_PREWARMED = 5,         ///< Profiler was not started due to prewarming
+    DD_PROFILER_STATUS_SAMPLED_OUT = 6,       ///< Profiler was not started due to sample rate
+    DD_PROFILER_STATUS_ALLOCATION_FAILED = 7, ///< Memory allocation failed
+    DD_PROFILER_STATUS_ALREADY_STARTED = 8,   ///< Failed to start profiler because it is already started
+} dd_profiler_status_t;
+
+/**
+ * Opaque handle to a dd profiler profile instance
+ */
+#ifdef __cplusplus
+typedef dd::profiler::profile dd_profile_t;
+#else
+typedef struct profile dd_profile_t;
+#endif
+
+/**
+ * @brief Gets the current status of the dd profiler
+ *
+ * This function provides detailed information about the profiler's current state,
+ * including why it may not have started or why it stopped.
+ *
+ * @return Current profiler status code
+ */
+dd_profiler_status_t dd_profiler_get_status(void);
+
+/**
+ * @brief Stops profiling if it's currently running
+ *
+ * This function should be called when the application no longer needs profiling. It will:
+ *
+ * - Stop the sampling thread
+ * - Flush any remaining collected samples
+ * - Set the profiler state to inactive
+ *
+ * After calling this function, `dd_profiler_get_status()` will return `DD_PROFILER_STATUS_STOPPED`.
+ *
+ * @note Safe to call multiple times - subsequent calls are no-ops
+ * @note Safe to call even if profiling was never started
+ *
+ * @warning Once stopped, profiling cannot be restarted in the same process
+ *
+ * @see `dd_profiler_get_status()`
+ */
+void dd_profiler_stop(void);
+
+/**
+ * @brief Retrieves the aggregated profile data from profiling
+ *
+ * Returns a typed handle to the profile data collected during profiling. This data
+ * contains deduplicated stack traces, binary mappings, and sample metadata that can
+ * be serialized for analysis.
+ *
+ * @return Typed handle to profile data, or NULL if:
+ *         - Profiling was never started
+ *         - No samples were collected
+ *         - Profile data has been destroyed
+ *
+ * @note The returned handle remains valid until destroyed
+ * @note This function can be called before or after stopping the profiler
+ * @note The profile data accumulates all samples from start to stop
+ *
+ * @see `dd_profiler_stop()`, `dd_profiler_destroy()`
+ */
+dd_profile_t* dd_profiler_get_profile(void);
+
+/**
+ * @brief Destroys the dd profiler data and frees all associated memory
+ *
+ * This function should be called when the profile data is no longer needed
+ * to free memory resources. After calling this function, `dd_profiler_get_profile()`
+ * will return NULL.
+ *
+ * @note Safe to call multiple times - subsequent calls are no-ops
+ * @note Safe to call even if profiling was never started
+ *
+ * @warning After calling this function, any previously returned profile handles become invalid
+ *
+ * @see `dd_profiler_get_profile()`
+ */
+void dd_profiler_destroy(void);
 
 #ifdef __cplusplus
 }
