@@ -126,6 +126,150 @@ struct LayerImageRendererTests {
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test
+    func reusesCachedImageWhenLayerReappearsBeforeExpiration() async throws {
+        // given
+        let rootLayer = Fixtures.rootLayer
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
+        rootLayer.addSublayer(layer)
+
+        let firstSnapshot = Fixtures.layerSnapshot(for: layer, replayID: 30, in: rootLayer, hasContents: true)
+        let secondSnapshot = Fixtures.layerSnapshot(for: layer, replayID: 30, in: rootLayer, hasContents: false)
+
+        let renderer = LayerImageRenderer(
+            scale: 1,
+            timeSource: .constant(0),
+            cachePolicy: .init(expirationFrameCount: 5, evictionIntervalFrameCount: 10, maximumEvictions: 128)
+        )
+
+        let firstResults = await renderer.renderImages(
+            for: [firstSnapshot],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        _ = await renderer.renderImages(
+            for: [],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        // when
+        let secondResults = await renderer.renderImages(
+            for: [secondSnapshot],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        // then
+        let firstImage = try firstResults.image(for: firstSnapshot.replayID)
+        let secondImage = try secondResults.image(for: secondSnapshot.replayID)
+
+        #expect(firstImage === secondImage)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
+    func evictsCachedStateAfterExpirationFrameCount() async {
+        // given
+        let rootLayer = Fixtures.rootLayer
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
+        rootLayer.addSublayer(layer)
+
+        let initialSnapshot = Fixtures.layerSnapshot(for: layer, replayID: 31, in: rootLayer, hasContents: true)
+        let reusedSnapshot = Fixtures.layerSnapshot(for: layer, replayID: 31, in: rootLayer, hasContents: false)
+
+        let renderer = LayerImageRenderer(
+            scale: 1,
+            timeSource: .constant(0),
+            cachePolicy: .init(expirationFrameCount: 1, evictionIntervalFrameCount: 1, maximumEvictions: 128)
+        )
+
+        _ = await renderer.renderImages(
+            for: [initialSnapshot],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        _ = await renderer.renderImages(
+            for: [],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+        _ = await renderer.renderImages(
+            for: [],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        // when
+        let results = await renderer.renderImages(
+            for: [reusedSnapshot],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        // then
+        #expect(results.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
+    func evictsCacheOnlyOnEvictionIntervalFrames() async throws {
+        // given
+        let rootLayer = Fixtures.rootLayer
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
+        rootLayer.addSublayer(layer)
+
+        let firstSnapshot = Fixtures.layerSnapshot(for: layer, replayID: 32, in: rootLayer, hasContents: true)
+        let secondSnapshot = Fixtures.layerSnapshot(for: layer, replayID: 32, in: rootLayer, hasContents: false)
+
+        let renderer = LayerImageRenderer(
+            scale: 1,
+            timeSource: .constant(0),
+            cachePolicy: .init(expirationFrameCount: 0, evictionIntervalFrameCount: 3, maximumEvictions: 128)
+        )
+
+        let firstResults = await renderer.renderImages(
+            for: [firstSnapshot],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        _ = await renderer.renderImages(
+            for: [],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        // when
+        let secondResults = await renderer.renderImages(
+            for: [secondSnapshot],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        // then
+        let firstImage = try firstResults.image(for: firstSnapshot.replayID)
+        let secondImage = try secondResults.image(for: secondSnapshot.replayID)
+
+        #expect(firstImage === secondImage)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
     func marksRemainingCandidatesTimedOutWhenBudgetIsExceeded() async throws {
         // given
         let rootLayer = Fixtures.rootLayer

@@ -52,21 +52,48 @@ internal final class LayerImageRenderer: LayerImageRendering {
         static let yieldThreshold: TimeInterval = 0.008
     }
 
+    struct CachePolicy {
+        let expirationFrameCount: UInt64
+        let evictionIntervalFrameCount: UInt64
+        let maximumEvictions: Int
+
+        static let `default` = Self(
+            expirationFrameCount: 300,
+            evictionIntervalFrameCount: 10,
+            maximumEvictions: 128
+        )
+    }
+
     typealias Result = Swift.Result<LayerImage, LayerImageError>
 
     private let scale: CGFloat?
     private let timeSource: any TimeSource
+    private let cachePolicy: CachePolicy
 
     // Stores the last captured image rect in the layer local coordinate space.
     // This lets us detect when a previously partial capture no longer covers
     // the currently visible region
     private var imageRects: [Int64: CGRect] = [:]
 
+    // Tracks when a replay ID was last observed in a captured snapshot, even if
+    // it did not need image rendering in that frame
+    private var frames: [Int64: UInt64] = [:]
+    private var frameNumber: UInt64 = 0
+
     private let images = NSCache<NSNumber, LayerImage>()
 
-    init(scale: CGFloat? = nil, timeSource: any TimeSource = .mediaTime) {
+    init(
+        scale: CGFloat? = nil,
+        timeSource: any TimeSource = .mediaTime,
+        cachePolicy: CachePolicy = .default
+    ) {
         self.scale = scale
         self.timeSource = timeSource
+        self.cachePolicy = .init(
+            expirationFrameCount: cachePolicy.expirationFrameCount,
+            evictionIntervalFrameCount: max(1, cachePolicy.evictionIntervalFrameCount),
+            maximumEvictions: max(1, cachePolicy.maximumEvictions)
+        )
     }
 
     func renderImages(
@@ -75,6 +102,13 @@ internal final class LayerImageRenderer: LayerImageRendering {
         rootLayer: CALayerReference,
         timeoutInterval: TimeInterval
     ) async -> [Int64: Result] {
+        frameNumber &+= 1
+        setSnapshots(snapshots, atFrame: frameNumber)
+
+        if frameNumber.isMultiple(of: cachePolicy.evictionIntervalFrameCount) {
+            evictExpiredCacheEntries(atFrame: frameNumber)
+        }
+
         let startTime = timeSource.now
 
         guard let rootLayer = rootLayer.resolve() else {
@@ -133,8 +167,7 @@ internal final class LayerImageRenderer: LayerImageRendering {
     ) -> [LayerSnapshot] {
         snapshots.filter { snapshot in
             guard let layerClass = snapshot.layer.class else {
-                imageRects.removeValue(forKey: snapshot.replayID)
-                images.removeObject(forKey: snapshot.replayID as NSNumber)
+                removeCache(for: snapshot.replayID)
                 return false
             }
 
@@ -184,13 +217,37 @@ internal final class LayerImageRenderer: LayerImageRendering {
 
             return layerImage
         } catch LayerImageChangeError.missingLayer {
-            imageRects.removeValue(forKey: snapshot.replayID)
-            images.removeObject(forKey: snapshot.replayID as NSNumber)
+            removeCache(for: snapshot.replayID)
             return nil
         } catch {
             // Rendering errors are mapped to discarded snapshots by the caller.
             return nil
         }
+    }
+
+    private func setSnapshots(_ snapshots: [LayerSnapshot], atFrame frame: UInt64) {
+        for snapshot in snapshots {
+            frames[snapshot.replayID] = frame
+        }
+    }
+
+    private func evictExpiredCacheEntries(atFrame currentFrame: UInt64) {
+        var evictedCount = 0
+
+        for (replayID, lastSeen) in frames where currentFrame - lastSeen > cachePolicy.expirationFrameCount {
+            removeCache(for: replayID)
+            evictedCount += 1
+
+            if evictedCount == cachePolicy.maximumEvictions {
+                break
+            }
+        }
+    }
+
+    private func removeCache(for replayID: Int64) {
+        imageRects.removeValue(forKey: replayID)
+        frames.removeValue(forKey: replayID)
+        images.removeObject(forKey: replayID as NSNumber)
     }
 
     private func renderImage(for layer: CALayer, in rect: CGRect, opaque: Bool) -> UIImage {
