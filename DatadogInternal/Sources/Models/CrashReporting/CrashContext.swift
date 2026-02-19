@@ -114,7 +114,7 @@ public struct CrashContext: Codable, Equatable {
         self.buildNumber = buildNumber
         self.device = device
         self.os = os
-        self.sdkVersion = service.sanitizedToDDTags()
+        self.sdkVersion = sdkVersion.sanitizedToDDTags()
         self.source = source
         self.trackingConsent = trackingConsent
         self.userInfo = userInfo

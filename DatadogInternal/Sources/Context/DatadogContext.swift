@@ -26,8 +26,11 @@ public struct DatadogContext {
     /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     public var version: String {
         didSet {
+            guard version != oldValue else {
+                return
+            }
             version = version.sanitizedToDDTags()
-            ddTags = Self.buildDDTags(service: service, version: version, sdkVersion: sdkVersion, env: env, variant: variant)
+            ddTags = buildDDTags()
         }
     }
 
@@ -195,11 +198,11 @@ public struct DatadogContext {
         self.brightnessLevel = brightnessLevel
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
         self.additionalContext = additionalContext
-        self.ddTags = Self.buildDDTags(service: self.service, version: self.version, sdkVersion: self.sdkVersion, env: self.env, variant: self.variant)
+        self.ddTags = buildDDTags()
     }
     // swiftlint:enable function_default_parameter_at_end
 
-    private static func buildDDTags(service: String, version: String, sdkVersion: String, env: String, variant: String?) -> String {
+    private func buildDDTags() -> String {
         var result = "service:\(service),version:\(version),sdk_version:\(sdkVersion),env:\(env)"
         if let variant {
             result += ",variant:\(variant)"
