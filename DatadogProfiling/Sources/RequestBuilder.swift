@@ -80,7 +80,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
             telemetry: telemetry
         )
 
-        return builder.uploadRequest(with: multipart.build(), compress: false)
+        return builder.uploadRequest(with: multipart.build(), compress: true)
     }
 
     private func url(with context: DatadogContext) -> URL {
