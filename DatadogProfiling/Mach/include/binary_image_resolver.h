@@ -7,7 +7,7 @@
 #ifndef DD_PROFILER_BINARY_IMAGE_RESOLVER_H_
 #define DD_PROFILER_BINARY_IMAGE_RESOLVER_H_
 
-#include "mach_profiler.h"
+#include "dd_profiler.h"
 
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
