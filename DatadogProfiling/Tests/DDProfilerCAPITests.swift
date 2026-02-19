@@ -8,7 +8,7 @@
 import XCTest
 import DatadogMachProfiler
 
-final class MachProfilerCAPITests: XCTestCase {
+final class DDProfilerCAPITests: XCTestCase {
     private var receivedTraces: [UnsafePointer<stack_trace_t>?] = []
     private var receivedCounts: [Int] = []
     private var callbackUserData: UnsafeMutableRawPointer?
