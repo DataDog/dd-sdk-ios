@@ -152,6 +152,26 @@ extension LayerSnapshotTests {
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test
+    func removingObscuredDropsSnapshotsWithoutVisibleFrame() {
+        // given
+        let snapshot = Fixtures.snapshot(
+            replayID: 1,
+            frame: CGRect(x: 200, y: 0, width: 100, height: 100),
+            clipRect: Fixtures.viewportRect,
+            opacity: 1.0,
+            backgroundColor: CGColor(red: 1, green: 0, blue: 0, alpha: 1.0),
+            hasContents: true
+        )
+
+        // when
+        let result = [snapshot].removingObscured(in: Fixtures.viewportRect)
+
+        // then
+        #expect(result.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
     func removingObscuredUsesGlobalIndexBucketForLargeOpaqueFrames() {
         // given
         let viewportRect = CGRect(x: 0, y: 0, width: 100, height: 1_000)

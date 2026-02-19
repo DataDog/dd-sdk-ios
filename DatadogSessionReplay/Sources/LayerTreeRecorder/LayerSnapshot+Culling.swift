@@ -57,7 +57,6 @@ extension Array where Element == LayerSnapshot {
             let visibleFrame = snapshot.frame.intersection(snapshot.clipRect)
 
             guard !visibleFrame.isNull, !visibleFrame.isEmpty else {
-                result.append(snapshot)
                 continue
             }
 
@@ -104,7 +103,7 @@ private struct OpaqueFrameIndex {
         frames.append(visibleFrame)
 
         let bandRange = bandRange(for: visibleFrame)
-        let coveredBands = bandRange.upperBound - bandRange.lowerBound + 1
+        let coveredBands = bandRange.count
 
         if coveredBands > maxBandsPerFrame {
             globalFrameIndices.append(frameIndex)
