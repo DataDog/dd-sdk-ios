@@ -13,7 +13,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include "mach_profiler.h"
+#include "dd_profiler.h"
 
 #ifdef __cplusplus
 namespace dd::profiler {
