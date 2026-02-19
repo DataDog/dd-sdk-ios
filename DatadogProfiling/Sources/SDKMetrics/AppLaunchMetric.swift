@@ -72,7 +72,7 @@ internal final class AppLaunchMetric {
 // MARK: - AppLaunchMetric errors
 
 extension AppLaunchMetric {
-    static var statusNotHandled: AppLaunchMetric { .init(status: .current, errorMessage: "Profile not handled because of the current `ctor_profiler` status.") }
+    static var statusNotHandled: AppLaunchMetric { .init(status: .current, errorMessage: "Profile not handled because of the current `dd_profiler` status.") }
     static var noProfile: AppLaunchMetric { .init(status: .current, errorMessage: "No profile was stored.") }
     static var noData: AppLaunchMetric { .init(status: .current, errorMessage: "Error serializing the profile.") }
 }

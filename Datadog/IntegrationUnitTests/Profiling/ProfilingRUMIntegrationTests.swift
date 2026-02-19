@@ -23,8 +23,8 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        ctor_profiler_stop()
-        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_stop()
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         let launchInfo: LaunchInfo = .mockWith(processLaunchDate: Date())
         core = DatadogCoreProxy(
@@ -38,7 +38,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
     override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
-        ctor_profiler_stop()
+        dd_profiler_stop()
         delete_profiling_defaults()
 
         super.tearDown()
