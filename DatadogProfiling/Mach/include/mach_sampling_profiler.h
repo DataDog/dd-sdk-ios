@@ -7,7 +7,7 @@
 #ifndef DD_PROFILER_MACH_SAMPLING_PROFILER_H_
 #define DD_PROFILER_MACH_SAMPLING_PROFILER_H_
 
-#include "mach_profiler.h"
+#include "dd_profiler.h"
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>

@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#include "ctor_profiler.h"
+#include "dd_profiler.h"
 
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
@@ -18,12 +18,12 @@
 #include <random>
 #include <mutex>
 
-static constexpr int64_t CTOR_PROFILER_TIMEOUT_NS = 5000000000ULL; // 5 seconds
+static constexpr int64_t DD_PROFILER_TIMEOUT_NS = 5000000000ULL; // 5 seconds
 
-namespace dd::profiler { class ctor_profiler; }
+namespace dd::profiler { class dd_profiler; }
 
-static dd::profiler::ctor_profiler* g_ctor_profiler = nullptr;
-static std::mutex g_ctor_profiler_mutex;
+static dd::profiler::dd_profiler* g_dd_profiler = nullptr;
+static std::mutex g_dd_profiler_mutex;
 
 /**
  * Checks if ThreadSanitizer is enabled
@@ -65,7 +65,6 @@ bool sample(double sample_rate) {
     if (sample_rate <= 0.0) return false;
     if (sample_rate >= 100.0) return true;
 
-    // Use probabilistic sampling based on the sample rate (0-100%)
     static std::random_device rd;
     static std::mt19937 gen(rd());
     static std::uniform_real_distribution<double> dis(0.0, 100.0);
@@ -150,40 +149,39 @@ namespace dd::profiler {
 /**
  * Encapsulates profiler state and operations
  */
-class ctor_profiler {
+class dd_profiler {
 public:
-    ctor_profiler_status_t status = CTOR_PROFILER_STATUS_NOT_STARTED;
+    dd_profiler_status_t status = DD_PROFILER_STATUS_NOT_STARTED;
 
-    ctor_profiler(
+    dd_profiler(
         double sample_rate = 0.0,
         bool is_prewarming = false,
-        int64_t timeout_ns = CTOR_PROFILER_TIMEOUT_NS
+        int64_t timeout_ns = DD_PROFILER_TIMEOUT_NS
     ) : sample_rate(sample_rate), is_prewarming(is_prewarming), timeout_ns(timeout_ns) {}
 
-    ~ctor_profiler() {
+    ~dd_profiler() {
         if (profiler) delete profiler;
         if (profile) delete profile;
         if (image_cache) delete image_cache;
     }
 
     /**
-     * Start the profiler using constructor configuration.
-     * 
+     * Start the profiler.
      */
     void start() {
         if (is_thread_sanitizer_enabled()) {
             printf("[DATADOG SDK] 🐶 → Profiling is disabled because ThreadSanitizer is active. Please disable ThreadSanitizer to enable profiling.\n");
-            status = CTOR_PROFILER_STATUS_NOT_STARTED;
+            status = DD_PROFILER_STATUS_NOT_STARTED;
             return;
         }
 
         if (is_prewarming) {
-            status = CTOR_PROFILER_STATUS_PREWARMED;
+            status = DD_PROFILER_STATUS_PREWARMED;
             return;
         }
 
         if (!sample(sample_rate)) {
-            status = CTOR_PROFILER_STATUS_SAMPLED_OUT;
+            status = DD_PROFILER_STATUS_SAMPLED_OUT;
             return;
         }
 
@@ -193,7 +191,7 @@ public:
         // Create profile aggregator
         profile = new dd::profiler::profile(sampling_interval_ns);
         if (!profile) {
-            status = CTOR_PROFILER_STATUS_ALLOCATION_FAILED;
+            status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
             return;
         }
 
@@ -205,7 +203,7 @@ public:
         if (!profiler) {
             delete profile;
             profile = nullptr;
-            status = CTOR_PROFILER_STATUS_ALLOCATION_FAILED;
+            status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
             return;
         }
 
@@ -219,7 +217,7 @@ public:
             image_cache = nullptr;
         }
 
-        status = CTOR_PROFILER_STATUS_RUNNING;
+        status = DD_PROFILER_STATUS_RUNNING;
         if (!profiler->start_sampling()) {
             delete profiler;
             delete profile;
@@ -227,31 +225,31 @@ public:
             profiler = nullptr;
             profile = nullptr;
             image_cache = nullptr;
-            status = CTOR_PROFILER_STATUS_ALREADY_STARTED;
+            status = DD_PROFILER_STATUS_ALREADY_STARTED;
             return;
         }
     }
 
     // Non-copyable
-    ctor_profiler(const ctor_profiler&) = delete;
-    ctor_profiler& operator=(const ctor_profiler&) = delete;
+    dd_profiler(const dd_profiler&) = delete;
+    dd_profiler& operator=(const dd_profiler&) = delete;
 
 
     void stop() {
         if (!profiler) return;
-        status = CTOR_PROFILER_STATUS_STOPPED;
+        status = DD_PROFILER_STATUS_STOPPED;
         profiler->stop_sampling();
     }
 
-    profile* get_profile() const { return profile; }
+    dd::profiler::profile* get_profile() const { return profile; }
 
 private:
     mach_sampling_profiler* profiler = nullptr;
-    profile* profile = nullptr;
+    dd::profiler::profile* profile = nullptr;
     binary_image_cache* image_cache = nullptr;
     double sample_rate = 0.0;
     bool is_prewarming = false;
-    int64_t timeout_ns = CTOR_PROFILER_TIMEOUT_NS; // 5 seconds default
+    int64_t timeout_ns = DD_PROFILER_TIMEOUT_NS;
 
     /**
      * Static callback function to handle collected stack traces.
@@ -261,17 +259,17 @@ private:
      *
      * @param traces Array of captured stack traces
      * @param count Number of traces in the array
-     * @param ctx Context pointer to ctor_profiler instance
+     * @param ctx Context pointer to dd_profiler instance
      */
     static void callback(stack_trace_t* traces, size_t count, void* ctx) {
         if (!traces || count == 0 || !ctx) return;
 
-        ctor_profiler* profiler = static_cast<ctor_profiler*>(ctx);
+        dd::profiler::dd_profiler* dp = static_cast<dd::profiler::dd_profiler*>(ctx);
 
         // Resolve binary images in-place before adding to the profile
-        resolve_stack_trace_frames(traces, count, profiler->image_cache);
+        resolve_stack_trace_frames(traces, count, dp->image_cache);
 
-        dd::profiler::profile* profile = profiler->profile;
+        dd::profiler::profile* profile = dp->profile;
         if (profile) {
             profile->add_samples(traces, count);
         }
@@ -287,9 +285,9 @@ private:
 
         // Check for timeout after adding samples
         int64_t duration_ns = profile->end_timestamp() - profile->start_timestamp();
-        if (duration_ns > profiler->timeout_ns) {
-            profiler->stop();
-            profiler->status = CTOR_PROFILER_STATUS_TIMEOUT;
+        if (duration_ns > dp->timeout_ns) {
+            dp->stop();
+            dp->status = DD_PROFILER_STATUS_TIMEOUT;
         }
     }
 };
@@ -298,63 +296,117 @@ private:
 
 /**
  * Constructor function that runs early during app launch to check if
- * constructor-based profiling should be enabled based on bundle configuration
- * and prewarming.
- * 
+ * profiling should be enabled based on bundle configuration and prewarming.
+ *
  * Uses high priority (65535) to run as close to main() as possible.
  */
 __attribute__((constructor(65535)))
-static void ctor_profiler_auto_start() {
+static void dd_profiler_auto_start() {
     if (!is_profiling_enabled()) {
         return;
     }
 
     set_main_thread(pthread_self());
 
-    // Create profiler and start with sample rate
-    g_ctor_profiler = new dd::profiler::ctor_profiler(read_profiling_sample_rate(), is_active_prewarm());
-    g_ctor_profiler->start();
+    g_dd_profiler = new dd::profiler::dd_profiler(read_profiling_sample_rate(), is_active_prewarm());
+    g_dd_profiler->start();
 
     // Reset profiling defaults to be re-evaluated again
     delete_profiling_defaults();
 }
 
-// C API implementations
+// MARK: - DD Profiler C API
 
-void ctor_profiler_stop(void) {
-    std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
-    if (g_ctor_profiler) g_ctor_profiler->stop();
+void dd_profiler_stop(void) {
+    std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
+    if (g_dd_profiler) g_dd_profiler->stop();
 }
 
-ctor_profiler_status_t ctor_profiler_get_status(void) {
-    std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
-    return g_ctor_profiler ? g_ctor_profiler->status : CTOR_PROFILER_STATUS_NOT_CREATED;
+dd_profiler_status_t dd_profiler_get_status(void) {
+    std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
+    return g_dd_profiler ? g_dd_profiler->status : DD_PROFILER_STATUS_NOT_CREATED;
 }
 
-ctor_profile_t* ctor_profiler_get_profile(void) {
-    std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
-    return g_ctor_profiler ? reinterpret_cast<ctor_profile_t*>(g_ctor_profiler->get_profile()) : nullptr;
+dd_profile_t* dd_profiler_get_profile(void) {
+    std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
+    return g_dd_profiler ? reinterpret_cast<dd_profile_t*>(g_dd_profiler->get_profile()) : nullptr;
 }
 
-void ctor_profiler_destroy(void) {
-    std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
-    delete g_ctor_profiler;
-    g_ctor_profiler = nullptr;
+void dd_profiler_destroy(void) {
+    std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
+    delete g_dd_profiler;
+    g_dd_profiler = nullptr;
 }
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void ctor_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns) {
-    std::lock_guard<std::mutex> lock(g_ctor_profiler_mutex);
-    delete g_ctor_profiler;
-    g_ctor_profiler = new dd::profiler::ctor_profiler(sample_rate, is_prewarming, timeout_ns);
-    g_ctor_profiler->start();
+void dd_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns) {
+    std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
+    delete g_dd_profiler;
+    g_dd_profiler = new dd::profiler::dd_profiler(sample_rate, is_prewarming, timeout_ns);
+    g_dd_profiler->start();
 }
 
 #ifdef __cplusplus
 }
 #endif
+
+// MARK: - Low-level profiler C API wrappers
+
+extern "C" {
+
+/**
+ * Creates a profiler instance.
+ * Uses fixed intervals for consistent sampling behavior.
+ */
+profiler_t* profiler_create(
+    const sampling_config_t* config,
+    stack_trace_callback_t callback,
+    void* ctx) {
+    if (!callback) return nullptr;
+
+    return reinterpret_cast<profiler_t*>(
+        new dd::profiler::mach_sampling_profiler(config, callback, ctx)
+    );
+}
+
+/**
+ * Destroys a profiler instance.
+ */
+void profiler_destroy(profiler_t* profiler) {
+    if (!profiler) return;
+    delete reinterpret_cast<dd::profiler::mach_sampling_profiler*>(profiler);
+}
+
+/**
+ * Starts profiling.
+ */
+int profiler_start(profiler_t* profiler) {
+    if (!profiler) return 0;
+    dd::profiler::mach_sampling_profiler* prof = reinterpret_cast<dd::profiler::mach_sampling_profiler*>(profiler);
+    return prof->start_sampling() ? 1 : 0;
+}
+
+/**
+ * Stops profiling.
+ */
+void profiler_stop(profiler_t* profiler) {
+    if (!profiler) return;
+    dd::profiler::mach_sampling_profiler* prof = reinterpret_cast<dd::profiler::mach_sampling_profiler*>(profiler);
+    prof->stop_sampling();
+}
+
+/**
+ * Checks if profiling is currently running.
+ */
+int profiler_is_running(const profiler_t* profiler) {
+    if (!profiler) return 0;
+    const dd::profiler::mach_sampling_profiler* prof = reinterpret_cast<const dd::profiler::mach_sampling_profiler*>(profiler);
+    return prof->running ? 1 : 0;
+}
+
+} // extern "C"
 
 #endif // __APPLE__ && !TARGET_OS_WATCH
