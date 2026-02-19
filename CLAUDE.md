@@ -106,17 +106,26 @@ The SDK is organized into independent, modular targets:
 
 ### Core Architecture Patterns
 
-**Initialization Flow**: SDK is initialized via `Datadog.initialize(with:trackingConsent:)` which creates a `DatadogCore` instance. Individual features are then enabled (e.g., `Logs.enable()`, `RUM.enable()`, `Trace.enable()`). Each feature registers with the core instance.
+**Initialization Flow**: SDK is initialized via `Datadog.initialize(with:trackingConsent:)` which creates a `DatadogCore` instance. Individual features are then enabled (e.g., `Logs.enable()`, `RUM.enable()`, `Trace.enable()`). Each feature registers with the core instance. When not initialized, the SDK uses NOP (no-op) implementations (`NOPMonitor`, `NOPDatadogCore`) that silently accept all API calls.
 
-**Message Bus**: Inter-module communication happens through a message bus (`MessageBusReceiver`). Features can subscribe to receive messages from other features (e.g., RUM subscribes to crash events, Session Replay subscribes to RUM view updates).
+**Message Bus**: Inter-module communication happens through a message bus (`MessageBusReceiver`). Features can subscribe to receive messages from other features (e.g., RUM subscribes to crash events, Session Replay subscribes to RUM view updates). The bus is the only way features communicate — they must NOT import each other.
 
-**Context Propagation**: `DatadogContext` is the central context object containing device info, app state, user info, network state, etc. It flows through the SDK and is attached to telemetry events.
+**Context Propagation**: `DatadogContext` is the central context object containing device info, app state, user info, network state, etc. It is built by `DatadogContextProvider` from multiple `ContextValuePublisher` instances that subscribe to system notifications and update context in real-time. Context flows through the SDK and is attached to telemetry events.
 
 **Storage & Upload**: Each feature writes events to disk using a storage layer, then an upload worker batches and sends data to Datadog backend. Upload uses a backoff strategy and respects battery/network conditions.
 
 **Dependency Injection**: The SDK heavily uses dependency injection for testability. Production implementations are in `DatadogCore/Sources/Core`, test utilities in `TestUtilities`.
 
-**Thread Safety**: Most SDK operations use background queues. Thread-safe access is managed via `ReadWriteLock` or dedicated serial queues.
+**Thread Safety**: Most SDK operations use background queues. Thread-safe access is managed via `@ReadWriteLock` property wrapper or dedicated serial queues. No `DispatchQueue.main.sync` — deadlock risk.
+
+### Storage
+
+- **File-based storage** in Application Support sandbox — no database (SQLite/CoreData)
+- **Directory structure**: `[AppSupport]/Datadog/[site]/[feature]/`
+- **Format**: JSON for events, binary TLV encoding for compact storage
+- **Encryption**: Optional via `DataEncryption` protocol implementation
+- **Caching**: Explicitly disabled at URLSession level (ephemeral config, `urlCache = nil`)
+- **Key-value storage**: `FeatureDataStore` for feature-specific persistent data
 
 ### OpenTelemetry Integration
 
@@ -165,6 +174,43 @@ The SDK can be compiled against either:
 - **release**: Release automation scripts
 - **dogfooding**: Scripts to create dogfooding PRs in internal apps
 
+## Module Dependencies
+
+```
+DatadogInternal (shared types, protocols — Foundation only, no external deps)
+    ├── DatadogCore (initialization, storage, upload)
+    │     ├── DatadogLogs
+    │     ├── DatadogTrace
+    │     ├── DatadogRUM
+    │     ├── DatadogSessionReplay
+    │     ├── DatadogCrashReporting
+    │     ├── DatadogWebViewTracking
+    │     ├── DatadogFlags
+    │     └── DatadogProfiling
+    └── TestUtilities (test-only, shared mocks/matchers)
+```
+
+All feature modules depend on `DatadogInternal` for shared protocols and types. Only `DatadogCore` provides the concrete implementations. Feature modules MUST NOT import each other.
+
+## HTTP Upload Details
+
+- **Auth**: Client token passed as `DD-API-KEY` header on all requests
+- **Custom headers**: `DD-EVP-ORIGIN` (SDK identifier), `DD-EVP-ORIGIN-VERSION` (SDK version), `DD-REQUEST-ID` (optional UUID)
+- **Formats**: JSON, NDJSON (newline-delimited) for batches, multipart/form-data for SR/crashes
+- **Compression**: Gzip (`Content-Encoding: gzip`)
+- **Endpoints by site**: `.us1` → `browser-intake-datadoghq.com`, `.eu1` → `browser-intake-datadoghq.eu`, etc.
+- **Header building**: `DatadogInternal/Sources/Upload/URLRequestBuilder.swift`
+
+## Key SwiftLint Rules (sources)
+
+- `explicit_top_level_acl` — all top-level declarations must have explicit access control
+- `force_cast`, `force_try`, `force_unwrapping` — forbidden in source code
+- `todo_without_jira` — all TODOs must reference JIRA (e.g., `TODO: RUM-123`)
+- `unsafe_uiapplication_shared` — use `UIApplication.managedShared` instead
+- `required_reason_api_name` — symbol names must not conflict with Apple's Required Reason APIs
+
+Config: `tools/lint/sources.swiftlint.yml` (sources), `tools/lint/tests.swiftlint.yml` (tests — more permissive)
+
 ## Common Workflows
 
 ### Adding a New Feature to an Existing Module
@@ -196,6 +242,24 @@ The SDK can be compiled against either:
 2. Run snapshot tests: `make sr-snapshot-test`
 3. If snapshots change intentionally, review diffs and push: `make sr-snapshots-push`
 
+### Adding a New RUM Command
+
+1. Define a new struct in `DatadogRUM/Sources/RUMMonitor/RUMCommand.swift` conforming to `RUMCommand`
+2. Include timestamp, attributes, and any decision hints (e.g., `canStartBackgroundView`)
+3. Add public API method to `RUMMonitorProtocol.swift` and implement in `Monitor.swift`
+4. Add processing logic in the appropriate scope (`RUMSessionScope`, `RUMViewScope`, etc.)
+5. Add unit tests in `DatadogRUM/Tests/RUMTests/Scopes/`
+6. Update API surface: `make api-surface`
+
+### Adding a New Context Provider
+
+1. Create `DatadogCore/Sources/Core/Context/<ProviderName>Publisher.swift`
+2. Implement `ContextValuePublisher` protocol from `DatadogInternal`
+3. Subscribe to relevant system notifications
+4. Register the publisher in `DatadogContextProvider` initialization
+5. Add the new value to `DatadogContext` if needed (in `DatadogInternal/Sources/Context/`)
+6. Add unit tests in `DatadogCore/Tests/`
+
 ## CI Environment
 
 The `ENV=ci` flag is used in CI to enable special behaviors (e.g., different API surface output paths). When debugging CI failures locally, you may need to set this.
@@ -210,9 +274,15 @@ The `ENV=ci` flag is used in CI to enable special behaviors (e.g., different API
 
 - All commits must be signed (GPG/SSH signatures required)
 - Keep PRs small and atomic, solving one issue each
+- **Always follow `.github/PULL_REQUEST_TEMPLATE.md`** when creating PRs
 - Code must pass `make lint`, `make test-ios-all`, `make test-tvos-all`, and API surface checks
 - Follow patterns established in the codebase (OOP, SOLID principles, dependency injection)
 
 ## Claude additional Agent documentation
 
-Claude can look at the Agents.md to gather more information about the project.
+Claude can look at the `AGENTS.md` to gather more information about the project. Key modules also have localized `AGENTS.md` files:
+
+- `DatadogRUM/AGENTS.md` — Scope hierarchy, RUMCommand patterns, instrumentation, known fragile areas
+- `DatadogCore/AGENTS.md` — Core orchestrator, storage pipeline, context providers, MessageBus
+- `DatadogInternal/AGENTS.md` — Shared protocols, generated models, context types
+- `TestUtilities/AGENTS.md` — Mock protocols, test proxies, event matchers
