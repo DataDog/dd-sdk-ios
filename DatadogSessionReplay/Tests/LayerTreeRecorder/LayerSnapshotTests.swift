@@ -7,6 +7,8 @@
 #if os(iOS)
 import Testing
 import QuartzCore
+import UIKit
+import WebKit
 
 @testable import DatadogSessionReplay
 
@@ -45,7 +47,23 @@ struct LayerSnapshotTests {
             #expect(snapshot.children.isEmpty)
             #expect(snapshot.path == "CALayer#0")
             #expect(snapshot.isSnapshot(of: layer))
+            #expect(snapshot.semantics == .generic)
         }
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
+    func capturesWKWebViewSemantics() {
+        // given
+        let webView = WKWebView()
+        webView.layer.addSublayer(CALayer())
+
+        // when
+        let snapshot = LayerSnapshot(from: webView.layer)
+
+        // then
+        #expect(snapshot.semantics == .webView(slotID: webView.hash))
+        #expect(snapshot.children.isEmpty)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

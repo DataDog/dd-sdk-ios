@@ -22,6 +22,7 @@ import QuartzCore
 internal struct LayerSnapshot: Sendable, Equatable {
     let layer: CALayerReference
     let replayID: Int64
+    let semantics: Semantics
 
     var path: String {
         pathComponents.joined(separator: "/")
@@ -80,6 +81,7 @@ extension LayerSnapshot {
         let opacity = layer.opacity
         let resolvedOpacity = parentOpacity * opacity
         let hasMask = parentHasMask || layer.mask != nil
+        let semantics = layer.semantics
 
         let nextClipRect: CGRect
         if layer.masksToBounds {
@@ -90,7 +92,7 @@ extension LayerSnapshot {
             nextClipRect = clipRect
         }
 
-        let sublayers = layer.sublayers ?? []
+        let sublayers: [CALayer] = semantics.subtreeStrategy == .record ? layer.sublayers ?? [] : []
 
         var children: [LayerSnapshot] = []
         children.reserveCapacity(sublayers.count)
@@ -119,6 +121,7 @@ extension LayerSnapshot {
         self.init(
             layer: .init(layer),
             replayID: layer.replayID,
+            semantics: semantics,
             pathComponents: pathComponents,
             frame: frame,
             clipRect: clipRect,

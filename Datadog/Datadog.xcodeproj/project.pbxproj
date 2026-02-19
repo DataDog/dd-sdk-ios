@@ -593,6 +593,7 @@
 		5B870BD52F41CB77008106A5 /* CALayer+ReplayID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BD42F41CB75008106A5 /* CALayer+ReplayID.swift */; };
 		5B870BD82F41CE10008106A5 /* CALayerReplayIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BD72F41CE04008106A5 /* CALayerReplayIDTests.swift */; };
 		5B870BDA2F41D3E5008106A5 /* LayerSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BD92F41D3E0008106A5 /* LayerSnapshot.swift */; };
+		5B2A5E223322B5EB00A1B2C3 /* LayerSnapshotSemantics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2A5E213322B5E900A1B2C3 /* LayerSnapshotSemantics.swift */; };
 		5B870BDC2F41D878008106A5 /* LayerSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BDB2F41D875008106A5 /* LayerSnapshotTests.swift */; };
 		5B870BDE2F41DE65008106A5 /* LayerSnapshot+Visibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BDD2F41DE5C008106A5 /* LayerSnapshot+Visibility.swift */; };
 		5B870BE02F41E0EE008106A5 /* LayerSnapshotVisibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BDF2F41E0E5008106A5 /* LayerSnapshotVisibilityTests.swift */; };
@@ -3040,6 +3041,7 @@
 		5B870BD42F41CB75008106A5 /* CALayer+ReplayID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CALayer+ReplayID.swift"; sourceTree = "<group>"; };
 		5B870BD72F41CE04008106A5 /* CALayerReplayIDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerReplayIDTests.swift; sourceTree = "<group>"; };
 		5B870BD92F41D3E0008106A5 /* LayerSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshot.swift; sourceTree = "<group>"; };
+		5B2A5E213322B5E900A1B2C3 /* LayerSnapshotSemantics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotSemantics.swift; sourceTree = "<group>"; };
 		5B870BDB2F41D875008106A5 /* LayerSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotTests.swift; sourceTree = "<group>"; };
 		5B870BDD2F41DE5C008106A5 /* LayerSnapshot+Visibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LayerSnapshot+Visibility.swift"; sourceTree = "<group>"; };
 		5B870BDF2F41E0E5008106A5 /* LayerSnapshotVisibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotVisibilityTests.swift; sourceTree = "<group>"; };
@@ -4982,6 +4984,7 @@
 				5BC91D422F3C9AED00D0241D /* LayerRecorder.swift */,
 				5B2275F02F4485F8001EF869 /* LayerImageRenderer.swift */,
 				5B870BD92F41D3E0008106A5 /* LayerSnapshot.swift */,
+				5B2A5E213322B5E900A1B2C3 /* LayerSnapshotSemantics.swift */,
 				5B870BDD2F41DE5C008106A5 /* LayerSnapshot+Visibility.swift */,
 				5B870BE12F423DCB008106A5 /* LayerSnapshot+Flattening.swift */,
 				5B870BE52F433110008106A5 /* LayerSnapshot+Culling.swift */,
@@ -10123,6 +10126,7 @@
 				A7B932FC2B1F6A0A00AE6477 /* SRDataModels.swift in Sources */,
 				A795069C2B974C8200AC4814 /* SessionReplay+objc.swift in Sources */,
 				5B870BDA2F41D3E5008106A5 /* LayerSnapshot.swift in Sources */,
+				5B2A5E223322B5EB00A1B2C3 /* LayerSnapshotSemantics.swift in Sources */,
 				61054E752A6EE10A00AAA894 /* ViewTreeSnapshot.swift in Sources */,
 				61054EA02A6EE10B00AAA894 /* Colors.swift in Sources */,
 				61054E7F2A6EE10A00AAA894 /* UISliderRecorder.swift in Sources */,
