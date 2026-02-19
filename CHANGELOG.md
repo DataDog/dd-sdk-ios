@@ -13,7 +13,6 @@
 - [IMPROVEMENT] Expose public entities from `DatadogInternal` to prevent `DatadogInternal` imports in customer code. See [#2666][]
 - [FIX] Propagate feature flags to RUM error and view events for crashes, fatal app hangs, and watchdog terminations. See [#2688][]
 - [FIX] Propagate feature flags to RUM error and view events for crashes, fatal app hangs, and watchdog terminations.
-- [IMPROVEMENT] Cache `DatadogContext.ddTags` to avoid repeated string computation on every event. See [#2706][]
 
 # 3.6.1 / 02-02-2026
 
