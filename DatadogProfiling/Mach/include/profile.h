@@ -27,7 +27,7 @@
 #include <TargetConditionals.h>
 #if !TARGET_OS_WATCH
 
-#include "mach_profiler.h"
+#include "dd_profiler.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
