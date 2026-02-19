@@ -12,6 +12,8 @@
 - [IMPROVEMENT] Improve span attribute encoding error messages to include attribute name and context. See [#2676][]
 - [IMPROVEMENT] Expose public entities from `DatadogInternal` to prevent `DatadogInternal` imports in customer code. See [#2666][]
 - [FIX] Propagate feature flags to RUM error and view events for crashes, fatal app hangs, and watchdog terminations. See [#2688][]
+- [FIX] Propagate feature flags to RUM error and view events for crashes, fatal app hangs, and watchdog terminations.
+- [IMPROVEMENT] Cache `DatadogContext.ddTags` to avoid repeated string computation on every event. See [#2706][]
 
 # 3.6.1 / 02-02-2026
 
@@ -1060,6 +1062,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2676]: https://github.com/DataDog/dd-sdk-ios/pull/2676
 [#2688]: https://github.com/DataDog/dd-sdk-ios/pull/2688
 [#2705]: https://github.com/DataDog/dd-sdk-ios/pull/2705
+[#2706]: https://github.com/DataDog/dd-sdk-ios/pull/2706
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
