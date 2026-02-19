@@ -350,7 +350,7 @@ final class MachSamplingProfilerTests: XCTestCase {
 
     // MARK: - Stack Trace Quality Tests
 
-    func testStackTraceCapture_containsValidFramesWithBinaryImages() {
+    func testStackTraceCapture_containsValidFrames() {
         // Given
         var config = sampling_config_t(
             sampling_interval_nanos: 2_000_000,
@@ -364,7 +364,7 @@ final class MachSamplingProfilerTests: XCTestCase {
         struct CallbackContext {
             var invalidTraceFound: Bool = false
             var invalidFrameFound: Bool = false
-            var invalidBinaryImageFound: Bool = false
+            var invalidRawImageDefaultsFound: Bool = false
             var count: Int = 0
         }
 
@@ -380,7 +380,7 @@ final class MachSamplingProfilerTests: XCTestCase {
 
                 (0..<count).forEach {
                     let trace = traces[$0]
-                    // Validate trace
+                    // Validate trace metadata
                     context.invalidTraceFound = trace.tid == 0 || // invalid thread ID
                         trace.timestamp == 0 || // invalid timestamp
                         trace.sampling_interval_nanos != 2_000_000 ||
@@ -392,13 +392,8 @@ final class MachSamplingProfilerTests: XCTestCase {
                         for frame in frames {
                             // Valid frame should have non-zero instruction pointer
                             context.invalidFrameFound = frame.instruction_ptr == 0
-
-                            let image = frame.image
-
-                            // Validate binary image fields
-                            context.invalidBinaryImageFound = image.load_address == 0 || // Should have valid load address
-                                image.filename == nil || // Should have filename
-                                strlen(image.filename) == 0 // Filename should not be empty
+                            // Raw traces should not contain resolved image data.
+                            context.invalidRawImageDefaultsFound = frame.image.load_address != 0 || frame.image.filename != nil
                         }
                     }
                 }
@@ -427,7 +422,7 @@ final class MachSamplingProfilerTests: XCTestCase {
         XCTAssertGreaterThan(context.value.count, 0, "Should receive samples")
         XCTAssertFalse(context.value.invalidTraceFound, "Should receive valid stack traces")
         XCTAssertFalse(context.value.invalidFrameFound, "Should capture valid stack frames with non-zero instruction pointers")
-        XCTAssertFalse(context.value.invalidBinaryImageFound, "Should capture valid binary image information")
+        XCTAssertFalse(context.value.invalidRawImageDefaultsFound, "Raw traces should have default-initialized binary image fields")
 
         // Cleanup
         mockThread.cancel()

@@ -73,6 +73,12 @@
 		114CA15D2D75D6AB00262287 /* DisplayLinkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CA15B2D75D6A700262287 /* DisplayLinkerTests.swift */; };
 		114FFDE82E0031BA00330C91 /* SwiftUIRUMViewsPredicate+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114FFDE72E0031BA00330C91 /* SwiftUIRUMViewsPredicate+objc.swift */; };
 		114FFDE92E0031BA00330C91 /* SwiftUIRUMViewsPredicate+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114FFDE72E0031BA00330C91 /* SwiftUIRUMViewsPredicate+objc.swift */; };
+		115792E22F4504E900AEE829 /* binary_image_resolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 115792E12F4504E900AEE829 /* binary_image_resolver.cpp */; };
+		115792E32F4504E900AEE829 /* binary_image_resolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 115792E12F4504E900AEE829 /* binary_image_resolver.cpp */; };
+		115792E52F4504F700AEE829 /* binary_image_resolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 115792E42F4504F700AEE829 /* binary_image_resolver.h */; };
+		115792E62F4504F700AEE829 /* binary_image_resolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 115792E42F4504F700AEE829 /* binary_image_resolver.h */; };
+		115792EC2F4608A200AEE829 /* BinaryImageResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115792EB2F4608A200AEE829 /* BinaryImageResolverTests.swift */; };
+		115792ED2F4608A200AEE829 /* BinaryImageResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115792EB2F4608A200AEE829 /* BinaryImageResolverTests.swift */; };
 		115F480B2E0BFE11006FAB07 /* DeterministicSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115F480A2E0BFE02006FAB07 /* DeterministicSamplerTests.swift */; };
 		115F480C2E0BFE11006FAB07 /* DeterministicSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115F480A2E0BFE02006FAB07 /* DeterministicSamplerTests.swift */; };
 		116506142E9533A700FD815C /* AppStateManagerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116506132E95339B00FD815C /* AppStateManagerMock.swift */; };
@@ -2777,6 +2783,9 @@
 		114CA1582D75C64E00262287 /* ViewHitchesReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesReaderTests.swift; sourceTree = "<group>"; };
 		114CA15B2D75D6A700262287 /* DisplayLinkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayLinkerTests.swift; sourceTree = "<group>"; };
 		114FFDE72E0031BA00330C91 /* SwiftUIRUMViewsPredicate+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwiftUIRUMViewsPredicate+objc.swift"; sourceTree = "<group>"; };
+		115792E12F4504E900AEE829 /* binary_image_resolver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = binary_image_resolver.cpp; sourceTree = "<group>"; };
+		115792E42F4504F700AEE829 /* binary_image_resolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = binary_image_resolver.h; sourceTree = "<group>"; };
+		115792EB2F4608A200AEE829 /* BinaryImageResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryImageResolverTests.swift; sourceTree = "<group>"; };
 		115F480A2E0BFE02006FAB07 /* DeterministicSamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSamplerTests.swift; sourceTree = "<group>"; };
 		116506132E95339B00FD815C /* AppStateManagerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManagerMock.swift; sourceTree = "<group>"; };
 		116506162E9535A500FD815C /* WatchdogTerminationMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationMocks.swift; sourceTree = "<group>"; };
@@ -7064,6 +7073,7 @@
 		D229FF5A2E3BA298009CCD62 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				115792E42F4504F700AEE829 /* binary_image_resolver.h */,
 				118AAE052EBBB74D0018E745 /* ctor_profiler_testing.h */,
 				D2883AAE2E6AF01B00880363 /* ctor_profiler.h */,
 				D233E7FE2E4B588B00E7CFDE /* dd_pprof.h */,
@@ -7084,6 +7094,7 @@
 			children = (
 				D233E7EB2E4B588000E7CFDE /* profile.pb-c.c */,
 				D233E7ED2E4B588000E7CFDE /* protobuf-c.c */,
+				115792E12F4504E900AEE829 /* binary_image_resolver.cpp */,
 				D2883AAB2E6AF01000880363 /* ctor_profiler.cpp */,
 				D233E8012E4B653F00E7CFDE /* dd_pprof.cpp */,
 				D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */,
@@ -7631,6 +7642,7 @@
 			isa = PBXGroup;
 			children = (
 				D27465822E7BFEC600C47FE2 /* AppLaunchProfilerTests.swift */,
+				115792EB2F4608A200AEE829 /* BinaryImageResolverTests.swift */,
 				D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */,
 				D27465772E796A1F00C47FE2 /* CTorProfilerTests.swift */,
 				D2D0E2012E3CEF1200BA4113 /* MachProfilerCAPITests.swift */,
@@ -7888,6 +7900,7 @@
 				D2E937292E53324A00FECA76 /* profile_pprof_packer.h in Headers */,
 				D2E937252E53324100FECA76 /* profile.h in Headers */,
 				D2E9372E2E53325900FECA76 /* protobuf-c.h in Headers */,
+				115792E52F4504F700AEE829 /* binary_image_resolver.h in Headers */,
 				D2E9372C2E53325200FECA76 /* profile.pb-c.h in Headers */,
 				D2E9371B2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
 				D229FFAC2E3BCAAE009CCD62 /* mach_profiler.h in Headers */,
@@ -7905,6 +7918,7 @@
 				D2E937262E53324100FECA76 /* profile.h in Headers */,
 				D2E9372F2E53325900FECA76 /* protobuf-c.h in Headers */,
 				D2E9372B2E53325200FECA76 /* profile.pb-c.h in Headers */,
+				115792E62F4504F700AEE829 /* binary_image_resolver.h in Headers */,
 				D2E9371A2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
 				D229FFA92E3BCA9B009CCD62 /* mach_profiler.h in Headers */,
 				D233E8002E4B588B00E7CFDE /* dd_pprof.h in Headers */,
@@ -10284,6 +10298,7 @@
 				1121FD032EE33B3400297156 /* ConfigurationMetric.swift in Sources */,
 				D2D0E1F32E3CE59700BA4113 /* mach_profiler.cpp in Sources */,
 				D233E7F62E4B588000E7CFDE /* profile.pb-c.c in Sources */,
+				115792E22F4504E900AEE829 /* binary_image_resolver.cpp in Sources */,
 				D233E7F72E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */,
 				D274657B2E7B199A00C47FE2 /* AppLaunchProfiler.swift in Sources */,
 				D233E7F82E4B588000E7CFDE /* profile.cpp in Sources */,
@@ -10308,6 +10323,7 @@
 				1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */,
 				D2D0E1F22E3CE59700BA4113 /* mach_profiler.cpp in Sources */,
 				D233E7EE2E4B588000E7CFDE /* profile.pb-c.c in Sources */,
+				115792E32F4504E900AEE829 /* binary_image_resolver.cpp in Sources */,
 				D233E7EF2E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */,
 				D274657C2E7B199A00C47FE2 /* AppLaunchProfiler.swift in Sources */,
 				D233E7F02E4B588000E7CFDE /* profile.cpp in Sources */,
@@ -11265,6 +11281,7 @@
 				D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
 				D2D0E20E2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */,
 				D2D0E2082E3CEF1200BA4113 /* MachProfilerCAPITests.swift in Sources */,
+				115792EC2F4608A200AEE829 /* BinaryImageResolverTests.swift in Sources */,
 				D2E937352E535B6400FECA76 /* ProfileMocks.swift in Sources */,
 				D2E937322E53368E00FECA76 /* ProfileCxxTests.swift in Sources */,
 			);
@@ -11288,6 +11305,7 @@
 				D2D0E2042E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
 				D2D0E20F2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */,
 				D2D0E2052E3CEF1200BA4113 /* MachProfilerCAPITests.swift in Sources */,
+				115792ED2F4608A200AEE829 /* BinaryImageResolverTests.swift in Sources */,
 				D2E937342E535B6400FECA76 /* ProfileMocks.swift in Sources */,
 				D2E937312E53368E00FECA76 /* ProfileCxxTests.swift in Sources */,
 			);
