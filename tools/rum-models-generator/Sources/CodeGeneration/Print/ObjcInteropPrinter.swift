@@ -36,8 +36,12 @@ import Foundation
 ///     }
 ///
 public class ObjcInteropPrinter: BasePrinter, CodePrinter {
-    public init(objcTypeNamesPrefix: String) {
+    public init(
+        objcTypeNamesPrefix: String,
+        objcRuntimeNameOverrides: [String: String] = [:]
+    ) {
         self.objcTypeNamesPrefix = objcTypeNamesPrefix
+        self.objcRuntimeNameOverrides = objcRuntimeNameOverrides
     }
 
     // MARK: - CodePrinter
@@ -52,6 +56,9 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
 
     /// The prefix used for types exposed to Obj-c.
     private let objcTypeNamesPrefix: String
+    /// Overrides for generated `@objc(...)` runtime names.
+    /// Keys are generated type names (e.g. `objc_RUMErrorEventErrorMeta`), values are runtime names (e.g. `DDRUMErrorEventMeta`).
+    private let objcRuntimeNameOverrides: [String: String]
 
     func print(objcInteropTypes: [ObjcInteropType]) throws -> String {
         reset()
@@ -81,7 +88,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
     private func print(objcInteropRootClass: ObjcInteropRootClass) throws {
         let className = objcTypeNamesPrefix + objcInteropRootClass.objcTypeName
         writeEmptyLine()
-        writeLine("@objc(\(className.objcNaming))")
+        writeLine("@objc(\(objcRuntimeName(for: className)))")
         writeLine("@objcMembers")
         writeLine("@_spi(objc)")
         writeLine("public class \(className): NSObject {")
@@ -123,7 +130,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         }
 
         writeEmptyLine()
-        writeLine("@objc(\(objcTypeName.objcNaming))")
+        writeLine("@objc(\(objcRuntimeName(for: objcTypeName)))")
         writeLine("@objcMembers")
         writeLine("@_spi(objc)")
         writeLine("public class \(objcTypeName): NSObject {")
@@ -161,7 +168,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         let className = objcTypeNamesPrefix + objcInteropNestedTransitiveClass.objcTypeName
         let rootClassName = objcTypeNamesPrefix + objcInteropNestedTransitiveClass.objcRootClass.objcTypeName
         writeEmptyLine()
-        writeLine("@objc(\(className.objcNaming))")
+        writeLine("@objc(\(objcRuntimeName(for: className)))")
         writeLine("@objcMembers")
         writeLine("@_spi(objc)")
         writeLine("public class \(className): NSObject {")
@@ -203,7 +210,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         let managesOptionalEnum = objcInteropNestedEnum.parentProperty.bridgedSwiftProperty.isOptional
         let objcEnumOptionality = managesOptionalEnum ? "?" : ""
         writeEmptyLine()
-        writeLine("@objc(\(enumName.objcNaming))")
+        writeLine("@objc(\(objcRuntimeName(for: enumName)))")
         writeLine("@_spi(objc)")
         writeLine("public enum \(enumName): Int {")
         indentRight()
@@ -254,7 +261,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         }
 
         writeEmptyLine()
-        writeLine("@objc(\(className.objcNaming))")
+        writeLine("@objc(\(objcRuntimeName(for: className)))")
         writeLine("@objcMembers")
         writeLine("@_spi(objc)")
         writeLine("public class \(className): NSObject {")
@@ -573,6 +580,10 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
     }
 
     // MARK: - Generating names
+
+    private func objcRuntimeName(for generatedObjcTypeName: String) -> String {
+        objcRuntimeNameOverrides[generatedObjcTypeName] ?? generatedObjcTypeName.objcNaming
+    }
 
     private func objcInteropTypeName(for objcType: ObjcInteropType) throws -> String {
         switch objcType {

@@ -43,6 +43,9 @@ internal func generateRUMSwiftModels(from schema: URL) throws -> String {
 
 internal func generateRUMObjcInteropModels(from schema: URL, skip typesToSkip: Set<String>) throws -> String {
     let generator = ModelsGenerator()
+    let objcRuntimeNameOverrides = [
+        "objc_RUMErrorEventErrorMeta": "DDRUMErrorEventErrorMetaInfo"
+    ]
 
     let template = OutputTemplate(
         header: """
@@ -66,7 +69,10 @@ internal func generateRUMObjcInteropModels(from schema: URL, skip typesToSkip: S
 
             """
     )
-    let printer = ObjcInteropPrinter(objcTypeNamesPrefix: "objc_")
+    let printer = ObjcInteropPrinter(
+        objcTypeNamesPrefix: "objc_",
+        objcRuntimeNameOverrides: objcRuntimeNameOverrides
+    )
 
     return try generator
         .generateCode(from: schema)

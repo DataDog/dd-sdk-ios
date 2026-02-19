@@ -129,6 +129,26 @@ final class ObjcInteropPrinterTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
+    func testPrintingObjcInteropWithCustomObjcRuntimeNameOverride() throws {
+        let fooStruct = SwiftStruct(
+            name: "Foo",
+            comment: nil,
+            properties: [],
+            conformance: []
+        )
+
+        let objcInteropTypes = try SwiftToObjcInteropTypeTransformer()
+            .transform(swiftTypes: [fooStruct])
+        let objcInteropPrinter = ObjcInteropPrinter(
+            objcTypeNamesPrefix: "objc_",
+            objcRuntimeNameOverrides: ["objc_Foo": "DDCustomFoo"]
+        )
+        let output = try objcInteropPrinter.print(objcInteropTypes: objcInteropTypes)
+
+        XCTAssertTrue(output.contains("@objc(DDCustomFoo)"))
+        XCTAssertFalse(output.contains("@objc(DDFoo)"))
+    }
+
     func testPrintingObjcInteropForSwiftStructWithIntProperties() throws {
         let fooStruct = SwiftStruct(
             name: "Foo",
