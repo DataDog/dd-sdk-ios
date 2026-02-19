@@ -299,6 +299,10 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
     while (trace->frame_count < max_depth && pc != nullptr) {
         auto& frame = trace->frames[trace->frame_count];
         frame.instruction_ptr = (uint64_t)pc;
+        // Keep raw traces safe for callbacks by setting safe defaults
+        frame.image.load_address = 0;
+        memset(frame.image.uuid, 0, sizeof(uuid_t));
+        frame.image.filename = nullptr;
 
         trace->frame_count++;
         
