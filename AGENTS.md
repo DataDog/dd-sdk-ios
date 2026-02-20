@@ -61,6 +61,44 @@ Agents add, remove, move files but forget to:
 
 **Always search for usages across the entire codebase before considering a change complete.**
 
+## Data Flow
+
+Understanding how data flows through the SDK is critical for making changes that propagate correctly.
+
+### RUM Event Emission Pipeline
+
+1. App calls public API (e.g., `RUMMonitor.shared().startView(...)`)
+2. `Monitor` (concrete `RUMMonitorProtocol` implementation) creates a `RUMCommand` with timestamp, attributes, user ID
+3. Command is enqueued to `FeatureScope` (async serial queue in `DatadogCore`)
+4. `FeatureScope` invokes scope hierarchy: `RUMApplicationScope.process()` → `RUMSessionScope.process()` → `RUMViewScope.process()`
+5. Each scope decides whether to accept, transform, or reject the command (returns `Bool` — `true` = scope stays open, `false` = scope is closed and removed from parent)
+6. If valid, scope serializes to RUM event JSON and calls `writer.write(data:)`
+7. `Writer` appends data to in-memory buffer or disk file
+8. `DataUploadWorker` periodically reads batches of events from disk
+9. `RequestBuilder` wraps batch in HTTP POST to Datadog intake
+10. `HTTPClient` sends request; on success files are deleted; on failure backoff/retry applies
+
+### State Management (Context)
+
+1. Device/app/user state is collected in `DatadogContext`
+2. Context is built by `DatadogContextProvider` from multiple publishers (user info, network state, battery, etc.)
+3. Publishers subscribe to system notifications and update context in real-time
+4. Context is passed to every scope during command processing
+5. Scopes attach context fields to events before writing
+
+## Key Abstractions
+
+Agents must understand these abstractions to know WHERE to add code:
+
+| Abstraction | Purpose | Examples |
+|-------------|---------|----------|
+| **Feature** | Represents a module (RUM, Logs, Trace). Conforms to `DatadogFeature` or `DatadogRemoteFeature`. | `RUMFeature`, `LogsFeature` |
+| **Scope** | Hierarchical state container. Implements `process(command:context:writer:)` returning `Bool` (`true` = scope stays open, `false` = scope is closed and removed). | `RUMApplicationScope`, `RUMSessionScope`, `RUMViewScope` |
+| **Command** | User action or system event triggering state changes. Struct with timestamp, attributes. | `RUMStartViewCommand`, `RUMAddUserActionCommand` |
+| **Storage & Upload** | Persist events and batch-transmit to backend. | `FeatureStorage`, `FileWriter`, `DataUploadWorker` |
+| **Context Provider** | Publishes system/app state changes. Implements `ContextValuePublisher`. | `UserInfoPublisher`, `NetworkConnectionInfoPublisher` |
+| **Message Bus** | Inter-feature pub/sub communication. Protocol (`FeatureMessageReceiver`) in `DatadogInternal/Sources/MessageBus/`; concrete `MessageBus` in `DatadogCore/Sources/Core/MessageBus.swift`. | `MessageBus`, `FeatureMessageReceiver` |
+
 ## Commit & PR Conventions
 
 ### Commit Requirements
@@ -69,6 +107,7 @@ Agents add, remove, move files but forget to:
 - Example: `[RUM-1234] Add baggage header merging support`, `[FFL-213] Add Feature Flags support`
 
 ### PR Requirements
+- **Always follow `.github/PULL_REQUEST_TEMPLATE.md`** when creating PRs
 - **Title prefix**: `[PROJECT-XXXX]` matching the JIRA ticket
 - Include thorough test coverage
 - Pass all CI checks (lint, tests, API surface verification)
@@ -115,7 +154,7 @@ dd-sdk-ios/
 ├── DatadogRUM/          # Real User Monitoring
 ├── DatadogSessionReplay/# Session Replay
 ├── DatadogCrashReporting/ # Crash Reporting
-├── DatadogWebViewTracking/ # Connecting RUM sessions from mobile apps to RUM sessions hapening within WebViews
+├── DatadogWebViewTracking/ # Connecting RUM sessions from mobile apps to RUM sessions happening within WebViews
 ├── DatadogFlags/        # Feature flags
 ├── TestUtilities/       # Shared test mocks and helpers
 ├── IntegrationTests/    # UI and integration tests
@@ -124,16 +163,82 @@ dd-sdk-ios/
 └── tools/               # Build, lint, and code generation tools
 ```
 
+### Where to Add New Code
+
+**New Feature Module (e.g., DatadogNotifications):**
+1. Create `DatadogNotifications/` with `Sources/` and `Tests/` subdirectories
+2. Entry point: `Notifications.swift`, config: `NotificationsConfiguration.swift`
+3. Feature plugin: `Feature/NotificationsFeature.swift` (implements `DatadogRemoteFeature`)
+4. Update `Datadog.xcworkspace` and any relevant `.pbxproj` files
+
+**New RUM Instrumentation:**
+1. Create files in `DatadogRUM/Sources/Instrumentation/<InstrumentationName>/`
+2. Follow existing patterns (e.g., `Resources/`, `Actions/`, `AppHangs/`, `Views/`)
+3. Register in `RUMInstrumentation.swift`
+4. Add tests in `DatadogRUM/Tests/RUMTests/Instrumentation/`
+
+**New RUM Command:**
+1. Add struct to `DatadogRUM/Sources/RUMMonitor/RUMCommand.swift` (implements `RUMCommand` protocol)
+2. Add processing logic in the appropriate scope (`RUMApplicationScope`, `RUMSessionScope`, `RUMViewScope`)
+3. Add tests in `DatadogRUM/Tests/RUMTests/Scopes/`
+
+**New Context Provider:**
+1. Create `DatadogCore/Sources/Core/Context/<ProviderName>Publisher.swift`
+2. Implement `ContextValuePublisher` protocol
+3. Subscribe to system notifications as needed
+4. Register in `DatadogContextProvider.swift` initialization
+5. Add tests in `DatadogCore/Tests/`
+
+**Shared Internal Types (used by multiple features):**
+1. Add to `DatadogInternal/Sources/` in the appropriate subdirectory (`Attributes/`, `Codable/`, `Context/`)
+2. Add tests in `DatadogInternal/Tests/`
+
 ## Testing
 
 ### Test Conventions
-- **Follow existing patterns** - Look at sibling test files for conventions
+- **Follow existing patterns** — Look at sibling test files for conventions
 - Use `TestUtilities` for mocks and helpers
-- Mock naming: `static func mockAny()` for any value, descriptive names for specific scenarios
-- Use `DatadogCoreProxy` for integration testing features
 - Do not test Apple frameworks
 - Do not test purely generated code
 - Do not mock DatadogCore incorrectly (use provided helpers)
+
+### Mock Infrastructure
+
+| Mock Protocol | Usage | Example |
+|---------------|-------|---------|
+| `.mockAny()` | Deterministic default — use when specific value doesn't matter | `DatadogContext.mockAny()` |
+| `.mockRandom()` | Randomized value — use for fuzz/property testing | `String.mockRandom()` |
+| `.mockWith(...)` | Customizable mock with named parameters for specific fields | `.mockWith(service: "test")` |
+
+### Key Test Types
+
+| Type | Purpose | Location |
+|------|---------|----------|
+| `DatadogCoreProxy` | In-memory SDK instance that intercepts all events for assertions | `TestUtilities/Sources/Proxies/DatadogCoreProxy.swift` |
+| `ServerMock` | HTTP mock server for network tests | `TestUtilities/Sources/Proxies/ServerMock.swift` |
+| `HTTPClientMock` | Mock HTTP client | `TestUtilities/Sources/Mocks/DatadogCore/` |
+| `PassthroughCoreMock` | Lightweight core mock that passes events through | `TestUtilities/Sources/Mocks/DatadogInternal/` |
+| `FeatureScopeMock` | Mock feature scope for isolated testing | `TestUtilities/Sources/Mocks/DatadogInternal/` |
+| `RUMSessionMatcher` | Groups RUM events by session, validates consistency | `TestUtilities/Sources/Matchers/` |
+
+### DatadogCoreProxy Usage Pattern
+
+```swift
+let core = DatadogCoreProxy(context: .mockWith(service: "test-service"))
+defer { core.flushAndTearDown() }
+
+RUM.enable(with: config, in: core)
+let monitor = RUMMonitor.shared(in: core)
+monitor.startView(key: "view1")
+
+let events = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
+XCTAssertEqual(events.count, 1)
+```
+
+### SwiftLint for Tests
+Separate lint rules (`tools/lint/tests.swiftlint.yml`) — more permissive than sources:
+- Force unwrapping and force try are allowed in tests
+- Same TODO-with-JIRA requirement applies
 
 ### Running Tests
 ```bash
@@ -220,10 +325,66 @@ All source files must include the Apache License header:
  */
 ```
 
+## Error Handling Strategy
+
+The SDK must **never throw exceptions** to customer code. All errors are handled internally:
+
+- **NOP implementations**: `NOPMonitor`, `NOPDatadogCore` are used when SDK is not initialized or a feature is disabled. These silently accept all API calls.
+- **Validation at boundaries**: Invalid input (blank strings, invalid URLs) is logged via `DD.logger` and ignored.
+- **Scope `Bool` return**: Scope `process()` returns `Bool` to control scope lifecycle. `true` = scope stays open; `false` = scope is closed and removed from its parent's child array. This is a lifecycle signal, not a propagation signal.
+- **Upload backoff**: Upload failures trigger exponential backoff and retry. Network errors are logged but never crash.
+- **User callback safety**: Exceptions in user-provided callbacks (e.g., event mappers) are caught and logged.
+
+## Thread Safety Rules
+
+- **`@ReadWriteLock`**: Property wrapper for concurrent read, exclusive write access. Use for shared mutable state.
+- **Serial queues**: Scope processing uses serial dispatch queues (`FeatureScope` is serial).
+- **No `DispatchQueue.main.sync`**: Forbidden — prevents deadlocks.
+- **Prefer `ReadWriteLock` wrappers**: Use `@ReadWriteLock` for new code. Exception: `NSLock` is used in method swizzling code (`DatadogInternal/Sources/Swizzling/`, `DatadogInternal/Sources/NetworkInstrumentation/`) where low-level synchronization is required — do not refactor those.
+- **No thread spawning**: SDK uses system background queues (`qos: .utility`), never creates threads.
+
+## Known Concerns & Fragile Areas
+
+Agents must be aware of these fragile areas to avoid making them worse:
+
+| Area | Location | Risk |
+|------|----------|------|
+| **SwiftUI view name extraction** | `DatadogRUM/Sources/Instrumentation/Views/SwiftUI/` | Uses `Mirror`/`String(describing:)` reflection — fragile across Swift compiler versions |
+| **UIKit method swizzling** | `DatadogRUM/Sources/Instrumentation/` | Depends on UIKit internal method signatures — iOS version changes could break silently |
+| **KSCrash report parsing** | `DatadogCrashReporting/Sources/` | Parsing C-level crash reports depends on KSCrash output format |
+| **Optional precondition in RUMSessionScope** | `RUMMonitor/Scopes/RUMSessionScope.swift` | Silent in production, crashes in debug — masks invalid state |
+| **500 concurrent feature operations** | `RUMFeatureOperationManager.swift` | Active operations capped at 500 with `Set<String>` tracking |
+| **Message bus queue unbounded** | `DatadogCore/Sources/Core/MessageBus/` | No queue depth limit — burst messaging could cause memory pressure |
+
+## Naming Conventions
+
+**Types:** `PascalCase` for classes, structs, enums, protocols
+**Functions/Properties:** `camelCase`
+**Protocols:** Named as capabilities or contracts (e.g., `DatadogCoreProtocol`, `FeatureScope`, `MessageBusReceiver`)
+**Internal types:** Prefixed with module context (e.g., `RUMCommand`, `RUMViewScope`)
+**Mock types:** Suffixed with `Mock` or `Spy` (e.g., `HTTPClientMock`, `SnapshotProcessorSpy`)
+**Test files:** Mirror source path with `Tests` suffix (e.g., `RUMViewScopeTests.swift`)
+
+**File naming patterns:**
+- Feature entry point: `{Feature}.swift` (e.g., `RUM.swift`, `Logs.swift`)
+- Feature configuration: `{Feature}Configuration.swift`
+- Feature plugin: `Feature/{Feature}Feature.swift`
+- Scope files: `RUM{ScopeName}Scope.swift`
+- Protocols: `{Feature}Protocol.swift`
+
+## Conditional Compilation
+
+- `SPM_BUILD` — defined when building via Swift Package Manager
+- `DD_BENCHMARK` — defined for benchmark builds
+- `DD_COMPILED_FOR_INTEGRATION_TESTS` — toggles `@testable` imports for integration tests
+- Platform checks: `#if os(iOS)`, `#if canImport(UIKit)`, `#if os(tvOS)`
+
 ## Dependencies
 
-- **KSCrash**: Crash reporting
-- **OpenTelemetryApi**: Distributed tracing
+- **KSCrash 2.5.0**: Crash detection and reporting (`DatadogCrashReporting`). Products: Recording (crash detection), Filters (report processing).
+- **opentelemetry-swift-core 2.3.0+**: OpenTelemetry API for distributed tracing (`DatadogTrace`). Two compilation modes:
+  - Default: Lightweight OpenTelemetry API mirror (https://github.com/DataDog/opentelemetry-swift-packages)
+  - Full: Set `OTEL_SWIFT` env var — requires iOS 13+ and adds significant dependency tree
 
 Avoid adding new dependencies unless absolutely necessary (small footprint principle).
 
