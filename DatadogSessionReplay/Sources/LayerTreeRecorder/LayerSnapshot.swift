@@ -17,6 +17,7 @@
 @preconcurrency import CoreGraphics
 import Foundation
 import QuartzCore
+import WebKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 internal struct LayerSnapshot: Sendable, Equatable {
@@ -55,16 +56,22 @@ internal struct LayerSnapshot: Sendable, Equatable {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
+internal struct LayerSnapshotContext {
+    let webViewCache: NSHashTable<WKWebView>
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
 extension LayerSnapshot {
     @MainActor
-    init(from root: CALayer) {
+    init(from root: CALayer, in context: LayerSnapshotContext) {
         self.init(
             from: root,
             in: root,
             pathComponents: [root.pathComponent(0)],
             clipRect: root.bounds,
             parentOpacity: 1.0,
-            parentHasMask: false
+            parentHasMask: false,
+            context: context
         )
     }
 
@@ -75,13 +82,14 @@ extension LayerSnapshot {
         pathComponents: [String],
         clipRect: CGRect,
         parentOpacity: Float,
-        parentHasMask: Bool
+        parentHasMask: Bool,
+        context: LayerSnapshotContext
     ) {
         let frame = layer.convert(layer.bounds, to: rootLayer)
         let opacity = layer.opacity
         let resolvedOpacity = parentOpacity * opacity
         let hasMask = parentHasMask || layer.mask != nil
-        let semantics = layer.semantics
+        let semantics = layer.semantics(in: context)
 
         let nextClipRect: CGRect
         if layer.masksToBounds {
@@ -112,7 +120,8 @@ extension LayerSnapshot {
                 pathComponents: pathComponents + [pathComponent],
                 clipRect: nextClipRect,
                 parentOpacity: resolvedOpacity,
-                parentHasMask: hasMask
+                parentHasMask: hasMask,
+                context: context
             )
 
             children.append(snapshot)

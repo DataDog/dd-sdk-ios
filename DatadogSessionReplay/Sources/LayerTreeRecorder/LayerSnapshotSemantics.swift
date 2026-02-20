@@ -33,10 +33,13 @@ extension LayerSnapshot {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
-    @MainActor var semantics: LayerSnapshot.Semantics {
+    @MainActor
+    func semantics(in context: LayerSnapshotContext) -> LayerSnapshot.Semantics {
         if let webView = delegate as? WKWebView {
+            context.webViewCache.add(webView)
             return .webView(slotID: webView.hash)
         }
+
         return .generic
     }
 }
