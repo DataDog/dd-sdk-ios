@@ -31,6 +31,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
     let actionsHandler: RUMActionsHandling
 
+    #if !os(tvOS)
+    /// Swizzles `UIScrollView.delegate` setter for intercepting scroll gestures.
+    /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
+    let scrollViewSwizzler: UIScrollViewSwizzler?
+    /// Receives scroll lifecycle events and generates RUM commands.
+    let scrollHandler: UIScrollViewScrollHandler?
+    #endif
+
     /// Instruments RUM Long Tasks. It is `nil` if long tasks tracking is not enabled.
     let longTasks: LongTaskObserver?
 
@@ -120,6 +128,33 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             return nil
         }()
 
+        #if !os(tvOS)
+        // Create scroll handler and swizzler if UIKit action tracking is enabled:
+        let scrollHandler: UIScrollViewScrollHandler?
+        let scrollViewSwizzler: UIScrollViewSwizzler?
+        if let uiKitRUMActionsPredicate = uiKitRUMActionsPredicate {
+            let handler = UIScrollViewScrollHandler(
+                dateProvider: dateProvider,
+                predicate: uiKitRUMActionsPredicate
+            )
+            scrollHandler = handler
+            scrollViewSwizzler = {
+                do {
+                    return try UIScrollViewSwizzler(handler: handler)
+                } catch {
+                    consolePrint(
+                        "🔥 Datadog SDK error: RUM scroll tracking can't be enabled due to error: \(error)",
+                        .error
+                    )
+                    return nil
+                }
+            }()
+        } else {
+            scrollHandler = nil
+            scrollViewSwizzler = nil
+        }
+        #endif
+
         // Create long tasks and app hang observers only if configured:
         var longTasks: LongTaskObserver? = nil
         var appHangs: AppHangsMonitor? = nil
@@ -155,6 +190,10 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.viewControllerSwizzler = viewControllerSwizzler
         self.actionsHandler = actionsHandler
         self.uiApplicationSwizzler = uiApplicationSwizzler
+        #if !os(tvOS)
+        self.scrollHandler = scrollHandler
+        self.scrollViewSwizzler = scrollViewSwizzler
+        #endif
         self.longTasks = longTasks
         self.appHangs = appHangs
         self.watchdogTermination = watchdogTermination
@@ -163,6 +202,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         // Enable configured instrumentations:
         self.viewControllerSwizzler?.swizzle()
         self.uiApplicationSwizzler?.swizzle()
+        #if !os(tvOS)
+        self.scrollViewSwizzler?.swizzle()
+        #endif
         self.longTasks?.start()
         self.appHangs?.start()
         self.memoryWarningMonitor?.start()
@@ -172,6 +214,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         // Disable configured instrumentations:
         viewControllerSwizzler?.unswizzle()
         uiApplicationSwizzler?.unswizzle()
+        #if !os(tvOS)
+        scrollViewSwizzler?.unswizzle()
+        #endif
         longTasks?.stop()
         appHangs?.stop()
         watchdogTermination?.stop()
@@ -181,6 +226,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     func publish(to subscriber: RUMCommandSubscriber) {
         viewsHandler.publish(to: subscriber)
         actionsHandler.publish(to: subscriber)
+        #if !os(tvOS)
+        scrollHandler?.publish(to: subscriber)
+        #endif
         longTasks?.publish(to: subscriber)
         appHangs?.nonFatalHangsHandler.publish(to: subscriber)
         memoryWarningMonitor?.reporter.publish(to: subscriber)
