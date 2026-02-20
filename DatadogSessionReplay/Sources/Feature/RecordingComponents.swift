@@ -97,7 +97,13 @@ internal struct RecordingComponents {
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) throws -> Self {
-        let layerRecorder = LayerRecorder(layerProvider: KeyWindowObserver())
+        // ScreenChangeMonitor delivers changes at most every 0.1s. We budget 0.09s
+        // for one recording pass to keep a small headroom for scheduling and handoff
+        let layerRecorder = LayerRecorder(
+            layerProvider: KeyWindowObserver(),
+            layerImageRenderer: LayerImageRenderer(scale: 1.0),
+            timeoutInterval: 0.09
+        )
         let screenChangeMonitor = try ScreenChangeMonitor(minimumDeliveryInterval: 0.1)
         let telemetryQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.telemetry", qos: .background)
         let telemetry = SessionReplayTelemetry(

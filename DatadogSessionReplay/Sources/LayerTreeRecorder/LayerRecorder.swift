@@ -19,10 +19,22 @@ import Foundation
 @available(iOS 13.0, tvOS 13.0, *)
 internal actor LayerRecorder: LayerRecording {
     private let layerProvider: any LayerProvider
+    private let layerImageRenderer: any LayerImageRendering
+    private let timeoutInterval: TimeInterval
+    private let timeSource: any TimeSource
+
     private var recordTask: Task<Void, Never>?
 
-    init(layerProvider: any LayerProvider) {
+    init(
+        layerProvider: any LayerProvider,
+        layerImageRenderer: any LayerImageRendering,
+        timeoutInterval: TimeInterval,
+        timeSource: any TimeSource = .mediaTime
+    ) {
         self.layerProvider = layerProvider
+        self.layerImageRenderer = layerImageRenderer
+        self.timeoutInterval = max(0, timeoutInterval)
+        self.timeSource = timeSource
     }
 
     func scheduleRecording(_ changes: CALayerChangeset, context: LayerRecordingContext) {
@@ -40,6 +52,8 @@ internal actor LayerRecorder: LayerRecording {
 @available(iOS 13.0, tvOS 13.0, *)
 extension LayerRecorder {
     private func record(_ changes: CALayerChangeset, context: LayerRecordingContext) async {
+        let startTime = timeSource.now
+
         guard
             // Capture layer tree snapshot
             let snapshot = await LayerSnapshot(using: layerProvider),
@@ -54,8 +68,17 @@ extension LayerRecorder {
             return
         }
 
+        let elapsed = timeSource.now - startTime
+        let remaining = max(0, timeoutInterval - elapsed)
+
+        let layerImages = await layerImageRenderer.renderImages(
+            for: targetSnapshots,
+            changes: changes,
+            rootLayer: snapshot.layer,
+            timeoutInterval: remaining
+        )
+
         // Pending stages:
-        // - Render layer bitmaps
         // - Process layer tree snapshots
     }
 }

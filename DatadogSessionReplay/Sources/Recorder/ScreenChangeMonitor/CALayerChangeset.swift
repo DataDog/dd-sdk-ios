@@ -34,6 +34,13 @@ internal struct CALayerChangeset: Sendable, Equatable {
         }
         return change.aspects
     }
+
+    func hasContentChanges(for layer: CALayerReference) -> Bool {
+        guard let aspects = aspects(for: layer) else {
+            return false
+        }
+        return aspects.contains(.display) || aspects.contains(.draw)
+    }
 }
 
 extension CALayerChangeset: CustomStringConvertible {

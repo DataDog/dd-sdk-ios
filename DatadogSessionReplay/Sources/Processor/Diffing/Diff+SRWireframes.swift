@@ -181,6 +181,7 @@ extension SRImageWireframe: MutableWireframe {
                 id: id,
                 isEmpty: use(isEmpty, ifDifferentThan: other.isEmpty),
                 mimeType: use(mimeType, ifDifferentThan: other.mimeType),
+                resourceId: use(resourceId, ifDifferentThan: other.resourceId),
                 shapeStyle: use(shapeStyle, ifDifferentThan: other.shapeStyle),
                 width: use(width, ifDifferentThan: other.width),
                 x: use(x, ifDifferentThan: other.x),

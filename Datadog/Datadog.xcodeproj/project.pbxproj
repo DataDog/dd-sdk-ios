@@ -554,6 +554,9 @@
 		5B1D028F2E8ED10200AB2391 /* FlagAssignmentsResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */; };
 		5B1D02942E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */; };
 		5B1D02952E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */; };
+		5B2275F12F4485FB001EF869 /* LayerImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2275F02F4485F8001EF869 /* LayerImageRenderer.swift */; };
+		5B2275F32F449F51001EF869 /* MediaTimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2275F22F449F4B001EF869 /* MediaTimeSource.swift */; };
+		5B2275F52F45BC79001EF869 /* LayerSnapshot+Rendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2275F42F45BC6F001EF869 /* LayerSnapshot+Rendering.swift */; };
 		5B3AF8AA2E4B3AE9009E5375 /* EnrichedResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3AF8A92E4B3AE6009E5375 /* EnrichedResourceTests.swift */; };
 		5B4F37692E93C5C90093778F /* FlagsRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */; };
 		5B4F376A2E93C5C90093778F /* FlagsRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */; };
@@ -597,6 +600,9 @@
 		5B870BE42F42404D008106A5 /* LayerSnapshotFlatteningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BE32F424044008106A5 /* LayerSnapshotFlatteningTests.swift */; };
 		5B870BE62F43311B008106A5 /* LayerSnapshot+Culling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BE52F433110008106A5 /* LayerSnapshot+Culling.swift */; };
 		5B870BE82F433286008106A5 /* LayerSnapshotCullingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B870BE72F43327F008106A5 /* LayerSnapshotCullingTests.swift */; };
+		5B22A0A22F4FA003001EF869 /* LayerSnapshotRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B22A0A12F4FA001001EF869 /* LayerSnapshotRenderingTests.swift */; };
+		5B22A0A52F500003001EF869 /* LayerImageRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B22A0A42F500001001EF869 /* LayerImageRendererTests.swift */; };
+		5B22A0A72F500101001EF869 /* TestTimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B22A0A62F5000FF001EF869 /* TestTimeSource.swift */; };
 		5B9565FC2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
 		5B9565FD2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
 		5B9B20C52E460A0600C95B6C /* ShapeResourceBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */; };
@@ -3004,6 +3010,9 @@
 		5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagEvaluationReceiver.swift; sourceTree = "<group>"; };
 		5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsResponseTests.swift; sourceTree = "<group>"; };
 		5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagEvaluationReceiverTests.swift; sourceTree = "<group>"; };
+		5B2275F02F4485F8001EF869 /* LayerImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerImageRenderer.swift; sourceTree = "<group>"; };
+		5B2275F22F449F4B001EF869 /* MediaTimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTimeSource.swift; sourceTree = "<group>"; };
+		5B2275F42F45BC6F001EF869 /* LayerSnapshot+Rendering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LayerSnapshot+Rendering.swift"; sourceTree = "<group>"; };
 		5B3AF8A92E4B3AE6009E5375 /* EnrichedResourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrichedResourceTests.swift; sourceTree = "<group>"; };
 		5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRUMIntegrationTests.swift; sourceTree = "<group>"; };
 		5B4F376B2E93C5D90093778F /* FlagsEvaluationIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsEvaluationIntegrationTests.swift; sourceTree = "<group>"; };
@@ -3038,6 +3047,9 @@
 		5B870BE32F424044008106A5 /* LayerSnapshotFlatteningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotFlatteningTests.swift; sourceTree = "<group>"; };
 		5B870BE52F433110008106A5 /* LayerSnapshot+Culling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LayerSnapshot+Culling.swift"; sourceTree = "<group>"; };
 		5B870BE72F43327F008106A5 /* LayerSnapshotCullingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotCullingTests.swift; sourceTree = "<group>"; };
+		5B22A0A12F4FA001001EF869 /* LayerSnapshotRenderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotRenderingTests.swift; sourceTree = "<group>"; };
+		5B22A0A42F500001001EF869 /* LayerImageRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerImageRendererTests.swift; sourceTree = "<group>"; };
+		5B22A0A62F5000FF001EF869 /* TestTimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTimeSource.swift; sourceTree = "<group>"; };
 		5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagDetails.swift; sourceTree = "<group>"; };
 		5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilderTests.swift; sourceTree = "<group>"; };
 		5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRepresentable.swift; sourceTree = "<group>"; };
@@ -4915,6 +4927,9 @@
 				5B870BDF2F41E0E5008106A5 /* LayerSnapshotVisibilityTests.swift */,
 				5B870BE32F424044008106A5 /* LayerSnapshotFlatteningTests.swift */,
 				5B870BE72F43327F008106A5 /* LayerSnapshotCullingTests.swift */,
+				5B22A0A12F4FA001001EF869 /* LayerSnapshotRenderingTests.swift */,
+				5B22A0A42F500001001EF869 /* LayerImageRendererTests.swift */,
+				5B22A0A62F5000FF001EF869 /* TestTimeSource.swift */,
 			);
 			path = LayerTreeRecorder;
 			sourceTree = "<group>";
@@ -4965,11 +4980,14 @@
 				5BC91D482F3CB53A00D0241D /* LayerRecording.swift */,
 				5BC91D442F3C9E2E00D0241D /* LayerProvider.swift */,
 				5BC91D422F3C9AED00D0241D /* LayerRecorder.swift */,
+				5B2275F02F4485F8001EF869 /* LayerImageRenderer.swift */,
 				5B870BD92F41D3E0008106A5 /* LayerSnapshot.swift */,
 				5B870BDD2F41DE5C008106A5 /* LayerSnapshot+Visibility.swift */,
 				5B870BE12F423DCB008106A5 /* LayerSnapshot+Flattening.swift */,
 				5B870BE52F433110008106A5 /* LayerSnapshot+Culling.swift */,
+				5B2275F42F45BC6F001EF869 /* LayerSnapshot+Rendering.swift */,
 				5BC91D402F3C8DF300D0241D /* LayerTreeRecordingCoordinator.swift */,
+				5B2275F22F449F4B001EF869 /* MediaTimeSource.swift */,
 				5BC91D012F3C8B9600D0241D /* RecordingController.swift */,
 			);
 			path = LayerTreeRecorder;
@@ -10015,6 +10033,7 @@
 				D2AD1CC82CE4AE6600106C74 /* Text.swift in Sources */,
 				5BCBC0CD2DF85B6A0094DCC2 /* SessionReplayPrivacyView.swift in Sources */,
 				D2AD1CC92CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift in Sources */,
+				5B2275F32F449F51001EF869 /* MediaTimeSource.swift in Sources */,
 				969B3B212C33F80500D62400 /* UIActivityIndicatorRecorder.swift in Sources */,
 				61054EA22A6EE10B00AAA894 /* Scheduler.swift in Sources */,
 				A7EA88562B17639A00FE2580 /* ResourcesWriter.swift in Sources */,
@@ -10035,6 +10054,8 @@
 				61054E632A6EE10A00AAA894 /* SessionReplayConfiguration.swift in Sources */,
 				5BC91D492F3CB54100D0241D /* LayerRecording.swift in Sources */,
 				61054E702A6EE10A00AAA894 /* TouchSnapshotProducer.swift in Sources */,
+				5B2275F12F4485FB001EF869 /* LayerImageRenderer.swift in Sources */,
+				5B2275F52F45BC79001EF869 /* LayerSnapshot+Rendering.swift in Sources */,
 				D2C5D52B2B84F6AB00B63F36 /* WebViewRecordReceiver.swift in Sources */,
 				61054E652A6EE10A00AAA894 /* AppWindowObserver.swift in Sources */,
 				A74A72812B0CEE4900771FEB /* ResourceRequestBuilder.swift in Sources */,
@@ -10175,6 +10196,9 @@
 				61054FAC2A6EE1BA00AAA894 /* CGRect+SessionReplayTests.swift in Sources */,
 				D218B0482D072CF300E3F82C /* SessionReplayTelemetryTests.swift in Sources */,
 				5B870BE82F433286008106A5 /* LayerSnapshotCullingTests.swift in Sources */,
+				5B22A0A22F4FA003001EF869 /* LayerSnapshotRenderingTests.swift in Sources */,
+				5B22A0A52F500003001EF869 /* LayerImageRendererTests.swift in Sources */,
+				5B22A0A72F500101001EF869 /* TestTimeSource.swift in Sources */,
 				D21331C12D132F0600E4A6A1 /* SwiftUIWireframesBuilderTests.swift in Sources */,
 				61054FA42A6EE1BA00AAA894 /* DiffTests.swift in Sources */,
 				61054FA02A6EE1BA00AAA894 /* SRCompressionTests.swift in Sources */,
