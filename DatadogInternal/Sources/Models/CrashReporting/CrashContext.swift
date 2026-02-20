@@ -183,6 +183,6 @@ public struct CrashContext: Codable, Equatable {
 extension CrashContext {
     /// Datadog tags to send in the error events.
     public var ddTags: String {
-        "service:\(service),version:\(version),sdk_version:\(sdkVersion),env:\(env)"
+        "\(DDTag.service):\(service),\(DDTag.version):\(version),\(DDTag.sdkVersion):\(sdkVersion),\(DDTag.env):\(env)"
     }
 }

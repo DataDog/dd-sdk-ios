@@ -203,12 +203,21 @@ public struct DatadogContext {
     // swiftlint:enable function_default_parameter_at_end
 
     private func buildDDTags() -> String {
-        var result = "service:\(service),version:\(version),sdk_version:\(sdkVersion),env:\(env)"
+        var result = "\(DDTag.service):\(service),\(DDTag.version):\(version),\(DDTag.sdkVersion):\(sdkVersion),\(DDTag.env):\(env)"
         if let variant {
-            result += ",variant:\(variant)"
+            result += ",\(DDTag.variant):\(variant)"
         }
         return result
     }
+}
+
+/// Shared key names used in `ddTags` strings across the SDK.
+public enum DDTag {
+    public static let service = "service"
+    public static let version = "version"
+    public static let sdkVersion = "sdk_version"
+    public static let env = "env"
+    public static let variant = "variant"
 }
 
 /// Defines an additional context value type associated to a key.
