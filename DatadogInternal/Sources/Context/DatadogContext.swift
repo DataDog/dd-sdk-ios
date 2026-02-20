@@ -24,7 +24,15 @@ public struct DatadogContext {
     public let env: String
 
     /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-    public var version: String
+    public var version: String {
+        didSet {
+            guard version != oldValue else {
+                return
+            }
+            version = version.sanitizedToDDTags()
+            ddTags = buildDDTags()
+        }
+    }
 
     /// The build number of the application that data is generated from.
     public let buildNumber: String
@@ -53,6 +61,9 @@ public struct DatadogContext {
     ///
     /// The value can change as the device continue to sync with the server.
     public var serverTimeOffset: TimeInterval = .zero
+
+    /// Cached Datadog tags to send in the events. Recomputed when `version` changes.
+    public private(set) var ddTags: String = ""
 
     // MARK: - Application Specific
 
@@ -187,32 +198,23 @@ public struct DatadogContext {
         self.brightnessLevel = brightnessLevel
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
         self.additionalContext = additionalContext
+        self.ddTags = buildDDTags()
     }
     // swiftlint:enable function_default_parameter_at_end
+
+    private func buildDDTags() -> String {
+        var result = "service:\(service),version:\(version),sdk_version:\(sdkVersion),env:\(env)"
+        if let variant {
+            result += ",variant:\(variant)"
+        }
+        return result
+    }
 }
 
 /// Defines an additional context value type associated to a key.
 public protocol AdditionalContext {
     /// The additional context key.
     static var key: String { get }
-}
-
-extension DatadogContext {
-    /// Datadog tags to send in the events.
-    public var ddTags: String {
-        var tags = [
-            "service": service,
-            "version": version,
-            "sdk_version": sdkVersion,
-            "env": env
-        ]
-
-        if let variant {
-            tags["variant"] = variant
-        }
-
-        return tags.map { "\($0.key):\($0.value)" }.joined(separator: ",")
-    }
 }
 
 extension DatadogContext {
