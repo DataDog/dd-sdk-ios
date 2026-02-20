@@ -17,13 +17,13 @@ internal struct HeaderProcessor {
     static let maxTotalSize = 2_048
 
     /// Default request headers to capture.
-    static let defaultRequestHeaders: Set<String> = [
+    private static let defaultRequestHeaders: Set<String> = [
         "cache-control",
         "content-type"
     ]
 
     /// Default response headers to capture.
-    static let defaultResponseHeaders: Set<String> = [
+    private static let defaultResponseHeaders: Set<String> = [
         "cache-control",
         "content-encoding",
         "content-length",
@@ -39,7 +39,7 @@ internal struct HeaderProcessor {
     /// iOS-managed headers that are always omitted from request capture.
     /// These are set by the URL Loading System and should not be reported as user-provided request headers.
     /// Ref: https://developer.apple.com/documentation/foundation/nsurlrequest#Reserved-HTTP-headers
-    static let reservedRequestHeaders: Set<String> = [
+    private static let reservedRequestHeaders: Set<String> = [
         "content-length",
         "authorization",
         "connection",
@@ -51,7 +51,7 @@ internal struct HeaderProcessor {
 
     /// Regex pattern to catch sensitive headers (auth, cookies, tokens, secrets, IPs, etc.).
     // swiftlint:disable:next force_try
-    static let securityPattern: NSRegularExpression = try! NSRegularExpression(
+    private static let securityPattern: NSRegularExpression = try! NSRegularExpression(
         pattern: "(token|cookie|secret|authorization|password|credential|bearer|(api|secret|access|app).?key|forwarded|real.?ip|connecting.?ip|client.?ip)",
         options: .caseInsensitive
     )
@@ -72,13 +72,15 @@ internal struct HeaderProcessor {
         requestHeaders: [String: String]?,
         responseHeaders: [AnyHashable: Any]?
     ) -> (request: [String: String], response: [String: String]) {
-        guard case .disabled = config else {
+        switch config {
+        case .disabled:
+            return (request: [:], response: [:])
+        case .defaults, .custom:
             let (captureRequest, captureResponse) = buildCaptureList()
             let request = filterRequestHeaders(requestHeaders, capturing: captureRequest)
             let response = filterResponseHeaders(responseHeaders, capturing: captureResponse)
             return (request: request, response: response)
         }
-        return (request: [:], response: [:])
     }
 
     // MARK: - Private
@@ -148,14 +150,19 @@ internal struct HeaderProcessor {
         for (key, value) in headers {
             let lowercasedKey = key.lowercased()
 
+            // Only capture headers in the configured list
             guard capturing.contains(lowercasedKey) else { continue }
+            // Skip iOS reserved headers
             guard !excluded.contains(lowercasedKey) else { continue }
+            // Skip sensitive headers (auth, cookies, tokens, etc.)
             guard !matchesSecurityPattern(lowercasedKey) else { continue }
+            // Enforce max header count
             guard result.count < Self.maxHeaderCount else { break }
 
             let truncatedValue = truncateValue(value)
             let entrySize = key.utf8.count + truncatedValue.utf8.count
 
+            // Enforce total size budget
             guard totalSize + entrySize <= Self.maxTotalSize else { break }
 
             result[key] = truncatedValue
