@@ -4,6 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Semantic classification for captured layer snapshots.
+//
+// Semantics let the capture pipeline attach meaning beyond raw layer geometry so downstream
+// stages can branch on behavior, such as subtree traversal and rendering strategy.
+
 #if os(iOS)
 import QuartzCore
 import UIKit
@@ -36,6 +43,7 @@ extension CALayer {
     @MainActor
     func semantics(in context: LayerSnapshotContext) -> LayerSnapshot.Semantics {
         if let webView = delegate as? WKWebView {
+            // Record the instance to preserve slot IDs for hidden but alive web views across captures
             context.webViewCache.add(webView)
             return .webView(slotID: webView.hash)
         }

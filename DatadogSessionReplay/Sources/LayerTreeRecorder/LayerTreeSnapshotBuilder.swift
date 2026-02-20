@@ -4,6 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Main-actor builder for immutable layer-tree snapshots.
+//
+// The builder owns cross-capture state needed during snapshot creation, currently the weak
+// WKWebView cache used to keep stable slot IDs for hidden web views.
+
 #if os(iOS)
 import Foundation
 import WebKit
