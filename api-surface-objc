@@ -2822,6 +2822,14 @@ public class objc_URLSessionTracking: NSObject
     override public init()
     public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_FirstPartyHostsTracing)
     public func setResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [String: Any]?)
+    public func setTrackResourceHeaders(_ trackResourceHeaders: objc_TrackResourceHeaders)
+public final class objc_HeaderCaptureRule: NSObject
+    public static let defaults = objc_HeaderCaptureRule(.defaults)
+    public static func matchHeaders(_ names: [String]) -> objc_HeaderCaptureRule
+public final class objc_TrackResourceHeaders: NSObject
+    public static let disabled = objc_TrackResourceHeaders(.disabled)
+    public static let defaults = objc_TrackResourceHeaders(.defaults)
+    public static func custom(_ rules: [objc_HeaderCaptureRule]) -> objc_TrackResourceHeaders
 public class objc_RUMConfiguration: NSObject
     public init(applicationID: String)
     public var applicationID: String

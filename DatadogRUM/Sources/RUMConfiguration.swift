@@ -342,11 +342,11 @@ extension RUM {
 
             /// Configuration for capturing HTTP headers from network requests and responses.
             ///
-            /// When enabled, the SDK captures configured HTTP headers from intercepted URLSession requests
-            /// and includes them in RUM Resource events. Headers are filtered for security (sensitive headers
-            /// like `Authorization`, `Cookie`, etc. are never captured) and size limits are enforced.
+            /// When enabled, the SDK captures configured HTTP headers from intercepted URLSession requests and responses
+            /// and includes them in RUM Resource events. Sensitive headers are filtered out for security reasons
+            /// (e.g., `Authorization` and `Cookie` headers are never captured) and size limits are enforced.
             ///
-            /// - `.disabled`: No header capture (default).
+            /// - `.disabled`: No header capture.
             /// - `.defaults`: Capture a predefined set of common request and response headers.
             /// - `.custom([rules])`: Capture headers based on custom rules.
             ///
