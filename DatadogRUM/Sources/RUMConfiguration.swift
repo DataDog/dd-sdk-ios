@@ -340,6 +340,19 @@ extension RUM {
             /// Default: `nil`.
             public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
 
+            /// Configuration for capturing HTTP headers from network requests and responses.
+            ///
+            /// When enabled, the SDK captures configured HTTP headers from intercepted URLSession requests and responses
+            /// and includes them in RUM Resource events. Sensitive headers are filtered out for security reasons
+            /// (e.g., `Authorization` and `Cookie` headers are never captured) and size limits are enforced.
+            ///
+            /// - `.disabled`: No header capture.
+            /// - `.defaults`: Capture a predefined set of common request and response headers.
+            /// - `.custom([rules])`: Capture headers based on custom rules.
+            ///
+            /// Default: `.disabled`.
+            public var trackResourceHeaders: TrackResourceHeaders = .disabled
+
             /// Private init to avoid `invalid redeclaration of synthesized memberwise init(...:)` in extension.
             private init() {}
         }
@@ -420,16 +433,50 @@ extension RUM.Configuration.URLSessionTracking {
         )
     }
 
+    /// Configuration for capturing HTTP headers from network requests and responses.
+    public enum TrackResourceHeaders {
+        /// No header capture. This is the default.
+        case disabled
+
+        /// Capture a predefined set of common request and response headers for all URLs.
+        ///
+        /// Default request headers: `cache-control`, `content-type`.
+        /// Default response headers: `cache-control`, `content-encoding`, `content-length`,
+        /// `content-type`, `etag`, `age`, `expires`, `vary`, `server-timing`, `x-cache`.
+        case defaults
+
+        /// Capture headers based on custom rules for all URLs.
+        ///
+        /// Multiple rules can be combined. For example, to capture default headers plus
+        /// additional custom headers:
+        /// ```swift
+        /// .custom([.defaults, .matchHeaders(["x-request-id"])])
+        /// ```
+        case custom([HeaderCaptureRule])
+    }
+
+    /// A rule that defines which HTTP headers to capture.
+    public enum HeaderCaptureRule {
+        /// Include the predefined set of default headers.
+        case defaults
+
+        /// Match headers by exact name (case-insensitive).
+        case matchHeaders([String])
+    }
+
     /// Configuration for automatic RUM resources tracking.
     /// - Parameters:
     ///   - firstPartyHostsTracing: Distributed tracing configuration for particular first-party hosts.
     ///   - resourceAttributesProvider: Custom attributes provider for intercepted RUM resources.
+    ///   - trackResourceHeaders: Configuration for capturing HTTP headers. Default: `.disabled`.
     public init(
         firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,
-        resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil
+        resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,
+        trackResourceHeaders: TrackResourceHeaders = .disabled
     ) {
         self.firstPartyHostsTracing = firstPartyHostsTracing
         self.resourceAttributesProvider = resourceAttributesProvider
+        self.trackResourceHeaders = trackResourceHeaders
     }
 }
 

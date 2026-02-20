@@ -420,6 +420,7 @@ public enum RUM
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing?
             public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
+            public var trackResourceHeaders: TrackResourceHeaders = .disabled
         public enum VitalsFrequency: String
             case frequent
             case average
@@ -428,7 +429,14 @@ public enum RUM
     public enum FirstPartyHostsTracing
         case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
         case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
-    public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
+    public enum TrackResourceHeaders
+        case disabled
+        case defaults
+        case custom([HeaderCaptureRule])
+    public enum HeaderCaptureRule
+        case defaults
+        case matchHeaders([String])
+    public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,trackResourceHeaders: TrackResourceHeaders = .disabled)
 [?] extension RUM.Configuration
     public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,trackSlowFrames: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
