@@ -34,22 +34,22 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
             return false
         }
 
-        let profileStatus = ctor_profiler_get_status()
-        guard profileStatus == CTOR_PROFILER_STATUS_RUNNING
-                || profileStatus == CTOR_PROFILER_STATUS_TIMEOUT
-                || profileStatus == CTOR_PROFILER_STATUS_STOPPED else {
-            if profileStatus != CTOR_PROFILER_STATUS_SAMPLED_OUT
-                && profileStatus != CTOR_PROFILER_STATUS_PREWARMED {
+        let profileStatus = dd_profiler_get_status()
+        guard profileStatus == DD_PROFILER_STATUS_RUNNING
+                || profileStatus == DD_PROFILER_STATUS_TIMEOUT
+                || profileStatus == DD_PROFILER_STATUS_STOPPED else {
+            if profileStatus != DD_PROFILER_STATUS_SAMPLED_OUT
+                && profileStatus != DD_PROFILER_STATUS_PREWARMED {
                 telemetryController.send(metric: AppLaunchMetric.statusNotHandled)
             }
             return false
         }
 
-        ctor_profiler_stop()
+        dd_profiler_stop()
         core.set(context: ProfilingContext(status: .current))
         defer { Self.unregisterInstance() }
 
-        guard let profile = ctor_profiler_get_profile() else {
+        guard let profile = dd_profiler_get_profile() else {
             telemetryController.send(metric: AppLaunchMetric.noProfile)
             return false
         }
@@ -118,7 +118,7 @@ private extension AppLaunchProfiler {
 
         pendingInstances -= 1
         if pendingInstances <= 0 {
-            ctor_profiler_destroy()
+            dd_profiler_destroy()
         }
     }
 }
@@ -142,25 +142,25 @@ extension AppLaunchProfiler {
 }
 
 extension ProfilingContext.Status {
-    static var current: Self { .init(ctor_profiler_get_status()) }
+    static var current: Self { .init(dd_profiler_get_status()) }
 
-    init(_ status: ctor_profiler_status_t) {
+    init(_ status: dd_profiler_status_t) {
         switch status {
-        case CTOR_PROFILER_STATUS_NOT_STARTED:
+        case DD_PROFILER_STATUS_NOT_STARTED:
             self = .stopped(reason: .notStarted)
-        case CTOR_PROFILER_STATUS_RUNNING:
+        case DD_PROFILER_STATUS_RUNNING:
             self = .running
-        case CTOR_PROFILER_STATUS_STOPPED:
+        case DD_PROFILER_STATUS_STOPPED:
             self = .stopped(reason: .manual)
-        case CTOR_PROFILER_STATUS_TIMEOUT:
+        case DD_PROFILER_STATUS_TIMEOUT:
             self = .stopped(reason: .timeout)
-        case CTOR_PROFILER_STATUS_PREWARMED:
+        case DD_PROFILER_STATUS_PREWARMED:
             self = .stopped(reason: .prewarmed)
-        case CTOR_PROFILER_STATUS_SAMPLED_OUT:
+        case DD_PROFILER_STATUS_SAMPLED_OUT:
             self = .stopped(reason: .sampledOut)
-        case CTOR_PROFILER_STATUS_ALLOCATION_FAILED:
+        case DD_PROFILER_STATUS_ALLOCATION_FAILED:
             self = .error(reason: .memoryAllocationFailed)
-        case CTOR_PROFILER_STATUS_ALREADY_STARTED:
+        case DD_PROFILER_STATUS_ALREADY_STARTED:
             self = .error(reason: .alreadyStarted)
         default:
             self = .unknown
