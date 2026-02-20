@@ -4,6 +4,14 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Defines the recording contract and immutable context passed to layer recorders.
+//
+// `LayerRecordingContext` mirrors the view/session/telemetry metadata needed to
+// build replay records for a capture cycle. The protocol isolates scheduling from
+// orchestration so coordinators can remain agnostic of recorder implementation.
+
 #if os(iOS)
 import Foundation
 @preconcurrency import DatadogInternal

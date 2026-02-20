@@ -4,6 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Abstraction for obtaining the root `CALayer` to capture.
+//
+// This keeps layer-tree recording decoupled from app/window discovery details and
+// makes the recorder easy to test with custom providers.
+
 #if os(iOS)
 import Foundation
 import QuartzCore
