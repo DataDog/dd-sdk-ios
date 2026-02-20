@@ -166,6 +166,10 @@ internal final class LayerImageRenderer: LayerImageRendering {
         with changes: CALayerChangeset
     ) -> [LayerSnapshot] {
         snapshots.filter { snapshot in
+            guard case .generic = snapshot.semantics else {
+                return false
+            }
+
             guard let layerClass = snapshot.layer.class else {
                 removeCache(for: snapshot.replayID)
                 return false
