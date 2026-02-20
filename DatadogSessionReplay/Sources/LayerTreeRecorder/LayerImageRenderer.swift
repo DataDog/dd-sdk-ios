@@ -197,9 +197,17 @@ internal final class LayerImageRenderer: LayerImageRendering {
             )
 
             // If a new render is not needed and we still have the previous image,
-            // return the cached image directly
+            // reuse its resource and update frame only when needed
             if !layerImageChange.needsRender, let layerImage = images.object(forKey: snapshot.replayID as NSNumber) {
-                return layerImage
+                let frame = layerImageChange.rect(in: rootLayer)
+
+                if layerImage.frame.equalTo(frame) {
+                    return layerImage
+                }
+
+                let newLayerImage = LayerImage(resource: layerImage.resource, frame: frame)
+                images.setObject(newLayerImage, forKey: snapshot.replayID as NSNumber)
+                return newLayerImage
             }
 
             let image = renderImage(

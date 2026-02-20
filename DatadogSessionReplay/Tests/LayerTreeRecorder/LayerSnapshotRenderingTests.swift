@@ -231,5 +231,38 @@ extension LayerSnapshotTests {
         #expect(change.rect.origin.x == 180)
         #expect(change.rect.size == CGSize(width: 20, height: 120))
     }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
+    func partialImageNeedsRenderWhenVisibleRectChangesWithinCachedRect() throws {
+        // given
+        let rootLayer = Fixtures.rootLayer
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 400, height: 120)
+        layer.position = CGPoint(x: 200, y: 60)
+        rootLayer.addSublayer(layer)
+
+        let snapshot = Fixtures.snapshot(
+            layer: layer,
+            replayID: 15,
+            frame: layer.convert(layer.bounds, to: rootLayer),
+            clipRect: CGRect(x: 120, y: 0, width: 80, height: 120),
+            hasContents: false
+        )
+
+        let previousPartialRect = CGRect(x: 100, y: 0, width: 200, height: 120)
+
+        // when
+        let change = try snapshot.layerImageChange(
+            with: CALayerChangeset(),
+            imageRects: [snapshot.replayID: previousPartialRect],
+            relativeTo: rootLayer
+        )
+
+        // then
+        #expect(change.needsRender)
+        #expect(change.rect.origin.x == 120)
+        #expect(change.rect.size == CGSize(width: 80, height: 120))
+    }
 }
 #endif

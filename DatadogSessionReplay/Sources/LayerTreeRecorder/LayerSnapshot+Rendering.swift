@@ -57,12 +57,14 @@ extension LayerSnapshot {
         let lastImageRect = imageRects[replayID]
         let isNew = lastImageRect == nil
 
-        // A capture is partial when the previous image did not cover full bounds,
-        // or when the layer is larger than the root viewport on first capture
-        let isPartialImage = lastImageRect.map { rect in
+        let lastRenderWasPartial = lastImageRect.map { rect in
             !rect.equalTo(layer.bounds)
-        } ?? layer.bounds.exceeds(rootLayer.bounds)
-        let imageRectDidChange = isPartialImage && !(lastImageRect?.contains(visibleRect) ?? false)
+        } ?? false
+        let renderWillBePartial = layer.bounds.sizeExceeds(rootLayer.bounds)
+        let isPartialImage = lastRenderWasPartial || (isNew && renderWillBePartial)
+        // Partial captures are content-addressed by local visible rect
+        // Any rect change requires a re-render to keep the rendered pixels aligned
+        let imageRectDidChange = isPartialImage && !(lastImageRect?.equalTo(visibleRect) ?? false)
 
         // Determine when pixel content may have changed
         let needsRender = if type(of: layer) == CALayer.self {
@@ -78,7 +80,7 @@ extension LayerSnapshot {
         return LayerImageChange(
             layer: layer,
             // For oversized layers, render only the visible local rect
-            rect: layer.bounds.exceeds(rootLayer.bounds) ? visibleRect : layer.bounds,
+            rect: renderWillBePartial ? visibleRect : layer.bounds,
             needsRender: needsRender
         )
     }
@@ -110,7 +112,7 @@ extension CALayer {
 }
 
 extension CGRect {
-    fileprivate func exceeds(_ other: CGRect) -> Bool {
+    fileprivate func sizeExceeds(_ other: CGRect) -> Bool {
         width > other.width || height > other.height
     }
 }

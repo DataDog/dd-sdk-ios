@@ -126,6 +126,103 @@ struct LayerImageRendererTests {
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test
+    func rerendersPartialImageWhenVisibleRectChangesWithinCachedRect() async throws {
+        // given
+        let rootLayer = Fixtures.rootLayer
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 400, height: 120)
+        layer.position = CGPoint(x: 200, y: 60)
+        rootLayer.addSublayer(layer)
+
+        let firstSnapshot = Fixtures.layerSnapshot(
+            for: layer,
+            replayID: 8,
+            in: rootLayer,
+            hasContents: true,
+            clipRect: CGRect(x: 0, y: 0, width: 200, height: 120)
+        )
+        let secondSnapshot = Fixtures.layerSnapshot(
+            for: layer,
+            replayID: 8,
+            in: rootLayer,
+            hasContents: false,
+            clipRect: CGRect(x: 60, y: 0, width: 120, height: 120)
+        )
+
+        let renderer = LayerImageRenderer(scale: 1, timeSource: .constant(0))
+
+        let firstResults = await renderer.renderImages(
+            for: [firstSnapshot],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        // when
+        let secondResults = await renderer.renderImages(
+            for: [secondSnapshot],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        // then
+        let firstImage = try firstResults.image(for: firstSnapshot.replayID)
+        let secondImage = try secondResults.image(for: secondSnapshot.replayID)
+
+        #expect(firstImage !== secondImage)
+        #expect(secondImage.frame.equalTo(CGRect(x: 60, y: 0, width: 120, height: 120)))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
+    func reusesCachedResourceAndCachesUpdatedFrameWhenGeometryChanges() async throws {
+        // given
+        let rootLayer = Fixtures.rootLayer
+        let layer = CATextLayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
+        layer.position = CGPoint(x: 60, y: 40)
+        rootLayer.addSublayer(layer)
+
+        let firstSnapshot = Fixtures.layerSnapshot(for: layer, replayID: 9, in: rootLayer)
+        let renderer = LayerImageRenderer(scale: 1, timeSource: .constant(0))
+
+        let firstResults = await renderer.renderImages(
+            for: [firstSnapshot],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        layer.position = CGPoint(x: 100, y: 90)
+        let secondSnapshot = Fixtures.layerSnapshot(for: layer, replayID: 9, in: rootLayer)
+
+        // when
+        let secondResults = await renderer.renderImages(
+            for: [secondSnapshot],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+        let thirdResults = await renderer.renderImages(
+            for: [secondSnapshot],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        // then
+        let firstImage = try firstResults.image(for: firstSnapshot.replayID)
+        let secondImage = try secondResults.image(for: secondSnapshot.replayID)
+        let thirdImage = try thirdResults.image(for: secondSnapshot.replayID)
+
+        #expect(firstImage !== secondImage)
+        #expect(secondImage.frame.equalTo(secondSnapshot.frame))
+        #expect(secondImage === thirdImage)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
     func reusesCachedImageWhenLayerReappearsBeforeExpiration() async throws {
         // given
         let rootLayer = Fixtures.rootLayer
