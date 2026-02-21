@@ -16,7 +16,9 @@ extension Vital: AnyMockable, RandomMockable {
         mockWith(
             id: .mockRandom(),
             name: .mockRandom(),
-            start: .mockRandom(),
+            operationKey: .mockRandom(),
+            type: [VitalType.duration, .applicationLaunch, .rumOperation(.start)].randomElement()!,
+            date: .mockRandom(),
             duration: .mockRandom()
         )
     }
@@ -24,9 +26,11 @@ extension Vital: AnyMockable, RandomMockable {
     public static func mockWith(
         id: String = .mockAny(),
         name: String = .mockAny(),
-        start: Int64 = .mockAny(),
+        operationKey: String? = .mockAny(),
+        type: VitalType = .duration,
+        date: Date = .mockAny(),
         duration: Int64 = .mockAny()
     ) -> Self {
-        .init(id: id, name: name, start: start, duration: duration)
+        .init(id: id, name: name, operationKey: operationKey, type: type, date: date, duration: duration)
     }
 }

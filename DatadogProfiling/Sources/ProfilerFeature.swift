@@ -18,6 +18,11 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 internal final class ProfilerFeature: DatadogRemoteFeature {
+    enum Constants {
+        static let maxFileSize = 10.MB.asUInt32()
+        static let maxObjectSize = 10.MB.asUInt32()
+        static let maxObjectsInFile = 1
+    }
     static let name = "profiler"
 
     let requestBuilder: FeatureRequestBuilder
@@ -28,34 +33,47 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
     /// Setting max-file-age to minimum will force creating a batch per profile.
     /// It is necessary as the profiling intake only accepts one profile per request.
-    let performanceOverride: PerformancePresetOverride? = PerformancePresetOverride(maxFileSize: .min)
+    let performanceOverride: PerformancePresetOverride? = PerformancePresetOverride(
+        maxFileSize: Constants.maxFileSize,
+        maxObjectSize: Constants.maxObjectSize,
+        maxObjectsInFile: Constants.maxObjectsInFile
+    )
 
     init(
+        core: DatadogCoreProtocol,
+        configuration: Profiling.Configuration,
         requestBuilder: FeatureRequestBuilder,
-        messageReceiver: FeatureMessageReceiver,
-        sampleRate: SampleRate,
         telemetryController: ProfilingTelemetryController,
         userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
     ) {
         self.requestBuilder = requestBuilder
-        self.messageReceiver = messageReceiver
         self.telemetryController = telemetryController
 
+        let messageReceivers: [FeatureMessageReceiver] = [
+            AppLaunchProfiler(
+                core: core,
+                telemetryController: telemetryController
+            )
+        ]
+
+        self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
+
         setProfilingEnabled(in: userDefaults)
-        set(sampleRate: sampleRate, in: userDefaults)
+        let sampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunch.sampleRate
+        setAppLaunch(sampleRate: sampleRate, in: userDefaults)
     }
 
     private func setProfilingEnabled(in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
         userDefaults.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
     }
 
-    private func set(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
-        let previousSampleRate = userDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate
+    private func setAppLaunch(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
+        let previousSampleRate = userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate
 
         // Profiling will use the lowest sample rate
         // if there is more than one SDK instance initialized.
         if previousSampleRate == nil || previousSampleRate ?? .maxSampleRate > sampleRate {
-            userDefaults.setValue(sampleRate, forKey: DD_PROFILING_SAMPLE_RATE_KEY)
+            userDefaults.setValue(sampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
         }
     }
 }
