@@ -27,14 +27,16 @@ struct LayerImageRendererTests {
             replayID: Int64,
             in rootLayer: CALayer,
             hasContents: Bool = false,
-            clipRect: CGRect? = nil
+            clipRect: CGRect? = nil,
+            semantics: LayerSnapshot.Semantics = .generic
         ) -> LayerSnapshot {
             LayerSnapshotTests.Fixtures.snapshot(
                 layer: layer,
                 replayID: replayID,
                 frame: layer.convert(layer.bounds, to: rootLayer),
                 clipRect: clipRect ?? rootLayer.bounds,
-                hasContents: hasContents
+                hasContents: hasContents,
+                semantics: semantics
             )
         }
     }
@@ -451,6 +453,36 @@ struct LayerImageRendererTests {
 
         // then
         _ = try results.image(for: snapshot.replayID)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
+    func webViewSemanticSnapshotIsNotImageCandidate() async {
+        // given
+        let rootLayer = Fixtures.rootLayer
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
+        rootLayer.addSublayer(layer)
+
+        let renderer = LayerImageRenderer(scale: 1, timeSource: .constant(0))
+        let snapshot = Fixtures.layerSnapshot(
+            for: layer,
+            replayID: 11,
+            in: rootLayer,
+            hasContents: true,
+            semantics: .webView(slotID: 42)
+        )
+
+        // when
+        let results = await renderer.renderImages(
+            for: [snapshot],
+            changes: .init(),
+            rootLayer: .init(rootLayer),
+            timeoutInterval: 1
+        )
+
+        // then
+        #expect(results.isEmpty)
     }
 }
 
