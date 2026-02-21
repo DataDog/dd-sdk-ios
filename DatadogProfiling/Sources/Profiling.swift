@@ -38,12 +38,12 @@ public enum Profiling {
         )
         try? core.register(
             feature: ProfilerFeature(
+                core: core,
+                configuration: configuration,
                 requestBuilder: RequestBuilder(
                     customUploadURL: configuration.customEndpoint,
                     telemetry: core.telemetry
                 ),
-                messageReceiver: AppLaunchProfiler(telemetryController: telemetryController),
-                sampleRate: configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate,
                 telemetryController: telemetryController
             )
         )
