@@ -49,7 +49,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/kstenerud/KSCrash.git", from: "2.5.0"),
-        .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.3.0")),
+        /*.package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.3.0"))*/
+        .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core.git", revision: "2fa47a7517be07f4efc959e513c8f80719cee65d"),
     ],
     targets: [
         .target(
@@ -198,11 +199,12 @@ let package = Package(
                 .target(name: "DatadogInternal"),
                 .target(name: "DatadogMachProfiler")
             ],
-            path: "DatadogProfiling/Sources",
-            resources: [
-                .copy("Resources/PrivacyInfo.xcprivacy")
-            ],
-            swiftSettings: internalSwiftSettings
+            path: "DatadogProfiling",
+            sources: ["Sources"],
+//            resources: [
+//                .copy("Resources/PrivacyInfo.xcprivacy")
+//            ],
+            swiftSettings: /*[.swiftLanguageMode(.v6)] +*/ internalSwiftSettings
         ),
         .target(
             name: "DatadogMachProfiler",
@@ -217,7 +219,7 @@ let package = Package(
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogProfiling/Tests",
-            swiftSettings: [.interoperabilityMode(.Cxx)] + internalSwiftSettings
+            swiftSettings: [.interoperabilityMode(.Cxx)/*, .swiftLanguageMode(.v6)*/] + internalSwiftSettings
         ),
 
         .target(
@@ -253,7 +255,8 @@ let package = Package(
             path: "TestUtilities/Sources",
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
         )
-    ]
+    ],
+//    swiftLanguageModes: [.v5]
 )
 
 // If the `DD_TEST_UTILITIES_ENABLED` development ENV is set, export additional utility packages.

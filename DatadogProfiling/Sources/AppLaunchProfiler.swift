@@ -18,9 +18,7 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 internal final class AppLaunchProfiler: FeatureMessageReceiver {
-    /// Shared counter to track pending `AppLaunchProfiler`s from handling the `ProfilerStop` message
-    private static var pendingInstances: Int = 0
-    private static let lock = NSLock()
+    private static let pendingInstances = PendingInstancesHandler()
 
     private let telemetryController: ProfilingTelemetryController
 
@@ -105,19 +103,12 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
 private extension AppLaunchProfiler {
     /// Registers the `AppLaunchProfiler` to handle the `ProfilerStop` message.
     static func registerInstance() {
-        lock.lock()
-        defer { lock.unlock() }
-
-        pendingInstances += 1
+        pendingInstances.increment()
     }
 
     /// Decrements the pending instance counter and destroys the profiler when all instances are done.
     static func unregisterInstance() {
-        lock.lock()
-        defer { lock.unlock() }
-
-        pendingInstances -= 1
-        if pendingInstances <= 0 {
+        if pendingInstances.decrement() <= 0 {
             dd_profiler_destroy()
         }
     }
@@ -128,18 +119,16 @@ private extension AppLaunchProfiler {
 extension AppLaunchProfiler {
     /// Returns the current pending instances count.
     static var currentPendingInstances: Int {
-        lock.lock()
-        defer { lock.unlock() }
-        return pendingInstances
+        pendingInstances.current()
     }
 
     /// Resets the pending instances counter.
     static func resetPendingInstances() {
-        lock.lock()
-        defer { lock.unlock() }
-        pendingInstances = 0
+        pendingInstances.reset()
     }
 }
+
+// MARK: - ProfilingContext Status
 
 extension ProfilingContext.Status {
     static var current: Self { .init(dd_profiler_get_status()) }
@@ -168,4 +157,35 @@ extension ProfilingContext.Status {
     }
 }
 
+// MARK: - PendingInstances handler
+
+private final class PendingInstancesHandler: @unchecked Sendable {
+    private var counter: Int = 0
+    private let lock = NSLock()
+
+    func increment() {
+        lock.lock()
+        defer { lock.unlock() }
+        counter += 1
+    }
+
+    func decrement() -> Int {
+        lock.lock()
+        defer { lock.unlock() }
+        counter -= 1
+        return counter
+    }
+
+    func current() -> Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return counter
+    }
+
+    func reset() {
+        lock.lock()
+        defer { lock.unlock() }
+        counter = 0
+    }
+}
 #endif
