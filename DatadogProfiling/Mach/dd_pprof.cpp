@@ -8,6 +8,7 @@
 
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
+#include "dd_pprof_testing.h"
 #include "profile.h"
 #include "profile_pprof_packer.h"
 #include "binary_image_resolver.h"
@@ -71,6 +72,11 @@ double dd_pprof_get_end_timestamp_s(dd_pprof_t* profile) {
     if (!profile) return 0.0;
     int64_t timestamp = reinterpret_cast<dd::profiler::profile*>(profile)->end_timestamp();
     return static_cast<double>(timestamp) / 1e9; // to seconds
+}
+
+size_t dd_pprof_sample_count(dd_pprof_t* profile) {
+    if (!profile) return 0;
+    return reinterpret_cast<dd::profiler::profile*>(profile)->samples().size();
 }
 
 } // extern "C"

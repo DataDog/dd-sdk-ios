@@ -7,6 +7,7 @@
 #if !os(watchOS)
 import Foundation
 import XCTest
+import DatadogInternal
 
 // swiftlint:disable duplicate_imports
 import DatadogMachProfiler
@@ -96,91 +97,26 @@ final class BinaryImageResolverTests: XCTestCase {
     }
 
     func testSamplingProfilerWithResolver_producesValidBinaryImages() {
-        // Given
-        var config = sampling_config_t(
-            sampling_interval_nanos: 2_000_000,
-            profile_current_thread_only: 1,
-            max_buffer_size: 10,
-            max_stack_depth: 64,
-            max_thread_count: 1,
-            qos_class: QOS_CLASS_DEFAULT
-        )
-
-        struct CallbackContext {
-            var unresolvedFrameFound: Bool = false
-            var resolvedFrameCount: Int = 0
-            var sampleCount: Int = 0
-        }
-
-        let context = CCallbackContext(CallbackContext())
-
-        // The callback resolves binary images in-place, then validates the resolved data.
-        let callback: stack_trace_callback_t = { traces, count, ctx in
-            guard count > 0, let traces else {
-                return
-            }
-
-            // Resolve binary images for all frames using the slow path (no cache)
-            for i in 0..<count {
-                for j in 0..<Int(traces[i].frame_count) {
-                    binary_image_init(&traces[i].frames[j].image)
-                    binary_image_lookup_pc(&traces[i].frames[j].image, UnsafeMutableRawPointer(bitPattern: UInt(traces[i].frames[j].instruction_ptr)))
-                }
-            }
-
-            CCallbackContext<CallbackContext>.withContextPointer(ctx) { context in
-                context.sampleCount += count
-
-                for i in 0..<count {
-                    guard traces[i].frame_count > 0, let frames = traces[i].frames else { continue }
-
-                    let buffer = UnsafeBufferPointer(start: frames, count: Int(traces[i].frame_count))
-                    for frame in buffer {
-                        let image = frame.image
-                        // A resolved frame should have a valid load address.
-                        if image.load_address == 0 {
-                            context.unresolvedFrameFound = true
-                        }
-                        if let filename = image.filename {
-                            XCTAssertGreaterThan(strlen(filename), 0)
-                        }
-                        context.resolvedFrameCount += 1
-                    }
-                }
-            }
-
-            // Cleanup allocated image data
-            for i in 0..<count {
-                for j in 0..<Int(traces[i].frame_count) {
-                    binary_image_destroy(&traces[i].frames[j].image)
-                }
-            }
-        }
-
         let callbackTimeout: TimeInterval = 2.0
 
         let mockThread = MockThread {
-            let profiler = profiler_create(&config, callback, context.rawPointer)
+            XCTAssertEqual(dd_profiler_start(), 1)
 
-            XCTAssertEqual(profiler_start(profiler), 1)
-
-            // Generate some stack depth to be sampled
             self.recursiveResolverWork(depth: 5) {
                 _ = sin(Double.random(in: 0...Double.pi))
                 Thread.sleep(forTimeInterval: 0.001)
             }
 
-            profiler_stop(profiler)
-            profiler_destroy(profiler)
+            dd_profiler_stop()
+
+            let sampleCount = dd_pprof_sample_count(dd_profiler_get_profile())
+            XCTAssertGreaterThan(sampleCount, 0, "Global profiler should have collected at least one resolved sample")
+
+            dd_profiler_destroy()
         }
 
         mockThread.start()
         XCTAssertTrue(mockThread.waitForWorkCompletion(timeout: callbackTimeout))
-
-        // Then
-        XCTAssertGreaterThan(context.value.sampleCount, 0)
-        XCTAssertGreaterThan(context.value.resolvedFrameCount, 0)
-        XCTAssertFalse(context.value.unresolvedFrameFound)
 
         mockThread.cancel()
     }

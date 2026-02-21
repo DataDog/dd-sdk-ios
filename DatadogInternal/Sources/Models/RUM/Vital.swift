@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import Foundation
+
 public struct Vital: Codable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id = "id"
@@ -13,17 +15,62 @@ public struct Vital: Codable, Equatable {
     }
     /// UUID of the vital
     public let id: String
-    /// Name of the Vital
+    /// Name of the vital
     public let name: String
+    /// Operation key of the vital
+    public let operationKey: String?
+    /// Step type of the vital ["start", "end"]
+    public let type: VitalType
+    /// Date when the vital was created
+    public let date: Date
     /// Start of the vital from epoch in nanoseconds
     public let start: Int64
     /// Duration of the vital in nanoseconds
     public let duration: Int64
+    /// Key identifier of the vital
+    public var key: String { "\(name)-\(operationKey ?? "")" }
 
-    public init(id: String, name: String, start: Int64, duration: Int64) {
+    public init(
+        id: String,
+        name: String,
+        operationKey: String? = nil,
+        type: VitalType = .duration,
+        date: Date = Date(),
+        duration: Int64 = 0
+    ) {
         self.id = id
         self.name = name
-        self.start = start
+        self.operationKey = operationKey
+        self.type = type
+        self.date = date
+        self.start = date.timeIntervalSince1970.dd.toInt64Nanoseconds
         self.duration = duration
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(start, forKey: .start)
+        try container.encode(duration, forKey: .duration)
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        operationKey = nil
+        type = .duration
+        start = try container.decode(Int64.self, forKey: .start)
+        date = Date(timeIntervalSince1970: TimeInterval.ddFromNanoseconds(start))
+        duration = try container.decode(Int64.self, forKey: .duration)
+    }
+}
+
+extension Vital {
+    public enum VitalType: Equatable {
+        case duration
+        case applicationLaunch
+        case rumOperation(RUMVitalOperationStepEvent.Vital.StepType)
     }
 }

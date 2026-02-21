@@ -18,7 +18,7 @@ class ProfilingTest: XCTestCase {
         // Given
         let configuration = Profiling.Configuration(customEndpoint: .mockRandom())
         let core = SingleFeatureCoreMock<ProfilerFeature>()
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         defer { dd_profiler_destroy() }
 
         // When
@@ -27,7 +27,7 @@ class ProfilingTest: XCTestCase {
         // Then
         let feature = core.feature(named: ProfilerFeature.name, type: ProfilerFeature.self)
         let requestBuilder = feature?.requestBuilder as? RequestBuilder
-        XCTAssertEqual(feature?.performanceOverride?.maxFileSize, .min)
+        XCTAssertEqual(feature?.performanceOverride?.maxFileSize, ProfilerFeature.Constants.maxFileSize)
         XCTAssertEqual(requestBuilder?.customUploadURL, configuration.customEndpoint)
         XCTAssertEqual(feature?.telemetryController.sampleRate, 20)
 
