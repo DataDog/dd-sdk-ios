@@ -314,9 +314,10 @@ public extension RUMMonitorProtocol {
     func startFeatureOperation(
         name: String,
         operationKey: String? = nil,
-        attributes: [AttributeKey: AttributeValue] = [:]
+        attributes: [AttributeKey: AttributeValue] = [:],
+        profiling: SamplingOption = .disabled
     ) {
-        startFeatureOperation(name: name, operationKey: operationKey, attributes: attributes)
+        startFeatureOperation(name: name, operationKey: operationKey, attributes: attributes, profiling: profiling)
     }
 
     /// Completes a Feature Operation successfully.
