@@ -33,29 +33,29 @@ internal final class StartupTypeHandler {
         self.coldStartRules = coldStartRules
     }
 
-    func startupType(currentAppState: AppStateInfo) -> RUMVitalAppLaunchEvent.Vital.StartupType {
+    func startupType(previousAppState: AppStateInfo?, currentAppState: AppStateInfo) -> RUMVitalAppLaunchEvent.Vital.StartupType {
         for rule in coldStartRules {
             switch rule {
             case .freshInstall:
-                if appStateManager.previousAppStateInfo == nil {
+                if previousAppState == nil {
                     telemetryController.track(coldStartRule: rule)
                     return .coldStart
                 }
             case .appUpdate:
-                if let previousAppStateInfo = appStateManager.previousAppStateInfo,
-                   previousAppStateInfo.appVersion != currentAppState.appVersion {
+                if let previousAppState,
+                   previousAppState.appVersion != currentAppState.appVersion {
                     telemetryController.track(coldStartRule: rule)
                     return .coldStart
                 }
             case .systemRestart:
-                if let previousAppStateInfo = appStateManager.previousAppStateInfo,
-                   previousAppStateInfo.systemBootTime < currentAppState.systemBootTime {
+                if let previousAppState,
+                   previousAppState.systemBootTime < currentAppState.systemBootTime {
                     telemetryController.track(coldStartRule: rule)
                     return .coldStart
                 }
             case .longInactivity:
-                if let previousAppStateInfo = appStateManager.previousAppStateInfo,
-                   (currentAppState.appLaunchTime - previousAppStateInfo.appLaunchTime) > Constants.maxInactivityDuration {
+                if let previousAppState,
+                   (currentAppState.appLaunchTime - previousAppState.appLaunchTime) > Constants.maxInactivityDuration {
                     telemetryController.track(coldStartRule: rule)
                     return .coldStart
                 }

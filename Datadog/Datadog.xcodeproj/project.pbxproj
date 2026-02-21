@@ -321,6 +321,8 @@
 		118ACA422EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA402EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift */; };
 		118ACA442EEEED24004E7F20 /* AppLaunchMetricControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA432EEEED1F004E7F20 /* AppLaunchMetricControllerTests.swift */; };
 		118ACA452EEEED24004E7F20 /* AppLaunchMetricControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA432EEEED1F004E7F20 /* AppLaunchMetricControllerTests.swift */; };
+		119F75F42F438C2100845833 /* DataStoreAsyncMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119F75F32F438C2100845833 /* DataStoreAsyncMock.swift */; };
+		119F75F52F438C2100845833 /* DataStoreAsyncMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119F75F32F438C2100845833 /* DataStoreAsyncMock.swift */; };
 		11A2F24A2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */; };
 		11A2F24B2E70CC08006EDC52 /* MediaTimeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2492E70CC08006EDC52 /* MediaTimeProvider.swift */; };
 		11A2F24C2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */; };
@@ -2871,6 +2873,7 @@
 		118ACA3A2EEED247004E7F20 /* AppLaunchMetricController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchMetricController.swift; sourceTree = "<group>"; };
 		118ACA402EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingTelemetryControllerTests.swift; sourceTree = "<group>"; };
 		118ACA432EEEED1F004E7F20 /* AppLaunchMetricControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchMetricControllerTests.swift; sourceTree = "<group>"; };
+		119F75F32F438C2100845833 /* DataStoreAsyncMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStoreAsyncMock.swift; sourceTree = "<group>"; };
 		11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameInfoProvider.swift; sourceTree = "<group>"; };
 		11A2F2492E70CC08006EDC52 /* MediaTimeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTimeProvider.swift; sourceTree = "<group>"; };
 		11A2F2512E71B730006EDC52 /* MediaTimeProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTimeProviderMock.swift; sourceTree = "<group>"; };
@@ -4481,6 +4484,7 @@
 				1182F9DF2DA2F827007FE71A /* AttributesMocks.swift */,
 				1182F9E02DA2F827007FE71A /* DatadogContextMock.swift */,
 				1182F9E12DA2F827007FE71A /* DatadogRemoteFeatureMock.swift */,
+				119F75F32F438C2100845833 /* DataStoreAsyncMock.swift */,
 				1182F9E22DA2F827007FE71A /* DataStoreMock.swift */,
 				1182F9E32DA2F827007FE71A /* DateProviderMock.swift */,
 				1182F9E42DA2F827007FE71A /* DDErrorMocks.swift */,
@@ -4492,7 +4496,9 @@
 				1182F9EB2DA2F827007FE71A /* FileWriterMock.swift */,
 				1182F9EC2DA2F827007FE71A /* HostsSanitizerMock.swift */,
 				1182F9ED2DA2F827007FE71A /* MockFeature.swift */,
+				D233E7D72E463DDD00E7CFDE /* MultipartBuilderSpy.swift */,
 				1182F9EE2DA2F827007FE71A /* PassthroughCoreMock.swift */,
+				D266ECF82DBA5B1800CB9B3A /* RUMDataModelMocks.swift */,
 				1182F9EF2DA2F827007FE71A /* SamplerMock.swift */,
 				1182F9F02DA2F827007FE71A /* SingleFeatureCoreMock.swift */,
 				1182F9F12DA2F827007FE71A /* TelemetryMocks.swift */,
@@ -4500,8 +4506,6 @@
 				1182F9F32DA2F827007FE71A /* UploadMock.swift */,
 				1182F9F42DA2F827007FE71A /* UploadMocks.swift */,
 				269035A12E41F93F00F1A830 /* UserConfigurationContextMocks.swift */,
-				D266ECF82DBA5B1800CB9B3A /* RUMDataModelMocks.swift */,
-				D233E7D72E463DDD00E7CFDE /* MultipartBuilderSpy.swift */,
 			);
 			path = DatadogInternal;
 			sourceTree = "<group>";
@@ -10731,6 +10735,7 @@
 				1182FA542DA2F827007FE71A /* DDCrashReportMocks.swift in Sources */,
 				1182FA552DA2F827007FE71A /* WebViewTrackingMocks.swift in Sources */,
 				1182FA562DA2F827007FE71A /* SnapshotProducerMocks.swift in Sources */,
+				119F75F52F438C2100845833 /* DataStoreAsyncMock.swift in Sources */,
 				1182FA572DA2F827007FE71A /* FeatureRegistrationCoreMock.swift in Sources */,
 				1182FA582DA2F827007FE71A /* DDThreadMocks.swift in Sources */,
 				1182FA592DA2F827007FE71A /* Mockable.swift in Sources */,
@@ -10830,6 +10835,7 @@
 				1182FAA82DA2F827007FE71A /* DDCrashReportMocks.swift in Sources */,
 				1182FAA92DA2F827007FE71A /* WebViewTrackingMocks.swift in Sources */,
 				1182FAAA2DA2F827007FE71A /* SnapshotProducerMocks.swift in Sources */,
+				119F75F42F438C2100845833 /* DataStoreAsyncMock.swift in Sources */,
 				1182FAAB2DA2F827007FE71A /* FeatureRegistrationCoreMock.swift in Sources */,
 				1182FAAC2DA2F827007FE71A /* DDThreadMocks.swift in Sources */,
 				1182FAAD2DA2F827007FE71A /* Mockable.swift in Sources */,

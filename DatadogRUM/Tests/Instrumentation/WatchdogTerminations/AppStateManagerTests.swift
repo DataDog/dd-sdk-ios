@@ -26,31 +26,6 @@ final class AppStateManagerTests: XCTestCase {
         )
     }
 
-    func testUpdateAppState_SetsIsActive() {
-        sut.storeCurrentAppState()
-
-        let isActiveExpectation = expectation(description: "isActive is set to true")
-
-        // app state changes
-        sut.updateAppState(state: .active)
-        featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
-            XCTAssertTrue(appState?.isActive == true)
-            isActiveExpectation.fulfill()
-        }
-        wait(for: [isActiveExpectation], timeout: 1)
-
-        let isBackgroundedExpectation = expectation(description: "isActive is set to false")
-
-        // app state changes again
-        sut.updateAppState(state: .background)
-        featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
-            XCTAssertTrue(appState?.isActive == false)
-            isBackgroundedExpectation.fulfill()
-        }
-
-        wait(for: [isBackgroundedExpectation], timeout: 1)
-    }
-
     func testDeleteAppState() {
         sut.storeCurrentAppState()
 
@@ -69,5 +44,82 @@ final class AppStateManagerTests: XCTestCase {
         }
 
         wait(for: [deleteExpectation], timeout: 1)
+    }
+
+    func testOnInitialStateLoaded_thereIsAPreviousAppState() {
+        // Given
+        let dataStore = DataStoreAsyncMock()
+        let featureScope = FeatureScopeMock(dataStore: dataStore)
+        let mockedPreviousState: AppStateInfo = .mockRandom()
+        featureScope.rumDataStore.setValue(mockedPreviousState, forKey: .appStateKey)
+        dataStore.flush()
+
+        // When
+        let appStateManager = AppStateManager(
+            featureScope: featureScope,
+            processId: .init(),
+            syntheticsEnvironment: false
+        )
+
+        let appStateExpectation = expectation(description: "There is a previous app state")
+        appStateManager.previousAppStateInfo { previousAppState in
+            // Then
+            XCTAssertEqual(previousAppState?.debugDescription, mockedPreviousState.debugDescription)
+            appStateExpectation.fulfill()
+        }
+
+        wait(for: [appStateExpectation], timeout: 0.1)
+    }
+
+    func testUpdateAppState_itUpdatesCorrectly() {
+        // Given
+        let dataStore = DataStoreAsyncMock()
+        let featureScope = FeatureScopeMock(dataStore: dataStore)
+        let initialStateQueue = DispatchQueue(label: "com.datadoghq.tests.initial-state-update")
+        let initialState = AppStateInfo.mockWith(wasTerminated: false, isActive: true)
+        featureScope.rumDataStore.setValue(initialState, forKey: .appStateKey)
+        dataStore.flush()
+
+        let appStateManager = AppStateManager(
+            featureScope: featureScope,
+            processId: .init(),
+            syntheticsEnvironment: false,
+            queue: initialStateQueue
+        )
+
+        let initialStateExpectation = expectation(description: "Initial state is loaded")
+        appStateManager.previousAppStateInfo { previousAppState in
+            XCTAssertEqual(previousAppState?.wasTerminated, false)
+            XCTAssertEqual(previousAppState?.isActive, true)
+            initialStateExpectation.fulfill()
+        }
+        wait(for: [initialStateExpectation], timeout: 0.1)
+
+        // When
+        appStateManager.updateAppState(state: .active)
+        initialStateQueue.sync {}
+        dataStore.flush()
+
+        // Then
+        let isActiveExpectation = expectation(description: "isActive is set to true")
+        featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
+            XCTAssertTrue(appState?.isActive == true)
+            isActiveExpectation.fulfill()
+        }
+        wait(for: [isActiveExpectation], timeout: 0.1)
+
+        // When
+        appStateManager.updateAppState(state: .background)
+        initialStateQueue.sync {}
+        dataStore.flush()
+
+        // Then
+        let isBackgroundedExpectation = expectation(description: "isActive is set to false")
+        featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
+            XCTAssertTrue(appState?.isActive == false)
+            isBackgroundedExpectation.fulfill()
+        }
+
+        wait(for: [isBackgroundedExpectation], timeout: 0.1)
     }
 }

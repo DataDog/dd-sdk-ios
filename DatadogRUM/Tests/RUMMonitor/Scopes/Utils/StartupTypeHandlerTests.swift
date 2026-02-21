@@ -29,7 +29,7 @@ final class StartupTypeHandlerTests: XCTestCase {
         let currentAppState: AppStateInfo = .mockAny()
 
         // When
-        let result = handler.startupType(currentAppState: currentAppState)
+        let result = handler.startupType(previousAppState: nil, currentAppState: currentAppState)
 
         // Then
         XCTAssertEqual(result, .coldStart)
@@ -37,11 +37,11 @@ final class StartupTypeHandlerTests: XCTestCase {
 
     func testAppUpdate_returnsColdStart() {
         // Given
-        (appStateManager as? AppStateManagerMock)?.previousAppStateInfo = .mockWith(appVersion: "1.0.0")
+        let previousAppState: AppStateInfo = .mockWith(appVersion: "1.0.0")
         let currentAppState: AppStateInfo = .mockWith(appVersion: "2.0.0")
 
         // When
-        let result = handler.startupType(currentAppState: currentAppState)
+        let result = handler.startupType(previousAppState: previousAppState, currentAppState: currentAppState)
 
         // Then
         XCTAssertEqual(result, .coldStart)
@@ -49,11 +49,11 @@ final class StartupTypeHandlerTests: XCTestCase {
 
     func testSystemRestart_returnsColdStart() {
         // Given
-        (appStateManager as? AppStateManagerMock)?.previousAppStateInfo = .mockWith(systemBootTime: 1_000_000)
+        let previousAppState: AppStateInfo = .mockWith(systemBootTime: 1_000_000)
         let currentAppState: AppStateInfo = .mockWith(systemBootTime: 1_100_000)
 
         // When
-        let result = handler.startupType(currentAppState: currentAppState)
+        let result = handler.startupType(previousAppState: previousAppState,currentAppState: currentAppState)
 
         // Then
         XCTAssertEqual(result, .coldStart)
@@ -61,11 +61,11 @@ final class StartupTypeHandlerTests: XCTestCase {
 
     func testLongInactivity_returnsColdStart() {
         // Given
-        (appStateManager as? AppStateManagerMock)?.previousAppStateInfo = .mockWith(appLaunchTime: 1_000_000)
+        let previousAppState: AppStateInfo = .mockWith(appLaunchTime: 1_000_000)
         let currentAppState: AppStateInfo = .mockWith(appLaunchTime: 1_000_000 + StartupTypeHandler.Constants.maxInactivityDuration + 1)
 
         // When
-        let result = handler.startupType(currentAppState: currentAppState)
+        let result = handler.startupType(previousAppState: previousAppState, currentAppState: currentAppState)
 
         // Then
         XCTAssertEqual(result, .coldStart)
@@ -73,11 +73,11 @@ final class StartupTypeHandlerTests: XCTestCase {
 
     func testOneWeekInactivity_returnsWarmStart() {
         // Given
-        (appStateManager as? AppStateManagerMock)?.previousAppStateInfo = .mockWith(appLaunchTime: 1_000_000)
+        let previousAppState: AppStateInfo = .mockWith(appLaunchTime: 1_000_000)
         let currentAppState: AppStateInfo = .mockWith(appLaunchTime: 1_000_000 + StartupTypeHandler.Constants.maxInactivityDuration)
 
         // When
-        let result = handler.startupType(currentAppState: currentAppState)
+        let result = handler.startupType(previousAppState: previousAppState, currentAppState: currentAppState)
 
         // Then
         XCTAssertEqual(result, .warmStart)
@@ -85,7 +85,7 @@ final class StartupTypeHandlerTests: XCTestCase {
 
     func testSimilarAppLaunch_returnsWarmStart() {
         // Given
-        (appStateManager as? AppStateManagerMock)?.previousAppStateInfo = .mockWith(
+        let previousAppState: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             systemBootTime: 1_000_000,
             appLaunchTime: 1_000_000
@@ -97,7 +97,7 @@ final class StartupTypeHandlerTests: XCTestCase {
         )
 
         // When
-        let result = handler.startupType(currentAppState: currentAppState)
+        let result = handler.startupType(previousAppState: previousAppState, currentAppState: currentAppState)
 
         // Then
         XCTAssertEqual(result, .warmStart)
@@ -105,7 +105,7 @@ final class StartupTypeHandlerTests: XCTestCase {
 
     func testMultipleColdConditions_returnsColdStart() {
         // Given
-        (appStateManager as? AppStateManagerMock)?.previousAppStateInfo = .mockWith(
+        let previousAppState: AppStateInfo = .mockWith(
             appVersion: "1.0.0",
             systemBootTime: 1_000_000,
             appLaunchTime: 1_000_000
@@ -117,7 +117,7 @@ final class StartupTypeHandlerTests: XCTestCase {
         )
 
         // When
-        let result = handler.startupType(currentAppState: currentAppState)
+        let result = handler.startupType(previousAppState: previousAppState, currentAppState: currentAppState)
 
         // Then
         XCTAssertEqual(result, .coldStart)
