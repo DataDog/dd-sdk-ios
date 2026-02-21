@@ -52,9 +52,6 @@ public struct ProfilingContext: AdditionalContext {
 
             /// Profiling stopped because app was pre-warmed (iOS 15+ app launch optimization).
             case prewarmed
-
-            /// Profiling was not started due to sampling configuration (profiling was sampled out).
-            case sampledOut
         }
 
         /// Errors that can occur during profiling operations.
