@@ -14,6 +14,7 @@
 #if !TARGET_OS_WATCH
 
 #include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <mach/mach.h>
 #include <mach/thread_act.h>
@@ -79,6 +80,12 @@ public:
     void stop_sampling();
 
     /**
+     * @brief Requests a flush of the sample buffer and blocks until complete.
+     * The sampling thread flushes at its next safe point (start of loop iteration).
+     */
+    void request_flush();
+
+    /**
      * @brief Atomic flag indicating if profiling is currently running
      */
     std::atomic<bool> running;
@@ -142,6 +149,13 @@ private:
      * @brief Mutex to protect start/stop operations from concurrent access
      */
     std::mutex state_mutex;
+
+    /**
+     * @brief Synchronization for flush request
+     */
+    std::atomic<bool> flush_requested{false};
+    std::mutex flush_mutex;
+    std::condition_variable flush_cv;
 };
 
 } // namespace dd::profiler

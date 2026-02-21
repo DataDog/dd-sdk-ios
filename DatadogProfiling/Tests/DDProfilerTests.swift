@@ -7,29 +7,40 @@
 #if !os(watchOS)
 import XCTest
 import DatadogInternal
+// swiftlint:disable duplicate_imports
 import DatadogMachProfiler
+import DatadogMachProfiler.Testing
+// swiftlint:enable duplicate_imports
 
 final class DDProfilerTests: XCTestCase {
+    override func setUp() {
+        super.setUp()
+        // `tearDown` leaves `g_dd_profiler` nil; without this, only the first test would match the
+        // static constructor's state. Recreate with 0% sample rate so `auto_start` leaves `NOT_STARTED`.
+        dd_profiler_destroy()
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+    }
+
     override func tearDown() {
-        super.tearDown()
         dd_profiler_stop()
         dd_profiler_destroy()
+        super.tearDown()
     }
 
     // MARK: - State Management Tests
 
     func testDDProfiler_initiallyNotStarted() {
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED, "Constructor profiler should not be started initially")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED, "Profiler should exist but not be running until started")
     }
 
     func testDDProfiler_startTesting_withValidSampleRate_startsSuccessfully() {
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING, "Profiler should be running after starting with valid sample rate")
     }
 
     func testDDProfiler_startTesting_withZeroSampleRate_doesNotStart() {
         dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_SAMPLED_OUT, "Profiler should not start with zero sample rate")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED, "Profiler should not start with zero sample rate")
     }
 
     func testDDProfiler_startTesting_withSampleRateAbove100_startsSuccessfully() {
@@ -49,7 +60,7 @@ final class DDProfilerTests: XCTestCase {
 
     func testDDProfiler_stop_whenRunning_stopsSuccessfully() {
         // Given
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING, "Profiler should be running")
 
         // When
@@ -61,16 +72,16 @@ final class DDProfilerTests: XCTestCase {
 
     func testDDProfiler_stop_whenNotRunning_doesNotCrash() {
         // Given
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED, "Precondition: profiler should not be running")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED, "Precondition: profiler should not be running")
 
-        // When/Then - should not crash
+        // When/Then - should not crash (`stop` is a no-op when sampling was never started)
         dd_profiler_stop()
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED, "Status should remain unchanged")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED, "Status should remain unchanged")
     }
 
     func testDDProfiler_multipleStops_doesNotCrash() {
         // Given
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         dd_profiler_stop()
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED, "Profiler should be stopped")
 
@@ -84,7 +95,7 @@ final class DDProfilerTests: XCTestCase {
 
     func testDDProfiler_getProfile_whenNotStarted_returnsNil() {
         // Given
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED, "Precondition: profiler should not be started")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED, "Precondition: profiler should not be started")
 
         // When/Then
         XCTAssertNil(dd_profiler_get_profile(), "Profile should be nil when profiler was never started")
@@ -92,7 +103,7 @@ final class DDProfilerTests: XCTestCase {
 
     func testDDProfiler_getProfile_whenRunning_returnsValidProfile() {
         // Given
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING, "Profiler should be running")
 
         // Allow some time for sampling to occur
@@ -107,7 +118,7 @@ final class DDProfilerTests: XCTestCase {
 
     func testDDProfiler_getProfile_afterStopping_returnsValidProfile() {
         // Given
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING, "Profiler should be running")
 
         // Allow some time for sampling
@@ -125,7 +136,7 @@ final class DDProfilerTests: XCTestCase {
 
     func testDDProfiler_destroy_clearsAllData() {
         // Given
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         Thread.sleep(forTimeInterval: 0.1)
 
         dd_profiler_stop()
@@ -154,7 +165,7 @@ final class DDProfilerTests: XCTestCase {
 
     func testDDProfiler_multipleDestroy_doesNotCrash() {
         // Given
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         Thread.sleep(forTimeInterval: 0.1)
 
         // When
@@ -180,7 +191,7 @@ final class DDProfilerTests: XCTestCase {
 
     func testConcurrentStop_doesNotCrash() {
         // Given
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
         let concurrentOperations = 10
@@ -200,7 +211,7 @@ final class DDProfilerTests: XCTestCase {
 
     func testConcurrentGetStatus_doesNotCrash() {
         // Given
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
         let concurrentOperations = 100
@@ -219,7 +230,7 @@ final class DDProfilerTests: XCTestCase {
 
     func testConcurrentGetProfile_doesNotCrash() {
         // Given
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
         Thread.sleep(forTimeInterval: 0.1) // Allow some sampling
 
@@ -239,7 +250,7 @@ final class DDProfilerTests: XCTestCase {
 
     func testConcurrentDestroy_doesNotCrash() {
         // Given
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
         Thread.sleep(forTimeInterval: 0.1) // Allow some sampling
         dd_profiler_stop()
@@ -261,7 +272,7 @@ final class DDProfilerTests: XCTestCase {
 
     func testConcurrentMixedOperations_doesNotCrash() {
         // Given
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_start(), 1)
         Thread.sleep(forTimeInterval: 0.1) // Allow some sampling
 
         let concurrentOperations = 50

@@ -24,7 +24,7 @@ internal final class ConfigurationMetric {
         static let defaultBufferSize = Int(SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE)
         static let defaultStackDepth = Int(SAMPLING_CONFIG_DEFAULT_STACK_DEPTH)
         static let defaultThreadCount = Int(SAMPLING_CONFIG_DEFAULT_THREAD_COUNT)
-        static let defaultSamplingFrequency = Int(SAMPLING_CONFIG_DEFAULT_INTERVAL_HZ)
+        static let defaultSamplingFrequency = Int(SAMPLING_CONFIG_DEFAULT_FREQUENCY_HZ)
     }
 
     /// Max number of samples of the profile.

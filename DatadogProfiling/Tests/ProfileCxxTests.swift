@@ -11,6 +11,7 @@ import TestUtilities
 // swiftlint:disable duplicate_imports
 import DatadogMachProfiler.Cxx
 import DatadogMachProfiler.Pprof
+import DatadogMachProfiler.Testing
 // swiftlint:enable duplicate_imports
 
 final class ProfileCxxTests: XCTestCase {
@@ -267,6 +268,7 @@ final class ProfileCxxTests: XCTestCase {
         defer { dd_pprof_free_serialized_data(data) }
 
         // Then
+        XCTAssertEqual(dd_pprof_sample_count(profile), 0, "Empty profile should report zero samples")
         XCTAssertGreaterThan(size, 0, "Empty profile should still produce some data")
         XCTAssertNotNil(data, "Serialized data should not be nil")
         // - Validate basic profile structure

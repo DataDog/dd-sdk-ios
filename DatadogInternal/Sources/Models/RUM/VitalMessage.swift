@@ -6,12 +6,11 @@
 
 import Foundation
 
-/// Message payload used to signal the TTID (Time to initial display).
-public struct TTIDMessage {
-    /// Correlation context that contains identifiers that will enable data correlation
-    /// across different telemetry streams.
-    public let context: [String: Encodable]
-    /// Vital info associated with the TTID.
+/// Message payload used to signal the occurrence of a vital.
+public struct VitalMessage {
+    /// Correlation context containing IDs for data correlation.
+    public let context: [String: AttributeValue]
+    /// Vital info for data correlation.
     public let vital: Vital
 
     /// Creates a new message payload.
@@ -19,7 +18,7 @@ public struct TTIDMessage {
     /// - Parameters
     ///   - context: Correlation context containing IDs for data correlation.
     ///   - vital: Vital info for data correlation.
-    public init(context: [String: Encodable], vital: Vital) {
+    public init(context: [String: AttributeValue], vital: Vital) {
         self.context = context
         self.vital = vital
     }
