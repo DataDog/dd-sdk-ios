@@ -25,6 +25,10 @@ class ColorReflectionTests: XCTestCase {
     }
 
     func testResolvedPaintReflection() throws {
+        if #available(iOS 26, tvOS 26, *) {
+            throw XCTSkip("This test uses a test fixture that doesn't match iOS 26's internal structure")
+        }
+
         let color: SwiftUI.Color._Resolved = .mockRandom()
         let paint = ResolvedPaint(paint: color)
 
