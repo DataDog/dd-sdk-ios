@@ -6,6 +6,7 @@
 
 #import <XCTest/XCTest.h>
 @import DatadogRUM;
+@import DatadogInternal;
 
 @interface DDRUMMonitor_apiTests : XCTestCase
 @end
@@ -92,7 +93,7 @@
     [monitor addAttributes:@{@"string": @"value", @"integer": @1, @"boolean": @true}];
     [monitor removeAttributesForKeys:@[@"string",@"integer",@"boolean"]];
     [monitor addFeatureFlagEvaluationWithName: @"name" value: @"value"];
-    [monitor startFeatureOperationWithName:@"test_flow" operationKey:@"operation_1" attributes:@{}];
+    [monitor startFeatureOperationWithName:@"test_flow" operationKey:@"operation_1" attributes:@{} profiling:[[DDSamplingOption alloc] initWithSampleRate: 100.0]];
     [monitor succeedFeatureOperationWithName:@"test_flow" operationKey:@"operation_1" attributes:@{}];
     [monitor failFeatureOperationWithName:@"test_flow" operationKey:@"operation_1" reason:DDRUMFeatureOperationFailureReasonError attributes:@{}];
 

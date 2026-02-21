@@ -90,9 +90,9 @@ class RUMTests: XCTestCase {
         let telemetryReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: TelemetryReceiver.self)
         let crashReportReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
         XCTAssertEqual(rum.performanceOverride?.maxFileAgeForRead, 24.hours)
-        XCTAssertEqual(monitor.scopes.dependencies.rumApplicationID, applicationID)
-        XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, 100)
-        XCTAssertEqual(monitor.scopes.dependencies.sessionEndedMetric.sampleRate, 15)
+        XCTAssertEqual(monitor.applicationScope.dependencies.rumApplicationID, applicationID)
+        XCTAssertEqual(monitor.applicationScope.dependencies.sessionSampler.samplingRate, 100)
+        XCTAssertEqual(monitor.applicationScope.dependencies.sessionEndedMetric.sampleRate, 15)
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 20)
         XCTAssertEqual(crashReportReceiver?.sessionSampler.samplingRate, 100)
     }
@@ -226,7 +226,7 @@ class RUMTests: XCTestCase {
 
         // Then
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        XCTAssertNotNil(monitor.scopes.dependencies.vitalsReaders)
+        XCTAssertNotNil(monitor.applicationScope.dependencies.vitalsReaders)
     }
 
     func testWhenEnabledWithNoVitalsUpdateFrequency() throws {
@@ -238,7 +238,7 @@ class RUMTests: XCTestCase {
 
         // Then
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        XCTAssertNil(monitor.scopes.dependencies.vitalsReaders)
+        XCTAssertNil(monitor.applicationScope.dependencies.vitalsReaders)
     }
 
     func testWhenEnabledWithEventMappers() throws {
@@ -254,7 +254,7 @@ class RUMTests: XCTestCase {
 
         // Then
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        let eventsMapper = monitor.scopes.dependencies.eventBuilder.eventsMapper
+        let eventsMapper = monitor.applicationScope.dependencies.eventBuilder.eventsMapper
         XCTAssertNotNil(eventsMapper.viewEventMapper)
         XCTAssertNotNil(eventsMapper.resourceEventMapper)
         XCTAssertNotNil(eventsMapper.actionEventMapper)
@@ -275,7 +275,7 @@ class RUMTests: XCTestCase {
 
         // Then
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        let eventsMapper = monitor.scopes.dependencies.eventBuilder.eventsMapper
+        let eventsMapper = monitor.applicationScope.dependencies.eventBuilder.eventsMapper
         XCTAssertNil(eventsMapper.viewEventMapper)
         XCTAssertNil(eventsMapper.resourceEventMapper)
         XCTAssertNil(eventsMapper.actionEventMapper)
@@ -292,7 +292,7 @@ class RUMTests: XCTestCase {
 
         // Then
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        XCTAssertNotNil(monitor.scopes.dependencies.onSessionStart)
+        XCTAssertNotNil(monitor.applicationScope.dependencies.onSessionStart)
     }
 
     func testWhenEnabledWithNoSessionStartListener() throws {
@@ -304,7 +304,7 @@ class RUMTests: XCTestCase {
 
         // Then
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        XCTAssertNil(monitor.scopes.dependencies.onSessionStart)
+        XCTAssertNil(monitor.applicationScope.dependencies.onSessionStart)
     }
 
     func testWhenEnabledWithCustomEndpoint() throws {
@@ -344,7 +344,7 @@ class RUMTests: XCTestCase {
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
         let crashReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
-        XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, 100)
+        XCTAssertEqual(monitor.applicationScope.dependencies.sessionSampler.samplingRate, 100)
         XCTAssertEqual(crashReceiver?.sessionSampler.samplingRate, 100)
     }
 
@@ -361,7 +361,7 @@ class RUMTests: XCTestCase {
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
         let crashReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
-        XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, random)
+        XCTAssertEqual(monitor.applicationScope.dependencies.sessionSampler.samplingRate, random)
         XCTAssertEqual(crashReceiver?.sessionSampler.samplingRate, random)
     }
 

@@ -198,7 +198,8 @@ let package = Package(
                 .target(name: "DatadogInternal"),
                 .target(name: "DatadogMachProfiler")
             ],
-            path: "DatadogProfiling/Sources",
+            path: "DatadogProfiling",
+            sources: ["Sources"],
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ],

@@ -98,7 +98,7 @@ internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 internal class Monitor: RUMCommandSubscriber {
     /// RUM feature scope.
     let featureScope: FeatureScope
-    let scopes: RUMApplicationScope
+    let applicationScope: RUMApplicationScope
     let dateProvider: DateProvider
 
     @ReadWriteLock
@@ -116,7 +116,7 @@ internal class Monitor: RUMCommandSubscriber {
         dateProvider: DateProvider
     ) {
         self.featureScope = dependencies.featureScope
-        self.scopes = RUMApplicationScope(dependencies: dependencies)
+        self.applicationScope = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
         self.fatalErrorContext = dependencies.fatalErrorContext
         self.rumUUIDGenerator = dependencies.rumUUIDGenerator
@@ -134,10 +134,10 @@ internal class Monitor: RUMCommandSubscriber {
 
             let transformedCommand = self.transform(command: command)
 
-            _ = self.scopes.process(command: transformedCommand, context: context, writer: writer)
+            _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
 
             if let debugging = self.debugging {
-                debugging.debug(applicationScope: self.scopes)
+                debugging.debug(applicationScope: self.applicationScope)
             }
         }
 
@@ -148,9 +148,9 @@ internal class Monitor: RUMCommandSubscriber {
                     return nil
                 }
 
-                let context = self.scopes.activeSession?.viewScopes.last?.context ??
-                                self.scopes.activeSession?.context ??
-                                self.scopes.context
+                let context = self.applicationScope.activeSession?.viewScopes.last?.context ??
+                                self.applicationScope.activeSession?.context ??
+                                self.applicationScope.context
 
                 guard context.sessionID != .nullUUID else {
                     // if Session was sampled or not yet started
@@ -162,7 +162,7 @@ internal class Monitor: RUMCommandSubscriber {
                     sessionID: context.sessionID.rawValue.uuidString.lowercased(),
                     viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
                     userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
-                    viewServerTimeOffset: self.scopes.activeSession?.viewScopes.last?.serverTimeOffset
+                    viewServerTimeOffset: self.applicationScope.activeSession?.viewScopes.last?.serverTimeOffset
                 )
             }
         )
@@ -223,7 +223,7 @@ extension Monitor: RUMMonitorProtocol {
         // Synchronise it through the context thread to make sure we return the correct
         // sessionID after all other events have been processed (also on the context thread):
         featureScope.context { [weak self] _ in
-            guard let sessionId = self?.scopes.activeSession?.sessionUUID else {
+            guard let sessionId = self?.applicationScope.activeSession?.sessionUUID else {
                 completion(nil)
                 return
             }
@@ -463,19 +463,32 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - Feature Operations
 
-    func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+    func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue], profiling: SamplingOption) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) started")
 
         telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .start)))))
+        let vital = Vital(
+            id: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+            name: name,
+            operationKey: operationKey,
+            type: .rumOperation(.start),
+            date: dateProvider.now,
+            duration: 0
+        )
+
+        if Sampler(samplingRate: profiling.sampleRate).sample() {
+            let context = applicationScope.activeSession?.rumContextAttributes ?? applicationScope.rumContextAttributes
+            featureScope.send(message: .payload(VitalMessage(context: context, vital: vital)))
+        }
 
         process(
             command: RUMOperationStepVitalCommand(
-                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                name: name,
+                vitalId: vital.id,
+                name: vital.name,
                 operationKey: operationKey,
                 stepType: .start,
                 failureReason: nil,
-                time: dateProvider.now,
+                time: vital.date,
                 attributes: attributes
             )
         )
@@ -486,14 +499,26 @@ extension Monitor: RUMMonitorProtocol {
 
         telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .succeed)))))
 
+        let vital = Vital(
+            id: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+            name: name,
+            operationKey: operationKey,
+            type: .rumOperation(.end),
+            date: dateProvider.now,
+            duration: 0
+        )
+
+        let context = applicationScope.activeSession?.rumContextAttributes ?? applicationScope.rumContextAttributes
+        featureScope.send(message: .payload(VitalMessage(context: context, vital: vital)))
+
         process(
             command: RUMOperationStepVitalCommand(
-                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                name: name,
+                vitalId: vital.id,
+                name: vital.name,
                 operationKey: operationKey,
                 stepType: .end,
                 failureReason: nil,
-                time: dateProvider.now,
+                time: vital.date,
                 attributes: attributes
             )
         )
@@ -504,14 +529,26 @@ extension Monitor: RUMMonitorProtocol {
 
         telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .fail)))))
 
+        let vital = Vital(
+            id: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+            name: name,
+            operationKey: operationKey,
+            type: .rumOperation(.end),
+            date: dateProvider.now,
+            duration: 0
+        )
+
+        let context = applicationScope.activeSession?.rumContextAttributes ?? applicationScope.rumContextAttributes
+        featureScope.send(message: .payload(VitalMessage(context: context, vital: vital)))
+
         process(
             command: RUMOperationStepVitalCommand(
-                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                name: name,
+                vitalId: vital.id,
+                name: vital.name,
                 operationKey: operationKey,
                 stepType: .end,
                 failureReason: reason,
-                time: dateProvider.now,
+                time: vital.date,
                 attributes: attributes
             )
         )
@@ -536,7 +573,7 @@ extension Monitor: RUMMonitorProtocol {
                 guard let self = self else {
                     return
                 }
-                self.debugging?.debug(applicationScope: self.scopes)
+                self.debugging?.debug(applicationScope: self.applicationScope)
             }
         }
         get {
