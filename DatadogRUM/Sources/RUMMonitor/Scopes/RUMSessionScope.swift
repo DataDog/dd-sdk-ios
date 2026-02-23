@@ -113,9 +113,16 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.parent = parent
         self.dependencies = dependencies
         self.applicationState = applicationState
-        self.isSampled = dependencies.sessionSampler.sample()
+        let candidateUUID = dependencies.rumUUIDGenerator.generateUnique()
+        let sessionIdentifier = candidateUUID.rawValue.uuidString
+            .split(separator: "-")
+            .last
+            .flatMap { UInt64($0, radix: 16) }
+        self.isSampled = sessionIdentifier.map {
+            DeterministicSampler(seed: $0, samplingRate: dependencies.sessionSampler.samplingRate).sample()
+        } ?? dependencies.sessionSampler.sample()
         self.startPrecondition = startPrecondition
-        self.sessionUUID = isSampled ? dependencies.rumUUIDGenerator.generateUnique() : .nullUUID
+        self.sessionUUID = isSampled ? candidateUUID : .nullUUID
         self.isInitialSession = isInitialSession
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime

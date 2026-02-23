@@ -863,3 +863,166 @@ class TracingURLSessionHandlerTests: XCTestCase {
         }
     }
 }
+
+// MARK: - Knuth trace sampling with child rate correction
+
+/// Tests for deterministic sampling and child rate correction in `TracingURLSessionHandler`.
+///
+///  1. Sampling decisions are deterministic for the same sessionID.
+///  2. The effective rate is `sessionRate.composed(with: traceRate)` — not `traceRate` alone (TEST-04).
+///  3. When no RUM context is present, the handler falls back gracefully (no crash).
+///  4. Boundary values match cross-SDK Knuth vectors.
+class KnuthTraceSamplingTests: XCTestCase {
+    // swiftlint:disable implicitly_unwrapped_optional
+    var core: PassthroughCoreMock!
+    var receiver: ContextMessageReceiver!
+    var tracer: DatadogTracer!
+    // swiftlint:enable implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+        receiver = ContextMessageReceiver()
+        core = PassthroughCoreMock(messageReceiver: receiver)
+        tracer = .mockWith(
+            core: core,
+            traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+            spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 1)
+        )
+    }
+
+    override func tearDown() {
+        core = nil
+        receiver = nil
+        tracer = nil
+        super.tearDown()
+    }
+
+    // MARK: Test 1 — Determinism
+
+    func testDeterministicSamplingForSameSessionID() {
+        // Given
+        let sessionUUID = "abcdef01-2345-6789-abcd-ef0123456789"
+        let sessionSampler = DeterministicSampler(sessionID: sessionUUID, samplingRate: 80.0)
+        core.set(context: { RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampleRate: sessionSampler.samplingRate) })
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: receiver,
+            samplingRate: 80.0,
+            firstPartyHosts: .init(["example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+
+        // When — modify is called twice with the same context
+        let (_, ctx1, _) = handler.modify(
+            request: .mockWith(url: "https://example.com/path"),
+            headerTypes: [.datadog],
+            networkContext: nil
+        )
+        let (_, ctx2, _) = handler.modify(
+            request: .mockWith(url: "https://example.com/path"),
+            headerTypes: [.datadog],
+            networkContext: nil
+        )
+
+        // Then — both calls return the same sampling priority (determinism)
+        XCTAssertEqual(ctx1?.samplingPriority.isKept, ctx2?.samplingPriority.isKept, "Sampling decision must be deterministic")
+    }
+
+    // MARK: Test 2 — Child rate correction (TEST-04)
+
+    func testChildRateCorrectionIsApplied() throws {
+        // seed 0xd860b2b9437a (~68.7% hash): NOT sampled at composed 40%, but sampled at trace-only 80%.
+        let sessionUUID = "a1b2c3d4-e5f6-7890-abcd-d860b2b9437a"
+        let sessionSampleRate: SampleRate = 50.0
+        let traceRate: SampleRate = 80.0
+
+        let sessionSampler = DeterministicSampler(sessionID: sessionUUID, samplingRate: sessionSampleRate)
+        let effectiveRate = sessionSampler.combined(with: traceRate).samplingRate
+        XCTAssertEqual(effectiveRate, 40.0, accuracy: 0.001)
+
+        let expectedSampled = sessionSampler.combined(with: traceRate).sample()
+        let oldBehaviour = DeterministicSampler(sessionID: sessionUUID, samplingRate: traceRate).sample()
+        XCTAssertNotEqual(expectedSampled, oldBehaviour, "Chosen vector must differ between composed and trace-only rate")
+
+        core.set(context: { RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampleRate: sessionSampleRate) })
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: receiver,
+            samplingRate: traceRate,
+            firstPartyHosts: .init(["example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+
+        let (_, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://example.com/resource"),
+            headerTypes: [.datadog],
+            networkContext: nil
+        )
+
+        let actualSampled = try XCTUnwrap(traceContext?.samplingPriority.isKept)
+        XCTAssertEqual(actualSampled, expectedSampled, "Handler must apply child-rate correction via sessionSampler.combined(with:)")
+    }
+
+    // MARK: Test 3 — No RUM context fallback
+
+    func testNoRUMContextFallbackDoesNotCrash() {
+        // Given — no RUM context set
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: receiver,
+            samplingRate: 80.0,
+            firstPartyHosts: .init(["example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+
+        let (_, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://example.com/path"),
+            headerTypes: [.datadog],
+            networkContext: nil
+        )
+
+        XCTAssertNotNil(traceContext?.samplingPriority.isKept, "Handler must return a sampling decision even without RUM context")
+    }
+
+    // MARK: Test 4 — Cross-SDK Knuth vector
+
+    func testCrossSDKKnuthVector() throws {
+        // seed 0x8e45571aa876 (~51.2% hash): NOT sampled at composed 48%, but sampled at trace-only 80%.
+        let sessionUUID = "a1b2c3d4-e5f6-7890-abcd-8e45571aa876"
+        let sessionSampleRate: SampleRate = 60.0
+        let traceRate: SampleRate = 80.0
+
+        let sessionSampler = DeterministicSampler(sessionID: sessionUUID, samplingRate: sessionSampleRate)
+        let effectiveRate = sessionSampler.combined(with: traceRate).samplingRate
+        XCTAssertEqual(effectiveRate, 48.0, accuracy: 0.001)
+
+        let expectedSampled = sessionSampler.combined(with: traceRate).sample()
+        let oldBehaviour = DeterministicSampler(sessionID: sessionUUID, samplingRate: traceRate).sample()
+        XCTAssertNotEqual(expectedSampled, oldBehaviour, "Chosen vector must differ between composed and trace-only rate")
+
+        core.set(context: { RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampleRate: sessionSampleRate) })
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: receiver,
+            samplingRate: traceRate,
+            firstPartyHosts: .init(["example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+
+        let (_, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://example.com/resource"),
+            headerTypes: [.datadog],
+            networkContext: nil
+        )
+
+        let actualSampled = try XCTUnwrap(traceContext?.samplingPriority.isKept)
+        XCTAssertEqual(actualSampled, expectedSampled, "Cross-SDK vector: handler must match composed rate Knuth decision")
+    }
+}

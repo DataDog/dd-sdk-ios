@@ -20,6 +20,10 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
     public let userActionID: String?
     /// Current view related server time offset
     public let viewServerTimeOffset: TimeInterval?
+    /// The sampler for the current RUM session, carrying the session seed and rate.
+    /// Consumers use `sessionSampler.combined(with: childRate).sample()` to apply
+    /// child-rate correction without UUID parsing.
+    public let sessionSampler: DeterministicSampler
 
     /// Creates a RUM context.
     ///
@@ -29,17 +33,20 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
     ///   - viewID: Current RUM view ID - standard UUID string, lowercased. It can be empty when view is being loaded.
     ///   - userActionID: The ID of current RUM action (standard UUID `String`, lowercased).
     ///   - viewServerTimeOffset: Current view related server time offset
+    ///   - sessionSampleRate: The sampling rate applied to the current RUM session. Defaults to `100.0`.
     public init(
         applicationID: String,
         sessionID: String,
         viewID: String? = nil,
         userActionID: String? = nil,
-        viewServerTimeOffset: TimeInterval? = nil
+        viewServerTimeOffset: TimeInterval? = nil,
+        sessionSampleRate: SampleRate = 100.0
     ) {
         self.applicationID = applicationID
         self.sessionID = sessionID
         self.viewID = viewID
         self.userActionID = userActionID
         self.viewServerTimeOffset = viewServerTimeOffset
+        self.sessionSampler = DeterministicSampler(sessionID: sessionID, samplingRate: sessionSampleRate)
     }
 }

@@ -84,6 +84,17 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             timeSinceAppStart: timeSinceAppStart
         )
 
+        let shouldSampleNewSession: Bool = {
+            let newSessionUUID = uuidGenerator.generateUnique()
+            let newSessionIdentifier = newSessionUUID.rawValue.uuidString
+                .split(separator: "-")
+                .last
+                .flatMap { UInt64($0, radix: 16) }
+            return newSessionIdentifier.map {
+                DeterministicSampler(seed: $0, samplingRate: sessionSampler.samplingRate).sample()
+            } ?? sessionSampler.sample()
+        }()
+
         // RUMM-2516 if a cross-platform crash was reported, do not send its native version
         if var lastRUMViewEvent = context.lastRUMViewEvent {
             if let lastRUMAttributes = context.lastRUMAttributes {
@@ -104,7 +115,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             }
         } else if let lastRUMSessionState = context.lastRUMSessionState {
             sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings)
-        } else if sessionSampler.sample() { // before producing a new RUM session, we must consider sampling
+        } else if shouldSampleNewSession { // before producing a new RUM session, we must consider sampling (deterministic Knuth)
             sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings)
         } else {
             DD.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")

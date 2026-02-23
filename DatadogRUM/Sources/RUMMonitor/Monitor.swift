@@ -110,6 +110,7 @@ internal class Monitor: RUMCommandSubscriber {
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
     private let telemetry: Telemetry
+    private let sessionSampler: Sampler
 
     init(
         dependencies: RUMScopeDependencies,
@@ -121,6 +122,7 @@ internal class Monitor: RUMCommandSubscriber {
         self.fatalErrorContext = dependencies.fatalErrorContext
         self.rumUUIDGenerator = dependencies.rumUUIDGenerator
         self.telemetry = dependencies.telemetry
+        self.sessionSampler = dependencies.sessionSampler
     }
 
     func process(command: RUMCommand) {
@@ -153,7 +155,7 @@ internal class Monitor: RUMCommandSubscriber {
                                 self.scopes.context
 
                 guard context.sessionID != .nullUUID else {
-                    // if Session was sampled or not yet started
+                    // if Session was not sampled or not yet started
                     return nil
                 }
 
@@ -162,7 +164,8 @@ internal class Monitor: RUMCommandSubscriber {
                     sessionID: context.sessionID.rawValue.uuidString.lowercased(),
                     viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
                     userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
-                    viewServerTimeOffset: self.scopes.activeSession?.viewScopes.last?.serverTimeOffset
+                    viewServerTimeOffset: self.scopes.activeSession?.viewScopes.last?.serverTimeOffset,
+                    sessionSampleRate: self.sessionSampler.samplingRate
                 )
             }
         )

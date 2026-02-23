@@ -1747,13 +1747,15 @@ extension RUMCoreContext: RandomMockable {
         applicationID: String = .mockAny(),
         sessionID: String = .mockAny(),
         viewID: String? = .mockAny(),
-        serverTimeOffset: TimeInterval = .mockAny()
+        serverTimeOffset: TimeInterval = .mockAny(),
+        sessionSampler: DeterministicSampler = DeterministicSampler(seed: 0, samplingRate: 100.0)
     ) -> Self {
         .init(
             applicationID: applicationID,
             sessionID: sessionID,
             viewID: viewID,
-            viewServerTimeOffset: serverTimeOffset
+            viewServerTimeOffset: serverTimeOffset,
+            sessionSampleRate: sessionSampler.samplingRate
         )
     }
 
