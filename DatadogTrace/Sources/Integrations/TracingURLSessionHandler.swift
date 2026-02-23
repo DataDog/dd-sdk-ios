@@ -329,8 +329,14 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     /// - returns: A ``TracingURLSessionHandler.NewSpanElements`` helper struct.
     private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?) -> NewSpanElements {
         let traceID = parentSpanContext?.traceID ?? tracer.traceIDGenerator.generate()
-        let sampler = sampler(sessionID: contextReceiver.context.rumContext?.sessionID, traceID: traceID.idLo)
-        let samplingDecision = parentSpanContext.map { $0.samplingDecision } ?? SamplingDecision(sampling: sampler)
+        let sampled = isSampled(
+            rumContext: contextReceiver.context.rumContext,
+            traceID: traceID.idLo
+        )
+        let samplingDecision = parentSpanContext.map { $0.samplingDecision } ?? SamplingDecision(
+            from: sampled ? .autoKeep : .autoDrop,
+            decisionMaker: .agentRate
+        )
 
         return NewSpanElements(
             spanID: tracer.spanIDGenerator.generate(),
@@ -343,20 +349,26 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         )
     }
 
-    private func sampler(sessionID: String?, traceID: UInt64?) -> Sampling {
-        if let sessionID,
-           // for a UUID with value aaaaaaaa-bbbb-Mccc-Nddd-1234567890ab
-           // we use as the base id the last part : 0x1234567890ab
-            let seed = sessionID
-            .split(separator: "-")
-            .last
-            .flatMap({ UInt64($0, radix: 16) }) {
-            return DeterministicSampler(seed: seed, samplingRate: samplingRate)
-        } else if let traceID {
-            return DeterministicSampler(seed: traceID, samplingRate: samplingRate)
+    /// Determines whether the current request should be sampled.
+    ///
+    /// When a RUM session is active, delegates to the session sampler's `combined(with:)` API
+    /// which applies the Knuth multiplicative hash with the composed (session × trace) rate.
+    /// Falls back to a trace-only Knuth sample using the traceID when no session is available.
+    ///
+    /// - Parameters:
+    ///   - rumContext: The current RUM core context (if available).
+    ///   - traceID: The trace ID low bits, used as a seed fallback when no RUM session is present.
+    /// - Returns: `true` if the request should be sampled.
+    private func isSampled(rumContext: RUMCoreContext?, traceID: UInt64?) -> Bool {
+        if let sessionSampler = rumContext?.sessionSampler {
+            return sessionSampler.combined(with: samplingRate).sample()
         }
-
-        return Sampler(samplingRate: samplingRate)
+        // No RUM context: fall back to Knuth on traceID or random sampler.
+        let fallbackRate = samplingRate
+        if let traceID {
+            return DeterministicSampler(seed: traceID, samplingRate: fallbackRate).sample()
+        }
+        return Sampler(samplingRate: fallbackRate).sample()
     }
 }
 
