@@ -5,6 +5,10 @@
 */
 
 #import <XCTest/XCTest.h>
+
+#if TARGET_OS_IOS || TARGET_OS_VISION
+
+
 @import DatadogWebViewTracking;
 @import WebKit;
 
@@ -39,3 +43,5 @@
 #pragma clang diagnostic pop
 
 @end
+
+#endif

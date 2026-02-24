@@ -95,16 +95,16 @@ test-ios:
 
 # Run unit tests for all iOS schemes
 test-ios-all:
-	@$(MAKE) test-ios SCHEME="DatadogCore iOS"
-	@$(MAKE) test-ios SCHEME="DatadogInternal iOS"
-	@$(MAKE) test-ios SCHEME="DatadogRUM iOS"
-	@$(MAKE) test-ios SCHEME="DatadogSessionReplay iOS"
-	@$(MAKE) test-ios SCHEME="DatadogLogs iOS"
-	@$(MAKE) test-ios SCHEME="DatadogTrace iOS"
-	@$(MAKE) test-ios SCHEME="DatadogCrashReporting iOS"
-	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking iOS"
-	@$(MAKE) test-ios SCHEME="DatadogFlags iOS"
-	@$(MAKE) test-ios SCHEME="DatadogProfiling iOS"
+	@$(MAKE) test-ios SCHEME="DatadogCore"
+	@$(MAKE) test-ios SCHEME="DatadogInternal"
+	@$(MAKE) test-ios SCHEME="DatadogRUM"
+	@$(MAKE) test-ios SCHEME="DatadogSessionReplay"
+	@$(MAKE) test-ios SCHEME="DatadogLogs"
+	@$(MAKE) test-ios SCHEME="DatadogTrace"
+	@$(MAKE) test-ios SCHEME="DatadogCrashReporting"
+	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking"
+	@$(MAKE) test-ios SCHEME="DatadogFlags"
+	@$(MAKE) test-ios SCHEME="DatadogProfiling"
 	@$(MAKE) test-ios SCHEME="DatadogIntegrationTests iOS"
 
 # Run unit tests for specified SCHEME using tvOS Simulator
@@ -117,14 +117,14 @@ test-tvos:
 
 # Run unit tests for all tvOS schemes
 test-tvos-all:
-	@$(MAKE) test-tvos SCHEME="DatadogCore tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogInternal tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogRUM tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogLogs tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogTrace tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogFlags tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogProfiling tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogCore"
+	@$(MAKE) test-tvos SCHEME="DatadogInternal"
+	@$(MAKE) test-tvos SCHEME="DatadogRUM"
+	@$(MAKE) test-tvos SCHEME="DatadogLogs"
+	@$(MAKE) test-tvos SCHEME="DatadogTrace"
+	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting"
+	@$(MAKE) test-tvos SCHEME="DatadogFlags"
+	@$(MAKE) test-tvos SCHEME="DatadogProfiling"
 	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests tvOS"
 
 # Run UI tests for specified TEST_PLAN

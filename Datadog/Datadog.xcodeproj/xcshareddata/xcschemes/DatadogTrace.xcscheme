@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D207317B29A5226A00ECBF94"
-               BuildableName = "DatadogLogs.framework"
-               BlueprintName = "DatadogLogs iOS"
+               BlueprintIdentifier = "D25EE93329C4C3C300CE3839"
+               BuildableName = "DatadogTrace.framework"
+               BlueprintName = "DatadogTrace"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +32,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D207317B29A5226A00ECBF94"
-            BuildableName = "DatadogLogs.framework"
-            BlueprintName = "DatadogLogs iOS"
+            BlueprintIdentifier = "D25EE93329C4C3C300CE3839"
+            BuildableName = "DatadogTrace.framework"
+            BlueprintName = "DatadogTrace"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -183,9 +183,9 @@
       <CodeCoverageTargets>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D207317B29A5226A00ECBF94"
-            BuildableName = "DatadogLogs.framework"
-            BlueprintName = "DatadogLogs iOS"
+            BlueprintIdentifier = "D25EE93329C4C3C300CE3839"
+            BuildableName = "DatadogTrace.framework"
+            BlueprintName = "DatadogTrace"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
@@ -194,9 +194,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D207318229A5226A00ECBF94"
-               BuildableName = "DatadogLogsTests iOS.xctest"
-               BlueprintName = "DatadogLogsTests iOS"
+               BlueprintIdentifier = "D25EE93A29C4C3C300CE3839"
+               BuildableName = "DatadogTraceTests.xctest"
+               BlueprintName = "DatadogTraceTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -222,9 +222,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D207317B29A5226A00ECBF94"
-            BuildableName = "DatadogLogs.framework"
-            BlueprintName = "DatadogLogs iOS"
+            BlueprintIdentifier = "D25EE93329C4C3C300CE3839"
+            BuildableName = "DatadogTrace.framework"
+            BlueprintName = "DatadogTrace"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1420"
+   LastUpgradeVersion = "1400"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,23 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D29A9F3329DD84AA005C54A4"
-               BuildableName = "DatadogRUM.framework"
-               BlueprintName = "DatadogRUM iOS"
+               BlueprintIdentifier = "3CE119FD29F7BE0000202522"
+               BuildableName = "DatadogWebViewTracking.framework"
+               BlueprintName = "DatadogWebViewTracking"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3CE11A0429F7BE0300202522"
+               BuildableName = "DatadogWebViewTrackingTests.xctest"
+               BlueprintName = "DatadogWebViewTrackingTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +46,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D29A9F3329DD84AA005C54A4"
-            BuildableName = "DatadogRUM.framework"
-            BlueprintName = "DatadogRUM iOS"
+            BlueprintIdentifier = "3CE119FD29F7BE0000202522"
+            BuildableName = "DatadogWebViewTracking.framework"
+            BlueprintName = "DatadogWebViewTracking"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -183,9 +197,9 @@
       <CodeCoverageTargets>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D29A9F3329DD84AA005C54A4"
-            BuildableName = "DatadogRUM.framework"
-            BlueprintName = "DatadogRUM iOS"
+            BlueprintIdentifier = "3CE119FD29F7BE0000202522"
+            BuildableName = "DatadogWebViewTracking.framework"
+            BlueprintName = "DatadogWebViewTracking"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
@@ -194,9 +208,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D29A9F3A29DD84AB005C54A4"
-               BuildableName = "DatadogRUMTests iOS.xctest"
-               BlueprintName = "DatadogRUMTests iOS"
+               BlueprintIdentifier = "3CE11A0429F7BE0300202522"
+               BuildableName = "DatadogWebViewTrackingTests.xctest"
+               BlueprintName = "DatadogWebViewTrackingTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -222,9 +236,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D29A9F3329DD84AA005C54A4"
-            BuildableName = "DatadogRUM.framework"
-            BlueprintName = "DatadogRUM iOS"
+            BlueprintIdentifier = "3CE119FD29F7BE0000202522"
+            BuildableName = "DatadogWebViewTracking.framework"
+            BlueprintName = "DatadogWebViewTracking"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

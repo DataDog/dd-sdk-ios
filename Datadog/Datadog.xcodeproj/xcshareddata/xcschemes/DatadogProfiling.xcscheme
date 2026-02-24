@@ -14,9 +14,23 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D23F8E4D29DDCD28001CFAE8"
-               BuildableName = "DatadogRUM.framework"
-               BlueprintName = "DatadogRUM tvOS"
+               BlueprintIdentifier = "D229FF8B2E3BC6D4009CCD62"
+               BuildableName = "DatadogProfiling.framework"
+               BlueprintName = "DatadogProfiling"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D2C9F0382E3B89D7008397FD"
+               BuildableName = "DatadogProfilingTests.xctest"
+               BlueprintName = "DatadogProfilingTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -29,15 +43,6 @@
       shouldUseLaunchSchemeArgsEnv = "NO"
       codeCoverageEnabled = "YES"
       onlyGenerateCoverageForSpecifiedTargets = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D23F8E4D29DDCD28001CFAE8"
-            BuildableName = "DatadogRUM.framework"
-            BlueprintName = "DatadogRUM tvOS"
-            ReferencedContainer = "container:Datadog.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "DD_TEST_RUNNER"
@@ -183,9 +188,9 @@
       <CodeCoverageTargets>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D23F8E4D29DDCD28001CFAE8"
-            BuildableName = "DatadogRUM.framework"
-            BlueprintName = "DatadogRUM tvOS"
+            BlueprintIdentifier = "D229FF8B2E3BC6D4009CCD62"
+            BuildableName = "DatadogProfiling.framework"
+            BlueprintName = "DatadogProfiling"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
@@ -194,9 +199,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D23F8E9A29DDCD38001CFAE8"
-               BuildableName = "DatadogRUMTests tvOS.xctest"
-               BlueprintName = "DatadogRUMTests tvOS"
+               BlueprintIdentifier = "D2C9F0382E3B89D7008397FD"
+               BuildableName = "DatadogProfilingTests.xctest"
+               BlueprintName = "DatadogProfilingTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -219,15 +224,6 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D23F8E4D29DDCD28001CFAE8"
-            BuildableName = "DatadogRUM.framework"
-            BlueprintName = "DatadogRUM tvOS"
-            ReferencedContainer = "container:Datadog.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
