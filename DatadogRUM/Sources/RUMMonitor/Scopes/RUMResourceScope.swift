@@ -157,8 +157,8 @@ internal class RUMResourceScope: RUMScope {
         }
 
         // Extract captured HTTP headers
-        let requestHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.resourceRequestHeaders)?.dd.decode()
-        let responseHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.resourceResponseHeaders)?.dd.decode()
+        let requestHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.requestHeaders)?.dd.decode()
+        let responseHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.responseHeaders)?.dd.decode()
 
         // Metrics values take precedence over other values.
         if let metrics = resourceMetrics {

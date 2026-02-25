@@ -164,15 +164,15 @@ public struct CrossPlatformAttributes {
     /// For Flutter this is the amount of time between an action occurring and the First Build Complete occurring on the next view.
     public static let customINVValue: String = "_dd.view.custom_inv_value"
 
-    /// HTTP headers captured from the resource request, serialized as a JSON string.
-    /// Used to transport request headers through the RUM command pipeline.
-    /// Expects `String` value containing a JSON dictionary of `[String: String]`.
-    public static let resourceRequestHeaders = "_dd.resource.request_headers"
+    /// Request headers passed from CP SDK or captured from native URLSession interception.
+    /// Used in RUM resources to transport request headers through the RUM command pipeline.
+    /// Expects `[String: String]` value containing header keys and values.
+    public static let requestHeaders = "_dd.request_headers"
 
-    /// HTTP headers captured from the resource response, serialized as a JSON string.
-    /// Used to transport response headers through the RUM command pipeline.
-    /// Expects `String` value containing a JSON dictionary of `[String: String]`.
-    public static let resourceResponseHeaders = "_dd.resource.response_headers"
+    /// Response headers passed from CP SDK or captured from native URLSession interception.
+    /// Used in RUM resources to transport response headers through the RUM command pipeline.
+    /// Expects `[String: String]` value containing header keys and values.
+    public static let responseHeaders = "_dd.response_headers"
 }
 
 /// HTTP header names used to pass GraphQL metadata from the application to the SDK.
