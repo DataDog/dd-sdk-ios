@@ -176,10 +176,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
                 responseHeaders: interception.completion?.httpResponse?.allHeaderFields
             )
             if !headers.request.isEmpty {
-                combinedAttributes[CrossPlatformAttributes.resourceRequestHeaders] = headers.request
+                combinedAttributes[CrossPlatformAttributes.requestHeaders] = headers.request
             }
             if !headers.response.isEmpty {
-                combinedAttributes[CrossPlatformAttributes.resourceResponseHeaders] = headers.response
+                combinedAttributes[CrossPlatformAttributes.responseHeaders] = headers.response
             }
         }
 

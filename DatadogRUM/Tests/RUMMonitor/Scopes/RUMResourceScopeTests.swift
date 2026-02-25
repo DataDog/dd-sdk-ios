@@ -1813,7 +1813,7 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: "/api/data",
                     time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
                     attributes: [
-                        CrossPlatformAttributes.resourceRequestHeaders: ["content-type": "application/json", "cache-control": "no-cache"]
+                        CrossPlatformAttributes.requestHeaders: ["content-type": "application/json", "cache-control": "no-cache"]
                     ],
                     kind: .xhr,
                     httpStatusCode: 200,
@@ -1850,7 +1850,7 @@ class RUMResourceScopeTests: XCTestCase {
                     resourceKey: "/api/data",
                     time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
                     attributes: [
-                        CrossPlatformAttributes.resourceResponseHeaders: ["content-type": "text/html", "etag": "\"abc\""]
+                        CrossPlatformAttributes.responseHeaders: ["content-type": "text/html", "etag": "\"abc\""]
                     ],
                     kind: .xhr,
                     httpStatusCode: 200,

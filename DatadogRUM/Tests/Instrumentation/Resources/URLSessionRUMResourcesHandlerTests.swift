@@ -1283,8 +1283,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
-        let requestHeaders = try XCTUnwrap(attributes[CrossPlatformAttributes.resourceRequestHeaders] as? [String: String])
-        let responseHeaders = try XCTUnwrap(attributes[CrossPlatformAttributes.resourceResponseHeaders] as? [String: String])
+        let requestHeaders = try XCTUnwrap(attributes[CrossPlatformAttributes.requestHeaders] as? [String: String])
+        let responseHeaders = try XCTUnwrap(attributes[CrossPlatformAttributes.responseHeaders] as? [String: String])
 
         XCTAssertEqual(requestHeaders.first(where: { $0.key.lowercased() == "content-type" })?.value, "application/json")
         XCTAssertEqual(requestHeaders.first(where: { $0.key.lowercased() == "cache-control" })?.value, "no-cache")
@@ -1324,8 +1324,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
-        XCTAssertNil(attributes[CrossPlatformAttributes.resourceRequestHeaders])
-        XCTAssertNil(attributes[CrossPlatformAttributes.resourceResponseHeaders])
+        XCTAssertNil(attributes[CrossPlatformAttributes.requestHeaders])
+        XCTAssertNil(attributes[CrossPlatformAttributes.responseHeaders])
     }
 
     func testWhenHeaderCaptureEnabled_andNoMatchingHeaders_itDoesNotAddEmptyAttributes() throws {
@@ -1363,8 +1363,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
-        XCTAssertNil(attributes[CrossPlatformAttributes.resourceRequestHeaders])
-        XCTAssertNil(attributes[CrossPlatformAttributes.resourceResponseHeaders])
+        XCTAssertNil(attributes[CrossPlatformAttributes.requestHeaders])
+        XCTAssertNil(attributes[CrossPlatformAttributes.responseHeaders])
     }
 
     // MARK: - Helper Methods
