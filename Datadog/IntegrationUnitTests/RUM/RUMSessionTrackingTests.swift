@@ -186,8 +186,10 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
     @available(tvOS, unavailable)
     private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate) }
 
-    @available(tvOS, unavailable)
     func testGivenPrewarmedLaunch_whenTrackingBackgroundSession() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET disabled
         let given = enableRUM(osPrewarmLaunch)
@@ -198,10 +200,13 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         // Then
         let sessions = try when.then()
         XCTAssertTrue(sessions.isEmpty)
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenPrewarmedLaunch_andBETEnabled_whenTrackingBackgroundSession() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET enabled
         let given = enableRUM(osPrewarmLaunch) { $0.trackBackgroundEvents = true }
@@ -210,6 +215,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
 
         let session = try when.then().takeSingle()
         assertBackgroundSession(session: session, expectedSessionPrecondition: .prewarm)
+        #endif
     }
 
     private var backgroundLaunch: AppRunner.ProcessLaunchType { .backgroundLaunch(processLaunchDate: processLaunchDate) }
@@ -302,8 +308,10 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         XCTAssertEqual(view.longTaskEvents.count, 2)
     }
 
-    @available(tvOS, unavailable)
     func testGivenPrewarmedLaunch_andSuspendedBackgroundSession_whenItGetsResumedByUserSession() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET disabled
         let given = enableRUM(osPrewarmLaunch) { $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate() }
@@ -314,10 +322,13 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         // Then
         let userSession = try when.then().takeSingle()
         assertResumedUserSession(session: userSession, expectedSessionPrecondition: .inactivityTimeout)
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenPrewarmedLaunch_andBETEnabled_andSuspendedBackgroundSession_whenItGetsResumedByUserSession() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET enabled
         let given = enableRUM(osPrewarmLaunch) {
@@ -332,6 +343,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         let (backgroundSession, userSession) = try when.then().takeTwo()
         assertSuspendedBackgroundSession(session: backgroundSession, expectedSessionPrecondition: .prewarm)
         assertResumedUserSession(session: userSession, expectedSessionPrecondition: .inactivityTimeout)
+        #endif
     }
 
     func testGivenBackgroundLaunch_andSuspendedBackgroundSession_whenItGetsResumedByUserSession() throws {

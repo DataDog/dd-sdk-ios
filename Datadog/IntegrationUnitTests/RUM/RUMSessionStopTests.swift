@@ -406,8 +406,10 @@ class RUMSessionStopTests: RUMSessionTestsBase {
 
     // MARK: - Background session "stop" → track in background
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundSession_whenItIsStopped_andNextEventIsTrackedInBackground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = backgroundSession()
             .and(.trackResource(after: dt1, duration: dt2))
@@ -433,10 +435,13 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 XCTAssertTrue(sessions.isEmpty)
             }
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andActionIsTrackedInBackground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET enabled
         let given1 = backgroundSession { $0.trackBackgroundEvents = true }
@@ -474,10 +479,13 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             DDAssertEqual(session2.views[0].duration, dt5, accuracy: accuracy)
             XCTAssertEqual(session2.views[0].actionEvents.count, 2)
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andOtherEventsAreTrackedInBackground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET enabled
         let given1 = backgroundSession { $0.trackBackgroundEvents = true }
@@ -509,12 +517,15 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 XCTAssertEqual(session.views[0].resourceEvents.count, 1)
             }
         }
+        #endif
     }
 
     // MARK: - Background session "stop" → track in foreground
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundSession_whenItIsStopped_andNextEventIsTrackedInForeground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = backgroundSession()
             .and(.trackResource(after: dt1, duration: dt2))
@@ -544,10 +555,13 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 }
             }
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andNextEventIsTrackedInForeground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET enabled
         let given1 = backgroundSession { $0.trackBackgroundEvents = true }
@@ -604,10 +618,13 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
             }
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundSession_whenItIsStopped_andViewIsTrackedInForeground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = backgroundSession { $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate() }
             .and(.trackResource(after: dt1, duration: dt2))
@@ -647,10 +664,13 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 }
             }
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andViewIsTrackedInForeground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET enabled
         let given1 = backgroundSession {
@@ -741,5 +761,6 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 DDAssertEqual(session2.views[0].duration, dt6, accuracy: accuracy)
             }
         }
+        #endif
     }
 }

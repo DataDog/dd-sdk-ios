@@ -483,8 +483,10 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     @available(tvOS, unavailable)
     private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate) }
 
-    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenNoEventIsTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch)
         let given2 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch) { rumConfig in
@@ -521,10 +523,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
             DDAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenManualViewIsTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
         let given2 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
@@ -586,10 +591,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenAutomaticViewIsTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
             rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
@@ -653,10 +661,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenActionsAreTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
         let given2 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
@@ -714,10 +725,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction2" }))
             }
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenResourceIsTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
         let given2 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
@@ -773,10 +787,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 XCTAssertNotNil(session.views[0].resourceEvents.first(where: { $0.resource.url == "https://resource.url" }))
             }
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenOSPrewarmLaunch_whenLongTasksAreTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
         let given2 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
@@ -833,14 +850,17 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 DDAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
             }
         }
+        #endif
     }
 
     // MARK: - Background Launch
 
     private var backgroundLaunch: AppRunner.ProcessLaunchType { .backgroundLaunch(processLaunchDate: processLaunchDate) }
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenNoEventIsTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
         let given2 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
@@ -877,10 +897,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
             DDAssertEqual(session.views[0].duration, dt1, accuracy: accuracy)
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenManualViewIsTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
         let given2 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
@@ -941,10 +964,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenAutomaticViewIsTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
             rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
@@ -1008,10 +1034,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenActionsAreTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
         let given2 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
@@ -1069,10 +1098,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 XCTAssertNotNil(session.views[0].actionEvents.first(where: { $0.action.target?.name == "CustomAction2" }))
             }
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenResourceIsTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
         let given2 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
@@ -1128,10 +1160,13 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 XCTAssertNotNil(session.views[0].resourceEvents.first(where: { $0.resource.url == "https://resource.url" }))
             }
         }
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenBackgroundLaunch_whenLongTasksAreTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
         let given2 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
@@ -1188,5 +1223,6 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 DDAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
             }
         }
+        #endif
     }
 }
