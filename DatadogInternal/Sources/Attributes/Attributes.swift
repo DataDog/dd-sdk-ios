@@ -124,6 +124,18 @@ public struct CrossPlatformAttributes {
     /// Expects `Double` value between `0.0` and `1.0`.
     public static let rulePSR = "_dd.rule_psr"
 
+    /// Request headers passed from CP SDK. Used in RUM resources created by cross platform SDK.
+    /// When cross-platform SDK injects custom headers to intercepted resource, we pass them through this
+    /// attribute and send them within the RUM resource, so the RUM backend can display them in the resource details.
+    /// Excepts `[String: String]` value containing header keys and values.
+    public static let requestHeaders = "_dd.request_headers"
+
+    /// Response headers passed from CP SDK. Used in RUM resources created by cross platform SDK.
+    /// When cross-platform SDK intercepts a response for a resource, we pass response headers through this
+    /// attribute and send them within the RUM resource, so the RUM backend can display them in the resource details.
+    /// Excepts `[String: String]` value containing header keys and values.
+    public static let responseHeaders = "_dd.response_headers"
+
     /// Custom attribute passed when starting GraphQL RUM resources from a cross platform SDK.
     /// It sets the GraphQL operation name if it was defined by the developer.
     /// Expects `String` value.
