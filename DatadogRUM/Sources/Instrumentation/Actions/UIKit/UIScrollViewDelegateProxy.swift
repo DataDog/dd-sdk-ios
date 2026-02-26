@@ -15,11 +15,11 @@ internal final class UIScrollViewDelegateProxy: NSObject, UIScrollViewDelegate {
     weak var originalDelegate: UIScrollViewDelegate?
 
     /// The handler notified of scroll lifecycle events.
-    let handler: UIScrollViewScrollHandler
+    let handler: UIScrollViewHandler
 
     init(
         originalDelegate: UIScrollViewDelegate?,
-        handler: UIScrollViewScrollHandler
+        handler: UIScrollViewHandler
     ) {
         self.handler = handler
         self.originalDelegate = originalDelegate
@@ -29,17 +29,17 @@ internal final class UIScrollViewDelegateProxy: NSObject, UIScrollViewDelegate {
     // MARK: - UIScrollViewDelegate (intercepted)
 
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        handler.scrollViewWillBeginDragging(scrollView)
+        handler.notify_scrollViewWillBeginDragging(scrollView)
         originalDelegate?.scrollViewWillBeginDragging?(scrollView)
     }
 
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        handler.scrollViewDidEndDragging(scrollView, willDecelerate: decelerate)
+        handler.notify_scrollViewDidEndDragging(scrollView, willDecelerate: decelerate)
         originalDelegate?.scrollViewDidEndDragging?(scrollView, willDecelerate: decelerate)
     }
 
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        handler.scrollViewDidEndDecelerating(scrollView)
+        handler.notify_scrollViewDidEndDecelerating(scrollView)
         originalDelegate?.scrollViewDidEndDecelerating?(scrollView)
     }
 

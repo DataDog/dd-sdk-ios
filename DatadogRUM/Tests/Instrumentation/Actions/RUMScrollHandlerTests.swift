@@ -11,14 +11,14 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
 
-class UIScrollViewScrollHandlerTests: XCTestCase {
+class RUMScrollHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
 
     private func createHandler(
         predicate: UITouchRUMActionsPredicate = MockScrollPredicate()
-    ) -> UIScrollViewScrollHandler {
-        let handler = UIScrollViewScrollHandler(
+    ) -> RUMScrollHandler {
+        let handler = RUMScrollHandler(
             dateProvider: dateProvider,
             predicate: predicate
         )
@@ -50,9 +50,9 @@ class UIScrollViewScrollHandlerTests: XCTestCase {
         scrollView.contentOffset = CGPoint(x: 0, y: 0)
 
         // When
-        handler.scrollViewWillBeginDragging(scrollView)
+        handler.notify_scrollViewWillBeginDragging(scrollView)
         scrollView.contentOffset = CGPoint(x: 0, y: 300)
-        handler.scrollViewDidEndDragging(scrollView, willDecelerate: false)
+        handler.notify_scrollViewDidEndDragging(scrollView, willDecelerate: false)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
@@ -69,7 +69,7 @@ class UIScrollViewScrollHandlerTests: XCTestCase {
         XCTAssertEqual(stopCommand?.actionType, .scroll)
         XCTAssertEqual(stopCommand?.name, "UIScrollView")
         XCTAssertEqual(
-            stopCommand?.attributes[UIScrollViewScrollHandler.gestureDirectionAttribute] as? String,
+            stopCommand?.attributes[RUMScrollHandler.gestureDirectionAttribute] as? String,
             "down"
         )
     }
@@ -83,15 +83,15 @@ class UIScrollViewScrollHandlerTests: XCTestCase {
         scrollView.contentOffset = CGPoint(x: 0, y: 300)
 
         // When
-        handler.scrollViewWillBeginDragging(scrollView)
+        handler.notify_scrollViewWillBeginDragging(scrollView)
         scrollView.contentOffset = CGPoint(x: 0, y: 0)
-        handler.scrollViewDidEndDragging(scrollView, willDecelerate: false)
+        handler.notify_scrollViewDidEndDragging(scrollView, willDecelerate: false)
 
         // Then
         let stopCommand = commandSubscriber.receivedCommands[1] as? RUMStopUserActionCommand
         XCTAssertEqual(stopCommand?.actionType, .swipe)
         XCTAssertEqual(
-            stopCommand?.attributes[UIScrollViewScrollHandler.gestureDirectionAttribute] as? String,
+            stopCommand?.attributes[RUMScrollHandler.gestureDirectionAttribute] as? String,
             "up"
         )
     }
@@ -108,13 +108,13 @@ class UIScrollViewScrollHandlerTests: XCTestCase {
 
         for testCase in testCases {
             let scrollView = createMockScrollView(panState: .began, contentOffset: testCase.start)
-            handler.scrollViewWillBeginDragging(scrollView)
+            handler.notify_scrollViewWillBeginDragging(scrollView)
             scrollView.contentOffset = testCase.end
-            handler.scrollViewDidEndDragging(scrollView, willDecelerate: false)
+            handler.notify_scrollViewDidEndDragging(scrollView, willDecelerate: false)
 
             let stopCommand = commandSubscriber.receivedCommands.last as? RUMStopUserActionCommand
             XCTAssertEqual(
-                stopCommand?.attributes[UIScrollViewScrollHandler.gestureDirectionAttribute] as? String,
+                stopCommand?.attributes[RUMScrollHandler.gestureDirectionAttribute] as? String,
                 testCase.expected,
                 "Expected direction '\(testCase.expected)' for offset \(testCase.start) -> \(testCase.end)"
             )
@@ -130,11 +130,11 @@ class UIScrollViewScrollHandlerTests: XCTestCase {
         let scrollView = MockScrollView(panGesture: panGesture)
         scrollView.contentOffset = CGPoint(x: 0, y: 0)
 
-        handler.scrollViewWillBeginDragging(scrollView)
+        handler.notify_scrollViewWillBeginDragging(scrollView)
 
         // Velocity is high at drag end
         panGesture.mockVelocity = CGPoint(x: 0, y: 800)
-        handler.scrollViewDidEndDragging(scrollView, willDecelerate: true)
+        handler.notify_scrollViewDidEndDragging(scrollView, willDecelerate: true)
 
         // Only start command so far
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
@@ -142,7 +142,7 @@ class UIScrollViewScrollHandlerTests: XCTestCase {
         // After deceleration, velocity resets to zero — but we captured it at drag end
         panGesture.mockVelocity = .zero
         scrollView.contentOffset = CGPoint(x: 0, y: 600)
-        handler.scrollViewDidEndDecelerating(scrollView)
+        handler.notify_scrollViewDidEndDecelerating(scrollView)
 
         // Start + stop
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
@@ -158,12 +158,12 @@ class UIScrollViewScrollHandlerTests: XCTestCase {
         let scrollView = MockScrollView(panGesture: panGesture)
         scrollView.contentOffset = CGPoint(x: 0, y: 0)
 
-        handler.scrollViewWillBeginDragging(scrollView)
-        handler.scrollViewDidEndDragging(scrollView, willDecelerate: true)
+        handler.notify_scrollViewWillBeginDragging(scrollView)
+        handler.notify_scrollViewDidEndDragging(scrollView, willDecelerate: true)
 
         // User re-drags during deceleration
         scrollView.contentOffset = CGPoint(x: 0, y: 300)
-        handler.scrollViewWillBeginDragging(scrollView)
+        handler.notify_scrollViewWillBeginDragging(scrollView)
 
         // start1 + stop1 (auto-finalized) + start2 = 3
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)

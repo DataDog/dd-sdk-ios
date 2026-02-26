@@ -15,7 +15,7 @@ import DatadogInternal
 internal final class UIScrollViewSwizzler {
     let setDelegate: SetDelegate
 
-    init(handler: UIScrollViewScrollHandler) throws {
+    init(handler: UIScrollViewHandler) throws {
         setDelegate = try SetDelegate(handler: handler)
     }
 
@@ -36,13 +36,13 @@ internal final class UIScrollViewSwizzler {
     > {
         private static let selector = #selector(setter: UIScrollView.delegate)
         private let method: Method
-        private let handler: UIScrollViewScrollHandler
+        private let handler: UIScrollViewHandler
 
         /// Proxies keyed by scroll view identity to avoid double-wrapping.
         private var proxies: [ObjectIdentifier: UIScrollViewDelegateProxy] = [:]
         private let lock = NSLock()
 
-        init(handler: UIScrollViewScrollHandler) throws {
+        init(handler: UIScrollViewHandler) throws {
             self.method = try dd_class_getInstanceMethod(UIScrollView.self, Self.selector)
             self.handler = handler
         }

@@ -12,7 +12,7 @@ import DatadogInternal
 /// Handles scroll and swipe gesture detection on UIScrollView-based components.
 /// Tracks scroll lifecycle events, classifies gestures as scroll or swipe based on velocity,
 /// and generates RUM commands for the action pipeline.
-internal final class UIScrollViewScrollHandler: RUMCommandPublisher {
+internal final class RUMScrollHandler: UIScrollViewHandler {
     /// Velocity threshold (in points/second) to classify a gesture as a swipe vs. scroll.
     /// Gestures with velocity magnitude >= this value are classified as swipe.
     static let velocityThreshold: CGFloat = 500
@@ -55,10 +55,10 @@ internal final class UIScrollViewScrollHandler: RUMCommandPublisher {
         self.subscriber = subscriber
     }
 
-    // MARK: - Scroll Lifecycle
+    // MARK: - UIScrollViewHandler
 
     /// Called when the user begins dragging.
-    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+    func notify_scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         // Only track user-initiated scrolls
         guard scrollView.panGestureRecognizer.state == .began || scrollView.panGestureRecognizer.state == .changed else {
             return
@@ -96,7 +96,7 @@ internal final class UIScrollViewScrollHandler: RUMCommandPublisher {
 
     /// Called when dragging ends. Captures lift velocity while the gesture recognizer still has it.
     /// If no deceleration follows, finalizes the scroll immediately.
-    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+    func notify_scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         let id = ObjectIdentifier(scrollView)
 
         // Capture velocity now — after deceleration it will be zero
@@ -111,7 +111,7 @@ internal final class UIScrollViewScrollHandler: RUMCommandPublisher {
     }
 
     /// Called when deceleration completes after a fling. Finalize the gesture.
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    func notify_scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         finalizeScroll(scrollView)
     }
 

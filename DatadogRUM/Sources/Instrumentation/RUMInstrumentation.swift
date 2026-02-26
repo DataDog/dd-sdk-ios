@@ -36,7 +36,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
     let scrollViewSwizzler: UIScrollViewSwizzler?
     /// Receives scroll lifecycle events and generates RUM commands.
-    let scrollHandler: UIScrollViewScrollHandler?
+    let scrollHandler: RUMScrollHandler?
     #endif
 
     /// Instruments RUM Long Tasks. It is `nil` if long tasks tracking is not enabled.
@@ -130,10 +130,10 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
         #if !os(tvOS)
         // Create scroll handler and swizzler if UIKit action tracking is enabled:
-        let scrollHandler: UIScrollViewScrollHandler?
+        let scrollHandler: RUMScrollHandler?
         let scrollViewSwizzler: UIScrollViewSwizzler?
         if let uiKitRUMActionsPredicate = uiKitRUMActionsPredicate {
-            let handler = UIScrollViewScrollHandler(
+            let handler = RUMScrollHandler(
                 dateProvider: dateProvider,
                 predicate: uiKitRUMActionsPredicate
             )
