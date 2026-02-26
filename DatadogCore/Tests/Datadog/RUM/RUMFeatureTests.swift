@@ -40,8 +40,7 @@ class RUMFeatureTests: XCTestCase {
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
         let randomBackgroundTasksEnabled: Bool = .mockRandom()
 
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
+        let httpClient = HTTPClientMock(responseCode: 200)
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -74,17 +73,18 @@ class RUMFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: randomBackgroundTasksEnabled
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         RUM.enable(with: .mockWith { $0.customEndpoint = randomUploadURL }, in: core)
 
         // When
         let monitor = RUMMonitor.shared(in: core)
-        monitor.startView(viewController: mockView) // on starting the first view we sends `application_start` action event
+        monitor.startView(key: .mockAny()) // on starting the first view we sends `application_start` action event
+        core.flushAndTearDown()
 
         // Then
-        let request = server.waitAndReturnRequests(count: 1)[0]
+        let requests = httpClient.requestsSent()
+        let request = try XCTUnwrap(requests.first)
         let requestURL = try XCTUnwrap(request.url)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(requestURL.absoluteString.starts(with: randomUploadURL.absoluteString + "?"))
@@ -111,8 +111,7 @@ class RUMFeatureTests: XCTestCase {
     // MARK: - HTTP Payload
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
+        let httpClient = HTTPClientMock(responseCode: 200)
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -142,12 +141,14 @@ class RUMFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         RUM.enable(with: .mockAny(), in: core)
+        core.flushAndTearDown()
 
-        let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
+        let requests = httpClient.requestsSent()
+        XCTAssertEqual(requests.count, 1)
+        let payload = try XCTUnwrap(requests.first?.decompressed().httpBody)
 
         // Expected payload format:
         // ```
@@ -160,8 +161,7 @@ class RUMFeatureTests: XCTestCase {
     }
 
     func testItOnlyKeepsOneViewEventPerPayload() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
+        let httpClient = HTTPClientMock(responseCode: 200)
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -191,7 +191,6 @@ class RUMFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         RUM.enable(with: .mockAny(), in: core)
@@ -200,9 +199,12 @@ class RUMFeatureTests: XCTestCase {
         RUMMonitor.shared(in: core).addError(message: "1st error")
         RUMMonitor.shared(in: core).addError(message: "2nd error")
         RUMMonitor.shared(in: core).addError(message: "3rd error")
+        core.flushAndTearDown()
 
         // Then
-        let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
+        let requests = httpClient.requestsSent()
+        XCTAssertEqual(requests.count, 1)
+        let payload = try XCTUnwrap(requests.first?.decompressed().httpBody)
         let eventMatchers = try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(payload)
         let viewMatchers = eventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewMatchers.count, 1, "It should keep only one view event")

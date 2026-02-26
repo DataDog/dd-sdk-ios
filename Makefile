@@ -62,6 +62,11 @@ DEFAULT_TVOS_OS := latest
 DEFAULT_TVOS_PLATFORM := tvOS Simulator
 DEFAULT_TVOS_DEVICE := Apple TV
 
+# Test env for running watchOS tests in local:
+DEFAULT_WATCHOS_OS := latest
+DEFAULT_WATCHOS_PLATFORM := watchOS Simulator
+DEFAULT_WATCHOS_DEVICE := Apple Watch
+
 # Test env for running visionOS tests in local:
 DEFAULT_VISIONOS_OS := latest
 DEFAULT_VISIONOS_PLATFORM := visionOS Simulator
@@ -131,6 +136,25 @@ test-tvos-all:
 	@$(MAKE) test-tvos SCHEME="DatadogFlags"
 	@$(MAKE) test-tvos SCHEME="DatadogProfiling"
 	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests"
+
+# Run unit tests for specified SCHEME using watchOS Simulator
+test-watchos:
+	@$(call require_param,SCHEME)
+	@:$(eval OS ?= $(DEFAULT_WATCHOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_WATCHOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_WATCHOS_DEVICE))
+	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run unit tests for all watchOS schemes
+test-watchos-all:
+	@$(MAKE) test-watchos SCHEME="DatadogCore"
+	@$(MAKE) test-watchos SCHEME="DatadogInternal"
+	@$(MAKE) test-watchos SCHEME="DatadogRUM"
+	@$(MAKE) test-watchos SCHEME="DatadogLogs"
+	@$(MAKE) test-watchos SCHEME="DatadogTrace"
+	@$(MAKE) test-watchos SCHEME="DatadogCrashReporting"
+	@$(MAKE) test-watchos SCHEME="DatadogFlags"
+	@$(MAKE) test-watchos SCHEME="DatadogIntegrationTests"
 
 # Run unit tests for specified SCHEME using visionOS Simulator
 test-visionos:

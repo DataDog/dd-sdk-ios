@@ -35,7 +35,7 @@ class RUMInternalProxyTests: XCTestCase {
         let duration: TimeInterval = .mockRandom()
 
         // When
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor._internal?.addLongTask(at: date, duration: duration)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -54,7 +54,7 @@ class RUMInternalProxyTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         // When
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor._internal?.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
         monitor._internal?.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
         monitor._internal?.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
@@ -62,7 +62,7 @@ class RUMInternalProxyTests: XCTestCase {
         monitor._internal?.updatePerformanceMetric(at: date, metric: .flutterBuildTime, value: 32.0)
         monitor._internal?.updatePerformanceMetric(at: date, metric: .flutterBuildTime, value: 52.0)
         monitor._internal?.updatePerformanceMetric(at: date, metric: .flutterRasterTime, value: 42.0)
-        monitor.stopView(viewController: mockView)
+        monitor.stopView(key: .mockAny())
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
@@ -86,7 +86,7 @@ class RUMInternalProxyTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         // When
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "POST"))
 
         let fetch = (start: date, end: date.addingTimeInterval(12))

@@ -21,6 +21,7 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertNil(config.uiKitActionsPredicate)
         XCTAssertNil(config.swiftUIViewsPredicate)
         XCTAssertNil(config.swiftUIActionsPredicate)
+        XCTAssertTrue(config.trackMemoryWarnings)
         #endif
         XCTAssertNil(config.urlSessionTracking)
         XCTAssertTrue(config.trackFrustrations)
@@ -36,6 +37,5 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertNil(config.onSessionStart)
         XCTAssertNil(config.customEndpoint)
         XCTAssertTrue(config.trackAnonymousUser)
-        XCTAssertTrue(config.trackMemoryWarnings)
     }
 }

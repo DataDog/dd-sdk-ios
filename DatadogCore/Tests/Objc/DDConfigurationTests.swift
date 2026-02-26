@@ -71,14 +71,16 @@ class DDConfigurationTests: XCTestCase {
         objcConfig.batchProcessingLevel = .high
         XCTAssertEqual(objcConfig.sdkConfiguration.batchProcessingLevel, .high)
 
+        #if !os(watchOS)
         objcConfig.proxyConfiguration = [kCFNetworkProxiesHTTPEnable: true, kCFNetworkProxiesHTTPPort: 123, kCFNetworkProxiesHTTPProxy: "www.example.com", kCFProxyUsernameKey: "proxyuser", kCFProxyPasswordKey: "proxypass" ]
-        objcConfig.additionalConfiguration = ["additional": "config"]
-
         XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPEnable] as? Bool, true)
         XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPPort] as? Int, 123)
         XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
         XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFProxyUsernameKey] as? String, "proxyuser")
         XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
+        #endif
+
+        objcConfig.additionalConfiguration = ["additional": "config"]
         XCTAssertEqual(objcConfig.sdkConfiguration._internal.additionalConfiguration["additional"] as? String, "config")
 
         class ObjCDataEncryption: objc_DataEncryption {

@@ -12,6 +12,8 @@
 
 #if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
 #import <UIKit/UIKit.h>
+#elif TARGET_OS_WATCH
+#import <WatchKit/WatchKit.h>
 #elif TARGET_OS_OSX
 #import <AppKit/AppKit.h>
 #endif
@@ -77,30 +79,39 @@ static void recordPreMainDate(void) {
 - (void)observeNotificationCenter:(NSNotificationCenter *)notificationCenter {
     __weak NSNotificationCenter *weakCenter = notificationCenter;
 
+    NSString *didFinishLaunchingNotificationName;
 #if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
-    __block id __unused didFinishLaunchingNotification = [notificationCenter addObserverForName:UIApplicationDidFinishLaunchingNotification
-                                                                object:nil
-                                                                 queue:NSOperationQueue.mainQueue
-                                                            usingBlock:^(NSNotification *_){
-
-        @synchronized(self) {
-            self->_didFinishLaunchingDate = CFAbsoluteTimeGetCurrent();
-            NSDate *didFinishLaunchingDate = [NSDate dateWithTimeIntervalSinceReferenceDate:self->_didFinishLaunchingDate];
-            NSDate *didBecomeActiveDate = self->_didBecomeActiveDate > 0 ? [NSDate dateWithTimeIntervalSinceReferenceDate:self->_didBecomeActiveDate] : nil;
-
-            for (UIApplicationNotificationCallback callback in self->_applicationNotificationCallbacks) {
-                callback(didFinishLaunchingDate, didBecomeActiveDate);
-            }
-        }
-
-        [weakCenter removeObserver:didFinishLaunchingNotification];
-        didFinishLaunchingNotification = nil;
-    }];
+    didFinishLaunchingNotificationName = UIApplicationDidFinishLaunchingNotification;
+#elif TARGET_OS_WATCH
+    didFinishLaunchingNotificationName = WKApplicationDidFinishLaunchingNotification;
 #endif
+
+    if (didFinishLaunchingNotificationName) {
+        __block id __unused didFinishLaunchingNotification = [notificationCenter addObserverForName:didFinishLaunchingNotificationName
+                                                                    object:nil
+                                                                     queue:NSOperationQueue.mainQueue
+                                                                usingBlock:^(NSNotification *_){
+
+            @synchronized(self) {
+                self->_didFinishLaunchingDate = CFAbsoluteTimeGetCurrent();
+                NSDate *didFinishLaunchingDate = [NSDate dateWithTimeIntervalSinceReferenceDate:self->_didFinishLaunchingDate];
+                NSDate *didBecomeActiveDate = self->_didBecomeActiveDate > 0 ? [NSDate dateWithTimeIntervalSinceReferenceDate:self->_didBecomeActiveDate] : nil;
+
+                for (UIApplicationNotificationCallback callback in self->_applicationNotificationCallbacks) {
+                    callback(didFinishLaunchingDate, didBecomeActiveDate);
+                }
+            }
+
+            [weakCenter removeObserver:didFinishLaunchingNotification];
+            didFinishLaunchingNotification = nil;
+        }];
+    }
 
     NSString *didBecomeActiveNotificationName;
 #if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
     didBecomeActiveNotificationName = UIApplicationDidBecomeActiveNotification;
+#elif TARGET_OS_WATCH
+    didBecomeActiveNotificationName = WKApplicationDidBecomeActiveNotification;
 #elif TARGET_OS_OSX
     didBecomeActiveNotificationName = NSApplicationDidBecomeActiveNotification;
 #endif

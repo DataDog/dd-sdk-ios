@@ -67,7 +67,7 @@ class GeneratingBacktraceTests: XCTestCase {
 
         // Then
         XCTAssertFalse(backtrace.stack.isEmpty)
-        XCTAssertTrue(backtrace.stack.contains(uiKitLibraryName), "Main thread stack should include UIKit symbols")
+        XCTAssertTrue(backtrace.stack.contains("XCTestCore"), "Main thread stack should include XCTestCore symbols")
     }
 
     func testGeneratingBacktraceOfSecondaryThread() throws {

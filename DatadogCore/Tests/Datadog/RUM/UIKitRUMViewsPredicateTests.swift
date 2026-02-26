@@ -8,6 +8,8 @@ import XCTest
 import DatadogRUM
 import TestUtilities
 
+#if !os(watchOS)
+
 #if canImport(SwiftUI)
 import SwiftUI
 #endif
@@ -70,3 +72,5 @@ class UIKitRUMViewsPredicateTests: XCTestCase {
     }
 #endif
 }
+
+#endif

@@ -31,6 +31,7 @@ class DDRUMConfigurationTests: XCTestCase {
         XCTAssertEqual(swift.telemetrySampleRate, 30)
     }
 
+#if !os(watchOS)
     func testUIKitViewsPredicate() {
         class ObjcPredicate: objc_UIKitRUMViewsPredicate {
             func rumView(for viewController: UIViewController) -> objc_RUMView? { nil }
@@ -51,6 +52,7 @@ class DDRUMConfigurationTests: XCTestCase {
         XCTAssertIdentical(objc.uiKitActionsPredicate, predicate)
         XCTAssertNotNil(swift.uiKitActionsPredicate)
     }
+#endif
 
     func testSetDDRUMURLSessionTrackingWithFirstPartyHosts() {
         let tracking = objc_URLSessionTracking()

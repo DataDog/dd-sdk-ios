@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import TestUtilities
 
@@ -39,3 +41,5 @@ class DDSwiftUIRUMActionsPredicateTests: XCTestCase {
         }
     }
 }
+
+#endif

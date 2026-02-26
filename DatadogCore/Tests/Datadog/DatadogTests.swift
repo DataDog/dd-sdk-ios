@@ -81,6 +81,7 @@ class DatadogTests: XCTestCase {
         configuration.site = .eu1
         configuration.batchSize = .small
         configuration.uploadFrequency = .frequent
+        #if !os(watchOS)
         configuration.proxyConfiguration = [
             kCFNetworkProxiesHTTPEnable: true,
             kCFNetworkProxiesHTTPPort: 123,
@@ -88,6 +89,7 @@ class DatadogTests: XCTestCase {
             kCFProxyUsernameKey: "proxyuser",
             kCFProxyPasswordKey: "proxypass",
         ]
+        #endif
         configuration.bundle = .mockWith(
             bundleIdentifier: "test",
             CFBundleShortVersionString: "1.0.0",
@@ -118,6 +120,7 @@ class DatadogTests: XCTestCase {
         XCTAssertTrue(core.dateProvider is SystemDateProvider)
         XCTAssertTrue(core.encryption is DataEncryptionMock)
 
+        #if !os(watchOS)
         let urlSessionClient = try XCTUnwrap(core.httpClient as? URLSessionClient)
         let connectionProxyDictionary = try XCTUnwrap(urlSessionClient.session.configuration.connectionProxyDictionary)
         XCTAssertEqual(connectionProxyDictionary[kCFNetworkProxiesHTTPEnable] as? Bool, true)
@@ -125,6 +128,7 @@ class DatadogTests: XCTestCase {
         XCTAssertEqual(connectionProxyDictionary[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
         XCTAssertEqual(connectionProxyDictionary[kCFProxyUsernameKey] as? String, "proxyuser")
         XCTAssertEqual(connectionProxyDictionary[kCFProxyPasswordKey] as? String, "proxypass")
+        #endif
 
         let context = core.contextProvider.read()
         XCTAssertEqual(context.clientToken, "abc-123")

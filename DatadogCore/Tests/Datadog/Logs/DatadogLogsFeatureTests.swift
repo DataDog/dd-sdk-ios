@@ -37,9 +37,7 @@ class DatadogLogsFeatureTests: XCTestCase {
         let randomDeviceOSVersion: String = .mockRandom()
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
         let randomBackgroundTasksEnabled: Bool = .mockRandom()
-
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
+        let httpClient = HTTPClientMock(responseCode: 200)
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -70,7 +68,6 @@ class DatadogLogsFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: randomBackgroundTasksEnabled
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         Logs.enable(with: .init(customEndpoint: randomUploadURL), in: core)
@@ -78,9 +75,12 @@ class DatadogLogsFeatureTests: XCTestCase {
         // When
         let logger = Logger.create(in: core)
         logger.debug(.mockAny())
+        core.flushAndTearDown()
 
         // Then
-        let request = server.waitAndReturnRequests(count: 1)[0]
+        let requests = httpClient.requestsSent()
+        XCTAssertEqual(requests.count, 1)
+        let request = try XCTUnwrap(requests.first)
         let requestURL = try XCTUnwrap(request.url)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertTrue(requestURL.absoluteString.starts(with: randomUploadURL.absoluteString + "?"))
@@ -102,8 +102,7 @@ class DatadogLogsFeatureTests: XCTestCase {
     // MARK: - HTTP Payload
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
+        let httpClient = HTTPClientMock(responseCode: 200)
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -133,7 +132,6 @@ class DatadogLogsFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         Logs.enable(with: .init(), in: core)
@@ -142,8 +140,11 @@ class DatadogLogsFeatureTests: XCTestCase {
         logger.debug("log 1")
         logger.debug("log 2")
         logger.debug("log 3")
+        core.flushAndTearDown()
 
-        let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
+        let requests = httpClient.requestsSent()
+        XCTAssertEqual(requests.count, 1)
+        let payload = try XCTUnwrap(requests.first?.decompressed().httpBody)
 
         // Expected payload format:
         // `[log1JSON,log2JSON,log3JSON]`

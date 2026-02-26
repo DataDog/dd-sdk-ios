@@ -6,6 +6,7 @@
 
 import XCTest
 import UIKit.UIApplication
+
 @testable import DatadogRUM
 
 class VitalCPUReaderTest: XCTestCase {
@@ -37,6 +38,7 @@ class VitalCPUReaderTest: XCTestCase {
         XCTAssertGreaterThan(totalUtilization.highUtilization / Double(repetitions), totalUtilization.sleepUtilization / Double(repetitions))
     }
 
+    #if !os(watchOS)
     func testWhenInactiveAppStateItIgnoresCPUTicks() throws {
         let baseline = try XCTUnwrap(cpuReader.readVitalData())
         testNotificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
@@ -51,6 +53,7 @@ class VitalCPUReaderTest: XCTestCase {
 
         XCTAssertGreaterThan(diffWhenActive, diffWhenInactive)
     }
+    #endif
 
     private func utilizationAndDuration(_ block: () -> Void) throws -> (utilization: Double, duration: Double) {
         let startTime = CFAbsoluteTimeGetCurrent()

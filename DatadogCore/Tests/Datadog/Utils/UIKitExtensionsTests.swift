@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import UIKit
 @testable import DatadogRUM
@@ -38,3 +40,5 @@ class UIKitExtensionsTests: XCTestCase {
         someNonUIKitClasses.forEach { XCTAssertFalse(Bundle(for: $0).dd.isUIKit) }
     }
 }
+
+#endif
