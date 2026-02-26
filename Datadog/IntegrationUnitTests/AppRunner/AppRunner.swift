@@ -30,7 +30,7 @@ internal class AppRunner {
         ///
         /// Sets `TASK_FOREGROUND_APPLICATION` as the task policy role — confirmed through local testing.
         static func userLaunchInSceneDelegateBasedApp(processLaunchDate: Date) -> ProcessLaunchType {
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             let taskPolicyRole = Int(TASK_FOREGROUND_APPLICATION.rawValue)
             #else
             let taskPolicyRole = __dd_private_TASK_POLICY_UNAVAILABLE
@@ -51,7 +51,7 @@ internal class AppRunner {
         ///
         /// Sets `TASK_FOREGROUND_APPLICATION` as the task policy role — confirmed through local testing.
         static func userLaunchInAppDelegateBasedApp(processLaunchDate: Date) -> ProcessLaunchType {
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             let taskPolicyRole = Int(TASK_FOREGROUND_APPLICATION.rawValue)
             #else
             let taskPolicyRole = __dd_private_TASK_POLICY_UNAVAILABLE
@@ -90,7 +90,7 @@ internal class AppRunner {
         /// confirmed for background launch scenarios. This is acceptable, as the SDK determines
         /// background launch based on a heuristic: "not user launch AND not prewarming" — which is reliably detectable.
         static func backgroundLaunch(processLaunchDate: Date) -> ProcessLaunchType {
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             let taskPolicyRole = Int(TASK_NONUI_APPLICATION.rawValue)
             #else
             let taskPolicyRole = __dd_private_TASK_POLICY_UNAVAILABLE
@@ -146,7 +146,7 @@ internal class AppRunner {
     func launch(_ launchType: ProcessLaunchType) {
         appDirectory = { Directory(url: temporaryDirectory) }
         processInfo = ProcessInfoMock(environment: launchType.processInfoEnvironment)
-        notificationCenter = NotificationCenter()
+        notificationCenter = .default
         dateProvider = DateProviderMock(now: launchType.processLaunchDate)
         appStateProvider = AppStateProviderMock(state: launchType.initialAppState)
         appLaunchHandler = AppLaunchHandlerMock(
