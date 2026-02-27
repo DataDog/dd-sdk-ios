@@ -79,6 +79,8 @@
 		115792E62F4504F700AEE829 /* binary_image_resolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 115792E42F4504F700AEE829 /* binary_image_resolver.h */; };
 		115792EC2F4608A200AEE829 /* BinaryImageResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115792EB2F4608A200AEE829 /* BinaryImageResolverTests.swift */; };
 		115792ED2F4608A200AEE829 /* BinaryImageResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115792EB2F4608A200AEE829 /* BinaryImageResolverTests.swift */; };
+		1157930A2F51F05100AEE829 /* binary_image_resolver_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 115793092F51F05100AEE829 /* binary_image_resolver_testing.h */; };
+		1157930B2F51F05100AEE829 /* binary_image_resolver_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 115793092F51F05100AEE829 /* binary_image_resolver_testing.h */; };
 		115F480B2E0BFE11006FAB07 /* DeterministicSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115F480A2E0BFE02006FAB07 /* DeterministicSamplerTests.swift */; };
 		115F480C2E0BFE11006FAB07 /* DeterministicSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115F480A2E0BFE02006FAB07 /* DeterministicSamplerTests.swift */; };
 		116506142E9533A700FD815C /* AppStateManagerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116506132E95339B00FD815C /* AppStateManagerMock.swift */; };
@@ -2786,6 +2788,7 @@
 		115792E12F4504E900AEE829 /* binary_image_resolver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = binary_image_resolver.cpp; sourceTree = "<group>"; };
 		115792E42F4504F700AEE829 /* binary_image_resolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = binary_image_resolver.h; sourceTree = "<group>"; };
 		115792EB2F4608A200AEE829 /* BinaryImageResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryImageResolverTests.swift; sourceTree = "<group>"; };
+		115793092F51F05100AEE829 /* binary_image_resolver_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = binary_image_resolver_testing.h; sourceTree = "<group>"; };
 		115F480A2E0BFE02006FAB07 /* DeterministicSamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSamplerTests.swift; sourceTree = "<group>"; };
 		116506132E95339B00FD815C /* AppStateManagerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManagerMock.swift; sourceTree = "<group>"; };
 		116506162E9535A500FD815C /* WatchdogTerminationMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationMocks.swift; sourceTree = "<group>"; };
@@ -7073,6 +7076,7 @@
 		D229FF5A2E3BA298009CCD62 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				115793092F51F05100AEE829 /* binary_image_resolver_testing.h */,
 				115792E42F4504F700AEE829 /* binary_image_resolver.h */,
 				118AAE052EBBB74D0018E745 /* ctor_profiler_testing.h */,
 				D2883AAE2E6AF01B00880363 /* ctor_profiler.h */,
@@ -7898,6 +7902,7 @@
 			files = (
 				D233E7FF2E4B588B00E7CFDE /* dd_pprof.h in Headers */,
 				D2E937292E53324A00FECA76 /* profile_pprof_packer.h in Headers */,
+				1157930B2F51F05100AEE829 /* binary_image_resolver_testing.h in Headers */,
 				D2E937252E53324100FECA76 /* profile.h in Headers */,
 				D2E9372E2E53325900FECA76 /* protobuf-c.h in Headers */,
 				115792E52F4504F700AEE829 /* binary_image_resolver.h in Headers */,
@@ -7916,6 +7921,7 @@
 			files = (
 				D2E937282E53324A00FECA76 /* profile_pprof_packer.h in Headers */,
 				D2E937262E53324100FECA76 /* profile.h in Headers */,
+				1157930A2F51F05100AEE829 /* binary_image_resolver_testing.h in Headers */,
 				D2E9372F2E53325900FECA76 /* protobuf-c.h in Headers */,
 				D2E9372B2E53325200FECA76 /* profile.pb-c.h in Headers */,
 				115792E62F4504F700AEE829 /* binary_image_resolver.h in Headers */,
