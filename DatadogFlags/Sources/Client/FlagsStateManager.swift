@@ -5,12 +5,11 @@
  */
 
 import Foundation
-import DatadogInternal
 
 /// A listener that receives state change notifications from a ``FlagsClient``.
 ///
 /// Implement this protocol to observe state transitions. Listeners are called
-/// synchronously while holding an internal lock, so implementations should be
+/// synchronously after the state is updated, so implementations should be
 /// fast and non-blocking.
 public protocol FlagsStateListener: AnyObject {
     /// Called when the client state changes.
@@ -39,44 +38,51 @@ public protocol FlagsStateObservable: AnyObject {
 
 /// Manages state transitions and listener notifications for a ``FlagsClient``.
 ///
-/// Thread-safe: all state reads and writes are protected by a read-write lock.
+/// Thread-safe: all state reads, writes, and listener notifications are
+/// serialized through a single lock to guarantee listeners observe transitions
+/// in the same order they are applied.
 internal final class FlagsStateManager: FlagsStateObservable {
-    @ReadWriteLock
-    private var state: FlagsClientState = .notReady
+    /// Guards both `_state` and `_listeners` to ensure atomic state + notify.
+    private let lock = NSRecursiveLock()
 
-    @ReadWriteLock
-    private var listeners: [WeakListener] = []
+    private var _state: FlagsClientState = .notReady
+    private var _listeners: [WeakListener] = []
 
     var currentState: FlagsClientState {
-        state
+        lock.lock()
+        defer { lock.unlock() }
+        return _state
     }
 
     func updateState(_ newState: FlagsClientState) {
-        _state.mutate { state in
-            state = newState
+        lock.lock()
+        guard newState != _state else {
+            lock.unlock()
+            return
         }
-        notifyListeners(newState)
+        _state = newState
+        let listeners = _listeners
+        lock.unlock()
+
+        for weakListener in listeners {
+            weakListener.value?.flagsStateDidChange(newState)
+        }
     }
 
     func addListener(_ listener: FlagsStateListener) {
-        _listeners.mutate { listeners in
-            listeners.removeAll { $0.value == nil }
-            listeners.append(WeakListener(listener))
-        }
-        listener.flagsStateDidChange(state)
+        lock.lock()
+        _listeners.removeAll { $0.value == nil }
+        _listeners.append(WeakListener(listener))
+        let snapshot = _state
+        lock.unlock()
+
+        listener.flagsStateDidChange(snapshot)
     }
 
     func removeListener(_ listener: FlagsStateListener) {
-        _listeners.mutate { listeners in
-            listeners.removeAll { $0.value === listener || $0.value == nil }
-        }
-    }
-
-    private func notifyListeners(_ newState: FlagsClientState) {
-        let currentListeners = _listeners.wrappedValue
-        for weakListener in currentListeners {
-            weakListener.value?.flagsStateDidChange(newState)
-        }
+        lock.lock()
+        _listeners.removeAll { $0.value === listener || $0.value == nil }
+        lock.unlock()
     }
 }
 

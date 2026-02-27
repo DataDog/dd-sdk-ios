@@ -85,6 +85,20 @@ final class FlagsStateManagerTests: XCTestCase {
         XCTAssertEqual(listener2.states, [.notReady, .stale])
     }
 
+    func testDuplicateStateUpdateDoesNotNotifyListeners() {
+        let manager = FlagsStateManager()
+        let listener = MockStateListener()
+        manager.addListener(listener)
+
+        // Listener receives initial state on add
+        XCTAssertEqual(listener.states, [.notReady])
+
+        manager.updateState(.reconciling)
+        manager.updateState(.reconciling) // duplicate — should be ignored
+
+        XCTAssertEqual(listener.states, [.notReady, .reconciling])
+    }
+
     func testDeallocatedListenerIsCleanedUp() {
         let manager = FlagsStateManager()
         var listener: MockStateListener? = MockStateListener()
