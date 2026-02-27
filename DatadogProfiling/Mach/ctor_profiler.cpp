@@ -214,7 +214,7 @@ public:
         // loaded images and watches for new ones via dyld notifications.
         image_cache = new binary_image_cache();
         // if cache allocation/start fails, keep profiling running
-        if (!image_cache || !image_cache->start()) {
+        if (!image_cache || !image_cache->load()) {
             delete image_cache;
             image_cache = nullptr;
         }
