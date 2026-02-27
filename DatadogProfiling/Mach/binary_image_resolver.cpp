@@ -72,6 +72,8 @@ static dd::profiler::binary_image_cache* g_binary_image_cache = nullptr;
 // Binary image utility functions
 // ============================================================================
 
+extern "C" {
+
 bool binary_image_init(binary_image_t* info) {
     if (!info) return false;
     memset(info->uuid, 0, sizeof(uuid_t));
@@ -139,6 +141,7 @@ bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
 
     return true;
 }
+}
 
 // ============================================================================
 // Binary image cache
@@ -167,7 +170,7 @@ binary_image_cache::~binary_image_cache() {
     cache.clear();
 }
 
-bool binary_image_cache::start() {
+bool binary_image_cache::load() {
     {
         std::lock_guard<std::mutex> glock(g_cacheptr_mutex);
         if (started) return started;

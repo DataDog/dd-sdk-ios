@@ -10,7 +10,7 @@ import XCTest
 
 // swiftlint:disable duplicate_imports
 import DatadogMachProfiler
-import DatadogMachProfiler.Cxx
+import DatadogMachProfiler.Testing
 // swiftlint:enable duplicate_imports
 
 final class BinaryImageResolverTests: XCTestCase {
