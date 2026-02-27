@@ -121,4 +121,173 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNil(flagsRepository.context)
         XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
     }
+
+    // MARK: - State Transitions
+
+    func testStateTransitionsToReadyOnSuccess() {
+        // Given
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .notReady)
+        let completed = expectation(description: "completed")
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+    }
+
+    func testStateTransitionsToErrorOnFailureWithNoCache() {
+        // Given
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .notReady)
+        let completed = expectation(description: "completed")
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .error)
+    }
+
+    func testStateTransitionsToStaleOnFailureWithCache() {
+        // Given — first set context successfully to populate cache
+        let fetcherMock = FlagAssignmentsFetcherMock { _, completion in
+            completion(.success(["test": .mockAny()]))
+        }
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcherMock,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let firstCompleted = expectation(description: "first completed")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            firstCompleted.fulfill()
+        }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+
+        // Given — now make the fetcher fail
+        fetcherMock.flagAssignmentsStub = { _, completion in
+            completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+        }
+        let secondCompleted = expectation(description: "second completed")
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            secondCompleted.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .stale)
+        // Cached flags should still be available
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
+    }
+
+    func testStateTransitionsToReconcilingDuringFetch() {
+        // Given
+        var capturedCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                capturedCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .notReady)
+
+        // When — start the fetch (but don't complete it)
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in }
+
+        // Then — state should be reconciling while fetch is in progress
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .reconciling)
+
+        // Complete the fetch
+        capturedCompletion?(.success(["test": .mockAny()]))
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+    }
+
+    func testResetTransitionsToNotReady() {
+        // Given — set context to reach ready state
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let completed = expectation(description: "completed")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            completed.fulfill()
+        }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+
+        // When
+        flagsRepository.reset()
+
+        // Then
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .notReady)
+    }
+
+    func testStateRecoveryFromStaleToReady() {
+        // Given — first succeed, then fail (stale), then succeed again
+        let fetcherMock = FlagAssignmentsFetcherMock { _, completion in
+            completion(.success(["test": .mockAny()]))
+        }
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcherMock,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+
+        // Reach ready state
+        let first = expectation(description: "first")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in first.fulfill() }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+
+        // Reach stale state
+        fetcherMock.flagAssignmentsStub = { _, completion in
+            completion(.failure(.networkError(URLError(.timedOut))))
+        }
+        let second = expectation(description: "second")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in second.fulfill() }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .stale)
+
+        // Recover to ready
+        fetcherMock.flagAssignmentsStub = { _, completion in
+            completion(.success(["test": .mockAny()]))
+        }
+        let third = expectation(description: "third")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in third.fulfill() }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+    }
 }

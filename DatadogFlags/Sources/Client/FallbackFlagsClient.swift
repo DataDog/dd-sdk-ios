@@ -10,10 +10,14 @@ import DatadogInternal
 internal final class FallbackFlagsClient: FlagsClientProtocol {
     private let name: String
     private weak var core: (any DatadogCoreProtocol)?
+    private let _stateManager = FlagsStateManager()
+
+    var state: FlagsStateObservable { _stateManager }
 
     init(name: String, core: any DatadogCoreProtocol) {
         self.name = name
         self.core = core
+        _stateManager.updateState(.error)
     }
 
     func setEvaluationContext(

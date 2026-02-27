@@ -152,7 +152,7 @@ final class FlagsClientTests: XCTestCase {
         let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
-                state: .init(
+                flagsData: .init(
                     flags: [
                         "string-flag": .init(
                             allocationKey: "allocation-123",
@@ -272,7 +272,7 @@ final class FlagsClientTests: XCTestCase {
         let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
-                state: .init(
+                flagsData: .init(
                     flags: [
                         "string-flag": .init(
                             allocationKey: "allocation-123",
@@ -366,7 +366,7 @@ final class FlagsClientTests: XCTestCase {
         let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
-                state: .init(
+                flagsData: .init(
                     flags: [
                         "string-flag": .init(
                             allocationKey: "allocation-123",

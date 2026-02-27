@@ -13,6 +13,12 @@ import DatadogInternal
 /// with detailed evaluation information. The protocol is extended with convenience methods for
 /// common flag types.
 public protocol FlagsClientProtocol: AnyObject {
+    /// An observable for tracking client state changes.
+    ///
+    /// Use this property to observe state transitions such as ``FlagsClientState/ready``,
+    /// ``FlagsClientState/stale``, or ``FlagsClientState/error``.
+    var state: FlagsStateObservable { get }
+
     /// Sets the evaluation context for flag targeting.
     ///
     /// The evaluation context includes user or session information used to determine which flag
