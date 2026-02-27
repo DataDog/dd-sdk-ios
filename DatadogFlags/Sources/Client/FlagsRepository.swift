@@ -12,6 +12,8 @@ internal protocol FlagsRepositoryProtocol {
 
     var context: FlagsEvaluationContext? { get }
 
+    var stateManager: FlagsStateManager { get }
+
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
@@ -30,6 +32,7 @@ internal final class FlagsRepository {
     }
 
     let clientName: String
+    let stateManager: FlagsStateManager
 
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
@@ -47,12 +50,14 @@ internal final class FlagsRepository {
         clientName: String,
         flagAssignmentsFetcher: any FlagAssignmentsFetching,
         dateProvider: any DateProvider,
-        featureScope: any FeatureScope
+        featureScope: any FeatureScope,
+        stateManager: FlagsStateManager = FlagsStateManager()
     ) {
         self.clientName = clientName
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
         self.dateProvider = dateProvider
         self.featureScope = featureScope
+        self.stateManager = stateManager
         readState()
     }
 
@@ -107,6 +112,9 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
+        let hadFlags = state != nil
+        stateManager.updateState(.reconciling)
+
         flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
             switch result {
             case .success(let flags):
@@ -120,8 +128,14 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     date: self.dateProvider.now
                 )
                 self.writeState()
+                self.stateManager.updateState(.ready)
                 completion(.success(()))
             case .failure(let error):
+                if hadFlags {
+                    self?.stateManager.updateState(.stale)
+                } else {
+                    self?.stateManager.updateState(.error)
+                }
                 completion(.failure(error))
             }
         }
@@ -129,6 +143,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
     func reset() {
         state = nil
+        stateManager.updateState(.notReady)
         featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
     }
 }
