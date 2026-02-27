@@ -17,6 +17,10 @@
 
 // --- Binary image utility functions ---
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Initializes a binary image structure to safe defaults.
  *
@@ -34,7 +38,9 @@ bool binary_image_init(binary_image_t* info);
 void binary_image_destroy(binary_image_t* info);
 
 /**
- * Looks up binary image information for a program counter address.
+ * Looks up binary image information for a program counter address by parsing
+ * the Mach-O header via dladdr. This does not use any cache and performs a full
+ * lookup every time.
  *
  * @param[out] info The binary image structure to populate (must be initialized with binary_image_init)
  * @param pc The program counter address to get image info for
@@ -42,7 +48,13 @@ void binary_image_destroy(binary_image_t* info);
  */
 bool binary_image_lookup_pc(binary_image_t* info, void* pc);
 
+#ifdef __cplusplus
+}
+#endif
+
 // --- Binary image cache ---
+
+#ifdef __cplusplus
 
 namespace dd::profiler {
 
@@ -75,9 +87,9 @@ public:
      * Populate cache with all currently loaded images and start watching
      * for new image loads via dyld notifications.
      *
-     * @return true if dyld register was started successfully, false otherwise
+     * @return true if images were loaded successfully, false otherwise
      */
-    bool start();
+    bool load();
 
     /**
      * Look up binary image information for a given instruction pointer.
@@ -133,6 +145,8 @@ private:
 void resolve_stack_trace_frames(stack_trace_t* traces, size_t count, binary_image_cache* cache);
 
 } // namespace dd::profiler
+
+#endif // __cplusplus
 
 #endif // __APPLE__ && !TARGET_OS_WATCH
 #endif // DD_PROFILER_BINARY_IMAGE_RESOLVER_H_
