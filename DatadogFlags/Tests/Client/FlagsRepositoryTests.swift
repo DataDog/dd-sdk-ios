@@ -254,6 +254,43 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(flagsRepository.stateManager.currentState, .notReady)
     }
 
+    func testStateTransitionsToStaleOnFailureWithDiskCache() throws {
+        // Given — pre-populate the data store with cached flags, using an async
+        // data store that delays the callback to simulate production behavior
+        // where the disk read may not complete before setEvaluationContext is called.
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAny()],
+            context: .mockAny(),
+            date: .mockAny()
+        )
+        let asyncStore = AsyncDataStoreMock()
+        try asyncStore.setValue(
+            JSONEncoder().encode(cachedData),
+            forKey: .mockAny()
+        )
+        let asyncFeatureScope = FeatureScopeMock(dataStore: asyncStore)
+
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: asyncFeatureScope
+        )
+
+        // When — call setEvaluationContext while the disk read may still be in-flight.
+        // The fix ensures waitForFlagsDataRead() is called before checking hadFlags.
+        let completed = expectation(description: "completed")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then — should be .stale (not .error) because cached flags exist on disk
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .stale)
+    }
+
     func testStateRecoveryFromStaleToReady() {
         // Given — first succeed, then fail (stale), then succeed again
         let fetcherMock = FlagAssignmentsFetcherMock { _, completion in
@@ -289,5 +326,38 @@ final class FlagsRepositoryTests: XCTestCase {
         flagsRepository.setEvaluationContext(.mockAny()) { _ in third.fulfill() }
         waitForExpectations(timeout: 0)
         XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+    }
+}
+
+// MARK: - Helpers
+
+/// A data store mock that dispatches callbacks asynchronously on a background queue,
+/// matching the production `FeatureDataStore` behavior. This enables testing race conditions
+/// where the disk read may not have completed before other operations begin.
+private final class AsyncDataStoreMock: DataStore {
+    private let queue = DispatchQueue(label: "test.async-data-store")
+    private var storage: [String: DataStoreValueResult] = [:]
+
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        storage[key] = .value(value, version)
+    }
+
+    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+        let result = storage[key] ?? .noValue
+        queue.async {
+            callback(result)
+        }
+    }
+
+    func removeValue(forKey key: String) {
+        storage[key] = nil
+    }
+
+    func clearAllData() {
+        storage.removeAll()
+    }
+
+    func flush() {
+        queue.sync {}
     }
 }

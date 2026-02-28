@@ -112,6 +112,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
+        waitForFlagsDataRead()
         let hadFlags = flagsData != nil
         stateManager.updateState(.reconciling)
 
