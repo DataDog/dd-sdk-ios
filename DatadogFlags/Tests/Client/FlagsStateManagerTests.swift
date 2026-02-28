@@ -113,6 +113,42 @@ final class FlagsStateManagerTests: XCTestCase {
         manager.updateState(.ready)
         XCTAssertEqual(newListener.states, [.notReady, .ready])
     }
+
+    func testConcurrentUpdatesDeliverStatesInOrder() {
+        let manager = FlagsStateManager()
+        let listener = ConcurrentMockStateListener()
+        manager.addListener(listener)
+
+        // Clear the initial .notReady notification
+        listener.reset()
+
+        let iterations = 1000
+        let queue = DispatchQueue(label: "test.concurrent", attributes: .concurrent)
+        let group = DispatchGroup()
+
+        // Fire many concurrent state updates alternating between two states
+        for i in 0..<iterations {
+            group.enter()
+            queue.async {
+                let state: FlagsClientState = i % 2 == 0 ? .reconciling : .ready
+                manager.updateState(state)
+                group.leave()
+            }
+        }
+
+        group.wait()
+
+        // Verify: each observed state must differ from its predecessor
+        // (no duplicate consecutive states, which would indicate out-of-order delivery
+        // where a stale notification arrived after a newer one)
+        let observed = listener.observedStates
+        for i in 1..<observed.count {
+            XCTAssertNotEqual(
+                observed[i], observed[i - 1],
+                "Listener received duplicate consecutive state at index \(i): \(observed[i])"
+            )
+        }
+    }
 }
 
 // MARK: - Helpers
@@ -122,5 +158,29 @@ private final class MockStateListener: FlagsStateListener {
 
     func flagsStateDidChange(_ newState: FlagsClientState) {
         states.append(newState)
+    }
+}
+
+/// Thread-safe listener for concurrency tests.
+private final class ConcurrentMockStateListener: FlagsStateListener {
+    private let lock = NSLock()
+    private var _states: [FlagsClientState] = []
+
+    var observedStates: [FlagsClientState] {
+        lock.lock()
+        defer { lock.unlock() }
+        return _states
+    }
+
+    func reset() {
+        lock.lock()
+        _states.removeAll()
+        lock.unlock()
+    }
+
+    func flagsStateDidChange(_ newState: FlagsClientState) {
+        lock.lock()
+        _states.append(newState)
+        lock.unlock()
     }
 }
