@@ -56,27 +56,22 @@ internal final class FlagsStateManager: FlagsStateObservable {
 
     func updateState(_ newState: FlagsClientState) {
         lock.lock()
+        defer { lock.unlock() }
         guard newState != _state else {
-            lock.unlock()
             return
         }
         _state = newState
-        let listeners = _listeners
-        lock.unlock()
-
-        for weakListener in listeners {
+        for weakListener in _listeners {
             weakListener.value?.flagsStateDidChange(newState)
         }
     }
 
     func addListener(_ listener: FlagsStateListener) {
         lock.lock()
+        defer { lock.unlock() }
         _listeners.removeAll { $0.value == nil }
         _listeners.append(WeakListener(listener))
-        let snapshot = _state
-        lock.unlock()
-
-        listener.flagsStateDidChange(snapshot)
+        listener.flagsStateDidChange(_state)
     }
 
     func removeListener(_ listener: FlagsStateListener) {
