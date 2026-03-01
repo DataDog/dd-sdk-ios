@@ -122,7 +122,7 @@ final class FlagsStateManagerTests: XCTestCase {
         // Clear the initial .notReady notification
         listener.reset()
 
-        let iterations = 1000
+        let iterations = 1_000
         let queue = DispatchQueue(label: "test.concurrent", attributes: .concurrent)
         let group = DispatchGroup()
 
@@ -144,7 +144,8 @@ final class FlagsStateManagerTests: XCTestCase {
         let observed = listener.observedStates
         for i in 1..<observed.count {
             XCTAssertNotEqual(
-                observed[i], observed[i - 1],
+                observed[i],
+                observed[i - 1],
                 "Listener received duplicate consecutive state at index \(i): \(observed[i])"
             )
         }
