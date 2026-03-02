@@ -272,18 +272,9 @@ private:
         resolve_stack_trace_frames(traces, count, profiler->image_cache);
 
         dd::profiler::profile* profile = profiler->profile;
-        if (profile) {
-            profile->add_samples(traces, count);
-        }
-
-        // Free image data we allocated during frame resolution.
-        for (size_t i = 0; i < count; i++) {
-            for (uint32_t j = 0; j < traces[i].frame_count; j++) {
-                binary_image_destroy(&traces[i].frames[j].image);
-            }
-        }
-
         if (!profile) return;
+
+        profile->add_samples(traces, count);
 
         // Check for timeout after adding samples
         int64_t duration_ns = profile->end_timestamp() - profile->start_timestamp();
