@@ -180,7 +180,9 @@ internal class RUMResourceScope: RUMScope {
             let hasBodySize = resourceMetrics?.requestBodySize != nil
             let hasHeaders = requestHeadersObj != nil
 
-            guard hasBodySize || hasHeaders else { return nil }
+            guard hasBodySize || hasHeaders else {
+                return nil
+            }
 
             return .init(
                 decodedBodySize: resourceMetrics?.requestBodySize?.decoded,

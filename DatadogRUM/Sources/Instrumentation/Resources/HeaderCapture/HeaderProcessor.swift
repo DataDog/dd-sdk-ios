@@ -85,11 +85,9 @@ internal struct HeaderProcessor {
 
     // MARK: - Private
 
-    /// Resolves the set of header names to capture for request and response based on the configuration rules.
-    private func buildCaptureList() -> (request: Set<String>, response: Set<String>) {
-        var requestHeaders = Set<String>()
-        var responseHeaders = Set<String>()
-
+    /// Resolves the ordered list of header names to capture for request and response based on the configuration rules.
+    /// Default headers are always placed first to ensure they get budget priority over custom headers.
+    private func buildCaptureList() -> (request: [String], response: [String]) {
         let rules: [RUM.Configuration.URLSessionTracking.HeaderCaptureRule]
 
         switch config {
@@ -101,15 +99,30 @@ internal struct HeaderProcessor {
             rules = customRules
         }
 
+        var requestHeaders: [String] = []
+        var responseHeaders: [String] = []
+        var seenRequest = Set<String>()
+        var seenResponse = Set<String>()
+
         for rule in rules {
             switch rule {
             case .defaults:
-                requestHeaders.formUnion(Self.defaultRequestHeaders)
-                responseHeaders.formUnion(Self.defaultResponseHeaders)
+                for name in Self.defaultRequestHeaders where seenRequest.insert(name).inserted {
+                    requestHeaders.append(name)
+                }
+                for name in Self.defaultResponseHeaders where seenResponse.insert(name).inserted {
+                    responseHeaders.append(name)
+                }
             case .matchHeaders(let names):
-                let lowercased = Set(names.map { $0.lowercased() })
-                requestHeaders.formUnion(lowercased)
-                responseHeaders.formUnion(lowercased)
+                for name in names {
+                    let lowercased = name.lowercased()
+                    if seenRequest.insert(lowercased).inserted {
+                        requestHeaders.append(lowercased)
+                    }
+                    if seenResponse.insert(lowercased).inserted {
+                        responseHeaders.append(lowercased)
+                    }
+                }
             }
         }
 
@@ -117,55 +130,60 @@ internal struct HeaderProcessor {
     }
 
     /// Filters request headers.
-    private func filterRequestHeaders(_ headers: [String: String]?, capturing: Set<String>) -> [String: String] {
+    private func filterRequestHeaders(_ headers: [String: String]?, capturing: [String]) -> [String: String] {
         guard let headers else {
             return [:]
         }
-        return filterHeaders(headers.map { ($0.key, $0.value) }, capturing: capturing, excluded: Self.reservedRequestHeaders)
+        // Build a case-insensitive lookup from the raw headers
+        let normalized = Dictionary(headers.map { ($0.key.lowercased(), ($0.key, $0.value)) }, uniquingKeysWith: { _, last in last })
+        return filterHeaders(normalized, capturing: capturing, excluded: Self.reservedRequestHeaders)
     }
 
     /// Filters response headers.
-    private func filterResponseHeaders(_ headers: [AnyHashable: Any]?, capturing: Set<String>) -> [String: String] {
+    private func filterResponseHeaders(_ headers: [AnyHashable: Any]?, capturing: [String]) -> [String: String] {
         guard let headers else {
             return [:]
         }
-        let stringPairs = headers.compactMap { rawKey, rawValue -> (String, String)? in
-            guard let key = rawKey as? String, let value = rawValue as? String else {
-                return nil
-            }
-            return (key, value)
+        // Build a case-insensitive lookup, keeping only String key/value pairs
+        var normalized: [String: (String, String)] = [:]
+        for (rawKey, rawValue) in headers {
+            guard let key = rawKey as? String, let value = rawValue as? String else { continue }
+            normalized[key.lowercased()] = (key, value)
         }
-        return filterHeaders(stringPairs, capturing: capturing)
+        return filterHeaders(normalized, capturing: capturing)
     }
 
-    /// Shared filtering logic: applies capture list, security pattern, excluded set, and size limits.
-    private func filterHeaders(_ headers: [(String, String)], capturing: Set<String>, excluded: Set<String> = []) -> [String: String] {
-        guard !headers.isEmpty else {
+    /// Shared filtering logic: iterates over the ordered capture list to ensure default headers
+    /// get budget priority over custom ones. Applies security pattern, excluded set, and size limits.
+    private func filterHeaders(
+        _ headersByLowercasedName: [String: (originalKey: String, value: String)],
+        capturing: [String],
+        excluded: Set<String> = []
+    ) -> [String: String] {
+        guard !headersByLowercasedName.isEmpty else {
             return [:]
         }
 
         var result: [String: String] = [:]
         var totalSize = 0
 
-        for (key, value) in headers {
-            let lowercasedKey = key.lowercased()
-
-            // Only capture headers in the configured list
-            guard capturing.contains(lowercasedKey) else { continue }
+        for name in capturing {
+            // Look up the header in the input (name is already lowercased)
+            guard let (originalKey, value) = headersByLowercasedName[name] else { continue }
             // Skip iOS reserved headers
-            guard !excluded.contains(lowercasedKey) else { continue }
+            guard !excluded.contains(name) else { continue }
             // Skip sensitive headers (auth, cookies, tokens, etc.)
-            guard !matchesSecurityPattern(lowercasedKey) else { continue }
+            guard !matchesSecurityPattern(name) else { continue }
             // Enforce max header count
             guard result.count < Self.maxHeaderCount else { break }
 
             let truncatedValue = truncateValue(value)
-            let entrySize = key.utf8.count + truncatedValue.utf8.count
+            let entrySize = originalKey.utf8.count + truncatedValue.utf8.count
 
             // Enforce total size budget
             guard totalSize + entrySize <= Self.maxTotalSize else { break }
 
-            result[key] = truncatedValue
+            result[originalKey] = truncatedValue
             totalSize += entrySize
         }
 
