@@ -18,6 +18,7 @@ module DatadogMachProfiler {
   }
 
   explicit module Testing {
+      header "binary_image_resolver_testing.h"
       header "ctor_profiler_testing.h"
       header "safe_read_testing.h"
       export *
