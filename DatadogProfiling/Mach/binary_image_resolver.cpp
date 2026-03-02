@@ -268,44 +268,29 @@ bool binary_image_cache::lookup(uint64_t instruction_ptr, binary_image_t* out_im
             const cached_image_t& cached = it->second;
             out_image->load_address = cached.load_address;
             memcpy(out_image->uuid, cached.uuid, sizeof(uuid_t));
-
-            if (cached.filename) {
-                size_t len = strlen(cached.filename) + 1;
-                char* fname = (char*)malloc(len);
-                if (fname) {
-                    memcpy(fname, cached.filename, len);
-                    out_image->filename = fname;
-                }
-            }
+            out_image->filename = cached.filename;
             return true;
         }
     }
 
     // Cache miss — fall back to full Mach-O header parsing.
-    // This handles images loaded between start() and now, or images
+    // This handles images loaded between load() and now, or images
     // that the dyld callback missed.
     if (binary_image_lookup_pc(out_image, (void*)instruction_ptr)) {
         // Cache the result for future lookups
         cached_image_t cached;
         cached.load_address = out_image->load_address;
         memcpy(cached.uuid, out_image->uuid, sizeof(uuid_t));
-        cached.filename = nullptr;
-
-        if (out_image->filename) {
-            size_t len = strlen(out_image->filename) + 1;
-            cached.filename = (char*)malloc(len);
-            if (cached.filename) {
-                memcpy(cached.filename, out_image->filename, len);
-            }
-        }
+        cached.filename = (char*)out_image->filename;
 
         std::lock_guard<std::mutex> lock(mutex);
-        bool inserted = cache.emplace(cached.load_address, cached).second;
-        if (!inserted && cached.filename) {
-            // Another thread inserted this image first (e.g., dyld callback).
-            // Free the duplicate filename we allocated.
+        auto [it, inserted] = cache.emplace(cached.load_address, cached);
+        if (!inserted) {
+            // Another thread inserted first (e.g., dyld callback).
             free(cached.filename);
         }
+        // Borrow from whichever entry is in the cache.
+        out_image->filename = it->second.filename;
         return true;
     }
 
