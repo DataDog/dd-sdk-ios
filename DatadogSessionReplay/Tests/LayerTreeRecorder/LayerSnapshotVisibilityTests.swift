@@ -24,6 +24,7 @@ extension LayerSnapshotTests.Fixtures {
         isHidden: Bool = false,
         backgroundColor: CGColor? = nil,
         hasContents: Bool = false,
+        semantics: LayerSnapshot.Semantics = .generic,
         cornerRadius: CGFloat = 0,
         borderWidth: CGFloat = 0,
         borderColor: CGColor? = nil,
@@ -33,6 +34,7 @@ extension LayerSnapshotTests.Fixtures {
         return LayerSnapshot(
             layer: CALayerReference(layer),
             replayID: replayID,
+            semantics: semantics,
             pathComponents: ["Test#\(replayID)"],
             frame: frame,
             clipRect: clipRect,

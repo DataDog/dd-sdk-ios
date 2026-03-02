@@ -166,6 +166,11 @@ internal final class LayerImageRenderer: LayerImageRendering {
         with changes: CALayerChangeset
     ) -> [LayerSnapshot] {
         snapshots.filter { snapshot in
+            // Layers with specific semantics are handled by dedicated wireframe paths
+            guard case .generic = snapshot.semantics else {
+                return false
+            }
+
             guard let layerClass = snapshot.layer.class else {
                 removeCache(for: snapshot.replayID)
                 return false

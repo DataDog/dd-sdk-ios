@@ -99,8 +99,9 @@ internal struct RecordingComponents {
     ) throws -> Self {
         // ScreenChangeMonitor delivers changes at most every 0.1s. We budget 0.09s
         // for one recording pass to keep a small headroom for scheduling and handoff
+        let snapshotBuilder = LayerTreeSnapshotBuilder(layerProvider: KeyWindowObserver())
         let layerRecorder = LayerRecorder(
-            layerProvider: KeyWindowObserver(),
+            snapshotBuilder: snapshotBuilder,
             layerImageRenderer: LayerImageRenderer(scale: 1.0),
             timeoutInterval: 0.09
         )

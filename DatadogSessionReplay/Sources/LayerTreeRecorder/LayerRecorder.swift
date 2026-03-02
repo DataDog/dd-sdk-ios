@@ -18,7 +18,7 @@ import Foundation
 
 @available(iOS 13.0, tvOS 13.0, *)
 internal actor LayerRecorder: LayerRecording {
-    private let layerProvider: any LayerProvider
+    private let snapshotBuilder: any LayerTreeSnapshotBuilding
     private let layerImageRenderer: any LayerImageRendering
     private let timeoutInterval: TimeInterval
     private let timeSource: any TimeSource
@@ -26,12 +26,12 @@ internal actor LayerRecorder: LayerRecording {
     private var recordTask: Task<Void, Never>?
 
     init(
-        layerProvider: any LayerProvider,
+        snapshotBuilder: any LayerTreeSnapshotBuilding,
         layerImageRenderer: any LayerImageRendering,
         timeoutInterval: TimeInterval,
         timeSource: any TimeSource = .mediaTime
     ) {
-        self.layerProvider = layerProvider
+        self.snapshotBuilder = snapshotBuilder
         self.layerImageRenderer = layerImageRenderer
         self.timeoutInterval = max(0, timeoutInterval)
         self.timeSource = timeSource
@@ -56,12 +56,12 @@ extension LayerRecorder {
 
         guard
             // Capture layer tree snapshot
-            let snapshot = await LayerSnapshot(using: layerProvider),
+            let layerTreeSnapshot = await snapshotBuilder.createSnapshot(context: context),
             // Prune, flatten and cull layer snapshots
-            let targetSnapshots = snapshot
+            let targetSnapshots = layerTreeSnapshot.root
                 .removingInvisible()?
                 .flattened()
-                .removingObscured(in: snapshot.clipRect),
+                .removingObscured(in: layerTreeSnapshot.root.clipRect),
             !targetSnapshots.isEmpty
         else {
             // There is nothing visible yet
@@ -71,26 +71,15 @@ extension LayerRecorder {
         let elapsed = timeSource.now - startTime
         let remaining = max(0, timeoutInterval - elapsed)
 
-        let layerImages = await layerImageRenderer.renderImages(
+        _ = await layerImageRenderer.renderImages(
             for: targetSnapshots,
             changes: changes,
-            rootLayer: snapshot.layer,
+            rootLayer: layerTreeSnapshot.root.layer,
             timeoutInterval: remaining
         )
 
         // Pending stages:
         // - Process layer tree snapshots
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension LayerSnapshot {
-    @MainActor
-    fileprivate init?(using layerProvider: any LayerProvider) {
-        guard let rootLayer = layerProvider.rootLayer else {
-            return nil
-        }
-        self.init(from: rootLayer)
     }
 }
 #endif

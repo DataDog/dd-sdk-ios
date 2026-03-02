@@ -7,6 +7,8 @@
 #if os(iOS)
 import Testing
 import QuartzCore
+import UIKit
+import WebKit
 
 @testable import DatadogSessionReplay
 
@@ -38,14 +40,30 @@ struct LayerSnapshotTests {
             layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 50)
 
             // when
-            let snapshot = LayerSnapshot(from: layer)
+            let snapshot = LayerSnapshot(from: layer, in: .mockAny())
 
             // then
             #expect(snapshot.replayID == 0)
             #expect(snapshot.children.isEmpty)
             #expect(snapshot.path == "CALayer#0")
             #expect(snapshot.isSnapshot(of: layer))
+            #expect(snapshot.semantics == .generic)
         }
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
+    func capturesWKWebViewSemantics() {
+        // given
+        let webView = WKWebView()
+        webView.layer.addSublayer(CALayer())
+
+        // when
+        let snapshot = LayerSnapshot(from: webView.layer, in: .mockAny())
+
+        // then
+        #expect(snapshot.semantics == .webView(slotID: webView.hash))
+        #expect(snapshot.children.isEmpty)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -60,7 +78,7 @@ struct LayerSnapshotTests {
             child.addSublayer(grandchild)
 
             // when
-            let snapshot = LayerSnapshot(from: root)
+            let snapshot = LayerSnapshot(from: root, in: .mockAny())
 
             // then
             #expect(snapshot.replayID == 2)
@@ -86,7 +104,7 @@ struct LayerSnapshotTests {
         parent.addSublayer(frontLayer)
 
         // when
-        let snapshot = LayerSnapshot(from: parent)
+        let snapshot = LayerSnapshot(from: parent, in: .mockAny())
 
         // then
         #expect(snapshot.children.count == 3)
@@ -108,7 +126,7 @@ struct LayerSnapshotTests {
         parent.addSublayer(child3)
 
         // when
-        let snapshot = LayerSnapshot(from: parent)
+        let snapshot = LayerSnapshot(from: parent, in: .mockAny())
 
         // then
         #expect(snapshot.children[0].path == "CALayer#0/CALayer#0")
@@ -129,7 +147,7 @@ struct LayerSnapshotTests {
         parent.addSublayer(anotherRegularLayer)
 
         // when
-        let snapshot = LayerSnapshot(from: parent)
+        let snapshot = LayerSnapshot(from: parent, in: .mockAny())
 
         // then
         #expect(snapshot.children[0].path == "CALayer#0/CALayer#0")
@@ -146,7 +164,7 @@ struct LayerSnapshotTests {
         layer.setAffineTransform(CGAffineTransform(rotationAngle: .pi / 4))
 
         // when
-        let snapshot = LayerSnapshot(from: layer)
+        let snapshot = LayerSnapshot(from: layer, in: .mockAny())
 
         // then
         #expect(!snapshot.isAxisAligned)
@@ -161,7 +179,7 @@ struct LayerSnapshotTests {
         layer.setAffineTransform(CGAffineTransform(rotationAngle: .pi / 2))
 
         // when
-        let snapshot = LayerSnapshot(from: layer)
+        let snapshot = LayerSnapshot(from: layer, in: .mockAny())
 
         // then
         #expect(snapshot.isAxisAligned)
@@ -175,7 +193,7 @@ struct LayerSnapshotTests {
         layer.bounds = CGRect(x: 0, y: 0, width: 200, height: 100)
 
         // when
-        let snapshot = LayerSnapshot(from: layer)
+        let snapshot = LayerSnapshot(from: layer, in: .mockAny())
 
         // then
         #expect(snapshot.isAxisAligned)
@@ -192,7 +210,7 @@ struct LayerSnapshotTests {
         layer.transform = CATransform3DRotate(transform, .pi / 4, 0, 1, 0)
 
         // when
-        let snapshot = LayerSnapshot(from: layer)
+        let snapshot = LayerSnapshot(from: layer, in: .mockAny())
 
         // then
         #expect(!snapshot.isAxisAligned)
@@ -208,7 +226,7 @@ struct LayerSnapshotTests {
         layer.backgroundColor = CGColor(red: 1, green: 0, blue: 0, alpha: 1)
 
         // when
-        let snapshot = LayerSnapshot(from: layer)
+        let snapshot = LayerSnapshot(from: layer, in: .mockAny())
 
         // then
         #expect(snapshot.opacity == 0.5)
@@ -229,7 +247,7 @@ struct LayerSnapshotTests {
         rootLayer.addSublayer(childLayer)
 
         // when
-        let snapshot = LayerSnapshot(from: rootLayer)
+        let snapshot = LayerSnapshot(from: rootLayer, in: .mockAny())
 
         // then
         #expect(snapshot.resolvedOpacity == 0.5)
@@ -247,7 +265,7 @@ struct LayerSnapshotTests {
         rootLayer.addSublayer(childLayer)
 
         // when
-        let snapshot = LayerSnapshot(from: rootLayer)
+        let snapshot = LayerSnapshot(from: rootLayer, in: .mockAny())
 
         // then
         #expect(snapshot.hasMask)
@@ -265,7 +283,7 @@ struct LayerSnapshotTests {
         layer.masksToBounds = true
 
         // when
-        let snapshot = LayerSnapshot(from: layer)
+        let snapshot = LayerSnapshot(from: layer, in: .mockAny())
 
         // then
         #expect(snapshot.cornerRadius == 10)
@@ -283,8 +301,8 @@ struct LayerSnapshotTests {
         layerWithContents.contents = Fixtures.anyImage
 
         // when
-        let snapshot = LayerSnapshot(from: layer)
-        let snapshotWithContents = LayerSnapshot(from: layerWithContents)
+        let snapshot = LayerSnapshot(from: layer, in: .mockAny())
+        let snapshotWithContents = LayerSnapshot(from: layerWithContents, in: .mockAny())
 
         // then
         #expect(snapshotWithContents.hasContents)
@@ -299,7 +317,7 @@ struct LayerSnapshotTests {
         layer.zPosition = 42.0
 
         // when
-        let snapshot = LayerSnapshot(from: layer)
+        let snapshot = LayerSnapshot(from: layer, in: .mockAny())
 
         // then
         #expect(snapshot.zPosition == 42.0)
@@ -319,7 +337,7 @@ struct LayerSnapshotTests {
         rootLayer.addSublayer(layer)
 
         // when
-        let snapshot = LayerSnapshot(from: rootLayer)
+        let snapshot = LayerSnapshot(from: rootLayer, in: .mockAny())
 
         // then
         #expect(snapshot.frame == CGRect(x: 0, y: 0, width: 400, height: 300))
@@ -346,7 +364,7 @@ struct LayerSnapshotTests {
         clippingLayer.addSublayer(layer)
 
         // when
-        let snapshot = LayerSnapshot(from: rootLayer)
+        let snapshot = LayerSnapshot(from: rootLayer, in: .mockAny())
 
         // then
         let rootBounds = CGRect(x: 0, y: 0, width: 400, height: 300)
@@ -380,7 +398,7 @@ struct LayerSnapshotTests {
         innerLayer.addSublayer(leafLayer)
 
         // when
-        let snapshot = LayerSnapshot(from: rootLayer)
+        let snapshot = LayerSnapshot(from: rootLayer, in: .mockAny())
         let outerSnapshot = snapshot.children[0]
         let innerSnapshot = outerSnapshot.children[0]
         let leafSnapshot = innerSnapshot.children[0]
