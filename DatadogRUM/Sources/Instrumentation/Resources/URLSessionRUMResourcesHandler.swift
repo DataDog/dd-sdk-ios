@@ -17,19 +17,23 @@ internal struct DistributedTracing {
     let firstPartyHosts: FirstPartyHosts
     /// Trace context injection configuration to determine whether the trace context should be injected or not.
     let traceContextInjection: TraceContextInjection
+    /// Used to obtain a currently active span and trace IDs, if any, when Trace feature is enabled.
+    let activeSpanProviderReceiver: ActiveSpanProviderReceiver
 
     init(
         samplingRate: SampleRate,
         firstPartyHosts: FirstPartyHosts,
         traceIDGenerator: TraceIDGenerator,
         spanIDGenerator: SpanIDGenerator,
-        traceContextInjection: TraceContextInjection
+        traceContextInjection: TraceContextInjection,
+        activeSpanProviderReceiver: ActiveSpanProviderReceiver
     ) {
         self.samplingRate = samplingRate
         self.traceIDGenerator = traceIDGenerator
         self.spanIDGenerator = spanIDGenerator
         self.firstPartyHosts = firstPartyHosts
         self.traceContextInjection = traceContextInjection
+        self.activeSpanProviderReceiver = activeSpanProviderReceiver
     }
 }
 
@@ -250,7 +254,13 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
 extension DistributedTracing {
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
-        let traceID = traceIDGenerator.generate()
+
+        // If there is an active trace span, we get the active span and trace ID on traceInfo.
+        let traceInfo: ActiveSpanProvider.ActiveSpanIDs? = activeSpanProviderReceiver.activeSpanProvider?.activeSpanIDs()
+
+        // In case there is, we use the same traceID so the backend can link the span generated from the RUM resource
+        // with the trace.
+        let traceID = traceInfo.map { $0.traceID } ?? traceIDGenerator.generate()
         let spanID = spanIDGenerator.generate()
 
         // Extract GraphQL attributes from request before they are removed
@@ -265,7 +275,8 @@ extension DistributedTracing {
         let injectedSpanContext = TraceContext(
             traceID: traceID,
             spanID: spanID,
-            parentSpanID: nil,
+            parentSpanID: traceInfo?.activeSpanID, // If there is an active span, use it as parent span for the span
+                                                   // the backend creates out of the RUM resource.
             sampleRate: samplingRate,
             samplingPriority: sampler.sample() ? .autoKeep : .autoDrop,
             samplingDecisionMaker: .agentRate,
@@ -333,6 +344,7 @@ extension DistributedTracing {
             .init(
                 traceID: $0.traceID,
                 spanID: $0.spanID,
+                parentSpanID: $0.parentSpanID,
                 samplingRate: Double(samplingRate.percentageProportion)
             )
         }

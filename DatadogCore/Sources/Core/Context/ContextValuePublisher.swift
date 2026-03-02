@@ -17,11 +17,11 @@ internal typealias ContextValueReceiver<Value> = (Value) -> Void
 /// ``ContextValuePublisher/Value`` types declared by the publisher.
 ///
 /// A publisher delivers elements to one ``ContextValueReceiver`` closure. After this,
-/// the publisher can call the receiver with new values. At anytime, a subcriber can cancel the
+/// the publisher can call the receiver with new values. At anytime, a subscriber can cancel the
 /// subscription. Invoking `cancel()` must stop calling its downstream receiver, canceling
 /// should also eliminate any strong references it currently holds.
 ///
-/// The publisher provides an `initialValue`, this parameter must be immutable, thead-safe,
+/// The publisher provides an `initialValue`, this parameter must be immutable, thread-safe,
 /// and it shouldn't block the caller.
 ///
 /// Every ``ContextValuePublisher`` must adhere to this contract for downstream

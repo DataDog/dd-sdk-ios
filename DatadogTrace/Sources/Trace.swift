@@ -80,5 +80,13 @@ public enum Trace {
             // to capture accurate timing from URLSessionTaskMetrics.
             try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
         }
+
+        core.set(context: ActiveSpanProvider { [weak tracer = trace.tracer] in
+            tracer?.activeSpan?.context.dd.map {
+                ActiveSpanProvider.ActiveSpanIDs(traceID: $0.traceID, activeSpanID: $0.spanID)
+            }
+        })
+
+        let tracer = trace.tracer
     }
 }

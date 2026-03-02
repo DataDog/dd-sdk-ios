@@ -118,6 +118,12 @@ public struct CrossPlatformAttributes {
     /// Expects `String` value.
     public static let spanID = "_dd.span_id"
 
+    /// Parent span ID passed from CP SDK. Used in RUM resources created by cross platform SDK.
+    /// When cross-platform SDK injects tracing headers to intercepted resource, we pass tracing information through this attribute
+    /// and send it within the RUM resource, so the RUM backend can issue corresponding APM span on behalf of the mobile app.
+    /// Expects `String` value.
+    public static let parentSpanID = "_dd.parent_span_id"
+
     /// Trace sample rate applied to RUM resources created by cross platform SDK.
     /// We send cross-platform SDK's sample rate within RUM resource in order to provide accurate visibility into what settings are
     /// configured at the SDK level. This gets displayed on APM's traffic ingestion control page.
