@@ -176,16 +176,18 @@ internal class RUMResourceScope: RUMScope {
         let decodedBodySize = resourceMetrics?.responseBodySize?.decoded
 
         let requestHeadersObj = requestHeaders.flatMap { $0.isEmpty ? nil : RUMResourceEvent.Resource.Request.Headers(headersInfo: $0) }
-        var request: RUMResourceEvent.Resource.Request? = resourceMetrics?.requestBodySize.map { size in
-            .init(
-                decodedBodySize: size.decoded,
-                encodedBodySize: size.encoded,
+        let request: RUMResourceEvent.Resource.Request? = {
+            let hasBodySize = resourceMetrics?.requestBodySize != nil
+            let hasHeaders = requestHeadersObj != nil
+
+            guard hasBodySize || hasHeaders else { return nil }
+
+            return .init(
+                decodedBodySize: resourceMetrics?.requestBodySize?.decoded,
+                encodedBodySize: resourceMetrics?.requestBodySize?.encoded,
                 headers: requestHeadersObj
             )
-        }
-        if request == nil, let requestHeadersObj {
-            request = .init(headers: requestHeadersObj)
-        }
+        }()
 
         let response: RUMResourceEvent.Resource.Response? = responseHeaders.flatMap { headers in
             headers.isEmpty ? nil : .init(headers: .init(headersInfo: headers))
