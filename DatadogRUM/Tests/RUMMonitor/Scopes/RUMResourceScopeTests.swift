@@ -1869,6 +1869,60 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(headers.headersInfo["etag"], "\"abc\"")
     }
 
+    func testWhenStopCommandContainsRequestHeadersAndBodySizeMetrics_itPopulatesBoth() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/api/data",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/data",
+            httpMethod: .post
+        )
+
+        let resourceFetchStart = Date.mockDecember15th2019At10AMUTC()
+        let metricsCommand = RUMAddResourceMetricsCommand(
+            resourceKey: "/api/data",
+            time: .mockDecember15th2019At10AMUTC(),
+            attributes: [:],
+            metrics: .mockWith(
+                fetch: .init(
+                    start: resourceFetchStart,
+                    end: resourceFetchStart.addingTimeInterval(10)
+                ),
+                requestBodySize: (encoded: 512, decoded: 1_024)
+            )
+        )
+
+        // When
+        XCTAssertTrue(scope.process(command: metricsCommand, context: context, writer: writer))
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/api/data",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    attributes: [
+                        CrossPlatformAttributes.requestHeaders: ["content-type": "application/json"]
+                    ],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        let request = try XCTUnwrap(event.resource.request)
+        XCTAssertEqual(request.encodedBodySize, 512)
+        XCTAssertEqual(request.decodedBodySize, 1_024)
+        let headers = try XCTUnwrap(request.headers)
+        XCTAssertEqual(headers.headersInfo["content-type"], "application/json")
+    }
+
     func testWhenStopCommandHasNoHeaders_requestAndResponseAreUnaffected() throws {
         // Given
         let scope = RUMResourceScope.mockWith(
