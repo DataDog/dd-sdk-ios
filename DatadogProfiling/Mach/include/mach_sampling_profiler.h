@@ -21,6 +21,23 @@
 #include <vector>
 #include <pthread.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * Sets the main thread pthread identifier.
+ *
+ * This function should be called from the main thread early in the process lifecycle.
+ *
+ * @param thread The pthread identifier for the main thread
+ */
+void set_main_thread(pthread_t thread);
+
+#ifdef __cplusplus
+}
+#endif
+
 namespace dd::profiler {
 
 /**
