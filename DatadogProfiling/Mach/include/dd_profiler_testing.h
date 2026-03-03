@@ -12,10 +12,22 @@
 #if !TARGET_OS_WATCH
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * Checks if profiling is enabled in UserDefaults.
+ * @return true if profiling is enabled, false otherwise
+ */
+bool dd_is_profiling_enabled(void);
+
+/**
+ * Deletes the profiling defaults from UserDefaults.
+ */
+void dd_delete_profiling_defaults(void);
 
 /**
  * @brief Manually starts profiling for testing purposes

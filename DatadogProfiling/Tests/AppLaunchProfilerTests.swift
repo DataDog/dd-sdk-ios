@@ -29,7 +29,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         AppLaunchProfiler.resetPendingInstances()
         dd_profiler_stop()
         dd_profiler_destroy()
-        delete_profiling_defaults()
+        dd_delete_profiling_defaults()
     }
 
     // MARK: - Message Handling Tests
@@ -222,7 +222,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     func testIsProfilingEnabled_whenNoKeyExists() {
         // When
-        let result = is_profiling_enabled()
+        let result = dd_is_profiling_enabled()
 
         // Then
         XCTAssertFalse(result)
@@ -234,7 +234,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         userDefaults?.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
 
         // When
-        let result = is_profiling_enabled()
+        let result = dd_is_profiling_enabled()
 
         // Then
         XCTAssertTrue(result)
@@ -246,7 +246,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         userDefaults?.setValue(false, forKey: DD_PROFILING_IS_ENABLED_KEY)
 
         // When
-        let result = is_profiling_enabled()
+        let result = dd_is_profiling_enabled()
 
         // Then
         XCTAssertFalse(result)
@@ -257,13 +257,13 @@ final class AppLaunchProfilerTests: XCTestCase {
         let userDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME)
         userDefaults?.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
 
-        XCTAssertTrue(is_profiling_enabled())
+        XCTAssertTrue(dd_is_profiling_enabled())
 
         // When
-        delete_profiling_defaults()
+        dd_delete_profiling_defaults()
 
         // Then
-        XCTAssertFalse(is_profiling_enabled())
+        XCTAssertFalse(dd_is_profiling_enabled())
     }
 
     func testDeleteProfilingDefaults_multipleCallsAreSafe() {
@@ -272,12 +272,12 @@ final class AppLaunchProfilerTests: XCTestCase {
         userDefaults?.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
 
         // When
-        delete_profiling_defaults()
-        delete_profiling_defaults()
-        delete_profiling_defaults()
+        dd_delete_profiling_defaults()
+        dd_delete_profiling_defaults()
+        dd_delete_profiling_defaults()
 
         // Then
-        XCTAssertFalse(is_profiling_enabled())
+        XCTAssertFalse(dd_is_profiling_enabled())
     }
 
     func testProfilingDefaults_persistAcrossTestCases() {
@@ -288,7 +288,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         // Then
         XCTAssertTrue(otherUserDefaults?.value(forKey: DD_PROFILING_IS_ENABLED_KEY) as? Bool ?? false)
-        XCTAssertTrue(is_profiling_enabled())
+        XCTAssertTrue(dd_is_profiling_enabled())
     }
 
     // MARK: - Pending Instances Tests

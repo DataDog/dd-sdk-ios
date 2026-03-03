@@ -31,7 +31,7 @@ static std::mutex g_dd_profiler_mutex;
  *
  * @return true if ThreadSanitizer is enabled, false otherwise
  */
-bool is_thread_sanitizer_enabled() {
+static bool is_thread_sanitizer_enabled() {
 #if __has_feature(thread_sanitizer)
     const char* tsanOptions = getenv("TSAN_OPTIONS");
     if (tsanOptions != nullptr) {
@@ -49,7 +49,7 @@ bool is_thread_sanitizer_enabled() {
  *
  * @return true if the process is actively pre-warmed, false otherwise
  */
-bool is_active_prewarm() {
+static bool is_active_prewarm() {
     const char* prewarm = getenv("ActivePrewarm");
     return prewarm != nullptr && strcmp(prewarm, "1") == 0;
 }
@@ -61,7 +61,7 @@ bool is_active_prewarm() {
  * @param sample_rate The sample rate percentage (0.0 to 100.0)
  * @return true if profiling should be enabled, false otherwise
  */
-bool sample(double sample_rate) {
+static bool sample(double sample_rate) {
     if (sample_rate <= 0.0) return false;
     if (sample_rate >= 100.0) return true;
 
@@ -83,7 +83,7 @@ extern "C" {
  *
  * @return If Profiling was enabled, or false if the key is not found
  */
-bool is_profiling_enabled() {
+bool dd_is_profiling_enabled() {
     CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
     CFStringRef key = CFSTR(DD_PROFILING_IS_ENABLED_KEY);
     CFPropertyListRef value = CFPreferencesCopyAppValue(key, suiteName);
@@ -105,7 +105,7 @@ bool is_profiling_enabled() {
  *
  * @return The sample rate as a double, or 0.0 if not found or invalid
  */
-double read_profiling_sample_rate() {
+static double read_profiling_sample_rate() {
     CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
     CFStringRef key = CFSTR(DD_PROFILING_SAMPLE_RATE_KEY);
     CFPropertyListRef value = CFPreferencesCopyAppValue(key, suiteName);
@@ -130,7 +130,7 @@ double read_profiling_sample_rate() {
  * Deletes the DatadogProfiling defaults from the `UserDefaults`
  * to be re-evaluated during `Profiling.enable()`.
  */
-void delete_profiling_defaults() {
+void dd_delete_profiling_defaults() {
     CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
     CFStringRef isEnabledKey = CFSTR(DD_PROFILING_IS_ENABLED_KEY);
     CFStringRef sampleRateKey = CFSTR(DD_PROFILING_SAMPLE_RATE_KEY);
@@ -294,7 +294,7 @@ private:
  */
 __attribute__((constructor(65535)))
 static void dd_profiler_auto_start() {
-    if (!is_profiling_enabled()) {
+    if (!dd_is_profiling_enabled()) {
         return;
     }
 
@@ -304,7 +304,7 @@ static void dd_profiler_auto_start() {
     g_dd_profiler->start();
 
     // Reset profiling defaults to be re-evaluated again
-    delete_profiling_defaults();
+    dd_delete_profiling_defaults();
 }
 
 // MARK: - DD Profiler C API
