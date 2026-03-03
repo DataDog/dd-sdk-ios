@@ -9,6 +9,7 @@ import TestUtilities
 import DatadogInternal
 
 @testable import DatadogTrace
+@testable import DatadogCore
 
 class ActiveSpansPoolTests: XCTestCase {
     private var core: DatadogCoreProtocol! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -171,5 +172,27 @@ class ActiveSpansPoolTests: XCTestCase {
 
         XCTAssertNil(tracer.activeSpan)
         XCTAssertTrue(tracer.activeSpansPool.isEmpty)
+    }
+
+    func testSetActive_activeSpanProviderWorks() throws {
+        let core = DatadogCoreProxy()
+        Trace.enable(in: core)
+        let tracer = Tracer.shared(in: core)
+
+        core.scope(for: TraceFeature.self).context { context in
+            guard let provider = context.additionalContext(ofType: ActiveSpanProviderAdditionalContext.self) else {
+                XCTFail("Additional context for ActiveSpanProvider is nil unexpectedly.")
+                return
+            }
+
+            XCTAssertNil(provider.activeSpanIDs())
+
+            let oneSpan = tracer.startSpan(operationName: .mockAny()).setActive()
+            XCTAssertEqual(provider.activeSpanIDs()?.activeSpanID, oneSpan.dd.ddContext.spanID)
+            XCTAssertEqual(provider.activeSpanIDs()?.traceID, oneSpan.dd.ddContext.traceID)
+
+            oneSpan.finish()
+            XCTAssertNil(provider.activeSpanIDs())
+        }
     }
 }

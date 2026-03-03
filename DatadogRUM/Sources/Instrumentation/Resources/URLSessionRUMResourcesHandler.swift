@@ -18,7 +18,7 @@ internal struct DistributedTracing {
     /// Trace context injection configuration to determine whether the trace context should be injected or not.
     let traceContextInjection: TraceContextInjection
     /// Used to obtain a currently active span and trace IDs, if any, when Trace feature is enabled.
-    let activeSpanProviderReceiver: ActiveSpanProviderReceiver
+    let activeSpanProviderContainer: ActiveSpanProviderContainer
 
     init(
         samplingRate: SampleRate,
@@ -26,14 +26,14 @@ internal struct DistributedTracing {
         traceIDGenerator: TraceIDGenerator,
         spanIDGenerator: SpanIDGenerator,
         traceContextInjection: TraceContextInjection,
-        activeSpanProviderReceiver: ActiveSpanProviderReceiver
+        activeSpanProviderContainer: ActiveSpanProviderContainer
     ) {
         self.samplingRate = samplingRate
         self.traceIDGenerator = traceIDGenerator
         self.spanIDGenerator = spanIDGenerator
         self.firstPartyHosts = firstPartyHosts
         self.traceContextInjection = traceContextInjection
-        self.activeSpanProviderReceiver = activeSpanProviderReceiver
+        self.activeSpanProviderContainer = activeSpanProviderContainer
     }
 }
 
@@ -256,7 +256,7 @@ extension DistributedTracing {
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
 
         // If there is an active trace span, we get the active span and trace ID on traceInfo.
-        let traceInfo: ActiveSpanProvider.ActiveSpanIDs? = activeSpanProviderReceiver.activeSpanProvider?.activeSpanIDs()
+        let traceInfo = activeSpanProviderContainer.activeSpanProvider?.activeSpanIDs()
 
         // In case there is, we use the same traceID so the backend can link the span generated from the RUM resource
         // with the trace.
@@ -275,8 +275,9 @@ extension DistributedTracing {
         let injectedSpanContext = TraceContext(
             traceID: traceID,
             spanID: spanID,
-            parentSpanID: traceInfo?.activeSpanID, // If there is an active span, use it as parent span for the span
-                                                   // the backend creates out of the RUM resource.
+            // If there is an active span, use it as parent span for the span
+            // the backend creates out of the RUM resource:
+            parentSpanID: traceInfo?.activeSpanID,
             sampleRate: samplingRate,
             samplingPriority: sampler.sample() ? .autoKeep : .autoDrop,
             samplingDecisionMaker: .agentRate,

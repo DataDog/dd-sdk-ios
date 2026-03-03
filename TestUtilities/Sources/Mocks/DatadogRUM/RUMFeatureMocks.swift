@@ -498,6 +498,7 @@ extension RUMSpanContext: AnyMockable, RandomMockable {
         return RUMSpanContext(
             traceID: .mock(.mockRandom(), .mockRandom()),
             spanID: .mock(.mockRandom()),
+            parentSpanID: .mock(.mockRandom()),
             samplingRate: .mockRandom()
         )
     }
@@ -505,11 +506,13 @@ extension RUMSpanContext: AnyMockable, RandomMockable {
     public static func mockWith(
         traceID: TraceID = .mockAny(),
         spanID: SpanID = .mockAny(),
+        parentSpanID: SpanID? = .mockAny(),
         samplingRate: Double = .mockAny()
     ) -> RUMSpanContext {
         return RUMSpanContext(
             traceID: traceID,
             spanID: spanID,
+            parentSpanID: parentSpanID,
             samplingRate: samplingRate
         )
     }
@@ -530,6 +533,7 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
             spanContext: .init(
                 traceID: .mock(.mockRandom(), .mockRandom()),
                 spanID: .mock(.mockRandom()),
+                parentSpanID: .mock(.mockRandom()),
                 samplingRate: .mockAny()
             )
         )
@@ -1873,5 +1877,13 @@ public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate {
 
     public func rumAction(with componentName: String) -> DatadogRUM.RUMAction? {
         return resultByName[componentName] ?? result
+    }
+}
+
+public struct MockActiveSpanProviderContainer: ActiveSpanProviderContainer {
+    public var activeSpanProvider: ActiveSpanProvider?
+
+    public init(activeSpanProvider: ActiveSpanProvider? = nil) {
+        self.activeSpanProvider = activeSpanProvider
     }
 }

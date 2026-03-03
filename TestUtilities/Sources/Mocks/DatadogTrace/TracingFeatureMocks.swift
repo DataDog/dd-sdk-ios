@@ -374,3 +374,13 @@ extension SamplingMechanismType: AnyMockable, RandomMockable {
         [SamplingMechanismType.fallback, .agentRate, .manual].randomElement()!
     }
 }
+
+public class MockActiveSpanProvider: ActiveSpanProvider {
+    public init() { }
+
+    public var storedActiveSpanIDs: ActiveSpanIDs?
+
+    public func activeSpanIDs() -> ActiveSpanIDs? {
+        storedActiveSpanIDs
+    }
+}

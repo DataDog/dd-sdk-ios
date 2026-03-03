@@ -84,6 +84,7 @@ class RUMResourceScopeTests: XCTestCase {
             spanContext: .init(
                 traceID: .init(idLo: 100),
                 spanID: .init(rawValue: 200),
+                parentSpanID: nil,
                 samplingRate: 0.42
             )
         )
@@ -170,6 +171,7 @@ class RUMResourceScopeTests: XCTestCase {
             spanContext: .init(
                 traceID: .init(idLo: 100),
                 spanID: .init(rawValue: 200),
+                parentSpanID: nil,
                 samplingRate: 0.42
             )
         )
@@ -255,6 +257,7 @@ class RUMResourceScopeTests: XCTestCase {
             spanContext: .init(
                 traceID: .init(idLo: 100),
                 spanID: .init(rawValue: 200),
+                parentSpanID: nil,
                 samplingRate: 0.42
             )
         )
@@ -329,6 +332,7 @@ class RUMResourceScopeTests: XCTestCase {
             spanContext: .init(
                 traceID: .init(idLo: 100),
                 spanID: .init(rawValue: 200),
+                parentSpanID: nil,
                 samplingRate: 0.42
             )
         )

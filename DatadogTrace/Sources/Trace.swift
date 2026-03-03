@@ -81,12 +81,10 @@ public enum Trace {
             try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
         }
 
-        core.set(context: ActiveSpanProvider { [weak tracer = trace.tracer] in
+        core.set(context: ActiveSpanProviderAdditionalContext { [weak tracer = trace.tracer] in
             tracer?.activeSpan?.context.dd.map {
-                ActiveSpanProvider.ActiveSpanIDs(traceID: $0.traceID, activeSpanID: $0.spanID)
+                ActiveSpanIDs(traceID: $0.traceID, activeSpanID: $0.spanID)
             }
         })
-
-        let tracer = trace.tracer
     }
 }

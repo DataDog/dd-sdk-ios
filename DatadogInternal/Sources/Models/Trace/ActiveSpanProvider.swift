@@ -6,25 +6,37 @@
 
 import Foundation
 
+/// Struct holding the active span and trace IDs, used by ``ActiveSpanProvider``.
+public struct ActiveSpanIDs {
+    public let traceID: TraceID
+    public let activeSpanID: SpanID
+
+    public init(traceID: TraceID, activeSpanID: SpanID) {
+        self.traceID = traceID
+        self.activeSpanID = activeSpanID
+    }
+}
+
+/// Entities implementing this protocol can provide the currently active span and trace IDs, if any exists.
+///
+/// These entities act as a bridge between Trace and RUM. If Trace is enabled, they provide the active span and trace ID.
+/// RUM (or any other module) can obtain this information from it.
+public protocol ActiveSpanProvider {
+    /// If there is a currently active span, returns an ``ActiveSpanIDs`` instance with the active span and trace IDs,
+    /// or `nil` otherwise.
+    ///
+    /// - returns: An ``ActiveSpanIDs`` instance with the active span and trace IDs, or `nil` otherwise.
+    func activeSpanIDs() -> ActiveSpanIDs?
+}
+
 /// This entity acts as a bridge between Trace and RUM. If Trace is enabled, it will provide an ``ActiveSpanProvider/ProviderFunction``
 /// that itself provides the active span and trace ID. RUM (or any other module) can obtain this information from it.
-public struct ActiveSpanProvider: AdditionalContext {
-    public static var key = "active_span_provider"
+public struct ActiveSpanProviderAdditionalContext: ActiveSpanProvider, AdditionalContext {
+    public static var key: String { "active_span_provider" }
 
-    /// Function that returns a ``ActiveSpanProvider/ActiveSpanIDs`` struct with the currently active span and trace IDs, or `nil` if
+    /// Function that returns a ``ActiveSpanIDs`` struct with the currently active span and trace IDs, or `nil` if
     /// there is no currently active span.
     public typealias ProviderFunction = () -> (ActiveSpanIDs?)
-
-    /// Struct holding the active span and trace IDs.
-    public struct ActiveSpanIDs {
-        public let traceID: TraceID
-        public let activeSpanID: SpanID
-
-        public init(traceID: TraceID, activeSpanID: SpanID) {
-            self.traceID = traceID
-            self.activeSpanID = activeSpanID
-        }
-    }
 
     /// The provider function that obtains the active span and trace IDs.
     private let providerFunction: ProviderFunction
@@ -35,10 +47,6 @@ public struct ActiveSpanProvider: AdditionalContext {
         self.providerFunction = providerFunction
     }
 
-    /// If there is a currently active span, returns an ``ActiveSpanProvider/ActiveSpanIDs`` instance with the active span and trace IDs,
-    /// or `nil` otherwise.
-    ///
-    /// - returns: An ``ActiveSpanProvider/ActiveSpanIDs`` instance with the active span and trace IDs, or `nil` otherwise.
     public func activeSpanIDs() -> ActiveSpanIDs? {
         providerFunction()
     }

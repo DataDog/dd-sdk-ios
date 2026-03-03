@@ -40,7 +40,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -81,7 +82,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -118,7 +120,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -158,7 +161,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -195,7 +199,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .sampled
+                traceContextInjection: .sampled,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -227,7 +232,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -257,7 +263,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -290,7 +297,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -312,6 +320,197 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNil(traceContext, "It must return no trace context")
     }
 
+    func testGivenFirstPartyInterception_withParentSpan_itInjectDDTraceHeaders() throws {
+        // Given
+        let activeSpanProvider = MockActiveSpanProvider()
+        let activeSpanProviderContainer = MockActiveSpanProviderContainer(activeSpanProvider: activeSpanProvider)
+
+        let activeTraceID = TraceID(rawValue: (1,1))
+        let activeSpanID = SpanID(rawValue: 2)
+
+        activeSpanProvider.storedActiveSpanIDs = .init(traceID: activeTraceID, activeSpanID: activeSpanID)
+
+        let handler = createHandler(
+            distributedTracing: .init(
+                samplingRate: .maxSampleRate,
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all,
+                activeSpanProviderContainer: activeSpanProviderContainer
+            )
+        )
+
+        // When
+        let (request, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), activeTraceID.toString(representation: .decimal))
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=1,_dd.p.dm=-1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "100")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "session.id=abcdef01-2345-6789-abcd-ef0123456789")
+
+        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+        XCTAssertEqual(injectedTraceContext.traceID, activeTraceID)
+        XCTAssertEqual(injectedTraceContext.spanID, 100)
+        XCTAssertEqual(injectedTraceContext.parentSpanID, activeSpanID)
+        XCTAssertEqual(injectedTraceContext.sampleRate, 100)
+        XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+        XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
+        XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+    }
+
+    func testGivenFirstPartyInterception_withParentSpan_itInjectB3TraceHeaders() throws {
+        // Given
+        let activeSpanProvider = MockActiveSpanProvider()
+        let activeSpanProviderContainer = MockActiveSpanProviderContainer(activeSpanProvider: activeSpanProvider)
+
+        let activeTraceID = TraceID(rawValue: (1,1))
+        let activeSpanID = SpanID(rawValue: 2)
+
+        activeSpanProvider.storedActiveSpanIDs = .init(traceID: activeTraceID, activeSpanID: activeSpanID)
+
+        let handler = createHandler(
+            distributedTracing: .init(
+                samplingRate: .maxSampleRate,
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all,
+                activeSpanProviderContainer: activeSpanProviderContainer
+            )
+        )
+
+        // When
+        let (request, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.b3],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "00000000000000010000000000000001-0000000000000064-1-0000000000000002")
+
+        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+        XCTAssertEqual(injectedTraceContext.traceID, activeTraceID)
+        XCTAssertEqual(injectedTraceContext.spanID, 100)
+        XCTAssertEqual(injectedTraceContext.parentSpanID, activeSpanID)
+        XCTAssertEqual(injectedTraceContext.sampleRate, 100)
+        XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+        XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
+        XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+    }
+
+    func testGivenFirstPartyInterception_withParentSpan_itInjectB3MultiTraceHeaders() throws {
+        // Given
+        let activeSpanProvider = MockActiveSpanProvider()
+        let activeSpanProviderContainer = MockActiveSpanProviderContainer(activeSpanProvider: activeSpanProvider)
+
+        let activeTraceID = TraceID(rawValue: (1,1))
+        let activeSpanID = SpanID(rawValue: 2)
+
+        activeSpanProvider.storedActiveSpanIDs = .init(traceID: activeTraceID, activeSpanID: activeSpanID)
+
+        let handler = createHandler(
+            distributedTracing: .init(
+                samplingRate: .maxSampleRate,
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all,
+                activeSpanProviderContainer: activeSpanProviderContainer
+            )
+        )
+
+        // When
+        let (request, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.b3multi],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "00000000000000010000000000000001")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField), "0000000000000002")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "1")
+
+        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+        XCTAssertEqual(injectedTraceContext.traceID, activeTraceID)
+        XCTAssertEqual(injectedTraceContext.spanID, 100)
+        XCTAssertEqual(injectedTraceContext.parentSpanID, activeSpanID)
+        XCTAssertEqual(injectedTraceContext.sampleRate, 100)
+        XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+        XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
+        XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+    }
+
+    func testGivenFirstPartyInterception_withParentSpan_itInjectW3CTraceHeaders() throws {
+        // Given
+        let activeSpanProvider = MockActiveSpanProvider()
+        let activeSpanProviderContainer = MockActiveSpanProviderContainer(activeSpanProvider: activeSpanProvider)
+
+        let activeTraceID = TraceID(rawValue: (1,1))
+        let activeSpanID = SpanID(rawValue: 2)
+
+        activeSpanProvider.storedActiveSpanIDs = .init(traceID: activeTraceID, activeSpanID: activeSpanID)
+
+        let handler = createHandler(
+            distributedTracing: .init(
+                samplingRate: .maxSampleRate,
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all,
+                activeSpanProviderContainer: activeSpanProviderContainer
+            )
+        )
+
+        // When
+        let (request, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.tracecontext],
+            networkContext: NetworkContext(
+                rumContext: .init(
+                    applicationID: .mockRandom(),
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                )
+            )
+        )
+
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000010000000000000001-0000000000000064-01")
+
+        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+        XCTAssertEqual(injectedTraceContext.traceID, activeTraceID)
+        XCTAssertEqual(injectedTraceContext.spanID, 100)
+        XCTAssertEqual(injectedTraceContext.parentSpanID, activeSpanID)
+        XCTAssertEqual(injectedTraceContext.sampleRate, 100)
+        XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+        XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
+        XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+    }
+
     func testGivenFirstPartyInterceptionAndShouldSetBaggageHeaderAndBaggageHeaderValuesToSet_withSampledTrace_itDoesNotOverwriteTraceHeadersExceptBaggage() throws {
         // Given
         let handler = createHandler(
@@ -320,7 +519,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -380,7 +580,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -439,7 +640,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -527,7 +729,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: DefaultTraceIDGenerator(),
                 spanIDGenerator: DefaultSpanIDGenerator(),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -755,7 +958,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
         let request: URLRequest = .mockWith(httpMethod: "GET")
@@ -799,7 +1003,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -836,7 +1041,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -874,7 +1080,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -927,7 +1134,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -959,7 +1167,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -1001,7 +1210,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
@@ -1136,7 +1346,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 1),
-                traceContextInjection: .all
+                traceContextInjection: .all,
+                activeSpanProviderContainer: ActiveSpanProviderReceiver()
             )
         )
 
