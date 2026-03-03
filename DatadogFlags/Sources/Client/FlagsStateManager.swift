@@ -81,8 +81,8 @@ internal final class FlagsStateManager: FlagsStateObservable {
 
     func removeListener(_ listener: FlagsStateListener) {
         lock.lock()
+        defer { lock.unlock() }
         _listeners.removeAll { $0.value === listener || $0.value == nil }
-        lock.unlock()
     }
 }
 

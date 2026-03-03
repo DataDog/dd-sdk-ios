@@ -291,6 +291,44 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(flagsRepository.stateManager.currentState, .stale)
     }
 
+    func testStateTransitionsToErrorOnFailureWithMismatchedCachedContext() {
+        // Given — first set context successfully to populate cache with context A
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+
+        let fetcherMock = FlagAssignmentsFetcherMock { _, completion in
+            completion(.success(["test": .mockAny()]))
+        }
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcherMock,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let firstCompleted = expectation(description: "first completed")
+        flagsRepository.setEvaluationContext(contextA) { _ in
+            firstCompleted.fulfill()
+        }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+
+        // Given — now make the fetcher fail and request a DIFFERENT context
+        fetcherMock.flagAssignmentsStub = { _, completion in
+            completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+        }
+        let secondCompleted = expectation(description: "second completed")
+
+        // When — set context B (different from cached context A)
+        flagsRepository.setEvaluationContext(contextB) { _ in
+            secondCompleted.fulfill()
+        }
+
+        // Then — should be .error (not .stale) because cached context A != requested context B
+        // This prevents serving user A's flags to user B
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.stateManager.currentState, .error)
+    }
+
     func testStateRecoveryFromStaleToReady() {
         // Given — first succeed, then fail (stale), then succeed again
         let fetcherMock = FlagAssignmentsFetcherMock { _, completion in

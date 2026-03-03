@@ -134,7 +134,10 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             case .failure(let error):
                 // State must be updated before calling completion —
                 // dd-openfeature-provider-swift checks currentState in the callback.
-                if hadFlags {
+                // Only use cached flags if they match the requested context to avoid
+                // serving flags from a different user/context.
+                let cachedContextMatches = self?.flagsData?.context == context
+                if hadFlags && cachedContextMatches {
                     self?.stateManager.updateState(.stale)
                 } else {
                     self?.stateManager.updateState(.error)
