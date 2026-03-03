@@ -39,7 +39,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         try core.flushAndTearDown()
         core = nil
         dd_profiler_stop()
-        delete_profiling_defaults()
+        dd_delete_profiling_defaults()
 
         super.tearDown()
     }
@@ -64,7 +64,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         let profilingEvents = try XCTUnwrap(core.waitAndReturnEventsMetadata(ofFeature: ProfilerFeature.name, ofType: ProfileEvent.self))
         XCTAssertTrue(profilingEvents.isEmpty)
 
-        XCTAssertTrue(is_profiling_enabled())
+        XCTAssertTrue(dd_is_profiling_enabled())
     }
 
     func testWhenRUMSendsTTIDMessage_itSendsAProfileEvent() throws {
@@ -104,7 +104,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         XCTAssertFalse(profilingEvent.tags.isEmpty)
         XCTAssertFalse(profilingEvent.additionalAttributes!.isEmpty)
 
-        XCTAssertTrue(is_profiling_enabled())
+        XCTAssertTrue(dd_is_profiling_enabled())
     }
 
     func testWhenRUMDoesNotSendTTIDMessage_itDoesNotSendAProfileEvent() throws {
@@ -131,7 +131,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         let profilingEvents = try XCTUnwrap(core.waitAndReturnEventsMetadata(ofFeature: ProfilerFeature.name, ofType: ProfileEvent.self))
         XCTAssertTrue(profilingEvents.isEmpty)
 
-        XCTAssertTrue(is_profiling_enabled())
+        XCTAssertTrue(dd_is_profiling_enabled())
     }
 }
 
