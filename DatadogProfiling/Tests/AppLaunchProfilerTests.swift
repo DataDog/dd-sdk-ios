@@ -42,7 +42,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         // When
         let result = profiler.receive(
-            message: .payload(ProfilerStop(context: mockRandomAttributes())),
+            message: .payload(TTIDMessage(context: mockRandomAttributes(), vital: .mockAny())),
             from: core
         )
         // Then
@@ -72,7 +72,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 1)
 
         // When
-        XCTAssertTrue(profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core))
+        XCTAssertTrue(profiler.receive(message: .payload(TTIDMessage(context: mockRandomAttributes(), vital: .mockAny())), from: core))
 
         // Then
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED, "Profiler should be destroyed after processing message")
@@ -88,7 +88,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED, "Profiler should not be created")
 
         // When
-        let result = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core)
+        let result = profiler.receive(message: .payload(TTIDMessage(context: mockRandomAttributes(), vital: .mockAny())), from: core)
 
         // Then
         XCTAssertFalse(result, "Should return false when no profile data is available")
@@ -103,7 +103,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_SAMPLED_OUT, "Profiler should be sampled out")
 
         // When
-        let result = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core)
+        let result = profiler.receive(message: .payload(TTIDMessage(context: mockRandomAttributes(), vital: .mockAny())), from: core)
 
         // Then
         XCTAssertFalse(result, "Should return false when profiler was sampled out")
@@ -118,7 +118,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_PREWARMED, "Profiler should be prewarmed")
 
         // When
-        let result = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core)
+        let result = profiler.receive(message: .payload(TTIDMessage(context: mockRandomAttributes(), vital: .mockAny())), from: core)
 
         // Then
         XCTAssertFalse(result, "Should return false when profiler was prewarmed")
@@ -152,21 +152,21 @@ final class AppLaunchProfilerTests: XCTestCase {
         let stopContext = mockRandomAttributes()
 
         // When
-        XCTAssertTrue(profiler.receive(message: .payload(ProfilerStop(context: stopContext)), from: core))
+        XCTAssertTrue(profiler.receive(message: .payload(TTIDMessage(context: stopContext, vital: .mockAny())), from: core))
 
         // Then
         let profilingContext = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
         XCTAssertEqual(profilingContext.status, .stopped(reason: .manual), "Should update the core context")
 
         XCTAssertEqual(core.events.count, 1, "Should write exactly one event")
-        let event = try XCTUnwrap(core.events.first)
-        let metadata = try XCTUnwrap(core.metadata.first as? ProfileEvent)
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
 
-        XCTAssertTrue(event is Data, "Event value should be Data (pprof)")
-        XCTAssertEqual(metadata.family, "ios")
-        XCTAssertEqual(metadata.runtime, "ios")
-        XCTAssertEqual(metadata.version, "4")
-        XCTAssertEqual(metadata.attachments, [ProfileEvent.Constants.wallFilename])
+        XCTAssertTrue(metadata.rumEvents != nil)
+        XCTAssertEqual(event.family, "ios")
+        XCTAssertEqual(event.runtime, "ios")
+        XCTAssertEqual(event.version, "4")
+        XCTAssertEqual(event.attachments, [ProfileAttachments.Constants.wallFilename, ProfileAttachments.Constants.rumEventsFilename])
 
         let expectedTags = [
             "service:test-service",
@@ -181,11 +181,11 @@ final class AppLaunchProfilerTests: XCTestCase {
             "remote_symbols:yes",
             "operation:launch"
         ].joined(separator: ",")
-        XCTAssertEqual(metadata.tags, expectedTags)
+        XCTAssertEqual(event.tags, expectedTags)
 
-        XCTAssertNotNil(metadata.start, "Should have start timestamp")
-        XCTAssertNotNil(metadata.end, "Should have end timestamp")
-        XCTAssertTrue(metadata.end >= metadata.start, "End timestamp should be >= start timestamp")
+        XCTAssertNotNil(event.start, "Should have start timestamp")
+        XCTAssertNotNil(event.end, "Should have end timestamp")
+        XCTAssertTrue(event.end >= event.start, "End timestamp should be >= start timestamp")
     }
 
     // MARK: - Status Mapping Tests
@@ -306,7 +306,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         // When
         for (index, profiler) in profilers.enumerated() {
-            _ = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: cores[index])
+            _ = profiler.receive(message: .payload(TTIDMessage(context: mockRandomAttributes(), vital: .mockAny())), from: cores[index])
 
             let remainingInstances = iterations - index - 1
             if remainingInstances > 0 {
