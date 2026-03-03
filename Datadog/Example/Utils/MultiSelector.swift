@@ -6,7 +6,7 @@
 
 import SwiftUI
 
-@available(iOS 14.0, *)
+@available(iOS 13, tvOS 13, *)
 struct MultiSelector<LabelView: View, Selectable: Identifiable & Hashable>: View {
     let label: LabelView
     let options: [Selectable]
@@ -44,7 +44,7 @@ struct MultiSelector<LabelView: View, Selectable: Identifiable & Hashable>: View
 }
 
 
-@available(iOS 13.0, *)
+@available(iOS 13, tvOS 13, *)
 struct MultiSelectionView<Selectable: Identifiable & Hashable>: View {
     let options: [Selectable]
     let optionToString: (Selectable) -> String

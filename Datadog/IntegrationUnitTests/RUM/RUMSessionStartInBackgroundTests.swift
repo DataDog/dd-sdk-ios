@@ -20,9 +20,13 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
 
     // MARK: - OS Prewarm Launch
 
+    @available(tvOS, unavailable)
     private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate) }
 
     func testGivenOSPrewarmLaunch_whenNoEventIsTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUM(osPrewarmLaunch)
         let given2 = enableRUM(osPrewarmLaunch) { rumConfig in
@@ -37,9 +41,13 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
             let sessions = try when.then()
             XCTAssertTrue(sessions.isEmpty)
         }
+        #endif
     }
 
     func testGivenOSPrewarmLaunch_whenEventAreTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET disabled
         let given1 = enableRUM(osPrewarmLaunch)
@@ -76,9 +84,13 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
             XCTAssertEqual(session.views[0].name, backgroundViewName)
             DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
         }
+        #endif
     }
 
     func testGivenOSPrewarmLaunch_whenLongTasksAreTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = enableRUM(osPrewarmLaunch)
         let given2 = enableRUM(osPrewarmLaunch) { rumConfig in
@@ -93,6 +105,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
             let sessions = try when.then()
             XCTAssertTrue(sessions.isEmpty)
         }
+        #endif
     }
 
     // MARK: - Background Launch
@@ -117,6 +130,9 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundLaunch_whenEventAreTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET disabled
         let given1 = enableRUM(backgroundLaunch)
@@ -152,6 +168,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
             XCTAssertEqual(session.views[0].name, backgroundViewName)
             DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
         }
+        #endif
     }
 
     func testGivenBackgroundLaunch_whenLongTasksAreTracked() throws {

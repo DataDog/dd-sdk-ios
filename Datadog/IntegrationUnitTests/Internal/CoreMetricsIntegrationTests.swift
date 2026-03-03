@@ -9,7 +9,7 @@ import XCTest
 @testable import DatadogRUM
 @testable import DatadogLogs
 @testable import DatadogTrace
-#if !os(tvOS)
+#if os(iOS)
 @testable import DatadogSessionReplay
 #endif
 
@@ -18,9 +18,9 @@ class CoreMetricsIntegrationTests: XCTestCase {
         XCTAssertEqual(BatchMetric.trackValue(for: RUMFeature.name), "rum")
         XCTAssertEqual(BatchMetric.trackValue(for: TraceFeature.name), "trace")
         XCTAssertEqual(BatchMetric.trackValue(for: LogsFeature.name), "logs")
-        #if !os(tvOS)
+#if os(iOS)
         XCTAssertEqual(BatchMetric.trackValue(for: SessionReplayFeature.name), "sr")
         XCTAssertEqual(BatchMetric.trackValue(for: ResourcesFeature.name), "sr-resources")
-        #endif
+#endif
     }
 }

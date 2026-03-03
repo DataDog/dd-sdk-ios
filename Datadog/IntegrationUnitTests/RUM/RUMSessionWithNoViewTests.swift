@@ -31,6 +31,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
     /// ```
     /// [BG:Background] --> [FG:(no view)]
     /// ```
+    @available(tvOS, unavailable)
     func prewarmedSessionWithResourceThatBecameActive(
         resourceStartAfter: TimeInterval,
         resourceDuration: TimeInterval,
@@ -66,6 +67,9 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
     // MARK: - Session in foreground with no view
 
     func testGivenBackgroundOrPrewarmedSessionThatBecameActive_whenEventsAreTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = backgroundSessionWithResourceThatBecameActive(resourceStartAfter: dt1, resourceDuration: dt2)
         let given2 = prewarmedSessionWithResourceThatBecameActive(resourceStartAfter: dt1, resourceDuration: dt2)
@@ -98,11 +102,15 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
                 DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
             }
         }
+        #endif
     }
 
     // MARK: - Session in background with no view
 
     func testGivenBackgroundOrPrewarmedSession_whenEventsAreTracked() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET disabled
         let given1 = backgroundSession()
@@ -159,6 +167,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
             let sessions = try when.then()
             XCTAssertTrue(sessions.isEmpty)
         }
+        #endif
     }
 
     func testGivenUserSessionThatEnteredBackground_whenEventsAreTracked() throws {

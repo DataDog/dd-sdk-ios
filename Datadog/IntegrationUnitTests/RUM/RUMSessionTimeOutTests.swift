@@ -357,6 +357,9 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
     // MARK: - Background session "time out" → track in background
 
     func testGivenBackgroundSession_whenItTimesOut_andNextEventIsTrackedInBackground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = backgroundSession()
             .and(.trackResource(after: dt1, duration: dt2))
@@ -382,9 +385,13 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
                 XCTAssertTrue(sessions.isEmpty)
             }
         }
+        #endif
     }
 
     func testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andNextEventIsTrackedInBackground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET enabled
         let given1 = backgroundSession { $0.trackBackgroundEvents = true }
@@ -449,11 +456,15 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
             DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
             XCTAssertEqual(session.views[0].resourceEvents.count, 1)
         }
+        #endif
     }
 
     // MARK: - Background session "time out" → track in foreground
 
     func testGivenBackgroundSession_whenItTimesOut_andNextEventIsTrackedInForeground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = backgroundSession()
             .and(.trackResource(after: dt1, duration: dt2))
@@ -493,9 +504,13 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
                 }
             }
         }
+        #endif
     }
 
     func testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andNextEventIsTrackedInForeground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET enabled
         let given1 = backgroundSession { $0.trackBackgroundEvents = true }
@@ -533,9 +548,13 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
                 }
             }
         }
+        #endif
     }
 
     func testGivenBackgroundSession_whenItTimesOut_andViewIsTrackedInForeground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         let given1 = backgroundSession { $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate() }
             .and(.trackResource(after: dt1, duration: dt2))
@@ -575,9 +594,13 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
                 }
             }
         }
+        #endif
     }
 
     func testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andViewIsTrackedInForeground() throws {
+        #if os(tvOS)
+        throw XCTSkip("This test is not available on tvOS")
+        #else
         // Given
         // - BET enabled
         let given1 = backgroundSession {
@@ -635,5 +658,6 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
                 }
             }
         }
+        #endif
     }
 }
