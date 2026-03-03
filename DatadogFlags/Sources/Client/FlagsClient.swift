@@ -272,7 +272,7 @@ extension FlagsClient: FlagsClientProtocol {
 
         rumFlagEvaluationReporter.sendFlagEvaluation(
             flagKey: key,
-            value: value
+            value: assignment.variationKey
         )
     }
 }
