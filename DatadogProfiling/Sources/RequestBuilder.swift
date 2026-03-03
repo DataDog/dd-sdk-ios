@@ -28,31 +28,41 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     }
 
     func request(for events: [Event], with context: DatadogContext, execution: ExecutionContext) throws -> URLRequest {
-        guard events.count == 1, let prof = events.first else {
+        guard events.count == 1, let event = events.first else {
             throw ProgrammerError(description: "Invalid event count: \(events.count)")
         }
 
-        guard let event = prof.metadata else {
+        guard let metadataData = event.metadata else {
             throw ProgrammerError(description: "Profile must include an event metadata")
         }
+
+        let decoder = JSONDecoder()
+        let attachments = try decoder.decode(ProfileAttachments.self, from: metadataData)
 
         var multipart = multipartBuilder
 
         multipart.addFormData(
             name: "event",
-            filename: ProfileEvent.Constants.eventFilename,
-            data: event,
+            filename: ProfileAttachments.Constants.profileEventFilename,
+            data: event.data,
             mimeType: "application/json"
         )
 
-        let decoder = JSONDecoder()
-
-        try multipart.addFormData(
-            name: ProfileEvent.Constants.wallFilename,
-            filename: ProfileEvent.Constants.wallFilename,
-            data: decoder.decode(Data.self, from: prof.data),
+        multipart.addFormData(
+            name: ProfileAttachments.Constants.wallFilename,
+            filename: ProfileAttachments.Constants.wallFilename,
+            data: attachments.pprof,
             mimeType: "application/octet-stream"
         )
+
+        if let rumEvents = attachments.rumEvents {
+            multipart.addFormData(
+                name: ProfileAttachments.Constants.rumEventsFilename,
+                filename: ProfileAttachments.Constants.rumEventsFilename,
+                data: rumEvents,
+                mimeType: "application/json"
+            )
+        }
 
         var tags = ["retry_count:\(execution.attempt + 1)"]
         if let previousResponseCode = execution.previousResponseCode {

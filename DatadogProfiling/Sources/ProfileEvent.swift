@@ -8,11 +8,6 @@ import Foundation
 import DatadogInternal
 
 internal struct ProfileEvent: Encodable {
-    internal enum Constants {
-        static let eventFilename: String = "event.json"
-        static let wallFilename: String = "wall.pprof"
-    }
-
     enum CodingKeys: String, CodingKey {
         case start
         case end

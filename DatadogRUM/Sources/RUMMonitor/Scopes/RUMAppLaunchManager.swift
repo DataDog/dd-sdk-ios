@@ -69,7 +69,15 @@ private extension RUMAppLaunchManager {
             profiling = .init(errorReason: profilingContext.error, status: profilingContext.profilingStatus)
         }
 
-        sendProfilerStopMessage(id: ttidVitalId, activeView: activeView)
+        sendTTIDMessageToProfiler(
+            vital: .init(
+                id: ttidVitalId,
+                name: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric.ttid.name,
+                start: context.launchInfo.processLaunchDate.timeIntervalSince1970.dd.toInt64Nanoseconds,
+                duration: ttid.dd.toInt64Nanoseconds
+            ),
+            activeView: activeView
+        )
 
         dependencies.appStateManager.currentAppStateInfo { [weak self] currentAppStateInfo in
             guard let self else {
@@ -214,11 +222,11 @@ private extension RUMAppLaunchManager {
         telemetryController.track(ttidEvent: vitalEvent, context: context)
     }
 
-    func sendProfilerStopMessage(id: String, activeView: RUMViewScope?) {
+    func sendTTIDMessageToProfiler(vital: Vital, activeView: RUMViewScope?) {
         var context: [String: Encodable] = [
             RUMContextAttributes.IDs.applicationID: parent.context.rumApplicationID,
             RUMContextAttributes.IDs.sessionID: parent.context.sessionID.toRUMDataFormat,
-            RUMContextAttributes.IDs.vitalID: id
+            RUMContextAttributes.IDs.vitalID: vital.id
         ]
 
         if let activeView {
@@ -226,7 +234,7 @@ private extension RUMAppLaunchManager {
             context[RUMContextAttributes.IDs.viewName] = [activeView.viewName]
         }
 
-        dependencies.featureScope.send(message: .payload(ProfilerStop(context: context)))
+        dependencies.featureScope.send(message: .payload(TTIDMessage(context: context, vital: vital)))
     }
 }
 

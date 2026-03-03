@@ -23,16 +23,24 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
     private static let lock = NSLock()
 
     private let telemetryController: ProfilingTelemetryController
+    private let encoder: JSONEncoder
 
-    init(telemetryController: ProfilingTelemetryController = .init()) {
+    init(
+        telemetryController: ProfilingTelemetryController = .init(),
+        encoder: JSONEncoder = JSONEncoder()
+    ) {
         Self.registerInstance()
         self.telemetryController = telemetryController
+        self.encoder = encoder
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(cmd as ProfilerStop) = message else {
+        guard case let .payload(cmd as TTIDMessage) = message else {
             return false
         }
+
+        let rumEvents = RUMEvents(vitals: [cmd.vital])
+        let rumEventsData = try? encoder.encode(rumEvents)
 
         let profileStatus = dd_profiler_get_status()
         guard profileStatus == DD_PROFILER_STATUS_RUNNING
@@ -75,7 +83,10 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                 version: "4",
                 start: Date(timeIntervalSince1970: start),
                 end: Date(timeIntervalSince1970: end),
-                attachments: [ProfileEvent.Constants.wallFilename],
+                attachments: [
+                    ProfileAttachments.Constants.wallFilename,
+                    ProfileAttachments.Constants.rumEventsFilename
+                ],
                 tags: [
                     "service:\(context.service)",
                     "version:\(context.version)",
@@ -92,7 +103,8 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                 additionalAttributes: cmd.context
             )
 
-            writer.write(value: pprof, metadata: event)
+            let attachments = ProfileAttachments(pprof: pprof, rumEvents: rumEventsData)
+            writer.write(value: event, metadata: attachments)
             self.telemetryController.send(metric: AppLaunchMetric(status: .init(profileStatus), durationNs: duration, fileSize: Int64(size)))
         }
 
