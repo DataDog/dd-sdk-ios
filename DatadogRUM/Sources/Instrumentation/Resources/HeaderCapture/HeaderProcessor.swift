@@ -134,8 +134,8 @@ internal struct HeaderProcessor {
         guard let headers else {
             return [:]
         }
-        // Build a case-insensitive lookup from the raw headers
-        let normalized = Dictionary(headers.map { ($0.key.lowercased(), ($0.key, $0.value)) }, uniquingKeysWith: { _, last in last })
+        // Build a case-insensitive lookup from the raw headers (values only, keys will be lowercased in output)
+        let normalized = Dictionary(headers.map { ($0.key.lowercased(), $0.value) }, uniquingKeysWith: { _, last in last })
         return filterHeaders(normalized, capturedHeaders: capturedHeaders, excluded: Self.reservedRequestHeaders)
     }
 
@@ -144,23 +144,24 @@ internal struct HeaderProcessor {
         guard let headers else {
             return [:]
         }
-        // Build a case-insensitive lookup, keeping only String key/value pairs
-        var normalized: [String: (String, String)] = [:]
+        // Build a case-insensitive lookup, keeping only String values (keys will be lowercased in output)
+        var normalized: [String: String] = [:]
         for (rawKey, rawValue) in headers {
             guard let key = rawKey as? String, let value = rawValue as? String else { continue }
-            normalized[key.lowercased()] = (key, value)
+            normalized[key.lowercased()] = value
         }
         return filterHeaders(normalized, capturedHeaders: capturedHeaders)
     }
 
     /// Shared filtering logic: iterates over the ordered capture list to ensure default headers
     /// get budget priority over custom ones. Applies security pattern, excluded set, and size limits.
+    /// All output keys are lowercased for cross-platform consistency.
     private func filterHeaders(
-        _ headersByLowercasedName: [String: (originalKey: String, value: String)],
+        _ valuesByLowercasedName: [String: String],
         capturedHeaders: [String],
         excluded: Set<String> = []
     ) -> [String: String] {
-        guard !headersByLowercasedName.isEmpty else {
+        guard !valuesByLowercasedName.isEmpty else {
             return [:]
         }
 
@@ -168,8 +169,8 @@ internal struct HeaderProcessor {
         var totalSize = 0
 
         for name in capturedHeaders {
-            // Look up the header in the input (name is already lowercased)
-            guard let (originalKey, value) = headersByLowercasedName[name] else { continue }
+            // Look up the header value in the input (name is already lowercased)
+            guard let value = valuesByLowercasedName[name] else { continue }
             // Skip iOS reserved headers
             guard !excluded.contains(name) else { continue }
             // Skip sensitive headers (auth, cookies, tokens, etc.)
@@ -178,12 +179,12 @@ internal struct HeaderProcessor {
             guard result.count < Self.maxHeaderCount else { break }
 
             let truncatedValue = truncateValue(value)
-            let entrySize = originalKey.utf8.count + truncatedValue.utf8.count
+            let entrySize = name.utf8.count + truncatedValue.utf8.count
 
             // Enforce total size budget
             guard totalSize + entrySize <= Self.maxTotalSize else { break }
 
-            result[originalKey] = truncatedValue
+            result[name] = truncatedValue
             totalSize += entrySize
         }
 
