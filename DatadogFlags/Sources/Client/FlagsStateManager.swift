@@ -41,9 +41,14 @@ public protocol FlagsStateObservable: AnyObject {
 /// Thread-safe: all state reads, writes, and listener notifications are
 /// serialized through a single lock to guarantee listeners observe transitions
 /// in the same order they are applied.
+///
+/// - Important: Listeners are notified while the lock is held. Calling any
+///   `FlagsStateManager` method from within a listener callback will deadlock.
+///   This enforces the documented contract that listeners should be fast and non-blocking.
 internal final class FlagsStateManager: FlagsStateObservable {
     /// Guards both `_state` and `_listeners` to ensure atomic state + notify.
-    private let lock = NSRecursiveLock()
+    /// Uses `NSLock` (not `NSRecursiveLock`) to fail fast on re-entrant calls.
+    private let lock = NSLock()
 
     private var _state: FlagsClientState = .notReady
     private var _listeners: [WeakListener] = []
