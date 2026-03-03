@@ -34,6 +34,30 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
         return session.delegate
     }
 
+    #if os(watchOS)
+    /// Indicates whether this task is an internal OS-created task wrapper.
+    ///
+    /// On watchOS, a single user-created task can result in multiple internal `URLSessionTask` wrapper
+    /// objects all sharing the same `taskIdentifier`. The user-facing task has no internal delegate
+    /// wrapper, while OS-internal tasks (e.g. the actual connection task, Privacy Dashboard shadow task)
+    /// have `_internalDelegateWrapper` set to route their callbacks internally.
+    ///
+    /// We use this to skip instrumentation of internal OS task wrappers — only the user-facing task
+    /// (with no internal delegate wrapper) should be instrumented.
+    ///
+    /// - Note (hypothesis by @maxep): This may be specific to watchOS because of its companion link
+    ///   architecture. Watch apps likely proxy networking through the paired iPhone or via the Watch's
+    ///   own radio with Privacy Proxy involvement, which could require the OS to spawn multiple internal
+    ///   task wrappers per user request. On iOS/tvOS/macOS, tasks connect directly to the network stack
+    ///   without such indirection, so only one task object is created per request.
+    var isInternalTask: Bool {
+        // `_internalDelegateWrapper` is a private ivar on `NSURLSessionTask`. It is non-nil on
+        // OS-internal task wrappers created by watchOS to handle the actual networking, and nil
+        // on user-created tasks returned from `URLSession.dataTask(...)`.
+        type.value(forKey: "_internalDelegateWrapper") != nil
+    }
+    #endif
+
     var hasCompletion: Bool {
         get {
             let value = objc_getAssociatedObject(type, &hasCompletionKey) as? Bool
