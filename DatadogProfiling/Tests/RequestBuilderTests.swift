@@ -25,13 +25,17 @@ class RequestBuilderTests: XCTestCase {
         additionalAttributes: mockRandomAttributes()
     )
 
-    let profileData: Data = .mockRandom()
+    let rumEvents: RUMEvents = .init(vitals: [.mockRandom()])
+    let pprof: Data = .mockRandom()
 
     private func mockEvent() throws -> Event {
         let encoder = JSONEncoder.dd.default()
+
+        let rumEventsData = try encoder.encode(rumEvents)
+        let attachments: ProfileAttachments = .init(pprof: pprof, rumEvents: rumEventsData)
         return try Event(
-            data: encoder.encode(profileData),
-            metadata: encoder.encode(profileEvent)
+            data: encoder.encode(profileEvent),
+            metadata: encoder.encode(attachments)
         )
     }
 
@@ -155,17 +159,24 @@ class RequestBuilderTests: XCTestCase {
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
         XCTAssertTrue(contentType.matches(regex: "multipart/form-data; boundary=\(multipartSpy.boundary)"))
-        XCTAssertEqual(multipartSpy.formFiles.count, 2)
+        XCTAssertEqual(multipartSpy.formFiles.count, 3)
 
         let eventFile = multipartSpy.formFiles[0]
         XCTAssertEqual(eventFile.filename, "event.json")
         XCTAssertEqual(eventFile.mimeType, "application/json")
-        XCTAssertEqual(eventFile.data, event.metadata)
+        XCTAssertEqual(eventFile.data, event.data)
 
         let pprofFile = multipartSpy.formFiles[1]
         XCTAssertEqual(pprofFile.filename, "wall.pprof")
         XCTAssertEqual(pprofFile.mimeType, "application/octet-stream")
-        XCTAssertEqual(pprofFile.data, profileData)
+        XCTAssertEqual(pprofFile.data, pprof)
+
+        let rumEventsFile = multipartSpy.formFiles[2]
+        XCTAssertEqual(rumEventsFile.filename, "rum-mobile-events.json")
+        XCTAssertEqual(rumEventsFile.mimeType, "application/json")
+
+        let rumEventsDecoded = try XCTUnwrap(JSONDecoder().decode(RUMEvents.self, from: rumEventsFile.data))
+        XCTAssertEqual(rumEventsDecoded, rumEvents)
     }
 
     func testWhenBatchDataHasMoreThanOneProfile() {
