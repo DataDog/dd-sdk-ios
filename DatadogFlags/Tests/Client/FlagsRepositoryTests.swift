@@ -327,6 +327,58 @@ final class FlagsRepositoryTests: XCTestCase {
         waitForExpectations(timeout: 0)
         XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
     }
+
+    // MARK: - State-Before-Completion Ordering
+
+    func testStateIsUpdatedBeforeCompletionOnSuccess() {
+        // Given
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let completed = expectation(description: "completed")
+
+        // When
+        var stateInCompletion: FlagsClientState?
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            stateInCompletion = flagsRepository.stateManager.currentState
+            completed.fulfill()
+        }
+
+        // Then — state must already be .ready when completion is called
+        // (dd-openfeature-provider-swift depends on this ordering)
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(stateInCompletion, .ready)
+    }
+
+    func testStateIsUpdatedBeforeCompletionOnFailure() {
+        // Given
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let completed = expectation(description: "completed")
+
+        // When
+        var stateInCompletion: FlagsClientState?
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            stateInCompletion = flagsRepository.stateManager.currentState
+            completed.fulfill()
+        }
+
+        // Then — state must already be .error when completion is called (no cached flags)
+        // (dd-openfeature-provider-swift depends on this ordering)
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(stateInCompletion, .error)
+    }
 }
 
 // MARK: - Helpers

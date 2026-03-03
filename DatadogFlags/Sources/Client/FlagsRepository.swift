@@ -132,6 +132,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 self.stateManager.updateState(.ready)
                 completion(.success(()))
             case .failure(let error):
+                // State must be updated before calling completion —
+                // dd-openfeature-provider-swift checks currentState in the callback.
                 if hadFlags {
                     self?.stateManager.updateState(.stale)
                 } else {
