@@ -378,9 +378,9 @@ extension SamplingMechanismType: AnyMockable, RandomMockable {
 public class MockActiveSpanProvider: ActiveSpanProvider {
     public init() { }
 
-    public var storedActiveSpanIDs: ActiveSpanIDs?
+    public var storedActiveSpanContext: ActiveSpanContext?
 
-    public func activeSpanIDs() -> ActiveSpanIDs? {
-        storedActiveSpanIDs
+    public func activeSpanContext() -> ActiveSpanContext? {
+        storedActiveSpanContext
     }
 }

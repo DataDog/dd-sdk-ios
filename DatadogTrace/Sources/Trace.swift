@@ -83,7 +83,12 @@ public enum Trace {
 
         core.set(context: ActiveSpanProviderAdditionalContext { [weak tracer = trace.tracer] in
             tracer?.activeSpan?.context.dd.map {
-                ActiveSpanIDs(traceID: $0.traceID, activeSpanID: $0.spanID)
+                ActiveSpanContext(
+                    traceID: $0.traceID,
+                    activeSpanID: $0.spanID,
+                    samplingPriority: $0.samplingDecision.samplingPriority,
+                    samplingMechanismType: $0.samplingDecision.decisionMaker
+                )
             }
         })
     }

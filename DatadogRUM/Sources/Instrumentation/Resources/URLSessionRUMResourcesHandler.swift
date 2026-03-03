@@ -254,14 +254,15 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
 extension DistributedTracing {
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
-
         // If there is an active trace span, we get the active span and trace ID on traceInfo.
-        let traceInfo = activeSpanProviderContainer.activeSpanProvider?.activeSpanIDs()
+        let activeSpanContext = activeSpanProviderContainer.activeSpanProvider?.activeSpanContext()
 
         // In case there is, we use the same traceID so the backend can link the span generated from the RUM resource
         // with the trace.
-        let traceID = traceInfo.map { $0.traceID } ?? traceIDGenerator.generate()
+        let traceID = activeSpanContext.map { $0.traceID } ?? traceIDGenerator.generate()
         let spanID = spanIDGenerator.generate()
+        let samplingPriority = activeSpanContext?.samplingPriority ?? (sampler(sessionID: rumSessionId).sample() ? .autoKeep : .autoDrop)
+        let samplingDecisionMaker = activeSpanContext?.samplingMechanismType ?? .agentRate
 
         // Extract GraphQL attributes from request before they are removed
         let graphql = GraphQLRequestAttributes(
@@ -271,16 +272,15 @@ extension DistributedTracing {
             payload: request.value(forHTTPHeaderField: GraphQLHeaders.payload)
         )
 
-        let sampler = sampler(sessionID: rumSessionId)
         let injectedSpanContext = TraceContext(
             traceID: traceID,
             spanID: spanID,
             // If there is an active span, use it as parent span for the span
             // the backend creates out of the RUM resource:
-            parentSpanID: traceInfo?.activeSpanID,
+            parentSpanID: activeSpanContext?.activeSpanID,
             sampleRate: samplingRate,
-            samplingPriority: sampler.sample() ? .autoKeep : .autoDrop,
-            samplingDecisionMaker: .agentRate,
+            samplingPriority: samplingPriority,
+            samplingDecisionMaker: samplingDecisionMaker,
             rumSessionId: rumSessionId,
             userId: userId,
             accountId: accountId,

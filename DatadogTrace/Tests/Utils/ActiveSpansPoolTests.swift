@@ -185,14 +185,14 @@ class ActiveSpansPoolTests: XCTestCase {
                 return
             }
 
-            XCTAssertNil(provider.activeSpanIDs())
+            XCTAssertNil(provider.activeSpanContext())
 
             let oneSpan = tracer.startSpan(operationName: .mockAny()).setActive()
-            XCTAssertEqual(provider.activeSpanIDs()?.activeSpanID, oneSpan.dd.ddContext.spanID)
-            XCTAssertEqual(provider.activeSpanIDs()?.traceID, oneSpan.dd.ddContext.traceID)
+            XCTAssertEqual(provider.activeSpanContext()?.activeSpanID, oneSpan.dd.ddContext.spanID)
+            XCTAssertEqual(provider.activeSpanContext()?.traceID, oneSpan.dd.ddContext.traceID)
 
             oneSpan.finish()
-            XCTAssertNil(provider.activeSpanIDs())
+            XCTAssertNil(provider.activeSpanContext())
         }
     }
 }

@@ -6,27 +6,40 @@
 
 import Foundation
 
-/// Struct holding the active span and trace IDs, used by ``ActiveSpanProvider``.
-public struct ActiveSpanIDs {
+/// Struct holding the active span information, used by ``ActiveSpanProvider``.
+///
+/// This struct's purpose is to hold all the necessary information to enrich a RUM resource event
+/// with span related information. The backend will use this information when generating a span out
+/// of a RUM resource to correctly link the span to a trace and parent, with the same sampling
+/// priority and decision mechanism as the trace's root span.
+public struct ActiveSpanContext {
+    /// Trace ID of the currently active span.
     public let traceID: TraceID
+    /// ID of the currently active span. This should be the RUM resource event parent span ID.
     public let activeSpanID: SpanID
+    /// Sampling priority of the trace with ID ``traceID``.
+    public let samplingPriority: SamplingPriority
+    /// Sampling decision mechanism of the trace with ID ``traceID``.
+    public let samplingMechanismType: SamplingMechanismType
 
-    public init(traceID: TraceID, activeSpanID: SpanID) {
+    public init(traceID: TraceID, activeSpanID: SpanID, samplingPriority: SamplingPriority, samplingMechanismType: SamplingMechanismType) {
         self.traceID = traceID
         self.activeSpanID = activeSpanID
+        self.samplingPriority = samplingPriority
+        self.samplingMechanismType = samplingMechanismType
     }
 }
 
-/// Entities implementing this protocol can provide the currently active span and trace IDs, if any exists.
+/// Entities implementing this protocol can provide the currently active span information.
 ///
-/// These entities act as a bridge between Trace and RUM. If Trace is enabled, they provide the active span and trace ID.
-/// RUM (or any other module) can obtain this information from it.
+/// These entities act as a bridge between Trace and RUM. If Trace is enabled, they provide the active span and trace ID,
+/// and sampling priority information. RUM (or any other module) can obtain this information from it.
 public protocol ActiveSpanProvider {
-    /// If there is a currently active span, returns an ``ActiveSpanIDs`` instance with the active span and trace IDs,
+    /// If there is a currently active span, returns an ``ActiveSpanContext`` instance with the active span and trace IDs,
     /// or `nil` otherwise.
     ///
-    /// - returns: An ``ActiveSpanIDs`` instance with the active span and trace IDs, or `nil` otherwise.
-    func activeSpanIDs() -> ActiveSpanIDs?
+    /// - returns: An ``ActiveSpanContext`` instance with the active span and trace IDs, or `nil` otherwise.
+    func activeSpanContext() -> ActiveSpanContext?
 }
 
 /// This entity acts as a bridge between Trace and RUM. If Trace is enabled, it will provide an ``ActiveSpanProvider/ProviderFunction``
@@ -34,9 +47,9 @@ public protocol ActiveSpanProvider {
 public struct ActiveSpanProviderAdditionalContext: ActiveSpanProvider, AdditionalContext {
     public static var key: String { "active_span_provider" }
 
-    /// Function that returns a ``ActiveSpanIDs`` struct with the currently active span and trace IDs, or `nil` if
+    /// Function that returns a ``ActiveSpanContext`` struct with the currently active span and trace IDs, or `nil` if
     /// there is no currently active span.
-    public typealias ProviderFunction = () -> (ActiveSpanIDs?)
+    public typealias ProviderFunction = () -> (ActiveSpanContext?)
 
     /// The provider function that obtains the active span and trace IDs.
     private let providerFunction: ProviderFunction
@@ -47,7 +60,7 @@ public struct ActiveSpanProviderAdditionalContext: ActiveSpanProvider, Additiona
         self.providerFunction = providerFunction
     }
 
-    public func activeSpanIDs() -> ActiveSpanIDs? {
+    public func activeSpanContext() -> ActiveSpanContext? {
         providerFunction()
     }
 }
