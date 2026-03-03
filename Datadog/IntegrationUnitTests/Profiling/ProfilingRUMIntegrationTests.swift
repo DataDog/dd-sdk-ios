@@ -89,15 +89,20 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         XCTAssertEqual(ttidVitalEvent.dd.profiling?.status, .running)
         XCTAssertEqual(ttidVitalEvent.vital.appLaunchMetric, .ttid)
 
-        let pprofData = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: ProfilerFeature.name, ofType: Data.self))
-        XCTAssertEqual(pprofData.count, 1)
+        let attachments = try XCTUnwrap(core.waitAndReturnEventsMetadata(ofFeature: ProfilerFeature.name, ofType: ProfileAttachments.self))
+        XCTAssertEqual(attachments.count, 1)
+        XCTAssertNotNil(attachments.first?.pprof)
+        XCTAssertNotNil(attachments.first?.rumEvents)
 
-        let profilingEvents = try XCTUnwrap(core.waitAndReturnEventsMetadata(ofFeature: ProfilerFeature.name, ofType: ProfileEvent.self))
+        let profilingEvents = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: ProfilerFeature.name, ofType: ProfileEvent.self))
         XCTAssertEqual(profilingEvents.count, 1)
         let profilingEvent = try XCTUnwrap(profilingEvents.first)
         XCTAssertEqual(profilingEvent.family, "ios")
         XCTAssertEqual(profilingEvent.runtime, "ios")
-        XCTAssertEqual(profilingEvent.attachments, [ProfileEvent.Constants.wallFilename])
+        XCTAssertEqual(profilingEvent.attachments, [
+            ProfileAttachments.Constants.wallFilename,
+            ProfileAttachments.Constants.rumEventsFilename
+        ])
         XCTAssertFalse(profilingEvent.tags.isEmpty)
         XCTAssertFalse(profilingEvent.additionalAttributes!.isEmpty)
 
