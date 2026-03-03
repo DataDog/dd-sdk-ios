@@ -1,7 +1,7 @@
 all: env-check repo-setup dependencies templates
 .PHONY: env-check repo-setup dependencies clean templates \
 		lint license-check \
-		test test-ios test-ios-all test-tvos test-tvos-all \
+		test test-ios test-ios-all test-tvos test-tvos-all test-visionos test-visionos-all \
 		ui-test ui-test-all ui-test-podinstall \
 		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-snapshot-tests-open \
 		tools-test \
@@ -61,6 +61,11 @@ DEFAULT_IOS_DEVICE := iPhone 15 Pro
 DEFAULT_TVOS_OS := latest
 DEFAULT_TVOS_PLATFORM := tvOS Simulator
 DEFAULT_TVOS_DEVICE := Apple TV
+
+# Test env for running visionOS tests in local:
+DEFAULT_VISIONOS_OS := latest
+DEFAULT_VISIONOS_PLATFORM := visionOS Simulator
+DEFAULT_VISIONOS_DEVICE := Apple Vision Pro
 
 # Test env for running SR snapshot tests in local:
 DEFAULT_SR_SNAPSHOT_TESTS_OS := 17.5
@@ -126,6 +131,27 @@ test-tvos-all:
 	@$(MAKE) test-tvos SCHEME="DatadogFlags"
 	@$(MAKE) test-tvos SCHEME="DatadogProfiling"
 	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests"
+
+# Run unit tests for specified SCHEME using visionOS Simulator
+test-visionos:
+	@$(call require_param,SCHEME)
+	@:$(eval OS ?= $(DEFAULT_VISIONOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_VISIONOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_VISIONOS_DEVICE))
+	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run unit tests for all visionOS schemes
+test-visionos-all:
+	@$(MAKE) test-visionos SCHEME="DatadogCore"
+	@$(MAKE) test-visionos SCHEME="DatadogInternal"
+	@$(MAKE) test-visionos SCHEME="DatadogRUM"
+	@$(MAKE) test-visionos SCHEME="DatadogLogs"
+	@$(MAKE) test-visionos SCHEME="DatadogTrace"
+	@$(MAKE) test-visionos SCHEME="DatadogCrashReporting"
+	@$(MAKE) test-visionos SCHEME="DatadogWebViewTracking"
+	@$(MAKE) test-visionos SCHEME="DatadogFlags"
+	@$(MAKE) test-visionos SCHEME="DatadogProfiling"
+	@$(MAKE) test-visionos SCHEME="DatadogIntegrationTests"
 
 # Run UI tests for specified TEST_PLAN
 ui-test:
