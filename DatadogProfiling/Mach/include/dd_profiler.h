@@ -143,15 +143,6 @@ typedef struct profiler profiler_t;
 #endif
 
 /**
- * Sets the main thread pthread identifier.
- *
- * This function should be called from the main thread early in the process lifecycle.
- *
- * @param thread The pthread identifier for the main thread
- */
-void set_main_thread(pthread_t thread);
-
-/**
  * Creates a profiler instance.
  *
  * Uses fixed intervals for consistent sampling behavior.
@@ -197,26 +188,6 @@ void profiler_stop(profiler_t* profiler);
 int profiler_is_running(const profiler_t* profiler);
 
 // MARK: - DD Profiler (auto-start) API
-
-/**
- * Checks if profiling is enabled in UserDefaults.
- *
- * Reads the profiling enabled state from UserDefaults suite to determine
- * if the profiling feature was previously enabled via Profiling.enable().
- *
- * @return true if profiling is enabled, false otherwise
- *
- * @note Reads from suite "com.datadoghq.ios-sdk" with key "is_profiling_enabled"
- * @note Returns false if the key doesn't exist or on read errors
- */
-bool is_profiling_enabled(void);
-
-/**
- * Deletes the profiling defaults from UserDefaults.
- *
- * Removes the profiling enabled state, allowing the session to start with a clean state.
- */
-void delete_profiling_defaults(void);
 
 /**
  * Status codes for the dd profiler operations
