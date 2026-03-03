@@ -77,8 +77,8 @@ internal struct HeaderProcessor {
             return (request: [:], response: [:])
         case .defaults, .custom:
             let (captureRequest, captureResponse) = buildCaptureList()
-            let request = filterRequestHeaders(requestHeaders, capturing: captureRequest)
-            let response = filterResponseHeaders(responseHeaders, capturing: captureResponse)
+            let request = filterRequestHeaders(requestHeaders, capturedHeaders: captureRequest)
+            let response = filterResponseHeaders(responseHeaders, capturedHeaders: captureResponse)
             return (request: request, response: response)
         }
     }
@@ -101,25 +101,25 @@ internal struct HeaderProcessor {
 
         var requestHeaders: [String] = []
         var responseHeaders: [String] = []
-        var seenRequest = Set<String>()
-        var seenResponse = Set<String>()
+        var seenRequests = Set<String>()
+        var seenResponses = Set<String>()
 
         for rule in rules {
             switch rule {
             case .defaults:
-                for name in Self.defaultRequestHeaders where seenRequest.insert(name).inserted {
+                for name in Self.defaultRequestHeaders where seenRequests.insert(name).inserted {
                     requestHeaders.append(name)
                 }
-                for name in Self.defaultResponseHeaders where seenResponse.insert(name).inserted {
+                for name in Self.defaultResponseHeaders where seenResponses.insert(name).inserted {
                     responseHeaders.append(name)
                 }
             case .matchHeaders(let names):
                 for name in names {
                     let lowercased = name.lowercased()
-                    if seenRequest.insert(lowercased).inserted {
+                    if seenRequests.insert(lowercased).inserted {
                         requestHeaders.append(lowercased)
                     }
-                    if seenResponse.insert(lowercased).inserted {
+                    if seenResponses.insert(lowercased).inserted {
                         responseHeaders.append(lowercased)
                     }
                 }
@@ -130,17 +130,17 @@ internal struct HeaderProcessor {
     }
 
     /// Filters request headers.
-    private func filterRequestHeaders(_ headers: [String: String]?, capturing: [String]) -> [String: String] {
+    private func filterRequestHeaders(_ headers: [String: String]?, capturedHeaders: [String]) -> [String: String] {
         guard let headers else {
             return [:]
         }
         // Build a case-insensitive lookup from the raw headers
         let normalized = Dictionary(headers.map { ($0.key.lowercased(), ($0.key, $0.value)) }, uniquingKeysWith: { _, last in last })
-        return filterHeaders(normalized, capturing: capturing, excluded: Self.reservedRequestHeaders)
+        return filterHeaders(normalized, capturedHeaders: capturedHeaders, excluded: Self.reservedRequestHeaders)
     }
 
     /// Filters response headers.
-    private func filterResponseHeaders(_ headers: [AnyHashable: Any]?, capturing: [String]) -> [String: String] {
+    private func filterResponseHeaders(_ headers: [AnyHashable: Any]?, capturedHeaders: [String]) -> [String: String] {
         guard let headers else {
             return [:]
         }
@@ -150,14 +150,14 @@ internal struct HeaderProcessor {
             guard let key = rawKey as? String, let value = rawValue as? String else { continue }
             normalized[key.lowercased()] = (key, value)
         }
-        return filterHeaders(normalized, capturing: capturing)
+        return filterHeaders(normalized, capturedHeaders: capturedHeaders)
     }
 
     /// Shared filtering logic: iterates over the ordered capture list to ensure default headers
     /// get budget priority over custom ones. Applies security pattern, excluded set, and size limits.
     private func filterHeaders(
         _ headersByLowercasedName: [String: (originalKey: String, value: String)],
-        capturing: [String],
+        capturedHeaders: [String],
         excluded: Set<String> = []
     ) -> [String: String] {
         guard !headersByLowercasedName.isEmpty else {
@@ -167,7 +167,7 @@ internal struct HeaderProcessor {
         var result: [String: String] = [:]
         var totalSize = 0
 
-        for name in capturing {
+        for name in capturedHeaders {
             // Look up the header in the input (name is already lowercased)
             guard let (originalKey, value) = headersByLowercasedName[name] else { continue }
             // Skip iOS reserved headers
