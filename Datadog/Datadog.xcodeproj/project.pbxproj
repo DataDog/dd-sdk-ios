@@ -7279,6 +7279,7 @@
 			buildConfigurationList = D229FFA32E3BC6D4009CCD62 /* Build configuration list for PBXNativeTarget "DatadogProfiling" */;
 			buildPhases = (
 				D229FF8E2E3BC6D4009CCD62 /* Headers */,
+				11C4E5942F583F84002196F4 /* ⚙️ Run cpp linter */,
 				D229FF8F2E3BC6D4009CCD62 /* Sources */,
 				D229FFA02E3BC6D4009CCD62 /* Frameworks */,
 				D229FFA22E3BC6D4009CCD62 /* Resources */,

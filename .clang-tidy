@@ -1,0 +1,59 @@
+---
+Checks: [
+  clang-diagnostic-*,
+
+  clang-analyzer-*,
+
+  bugprone-*,
+  -bugprone-easily-swappable-parameters, # permit `coord(int x, int y, int z)
+
+  readability-*,
+  -readability-magic-numbers,               # many constants are trivial; sometimes extracting them makes code less readable
+  -readability-identifier-length,           # sometimes short identifiers are OK in general-purpose/low-level routines
+  -readability-implicit-bool-conversion,    # permit `if (!ptr)`
+  -readability-simplify-boolean-expr,       # sometimes control flow can be more clearly documented w/ comments if branches are explicit
+  -readability-uppercase-literal-suffix,    # permit `1.0f`
+  -readability-redundant-access-specifiers, # public:/private: can delineate logical groupings of members; should be close to what they modify
+  -readability-named-parameter,             # allow parameter name to be omitted (conflicts with clang-diagnostic-unused-parameter)
+  -readability-braces-around-statements,    # permit `if (!ptr) return false;` on a single line
+  -readability-use-concise-preprocessor-directives, # `#if defined(X)` is consistent with `#elif defined(Y)` branches
+  -readability-use-anyofallof,              # a for loop is perfectly readable; `std::all_of()` with a lambda is not inherently clearer
+
+  performance-*,
+  -performance-no-int-to-ptr, # integer-to-pointer casts are fundamental to stack walking and address resolution
+
+  portability-*,
+
+  concurrency-*,
+  -concurrency-mt-unsafe, # getenv at startup is safe on Apple platforms; no thread-safe alternative exists
+
+  google-*,
+  -google-readability-todo,    # allow naked TODO for now; mandate JIRA ID once production-ready
+  -google-readability-casting, # same rationale as cppcoreguidelines-pro-type-cstyle-cast
+
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-type-union-access,           # unions are fragile, but OK if move/copy/dtor are managed tightly
+  -cppcoreguidelines-avoid-const-or-ref-data-members, # member references are fragile, but OK if lifetime guarantees are assured
+  -cppcoreguidelines-avoid-non-const-global-variables, # file-scoped statics (mutexes, caches) are standard in systems/profiler code
+  -cppcoreguidelines-avoid-c-arrays,                  # quite often unavoidable w/o std::span; reevaluate for C++20
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,   # ditto; no good alternative w/o std::span
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay, # array-to-pointer decay is unavoidable when calling C APIs (memset, memcpy, etc.)
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, # loop-bounded operator[] is safe; .at() adds unwanted exception paths in profiler code
+  -cppcoreguidelines-pro-type-cstyle-cast,             # C-style casts are idiomatic for Mach/Darwin C API interop and pointer-integer conversions
+  -cppcoreguidelines-pro-type-const-cast,              # const_cast is needed when C-interface fields are const char* but owner must allocate/free
+  -cppcoreguidelines-pro-type-reinterpret-cast,        # reinterpret_cast is essential for opaque C handle patterns and Mach API types
+  -cppcoreguidelines-pro-type-vararg,                  # snprintf/printf are idiomatic and safe; std::format requires C++20
+  -cppcoreguidelines-no-malloc,                        # C-interface structs require manual memory management across the C ABI boundary
+  -cppcoreguidelines-owning-memory,                    # requires GSL dependency; C-interface code uses malloc/free directly
+  -cppcoreguidelines-non-private-member-variables-in-classes, # file-scoped classes don't benefit from enforced encapsulation
+  -cppcoreguidelines-macro-usage,                     # needed for asserts; we don't make use of macros otherwise
+]
+
+CheckOptions:
+  readability-function-cognitive-complexity.IgnoreMacros: true
+  readability-function-cognitive-complexity.Threshold: 35
+
+WarningsAsErrors: '*'
+
+ExcludeHeaderFilterRegex: '.*(include-c/).*'
