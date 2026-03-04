@@ -251,7 +251,7 @@ bool stack_trace_get_thread_info(stack_trace_t* trace, thread_t thread) {
     int result = pthread_getname_np(pthread, (char*)trace->thread_name, PTHREAD_THREAD_NAME_MAX);
 
     if (pthread == g_main_pthread) {
-        strcpy((char*)trace->thread_name, "com.apple.main-thread");
+        strlcpy((char*)trace->thread_name, "com.apple.main-thread", PTHREAD_THREAD_NAME_MAX);
     }
     
     if (result == KERN_SUCCESS) return true;
@@ -293,7 +293,8 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
     trace->timestamp = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
     trace->frame_count = 0;
 
-    void *fp, *pc = nullptr;
+    void *fp = nullptr;
+    void *pc = nullptr;
     if (!thread_get_frame_pointers(thread, &fp, &pc)) return;
 
     while (trace->frame_count < max_depth && pc != nullptr) {
@@ -312,7 +313,7 @@ void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t m
 
         // Read the next frame pointer and return address
         void* next_frame[2];
-        if (!safe_read_memory(fp, next_frame, sizeof(next_frame))) break;
+        if (!safe_read_memory(fp, static_cast<void*>(next_frame), sizeof(next_frame))) break;
 
         fp = next_frame[0];  // Next frame pointer
         pc = next_frame[1];  // Return address
@@ -460,8 +461,8 @@ void mach_sampling_profiler::main() {
         if (config.profile_current_thread_only) {
             sample_thread(pthread_mach_thread_np(target_thread), interval_nanos);
         } else {
-            thread_act_array_t threads;
-            mach_msg_type_number_t count;
+            thread_act_array_t threads = nullptr;
+            mach_msg_type_number_t count = 0;
             
             if (task_threads(mach_task_self(), &threads, &count) != KERN_SUCCESS) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -513,7 +514,7 @@ void mach_sampling_profiler::flush_buffer() {
     sample_buffer.clear();
 }
 
-} // namespace dd:profiler
+} // namespace dd::profiler
 
 extern "C" {
 
