@@ -131,6 +131,9 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.ssl)
         XCTAssertNil(event.resource.firstByte)
         XCTAssertNil(event.resource.download)
+        XCTAssertNil(event.resource.decodedBodySize)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.request)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.traceId, "64")
@@ -955,7 +958,8 @@ class RUMResourceScopeTests: XCTestCase {
                     start: resourceFetchStart.addingTimeInterval(9),
                     end: resourceFetchStart.addingTimeInterval(10)
                 ),
-                responseBodySize: (encoded: 1_500, decoded: 2_048)
+                responseBodySize: (encoded: 1_500, decoded: 2_048),
+                requestBodySize: (encoded: 512, decoded: 1_024)
             )
         )
 
@@ -1007,6 +1011,10 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.resource.firstByte?.duration, 1_000_000_000)
         XCTAssertEqual(event.resource.download?.start, 9_000_000_000)
         XCTAssertEqual(event.resource.download?.duration, 1_000_000_000)
+        XCTAssertEqual(event.resource.encodedBodySize, 1_500)
+        XCTAssertEqual(event.resource.decodedBodySize, 2_048)
+        XCTAssertEqual(event.resource.request?.encodedBodySize, 512)
+        XCTAssertEqual(event.resource.request?.decodedBodySize, 1_024)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.source, .ios)
@@ -1016,9 +1024,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
-        // Body size metrics (only response body size was provided)
-        XCTAssertEqual(event.resource.encodedBodySize, 1_500)
-        XCTAssertEqual(event.resource.decodedBodySize, 2_048)
     }
 
     func testGivenStartedResource_whenResourceReceivesMetricsWithRequestAndResponseBodySizes_itAggregatesThemInSentResourceEvent() throws {

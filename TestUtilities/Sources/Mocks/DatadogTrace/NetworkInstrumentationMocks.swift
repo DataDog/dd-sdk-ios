@@ -213,7 +213,8 @@ extension ResourceMetrics: AnyMockable {
         ssl: DateInterval? = nil,
         firstByte: DateInterval? = nil,
         download: DateInterval? = nil,
-        responseBodySize: (encoded: Int64, decoded: Int64)? = nil
+        responseBodySize: (encoded: Int64, decoded: Int64)? = nil,
+        requestBodySize: (encoded: Int64, decoded: Int64)? = nil
     ) -> Self {
         return .init(
             fetch: fetch,
@@ -223,7 +224,8 @@ extension ResourceMetrics: AnyMockable {
             ssl: ssl,
             firstByte: firstByte,
             download: download,
-            responseBodySize: responseBodySize
+            responseBodySize: responseBodySize,
+            requestBodySize: requestBodySize
         )
     }
 }

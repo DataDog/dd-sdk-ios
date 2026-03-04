@@ -73,18 +73,14 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
             return false
         }
 
-        let versionKey = LogEventEncoder.StaticCodingKeys.applicationVersion.rawValue
-        let envKey = LogEventEncoder.StaticCodingKeys.environment.rawValue
         let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
         let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
 
         core.scope(for: LogsFeature.self).eventWriteContext { context, writer in
-            let ddTags = "\(versionKey):\(context.version),\(envKey):\(context.env)"
-
             if let tags = event[tagsKey] as? String, !tags.isEmpty {
-                event[tagsKey] = "\(ddTags),\(tags)"
+                event[tagsKey] = "\(context.ddTags),\(tags)"
             } else {
-                event[tagsKey] = ddTags
+                event[tagsKey] = context.ddTags
             }
 
             if let timestampInMs = event[dateKey] as? Int {
