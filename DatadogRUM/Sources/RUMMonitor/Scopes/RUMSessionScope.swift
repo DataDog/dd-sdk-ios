@@ -159,6 +159,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Phase 1 prototype: Start memory timeseries collection for this session
         self.memoryCollector = MemoryTimeseriesCollector(
             sessionID: sessionUUID,
+            applicationID: parent.context.rumApplicationID,
             reader: VitalMemoryReader()
         )
         self.memoryCollector?.start()

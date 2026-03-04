@@ -16,6 +16,12 @@ internal class MemoryTimeseriesCollector {
     /// The session ID this collector is associated with.
     private let sessionID: RUMUUID
 
+    /// The application ID for event creation.
+    private let applicationID: String
+
+    /// Batch size for event creation (configurable for staging validation).
+    private let batchSize: Int
+
     /// Reader for memory footprint data.
     private let memoryReader: VitalMemoryReader
 
@@ -39,9 +45,18 @@ internal class MemoryTimeseriesCollector {
     ///
     /// - Parameters:
     ///   - sessionID: The RUM session ID to associate collected data with.
+    ///   - applicationID: The application ID for event creation.
+    ///   - batchSize: Batch size for event creation (configurable for staging validation). Defaults to 120 (2 minutes at 1Hz).
     ///   - reader: The memory reader to use for sampling. Defaults to VitalMemoryReader.
-    init(sessionID: RUMUUID, reader: VitalMemoryReader = VitalMemoryReader()) {
+    init(
+        sessionID: RUMUUID,
+        applicationID: String,
+        batchSize: Int = 120,
+        reader: VitalMemoryReader = VitalMemoryReader()
+    ) {
         self.sessionID = sessionID
+        self.applicationID = applicationID
+        self.batchSize = batchSize
         self.memoryReader = reader
         self.collectionQueue = DispatchQueue(
             label: "com.datadoghq.memory-timeseries",
@@ -84,11 +99,52 @@ internal class MemoryTimeseriesCollector {
         bufferQueue.async { [weak self] in
             guard let self = self else { return }
 
+            // Log final state
             DD.logger.debug("""
                 MemoryTimeseriesCollector stopped for session \(self.sessionID.rawValue). \
                 Total samples: \(self.samples.count), Failed reads: \(self.failedReadCount)
                 """)
+
+            // Create final events (for verification)
+            let events = TimeseriesEventBuilder.createEvents(
+                from: self.samples,
+                sessionID: self.sessionID,
+                applicationID: self.applicationID,
+                batchSize: self.batchSize
+            )
+
+            DD.logger.debug("""
+                Final event summary: \(events.count) event(s) created. \
+                First event: \(events.first?.data.count ?? 0) data points
+                """)
         }
+    }
+
+    /// Creates timeseries events from buffered samples.
+    ///
+    /// - Returns: Array of timeseries events formatted per backend schema.
+    /// - Note: This does NOT clear the buffer. Flushing behavior TBD in Phase 3.
+    func flushEvents() -> [TimeseriesEvent] {
+        var events: [TimeseriesEvent] = []
+
+        bufferQueue.sync {
+            guard !samples.isEmpty else { return }
+
+            // Create events using builder
+            events = TimeseriesEventBuilder.createEvents(
+                from: samples,
+                sessionID: sessionID,
+                applicationID: applicationID,
+                batchSize: batchSize
+            )
+
+            DD.logger.debug("""
+                MemoryTimeseriesCollector: Created \(events.count) timeseries event(s) \
+                from \(samples.count) samples (batch size: \(batchSize))
+                """)
+        }
+
+        return events
     }
 
     deinit {
@@ -147,6 +203,9 @@ internal class MemoryTimeseriesCollector {
         let maxFootprint = footprints.max() ?? 0
         let avgFootprint = footprints.reduce(0, +) / UInt64(footprints.count)
 
+        // Preview event creation
+        let wouldCreateEvents = (count + batchSize - 1) / batchSize
+
         DD.logger.debug("""
             Memory timeseries batch snapshot:
               Session: \(sessionID.rawValue)
@@ -154,6 +213,7 @@ internal class MemoryTimeseriesCollector {
               Timestamp range: \(firstTimestamp) - \(lastTimestamp) (\((lastTimestamp - firstTimestamp) / 1000)s)
               Estimated size: \(estimatedSizeBytes) bytes
               Memory footprint: min=\(minFootprint) bytes, max=\(maxFootprint) bytes, avg=\(avgFootprint) bytes
+              Would create: \(wouldCreateEvents) event(s) with batch size \(batchSize)
             """)
     }
 }

@@ -1113,6 +1113,7 @@
 		8DD092532F21E5EE00590EE4 /* EvaluationAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA681535D980BA99B12659B /* EvaluationAggregatorTests.swift */; };
 		8DD092542F21E5F600590EE4 /* EvaluationLoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC44AD2847746ED69201F65 /* EvaluationLoggingTests.swift */; };
 		8DD092552F21E63F00590EE4 /* FlagsEvaluationFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD117A3F5E4EFA0335A8268F /* FlagsEvaluationFeature.swift */; };
+		91C9668F95755A40E03B8C7C /* TimeseriesEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23160125CD9A32495AA7B1C9 /* TimeseriesEvent.swift */; };
 		960A0D3B2D6E2490004BB999 /* Reflector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D3A2D6E2490004BB999 /* Reflector.swift */; };
 		960A0D3C2D6E2490004BB999 /* CustomDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D382D6E2490004BB999 /* CustomDump.swift */; };
 		960A0D3D2D6E2490004BB999 /* ReflectionMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960A0D392D6E2490004BB999 /* ReflectionMirror.swift */; };
@@ -1244,6 +1245,7 @@
 		B3E46CAC2D91B3AD00BABF66 /* NetworkContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E46CAA2D91B3A400BABF66 /* NetworkContextProvider.swift */; };
 		B3E46CAE2D91B40000BABF66 /* NetworkContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E46CAD2D91B3FC00BABF66 /* NetworkContext.swift */; };
 		B3E46CAF2D91B40000BABF66 /* NetworkContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E46CAD2D91B3FC00BABF66 /* NetworkContext.swift */; };
+		C0A0F849AC5847F0D5F2B2EE /* TimeseriesEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23160125CD9A32495AA7B1C9 /* TimeseriesEvent.swift */; };
 		D2056C212BBFE05A0085BC76 /* WireframesBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2056C202BBFE05A0085BC76 /* WireframesBuilderTests.swift */; };
 		D20605A3287464F40047275C /* ContextValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A2287464F40047275C /* ContextValuePublisher.swift */; };
 		D20605A4287464F40047275C /* ContextValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A2287464F40047275C /* ContextValuePublisher.swift */; };
@@ -2907,6 +2909,7 @@
 		11F55FE82DCE501A00DE4944 /* Trace+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Trace+objc.swift"; sourceTree = "<group>"; };
 		11F59BC02EAE2180009F8579 /* LaunchInfoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchInfoPublisher.swift; sourceTree = "<group>"; };
 		1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugOTelTracingViewController.swift; sourceTree = "<group>"; };
+		23160125CD9A32495AA7B1C9 /* TimeseriesEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimeseriesEvent.swift; sourceTree = "<group>"; };
 		261255862E2167E40015042B /* BaggageHeaderMerger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaggageHeaderMerger.swift; sourceTree = "<group>"; };
 		261255892E2167F10015042B /* BaggageHeaderMergerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaggageHeaderMergerTests.swift; sourceTree = "<group>"; };
 		265496D22D81C5AE0094B6E2 /* RUMAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAccount.swift; sourceTree = "<group>"; };
@@ -3929,7 +3932,6 @@
 		D2FB1256292E0F0B005B13F8 /* TrackingConsentPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsentPublisherTests.swift; sourceTree = "<group>"; };
 		D2FB125C292FBB56005B13F8 /* Datadog+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Datadog+Internal.swift"; sourceTree = "<group>"; };
 		D2FCA238271D896E0020286F /* SwiftUIExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIExtensions.swift; sourceTree = "<group>"; };
-		DBBC94814AC23F74778A81A0 /* TimeseriesEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimeseriesEvent.swift; sourceTree = "<group>"; };
 		E11625D727B681D200E428C6 /* CITestIntegration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CITestIntegration.swift; sourceTree = "<group>"; };
 		E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CITestIntegrationTests.swift; sourceTree = "<group>"; };
 		E179FB4D28F80A6400CC2698 /* PerformanceMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceMetric.swift; sourceTree = "<group>"; };
@@ -6478,6 +6480,7 @@
 				61C2C21124C5951400C0321C /* RUMViewScope.swift */,
 				61494B7827F3522C0082BBCC /* Utils */,
 				537180421921468CA6D91772 /* MemoryTimeseriesCollector.swift */,
+				23160125CD9A32495AA7B1C9 /* TimeseriesEvent.swift */,
 			);
 			path = Scopes;
 			sourceTree = "<group>";
@@ -6781,7 +6784,6 @@
 		74792539113005103CC39D32 /* Scopes */ = {
 			isa = PBXGroup;
 			children = (
-				DBBC94814AC23F74778A81A0 /* TimeseriesEvent.swift */,
 			);
 			name = Scopes;
 			sourceTree = "<group>";
@@ -10607,6 +10609,7 @@
 				D23F8E8F29DDCD28001CFAE8 /* RUMUUIDGenerator.swift in Sources */,
 				61DCC84F2C071DCD00CB59E5 /* TelemetryInterceptor.swift in Sources */,
 				F990D4D437E89C104ECF9831 /* MemoryTimeseriesCollector.swift in Sources */,
+				C0A0F849AC5847F0D5F2B2EE /* TimeseriesEvent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -11101,6 +11104,7 @@
 				D29A9F5229DD85BB005C54A4 /* RUMUUIDGenerator.swift in Sources */,
 				61DCC84E2C071DCD00CB59E5 /* TelemetryInterceptor.swift in Sources */,
 				F003001DCC474CDA8AB778D2 /* MemoryTimeseriesCollector.swift in Sources */,
+				91C9668F95755A40E03B8C7C /* TimeseriesEvent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
