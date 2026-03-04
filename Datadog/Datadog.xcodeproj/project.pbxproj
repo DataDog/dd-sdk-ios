@@ -3929,6 +3929,7 @@
 		D2FB1256292E0F0B005B13F8 /* TrackingConsentPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsentPublisherTests.swift; sourceTree = "<group>"; };
 		D2FB125C292FBB56005B13F8 /* Datadog+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Datadog+Internal.swift"; sourceTree = "<group>"; };
 		D2FCA238271D896E0020286F /* SwiftUIExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIExtensions.swift; sourceTree = "<group>"; };
+		DBBC94814AC23F74778A81A0 /* TimeseriesEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimeseriesEvent.swift; sourceTree = "<group>"; };
 		E11625D727B681D200E428C6 /* CITestIntegration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CITestIntegration.swift; sourceTree = "<group>"; };
 		E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CITestIntegrationTests.swift; sourceTree = "<group>"; };
 		E179FB4D28F80A6400CC2698 /* PerformanceMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceMetric.swift; sourceTree = "<group>"; };
@@ -6777,12 +6778,28 @@
 			path = RUMEventOutputs;
 			sourceTree = "<group>";
 		};
+		74792539113005103CC39D32 /* Scopes */ = {
+			isa = PBXGroup;
+			children = (
+				DBBC94814AC23F74778A81A0 /* TimeseriesEvent.swift */,
+			);
+			name = Scopes;
+			sourceTree = "<group>";
+		};
 		864A707F2DE092AD00AC0619 /* RUMContext */ = {
 			isa = PBXGroup;
 			children = (
 				864A707E2DE092AD00AC0619 /* AccessibilityReaderTests.swift */,
 			);
 			path = RUMContext;
+			sourceTree = "<group>";
+		};
+		8E1A53B00CB3DC2A4B0BD175 /* RUMMonitor */ = {
+			isa = PBXGroup;
+			children = (
+				74792539113005103CC39D32 /* Scopes */,
+			);
+			name = RUMMonitor;
 			sourceTree = "<group>";
 		};
 		960B26BA2D03541900D7196F /* SwiftUI */ = {
@@ -6940,6 +6957,14 @@
 				9E986C2F2677B91400D62490 /* VitalRefreshRateReaderTests.swift */,
 			);
 			path = RUMVitals;
+			sourceTree = "<group>";
+		};
+		CB9AEC496C63EA83C5D3C0F6 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				8E1A53B00CB3DC2A4B0BD175 /* RUMMonitor */,
+			);
+			name = Sources;
 			sourceTree = "<group>";
 		};
 		D207317D29A5226A00ECBF94 /* DatadogLogs */ = {
@@ -7447,6 +7472,7 @@
 				6174D60E2BFDEA1F00EC7469 /* SDKMetrics */,
 				D29A9F8B29DD860A005C54A4 /* Utils */,
 				618DCFD524C7264100589570 /* UUIDs */,
+				CB9AEC496C63EA83C5D3C0F6 /* Sources */,
 			);
 			name = DatadogRUM;
 			path = ../DatadogRUM/Sources;
