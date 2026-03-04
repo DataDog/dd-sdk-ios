@@ -1,6 +1,6 @@
 all: env-check repo-setup dependencies templates
 .PHONY: env-check repo-setup dependencies clean templates \
-		lint license-check \
+		lint lint-cpp license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all \
 		ui-test ui-test-all ui-test-podinstall \
 		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-snapshot-tests-open \
@@ -47,6 +47,10 @@ clean-carthage:
 lint:
 	@$(ECHO_TITLE) "make lint"
 	./tools/lint/run-linter.sh
+
+lint-cpp:
+	@$(ECHO_TITLE) "make lint-cpp"
+	./tools/lint/run-cpp-linter.sh
 
 license-check:
 	@$(ECHO_TITLE) "make license-check"

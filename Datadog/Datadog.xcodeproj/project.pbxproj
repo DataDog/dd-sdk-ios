@@ -8366,6 +8366,7 @@
 			buildConfigurationList = D229FF862E3BC5B8009CCD62 /* Build configuration list for PBXNativeTarget "DatadogProfiling tvOS" */;
 			buildPhases = (
 				D229FF712E3BC5B8009CCD62 /* Headers */,
+				11C4E5952F584E46002196F4 /* ⚙️ Run cpp linter */,
 				D229FF722E3BC5B8009CCD62 /* Sources */,
 				D229FF832E3BC5B8009CCD62 /* Frameworks */,
 				D229FF852E3BC5B8009CCD62 /* Resources */,
@@ -8385,6 +8386,7 @@
 			buildConfigurationList = D229FFA32E3BC6D4009CCD62 /* Build configuration list for PBXNativeTarget "DatadogProfiling iOS" */;
 			buildPhases = (
 				D229FF8E2E3BC6D4009CCD62 /* Headers */,
+				11C4E5942F583F84002196F4 /* ⚙️ Run cpp linter */,
 				D229FF8F2E3BC6D4009CCD62 /* Sources */,
 				D229FFA02E3BC6D4009CCD62 /* Frameworks */,
 				D229FFA22E3BC6D4009CCD62 /* Resources */,
@@ -9345,6 +9347,46 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif which swiftlint >/dev/null; then\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-linter.sh\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		11C4E5942F583F84002196F4 /* ⚙️ Run cpp linter */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "⚙️ Run cpp linter";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif [ \"$CARTHAGE\" == \"YES\" ]; then\n  echo \"Skipping linting for carthage build...\"\nelse\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-cpp-linter.sh\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		11C4E5952F584E46002196F4 /* ⚙️ Run cpp linter */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "⚙️ Run cpp linter";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif [ \"$CARTHAGE\" == \"YES\" ]; then\n  echo \"Skipping linting for carthage build...\"\nelse\n  cd ${SOURCE_ROOT}/..\n  ./tools/lint/run-cpp-linter.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		61133C772423A4C300786299 /* ⚙️ Run linter */ = {
