@@ -38,6 +38,8 @@ grep "test-ios-all" Makefile -A 20  # shows all iOS schemes used in CI
 
 ### 2. Xcode MCP — selective, fast, single test or class
 
+Requires **Xcode 26.3+** with the Xcode MCP server enabled in Claude Code settings. Verify it's active by checking that `XcodeListWindows` is available — if not, fall back to `xcodebuild -only-testing` for selective tests.
+
 `RunSomeTests` is limited to targets in the **currently active Xcode scheme**. The MCP has no tool to switch schemes — that must be done manually in Xcode.
 
 **Get the tabIdentifier** (identifies the open Xcode workspace window):
@@ -54,7 +56,7 @@ GetTestList(tabIdentifier: <tabIdentifier>)
 **If the test is in the active scheme**, run it directly:
 ```
 RunSomeTests(
-  tabIdentifier: "windowtab1",
+  tabIdentifier: <tabIdentifier>,
   tests: [{
     targetName: "<targetName from GetTestList>",
     testIdentifier: "<TestClass>/<testMethod>()"
@@ -73,7 +75,7 @@ xcodebuild test \
 
 To find which module owns a test:
 ```
-XcodeGrep(tabIdentifier: "windowtab1", pattern: "func <testName>", outputMode: "filesWithMatches")
+XcodeGrep(tabIdentifier: <tabIdentifier>, pattern: "func <testName>", outputMode: "filesWithMatches")
 # path reveals the module: DatadogInternal/Tests/... → scheme "DatadogInternal iOS"
 ```
 

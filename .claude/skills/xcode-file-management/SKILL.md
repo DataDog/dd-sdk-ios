@@ -9,6 +9,10 @@ description: Use when adding, removing, moving, or renaming Swift source files i
 
 The dd-sdk-ios project is both an SPM package **and** an Xcode workspace with `.pbxproj` files. SPM builds discover files automatically, but **Xcode does not** — it requires explicit registration in `.pbxproj`. The Xcode MCP server (available from Xcode 26.3+) handles this automatically. Always use it.
 
+## Prerequisites
+
+The Xcode MCP server requires **Xcode 26.3+** and must be enabled in Claude Code settings. Verify it's active by checking that `XcodeListWindows` is available. If not, stop and ask the user to enable the Xcode MCP server before proceeding with file operations.
+
 ## The Rule
 
 **Never use `Write`, `Bash mv/mkdir/rm`, or `Edit` for file creation, deletion, or movement in this project.**
@@ -66,7 +70,6 @@ Write(file_path: ".../DatadogLogs/Sources/LogBatcher.swift", content: "...")
 
 ```python
 XcodeListWindows()  # → returns tabIdentifier for open workspace
-# For dd-sdk-ios, tabIdentifier is "windowtab1" when Datadog.xcworkspace is open
 ```
 
 ## Path Format
@@ -74,7 +77,7 @@ XcodeListWindows()  # → returns tabIdentifier for open workspace
 Xcode MCP uses **project navigator paths**, not filesystem paths. Use `XcodeLS` to discover them:
 
 ```python
-XcodeLS(tabIdentifier: "windowtab1", path: "DatadogLogs")
+XcodeLS(tabIdentifier: <tab>, path: "DatadogLogs")
 # → ["ConsoleLogger.swift", "Feature/LogsFeature.swift", ...]
 # Note: paths are relative to the Xcode group, not the filesystem root
 ```
