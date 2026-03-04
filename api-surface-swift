@@ -1278,6 +1278,7 @@ public final class FlagsClient
     public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
     public static func shared(named name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
 [?] extension FlagsClient: FlagsClientProtocol
+    public var state: FlagsStateObservable
     public func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
 [?] extension FlagsClient: FlagsClientInternal
@@ -1290,6 +1291,7 @@ public protocol FlagsClientInternal: AnyObject
     public func getFlagAssignments() -> [String: FlagAssignment]?
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
 public protocol FlagsClientProtocol: AnyObject
+    var state: FlagsStateObservable
     func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)
     func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
 [?] extension FlagsClientProtocol
@@ -1308,6 +1310,18 @@ public protocol FlagsClientProtocol: AnyObject
     public func getIntegerDetails(key: String, defaultValue: Int) -> FlagDetails<Int>
     public func getDoubleDetails(key: String, defaultValue: Double) -> FlagDetails<Double>
     public func getObjectDetails(key: String, defaultValue: AnyValue) -> FlagDetails<AnyValue>
+public enum FlagsClientState: Equatable
+    case notReady
+    case ready
+    case reconciling
+    case stale
+    case error
+public protocol FlagsStateListener: AnyObject
+    func flagsStateDidChange(_ newState: FlagsClientState)
+public protocol FlagsStateObservable: AnyObject
+    var currentState: FlagsClientState
+    func addListener(_ listener: FlagsStateListener)
+    func removeListener(_ listener: FlagsStateListener)
 public enum Flags
     public struct Configuration
         public var gracefulModeEnabled: Bool
