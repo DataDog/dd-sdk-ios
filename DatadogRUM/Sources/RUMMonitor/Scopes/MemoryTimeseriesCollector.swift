@@ -154,7 +154,12 @@ internal class MemoryTimeseriesCollector {
             logEventDetails(events)
 
             // Send events to DatadogCore
-            for event in events {
+            for (index, event) in events.enumerated() {
+                // Log JSON for first event only (validation)
+                if index == 0 {
+                    logEncodedJSON(event)
+                }
+
                 writer.write(value: event)
                 eventCount += 1
 
@@ -282,6 +287,26 @@ internal class MemoryTimeseriesCollector {
               Memory footprint: min=\(minFootprint) bytes, max=\(maxFootprint) bytes, avg=\(avgFootprint) bytes
               Would create: \(wouldCreateEvents) event(s) with batch size \(batchSize)
             """)
+    }
+
+    /// Logs JSON-encoded event for schema validation.
+    ///
+    /// - Parameter event: Event to encode and log
+    private func logEncodedJSON(_ event: TimeseriesEvent) {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+
+        do {
+            let jsonData = try encoder.encode(event)
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                DD.logger.debug("""
+                    Timeseries event JSON:
+                    \(jsonString)
+                    """)
+            }
+        } catch {
+            DD.logger.error("Failed to encode timeseries event to JSON: \(error)")
+        }
     }
 
     /// Logs detailed event information for debugging and validation.
