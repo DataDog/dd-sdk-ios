@@ -14,9 +14,17 @@ while :; do
     shift
 done
 
-CLANG_TIDY="$(brew --prefix llvm 2>/dev/null)/bin/clang-tidy"
-if [ ! -x "$CLANG_TIDY" ]; then
-	echo "error: clang-tidy not found. Install with: brew install llvm"; exit 1
+# Find clang-tidy in common Homebrew locations (Apple Silicon and Intel)
+CLANG_TIDY=""
+for prefix in /opt/homebrew /usr/local; do
+    if [ -x "${prefix}/opt/llvm/bin/clang-tidy" ]; then
+        CLANG_TIDY="${prefix}/opt/llvm/bin/clang-tidy"
+        break
+    fi
+done
+
+if [ -z "$CLANG_TIDY" ]; then
+	echo "warning: clang-tidy not found. Install with: brew install llvm. Skipping C++ linting."; exit 0
 fi
 
 SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path)
