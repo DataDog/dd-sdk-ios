@@ -43,6 +43,20 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
     }
 
+    // MARK: - Timeseries Staging Configuration
+    // Timeseries events are being sent to staging for Phase 2 validation.
+    // Backend team has enabled schema in staging for testing.
+    //
+    // Staging validation goals:
+    // - Query-side performance characteristics
+    // - Event size impact with real data volumes
+    // - Index efficiency for nested fields (timeseries.name, start/end filters)
+    //
+    // Configuration:
+    // - Batch size: 120 points (2 minutes at 1Hz) - configurable for experimentation
+    // - Flushing: Every batchSize samples
+    // - Buffer: Cleared after successful send
+
     /// Phase 1 prototype: Memory timeseries collector for session-scoped memory sampling
     private var memoryCollector: MemoryTimeseriesCollector?
 
@@ -324,6 +338,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             } else if !hasActiveView {
                 DD.logger.warn("No active view found to add the loading time.")
                 dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: true, noView: false, overwritten: command.overwrite)))))
+            }
+        }
+
+        // Phase 2 prototype: Flush timeseries events when batch size reached
+        if let collector = memoryCollector, collector.shouldFlush() {
+            let sentCount = collector.flushEvents(writer: writer)
+            if sentCount > 0 {
+                DD.logger.debug("Flushed \(sentCount) timeseries event(s) to staging")
             }
         }
 

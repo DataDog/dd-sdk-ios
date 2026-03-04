@@ -120,18 +120,30 @@ internal class MemoryTimeseriesCollector {
         }
     }
 
-    /// Creates timeseries events from buffered samples.
+    /// Creates and sends timeseries events from buffered samples.
     ///
-    /// - Returns: Array of timeseries events formatted per backend schema.
-    /// - Note: This does NOT clear the buffer. Flushing behavior TBD in Phase 3.
-    func flushEvents() -> [TimeseriesEvent] {
-        var events: [TimeseriesEvent] = []
+    /// Validation checklist (for staging):
+    /// - [ ] JSON uses snake_case (session_id, application_id, data_point_value)
+    /// - [ ] Timestamps are in nanoseconds
+    /// - [ ] Event has session_id and application_id (NOT view.id)
+    /// - [ ] name field uses snake_case (memory_usage not memory.usage)
+    /// - [ ] data array contains timestamp + data_point_value per point
+    /// - [ ] Event type is "timeseries"
+    ///
+    /// - Parameters:
+    ///   - writer: Writer for sending events to DatadogCore
+    /// - Returns: Number of events sent.
+    func flushEvents(writer: Writer) -> Int {
+        var eventCount = 0
 
         bufferQueue.sync {
             guard !samples.isEmpty else { return }
 
-            // Create events using builder
-            events = TimeseriesEventBuilder.createEvents(
+            // Only flush if we have enough samples for at least one batch
+            guard samples.count >= batchSize else { return }
+
+            // Create events
+            let events = TimeseriesEventBuilder.createEvents(
                 from: samples,
                 sessionID: sessionID,
                 applicationID: applicationID,
@@ -140,9 +152,50 @@ internal class MemoryTimeseriesCollector {
 
             DD.logger.debug("MemoryTimeseriesCollector: Created \(events.count) timeseries event(s)")
             logEventDetails(events)
+
+            // Send events to DatadogCore
+            for event in events {
+                writer.write(value: event)
+                eventCount += 1
+
+                DD.logger.debug("""
+                    Timeseries event sent:
+                      ID: \(event.id)
+                      Session: \(event.sessionId)
+                      Data points: \(event.data.count)
+                    """)
+            }
+
+            // Clear buffer after successful flush
+            if eventCount > 0 {
+                samples.removeAll()
+                DD.logger.debug("Buffer cleared after sending \(eventCount) event(s)")
+            }
+
+            // Log staging verification data
+            DD.logger.debug("""
+                ========================================
+                STAGING VERIFICATION DATA
+                ========================================
+                Events sent: \(eventCount)
+                Session ID: \(sessionID.rawValue)
+                Application ID: \(applicationID)
+
+                To verify in staging:
+                1. Query events by session_id: \(sessionID.rawValue)
+                2. Expected event count: \(eventCount)
+                3. Check event name: memory_usage
+                4. Verify data points count: ~\(batchSize) per event
+
+                Query example:
+                SELECT * FROM timeseries_events
+                WHERE session_id = '\(sessionID.rawValue)'
+                ORDER BY start
+                ========================================
+                """)
         }
 
-        return events
+        return eventCount
     }
 
     deinit {
@@ -150,6 +203,17 @@ internal class MemoryTimeseriesCollector {
     }
 
     // MARK: - Private
+
+    /// Checks if buffer should be flushed (batch size reached).
+    ///
+    /// - Returns: True if buffer has at least batchSize samples ready to flush.
+    func shouldFlush() -> Bool {
+        var result = false
+        bufferQueue.sync {
+            result = samples.count >= batchSize
+        }
+        return result
+    }
 
     /// Collects a single memory sample.
     ///
@@ -176,6 +240,11 @@ internal class MemoryTimeseriesCollector {
             guard let self = self else { return }
 
             self.samples.append((timestamp: timestampMs, footprint: UInt64(footprint)))
+
+            // Log when batch size reached (ready to flush)
+            if self.samples.count == self.batchSize {
+                DD.logger.debug("MemoryTimeseriesCollector: Batch size reached (\(self.batchSize) samples). Ready to flush.")
+            }
 
             // Log batch snapshots every 120 samples (~2 minutes at 1/sec)
             if self.samples.count % 120 == 0 {
