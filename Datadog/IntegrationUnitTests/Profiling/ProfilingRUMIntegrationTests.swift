@@ -20,8 +20,8 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        ctor_profiler_stop()
-        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_stop()
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         let launchInfo: LaunchInfo = .mockWith(processLaunchDate: Date())
         core = DatadogCoreProxy(
@@ -35,8 +35,8 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
     override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
-        ctor_profiler_stop()
-        delete_profiling_defaults()
+        dd_profiler_stop()
+        dd_delete_profiling_defaults()
 
         super.tearDown()
     }
@@ -61,7 +61,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         let profilingEvents = try XCTUnwrap(core.waitAndReturnEventsMetadata(ofFeature: ProfilerFeature.name, ofType: ProfileEvent.self))
         XCTAssertTrue(profilingEvents.isEmpty)
 
-        XCTAssertTrue(is_profiling_enabled())
+        XCTAssertTrue(dd_is_profiling_enabled())
     }
 
     func testWhenRUMSendsTTIDMessage_itSendsAProfileEvent() throws {
@@ -101,7 +101,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         XCTAssertFalse(profilingEvent.tags.isEmpty)
         XCTAssertFalse(profilingEvent.additionalAttributes!.isEmpty)
 
-        XCTAssertTrue(is_profiling_enabled())
+        XCTAssertTrue(dd_is_profiling_enabled())
     }
 
     func testWhenRUMDoesNotSendTTIDMessage_itDoesNotSendAProfileEvent() throws {
@@ -128,6 +128,6 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         let profilingEvents = try XCTUnwrap(core.waitAndReturnEventsMetadata(ofFeature: ProfilerFeature.name, ofType: ProfileEvent.self))
         XCTAssertTrue(profilingEvents.isEmpty)
 
-        XCTAssertTrue(is_profiling_enabled())
+        XCTAssertTrue(dd_is_profiling_enabled())
     }
 }

@@ -7,7 +7,7 @@
 #ifndef DD_PROFILER_MACH_SAMPLING_PROFILER_H_
 #define DD_PROFILER_MACH_SAMPLING_PROFILER_H_
 
-#include "mach_profiler.h"
+#include "dd_profiler.h"
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
@@ -20,6 +20,23 @@
 #include <mach/thread_info.h>
 #include <vector>
 #include <pthread.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * Sets the main thread pthread identifier.
+ *
+ * This function should be called from the main thread early in the process lifecycle.
+ *
+ * @param thread The pthread identifier for the main thread
+ */
+void set_main_thread(pthread_t thread);
+
+#ifdef __cplusplus
+}
+#endif
 
 namespace dd::profiler {
 

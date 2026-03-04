@@ -4,21 +4,33 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#ifndef DD_PROFILER_CTOR_PROFILER_TESTING_H_
-#define DD_PROFILER_CTOR_PROFILER_TESTING_H_
+#ifndef DD_PROFILER_TESTING_H_
+#define DD_PROFILER_TESTING_H_
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #if !TARGET_OS_WATCH
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * @brief Manually starts constructor profiling for testing purposes
+ * Checks if profiling is enabled in UserDefaults.
+ * @return true if profiling is enabled, false otherwise
+ */
+bool dd_is_profiling_enabled(void);
+
+/**
+ * Deletes the profiling defaults from UserDefaults.
+ */
+void dd_delete_profiling_defaults(void);
+
+/**
+ * @brief Manually starts profiling for testing purposes
  *
  * This function bypasses the automatic constructor-based startup mechanism and allows
  * manual control over profiling for testing scenarios.
@@ -38,15 +50,15 @@ extern "C" {
  *                   - Timeout checking occurs during sample processing
  *
  * @note Safe to call multiple times - destroys existing instance before creating new one
- * @note Check `ctor_profiler_get_status()` for detailed status after calling
+ * @note Check `dd_profiler_get_status()` for detailed status after calling
  * @note Designed for unit tests, integration tests, and development builds
  *
  * @warning FOR TESTING USE ONLY - Not intended for production environments
  * @warning May impact application performance if used inappropriately
  *
- * @see `ctor_profiler_get_status()`, `ctor_profiler_stop()`, `ctor_profiler_get_profile()`
+ * @see `dd_profiler_get_status()`, `dd_profiler_stop()`, `dd_profiler_get_profile()`
  */
-void ctor_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns);
+void dd_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns);
 
 #ifdef __cplusplus
 }
@@ -55,4 +67,4 @@ void ctor_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t
 #endif // !TARGET_OS_WATCH
 #endif // __APPLE__
 
-#endif // DD_PROFILER_CTOR_PROFILER_TESTING_H_
+#endif // DD_PROFILER_TESTING_H_
