@@ -14,7 +14,7 @@ description: Use when creating a pull request in dd-sdk-ios. Use when writing PR
 
 ## Creating via gh
 
-The repo has a PR template at `.github/PULL_REQUEST_TEMPLATE.md` with three sections: **What and why?**, **How?**, and a **Review checklist**. Write the body inline following that structure:
+The repo has a PR template at `.github/PULL_REQUEST_TEMPLATE.md`. Read it and fill in all sections:
 
 ```bash
 gh pr create \
@@ -26,6 +26,13 @@ gh pr create \
 
 **Never add `Co-Authored-By: Claude` or any AI co-author trailer** to the PR body or commits.
 
+## Before Opening
+
+- [ ] `make lint` passes
+- [ ] `make test-ios-all` passes
+- [ ] `make api-surface-verify` passes (if public API changed)
+- [ ] CHANGELOG updated (if user-facing change)
+
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -33,4 +40,3 @@ gh pr create \
 | Wrong base branch | Always `develop`, not `main` or `master` |
 | Missing `[PROJECT-XXXX]` title prefix | Required for internal work |
 | Skipping review checklist items | Fill out checklist before marking PR ready |
-| No CHANGELOG entry for user-facing changes | Add entry to `CHANGELOG.md` |

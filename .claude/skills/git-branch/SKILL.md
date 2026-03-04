@@ -18,13 +18,24 @@ Branch names follow: `<author>/<JIRA-TICKET>/<descriptive-slug>`
 - `bplasovska/RUM-14563/lowercase-header-keys`
 - `kelvin/RUM-13420/cache-ddtags`
 
-## Base Branch
+## Branch Model
 
-Always branch from `develop` (not `main` or `master`):
+The repo follows **git-flow**: `master` is production, `develop` is the integration branch.
+
+For a single PR, branch from `develop`:
 
 ```bash
 git checkout -b <author>/<JIRA-TICKET>/<slug> develop
 ```
+
+For large contributions split across multiple PRs, create a shared feature branch first, then branch each PR from it:
+
+```bash
+git checkout -b feature/<feature-slug> develop          # shared target branch
+git checkout -b <author>/<JIRA-TICKET>/<slug> feature/<feature-slug>  # per-PR branch
+```
+
+Each per-PR branch targets `feature/<feature-slug>`. Only the final feature branch is merged into `develop`.
 
 ## No JIRA Ticket?
 

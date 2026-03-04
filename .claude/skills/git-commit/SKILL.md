@@ -23,14 +23,6 @@ description: Use when committing changes in dd-sdk-ios. Use when writing commit 
 
 Third-party contributions skip the prefix.
 
-## Before Committing
-
-```bash
-make lint          # Run SwiftLint
-make test-ios-all  # Run all iOS unit tests
-make api-surface-verify  # If public API changed
-```
-
 ## Commit Command
 
 ```bash
@@ -47,6 +39,5 @@ The `-S` flag applies your configured GPG/SSH signature.
 |---------|-----|
 | Missing signature | Always use `-S`; check `git log --show-signature -1` |
 | Missing `[PROJECT-XXXX]` prefix | Required for internal dev; skipped for third-party |
-| Committing without running lint/tests | Run `make lint` and `make test-ios-all` first |
 | New files missing from pbxproj | Use Xcode MCP tools — see `xcode-file-management` skill |
 | Adding `Co-Authored-By: Claude` trailer | Never add AI co-author trailers in this repo |
