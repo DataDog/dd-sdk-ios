@@ -45,11 +45,11 @@ internal class MemoryTimeseriesCollector {
         self.memoryReader = reader
         self.collectionQueue = DispatchQueue(
             label: "com.datadoghq.memory-timeseries",
-            target: .global(qos: .utility)
+            target: .global(qos: .userInitiated)
         )
         self.bufferQueue = DispatchQueue(
             label: "com.datadoghq.memory-timeseries-buffer",
-            target: .global(qos: .utility)
+            target: .global(qos: .userInitiated)
         )
     }
 
