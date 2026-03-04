@@ -153,16 +153,22 @@ class dd_profiler {
 public:
     dd_profiler_status_t status = DD_PROFILER_STATUS_NOT_STARTED;
 
-    dd_profiler(
+    explicit dd_profiler(
         double sample_rate = 0.0,
         bool is_prewarming = false,
         int64_t timeout_ns = DD_PROFILER_TIMEOUT_NS
     ) : sample_rate(sample_rate), is_prewarming(is_prewarming), timeout_ns(timeout_ns) {}
 
+    // Non-copyable, non-movable (prevents double-free of raw pointers)
+    dd_profiler(const dd_profiler&) = delete;
+    dd_profiler& operator=(const dd_profiler&) = delete;
+    dd_profiler(dd_profiler&&) = delete;
+    dd_profiler& operator=(dd_profiler&&) = delete;
+
     ~dd_profiler() {
-        if (profiler) delete profiler;
-        if (profile) delete profile;
-        if (image_cache) delete image_cache;
+        delete profiler;
+        delete profile;
+        delete image_cache;
     }
 
     /**
@@ -229,11 +235,6 @@ public:
             return;
         }
     }
-
-    // Non-copyable
-    dd_profiler(const dd_profiler&) = delete;
-    dd_profiler& operator=(const dd_profiler&) = delete;
-
 
     void stop() {
         if (!profiler) return;
