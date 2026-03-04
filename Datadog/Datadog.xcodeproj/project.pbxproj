@@ -8743,6 +8743,8 @@
 				D2B151BB2E3BD48C008879F0 /* PBXTargetDependency */,
 			);
 			name = "DatadogProfilingTests iOS";
+			packageProductDependencies = (
+			);
 			productName = DatadogProfilingTests;
 			productReference = D2C9F0392E3B89D7008397FD /* DatadogProfilingTests iOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -8762,6 +8764,8 @@
 				D2B151BD2E3BD496008879F0 /* PBXTargetDependency */,
 			);
 			name = "DatadogProfilingTests tvOS";
+			packageProductDependencies = (
+			);
 			productName = DatadogProfilingTests;
 			productReference = D2C9F30F2E3B8B7C008397FD /* DatadogProfilingTests tvOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
