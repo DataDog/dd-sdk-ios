@@ -7,6 +7,8 @@
 # 3.8.0 / 12-03-2026
 
 - [FEATURE] Add OOB scroll and swipe action tracking. See [#2717][]
+- [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
+- [IMPROVEMENT] Rename `DDRUMErrorEventErrorMeta` to `DDRUMErrorEventErrorMetaInfo`, add support of custom Objective-C runtime names for generated RUM models. See [#2705][]
 - [FEATURE] Add `trackResourceHeaders` configuration to capture HTTP request and response headers in RUM Resource events. See [#2721][]
 - [FEATURE] RUM Resources will now be augmented with the currently active span information, specifically the parent span and trace IDs, and sampling priority and decision maker. See [#2726][]
 - [IMPROVEMENT] Rename `DDRUMErrorEventErrorMeta` to `DDRUMErrorEventErrorMetaInfo`, add support of custom Objective-C runtime names for generated RUM models. See [#2705][]
@@ -1082,6 +1084,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
 [#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
 [#2751]: https://github.com/DataDog/dd-sdk-ios/pull/2751
+[#2719]: https://github.com/DataDog/dd-sdk-ios/pull/2719
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
