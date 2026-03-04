@@ -138,10 +138,8 @@ internal class MemoryTimeseriesCollector {
                 batchSize: batchSize
             )
 
-            DD.logger.debug("""
-                MemoryTimeseriesCollector: Created \(events.count) timeseries event(s) \
-                from \(samples.count) samples (batch size: \(batchSize))
-                """)
+            DD.logger.debug("MemoryTimeseriesCollector: Created \(events.count) timeseries event(s)")
+            logEventDetails(events)
         }
 
         return events
@@ -215,5 +213,44 @@ internal class MemoryTimeseriesCollector {
               Memory footprint: min=\(minFootprint) bytes, max=\(maxFootprint) bytes, avg=\(avgFootprint) bytes
               Would create: \(wouldCreateEvents) event(s) with batch size \(batchSize)
             """)
+    }
+
+    /// Logs detailed event information for debugging and validation.
+    ///
+    /// - Parameter events: Events to inspect
+    private func logEventDetails(_ events: [TimeseriesEvent]) {
+        for (index, event) in events.enumerated() {
+            let dataCount = event.data.count
+            let firstTimestamp = event.data.first?.timestamp ?? 0
+            let lastTimestamp = event.data.last?.timestamp ?? 0
+            let durationMs = (lastTimestamp - firstTimestamp) / 1_000_000 // ns → ms
+
+            let firstValue = event.data.first?.dataPointValue ?? 0
+            let lastValue = event.data.last?.dataPointValue ?? 0
+            let avgValue = event.data.map { $0.dataPointValue }.reduce(0, +) / Double(dataCount)
+
+            DD.logger.debug("""
+                Timeseries Event [\(index + 1)/\(events.count)]:
+                  Type: \(event.type)
+                  ID: \(event.id)
+                  Name: \(event.name)
+                  Session: \(event.sessionId)
+                  Application: \(event.applicationId)
+                  Duration: \(durationMs)ms
+                  Data points: \(dataCount)
+                  Value range: \(Int(firstValue)) → \(Int(lastValue)) bytes (avg: \(Int(avgValue)))
+                  Start timestamp: \(firstTimestamp) ns
+                  End timestamp: \(lastTimestamp) ns
+                """)
+
+            // Sample first 3 data points for validation
+            if dataCount > 0 {
+                let samplePoints = event.data.prefix(3)
+                DD.logger.debug("""
+                  Sample data points:
+                  \(samplePoints.map { "  [\($0.timestamp)]: \(Int($0.dataPointValue)) bytes" }.joined(separator: "\n"))
+                  """)
+            }
+        }
     }
 }
