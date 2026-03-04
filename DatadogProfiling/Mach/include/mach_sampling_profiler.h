@@ -102,12 +102,12 @@ protected:
     /**
      * @brief Thread handle for the sampling thread
      */
-    pthread_t sampling_thread;
+    pthread_t sampling_thread{};
 
     /**
      * @brief Thread to profile when in single-thread mode
      */
-    pthread_t target_thread;  
+    pthread_t target_thread{};  
 
     /**
      * @brief Buffer for collecting stack traces
