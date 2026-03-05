@@ -23,15 +23,12 @@ internal final class ActiveSpanProviderReceiver: FeatureMessageReceiver, ActiveS
     private(set) var activeSpanProvider: ActiveSpanProvider?
 
     func receive(message: FeatureMessage, from core: any DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .context(let datadogContext):
+        if case let .context(datadogContext) = message {
             _activeSpanProvider.mutate {
                 $0 = datadogContext.additionalContext(ofType: ActiveSpanProviderAdditionalContext.self)
             }
-
-            return true
-        default:
-            return false
         }
+
+        return false
     }
 }
