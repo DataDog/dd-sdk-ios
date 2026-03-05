@@ -11,7 +11,7 @@
 // It serializes recording work and intentionally drops new scheduling requests while
 // a capture task is in flight to avoid re-entrancy. The current pipeline scaffolding
 // captures a snapshot, removes invisible branches, flattens the tree, and culls fully
-// obscured layers before moving to rendering/processing stages.
+// obscured layers before image rendering and wireframe generation.
 
 #if os(iOS)
 import Foundation
@@ -71,15 +71,26 @@ extension LayerRecorder {
         let elapsed = timeSource.now - startTime
         let remaining = max(0, timeoutInterval - elapsed)
 
-        _ = await layerImageRenderer.renderImages(
+        let layerImages = await layerImageRenderer.renderImages(
             for: targetSnapshots,
             changes: changes,
             rootLayer: layerTreeSnapshot.root.layer,
             timeoutInterval: remaining
         )
 
+        let wireframeBuilder = LayerWireframeBuilder()
+        let output = wireframeBuilder.createWireframes(
+            for: targetSnapshots,
+            layerImages: layerImages,
+            webViewSlotIDs: layerTreeSnapshot.webViewSlotIDs
+        )
+
+        guard !output.wireframes.isEmpty else {
+            return
+        }
+
         // Pending stages:
-        // - Process layer tree snapshots
+        // - Hand over `output` to the layer snapshot processor.
     }
 }
 #endif
