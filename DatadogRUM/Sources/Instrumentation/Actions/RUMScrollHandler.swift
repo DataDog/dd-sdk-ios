@@ -38,9 +38,6 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
     /// Active scrolls keyed by scroll view identity.
     private var activeScrolls: [ObjectIdentifier: ScrollState] = [:]
 
-    /// Lock protecting `activeScrolls`.
-    private let lock = NSLock()
-
     init(
         dateProvider: DateProvider,
         predicate: UITouchRUMActionsPredicate
@@ -78,9 +75,7 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
             actionName: action.name
         )
 
-        lock.lock()
         activeScrolls[ObjectIdentifier(scrollView)] = state
-        lock.unlock()
 
         let command = RUMStartUserActionCommand(
             time: state.startTime,
@@ -101,9 +96,7 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
 
         // Capture velocity now — after deceleration it will be zero
         let velocity = scrollView.panGestureRecognizer.velocity(in: scrollView)
-        lock.lock()
         activeScrolls[id]?.liftVelocity = velocity
-        lock.unlock()
 
         if !decelerate {
             finalizeScroll(scrollView)
@@ -115,13 +108,6 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
         finalizeScroll(scrollView)
     }
 
-    /// Cleans up all active scroll states (e.g. on app backgrounding).
-    func cancelAll() {
-        lock.lock()
-        activeScrolls.removeAll()
-        lock.unlock()
-    }
-
     // MARK: - Private
 
     /// Finalizes the active scroll on this view if one exists. Called before starting a new scroll
@@ -129,11 +115,7 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
     private func finalizeScrollIfNeeded(_ scrollView: UIScrollView) {
         let id = ObjectIdentifier(scrollView)
 
-        lock.lock()
-        let hasActiveScroll = activeScrolls[id] != nil
-        lock.unlock()
-
-        if hasActiveScroll {
+        if activeScrolls[id] != nil {
             finalizeScroll(scrollView)
         }
     }
@@ -141,12 +123,9 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
     private func finalizeScroll(_ scrollView: UIScrollView) {
         let id = ObjectIdentifier(scrollView)
 
-        lock.lock()
         guard let state = activeScrolls.removeValue(forKey: id) else {
-            lock.unlock()
             return
         }
-        lock.unlock()
 
         let velocity = state.liftVelocity ?? .zero
         let gestureType = classifyGesture(velocity: velocity)
