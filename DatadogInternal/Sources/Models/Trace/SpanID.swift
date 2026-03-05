@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct SpanID: RawRepresentable, Equatable, Hashable {
+public struct SpanID: RawRepresentable, Equatable, Hashable, Sendable {
     public static let invalidId: UInt64 = 0
     public static let invalid = SpanID()
 

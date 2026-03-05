@@ -11,7 +11,7 @@ import DatadogInternal
 ///
 /// These should be reference types, since we need to refer to them from several places in the code with the
 /// guarantee we're accessing the same instance.
-internal protocol ActiveSpanProviderContainer: AnyObject {
+internal protocol ActiveSpanProviderContainer: Sendable, AnyObject {
     var activeSpanProvider: ActiveSpanProvider? { get }
 }
 

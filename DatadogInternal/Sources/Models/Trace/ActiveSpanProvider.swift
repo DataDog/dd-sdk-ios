@@ -12,7 +12,7 @@ import Foundation
 /// with span related information. The backend will use this information when generating a span out
 /// of a RUM resource to correctly link the span to a trace and parent, with the same sampling
 /// priority and decision mechanism as the trace's root span.
-public struct ActiveSpanContext {
+public struct ActiveSpanContext: Sendable {
     /// Trace ID of the currently active span.
     public let traceID: TraceID
     /// ID of the currently active span. This should be the RUM resource event parent span ID.
@@ -34,7 +34,7 @@ public struct ActiveSpanContext {
 ///
 /// These entities act as a bridge between Trace and RUM. If Trace is enabled, they provide the active span and trace ID,
 /// and sampling priority information. RUM (or any other module) can obtain this information from it.
-public protocol ActiveSpanProvider {
+public protocol ActiveSpanProvider: Sendable {
     /// If there is a currently active span, returns an ``ActiveSpanContext`` instance with the active span and trace IDs,
     /// or `nil` otherwise.
     ///
@@ -49,7 +49,7 @@ public struct ActiveSpanProviderAdditionalContext: ActiveSpanProvider, Additiona
 
     /// Function that returns a ``ActiveSpanContext`` struct with the currently active span and trace IDs, or `nil` if
     /// there is no currently active span.
-    public typealias ProviderFunction = () -> (ActiveSpanContext?)
+    public typealias ProviderFunction = @Sendable () -> (ActiveSpanContext?)
 
     /// The provider function that obtains the active span and trace IDs.
     private let providerFunction: ProviderFunction

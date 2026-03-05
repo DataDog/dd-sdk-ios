@@ -1881,7 +1881,7 @@ public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate {
 }
 
 public struct MockActiveSpanProviderContainer: ActiveSpanProviderContainer {
-    public var activeSpanProvider: ActiveSpanProvider?
+    public let activeSpanProvider: ActiveSpanProvider?
 
     public init(activeSpanProvider: ActiveSpanProvider? = nil) {
         self.activeSpanProvider = activeSpanProvider
