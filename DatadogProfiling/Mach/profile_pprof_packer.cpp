@@ -71,22 +71,22 @@ namespace dd::profiler {
  */
 
 /** @brief Convert string table to protobuf format with proper memory allocation */
-void perftools__profiles__profile__add_strings(const std::vector<std::string>& strings, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
+void perftools_profiles_profile_add_strings(const std::vector<std::string>& strings, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
 
 /** @brief Set sample type definitions (e.g., "cpu"/"nanoseconds", "wall"/"nanoseconds") */
-void perftools__profiles__profile__set_sample_type(int64_t type, int64_t unit, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
+void perftools_profiles_profile_set_sample_type(int64_t type, int64_t unit, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
 
 /** @brief Set period type and value for sampling interval */
-void perftools__profiles__profile__set_period(int64_t type, int64_t unit, int64_t period, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
+void perftools_profiles_profile_set_period(int64_t type, int64_t unit, int64_t period, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
 
 /** @brief Convert memory mapping information to protobuf format */
-void perftools__profiles__profile__add_mappings(const std::vector<mapping_t>& mappings, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
+void perftools_profiles_profile_add_mappings(const std::vector<mapping_t>& mappings, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
 
 /** @brief Convert code location information to protobuf format */
-void perftools__profiles__profile__add_locations(const std::vector<location_t>& locations, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
+void perftools_profiles_profile_add_locations(const std::vector<location_t>& locations, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
 
 /** @brief Convert sample data to protobuf format */
-void perftools__profiles__profile__add_samples(const std::vector<sample_t>& samples, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
+void perftools_profiles_profile_add_samples(const std::vector<sample_t>& samples, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
 
 /**
  * @brief Pack profile data into pprof protobuf binary format
@@ -116,12 +116,12 @@ size_t profile_pprof_pack(const profile& prof, uint8_t** data) {
     perftools__profiles__profile__init(pprof);
     
     // Convert each component of the profile to protobuf format
-    perftools__profiles__profile__add_strings(prof.strings(), pprof, &profile_allocator);
-    perftools__profiles__profile__set_sample_type(prof.wall_time_str_id(), prof.nanoseconds_str_id(), pprof, &profile_allocator);
-    perftools__profiles__profile__set_period(prof.wall_time_str_id(), prof.nanoseconds_str_id(), prof.sampling_interval_ns(), pprof, &profile_allocator);
-    perftools__profiles__profile__add_mappings(prof.mappings(), pprof, &profile_allocator);
-    perftools__profiles__profile__add_locations(prof.locations(), pprof, &profile_allocator);
-    perftools__profiles__profile__add_samples(prof.samples(), pprof, &profile_allocator);
+    perftools_profiles_profile_add_strings(prof.strings(), pprof, &profile_allocator);
+    perftools_profiles_profile_set_sample_type(prof.wall_time_str_id(), prof.nanoseconds_str_id(), pprof, &profile_allocator);
+    perftools_profiles_profile_set_period(prof.wall_time_str_id(), prof.nanoseconds_str_id(), static_cast<int64_t>(prof.sampling_interval_ns()), pprof, &profile_allocator);
+    perftools_profiles_profile_add_mappings(prof.mappings(), pprof, &profile_allocator);
+    perftools_profiles_profile_add_locations(prof.locations(), pprof, &profile_allocator);
+    perftools_profiles_profile_add_samples(prof.samples(), pprof, &profile_allocator);
     
     // Calculate required buffer size and serialize to binary format
     size_t packed_size = perftools__profiles__profile__get_packed_size(pprof);
@@ -161,7 +161,7 @@ size_t profile_pprof_pack(const profile& prof, uint8_t** data) {
  * Each string is allocated using the protobuf allocator to ensure
  * consistent memory management.
  */
-void perftools__profiles__profile__add_strings(const std::vector<std::string>& strings, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
+void perftools_profiles_profile_add_strings(const std::vector<std::string>& strings, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
     pprof->n_string_table = strings.size();
     if (strings.empty()) return;
     
@@ -174,7 +174,7 @@ void perftools__profiles__profile__add_strings(const std::vector<std::string>& s
     }
 }
 
-void perftools__profiles__profile__set_sample_type(int64_t type, int64_t unit, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
+void perftools_profiles_profile_set_sample_type(int64_t type, int64_t unit, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
     // Create wall-time sample types
     pprof->n_sample_type = 1;
     pprof->sample_type = static_cast<Perftools__Profiles__ValueType**>(
@@ -190,7 +190,7 @@ void perftools__profiles__profile__set_sample_type(int64_t type, int64_t unit, P
     pprof->sample_type[0] = sample_type_0;
 }
 
-void perftools__profiles__profile__set_period(int64_t type, int64_t unit, int64_t period, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
+void perftools_profiles_profile_set_period(int64_t type, int64_t unit, int64_t period, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
     // Create a separate ValueType for period_type
     auto* period_type = static_cast<Perftools__Profiles__ValueType*>(
         pb_alloc(allocator, sizeof(Perftools__Profiles__ValueType))
@@ -204,7 +204,7 @@ void perftools__profiles__profile__set_period(int64_t type, int64_t unit, int64_
     pprof->period = period;
 }
 
-void perftools__profiles__profile__add_mappings(const std::vector<mapping_t>& mappings, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
+void perftools_profiles_profile_add_mappings(const std::vector<mapping_t>& mappings, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
     pprof->n_mapping = mappings.size();
     if (mappings.empty()) return;
     
@@ -217,7 +217,7 @@ void perftools__profiles__profile__add_mappings(const std::vector<mapping_t>& ma
             pb_alloc(allocator, sizeof(Perftools__Profiles__Mapping))
         );
         perftools__profiles__mapping__init(mapping);
-        mapping->id = static_cast<uint64_t>(i + 1);
+        mapping->id = static_cast<uint64_t>(i + 1); // NOLINT(bugprone-misplaced-widening-cast) size_t is 64-bit on Apple platforms
         mapping->memory_start = mappings[i].memory_start;
         mapping->filename = mappings[i].filename_id;
         mapping->build_id = mappings[i].build_id;
@@ -225,7 +225,7 @@ void perftools__profiles__profile__add_mappings(const std::vector<mapping_t>& ma
     }
 }
 
-void perftools__profiles__profile__add_locations(const std::vector<location_t>& locations, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
+void perftools_profiles_profile_add_locations(const std::vector<location_t>& locations, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
     pprof->n_location = locations.size();
     if (locations.empty()) return;
     
@@ -238,7 +238,7 @@ void perftools__profiles__profile__add_locations(const std::vector<location_t>& 
             pb_alloc(allocator, sizeof(Perftools__Profiles__Location))
         );
         perftools__profiles__location__init(location);
-        location->id = static_cast<uint64_t>(i + 1);
+        location->id = static_cast<uint64_t>(i + 1); // NOLINT(bugprone-misplaced-widening-cast) size_t is 64-bit on Apple platforms
         location->mapping_id = locations[i].mapping_id;
         location->address = locations[i].address;
         
@@ -248,7 +248,7 @@ void perftools__profiles__profile__add_locations(const std::vector<location_t>& 
     }
 }
 
-void perftools__profiles__profile__add_samples(const std::vector<sample_t>& samples, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
+void perftools_profiles_profile_add_samples(const std::vector<sample_t>& samples, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
     pprof->n_sample = samples.size();
     if (pprof->n_sample == 0) return;
     

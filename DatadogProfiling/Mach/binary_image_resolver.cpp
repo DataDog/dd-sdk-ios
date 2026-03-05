@@ -218,7 +218,7 @@ void binary_image_cache::add_image_locked(const struct mach_header* header, cons
     if (!is_valid_load_command_count(header64->ncmds)) return;
 
     // Initialize cached entry
-    cached_image_t cached;
+    cached_image_t cached{};
     cached.load_address = load_address;
     memset(cached.uuid, 0, sizeof(uuid_t));
     cached.filename = nullptr;
@@ -278,7 +278,7 @@ bool binary_image_cache::lookup(uint64_t instruction_ptr, binary_image_t* out_im
     // that the dyld callback missed.
     if (binary_image_lookup_pc(out_image, (void*)instruction_ptr)) {
         // Cache the result for future lookups
-        cached_image_t cached;
+        cached_image_t cached{};
         cached.load_address = out_image->load_address;
         memcpy(cached.uuid, out_image->uuid, sizeof(uuid_t));
         cached.filename = (char*)out_image->filename;
