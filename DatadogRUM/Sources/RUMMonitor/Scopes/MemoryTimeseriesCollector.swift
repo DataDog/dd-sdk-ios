@@ -86,6 +86,7 @@ internal class MemoryTimeseriesCollector {
         timer.resume()
 
         DD.logger.debug("MemoryTimeseriesCollector started for session \(sessionID.rawValue)")
+        print("MemoryTimeseriesCollector started for session \(sessionID.rawValue)")
     }
 
     /// Stops memory collection.
@@ -170,11 +171,13 @@ internal class MemoryTimeseriesCollector {
                 eventCount += 1
 
                 DD.logger.debug("""
-                    Timeseries event sent:
+                    ✅ Timeseries event written to RUM pipeline:
                       ID: \(event.timeseries.id)
                       Session: \(event.session.id)
                       Data points: \(event.timeseries.data.count)
+                      Type: \(event.type)
                     """)
+                DD.logger.debug("📤 Timeseries event submitted for upload (id: \(event.timeseries.id))")
             }
 
             // Clear buffer after successful flush
@@ -257,8 +260,8 @@ internal class MemoryTimeseriesCollector {
                 DD.logger.debug("MemoryTimeseriesCollector: Batch size reached (\(self.batchSize) samples). Ready to flush.")
             }
 
-            // Log batch snapshots every 120 samples (~2 minutes at 1/sec)
-            if self.samples.count % 120 == 0 {
+            // Log batch snapshots at batch size intervals
+            if self.samples.count % self.batchSize == 0 {
                 self.logBatchSnapshot()
             }
         }

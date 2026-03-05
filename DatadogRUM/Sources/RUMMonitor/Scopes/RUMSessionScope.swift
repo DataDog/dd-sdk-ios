@@ -53,9 +53,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     // - Index efficiency for nested fields (timeseries.name, start/end filters)
     //
     // Configuration:
-    // - Batch size: 120 points (2 minutes at 1Hz) - configurable for experimentation
+    // - Batch size: 15 points (15 seconds at 1Hz) - reduced for faster testing
     // - Flushing: Every batchSize samples
     // - Buffer: Cleared after successful send
+    //
+    // Phase 02.1 note: Reduced from 120 to 15 for faster upload verification
 
     /// Phase 1 prototype: Memory timeseries collector for session-scoped memory sampling
     private var memoryCollector: MemoryTimeseriesCollector?
@@ -171,9 +173,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         dependencies.fatalErrorContext.sessionState = state
 
         // Phase 1 prototype: Start memory timeseries collection for this session
+        // Phase 02.1: Using batchSize=15 for faster upload testing (15 seconds at 1Hz)
         self.memoryCollector = MemoryTimeseriesCollector(
             sessionID: sessionUUID,
             applicationID: parent.context.rumApplicationID,
+            batchSize: 15,
             reader: VitalMemoryReader()
         )
         self.memoryCollector?.start()
@@ -341,11 +345,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             }
         }
 
-        // Phase 2 prototype: Flush timeseries events when batch size reached
+        // Phase 02.1: Flush timeseries events when batch size reached
         if let collector = memoryCollector, collector.shouldFlush() {
+            DD.logger.debug("🔄 Timeseries batch ready - flushing to RUM pipeline...")
             let sentCount = collector.flushEvents(writer: writer)
             if sentCount > 0 {
-                DD.logger.debug("Flushed \(sentCount) timeseries event(s) to staging")
+                DD.logger.debug("✅ Flushed \(sentCount) timeseries event(s) - awaiting upload status")
             }
         }
 
