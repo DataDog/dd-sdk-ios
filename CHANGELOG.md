@@ -1,10 +1,10 @@
 # Unreleased
 
 - [IMPROVEMENT] Rename `DDRUMErrorEventErrorMeta` to `DDRUMErrorEventErrorMetaInfo`, add support of custom Objective-C runtime names for generated RUM models. See [#2705][]
+- [FEATURE] Add `trackResourceHeaders` configuration to capture HTTP request and response headers in RUM Resource events. See [#2721][]
 
 # 3.7.0 / 18-02-2026
 
-- [FEATURE] Add `trackResourceHeaders` configuration to capture HTTP request and response headers in RUM Resource events. See [#2699][]
 - [FEATURE] Add evaluation logging to `DatadogFlags` module. See [#2646][]
 - [FEATURE] Automatic network instrumentation now tracks `URLSession` requests without requiring delegate registration. See [#2620][]
 - [FEATURE] Deprecate `URLSessionInstrumentation.enable(with:in:)` API in favor of `URLSessionInstrumentation.enableDurationBreakdown(with:in:)`. See [#2634][]
@@ -1061,6 +1061,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2676]: https://github.com/DataDog/dd-sdk-ios/pull/2676
 [#2688]: https://github.com/DataDog/dd-sdk-ios/pull/2688
 [#2705]: https://github.com/DataDog/dd-sdk-ios/pull/2705
+[#2721]: https://github.com/DataDog/dd-sdk-ios/pull/2721
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
