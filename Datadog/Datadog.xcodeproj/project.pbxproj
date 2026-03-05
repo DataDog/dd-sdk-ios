@@ -565,6 +565,8 @@
 		5B2A5E223322B5EB00A1B2C3 /* LayerSnapshotSemantics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2A5E213322B5E900A1B2C3 /* LayerSnapshotSemantics.swift */; };
 		5B2A5E293322B5FB00A1B2C3 /* LayerTreeSnapshotBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2A5E253322B5F300A1B2C3 /* LayerTreeSnapshotBuilder.swift */; };
 		5B2A5E2A3322B5FD00A1B2C3 /* LayerTreeSnapshotBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2A5E263322B5F500A1B2C3 /* LayerTreeSnapshotBuilderTests.swift */; };
+		5B6D200E33495D1500A1B2C3 /* LayerWireframeBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6D200C33495D1100A1B2C3 /* LayerWireframeBuilder.swift */; };
+		5B6D200F33495D1700A1B2C3 /* LayerWireframeBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6D200D33495D1300A1B2C3 /* LayerWireframeBuilderTests.swift */; };
 		5B3AF8AA2E4B3AE9009E5375 /* EnrichedResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3AF8A92E4B3AE6009E5375 /* EnrichedResourceTests.swift */; };
 		5B4F37692E93C5C90093778F /* FlagsRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */; };
 		5B4F376A2E93C5C90093778F /* FlagsRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */; };
@@ -3027,6 +3029,8 @@
 		5B2A5E213322B5E900A1B2C3 /* LayerSnapshotSemantics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotSemantics.swift; sourceTree = "<group>"; };
 		5B2A5E253322B5F300A1B2C3 /* LayerTreeSnapshotBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerTreeSnapshotBuilder.swift; sourceTree = "<group>"; };
 		5B2A5E263322B5F500A1B2C3 /* LayerTreeSnapshotBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerTreeSnapshotBuilderTests.swift; sourceTree = "<group>"; };
+		5B6D200C33495D1100A1B2C3 /* LayerWireframeBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerWireframeBuilder.swift; sourceTree = "<group>"; };
+		5B6D200D33495D1300A1B2C3 /* LayerWireframeBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerWireframeBuilderTests.swift; sourceTree = "<group>"; };
 		5B3AF8A92E4B3AE6009E5375 /* EnrichedResourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrichedResourceTests.swift; sourceTree = "<group>"; };
 		5B4F37682E93C5B80093778F /* FlagsRUMIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRUMIntegrationTests.swift; sourceTree = "<group>"; };
 		5B4F376B2E93C5D90093778F /* FlagsEvaluationIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsEvaluationIntegrationTests.swift; sourceTree = "<group>"; };
@@ -4943,6 +4947,7 @@
 				5B870BE72F43327F008106A5 /* LayerSnapshotCullingTests.swift */,
 				5B22A0A12F4FA001001EF869 /* LayerSnapshotRenderingTests.swift */,
 				5B22A0A42F500001001EF869 /* LayerImageRendererTests.swift */,
+				5B6D200D33495D1300A1B2C3 /* LayerWireframeBuilderTests.swift */,
 				5B2A5E263322B5F500A1B2C3 /* LayerTreeSnapshotBuilderTests.swift */,
 				5B22A0A62F5000FF001EF869 /* TestTimeSource.swift */,
 			);
@@ -4996,6 +5001,7 @@
 				5BC91D442F3C9E2E00D0241D /* LayerProvider.swift */,
 				5BC91D422F3C9AED00D0241D /* LayerRecorder.swift */,
 				5B2275F02F4485F8001EF869 /* LayerImageRenderer.swift */,
+				5B6D200C33495D1100A1B2C3 /* LayerWireframeBuilder.swift */,
 				5B870BD92F41D3E0008106A5 /* LayerSnapshot.swift */,
 				5B2A5E213322B5E900A1B2C3 /* LayerSnapshotSemantics.swift */,
 				5B870BDD2F41DE5C008106A5 /* LayerSnapshot+Visibility.swift */,
@@ -10142,6 +10148,7 @@
 				5B870BDA2F41D3E5008106A5 /* LayerSnapshot.swift in Sources */,
 				5B2A5E223322B5EB00A1B2C3 /* LayerSnapshotSemantics.swift in Sources */,
 				5B2A5E293322B5FB00A1B2C3 /* LayerTreeSnapshotBuilder.swift in Sources */,
+				5B6D200E33495D1500A1B2C3 /* LayerWireframeBuilder.swift in Sources */,
 				61054E752A6EE10A00AAA894 /* ViewTreeSnapshot.swift in Sources */,
 				61054EA02A6EE10B00AAA894 /* Colors.swift in Sources */,
 				61054E7F2A6EE10A00AAA894 /* UISliderRecorder.swift in Sources */,
@@ -10217,6 +10224,7 @@
 				5B870BE82F433286008106A5 /* LayerSnapshotCullingTests.swift in Sources */,
 				5B22A0A22F4FA003001EF869 /* LayerSnapshotRenderingTests.swift in Sources */,
 				5B22A0A52F500003001EF869 /* LayerImageRendererTests.swift in Sources */,
+				5B6D200F33495D1700A1B2C3 /* LayerWireframeBuilderTests.swift in Sources */,
 				5B2A5E2A3322B5FD00A1B2C3 /* LayerTreeSnapshotBuilderTests.swift in Sources */,
 				5B22A0A72F500101001EF869 /* TestTimeSource.swift in Sources */,
 				D21331C12D132F0600E4A6A1 /* SwiftUIWireframesBuilderTests.swift in Sources */,

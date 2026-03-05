@@ -48,11 +48,11 @@ extension LayerSnapshot {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension LayerSnapshot {
-    fileprivate var hasVisibleBackgroundColor: Bool {
+    var hasVisibleBackgroundColor: Bool {
         (backgroundColor?.alpha ?? 0) > 0
     }
 
-    fileprivate var hasVisibleBorder: Bool {
+    var hasVisibleBorder: Bool {
         borderWidth > 0 && (borderColor?.alpha ?? 0) > 0
     }
 }
