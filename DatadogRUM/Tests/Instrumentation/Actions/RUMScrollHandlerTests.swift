@@ -171,6 +171,20 @@ class RUMScrollHandlerTests: XCTestCase {
         XCTAssertTrue(commandSubscriber.receivedCommands[1] is RUMStopUserActionCommand)
         XCTAssertTrue(commandSubscriber.receivedCommands[2] is RUMStartUserActionCommand)
     }
+
+    // MARK: - Filtering
+
+    func testWhenPredicateReturnsNil_itDoesNotTrack() {
+        let predicate = MockScrollPredicate(result: nil)
+        let handler = createHandler(predicate: predicate)
+        let scrollView = createMockScrollView(panState: .began)
+
+        handler.notify_scrollViewWillBeginDragging(scrollView)
+        scrollView.contentOffset = CGPoint(x: 0, y: 100)
+        handler.notify_scrollViewDidEndDragging(scrollView, willDecelerate: false)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
+    }
 }
 
 // MARK: - Test Mocks
