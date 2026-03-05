@@ -252,8 +252,7 @@ class HeaderProcessorTests: XCTestCase {
         )
 
         // Then - Only content-type should pass (others are reserved for requests)
-        XCTAssertEqual(result.request.count, 1)
-        XCTAssertNotNil(result.request.first(where: { $0.key.lowercased() == "content-type" }))
+        XCTAssertEqual(result.request, ["content-type": "application/json"])
     }
 
     func testItDoesNotFilterReservedHeadersFromResponse() {
@@ -273,8 +272,8 @@ class HeaderProcessorTests: XCTestCase {
             ]
         )
 
-        // Then - Content-Length is valid in responses
-        XCTAssertEqual(result.response.count, 2)
+        // Then - Content-Length is valid in responses (keys are lowercased in output)
+        XCTAssertEqual(result.response, ["content-length": "1024", "content-type": "application/json"])
     }
 
     // MARK: - Case Sensitivity
@@ -289,11 +288,9 @@ class HeaderProcessorTests: XCTestCase {
             responseHeaders: ["CONTENT-TYPE": "text/html"]
         )
 
-        // Then
-        XCTAssertEqual(result.request.count, 1)
-        XCTAssertEqual(result.request.first(where: { $0.key.lowercased() == "content-type" })?.value, "application/json")
-        XCTAssertEqual(result.response.count, 1)
-        XCTAssertEqual(result.response.first(where: { $0.key.lowercased() == "content-type" })?.value, "text/html")
+        // Then - keys are always lowercased in output
+        XCTAssertEqual(result.request, ["content-type": "application/json"])
+        XCTAssertEqual(result.response, ["content-type": "text/html"])
     }
 
     // MARK: - Value Truncation
