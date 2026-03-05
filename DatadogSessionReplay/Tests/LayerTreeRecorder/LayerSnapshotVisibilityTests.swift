@@ -10,51 +10,6 @@ import QuartzCore
 
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, tvOS 13.0, *)
-extension LayerSnapshotTests.Fixtures {
-    static func snapshot(
-        layer: CALayer = .init(),
-        replayID: Int64 = 0,
-        frame: CGRect = CGRect(x: 0, y: 0, width: 100, height: 100),
-        clipRect: CGRect = .infinite,
-        zPosition: CGFloat = 0,
-        isAxisAligned: Bool = true,
-        opacity: Float = 1.0,
-        resolvedOpacity: Float? = nil,
-        isHidden: Bool = false,
-        backgroundColor: CGColor? = nil,
-        hasContents: Bool = false,
-        semantics: LayerSnapshot.Semantics = .generic,
-        cornerRadius: CGFloat = 0,
-        borderWidth: CGFloat = 0,
-        borderColor: CGColor? = nil,
-        hasMask: Bool = false,
-        children: [LayerSnapshot] = []
-    ) -> LayerSnapshot {
-        return LayerSnapshot(
-            layer: CALayerReference(layer),
-            replayID: replayID,
-            semantics: semantics,
-            pathComponents: ["Test#\(replayID)"],
-            frame: frame,
-            clipRect: clipRect,
-            zPosition: zPosition,
-            isAxisAligned: isAxisAligned,
-            opacity: opacity,
-            resolvedOpacity: resolvedOpacity ?? opacity,
-            isHidden: isHidden,
-            backgroundColor: backgroundColor,
-            hasContents: hasContents,
-            cornerRadius: cornerRadius,
-            borderWidth: borderWidth,
-            borderColor: borderColor,
-            masksToBounds: false,
-            hasMask: hasMask,
-            children: children
-        )
-    }
-}
-
 extension LayerSnapshotTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test

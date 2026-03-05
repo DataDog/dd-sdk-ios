@@ -13,33 +13,7 @@ import Testing
 @MainActor
 struct LayerImageRendererTests {
     @available(iOS 13.0, tvOS 13.0, *)
-    enum Fixtures {
-        static let rootBounds = CGRect(x: 0, y: 0, width: 200, height: 300)
-
-        static var rootLayer: CALayer {
-            let layer = CALayer()
-            layer.bounds = rootBounds
-            return layer
-        }
-
-        static func layerSnapshot(
-            for layer: CALayer,
-            replayID: Int64,
-            in rootLayer: CALayer,
-            hasContents: Bool = false,
-            clipRect: CGRect? = nil,
-            semantics: LayerSnapshot.Semantics = .generic
-        ) -> LayerSnapshot {
-            LayerSnapshotTests.Fixtures.snapshot(
-                layer: layer,
-                replayID: replayID,
-                frame: layer.convert(layer.bounds, to: rootLayer),
-                clipRect: clipRect ?? rootLayer.bounds,
-                hasContents: hasContents,
-                semantics: semantics
-            )
-        }
-    }
+    typealias Fixtures = LayerTreeRecorderFixtures
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test
@@ -409,7 +383,7 @@ struct LayerImageRendererTests {
         layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 60)
         rootLayer.addSublayer(layer)
 
-        let snapshot = LayerSnapshotTests.Fixtures.snapshot(
+        let snapshot = Fixtures.snapshot(
             layer: layer,
             replayID: 6,
             frame: CGRect(x: 500, y: 500, width: 100, height: 60), // outside clip rect -> invalid visible rect

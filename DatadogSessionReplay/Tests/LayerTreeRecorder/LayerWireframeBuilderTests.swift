@@ -26,7 +26,7 @@ struct LayerWireframeBuilderTests {
             borderWidth: CGFloat = 0,
             borderColor: CGColor? = nil
         ) -> LayerSnapshot {
-            LayerSnapshotTests.Fixtures.snapshot(
+            LayerTreeRecorderFixtures.snapshot(
                 replayID: replayID,
                 frame: visibleFrame,
                 clipRect: clipRect,
@@ -38,7 +38,7 @@ struct LayerWireframeBuilderTests {
         }
 
         static func layerImage(frame: CGRect = visibleFrame) -> LayerImage {
-            let image = UIImage(cgImage: LayerSnapshotTests.Fixtures.anyImage)
+            let image = UIImage(cgImage: LayerTreeRecorderFixtures.anyImage)
             return LayerImage(resource: .init(image: image, tintColor: nil), frame: frame)
         }
     }
