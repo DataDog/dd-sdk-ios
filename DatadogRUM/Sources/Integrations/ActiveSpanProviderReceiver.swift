@@ -17,7 +17,7 @@ internal protocol ActiveSpanProviderContainer: Sendable, AnyObject {
 
 /// Handles messages with updated `DatadogCore` instances, and keeps the `ActiveSpanProvider` in a variable.
 /// See ``ActiveSpanProvider`` documentation for details on why this is needed.
-internal class ActiveSpanProviderReceiver: FeatureMessageReceiver, ActiveSpanProviderContainer, @unchecked Sendable {
+internal final class ActiveSpanProviderReceiver: FeatureMessageReceiver, ActiveSpanProviderContainer, @unchecked Sendable {
     /// This contains an ``ActiveSpanProvider`` if the Trace feature is enabled, or `nil` otherwise.
     @ReadWriteLock
     private(set) var activeSpanProvider: ActiveSpanProvider?
