@@ -8,13 +8,16 @@ import Foundation
 import DatadogInternal
 
 /// Entities implementing this protocol may contain an ``ActiveSpanProvider``.
-internal protocol ActiveSpanProviderContainer {
+///
+/// These should be reference types, since we need to refer to them from several places in the code with the
+/// guarantee we're accessing the same instance.
+internal protocol ActiveSpanProviderContainer: AnyObject {
     var activeSpanProvider: ActiveSpanProvider? { get }
 }
 
 /// Handles messages with updated `DatadogCore` instances, and keeps the `ActiveSpanProvider` in a variable.
 /// See ``ActiveSpanProvider`` documentation for details on why this is needed.
-internal struct ActiveSpanProviderReceiver: FeatureMessageReceiver, ActiveSpanProviderContainer {
+internal class ActiveSpanProviderReceiver: FeatureMessageReceiver, ActiveSpanProviderContainer, @unchecked Sendable {
     /// This contains an ``ActiveSpanProvider`` if the Trace feature is enabled, or `nil` otherwise.
     @ReadWriteLock
     private(set) var activeSpanProvider: ActiveSpanProvider?
