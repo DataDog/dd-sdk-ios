@@ -106,28 +106,32 @@ internal class MemoryTimeseriesCollector {
                 """)
 
             // Create final events (for verification)
+            let currentDate = Date().timeIntervalSince1970.dd.toInt64Milliseconds
             let events = TimeseriesEventBuilder.createEvents(
                 from: self.samples,
                 sessionID: self.sessionID,
                 applicationID: self.applicationID,
+                date: currentDate,
                 batchSize: self.batchSize
             )
 
             DD.logger.debug("""
                 Final event summary: \(events.count) event(s) created. \
-                First event: \(events.first?.data.count ?? 0) data points
+                First event: \(events.first?.timeseries.data.count ?? 0) data points
                 """)
         }
     }
 
     /// Creates and sends timeseries events from buffered samples.
     ///
-    /// Validation checklist (for staging):
-    /// - [ ] JSON uses snake_case (session_id, application_id, data_point_value)
-    /// - [ ] Timestamps are in nanoseconds
-    /// - [ ] Event has session_id and application_id (NOT view.id)
-    /// - [ ] name field uses snake_case (memory_usage not memory.usage)
-    /// - [ ] data array contains timestamp + data_point_value per point
+    /// Phase 02.1 validation checklist (RUM common schema):
+    /// - [ ] Root-level RUM common fields: date, application, session, _dd, source
+    /// - [ ] Nested timeseries object: id, start, end, name, data
+    /// - [ ] snake_case keys: data_point_value, format_version
+    /// - [ ] _dd.format_version = 2
+    /// - [ ] Timestamps are nanoseconds (16+ digits) in data points
+    /// - [ ] No view field (session-scoped)
+    /// - [ ] name is enum: memory_usage, battery_level, etc.
     /// - [ ] Event type is "timeseries"
     ///
     /// - Parameters:
@@ -142,11 +146,13 @@ internal class MemoryTimeseriesCollector {
             // Only flush if we have enough samples for at least one batch
             guard samples.count >= batchSize else { return }
 
-            // Create events
+            // Create events with current date
+            let currentDate = Date().timeIntervalSince1970.dd.toInt64Milliseconds
             let events = TimeseriesEventBuilder.createEvents(
                 from: samples,
                 sessionID: sessionID,
                 applicationID: applicationID,
+                date: currentDate,
                 batchSize: batchSize
             )
 
@@ -165,9 +171,9 @@ internal class MemoryTimeseriesCollector {
 
                 DD.logger.debug("""
                     Timeseries event sent:
-                      ID: \(event.id)
-                      Session: \(event.sessionId)
-                      Data points: \(event.data.count)
+                      ID: \(event.timeseries.id)
+                      Session: \(event.session.id)
+                      Data points: \(event.timeseries.data.count)
                     """)
             }
 
@@ -291,8 +297,13 @@ internal class MemoryTimeseriesCollector {
 
     /// Logs JSON-encoded event for schema validation.
     ///
+    /// Phase 02.1: Validates RUM common schema with nested timeseries structure.
+    /// Expected JSON structure:
+    /// - Root level: date, application, session, _dd, source, type
+    /// - Nested timeseries: id, start, end, name, data
+    ///
     /// - Parameter event: Event to encode and log
-    private func logEncodedJSON(_ event: TimeseriesEvent) {
+    private func logEncodedJSON(_ event: RUMTimeseriesEvent) {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
 
@@ -300,7 +311,7 @@ internal class MemoryTimeseriesCollector {
             let jsonData = try encoder.encode(event)
             if let jsonString = String(data: jsonData, encoding: .utf8) {
                 DD.logger.debug("""
-                    Timeseries event JSON:
+                    Timeseries event JSON (RUM common schema):
                     \(jsonString)
                     """)
             }
@@ -311,35 +322,41 @@ internal class MemoryTimeseriesCollector {
 
     /// Logs detailed event information for debugging and validation.
     ///
+    /// Phase 02.1: References nested timeseries structure following RUMDataModel pattern.
+    ///
     /// - Parameter events: Events to inspect
-    private func logEventDetails(_ events: [TimeseriesEvent]) {
+    private func logEventDetails(_ events: [RUMTimeseriesEvent]) {
         for (index, event) in events.enumerated() {
-            let dataCount = event.data.count
-            let firstTimestamp = event.data.first?.timestamp ?? 0
-            let lastTimestamp = event.data.last?.timestamp ?? 0
+            let ts = event.timeseries
+            let dataCount = ts.data.count
+            let firstTimestamp = ts.data.first?.timestamp ?? 0
+            let lastTimestamp = ts.data.last?.timestamp ?? 0
             let durationMs = (lastTimestamp - firstTimestamp) / 1_000_000 // ns → ms
 
-            let firstValue = event.data.first?.dataPointValue ?? 0
-            let lastValue = event.data.last?.dataPointValue ?? 0
-            let avgValue = event.data.map { $0.dataPointValue }.reduce(0, +) / Double(dataCount)
+            let firstValue = ts.data.first?.dataPointValue ?? 0
+            let lastValue = ts.data.last?.dataPointValue ?? 0
+            let avgValue = ts.data.map { $0.dataPointValue }.reduce(0, +) / Double(dataCount)
 
             DD.logger.debug("""
                 Timeseries Event [\(index + 1)/\(events.count)]:
                   Type: \(event.type)
-                  ID: \(event.id)
-                  Name: \(event.name)
-                  Session: \(event.sessionId)
-                  Application: \(event.applicationId)
-                  Duration: \(durationMs)ms
-                  Data points: \(dataCount)
-                  Value range: \(Int(firstValue)) → \(Int(lastValue)) bytes (avg: \(Int(avgValue)))
-                  Start timestamp: \(firstTimestamp) ns
-                  End timestamp: \(lastTimestamp) ns
+                  Date: \(event.date) ms
+                  Application: \(event.application.id)
+                  Session: \(event.session.id) (\(event.session.type))
+                  Source: \(event.source?.rawValue ?? "nil")
+                  Timeseries:
+                    ID: \(ts.id)
+                    Name: \(ts.name.rawValue)
+                    Duration: \(durationMs)ms
+                    Data points: \(dataCount)
+                    Value range: \(Int(firstValue)) → \(Int(lastValue)) bytes (avg: \(Int(avgValue)))
+                    Start timestamp: \(firstTimestamp) ns
+                    End timestamp: \(lastTimestamp) ns
                 """)
 
             // Sample first 3 data points for validation
             if dataCount > 0 {
-                let samplePoints = event.data.prefix(3)
+                let samplePoints = ts.data.prefix(3)
                 DD.logger.debug("""
                   Sample data points:
                   \(samplePoints.map { "  [\($0.timestamp)]: \(Int($0.dataPointValue)) bytes" }.joined(separator: "\n"))

@@ -7,61 +7,8 @@
 import Foundation
 import DatadogInternal
 
-/// Timeseries event structure for performance metrics.
-///
-/// Phase 2: Backend-aligned schema (session-scoped, explicit timestamps, snake_case naming).
-/// This model matches the schema agreed with backend team and enabled in staging.
-internal struct TimeseriesEvent: Encodable {
-    /// Event type identifier.
-    let type: String = "timeseries"
-
-    /// Unique identifier for this timeseries event.
-    let id: String
-
-    /// Application identifier.
-    let applicationId: String
-
-    /// Session identifier.
-    let sessionId: String
-
-    /// Timestamp of first data point (nanoseconds from epoch).
-    let start: Int64
-
-    /// Timestamp of last data point (nanoseconds from epoch).
-    let end: Int64
-
-    /// Timeseries name (snake_case enum).
-    /// Examples: memory_usage, battery_level, disk_writes_bytes, thread_count
-    let name: String
-
-    /// Array of timestamped data points.
-    let data: [DataPoint]
-
-    /// Single data point with timestamp and value.
-    struct DataPoint: Encodable {
-        /// Timestamp in nanoseconds from epoch (UTC).
-        let timestamp: Int64
-
-        /// Metric value.
-        let dataPointValue: Double
-
-        enum CodingKeys: String, CodingKey {
-            case timestamp
-            case dataPointValue = "data_point_value"
-        }
-    }
-
-    enum CodingKeys: String, CodingKey {
-        case type
-        case id
-        case applicationId = "application_id"
-        case sessionId = "session_id"
-        case start
-        case end
-        case name
-        case data
-    }
-}
+// Phase 02.1: Timeseries events now use RUMTimeseriesEvent from RUMDataModels.swift
+// This follows the standard RUM event pattern with RUM common properties and nested timeseries object.
 
 /// Factory for creating timeseries events from collected samples.
 internal struct TimeseriesEventBuilder {
@@ -71,14 +18,16 @@ internal struct TimeseriesEventBuilder {
     ///   - samples: Array of (timestamp in ms, footprint in bytes) tuples
     ///   - sessionID: RUM session identifier
     ///   - applicationID: Application identifier
+    ///   - date: Event date in ms from epoch
     ///   - batchSize: Maximum number of data points per event (configurable for staging)
-    /// - Returns: Array of TimeseriesEvent (multiple if samples exceed batchSize)
+    /// - Returns: Array of RUMTimeseriesEvent (multiple if samples exceed batchSize)
     static func createEvents(
         from samples: [(timestamp: Int64, footprint: UInt64)],
         sessionID: RUMUUID,
         applicationID: String,
+        date: Int64,
         batchSize: Int = 120
-    ) -> [TimeseriesEvent] {
+    ) -> [RUMTimeseriesEvent] {
         // TODO: Implement batching logic
         // For Phase 2: Create single event with all samples (up to batchSize)
         // Future: Support multiple events if samples.count > batchSize
@@ -90,20 +39,33 @@ internal struct TimeseriesEventBuilder {
 
         // Convert to data points (milliseconds → nanoseconds)
         let dataPoints = batchSamples.map { sample in
-            TimeseriesEvent.DataPoint(
-                timestamp: sample.timestamp * 1_000_000, // ms → ns
-                dataPointValue: Double(sample.footprint)
+            RUMTimeseriesEvent.Timeseries.DataPoint(
+                dataPointValue: Double(sample.footprint),
+                timestamp: sample.timestamp * 1_000_000 // ms → ns
             )
         }
 
-        let event = TimeseriesEvent(
-            id: UUID().uuidString,
-            applicationId: applicationID,
-            sessionId: sessionID.rawValue.uuidString,
-            start: dataPoints.first!.timestamp,
+        let timeseries = RUMTimeseriesEvent.Timeseries(
+            data: dataPoints,
             end: dataPoints.last!.timestamp,
-            name: "memory_usage",
-            data: dataPoints
+            id: UUID().uuidString,
+            name: .memoryUsage,
+            start: dataPoints.first!.timestamp
+        )
+
+        let event = RUMTimeseriesEvent(
+            dd: RUMTimeseriesEvent.DD(),
+            application: RUMTimeseriesEvent.Application(id: applicationID),
+            date: date,
+            service: nil,
+            session: RUMTimeseriesEvent.Session(
+                id: sessionID.rawValue.uuidString,
+                type: .user
+            ),
+            source: .ios,
+            timeseries: timeseries,
+            view: nil,
+            version: nil
         )
 
         return [event]

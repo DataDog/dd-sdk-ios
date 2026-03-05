@@ -11618,4 +11618,261 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
+/// Schema of all properties of a Timeseries event
+public struct RUMTimeseriesEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Application properties
+    public let application: Application
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// The service name for this application
+    public let service: String?
+
+    /// Session properties
+    public let session: Session
+
+    /// The source of this event
+    public let source: Source?
+
+    /// RUM event type
+    public let type: String = "timeseries"
+
+    /// Timeseries properties
+    public let timeseries: Timeseries
+
+    /// View properties (optional for session-scoped timeseries)
+    public var view: View?
+
+    /// The version for this application
+    public let version: String?
+
+    public enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case application = "application"
+        case date = "date"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case type = "type"
+        case timeseries = "timeseries"
+        case view = "view"
+        case version = "version"
+    }
+
+    /// Schema of all properties of a Timeseries event
+    ///
+    /// - Parameters:
+    ///   - dd: Internal properties
+    ///   - application: Application properties
+    ///   - date: Start of the event in ms from epoch
+    ///   - service: The service name for this application
+    ///   - session: Session properties
+    ///   - source: The source of this event
+    ///   - timeseries: Timeseries properties
+    ///   - view: View properties (optional for session-scoped timeseries)
+    ///   - version: The version for this application
+    public init(
+        dd: DD,
+        application: Application,
+        date: Int64,
+        service: String? = nil,
+        session: Session,
+        source: Source? = nil,
+        timeseries: Timeseries,
+        view: View? = nil,
+        version: String? = nil
+    ) {
+        self.dd = dd
+        self.application = application
+        self.date = date
+        self.service = service
+        self.session = session
+        self.source = source
+        self.timeseries = timeseries
+        self.view = view
+        self.version = version
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        public enum CodingKeys: String, CodingKey {
+            case formatVersion = "format_version"
+        }
+
+        /// Internal properties
+        public init() {
+        }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Application properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the application
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// UUID of the session
+        public let id: String
+
+        /// Type of the session
+        public let type: RUMSessionType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case type = "type"
+        }
+
+        /// Session properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the session
+        ///   - type: Type of the session
+        public init(
+            id: String,
+            type: RUMSessionType
+        ) {
+            self.id = id
+            self.type = type
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case roku = "roku"
+        case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
+    }
+
+    /// Timeseries properties
+    public struct Timeseries: Codable {
+        /// Array of timestamped data points
+        public let data: [DataPoint]
+
+        /// Timestamp of last data point (nanoseconds from epoch)
+        public let end: Int64
+
+        /// UUID of the timeseries event
+        public let id: String
+
+        /// Timeseries type name
+        public let name: TimeseriesName
+
+        /// Timestamp of first data point (nanoseconds from epoch)
+        public let start: Int64
+
+        public enum CodingKeys: String, CodingKey {
+            case data = "data"
+            case end = "end"
+            case id = "id"
+            case name = "name"
+            case start = "start"
+        }
+
+        /// Timeseries properties
+        ///
+        /// - Parameters:
+        ///   - data: Array of timestamped data points
+        ///   - end: Timestamp of last data point (nanoseconds from epoch)
+        ///   - id: UUID of the timeseries event
+        ///   - name: Timeseries type name
+        ///   - start: Timestamp of first data point (nanoseconds from epoch)
+        public init(
+            data: [DataPoint],
+            end: Int64,
+            id: String,
+            name: TimeseriesName,
+            start: Int64
+        ) {
+            self.data = data
+            self.end = end
+            self.id = id
+            self.name = name
+            self.start = start
+        }
+
+        /// Single data point with timestamp and value
+        public struct DataPoint: Codable {
+            /// Metric value
+            public let dataPointValue: Double
+
+            /// Timestamp in nanoseconds from epoch (UTC)
+            public let timestamp: Int64
+
+            public enum CodingKeys: String, CodingKey {
+                case dataPointValue = "data_point_value"
+                case timestamp = "timestamp"
+            }
+
+            /// Single data point with timestamp and value
+            ///
+            /// - Parameters:
+            ///   - dataPointValue: Metric value
+            ///   - timestamp: Timestamp in nanoseconds from epoch (UTC)
+            public init(
+                dataPointValue: Double,
+                timestamp: Int64
+            ) {
+                self.dataPointValue = dataPointValue
+                self.timestamp = timestamp
+            }
+        }
+
+        /// Timeseries type name
+        public enum TimeseriesName: String, Codable {
+            case memoryUsage = "memory_usage"
+            case batteryLevel = "battery_level"
+            case diskWritesBytes = "disk_writes_bytes"
+            case threadCount = "thread_count"
+        }
+    }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// View properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the view
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+}
+
 // Generated from https://github.com/DataDog/rum-events-format/tree/df49e999b2444a66f3c37089db42e3c20ca5538d
