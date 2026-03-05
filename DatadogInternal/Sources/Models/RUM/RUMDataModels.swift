@@ -11848,9 +11848,6 @@ public struct RUMTimeseriesEvent: RUMDataModel {
         /// Timeseries type name
         public enum TimeseriesName: String, Codable {
             case memoryUsage = "memory_usage"
-            case batteryLevel = "battery_level"
-            case diskWritesBytes = "disk_writes_bytes"
-            case threadCount = "thread_count"
         }
     }
 
