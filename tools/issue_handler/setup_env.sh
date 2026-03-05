@@ -30,7 +30,7 @@ SLACK_CHANNEL_ID=
 GITHUB_REPOSITORY=DataDog/dd-sdk-ios
 
 # Optional: Override OpenAI defaults
-# OPENAI_MODEL=chatgpt-4o-latest
+# OPENAI_MODEL=gpt-5.2-chat-latest
 # OPENAI_TEMPERATURE=0.4
 # OPENAI_MAX_RESPONSE_TOKENS=500
 EOL

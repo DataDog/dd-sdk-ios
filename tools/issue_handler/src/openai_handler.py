@@ -71,7 +71,7 @@ class OpenAIHandler:
             raise EnvironmentError("OPENAI_SYSTEM_PROMPT environment variable must be set")
 
         # Model can be overridden via env
-        self.model = os.environ.get("OPENAI_MODEL", "chatgpt-4o-latest")
+        self.model = os.environ.get("OPENAI_MODEL", "gpt-5.2-chat-latest")
 
     def analyze_issue(self, issue: GithubIssue) -> AnalysisResult:
         """
