@@ -33,36 +33,20 @@ public struct DeterministicSampler: Sampling {
     ///     - `100.0` enables full sampling (all data is sampled).
     public init(seed: UInt64, samplingRate: SampleRate) {
         self.seed = seed
-        // We use overflow multiplication to create a "randomized" hash based on the `seed`
         self.samplingRate = samplingRate
         if samplingRate >= 100.0 {
             self.shouldSample = true
-        } else if samplingRate <= 0.0 {
-            self.shouldSample = false
         } else {
+            // We use overflow multiplication to create a "randomized" hash based on the `seed`
             let hash = seed &* Constants.samplerHasher
             let threshold = Double(Constants.maxID) * Double(samplingRate) / 100.0
-            self.shouldSample = Double(hash) <= threshold
+            self.shouldSample = Double(hash) < threshold
         }
     }
 
-    /// Convenience initializer that derives the seed from a session UUID string.
-    ///
-    /// The last segment of the UUID (the 12-hex-character node component) is parsed as a
-    /// hexadecimal `UInt64` and used as the seed. Falls back to `0` for malformed inputs.
-    ///
-    /// **seed=0 fallback:** When UUID parsing fails, seed defaults to 0. The Knuth hash
-    /// of 0 is 0, which is always `<= threshold` for any `samplingRate > 0`, so malformed
-    /// UUIDs are always sampled (fail-open). This is intentional — a broken UUID should
-    /// not silently drop data.
-    ///
-    /// - Parameters:
-    ///   - sessionID: A UUID string in the standard `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` format.
-    ///   - samplingRate: A percentage value between `0.0` and `100.0`.
-    public init(sessionID: String, samplingRate: SampleRate) {
-        let seed = sessionID.split(separator: "-").last.flatMap { UInt64($0, radix: 16) } ?? 0
-        self.init(seed: seed, samplingRate: samplingRate)
-    }
+    /// Based on the `seed` and sampling rate, it returns consistent value decisions.
+    /// - Returns: `true` if data should be "sampled".
+    public func sample() -> Bool { shouldSample }
 
     /// Returns a new `DeterministicSampler` that applies both this sampler's rate and `childRate`,
     /// while preserving the same seed so sampling decisions remain consistent.
@@ -80,14 +64,24 @@ public struct DeterministicSampler: Sampling {
     public func combined(with childRate: SampleRate) -> DeterministicSampler {
         DeterministicSampler(seed: seed, samplingRate: samplingRate.composed(with: childRate))
     }
-
-    /// Based on the `seed` and sampling rate, it returns consistent value decisions.
-    /// - Returns: `true` if data should be "sampled".
-    public func sample() -> Bool { shouldSample }
 }
 
-extension DeterministicSampler: Equatable {
-    public static func == (lhs: DeterministicSampler, rhs: DeterministicSampler) -> Bool {
-        lhs.seed == rhs.seed && lhs.samplingRate == rhs.samplingRate
+extension DeterministicSampler {
+    /// Convenience initializer that derives the seed from a session UUID string.
+    ///
+    /// The last segment of the UUID (the 12-hex-character node component) is parsed as a
+    /// hexadecimal `UInt64` and used as the seed. Falls back to `0` for malformed inputs.
+    ///
+    /// **seed=0 fallback:** When UUID parsing fails, seed defaults to 0. The Knuth hash
+    /// of 0 is 0, which is always `<= threshold` for any `samplingRate > 0`, so malformed
+    /// UUIDs are always sampled (fail-open). This is intentional — a broken UUID should
+    /// not silently drop data.
+    ///
+    /// - Parameters:
+    ///   - uuid: A UUID string in the standard `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` format.
+    ///   - samplingRate: A percentage value between `0.0` and `100.0`.
+    public init(uuid: String, samplingRate: SampleRate) {
+        let seed = uuid.split(separator: "-").last.flatMap { UInt64($0, radix: 16) } ?? 0
+        self.init(seed: seed, samplingRate: samplingRate)
     }
 }

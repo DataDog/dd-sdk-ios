@@ -14,7 +14,7 @@ import DatadogInternal
 class RUMContextReceiverTests: XCTestCase {
     private let receiver = RUMContextReceiver()
 
-    func testWhenMessageContainsNonEmptyRUMBaggage_itNotifiesRUMContext() throws {
+    func testWhenMessageContainsNonEmptyRUMContext_itNotifiesRUMContext() throws {
         // Given
         let core = PassthroughCoreMock()
         let coreContext: DatadogContext = .mockWith(
@@ -22,6 +22,7 @@ class RUMContextReceiverTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: "app-id",
                     sessionID: "session-id",
+                    sessionSampler: Sampler.mockKeepAll(),
                     viewID: "view-id",
                     viewServerTimeOffset: 123
                 )
@@ -45,7 +46,7 @@ class RUMContextReceiverTests: XCTestCase {
         XCTAssertEqual(rumContext?.viewServerTimeOffset, 123)
     }
 
-    func testWhenSucceedingMessagesContainDifferentRUMBaggages_itNotifiesRUMContextChange() throws {
+    func testWhenSucceedingMessagesContainDifferentRUMContexts_itNotifiesRUMContextChange() throws {
         // Given
         let core = PassthroughCoreMock()
         let coreContext1: DatadogContext = .mockWith(
@@ -53,6 +54,7 @@ class RUMContextReceiverTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: "app-id-1",
                     sessionID: "session-id-1",
+                    sessionSampler: Sampler.mockKeepAll(),
                     viewID: "view-id-1",
                     viewServerTimeOffset: 123
                 )
@@ -64,6 +66,7 @@ class RUMContextReceiverTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: "app-id-2",
                     sessionID: "session-id-2",
+                    sessionSampler: Sampler.mockKeepAll(),
                     viewID: "view-id-2",
                     viewServerTimeOffset: 345
                 )
@@ -95,7 +98,7 @@ class RUMContextReceiverTests: XCTestCase {
         XCTAssertEqual(rumContexts[1].viewServerTimeOffset, 345)
     }
 
-    func testWhenSucceedingMessagesContainSameRUMBaggages_itNotifiesRUMContextChangeOnce() throws {
+    func testWhenSucceedingMessagesContainSameRUMContexts_itNotifiesRUMContextChangeOnce() throws {
         // Given
         let core = PassthroughCoreMock()
         let coreContext1: DatadogContext = .mockWith(
@@ -103,6 +106,7 @@ class RUMContextReceiverTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: "app-id",
                     sessionID: "session-id",
+                    sessionSampler: Sampler.mockKeepAll(),
                     viewID: "view-id",
                     viewServerTimeOffset: 123
                 )
@@ -114,6 +118,7 @@ class RUMContextReceiverTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: "app-id",
                     sessionID: "session-id",
+                    sessionSampler: Sampler.mockKeepAll(),
                     viewID: "view-id",
                     viewServerTimeOffset: 123
                 )
@@ -141,7 +146,7 @@ class RUMContextReceiverTests: XCTestCase {
         XCTAssertEqual(rumContexts[0].viewServerTimeOffset, 123)
     }
 
-    func testWhenMessageContainsNoRUMBaggage_itResetRUMContext() throws {
+    func testWhenMessageContainsNoRUMContext_itResetRUMContext() throws {
         // Given
         let core = PassthroughCoreMock()
         let coreContext1: DatadogContext = .mockWith(
@@ -149,6 +154,7 @@ class RUMContextReceiverTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: "app-id",
                     sessionID: "session-id",
+                    sessionSampler: Sampler.mockKeepAll(),
                     viewID: "view-id",
                     viewServerTimeOffset: 123
                 )

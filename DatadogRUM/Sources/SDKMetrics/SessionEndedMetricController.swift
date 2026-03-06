@@ -59,9 +59,6 @@ internal final class SessionEndedMetricController {
     ///   - context: The SDK context at the moment of starting this session.
     /// - Returns: The newly created `SessionEndedMetric` instance.
     func startMetric(sessionID: RUMUUID, precondition: RUMSessionPrecondition?, context: DatadogContext) {
-        guard sessionID != RUMUUID.nullUUID else {
-            return // do not track metric when session is not sampled
-        }
         _metricsBySessionID.mutate { metrics in
             metrics[sessionID] = SessionEndedMetric(
                 sessionID: sessionID,

@@ -52,7 +52,7 @@ internal struct SpanEventBuilder {
 
         if bundleWithRUM {
             // Enrich with RUM context
-            if let rum = context.additionalContext(ofType: RUMCoreContext.self) {
+            if let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.sample() {
                 tags[SpanTags.rumApplicationID] = rum.applicationID
                 tags[SpanTags.rumSessionID] = rum.sessionID
                 tags[SpanTags.rumViewID] = rum.viewID

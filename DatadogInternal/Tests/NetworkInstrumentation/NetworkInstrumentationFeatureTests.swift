@@ -2161,7 +2161,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let provider = NetworkContextCoreProvider()
         let userInfo = UserInfo(id: "user123", name: "TestUser", email: "test@example.com")
         let accountInfo = AccountInfo(id: "account456", name: "TestAccount")
-        let rumContext = RUMCoreContext(applicationID: "app123", sessionID: "session789")
+        let rumContext: RUMCoreContext = .mockWith(applicationID: "app123", sessionID: "session789")
 
         let context = DatadogContext.mockWith(
             userInfo: userInfo,
@@ -2193,7 +2193,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testWhenReceivingContextMessage_withoutUserAndAccountInfo_itCreatesNetworkContextWithNilValues() throws {
         // Given
         let provider = NetworkContextCoreProvider()
-        let rumContext = RUMCoreContext(applicationID: "app123", sessionID: "session789")
+        let rumContext: RUMCoreContext = .mockWith(applicationID: "app123", sessionID: "session789")
 
         let context = DatadogContext.mockWith(
             userInfo: .mockEmpty(),

@@ -351,24 +351,25 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
     /// Determines whether the current request should be sampled.
     ///
-    /// When a RUM session is active, delegates to the session sampler's `combined(with:)` API
-    /// which applies the Knuth multiplicative hash with the composed (session × trace) rate.
-    /// Falls back to a trace-only Knuth sample using the traceID when no session is available.
+    /// When a RUM session is active, combines the session sampler with the trace sampling rate
+    /// for a consistent decision. Otherwise, falls back to a deterministic sample seeded by the
+    /// trace ID, or a random sample if no trace ID is available.
     ///
     /// - Parameters:
-    ///   - rumContext: The current RUM core context (if available).
-    ///   - traceID: The trace ID low bits, used as a seed fallback when no RUM session is present.
+    ///   - rumSampling: The current RUM deterministic sampling context, if available.
+    ///   - traceID: The trace ID used as a deterministic seed when no RUM session is present.
     /// - Returns: `true` if the request should be sampled.
     private func isSampled(rumContext: RUMCoreContext?, traceID: UInt64?) -> Bool {
-        if let sessionSampler = rumContext?.sessionSampler {
-            return sessionSampler.combined(with: samplingRate).sample()
+        if let rumContext {
+            return rumContext.sessionSampler.combined(with: samplingRate).sample()
         }
+
         // No RUM context: fall back to Knuth on traceID or random sampler.
-        let fallbackRate = samplingRate
         if let traceID {
-            return DeterministicSampler(seed: traceID, samplingRate: fallbackRate).sample()
+            return DeterministicSampler(seed: traceID, samplingRate: samplingRate).sample()
         }
-        return Sampler(samplingRate: fallbackRate).sample()
+
+        return Sampler(samplingRate: samplingRate).sample()
     }
 }
 

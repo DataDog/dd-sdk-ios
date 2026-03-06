@@ -31,11 +31,11 @@ class RUMSessionScopeTests: XCTestCase {
     func testContextWhenSessionIsRejectedBySampler() {
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
-            dependencies: .mockWith(sessionSampler: .mockRejectAll())
+            dependencies: .mockWith(samplingRate: 0)
        )
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
-        XCTAssertEqual(scope.context.sessionID, .nullUUID)
+        XCTAssertFalse(scope.isSampled)
         XCTAssertNil(scope.context.activeViewID)
         XCTAssertNil(scope.context.activeViewPath)
         XCTAssertNil(scope.context.activeUserActionID)
@@ -46,7 +46,7 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: currentTime,
-            dependencies: .mockWith(sessionSampler: .mockRandom())
+            dependencies: .mockWith(samplingRate: .mockRandom())
         )
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
@@ -62,7 +62,7 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: currentTime,
-            dependencies: .mockWith(sessionSampler: .mockRandom())
+            dependencies: .mockWith(samplingRate: .mockRandom())
         )
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
@@ -83,7 +83,7 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: currentTime,
-            dependencies: .mockWith(sessionSampler: .mockRandom())
+            dependencies: .mockWith(samplingRate: .mockRandom())
         )
 
         for _ in 0...10 {
@@ -100,7 +100,7 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: currentTime,
-            dependencies: .mockWith(sessionSampler: .mockRandom())
+            dependencies: .mockWith(samplingRate: .mockRandom())
         )
 
         for _ in 0...8 {
@@ -325,7 +325,7 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: Date(),
-            dependencies: .mockWith(sessionSampler: .mockRejectAll())
+            dependencies: .mockWith(samplingRate: 0)
         )
 
         XCTAssertEqual(scope.viewScopes.count, 0)
@@ -343,6 +343,7 @@ class RUMSessionScopeTests: XCTestCase {
         let fatalErrorContext = FatalErrorContextNotifierMock()
         let randomIsInitialSession: Bool = .mockRandom()
         let randomIsReplayBeingRecorded: Bool = .mockRandom()
+        let randomSampleRate: SampleRate = .mockRandom(min: 0, max: 100)
 
         // When
         let scope: RUMSessionScope = .mockWith(
@@ -355,7 +356,7 @@ class RUMSessionScopeTests: XCTestCase {
             ),
             dependencies: .mockWith(
                 featureScope: featureScope,
-                sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter if sampled or not,
+                samplingRate: randomSampleRate,
                 fatalErrorContext: fatalErrorContext
             )
         )
@@ -363,6 +364,10 @@ class RUMSessionScopeTests: XCTestCase {
         // Then
         let expectedSessionState = RUMSessionState(
             sessionUUID: scope.sessionUUID.rawValue,
+            isSampled: DeterministicSampler(
+                uuid: scope.sessionUUID.rawValue.uuidString,
+                samplingRate: randomSampleRate
+            ).sample(),
             isInitialSession: randomIsInitialSession,
             hasTrackedAnyView: false,
             didStartWithReplay: randomIsReplayBeingRecorded
@@ -402,6 +407,7 @@ class RUMSessionScopeTests: XCTestCase {
         // Then
         let expectedSessionState = RUMSessionState(
             sessionUUID: scope.sessionUUID.rawValue,
+            isSampled: true,
             isInitialSession: randomIsInitialSession,
             hasTrackedAnyView: true,
             didStartWithReplay: randomIsReplayBeingRecorded

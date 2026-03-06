@@ -100,7 +100,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
-            sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
+            samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             hasAppHangsEnabled: configuration.appHangThreshold != nil,
