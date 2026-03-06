@@ -7,7 +7,7 @@
 import Foundation
 
 /// Crash Report format supported by Datadog SDK.
-public struct DDCrashReport {
+public struct DDCrashReport: Sendable {
     /// Meta information about the process.
     /// Ref.: https://developer.apple.com/documentation/xcode/examining-the-fields-in-a-crash-report
     public struct Meta: Encodable {

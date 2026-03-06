@@ -11,7 +11,7 @@ import Foundation
 ///
 /// Note: as it gets saved along with the crash report during process interruption, it's good
 /// to keep this data well-packed and as small as possible.
-public struct CrashContext: Codable, Equatable {
+public struct CrashContext: Codable, Equatable, Sendable {
     /// The Application Launch Date
     public var appLaunchDate: Date?
 

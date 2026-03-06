@@ -41,7 +41,7 @@ extension CrashReportingFeature {
     }
 }
 
-public class CrashReportingPluginMock: CrashReportingPlugin {
+public class CrashReportingPluginMock: CrashReportingPlugin, @unchecked Sendable {
     /// The crash report loaded by this plugin.
     public var pendingCrashReport: DDCrashReport?
     /// If the plugin was asked to delete the crash report.
@@ -54,13 +54,22 @@ public class CrashReportingPluginMock: CrashReportingPlugin {
 
     public init() {}
 
-    public func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {
-        hasPurgedCrashReport = completion(pendingCrashReport)
+    public func readPendingCrashReport() async -> DDCrashReport? {
+        let report = pendingCrashReport
         didReadPendingCrashReport?()
+        return report
     }
 
-    /// Notifies the `readPendingCrashReport(completion:)` return.
+    public func deletePendingCrashReports() {
+        hasPurgedCrashReport = true
+        didDeletePendingCrashReports?()
+    }
+
+    /// Notifies when `readPendingCrashReport()` returns.
     public var didReadPendingCrashReport: (() -> Void)?
+
+    /// Notifies when `deletePendingCrashReports()` is called.
+    public var didDeletePendingCrashReports: (() -> Void)?
 
     public func inject(context: Data) {
         injectedContextData = context
@@ -73,8 +82,9 @@ public class CrashReportingPluginMock: CrashReportingPlugin {
     public var backtraceReporter: BacktraceReporting? { injectedBacktraceReporter }
 }
 
-public class NOPCrashReportingPlugin: CrashReportingPlugin {
-    public func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {}
+public class NOPCrashReportingPlugin: CrashReportingPlugin, @unchecked Sendable {
+    public func readPendingCrashReport() async -> DDCrashReport? { nil }
+    public func deletePendingCrashReports() {}
     public func inject(context: Data) {}
     public var backtraceReporter: BacktraceReporting? { nil }
 
@@ -83,17 +93,18 @@ public class NOPCrashReportingPlugin: CrashReportingPlugin {
 
 public class CrashContextProviderMock: CrashContextProvider {
     public private(set) var currentCrashContext: CrashContext?
-    public var onCrashContextChange: (CrashContext) -> Void
+    public var onCrashContextChange: @Sendable (CrashContext) -> Void
 
-    public init(initialCrashContext: CrashContext = .mockAny()) {
+    public init(initialCrashContext: CrashContext? = .mockAny()) {
         self.currentCrashContext = initialCrashContext
         self.onCrashContextChange = { _ in }
     }
 }
 
-public class CrashReportSenderMock: CrashReportSender {
+public class CrashReportSenderMock: CrashReportSender, @unchecked Sendable {
     public var sentCrashReport: DDCrashReport?
     public var sentCrashContext: CrashContext?
+    public var sentLaunchReport: LaunchReport?
 
     public init() {}
 
@@ -105,10 +116,15 @@ public class CrashReportSenderMock: CrashReportSender {
 
     public var didSendCrashReport: (() -> Void)?
 
-    public func send(launch: DatadogInternal.LaunchReport) {}
+    public func send(launch: DatadogInternal.LaunchReport) {
+        sentLaunchReport = launch
+        didSendLaunchReport?()
+    }
+
+    public var didSendLaunchReport: (() -> Void)?
 }
 
-public class CrashReceiverMock: FeatureMessageReceiver {
+public class CrashReceiverMock: FeatureMessageReceiver, @unchecked Sendable {
     public var receivedCrash: Crash?
 
     public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {

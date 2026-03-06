@@ -569,8 +569,9 @@ public final class CrashReporting
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default)
 public static func enable()
-public protocol CrashReportingPlugin: AnyObject
-    func readPendingCrashReport(completion: @escaping (DDCrashReport?) -> Bool)
+public protocol CrashReportingPlugin: AnyObject, Sendable
+    func readPendingCrashReport() async -> DDCrashReport?
+    func deletePendingCrashReports()
     func inject(context: Data)
     var backtraceReporter: BacktraceReporting?
 

@@ -15,8 +15,7 @@ import DatadogLogs
 class CrashReporterTests: XCTestCase {
     // MARK: - Sending Crash Report
 
-    func testWhenPendingCrashReportIsFound_itIsSentAndPurged() throws {
-        let expectation = self.expectation(description: "`CrashReportSender` sends the crash report")
+    func testWhenPendingCrashReportIsFound_itIsSentAndPurged() async throws {
         let crashContext: CrashContext = .mockRandom()
         let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
         let plugin = CrashReportingPluginMock()
@@ -35,11 +34,9 @@ class CrashReporterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        // Then
-        sender.didSendCrashReport = { expectation.fulfill() }
-        feature.sendCrashReportIfFound()
+        await feature.sendCrashReportIfFound().value
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        // Then
         DDAssertReflectionEqual(sender.sentCrashReport, crashReport, "It should send the crash report retrieved from the `plugin`")
         let sentCrashContext = try XCTUnwrap(sender.sentCrashContext, "It should send the crash context")
         DDAssertDictionariesEqual(
@@ -51,8 +48,7 @@ class CrashReporterTests: XCTestCase {
         XCTAssertTrue(plugin.hasPurgedCrashReport == true, "It should ask to purge the crash report")
     }
 
-    func testWhenPendingCrashReportIsFound_itIsSentMessageBus() throws {
-        let expectation = self.expectation(description: "`CrashReportSender` sends the crash report to RUM feature")
+    func testWhenPendingCrashReportIsFound_itIsSentMessageBus() async throws {
         let crashContext: CrashContext = .mockRandom()
         let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
         let rumCrashReceiver = CrashReceiverMock()
@@ -74,17 +70,13 @@ class CrashReporterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        //Then
-        plugin.didReadPendingCrashReport = { expectation.fulfill() }
-        feature.sendCrashReportIfFound()
+        await feature.sendCrashReportIfFound().value
 
-        waitForExpectations(timeout: 0.5, handler: nil)
-
+        // Then
         XCTAssertNotNil(rumCrashReceiver.receivedCrash, "crash must not be empty")
     }
 
-    func testWhenPendingCrashReportIsNotFound_itDoesNothing() {
-        let expectation = self.expectation(description: "`plugin` checks the crash report")
+    func testWhenPendingCrashReportIsNotFound_itDoesNothing() async {
         let plugin = CrashReportingPluginMock()
 
         // Given
@@ -101,19 +93,15 @@ class CrashReporterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        // Then
-        plugin.didReadPendingCrashReport = { expectation.fulfill() }
-        feature.sendCrashReportIfFound()
+        await feature.sendCrashReportIfFound().value
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        // Then
         XCTAssertNil(sender.sentCrashReport, "It should not send the crash report")
         XCTAssertNil(sender.sentCrashContext, "It should not send the crash context")
-        XCTAssertTrue(plugin.hasPurgedCrashReport == false, "It should not purge the crash report")
+        XCTAssertNil(plugin.hasPurgedCrashReport, "It should not purge the crash report")
     }
 
-    func testWhenPendingCrashReportIsFoundButItHasUnavailableCrashContext_itPurgesTheCrashReportWithNoSending() {
-        let expectation = self.expectation(description: "`CrashReportSender` does not send the crash report")
-        expectation.isInverted = true
+    func testWhenPendingCrashReportIsFoundButItHasUnavailableCrashContext_itPurgesTheCrashReportWithNoSending() async {
         let plugin = CrashReportingPluginMock()
 
         // Given
@@ -130,11 +118,10 @@ class CrashReporterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        // Then
-        sender.didSendCrashReport = { expectation.fulfill() }
-        feature.sendCrashReportIfFound()
+        await feature.sendCrashReportIfFound().value
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        // Then
+        XCTAssertNil(sender.sentCrashReport, "It should not send the crash report")
         XCTAssertTrue(
             plugin.hasPurgedCrashReport == true,
             "It should ask to purge the crash report as the crash context is unavailable"
@@ -197,8 +184,7 @@ class CrashReporterTests: XCTestCase {
         }
     }
 
-    func testGivenAnyCrashWithUnauthorizedTrackingConsent_whenSending_itIsDropped() throws {
-        let expectation = self.expectation(description: "`plugin` checks the crash report")
+    func testGivenAnyCrashWithUnauthorizedTrackingConsent_whenSending_itIsDropped() async throws {
         // Given
         let core = PassthroughCoreMock()
         let lastRUMViewEvent: RUMViewEvent? = Bool.random() ? .mockRandom() : nil
@@ -207,13 +193,12 @@ class CrashReporterTests: XCTestCase {
             date: .mockDecember15th2019At10AMUTC(),
             context: CrashContext.mockWith(
                 trackingConsent: [.pending, .notGranted].randomElement()!,
-                lastRUMViewEvent: lastRUMViewEvent // no matter if in RUM session or not
+                lastRUMViewEvent: lastRUMViewEvent
             ).data
         )
 
         let plugin = CrashReportingPluginMock()
         plugin.pendingCrashReport = crashReport
-        plugin.didReadPendingCrashReport = { expectation.fulfill() }
 
         let feature = CrashReportingFeature(
             crashReportingPlugin: plugin,
@@ -224,10 +209,9 @@ class CrashReporterTests: XCTestCase {
         )
 
         // When
-        feature.sendCrashReportIfFound()
+        await feature.sendCrashReportIfFound().value
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertEqual(core.events.count, 0, "Crash must not be send as it doesn't have `.granted` consent")
     }
 
@@ -266,15 +250,14 @@ class CrashReporterTests: XCTestCase {
         )
         // swiftlint:enable opening_brace
 
-        feature.flush()
-        waitForExpectations(timeout: 0)
+        withExtendedLifetime(feature) {
+            waitForExpectations(timeout: 2)
+        }
     }
 
     // MARK: - Usage
 
-    func testGivenNoRegisteredCrashReportReceiver_whenPendingCrashReportIsFound_itPrintsWarning() {
-        let expectation = self.expectation(description: "`plugin` checks the crash report")
-
+    func testGivenNoRegisteredCrashReportReceiver_whenPendingCrashReportIsFound_itPrintsWarning() async {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -283,8 +266,6 @@ class CrashReporterTests: XCTestCase {
         plugin.pendingCrashReport = .mockWith(
             context: CrashContext.mockAny().data
         )
-
-        plugin.didReadPendingCrashReport = { expectation.fulfill() }
 
         // When
         let feature = CrashReportingFeature(
@@ -295,11 +276,9 @@ class CrashReporterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        // When
-        feature.sendCrashReportIfFound()
+        await feature.sendCrashReportIfFound().value
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
         let logs = dd.logger.warnLogs
 
         XCTAssert(logs.contains(where: { $0.message == """

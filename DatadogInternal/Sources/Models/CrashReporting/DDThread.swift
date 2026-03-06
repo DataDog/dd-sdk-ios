@@ -7,7 +7,7 @@
 import Foundation
 
 /// Unsymbolicated stack trace of a running thread.
-public struct DDThread: Codable {
+public struct DDThread: Codable, Sendable {
     /// The name of the thread, e.g. `"Thread 0"`
     public let name: String
     /// Unsymbolicated stack trace of the crash.

@@ -22,7 +22,9 @@ internal import KSCrashRecording
 /// This implementation uses KSCrash's low-level symbolication capabilities to generate
 /// backtraces for specified threads, including thread information, stack frames, and
 /// binary image metadata.
-internal struct KSCrashBacktrace: BacktraceReporting {
+/// - Safety: `@unchecked Sendable` because `telemetry` is a non-Sendable protocol
+///   from DatadogInternal (Swift 5 module), but the instance is immutable after init.
+internal struct KSCrashBacktrace: BacktraceReporting, @unchecked Sendable {
     /// Telemetry interface for reporting errors during backtrace generation.
     let telemetry: Telemetry
 
