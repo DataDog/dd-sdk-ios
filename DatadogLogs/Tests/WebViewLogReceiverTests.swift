@@ -101,7 +101,7 @@ class WebViewLogReceiverTests: XCTestCase {
                     RUMCoreContext(
                         applicationID: "123456",
                         sessionID: mockSessionID.uuidString.lowercased(),
-                        sessionSampler: Sampler.mockKeepAll()
+                        sessionSampler: .mockKeepAll()
                     )
                 ]
             )
@@ -157,7 +157,7 @@ class WebViewLogReceiverTests: XCTestCase {
                     RUMCoreContext(
                         applicationID: applicationID,
                         sessionID: sessionID,
-                        sessionSampler: Sampler.mockKeepAll(),
+                        sessionSampler: DeterministicSampler.mockKeepAll(),
                         viewID: viewID,
                         userActionID: actionID
                     )
@@ -201,7 +201,7 @@ class WebViewLogReceiverTests: XCTestCase {
                     RUMCoreContext(
                         applicationID: applicationID,
                         sessionID: sessionID,
-                        sessionSampler: Sampler.mockRejectAll()
+                        sessionSampler: .mockRejectAll()
                     )
                 ]
             ),

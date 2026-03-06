@@ -7,7 +7,7 @@
 import Foundation
 
 /// The RUM context received from `Core`.
-public struct RUMCoreContext: AdditionalContext {
+public struct RUMCoreContext: AdditionalContext, Equatable {
     /// RUM key in core additional context.
     public static let key = "rum"
     /// Current RUM application ID - standard UUID string, lowercased.
@@ -20,10 +20,10 @@ public struct RUMCoreContext: AdditionalContext {
     public let userActionID: String?
     /// Current view related server time offset
     public let viewServerTimeOffset: TimeInterval?
-    /// The sampler for the current RUM session, carrying the session seed and rate.
+    /// The deterministic sampler for the current RUM session, carrying the session seed and rate.
     /// Consumers use `sessionSampler.combined(with: childRate).sample()` to apply
     /// child-rate correction without UUID parsing.
-    public let sessionSampler: Sampling
+    public let sessionSampler: DeterministicSampler
 
     /// Creates a RUM context.
     ///
@@ -37,10 +37,10 @@ public struct RUMCoreContext: AdditionalContext {
     public init(
         applicationID: String,
         sessionID: String,
-        sessionSampler: Sampling,
+        sessionSampler: DeterministicSampler,
         viewID: String? = nil,
         userActionID: String? = nil,
-        viewServerTimeOffset: TimeInterval? = nil,
+        viewServerTimeOffset: TimeInterval? = nil
     ) {
         self.applicationID = applicationID
         self.sessionID = sessionID
@@ -48,16 +48,5 @@ public struct RUMCoreContext: AdditionalContext {
         self.viewID = viewID
         self.userActionID = userActionID
         self.viewServerTimeOffset = viewServerTimeOffset
-    }
-}
-
-extension RUMCoreContext: Equatable {
-    public static func == (lhs: RUMCoreContext, rhs: RUMCoreContext) -> Bool {
-        lhs.applicationID == rhs.applicationID
-            && lhs.sessionID == rhs.sessionID
-            && lhs.viewID == rhs.viewID
-            && lhs.userActionID == rhs.userActionID
-            && lhs.viewServerTimeOffset == rhs.viewServerTimeOffset
-            && lhs.sessionSampler.samplingRate == rhs.sessionSampler.samplingRate
     }
 }
