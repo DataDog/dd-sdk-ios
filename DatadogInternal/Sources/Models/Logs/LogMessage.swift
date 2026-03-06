@@ -6,10 +6,10 @@
 
 import Foundation
 
-public struct LogMessage {
+public struct LogMessage: Sendable {
     /// Log levels ordered by their severity, with `.debug` being the least severe and
     /// `.critical` being the most severe.
-    public enum Level: Int {
+    public enum Level: Int, Sendable {
         case debug
         case info
         case notice
@@ -35,9 +35,9 @@ public struct LogMessage {
     /// `true` if network information should be added to the log entry
     public let networkInfoEnabled: Bool?
     /// The Log user custom attributes
-    public let userAttributes: [String: Encodable]?
+    public let userAttributes: [String: Encodable & Sendable]?
     /// The Log internal attributes
-    public let internalAttributes: [String: Encodable]?
+    public let internalAttributes: [String: Encodable & Sendable]?
 
     /// Creates a Log Message to be dispatched on the message-bus.
     ///
@@ -61,8 +61,8 @@ public struct LogMessage {
         level: Level,
         thread: String,
         networkInfoEnabled: Bool?,
-        userAttributes: [String: Encodable]?,
-        internalAttributes: [String: Encodable]?
+        userAttributes: [String: Encodable & Sendable]?,
+        internalAttributes: [String: Encodable & Sendable]?
     ) {
         self.logger = logger
         self.service = service

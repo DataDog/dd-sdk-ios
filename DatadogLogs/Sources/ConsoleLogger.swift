@@ -45,7 +45,7 @@ internal final class ConsoleLogger: LoggerProtocol {
 
     // MARK: - Logging
 
-    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {
+    func log(level: LogLevel, message: String, error: Error?, attributes: [String: AttributeValue]?) {
         var errorString: String? = nil
         if let error = error {
             let ddError = DDError(error: error)
@@ -95,7 +95,7 @@ extension ConsoleLogger: InternalLoggerProtocol {
         errorKind: String?,
         errorMessage: String?,
         stackTrace: String?,
-        attributes: [String: Encodable]?
+        attributes: [String: AttributeValue]?
     ) {
         var errorString: String? = nil
         if errorKind != nil || errorMessage != nil || stackTrace != nil {
@@ -111,7 +111,7 @@ extension ConsoleLogger: InternalLoggerProtocol {
     func critical(
         message: String,
         error: Error?,
-        attributes: [String: Encodable]?,
+        attributes: [String: AttributeValue]?,
         completionHandler: @escaping CompletionHandler
     ) {
         self.critical(message, error: error, attributes: attributes)

@@ -24,7 +24,7 @@ public protocol OTSpan: Sendable {
     ///
     /// - parameter fields:    Fields to set on the span log
     /// - parameter timestamp: Timestamp to use for the span log
-    func log(fields: [String: Encodable], timestamp: Date)
+    func log(fields: [String: AttributeValue], timestamp: Date)
 
     /// Add a new baggage item or replace an existing baggage item value for the given key
     ///
@@ -66,7 +66,7 @@ public extension OTSpan {
     /// Add a new log with the supplied fields and the current timestamp
     ///
     /// - parameter fields: Fields to set on the span log
-    func log(fields: [String: Encodable]) {
+    func log(fields: [String: AttributeValue]) {
         self.log(fields: fields, timestamp: Date())
     }
 

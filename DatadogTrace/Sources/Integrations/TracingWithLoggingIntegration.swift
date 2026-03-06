@@ -33,7 +33,7 @@ internal struct TracingWithLoggingIntegration {
     func writeLog(
         withSpanContext spanContext: DDSpanContext,
         message: String? = nil,
-        fields: [String: Encodable],
+        fields: [String: AttributeValue],
         date: Date,
         else fallback: @escaping () -> Void
     ) {

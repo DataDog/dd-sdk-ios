@@ -9,7 +9,7 @@ import DatadogInternal
 
 /// Log levels ordered by their severity, with `.debug` being the least severe and
 /// `.critical` being the most severe.
-public enum LogLevel: Int, Codable {
+public enum LogLevel: Int, Codable, Sendable {
     case debug
     case info
     case notice
@@ -54,7 +54,7 @@ public protocol LoggerProtocol: Sendable {
     ///   - error: the error information (optional)
     ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
     /// the same key already exist in this logger, it will be overridden (only for this message).
-    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?)
+    func log(level: LogLevel, message: String, error: Error?, attributes: [String: AttributeValue]?)
 
     // MARK: - Attributes
 
@@ -178,7 +178,7 @@ public extension LoggerProtocol {
 }
 
 internal struct NOPLogger: LoggerProtocol {
-    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {}
+    func log(level: LogLevel, message: String, error: Error?, attributes: [String: AttributeValue]?) {}
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {}
     func removeAttribute(forKey key: AttributeKey) {}
     func addTag(withKey key: String, value: String) {}
@@ -191,7 +191,7 @@ internal struct NOPLogger: LoggerProtocol {
 internal struct CombinedLogger: LoggerProtocol {
     let combinedLoggers: [LoggerProtocol]
 
-    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {
+    func log(level: LogLevel, message: String, error: Error?, attributes: [String: AttributeValue]?) {
         combinedLoggers.forEach { $0.log(level: level, message: message, error: error, attributes: attributes) }
     }
 
@@ -227,7 +227,7 @@ extension CombinedLogger: InternalLoggerProtocol {
         errorKind: String?,
         errorMessage: String?,
         stackTrace: String?,
-        attributes: [String: Encodable]?
+        attributes: [String: AttributeValue]?
     ) {
         combinedLoggers.forEach {
             $0._internal.log(
@@ -244,7 +244,7 @@ extension CombinedLogger: InternalLoggerProtocol {
     func critical(
         message: String,
         error: Error?,
-        attributes: [String: Encodable]?,
+        attributes: [String: AttributeValue]?,
         completionHandler: @escaping CompletionHandler
     ) {
         let group = DispatchGroup()

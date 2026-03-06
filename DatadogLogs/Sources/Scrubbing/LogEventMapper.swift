@@ -8,30 +8,27 @@ import Foundation
 
 /// Data scrubbing interface.
 ///
-/// It takes `LogEvent` and call the callback with the modified `LogEvent`.
-/// Not calling the callback will drop the event.
-public protocol LogEventMapper {
+/// It takes a `LogEvent` and returns the modified event.
+/// Returning `nil` will drop the event.
+public protocol LogEventMapper: Sendable {
     /// Maps a log event for data scrubbing.
     ///
-    /// This method allow async call to the callback closure.
-    ///
-    /// - Parameters:
-    ///   - event: The event to map.
-    ///   - callback: The mapper callback with the new event.
-    func map(event: LogEvent, callback: @escaping (LogEvent) -> Void)
+    /// - Parameter event: The event to map.
+    /// - Returns: The mapped event, or `nil` to drop it.
+    func map(event: LogEvent) async -> LogEvent?
 }
 
 /// Synchronous log event mapper.
 ///
-/// The class take a flat-map closure parameter for event scrubbing
-internal final class SyncLogEventMapper: LogEventMapper {
+/// Wraps a flat-map closure for event scrubbing.
+internal final class SyncLogEventMapper: LogEventMapper, @unchecked Sendable {
     let mapper: (LogEvent) -> LogEvent?
 
     init(_ mapper: @escaping (LogEvent) -> LogEvent?) {
         self.mapper = mapper
     }
 
-    func map(event: LogEvent, callback: @escaping (LogEvent) -> Void) {
-        mapper(event).map(callback)
+    func map(event: LogEvent) async -> LogEvent? {
+        mapper(event)
     }
 }

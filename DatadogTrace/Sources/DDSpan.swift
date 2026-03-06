@@ -107,11 +107,11 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         return self
     }
 
-    func log(fields: [String: Encodable], timestamp: Date) {
+    func log(fields: [String: AttributeValue], timestamp: Date) {
         log(message: nil, fields: fields, timestamp: timestamp)
     }
 
-    func log(message: String?, fields: [String: Encodable], timestamp: Date) {
+    func log(message: String?, fields: [String: AttributeValue], timestamp: Date) {
         if warnIfFinished("log(fields:timestamp:)") {
             return
         }
@@ -160,7 +160,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         }
     }
 
-    private func sendSpanLogs(message: String?, fields: [String: Encodable], date: Date) {
+    private func sendSpanLogs(message: String?, fields: [String: AttributeValue], date: Date) {
         loggingIntegration.writeLog(withSpanContext: ddContext, message: message, fields: fields, date: date, else: {
             DD.logger.warn("The log for span \"\(self.operationName)\" will not be send, because the Logs feature is not enabled.")
         })

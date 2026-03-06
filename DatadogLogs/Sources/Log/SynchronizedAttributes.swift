@@ -13,12 +13,12 @@ import DatadogInternal
 /// need to be safely managed across multiple threads or tasks.
 internal final class SynchronizedAttributes: Sendable {
     /// The underlying dictionary of attributes, wrapped in a `ReadWriteLock` to ensure thread safety.
-    private let attributes: ReadWriteLock<[String: Encodable]>
+    private let attributes: ReadWriteLock<[String: AttributeValue]>
 
     /// Initializes a new instance of `SynchronizedAttributes` with the provided dictionary.
     ///
     /// - Parameter attributes: A dictionary of initial attributes.
-    init(attributes: [String: Encodable]) {
+    init(attributes: [String: AttributeValue]) {
         self.attributes = .init(wrappedValue: attributes)
     }
 
@@ -41,7 +41,7 @@ internal final class SynchronizedAttributes: Sendable {
     /// Retrieves the current dictionary of attributes.
     ///
     /// - Returns: A dictionary containing all the attributes.
-    func getAttributes() -> [String: Encodable] {
+    func getAttributes() -> [String: Encodable & Sendable] {
         return attributes.wrappedValue
     }
 }

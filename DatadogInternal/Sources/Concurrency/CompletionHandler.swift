@@ -7,7 +7,7 @@
 import Foundation
 
 /// Alias from completion closure with no parameter.
-public typealias CompletionHandler = () -> Void
+public typealias CompletionHandler = @Sendable () -> Void
 
 /// No-op completion function.
 ///

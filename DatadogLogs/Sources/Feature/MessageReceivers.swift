@@ -23,38 +23,43 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
         }
 
         core.scope(for: LogsFeature.self).eventWriteContext { context, writer in
-            let builder = LogEventBuilder(
-                service: log.service ?? context.service,
-                loggerName: log.logger,
-                networkInfoEnabled: log.networkInfoEnabled ?? false,
-                eventMapper: logEventMapper
-            )
+            let level: LogLevel = {
+                switch log.level {
+                case .debug: return .debug
+                case .info: return .info
+                case .notice: return .notice
+                case .warn: return .warn
+                case .error: return .error
+                case .critical: return .critical
+                }
+            }()
 
-            builder.createLogEvent(
-                date: log.date,
-                level: {
-                    switch log.level {
-                    case .debug: return .debug
-                    case .info: return .info
-                    case .notice: return .notice
-                    case .warn: return .warn
-                    case .error: return .error
-                    case .critical: return .critical
-                    }
-                }(),
-                message: log.message,
-                error: log.error,
-                errorFingerprint: nil,
-                binaryImages: nil,
-                attributes: .init(
-                    userAttributes: log.userAttributes ?? [:],
-                    internalAttributes: log.internalAttributes
-                ),
-                tags: [],
-                context: context,
-                threadName: log.thread,
-                callback: writer.write
-            )
+            Task {
+                let builder = LogEventBuilder(
+                    service: log.service ?? context.service,
+                    loggerName: log.logger,
+                    networkInfoEnabled: log.networkInfoEnabled ?? false,
+                    eventMapper: logEventMapper
+                )
+
+                let event = await builder.createLogEvent(
+                    date: log.date,
+                    level: level,
+                    message: log.message,
+                    error: log.error,
+                    errorFingerprint: nil,
+                    binaryImages: nil,
+                    attributes: .init(
+                        userAttributes: log.userAttributes ?? [:],
+                        internalAttributes: log.internalAttributes
+                    ),
+                    tags: [],
+                    context: context,
+                    threadName: log.thread
+                )
+
+                writer.write(value: event)
+            }
         }
 
         return true

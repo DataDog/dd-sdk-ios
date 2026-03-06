@@ -75,8 +75,8 @@ class LogsTests: XCTestCase {
 
     func testConfigurationInternalOverrides() throws {
         struct LogEventMapperMock: LogEventMapper {
-            func map(event: DatadogLogs.LogEvent, callback: @escaping (DatadogLogs.LogEvent) -> Void) {
-                callback(event)
+            func map(event: DatadogLogs.LogEvent) async -> DatadogLogs.LogEvent? {
+                event
             }
         }
 

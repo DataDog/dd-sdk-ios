@@ -46,9 +46,9 @@ public struct LogEvent: Encodable {
         }
 
         /// Log custom attributes, They are subject for sanitization.
-        public var userAttributes: [String: Encodable]
+        public var userAttributes: [String: AttributeValue]
         /// Log attributes added internally by the SDK. They are not a subject for sanitization.
-        internal let internalAttributes: [String: Encodable]?
+        internal let internalAttributes: [String: AttributeValue]?
     }
 
     /// Error description associated with a log event.

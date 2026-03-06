@@ -10,9 +10,7 @@ import DatadogInternal
 @testable import DatadogLogs
 
 class LogEventBuilderTests: XCTestCase {
-    func testItBuildsLogEventWithLogInformation() throws {
-        let expectation = expectation(description: "build log event")
-
+    func testItBuildsLogEventWithLogInformation() async throws {
         let randomDate: Date = .mockRandomInThePast()
         let randomLevel: LogLevel = .mockRandom()
         let randomMessage: String = .mockRandom()
@@ -41,7 +39,7 @@ class LogEventBuilderTests: XCTestCase {
         )
 
         // When
-        builder.createLogEvent(
+        let log = await builder.createLogEvent(
             date: randomDate,
             level: randomLevel,
             message: randomMessage,
@@ -66,40 +64,34 @@ class LogEventBuilderTests: XCTestCase {
                 )
             ),
             threadName: randomThreadName
-        ) { log in
-            // Then
-            XCTAssertEqual(log.date, randomDate)
-            XCTAssertEqual(log.status, self.expectedLogStatus(for: randomLevel))
-            XCTAssertEqual(log.message, randomMessage)
-            XCTAssertEqual(log.error?.kind, randomError.type)
-            XCTAssertEqual(log.error?.message, randomError.message)
-            XCTAssertEqual(log.error?.stack, randomError.stack)
-            XCTAssertEqual(log.error?.sourceType, "ios")
-            XCTAssertEqual(log.error?.fingerprint, randomErrorFingerprint)
-            XCTAssertEqual(log.attributes, randomAttributes)
-            XCTAssertEqual(log.tags.map { Set($0) }, randomTags)
-            XCTAssertEqual(log.serviceName, randomService)
-            XCTAssertEqual(log.loggerName, randomLoggerName)
-            XCTAssertEqual(log.threadName, randomThreadName)
-            XCTAssertEqual(log.device.brand, "Apple")
-            XCTAssertEqual(log.device.name, randomName)
-            XCTAssertEqual(log.device.model, randomModel)
-            XCTAssertEqual(log.device.architecture, randomArchitecture)
-            XCTAssertEqual(log.device.logicalCpuCount, randomProcessorCount)
-            XCTAssertEqual(log.device.totalRam, randomTotalRam)
-            XCTAssertEqual(log.os.name, randomOsName)
-            XCTAssertEqual(log.os.version, randomOsVersion)
-            XCTAssertEqual(log.os.build, randomOsBuildNumber)
+        ) as! LogEvent
 
-            expectation.fulfill()
-        }
-
-        wait(for: [expectation], timeout: 0)
+        // Then
+        XCTAssertEqual(log.date, randomDate)
+        XCTAssertEqual(log.status, expectedLogStatus(for: randomLevel))
+        XCTAssertEqual(log.message, randomMessage)
+        XCTAssertEqual(log.error?.kind, randomError.type)
+        XCTAssertEqual(log.error?.message, randomError.message)
+        XCTAssertEqual(log.error?.stack, randomError.stack)
+        XCTAssertEqual(log.error?.sourceType, "ios")
+        XCTAssertEqual(log.error?.fingerprint, randomErrorFingerprint)
+        XCTAssertEqual(log.attributes, randomAttributes)
+        XCTAssertEqual(log.tags.map { Set($0) }, randomTags)
+        XCTAssertEqual(log.serviceName, randomService)
+        XCTAssertEqual(log.loggerName, randomLoggerName)
+        XCTAssertEqual(log.threadName, randomThreadName)
+        XCTAssertEqual(log.device.brand, "Apple")
+        XCTAssertEqual(log.device.name, randomName)
+        XCTAssertEqual(log.device.model, randomModel)
+        XCTAssertEqual(log.device.architecture, randomArchitecture)
+        XCTAssertEqual(log.device.logicalCpuCount, randomProcessorCount)
+        XCTAssertEqual(log.device.totalRam, randomTotalRam)
+        XCTAssertEqual(log.os.name, randomOsName)
+        XCTAssertEqual(log.os.version, randomOsVersion)
+        XCTAssertEqual(log.os.build, randomOsBuildNumber)
     }
 
-    func testItBuildsLogEventWithSDKContextInformation() throws {
-        let expectation = expectation(description: "build log event")
-
+    func testItBuildsLogEventWithSDKContextInformation() async throws {
         let randomDate: Date = .mockRandomInThePast()
         let randomApplicationVersion: String = .mockRandom()
         let randomApplicationBuildNumber: String = .mockRandom()
@@ -146,45 +138,42 @@ class LogEventBuilderTests: XCTestCase {
         )
 
         // When
-        builder.createLogEvent(
-            date: randomDate,
-            level: .mockAny(),
-            message: .mockAny(),
-            error: .mockAny(),
-            errorFingerprint: .mockAny(),
-            binaryImages: .mockAny(),
-            attributes: .mockAny(),
-            tags: .mockAny(),
-            context: randomSDKContext,
-            threadName: .mockAny()
-        ) { log in
-            // Then
-            XCTAssertEqual(log.date, randomDate.addingTimeInterval(randomServerOffset), "It must correct date with server offset")
-            XCTAssertEqual(log.environment, randomSDKContext.env)
-            XCTAssertEqual(log.applicationVersion, randomSDKContext.version)
-            XCTAssertEqual(log.applicationBuildNumber, randomSDKContext.buildNumber)
-            XCTAssertEqual(log.loggerVersion, randomSDKContext.sdkVersion)
-            XCTAssertNil(log.buildId)
-            XCTAssertEqual(log.userInfo.id, randomUserInfo.id)
-            XCTAssertEqual(log.userInfo.name, randomUserInfo.name)
-            XCTAssertEqual(log.userInfo.email, randomUserInfo.email)
-            DDAssertDictionariesEqual(log.userInfo.extraInfo, randomUserInfo.extraInfo)
-            XCTAssertEqual(log.networkConnectionInfo, randomNetworkInfo)
-            XCTAssertEqual(log.mobileCarrierInfo, randomCarrierInfo)
-            XCTAssertEqual(log.device.brand, "Apple")
-            XCTAssertEqual(log.device.name, randomName)
-            XCTAssertEqual(log.device.model, randomModel)
-            XCTAssertEqual(log.device.logicalCpuCount, randomProcessorCount)
-            XCTAssertEqual(log.device.totalRam, randomTotalRam)
-            XCTAssertEqual(log.os.version, randomOSVersion)
-            XCTAssertEqual(log.os.build, randomOSBuild)
-            expectation.fulfill()
-        }
+        let log = await builder.createLogEvent(
+                date: randomDate,
+                level: .mockAny(),
+                message: .mockAny(),
+                error: .mockAny(),
+                errorFingerprint: .mockAny(),
+                binaryImages: .mockAny(),
+                attributes: .mockAny(),
+                tags: .mockAny(),
+                context: randomSDKContext,
+                threadName: .mockAny()
+            ) as! LogEvent
 
-        wait(for: [expectation], timeout: 0)
+        // Then
+        XCTAssertEqual(log.date, randomDate.addingTimeInterval(randomServerOffset), "It must correct date with server offset")
+        XCTAssertEqual(log.environment, randomSDKContext.env)
+        XCTAssertEqual(log.applicationVersion, randomSDKContext.version)
+        XCTAssertEqual(log.applicationBuildNumber, randomSDKContext.buildNumber)
+        XCTAssertEqual(log.loggerVersion, randomSDKContext.sdkVersion)
+        XCTAssertNil(log.buildId)
+        XCTAssertEqual(log.userInfo.id, randomUserInfo.id)
+        XCTAssertEqual(log.userInfo.name, randomUserInfo.name)
+        XCTAssertEqual(log.userInfo.email, randomUserInfo.email)
+        DDAssertDictionariesEqual(log.userInfo.extraInfo, randomUserInfo.extraInfo)
+        XCTAssertEqual(log.networkConnectionInfo, randomNetworkInfo)
+        XCTAssertEqual(log.mobileCarrierInfo, randomCarrierInfo)
+        XCTAssertEqual(log.device.brand, "Apple")
+        XCTAssertEqual(log.device.name, randomName)
+        XCTAssertEqual(log.device.model, randomModel)
+        XCTAssertEqual(log.device.logicalCpuCount, randomProcessorCount)
+        XCTAssertEqual(log.device.totalRam, randomTotalRam)
+        XCTAssertEqual(log.os.version, randomOSVersion)
+        XCTAssertEqual(log.os.build, randomOSBuild)
     }
 
-    func testGivenContextWithBuildID_whenBuildingLog_itSetsBuildId() throws {
+    func testGivenContextWithBuildID_whenBuildingLog_itSetsBuildId() async throws {
         // Given
         let buildId: String = .mockRandom()
         let randomSDKContext: DatadogContext = .mockWith(
@@ -199,25 +188,24 @@ class LogEventBuilderTests: XCTestCase {
             eventMapper: nil
         )
 
-        builder.createLogEvent(
-            date: .mockRandom(),
-            level: .mockAny(),
-            message: .mockAny(),
-            error: .mockAny(),
-            errorFingerprint: .mockAny(),
-            binaryImages: .mockAny(),
-            attributes: .mockAny(),
-            tags: .mockAny(),
-            context: randomSDKContext,
-            threadName: .mockAny()
-        ) { log in
-            XCTAssertEqual(log.buildId, buildId)
-        }
+        let log = await builder.createLogEvent(
+                date: .mockRandom(),
+                level: .mockAny(),
+                message: .mockAny(),
+                error: .mockAny(),
+                errorFingerprint: .mockAny(),
+                binaryImages: .mockAny(),
+                attributes: .mockAny(),
+                tags: .mockAny(),
+                context: randomSDKContext,
+                threadName: .mockAny()
+            ) as! LogEvent
+
+        // Then
+        XCTAssertEqual(log.buildId, buildId)
     }
 
-    func testGivenSendNetworkInfoDisabled_whenBuildingLog_itDoesNotSetConnectionAndCarrierInfo() throws {
-        let expectation = expectation(description: "build log event")
-
+    func testGivenSendNetworkInfoDisabled_whenBuildingLog_itDoesNotSetConnectionAndCarrierInfo() async throws {
         // Given
         let builder = LogEventBuilder(
             service: .mockAny(),
@@ -227,35 +215,30 @@ class LogEventBuilderTests: XCTestCase {
         )
 
         // When
-        builder.createLogEvent(
-            date: .mockAny(),
-            level: .mockAny(),
-            message: .mockAny(),
-            error: .mockAny(),
-            errorFingerprint: .mockAny(),
-            binaryImages: .mockAny(),
-            attributes: .mockAny(),
-            tags: .mockAny(),
-            context: .mockWith(
-                networkConnectionInfo: .mockAny(),
-                carrierInfo: .mockAny()
-            ),
-            threadName: .mockAny()
-        ) { log in
-            // Then
-            XCTAssertNil(log.networkConnectionInfo)
-            XCTAssertNil(log.mobileCarrierInfo)
-            expectation.fulfill()
-        }
+        let log = try await builder.createLogEvent(
+                date: .mockAny(),
+                level: .mockAny(),
+                message: .mockAny(),
+                error: .mockAny(),
+                errorFingerprint: .mockAny(),
+                binaryImages: .mockAny(),
+                attributes: .mockAny(),
+                tags: .mockAny(),
+                context: .mockWith(
+                    networkConnectionInfo: .mockAny(),
+                    carrierInfo: .mockAny()
+                ),
+                threadName: .mockAny()
+            ) as! LogEvent
 
-        wait(for: [expectation], timeout: 0)
+        // Then
+        XCTAssertNil(log.networkConnectionInfo)
+        XCTAssertNil(log.mobileCarrierInfo)
     }
 
     // MARK: - Events Mapping
 
-    func testGivenBuilderWithEventMapper_whenEventIsModified_itBuildsModifiedEvent() throws {
-        let expectation = expectation(description: "build log event")
-
+    func testGivenBuilderWithEventMapper_whenEventIsModified_itBuildsModifiedEvent() async throws {
         // Given
         let builder = LogEventBuilder(
             service: .mockAny(),
@@ -269,30 +252,24 @@ class LogEventBuilderTests: XCTestCase {
         )
 
         // When
-        builder.createLogEvent(
-            date: .mockAny(),
-            level: .mockAny(),
-            message: "original message",
-            error: .mockAny(),
-            errorFingerprint: .mockAny(),
-            binaryImages: .mockAny(),
-            attributes: .mockAny(),
-            tags: .mockAny(),
-            context: .mockAny(),
-            threadName: .mockAny()
-        ) { log in
-            // Then
-            XCTAssertEqual(log.message, "modified message")
-            expectation.fulfill()
-        }
+        let log = try await builder.createLogEvent(
+                date: .mockAny(),
+                level: .mockAny(),
+                message: "original message",
+                error: .mockAny(),
+                errorFingerprint: .mockAny(),
+                binaryImages: .mockAny(),
+                attributes: .mockAny(),
+                tags: .mockAny(),
+                context: .mockAny(),
+                threadName: .mockAny()
+            ) as! LogEvent
 
-        wait(for: [expectation], timeout: 0)
+        // Then
+        XCTAssertEqual(log.message, "modified message")
     }
 
-    func testGivenBuilderWithEventMapper_whenEventIsDropped_thenCallbackIsNotCalled() throws {
-        let expectation = expectation(description: "build log event")
-        expectation.isInverted = true
-
+    func testGivenBuilderWithEventMapper_whenEventIsDropped_itReturnsNil() async throws {
         // Given
         let builder = LogEventBuilder(
             service: .mockAny(),
@@ -304,7 +281,7 @@ class LogEventBuilderTests: XCTestCase {
         )
 
         // When
-        builder.createLogEvent(
+        let log = await builder.createLogEvent(
             date: .mockAny(),
             level: .mockAny(),
             message: .mockAny(),
@@ -315,11 +292,10 @@ class LogEventBuilderTests: XCTestCase {
             tags: .mockAny(),
             context: .mockAny(),
             threadName: .mockAny()
-        ) { _ in
-            expectation.fulfill()
-        }
+        )
 
-        wait(for: [expectation], timeout: 0)
+        // Then
+        XCTAssertNil(log)
     }
 
     // MARK: - Helpers

@@ -8,7 +8,7 @@ let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment[
 
 let package = Package(
     name: "Datadog",
-    platforms: [.iOS(.v12), .tvOS(.v12), .macOS(.v12), .watchOS(.v7)],
+    platforms: [.iOS(.v13), .tvOS(.v13), .macOS(.v13), .watchOS(.v7)],
     products: [
         .library(
             name: "DatadogCore",
@@ -89,7 +89,10 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogInternal"),
             ],
-            path: "DatadogLogs/Sources"
+            path: "DatadogLogs/Sources",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
         ),
         .testTarget(
             name: "DatadogLogsTests",

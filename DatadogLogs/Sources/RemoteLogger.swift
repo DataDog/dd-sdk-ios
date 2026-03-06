@@ -96,11 +96,11 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
 
     // MARK: - Logging
 
-    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?) {
+    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable & Sendable]?) {
         internalLog(level: level, message: message, error: error.map { DDError(error: $0) }, attributes: attributes)
     }
 
-    func internalLog(level: LogLevel, message: String, error: DDError?, attributes: [String: Encodable]?, completionHandler: @escaping CompletionHandler = NOPCompletionHandler) {
+    func internalLog(level: LogLevel, message: String, error: DDError?, attributes: [String: Encodable & Sendable]?, completionHandler: @escaping CompletionHandler = NOPCompletionHandler) {
         guard configuration.sampler.sample() else {
             return
         }
@@ -123,8 +123,8 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
         let userAttributes = loggerAttributes
             .merging(logAttributes ?? [:]) { $1 } // prefer `logAttributes``
 
-        let combinedAttributes: [String: any Encodable] = globalAttributes
-            .merging(userAttributes) { $1 } // prefer `userAttribute`
+        let combinedAttributes: [String: AttributeValue] = globalAttributes
+            .merging(userAttributes) { $1 }
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
@@ -133,7 +133,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
                 return
             }
 
-            var internalAttributes: [String: Encodable] = [:]
+            var internalAttributes: [String: AttributeValue] = [:]
 
             // When bundle with RUM is enabled, link RUM context (if available):
             if self.rumContextIntegration, let rum = context.additionalContext(ofType: RUMCoreContext.self) {
@@ -163,21 +163,25 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
                 eventMapper: self.configuration.eventMapper
             )
 
-            builder.createLogEvent(
-                date: date,
-                level: level,
-                message: message,
-                error: error,
-                errorFingerprint: errorFingerprint,
-                binaryImages: binaryImages,
-                attributes: .init(
-                    userAttributes: combinedAttributes,
-                    internalAttributes: internalAttributes
-                ),
-                tags: tags,
-                context: context,
-                threadName: threadName
-            ) { log in
+            Task {
+                guard let log = await builder.createLogEvent(
+                    date: date,
+                    level: level,
+                    message: message,
+                    error: error,
+                    errorFingerprint: errorFingerprint,
+                    binaryImages: binaryImages,
+                    attributes: .init(
+                        userAttributes: combinedAttributes,
+                        internalAttributes: internalAttributes
+                    ),
+                    tags: tags,
+                    context: context,
+                    threadName: threadName
+                ) else {
+                    return
+                }
+
                 writer.write(value: log, completion: completionHandler)
 
                 guard log.status == .error || log.status == .critical else {
@@ -218,7 +222,7 @@ extension RemoteLogger: InternalLoggerProtocol {
         errorKind: String?,
         errorMessage: String?,
         stackTrace: String?,
-        attributes: [String: Encodable]?
+        attributes: [String: AttributeValue]?
     ) {
         var ddError: DDError?
         // Find and remove source_type if it's in the attributes
@@ -237,7 +241,7 @@ extension RemoteLogger: InternalLoggerProtocol {
     func critical(
         message: String,
         error: Error?,
-        attributes: [String: Encodable]?,
+        attributes: [String: AttributeValue]?,
         completionHandler: @escaping CompletionHandler
     ) {
         internalLog(

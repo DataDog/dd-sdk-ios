@@ -60,7 +60,7 @@ public typealias AttributeKey = String
 /// Attributes in Datadog console can be nested up to 10 levels deep. If number of nested attribute levels
 /// defined as sum of key levels and value levels exceeds 10, the data may not be delivered.
 ///
-public typealias AttributeValue = Encodable
+public typealias AttributeValue = Encodable & Sendable
 
 // MARK: - Internal attributes
 
@@ -214,11 +214,11 @@ public struct LaunchArguments {
 }
 
 extension DatadogExtension where ExtendedType == [String: Any] {
-    public var swiftAttributes: [String: Encodable] {
+    public var swiftAttributes: [String: AttributeValue] {
         type.mapValues { AnyEncodable($0) }
     }
 
-    public var swiftSendableAttributes: [String: Encodable & Sendable] {
+    public var swiftSendableAttributes: [String: AttributeValue] {
         type.mapValues { AnyEncodable($0) }
     }
 }
@@ -229,24 +229,24 @@ extension DatadogExtension where ExtendedType == [String: Encodable] {
     }
 }
 
-extension DatadogExtension where ExtendedType == [String: Encodable & Sendable] {
+extension DatadogExtension where ExtendedType == [String: AttributeValue] {
     public var objCAttributes: [String: Any] {
         type.compactMapValues { ($0 as? AnyEncodable)?.value }
     }
 }
 
-extension AttributeValue {
+extension Encodable {
     /// Instance Datadog extension point.
     ///
-    /// `AttributeValue` aka `Encodable` is a protocol and cannot be extended
-    /// with conformance to`DatadogExtension`, so we need to define the `dd`
+    /// `Encodable` is a protocol and cannot be extended
+    /// with conformance to `DatadogExtension`, so we need to define the `dd`
     /// endpoint.
-    public var dd: DatadogExtension<AttributeValue> {
+    public var dd: DatadogExtension<any Encodable> {
         DatadogExtension(self)
     }
 }
 
-extension DatadogExtension where ExtendedType == AttributeValue {
+extension DatadogExtension where ExtendedType == any Encodable {
     public func decode<T>(_: T.Type = T.self) -> T? {
         switch type {
         case let encodable as _AnyEncodable:
