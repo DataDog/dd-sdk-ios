@@ -5,4 +5,4 @@ packaging==23.2
 pluggy==1.6.0
 pytest==7.4.4
 smmap==5.0.2
-tomli==2.0.2
+tomli==2.4.0
