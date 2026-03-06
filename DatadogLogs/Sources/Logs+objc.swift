@@ -74,7 +74,7 @@ public final class objc_LogsConfiguration: NSObject {
     ///
     /// The implementation should obtain a mutable version of the `DDLogEvent`, modify it and return it. Returning `nil` will result
     /// with dropping the Log event entirely, so it won't be send to Datadog.
-    public func setEventMapper(_ mapper: @escaping (objc_LogEvent) -> objc_LogEvent?) {
+    public func setEventMapper(_ mapper: @escaping @Sendable (objc_LogEvent) -> objc_LogEvent?) {
         configuration.eventMapper = { swiftEvent in
             let objcEvent = objc_LogEvent(swiftModel: swiftEvent)
             return mapper(objcEvent)?.swiftModel

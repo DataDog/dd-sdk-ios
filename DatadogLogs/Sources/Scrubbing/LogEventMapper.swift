@@ -21,10 +21,10 @@ public protocol LogEventMapper: Sendable {
 /// Synchronous log event mapper.
 ///
 /// Wraps a flat-map closure for event scrubbing.
-internal final class SyncLogEventMapper: LogEventMapper, @unchecked Sendable {
-    let mapper: (LogEvent) -> LogEvent?
+internal final class SyncLogEventMapper: LogEventMapper {
+    let mapper: @Sendable (LogEvent) -> LogEvent?
 
-    init(_ mapper: @escaping (LogEvent) -> LogEvent?) {
+    init(_ mapper: @escaping @Sendable (LogEvent) -> LogEvent?) {
         self.mapper = mapper
     }
 
