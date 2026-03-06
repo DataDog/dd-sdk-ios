@@ -148,23 +148,18 @@ class LoggerTests: XCTestCase {
         XCTAssertTrue(logger is NOPLogger)
     }
 
-    func testWhenCriticalLoggedFromInternal_itCallCompletionOnce() throws {
-        let completionExpectation = expectation(description: "Error processing completion")
-        completionExpectation.assertForOverFulfill = true
-
+    func testWhenCriticalLoggedFromInternal_itCompletes() async throws {
         // Given
         let logger = Logger.create(with: Logger.Configuration(consoleLogFormat: .short), in: core)
 
         // When
-        logger._internal.critical(
+        await logger._internal.critical(
             message: "test",
             error: nil,
-            attributes: nil,
-            completionHandler: completionExpectation.fulfill
+            attributes: nil
         )
 
         // Then
-        wait(for: [completionExpectation], timeout: 0.5)
         XCTAssertTrue(logger is CombinedLogger)
     }
 

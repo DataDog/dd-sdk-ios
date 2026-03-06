@@ -9,7 +9,7 @@ import DatadogInternal
 
 /// `Logger` sending logs to Datadog.
 internal final class RemoteLogger: LoggerProtocol, Sendable {
-    struct Configuration: @unchecked Sendable {
+    struct Configuration: Sendable {
         /// The `service` value for logs.
         /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
         let service: String?
@@ -96,23 +96,36 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
 
     // MARK: - Logging
 
-    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable & Sendable]?) {
-        internalLog(level: level, message: message, error: error.map { DDError(error: $0) }, attributes: attributes)
+    /// Holds all state captured synchronously on the user thread before
+    /// handing off to the async write path.
+    private struct PreparedLogContext {
+        let date: Date
+        let threadName: String
+        let level: LogLevel
+        let message: String
+        let error: DDError?
+        let tags: Set<String>
+        let combinedAttributes: [String: AttributeValue]
+        let errorFingerprint: String?
+        let addBinaryImages: Bool
     }
 
-    func internalLog(level: LogLevel, message: String, error: DDError?, attributes: [String: Encodable & Sendable]?, completionHandler: @escaping CompletionHandler = NOPCompletionHandler) {
-        guard configuration.sampler.sample() else {
-            return
-        }
-        guard level.rawValue >= configuration.threshold.rawValue else {
-            return
-        }
+    /// Captures all user-thread-sensitive state synchronously.
+    /// Returns `nil` if the log should be dropped (sampled out or below threshold).
+    private func prepareLogContext(
+        level: LogLevel,
+        message: String,
+        error: DDError?,
+        attributes: [String: Encodable & Sendable]?
+    ) -> PreparedLogContext? {
+        guard configuration.sampler.sample() else { return nil }
+        guard level.rawValue >= configuration.threshold.rawValue else { return nil }
 
         // on user thread:
         let date = dateProvider.now
         let threadName = Thread.current.dd.name
 
-        // capture current tags and attributes before opening the write event context
+        // capture current tags and attributes before handing off to the async write path
         let tags = loggerTags.getTags()
         let globalAttributes = globalAttributes.getAttributes()
         let loggerAttributes = loggerAttributes.getAttributes()
@@ -121,97 +134,119 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
         let errorFingerprint: String? = logAttributes?.removeValue(forKey: Logs.Attributes.errorFingerprint)?.dd.decode()
         let addBinaryImages = logAttributes?.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() ?? false
         let userAttributes = loggerAttributes
-            .merging(logAttributes ?? [:]) { $1 } // prefer `logAttributes``
+            .merging(logAttributes ?? [:]) { $1 } // prefer `logAttributes`
 
         let combinedAttributes: [String: AttributeValue] = globalAttributes
             .merging(userAttributes) { $1 }
 
+        return PreparedLogContext(
+            date: date,
+            threadName: threadName,
+            level: level,
+            message: message,
+            error: error,
+            tags: tags,
+            combinedAttributes: combinedAttributes,
+            errorFingerprint: errorFingerprint,
+            addBinaryImages: addBinaryImages
+        )
+    }
+
+    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable & Sendable]?) {
+        guard let prepared = prepareLogContext(level: level, message: message, error: error.map { DDError(error: $0) }, attributes: attributes) else {
+            return
+        }
+        Task { [weak self] in
+            await self?.writeLog(prepared)
+        }
+    }
+
+    /// Async write path — bridges `eventWriteContext`, builds the event, and writes it.
+    private func writeLog(_ prepared: PreparedLogContext) async {
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
-        featureScope.eventWriteContext { [weak self] context, writer in
-            guard let self else {
-                return
-            }
-
-            var internalAttributes: [String: AttributeValue] = [:]
-
-            // When bundle with RUM is enabled, link RUM context (if available):
-            if self.rumContextIntegration, let rum = context.additionalContext(ofType: RUMCoreContext.self) {
-                internalAttributes[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
-                internalAttributes[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
-                internalAttributes[LogEvent.Attributes.RUM.viewID] = rum.viewID
-                internalAttributes[LogEvent.Attributes.RUM.actionID] = rum.userActionID
-            }
-
-            // When bundle with Trace is enabled, link Trace context (if available):
-            if self.activeSpanIntegration, let spanContext = context.additionalContext(ofType: TraceCoreContext.Span.self) {
-                internalAttributes[LogEvent.Attributes.Trace.traceID] = spanContext.traceID
-                internalAttributes[LogEvent.Attributes.Trace.spanID] = spanContext.spanID
-            }
-
-            // When binary images are requested, add them
-            var binaryImages: [BinaryImage]?
-            if addBinaryImages {
-                // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
-                binaryImages = try? self.backtraceReporter?.generateBacktrace()?.binaryImages
-            }
-
-            let builder = LogEventBuilder(
-                service: self.configuration.service ?? context.service,
-                loggerName: self.configuration.name,
-                networkInfoEnabled: self.configuration.networkInfoEnabled,
-                eventMapper: self.configuration.eventMapper
-            )
-
-            Task {
-                guard let log = await builder.createLogEvent(
-                    date: date,
-                    level: level,
-                    message: message,
-                    error: error,
-                    errorFingerprint: errorFingerprint,
-                    binaryImages: binaryImages,
-                    attributes: .init(
-                        userAttributes: combinedAttributes,
-                        internalAttributes: internalAttributes
-                    ),
-                    tags: tags,
-                    context: context,
-                    threadName: threadName
-                ) else {
-                    return
-                }
-
-                writer.write(value: log, completion: completionHandler)
-
-                guard log.status == .error || log.status == .critical else {
-                    return
-                }
-
-                // Add back in fingerprint and error source type
-                var busCombinedAttributes = combinedAttributes
-                if let errorSourcetype = error?.sourceType {
-                    busCombinedAttributes[CrossPlatformAttributes.errorSourceType] = errorSourcetype
-                }
-                if let errorFingerprint = errorFingerprint {
-                    busCombinedAttributes[Logs.Attributes.errorFingerprint] = errorFingerprint
-                }
-
-                self.featureScope.send(
-                    message: .payload(
-                        RUMErrorMessage(
-                            time: date,
-                            message: log.error?.message ?? log.message,
-                            source: "logger",
-                            type: log.error?.kind,
-                            stack: log.error?.stack,
-                            attributes: busCombinedAttributes,
-                            binaryImages: binaryImages
-                        )
-                    )
-                )
+        let (context, writer) = await withCheckedContinuation { continuation in
+            featureScope.eventWriteContext { context, writer in
+                continuation.resume(returning: (context, writer))
             }
         }
+
+        var internalAttributes: [String: AttributeValue] = [:]
+
+        // When bundle with RUM is enabled, link RUM context (if available):
+        if rumContextIntegration, let rum = context.additionalContext(ofType: RUMCoreContext.self) {
+            internalAttributes[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
+            internalAttributes[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
+            internalAttributes[LogEvent.Attributes.RUM.viewID] = rum.viewID
+            internalAttributes[LogEvent.Attributes.RUM.actionID] = rum.userActionID
+        }
+
+        // When bundle with Trace is enabled, link Trace context (if available):
+        if activeSpanIntegration, let spanContext = context.additionalContext(ofType: TraceCoreContext.Span.self) {
+            internalAttributes[LogEvent.Attributes.Trace.traceID] = spanContext.traceID
+            internalAttributes[LogEvent.Attributes.Trace.spanID] = spanContext.spanID
+        }
+
+        // When binary images are requested, add them
+        var binaryImages: [BinaryImage]?
+        if prepared.addBinaryImages {
+            // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
+            binaryImages = try? backtraceReporter?.generateBacktrace()?.binaryImages
+        }
+
+        let builder = LogEventBuilder(
+            service: configuration.service ?? context.service,
+            loggerName: configuration.name,
+            networkInfoEnabled: configuration.networkInfoEnabled,
+            eventMapper: configuration.eventMapper
+        )
+
+        guard let log = await builder.createLogEvent(
+            date: prepared.date,
+            level: prepared.level,
+            message: prepared.message,
+            error: prepared.error,
+            errorFingerprint: prepared.errorFingerprint,
+            binaryImages: binaryImages,
+            attributes: .init(
+                userAttributes: prepared.combinedAttributes,
+                internalAttributes: internalAttributes
+            ),
+            tags: prepared.tags,
+            context: context,
+            threadName: prepared.threadName
+        ) else {
+            return
+        }
+
+        writer.write(value: log)
+
+        guard log.status == .error || log.status == .critical else {
+            return
+        }
+
+        // Add back in fingerprint and error source type
+        var busCombinedAttributes = prepared.combinedAttributes
+        if let errorSourcetype = prepared.error?.sourceType {
+            busCombinedAttributes[CrossPlatformAttributes.errorSourceType] = errorSourcetype
+        }
+        if let errorFingerprint = prepared.errorFingerprint {
+            busCombinedAttributes[Logs.Attributes.errorFingerprint] = errorFingerprint
+        }
+
+        featureScope.send(
+            message: .payload(
+                RUMErrorMessage(
+                    time: prepared.date,
+                    message: log.error?.message ?? log.message,
+                    source: "logger",
+                    type: log.error?.kind,
+                    stack: log.error?.stack,
+                    attributes: busCombinedAttributes,
+                    binaryImages: binaryImages
+                )
+            )
+        )
     }
 }
 
@@ -235,21 +270,22 @@ extension RemoteLogger: InternalLoggerProtocol {
             ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "", sourceType: sourceType ?? "ios")
         }
 
-        internalLog(level: level, message: message, error: ddError, attributes: logAttributes)
+        guard let prepared = prepareLogContext(level: level, message: message, error: ddError, attributes: logAttributes) else {
+            return
+        }
+        Task { [weak self] in
+            await self?.writeLog(prepared)
+        }
     }
 
     func critical(
         message: String,
         error: Error?,
-        attributes: [String: AttributeValue]?,
-        completionHandler: @escaping CompletionHandler
-    ) {
-        internalLog(
-            level: .critical,
-            message: message,
-            error: error.map { DDError(error: $0) },
-            attributes: attributes,
-            completionHandler: completionHandler
-        )
+        attributes: [String: AttributeValue]?
+    ) async {
+        guard let prepared = prepareLogContext(level: .critical, message: message, error: error.map { DDError(error: $0) }, attributes: attributes) else {
+            return
+        }
+        await writeLog(prepared)
     }
 }
