@@ -110,7 +110,6 @@ internal class Monitor: RUMCommandSubscriber {
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
     private let telemetry: Telemetry
-    private let sampleRate: SampleRate
 
     init(
         dependencies: RUMScopeDependencies,
@@ -122,7 +121,6 @@ internal class Monitor: RUMCommandSubscriber {
         self.fatalErrorContext = dependencies.fatalErrorContext
         self.rumUUIDGenerator = dependencies.rumUUIDGenerator
         self.telemetry = dependencies.telemetry
-        self.sampleRate = dependencies.samplingRate
     }
 
     func process(command: RUMCommand) {
@@ -150,17 +148,21 @@ internal class Monitor: RUMCommandSubscriber {
                     return nil
                 }
 
-                let context = self.scopes.activeSession?.viewScopes.last?.context ??
-                                self.scopes.activeSession?.context ??
+                guard let activeSession = self.scopes.activeSession else {
+                    return nil
+                }
+
+                let context = activeSession.viewScopes.last?.context ??
+                                activeSession.context ??
                                 self.scopes.context
 
                 return RUMCoreContext(
                     applicationID: context.rumApplicationID,
                     sessionID: context.sessionID.rawValue.uuidString.lowercased(),
-                    sessionSampler: DeterministicSampler(uuid: context.sessionID.rawValue.uuidString, samplingRate: sampleRate),
+                    sessionSampler: activeSession.sampler,
                     viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
                     userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
-                    viewServerTimeOffset: self.scopes.activeSession?.viewScopes.last?.serverTimeOffset
+                    viewServerTimeOffset: activeSession.viewScopes.last?.serverTimeOffset
                 )
             }
         )
@@ -227,7 +229,7 @@ extension Monitor: RUMMonitorProtocol {
             }
 
             var sessionIdValue: String? = nil
-            if activeSession.isSampled, activeSession.sessionUUID != .nullUUID {
+            if activeSession.sampler.isSampled, activeSession.sessionUUID != .nullUUID {
                 sessionIdValue = activeSession.sessionUUID.rawValue.uuidString
             }
 

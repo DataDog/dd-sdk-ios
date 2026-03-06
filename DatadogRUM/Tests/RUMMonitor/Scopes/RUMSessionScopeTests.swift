@@ -35,7 +35,7 @@ class RUMSessionScopeTests: XCTestCase {
        )
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
-        XCTAssertFalse(scope.isSampled)
+        XCTAssertFalse(scope.sampler.isSampled)
         XCTAssertNil(scope.context.activeViewID)
         XCTAssertNil(scope.context.activeViewPath)
         XCTAssertNil(scope.context.activeUserActionID)

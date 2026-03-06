@@ -81,8 +81,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// The precondition that led to the creation of this session.
     /// TODO: RUM-1650 This should become non-optional after all preconditions are implemented.
     let startPrecondition: RUMSessionPrecondition?
-    /// If events from this session should be sampled (send to Datadog).
-    let isSampled: Bool
+    /// The deterministic sampler for this session, seeded from the session UUID.
+    let sampler: DeterministicSampler
     /// If the session is currently active. Set to `false` upon reaching the `EndReason`.
     var isActive: Bool { endReason == nil }
     /// If this is the very first session created in the current app process (`false` for session created upon expiration of a previous one).
@@ -116,10 +116,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.parent = parent
         self.dependencies = dependencies
         self.applicationState = applicationState
-        self.isSampled = DeterministicSampler(
+        self.sampler = DeterministicSampler(
             uuid: sessionUUID.rawValue.uuidString,
             samplingRate: dependencies.samplingRate
-        ).sample()
+        )
         self.startPrecondition = startPrecondition
         self.sessionUUID = sessionUUID
         self.isInitialSession = isInitialSession
@@ -129,14 +129,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.endReason = nil
         self.state = RUMSessionState(
             sessionUUID: sessionUUID.rawValue,
-            isSampled: self.isSampled,
+            isSampled: sampler.isSampled,
             isInitialSession: isInitialSession,
             hasTrackedAnyView: false,
             didStartWithReplay: context.hasReplay
         )
         self.interactionToNextViewMetric = dependencies.interactionToNextViewMetricFactory()
 
-        if isSampled {
+        if sampler.isSampled {
             // Start tracking "RUM Session Ended" metric for this session
             dependencies.sessionEndedMetric.startMetric(
                 sessionID: sessionUUID,
@@ -236,7 +236,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             lastInteractionTime = command.time
         }
 
-        if !isSampled {
+        if !sampler.isSampled {
             // Make sure sessions end even if they are not sampled
             if command is RUMStopSessionCommand {
                 endReason = .stopAPI
