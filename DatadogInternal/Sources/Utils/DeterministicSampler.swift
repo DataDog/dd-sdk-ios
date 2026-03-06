@@ -21,8 +21,8 @@ public struct DeterministicSampler: Sampling, Equatable {
     public let seed: UInt64
     /// Value between `0.0` and `100.0`, where `0.0` means NO event will be sent and `100.0` means ALL events will be sent.
     public let samplingRate: SampleRate
-    /// Persisted sampling decision.
-    private let shouldSample: Bool
+    /// Persisted sampling decision for this seed and rate.
+    public let isSampled: Bool
 
     /// Initializes a new instance of `DeterministicSampler`.
     ///
@@ -35,18 +35,18 @@ public struct DeterministicSampler: Sampling, Equatable {
         self.seed = seed
         self.samplingRate = samplingRate
         if samplingRate >= 100.0 {
-            self.shouldSample = true
+            self.isSampled = true
         } else {
             // We use overflow multiplication to create a "randomized" hash based on the `seed`
             let hash = seed &* Constants.samplerHasher
             let threshold = Double(Constants.maxID) * Double(samplingRate) / 100.0
-            self.shouldSample = Double(hash) < threshold
+            self.isSampled = Double(hash) < threshold
         }
     }
 
     /// Based on the `seed` and sampling rate, it returns consistent value decisions.
     /// - Returns: `true` if data should be "sampled".
-    public func sample() -> Bool { shouldSample }
+    public func sample() -> Bool { isSampled }
 
     /// Returns a new `DeterministicSampler` that applies both this sampler's rate and `childRate`,
     /// while preserving the same seed so sampling decisions remain consistent.
