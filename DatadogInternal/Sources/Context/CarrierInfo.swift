@@ -7,9 +7,9 @@
 import Foundation
 
 /// Carrier details specific to cellular radio access.
-public struct CarrierInfo: Codable, Equatable {
+public struct CarrierInfo: Codable, Equatable, Sendable {
     // swiftlint:disable identifier_name
-    public enum RadioAccessTechnology: String, Codable, CaseIterable {
+    public enum RadioAccessTechnology: String, Codable, CaseIterable, Sendable {
         case GPRS
         case Edge
         case WCDMA

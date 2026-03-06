@@ -41,7 +41,7 @@ internal final class SynchronizedAttributes: Sendable {
     /// Retrieves the current dictionary of attributes.
     ///
     /// - Returns: A dictionary containing all the attributes.
-    func getAttributes() -> [String: Encodable & Sendable] {
+    func getAttributes() -> [String: AttributeValue] {
         return attributes.wrappedValue
     }
 }
