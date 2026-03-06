@@ -111,10 +111,8 @@ extension ConsoleLogger: InternalLoggerProtocol {
     func critical(
         message: String,
         error: Error?,
-        attributes: [String: AttributeValue]?,
-        completionHandler: @escaping CompletionHandler
-    ) {
+        attributes: [String: AttributeValue]?
+    ) async {
         self.critical(message, error: error, attributes: attributes)
-        completionHandler()
     }
 }

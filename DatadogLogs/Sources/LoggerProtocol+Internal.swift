@@ -32,23 +32,21 @@ public protocol InternalLoggerProtocol: Sendable {
         attributes: [String: AttributeValue]?
     )
 
-    /// Logs a critical entry then call completion.
+    /// Logs a critical entry and awaits until the write completes.
     ///
     /// This method is meant for non-native or cross platform frameworks (such as KMP) to send error information
     /// synchronously.
     ///
     /// - Parameters:
-    ///   - error: the `Error` object. It will be used to infer error details.
     ///   - message: the message to be logged
+    ///   - error: the `Error` object. It will be used to infer error details.
     ///   - attributes: a dictionary of attributes (optional) to add for this message. If an attribute with
     ///                 the same key already exist in this logger, it will be overridden (only for this message).
-    ///   - completionHandler: A completion closure called when reporting the log is completed.
     func critical(
         message: String,
         error: Error?,
-        attributes: [String: AttributeValue]?,
-        completionHandler: @escaping CompletionHandler
-    )
+        attributes: [String: AttributeValue]?
+    ) async
 }
 
 private struct NOPInternalLogger: InternalLoggerProtocol {
@@ -64,9 +62,8 @@ private struct NOPInternalLogger: InternalLoggerProtocol {
     func critical(
         message: String,
         error: Error?,
-        attributes: [String: AttributeValue]?,
-        completionHandler: @escaping CompletionHandler
-    ) { completionHandler() }
+        attributes: [String: AttributeValue]?
+    ) async { }
 }
 
 /// Extends `LoggerProtocol` with additional methods designed for Datadog cross-platform SDKs.

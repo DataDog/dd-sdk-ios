@@ -358,16 +358,22 @@ extension objc_Logger {
             return
         }
 
+        // Convert to Sendable types before crossing the Task boundary:
+        // - [String: Any] → [String: AttributeValue] (Encodable & Sendable)
+        // - Error? → NSError? (@unchecked Sendable, always valid for @objc errors)
+        let swiftAttributes = attributes.dd.swiftAttributes
+        let nsError = error.map { $0 as NSError }
+
         let semaphore = DispatchSemaphore(value: 0)
 
-        logger.critical(
-            message: message,
-            error: error,
-            attributes: attributes.dd.swiftAttributes,
-            completionHandler: {
-                semaphore.signal()
-            }
-        )
+        Task {
+            await logger.critical(
+                message: message,
+                error: nsError,
+                attributes: swiftAttributes
+            )
+            semaphore.signal()
+        }
 
         _ = semaphore.wait(timeout: .now() + .seconds(2))
     }

@@ -161,9 +161,7 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(errorMessage.attributes[Logs.Attributes.errorFingerprint] as? String, mockFingerprint)
     }
 
-    func testWhenCriticalLoggedFromInternal_itCallCompletion() throws {
-        let completionExpectation = expectation(description: "Error processing completion")
-
+    func testWhenCriticalLoggedFromInternal_itCallCompletion() async throws {
         // Given
         let stubBacktrace: BacktraceReport = .mockRandom()
 
@@ -179,15 +177,13 @@ class RemoteLoggerTests: XCTestCase {
 
         // When
         let message = String.mockRandom()
-        logger._internal.critical(
+        await logger._internal.critical(
             message: message,
             error: ErrorMock(),
-            attributes: [CrossPlatformAttributes.includeBinaryImages: true],
-            completionHandler: completionExpectation.fulfill
+            attributes: [CrossPlatformAttributes.includeBinaryImages: true]
         )
 
         // Then
-        wait(for: [completionExpectation], timeout: 0)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
