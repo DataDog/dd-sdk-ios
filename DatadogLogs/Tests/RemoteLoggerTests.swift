@@ -473,7 +473,7 @@ class RemoteLoggerTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: applicationID,
                     sessionID: sessionID,
-                    sessionSampler: Sampler.mockKeepAll(),
+                    sessionSampler: .mockKeepAll(),
                     viewID: viewID,
                     userActionID: actionID
                 )
@@ -514,7 +514,7 @@ class RemoteLoggerTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: applicationID,
                     sessionID: sessionID,
-                    sessionSampler: Sampler.mockRejectAll()
+                    sessionSampler: .mockRejectAll()
                 )
             ]
         )

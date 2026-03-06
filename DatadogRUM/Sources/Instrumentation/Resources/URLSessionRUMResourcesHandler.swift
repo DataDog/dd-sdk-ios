@@ -254,7 +254,7 @@ extension DistributedTracing {
         // with the tracing `samplingRate` while preserving the seed, so every resource in
         // the same session receives a consistent sampling decision.
         // When no RUM context exists, fall back to a random `Sampler`.
-        let sampler = networkContext?.rumContext?.sessionSampler.combined(with: samplingRate)
+        let sampler: Sampling = networkContext?.rumContext?.sessionSampler.combined(with: samplingRate)
             ?? Sampler(samplingRate: samplingRate)
         // In case there is, we use the same traceID so the backend can link the span generated from the RUM resource
         // with the trace.

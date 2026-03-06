@@ -10,7 +10,7 @@
 /// deterministic sampling based on a sampling rate `samplingRate`.
 ///
 /// Conforms to the `Sampling` protocol.
-public struct DeterministicSampler: Sampling {
+public struct DeterministicSampler: Sampling, Equatable {
     enum Constants {
         /// Good number for Knuth hashing (large, prime, fit in 64 bit long)
         internal static let samplerHasher: UInt64 = 1_111_111_111_111_111_111

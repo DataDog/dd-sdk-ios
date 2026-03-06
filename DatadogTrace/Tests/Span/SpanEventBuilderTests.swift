@@ -671,7 +671,7 @@ class SpanEventBuilderTests: XCTestCase {
     // swiftlint:disable opening_brace
     func testWhenBundleWithRUMisEnabled_itCreatesSpanWithRUMContext() {
         // Given
-        let sampler = Sampler.mockKeepAll()
+        let sampler: DeterministicSampler = .mockKeepAll()
         let rum = oneOf([
             { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), sessionSampler: sampler, viewID: .mockRandom(), userActionID: .mockRandom()) },
             { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), sessionSampler: sampler, viewID: .mockRandom(), userActionID: nil) },
@@ -710,7 +710,7 @@ class SpanEventBuilderTests: XCTestCase {
         let rum = RUMCoreContext(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
-            sessionSampler: Sampler.mockRejectAll()
+            sessionSampler: .mockRejectAll()
         )
         let context: DatadogContext = .mockWith(additionalContext: [rum])
 
@@ -744,7 +744,7 @@ class SpanEventBuilderTests: XCTestCase {
         let rum = RUMCoreContext(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
-            sessionSampler: Sampler.mockKeepAll(),
+            sessionSampler: .mockKeepAll(),
             viewID: .mockRandom(),
             userActionID: .mockRandom()
         )

@@ -22,7 +22,7 @@ class RUMContextReceiverTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: "app-id",
                     sessionID: "session-id",
-                    sessionSampler: Sampler.mockKeepAll(),
+                    sessionSampler: .mockKeepAll(),
                     viewID: "view-id",
                     viewServerTimeOffset: 123
                 )
@@ -54,7 +54,7 @@ class RUMContextReceiverTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: "app-id-1",
                     sessionID: "session-id-1",
-                    sessionSampler: Sampler.mockKeepAll(),
+                    sessionSampler: .mockKeepAll(),
                     viewID: "view-id-1",
                     viewServerTimeOffset: 123
                 )
@@ -66,7 +66,7 @@ class RUMContextReceiverTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: "app-id-2",
                     sessionID: "session-id-2",
-                    sessionSampler: Sampler.mockKeepAll(),
+                    sessionSampler: DeterministicSampler.mockKeepAll(),
                     viewID: "view-id-2",
                     viewServerTimeOffset: 345
                 )
@@ -106,7 +106,7 @@ class RUMContextReceiverTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: "app-id",
                     sessionID: "session-id",
-                    sessionSampler: Sampler.mockKeepAll(),
+                    sessionSampler: .mockKeepAll(),
                     viewID: "view-id",
                     viewServerTimeOffset: 123
                 )
@@ -118,7 +118,7 @@ class RUMContextReceiverTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: "app-id",
                     sessionID: "session-id",
-                    sessionSampler: Sampler.mockKeepAll(),
+                    sessionSampler: .mockKeepAll(),
                     viewID: "view-id",
                     viewServerTimeOffset: 123
                 )
@@ -154,7 +154,7 @@ class RUMContextReceiverTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: "app-id",
                     sessionID: "session-id",
-                    sessionSampler: Sampler.mockKeepAll(),
+                    sessionSampler: .mockKeepAll(),
                     viewID: "view-id",
                     viewServerTimeOffset: 123
                 )

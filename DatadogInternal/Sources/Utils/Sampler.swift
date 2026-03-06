@@ -20,15 +20,6 @@ public protocol Sampling {
     /// - Returns: A boolean value indicating whether sampling should occur.
     ///            `true` if the sample should be kept, `false` if it should be dropped.
     func sample() -> Bool
-
-    /// Returns a new sampler that applies both this sampler's rate and `childRate`.
-    ///
-    /// Use this when a child feature has its own sampling rate that must be applied on top of a
-    /// parent sampling rate.
-    ///
-    /// - Parameter childRate: The child feature's sampling rate (0.0–100.0).
-    /// - Returns: A new sampler whose effective rate is the composition of both rates.
-    func combined(with childRate: SampleRate) -> Self
 }
 
 /// Sampler, deciding if events should be sent do Datadog or dropped.
@@ -44,16 +35,6 @@ public struct Sampler: Sampling {
     /// - Returns: `true` if event should be sent to Datadog and `false` if it should be dropped.
     public func sample() -> Bool {
         return Float.random(in: 0.0..<100.0) < samplingRate
-    }
-
-    /// Returns a new `Sampler` that applies both this sampler's rate and `childRate`.
-    ///
-    /// The new sampler uses a random sampling decision based on the composed rate.
-    ///
-    /// - Parameter childRate: The child feature's sampling rate (0.0–100.0).
-    /// - Returns: A new sampler whose effective rate is the composition of both rates.
-    public func combined(with childRate: SampleRate) -> Sampler {
-        Sampler(samplingRate: samplingRate.composed(with: childRate))
     }
 }
 
