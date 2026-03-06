@@ -70,7 +70,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         // Use the current active span as parent if the propagation headers support it.
-        let newSpanElements = makeElementsForNewSpanContext(tracer: tracer, parentSpanContext: tracer.activeSpan?.context as? DDSpanContext)
+        let newSpanElements = makeElementsForNewSpanContext(tracer: tracer, parentSpanContext: tracer.activeSpan?.context as? DDSpanContext, networkContext: networkContext)
 
         let injectedSpanContext = TraceContext(
             traceID: newSpanElements.traceID,
@@ -327,10 +327,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     ///    - parentSpanContext: If the span created by the session handler should be related to a parent span, pass
     ///    the parent span context here, otherwise, pass `nil`.
     /// - returns: A ``TracingURLSessionHandler.NewSpanElements`` helper struct.
-    private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?) -> NewSpanElements {
+    private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?, networkContext: NetworkContext? = nil) -> NewSpanElements {
         let traceID = parentSpanContext?.traceID ?? tracer.traceIDGenerator.generate()
         let sampled = isSampled(
-            rumContext: contextReceiver.context.rumContext,
+            rumContext: networkContext?.rumContext ?? contextReceiver.context.rumContext,
             traceID: traceID.idLo
         )
         let samplingDecision = parentSpanContext.map { $0.samplingDecision } ?? SamplingDecision(

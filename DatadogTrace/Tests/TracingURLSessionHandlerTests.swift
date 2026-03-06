@@ -872,13 +872,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     // MARK: - Determinist sampling with child rate correction
 
-
     func testDeterministicSamplingForSameSessionID() {
         // Given
         let receiver = ContextMessageReceiver()
         let sessionUUID = "abcdef01-2345-6789-abcd-ef0123456789"
         let sessionSampler = DeterministicSampler(uuid: sessionUUID, samplingRate: 80.0)
-        core.set(context: { RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampler: sessionSampler) })
+        let networkContext = NetworkContext(rumContext: RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampler: sessionSampler))
 
         let handler = TracingURLSessionHandler(
             tracer: tracer,
@@ -889,16 +888,16 @@ class TracingURLSessionHandlerTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        // When — modify is called twice with the same context
+        // When — modify is called twice with the same networkContext
         let (_, ctx1, _) = handler.modify(
             request: .mockWith(url: "https://example.com/path"),
             headerTypes: [.datadog],
-            networkContext: nil
+            networkContext: networkContext
         )
         let (_, ctx2, _) = handler.modify(
             request: .mockWith(url: "https://example.com/path"),
             headerTypes: [.datadog],
-            networkContext: nil
+            networkContext: networkContext
         )
 
         // Then — both calls return the same sampling priority (determinism)
@@ -918,11 +917,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let effectiveRate = sessionSampler.combined(with: traceRate).samplingRate
         XCTAssertEqual(effectiveRate, 40.0, accuracy: 0.001)
 
-        let expectedSampled = sessionSampler.combined(with: traceRate).sample()
-        let oldBehaviour = DeterministicSampler(uuid: sessionUUID, samplingRate: traceRate).sample()
+        let expectedSampled = sessionSampler.combined(with: traceRate).isSampled
+        let oldBehaviour = DeterministicSampler(uuid: sessionUUID, samplingRate: traceRate).isSampled
         XCTAssertNotEqual(expectedSampled, oldBehaviour, "Chosen vector must differ between composed and trace-only rate")
-
-        core.set(context: { RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampler: sessionSampler) })
 
         let handler = TracingURLSessionHandler(
             tracer: tracer,
@@ -936,7 +933,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let (_, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://example.com/resource"),
             headerTypes: [.datadog],
-            networkContext: nil
+            networkContext: NetworkContext(rumContext: RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampler: sessionSampler))
         )
 
         let actualSampled = try XCTUnwrap(traceContext?.samplingPriority.isKept)
@@ -946,7 +943,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
     // MARK: Test 3 — No RUM context fallback
 
     func testNoRUMContextFallbackDoesNotCrash() {
-        // Given — no RUM context set
+        // Given — no RUM context in networkContext
         let receiver = ContextMessageReceiver()
         let handler = TracingURLSessionHandler(
             tracer: tracer,
@@ -960,7 +957,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let (_, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://example.com/path"),
             headerTypes: [.datadog],
-            networkContext: nil
+            networkContext: NetworkContext(rumContext: nil)
         )
 
         XCTAssertNotNil(traceContext?.samplingPriority.isKept, "Handler must return a sampling decision even without RUM context")
@@ -979,11 +976,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let effectiveRate = sessionSampler.combined(with: traceRate).samplingRate
         XCTAssertEqual(effectiveRate, 48.0, accuracy: 0.001)
 
-        let expectedSampled = sessionSampler.combined(with: traceRate).sample()
-        let oldBehaviour = DeterministicSampler(uuid: sessionUUID, samplingRate: traceRate).sample()
+        let expectedSampled = sessionSampler.combined(with: traceRate).isSampled
+        let oldBehaviour = DeterministicSampler(uuid: sessionUUID, samplingRate: traceRate).isSampled
         XCTAssertNotEqual(expectedSampled, oldBehaviour, "Chosen vector must differ between composed and trace-only rate")
-
-        core.set(context: { RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampler: sessionSampler) })
 
         let handler = TracingURLSessionHandler(
             tracer: tracer,
@@ -997,7 +992,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let (_, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://example.com/resource"),
             headerTypes: [.datadog],
-            networkContext: nil
+            networkContext: NetworkContext(rumContext: RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampler: sessionSampler))
         )
 
         let actualSampled = try XCTUnwrap(traceContext?.samplingPriority.isKept)
