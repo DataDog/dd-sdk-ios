@@ -85,7 +85,7 @@ extension LayerSnapshot {
         parentHasMask: Bool,
         context: LayerSnapshotContext
     ) {
-        let frame = layer.convert(layer.bounds, to: rootLayer)
+        let frame = layer.frame(relativeTo: rootLayer)
         let opacity = layer.opacity
         let resolvedOpacity = parentOpacity * opacity
         let hasMask = parentHasMask || layer.mask != nil
