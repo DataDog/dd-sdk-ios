@@ -182,7 +182,7 @@ public enum TelemetryMessage {
 
 /// The `Telemetry` protocol defines methods to collect debug information
 /// and detect execution errors of the Datadog SDK.
-public protocol Telemetry {
+public protocol Telemetry: Sendable {
     /// Sends a Telemetry message.
     ///
     /// - Parameter telemetry: The telemtry message

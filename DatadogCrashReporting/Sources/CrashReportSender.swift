@@ -7,7 +7,7 @@
 import DatadogInternal
 
 /// An object for sending crash reports.
-internal protocol CrashReportSender {
+internal protocol CrashReportSender: Sendable {
     /// Send the crash report and context to integrations.
     ///
     /// - Parameters:
@@ -23,7 +23,8 @@ internal protocol CrashReportSender {
 }
 
 /// An object for sending crash reports on the Core message-bus.
-internal struct MessageBusSender: CrashReportSender {
+/// - Safety: `@unchecked Sendable` because `core` is a weak reference, safe to share.
+internal struct MessageBusSender: CrashReportSender, @unchecked Sendable {
     /// The core for sending crash report and context.
     ///
     /// It must be a weak reference to avoid retain cycle (the `CrashReportSender` is held by crash reporting

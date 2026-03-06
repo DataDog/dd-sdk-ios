@@ -11,87 +11,9 @@ internal final class CrashReportingFeature: DatadogFeature {
     static let name = "crash-reporter"
 
     let messageReceiver: FeatureMessageReceiver
-
-    /// Queue for synchronizing internal operations.
-    private let queue: DispatchQueue
-
     let crashContextProvider: CrashContextProvider
 
-    /// An interface for accessing the `DDCrashReportingPlugin` from `DatadogCrashReporting`.
-    let plugin: CrashReportingPlugin
-    /// Integration enabling sending crash reports as RUM Errors.
-    let sender: CrashReportSender
-    /// Telemetry interface.
-    let telemetry: Telemetry
-
-    init(
-        crashReportingPlugin: CrashReportingPlugin,
-        crashContextProvider: CrashContextProvider,
-        sender: CrashReportSender,
-        messageReceiver: FeatureMessageReceiver,
-        telemetry: Telemetry
-    ) {
-        self.queue = DispatchQueue(
-            label: "com.datadoghq.crash-reporter",
-            target: .global(qos: .utility)
-        )
-        self.plugin = crashReportingPlugin
-        self.sender = sender
-        self.crashContextProvider = crashContextProvider
-        self.messageReceiver = messageReceiver
-        self.telemetry = telemetry
-
-        // Inject current `CrashContext`
-        if let context = crashContextProvider.currentCrashContext {
-            inject(currentCrashContext: context)
-        }
-
-        // Register for future `CrashContext` changes
-        self.crashContextProvider.onCrashContextChange = { [weak self] in
-            self?.inject(currentCrashContext: $0)
-        }
-    }
-
-    // MARK: - Interaction with `DatadogCrashReporting` plugin
-
-    func sendCrashReportIfFound() {
-        queue.async {
-            self.plugin.readPendingCrashReport { [weak self] crashReport in
-                guard let self = self else {
-                    return false
-                }
-
-                guard let availableCrashReport = crashReport else {
-                    DD.logger.debug("No pending Crash found")
-                    self.sender.send(launch: .init(didCrash: false))
-                    return false
-                }
-
-                DD.logger.debug("Loaded pending crash report")
-
-                guard let crashContext = availableCrashReport.context.flatMap({ self.decode(crashContextData: $0) }) else {
-                    // `CrashContext` is malformed and and cannot be read. Return `true` to let the crash reporter
-                    // purge this crash report as we are not able to process it respectively.
-                    self.sender.send(launch: .init(didCrash: true))
-                    return true
-                }
-
-                self.sender.send(report: availableCrashReport, with: crashContext)
-                self.sender.send(launch: .init(didCrash: true))
-                return true
-            }
-        }
-    }
-
-    private func inject(currentCrashContext: CrashContext) {
-        queue.async {
-            if let crashContextData = self.encode(crashContext: currentCrashContext) {
-                self.plugin.inject(context: crashContextData)
-            }
-        }
-    }
-
-    // MARK: - CrashContext Encoding and Decoding
+    private let coordinator: CrashReportCoordinator
 
     /// JSON encoder used for writing `CrashContext` into JSON `Data` injected to crash report.
     /// Note: this `JSONEncoder` must have the same configuration as the `JSONEncoder` used later for writing payloads to uploadable files.
@@ -113,6 +35,92 @@ internal final class CrashReportingFeature: DatadogFeature {
         return decoder
     }()
 
+    init(
+        crashReportingPlugin: CrashReportingPlugin,
+        crashContextProvider: CrashContextProvider,
+        sender: CrashReportSender,
+        messageReceiver: FeatureMessageReceiver,
+        telemetry: Telemetry
+    ) {
+        self.coordinator = CrashReportCoordinator(
+            plugin: crashReportingPlugin,
+            sender: sender,
+            telemetry: telemetry
+        )
+        self.crashContextProvider = crashContextProvider
+        self.messageReceiver = messageReceiver
+
+        if let context = crashContextProvider.currentCrashContext {
+            Task { [coordinator] in await coordinator.inject(currentCrashContext: context) }
+        }
+
+        self.crashContextProvider.onCrashContextChange = { [weak coordinator] context in
+            Task { await coordinator?.inject(currentCrashContext: context) }
+        }
+    }
+
+    // MARK: - Interaction with `DatadogCrashReporting` plugin
+
+    @discardableResult
+    func sendCrashReportIfFound() -> Task<Void, Never> {
+        coordinator.sendCrashReportIfFound()
+    }
+}
+
+// MARK: - CrashReportCoordinator
+
+/// Coordinates crash report operations with actor isolation.
+internal actor CrashReportCoordinator {
+    private let plugin: CrashReportingPlugin
+    private let sender: CrashReportSender
+    private let telemetry: Telemetry
+
+    init(
+        plugin: CrashReportingPlugin,
+        sender: CrashReportSender,
+        telemetry: sending Telemetry
+    ) {
+        self.plugin = plugin
+        self.sender = sender
+        self.telemetry = telemetry
+    }
+
+    func inject(currentCrashContext: CrashContext) {
+        if let crashContextData = encode(crashContext: currentCrashContext) {
+            plugin.inject(context: crashContextData)
+        }
+    }
+
+    nonisolated func sendCrashReportIfFound() -> Task<Void, Never> {
+        Task {
+            await self.performSendCrashReportIfFound()
+        }
+    }
+
+    // MARK: - Private
+
+    private func performSendCrashReportIfFound() async {
+        let crashReport = await plugin.readPendingCrashReport()
+
+        guard let crashReport else {
+            DD.logger.debug("No pending Crash found")
+            sender.send(launch: .init(didCrash: false))
+            return
+        }
+
+        DD.logger.debug("Loaded pending crash report")
+
+        guard let crashContext = crashReport.context.flatMap({ decode(crashContextData: $0) }) else {
+            sender.send(launch: .init(didCrash: true))
+            plugin.deletePendingCrashReports()
+            return
+        }
+
+        sender.send(report: crashReport, with: crashContext)
+        sender.send(launch: .init(didCrash: true))
+        plugin.deletePendingCrashReports()
+    }
+
     private func encode(crashContext: CrashContext) -> Data? {
         do {
             return try CrashReportingFeature.crashContextEncoder.encode(crashContext)
@@ -124,7 +132,6 @@ internal final class CrashReportingFeature: DatadogFeature {
                 """,
                 error: error
             )
-
             telemetry.error("Failed to encode crash report context", error: error)
             return nil
         }
@@ -144,12 +151,5 @@ internal final class CrashReportingFeature: DatadogFeature {
             telemetry.error("Failed to decode crash report context", error: error)
             return nil
         }
-    }
-}
-
-extension CrashReportingFeature: Flushable {
-    func flush() {
-        // Await asynchronous operations completion to safely sink all pending tasks.
-        queue.sync {}
     }
 }

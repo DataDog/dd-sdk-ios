@@ -6,6 +6,6 @@
 
 import Foundation
 
-internal struct CrashReportException: Error {
+internal struct CrashReportException: Error, Sendable {
     let description: String
 }

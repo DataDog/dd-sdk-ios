@@ -21,8 +21,11 @@ internal import KSCrashFilters
 
 /// The implementation of `CrashReportingPlugin`.
 /// Pass its instance as the crash reporting plugin for Datadog SDK to enable crash reporting feature.
+///
+/// - Safety: `@unchecked Sendable` because `store` and `telemetry` are immutable after init
+///   and the underlying KSCrash APIs are designed for cross-thread use.
 @objc
-internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
+internal class KSCrashPlugin: NSObject, CrashReportingPlugin, @unchecked Sendable {
     private let store: CrashReportStore
     private let telemetry: Telemetry
 
@@ -56,32 +59,36 @@ internal class KSCrashPlugin: NSObject, CrashReportingPlugin {
 
     // MARK: - CrashReportingPlugin
 
-    func readPendingCrashReport(completion: @escaping (DDCrashReport?) -> Bool) {
-        self.store.sendAllReports { reports, error in
-            do {
-                if let error {
-                    throw error
-                }
+    func readPendingCrashReport() async -> DDCrashReport? {
+        await withCheckedContinuation { continuation in
+            self.store.sendAllReports { [weak self] reports, error in
+                do {
+                    if let error {
+                        throw error
+                    }
 
-                guard let report = reports?.first else {
-                    _ = completion(nil)
-                    return
-                }
+                    guard let report = reports?.first else {
+                        continuation.resume(returning: nil)
+                        return
+                    }
 
-                guard let report = report.untypedValue as? DDCrashReport else {
-                    throw CrashReportException(description: "Report is not of type DDCrashReport")
-                }
+                    guard let ddReport = report.untypedValue as? DDCrashReport else {
+                        throw CrashReportException(description: "Report is not of type DDCrashReport")
+                    }
 
-                if completion(report) {
-                    self.store.deleteAllReports()
+                    continuation.resume(returning: ddReport)
+                } catch {
+                    continuation.resume(returning: nil)
+                    self?.store.deleteAllReports()
+                    consolePrint("🔥 DatadogCrashReporting error: failed to load crash report: \(error)", .error)
+                    self?.telemetry.error("[KSCrash] Fails to load crash report", error: error)
                 }
-            } catch {
-                _ = completion(nil)
-                self.store.deleteAllReports()
-                consolePrint("🔥 DatadogCrashReporting error: failed to load crash report: \(error)", .error)
-                self.telemetry.error("[KSCrash] Fails to load crash report", error: error)
             }
         }
+    }
+
+    func deletePendingCrashReports() {
+        store.deleteAllReports()
     }
 
     func inject(context: Data) {

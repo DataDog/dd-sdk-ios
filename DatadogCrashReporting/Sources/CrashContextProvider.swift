@@ -12,11 +12,13 @@ internal protocol CrashContextProvider: AnyObject {
     /// Returns current `CrashContext` value.
     var currentCrashContext: CrashContext? { get }
     /// Notifies on `CrashContext` change.
-    var onCrashContextChange: (CrashContext) -> Void { set get }
+    var onCrashContextChange: @Sendable (CrashContext) -> Void { set get }
 }
 
 /// Manages the `CrashContext` reads and writes in a thread-safe manner.
-internal class CrashContextCoreProvider: CrashContextProvider {
+///
+/// - Safety: `@unchecked Sendable` because all mutable state is synchronized via `queue`.
+internal class CrashContextCoreProvider: CrashContextProvider, @unchecked Sendable {
     /// Queue for synchronizing `unsafeCrashContext` updates.
     private let queue = DispatchQueue(
         label: "com.datadoghq.crash-context",
@@ -24,7 +26,7 @@ internal class CrashContextCoreProvider: CrashContextProvider {
     )
 
     /// Unsafe callback instance.
-    private var _callback: (CrashContext) -> Void = { _ in }
+    private var _callback: @Sendable (CrashContext) -> Void = { _ in }
 
     /// Unsychronized `CrashContext`. The `queue` must be used to synchronize its mutation.
     private var _context: CrashContext? {
@@ -53,7 +55,7 @@ internal class CrashContextCoreProvider: CrashContextProvider {
         queue.sync { _context }
     }
 
-    var onCrashContextChange: (CrashContext) -> Void {
+    var onCrashContextChange: @Sendable (CrashContext) -> Void {
         get { queue.sync { self._callback } }
         set { queue.async { self._callback = newValue } }
     }

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct Crash {
+public struct Crash: Sendable {
     /// The crash report.
     public let report: DDCrashReport
     /// The crash context

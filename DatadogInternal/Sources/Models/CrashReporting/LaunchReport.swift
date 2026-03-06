@@ -7,7 +7,7 @@
 import Foundation
 
 /// Launch report format supported by Datadog SDK.
-public struct LaunchReport: AdditionalContext {
+public struct LaunchReport: AdditionalContext, Sendable {
     /// The key used to encode/decode the `LaunchReport` in `DatadogContext.baggages`
     public static let key = "launch-report"
 

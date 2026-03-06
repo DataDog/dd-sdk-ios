@@ -14,7 +14,7 @@ import DatadogInternal
 /// A crash reporter mock with two capabilities:
 /// - notifying a pending crash report found at SDK init,
 /// - recording crash context data injected from SDK core and features like RUM.
-private class CrashReporterMock: CrashReportingPlugin {
+private class CrashReporterMock: CrashReportingPlugin, @unchecked Sendable {
     @ReadWriteLock
     var pendingCrashReport: DDCrashReport?
     @ReadWriteLock
@@ -26,7 +26,8 @@ private class CrashReporterMock: CrashReportingPlugin {
         self.pendingCrashReport = pendingCrashReport
     }
 
-    func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) { _ = completion(pendingCrashReport) }
+    func readPendingCrashReport() async -> DDCrashReport? { pendingCrashReport }
+    func deletePendingCrashReports() {}
     func inject(context: Data) { injectedContext = context }
     var backtraceReporter: BacktraceReporting? { injectedBacktraceReporter }
 }
