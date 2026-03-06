@@ -19,7 +19,7 @@ public enum Logs {
     ///
     /// This configuration will be applied to all Logger instances.
     public struct Configuration {
-        public typealias EventMapper = (LogEvent) -> LogEvent?
+        public typealias EventMapper = @Sendable (LogEvent) -> LogEvent?
         /// Sets the custom mapper for `LogEvent`. This can be used to modify logs before they are send to Datadog.
         ///
         /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it. Returning `nil` will result
