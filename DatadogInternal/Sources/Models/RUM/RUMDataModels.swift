@@ -11,7 +11,7 @@
 public protocol RUMDataModel: Codable {}
 
 /// Device properties
-public struct Device: Codable {
+public struct Device: Codable, Sendable {
     /// The CPU architecture of the device that is reporting the error
     public let architecture: String?
 
@@ -133,7 +133,7 @@ public struct Device: Codable {
 }
 
 /// Operating system properties
-public struct OperatingSystem: Codable {
+public struct OperatingSystem: Codable, Sendable {
     /// Operating system build number, e.g. 15D21
     public let build: String?
 

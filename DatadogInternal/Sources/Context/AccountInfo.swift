@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct AccountInfo: Codable {
+public struct AccountInfo: Codable, Sendable {
     /// Account ID
     public let id: String
     /// Name representing the account, if any.

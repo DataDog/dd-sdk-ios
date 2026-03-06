@@ -9,9 +9,9 @@ import DatadogInternal
 
 /// `Encodable` representation of log. It gets sanitized before encoding.
 /// All mutable properties are subject of sanitization.
-public struct LogEvent: Encodable {
+public struct LogEvent: Encodable, Sendable {
     /// The Log event status definitions.
-    public enum Status: String, Encodable, CaseIterable, Equatable {
+    public enum Status: String, Encodable, CaseIterable, Equatable, Sendable {
         case debug
         case info
         case notice
@@ -22,10 +22,10 @@ public struct LogEvent: Encodable {
     }
 
     /// Custom attributes associated with a the log event.
-    public struct Attributes {
+    public struct Attributes: Sendable {
         /// List of log attribute keys used to establish the link between the Log event and the RUM session that it was collected within.
         /// Those keys are recognised by Datadog app and used to render the link in web UI.
-        internal enum RUM {
+        internal enum RUM: Sendable {
             /// Key referencing the RUM applicaiton ID.
             static let applicationID = "application_id"
             /// Key referencing the RUM session ID.
@@ -38,7 +38,7 @@ public struct LogEvent: Encodable {
 
         /// List of log attribute keys used to establish the link between the Log event and the Tracing span that it was collected within.
         /// Those keys are recognised by Datadog app and used to render the link in web UI.
-        internal enum Trace {
+        internal enum Trace: Sendable {
             /// Key referencing the trace ID.
             static let traceID = "dd.trace_id"
             /// Key referencing the span ID.
@@ -52,9 +52,9 @@ public struct LogEvent: Encodable {
     }
 
     /// Error description associated with a log event.
-    public struct Error {
+    public struct Error: Sendable {
         /// Description of BinaryImage (used for symbolicaiton of stack traces)
-        public struct BinaryImage: Codable {
+        public struct BinaryImage: Codable, Sendable {
             /// CPU architecture from the library.
             public let arch: String?
 
@@ -98,9 +98,9 @@ public struct LogEvent: Encodable {
     }
 
     /// Datadog specific attributes.
-    public struct Dd: Codable {
+    public struct Dd: Codable, Sendable {
         /// Device information
-        public struct Device: Codable {
+        public struct Device: Codable, Sendable {
             /// The CPU architecture of the device. Used to symbolication and deobfuscation.
             public let architecture: String
         }

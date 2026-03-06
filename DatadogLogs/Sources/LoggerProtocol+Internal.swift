@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Internal Logger for Cross-Platform access.
-public protocol InternalLoggerProtocol {
+public protocol InternalLoggerProtocol: Sendable {
     /// General purpose logging method.
     /// Sends a log with certain `level`, `message`, `errorKind`,  `errorMessage`,  `stackTrace` and `attributes`.
     /// 
