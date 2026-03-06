@@ -7,7 +7,7 @@
 import Foundation
 
 /// Common representation of Swift `Error` used by different features.
-public struct DDError: Equatable, Codable {
+public struct DDError: Equatable, Codable, Sendable {
     public let type: String
     public let message: String
     public let stack: String

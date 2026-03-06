@@ -7,7 +7,7 @@
 import Foundation
 
 /// A type, writing data.
-public protocol Writer {
+public protocol Writer: Sendable {
     /// Encodes given encodable value and metadata, and writes to the destination.
     /// - Parameters:
     ///   - value: Encodable value to write.

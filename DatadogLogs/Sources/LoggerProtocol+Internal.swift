@@ -29,7 +29,7 @@ public protocol InternalLoggerProtocol {
         errorKind: String?,
         errorMessage: String?,
         stackTrace: String?,
-        attributes: [String: Encodable]?
+        attributes: [String: AttributeValue]?
     )
 
     /// Logs a critical entry then call completion.
@@ -46,7 +46,7 @@ public protocol InternalLoggerProtocol {
     func critical(
         message: String,
         error: Error?,
-        attributes: [String: Encodable]?,
+        attributes: [String: AttributeValue]?,
         completionHandler: @escaping CompletionHandler
     )
 }
@@ -58,13 +58,13 @@ private struct NOPInternalLogger: InternalLoggerProtocol {
         errorKind: String?,
         errorMessage: String?,
         stackTrace: String?,
-        attributes: [String: Encodable]?
+        attributes: [String: AttributeValue]?
     ) { }
 
     func critical(
         message: String,
         error: Error?,
-        attributes: [String: Encodable]?,
+        attributes: [String: AttributeValue]?,
         completionHandler: @escaping CompletionHandler
     ) { completionHandler() }
 }

@@ -64,7 +64,7 @@ internal struct DDNoopSpan: OTSpan {
     func tracer() -> OTTracer { DDNoopGlobals.tracer }
     func setOperationName(_ operationName: String) {}
     func finish(at time: Date) {}
-    func log(fields: [String: Encodable], timestamp: Date) {}
+    func log(fields: [String: DatadogInternal.AttributeValue], timestamp: Date) {}
     func baggageItem(withKey key: String) -> String? { nil }
     func setBaggageItem(key: String, value: String) {}
     func setTag(key: String, value: OTTracer.TagValue) {}

@@ -39,8 +39,8 @@ internal struct LogEventBuilder {
     ///   - tags: tags to associate with log
     ///   - context: SDK context from the moment of creating log
     ///   - threadName: the name of the thread on which the log is created.
-    ///   - callback: The callback to return the modified `LogEvent`.
     ///
+    /// - Returns: The mapped `LogEvent`, or `nil` if the event was dropped by the mapper.
     /// - Note: `date` and `threadName` must be collected on the user thread.
     func createLogEvent(
         date: Date,
@@ -52,9 +52,8 @@ internal struct LogEventBuilder {
         attributes: LogEvent.Attributes,
         tags: Set<String>,
         context: DatadogContext,
-        threadName: String,
-        callback: @escaping (LogEvent) -> Void
-    ) {
+        threadName: String
+    ) async -> LogEvent? {
         let log = LogEvent(
             date: date.addingTimeInterval(context.serverTimeOffset),
             status: level.asLogStatus,
@@ -92,7 +91,10 @@ internal struct LogEventBuilder {
             tags: !tags.isEmpty ? Array(tags) : nil
         )
 
-        eventMapper?.map(event: log, callback: callback) ?? callback(log)
+        if let eventMapper {
+            return await eventMapper.map(event: log)
+        }
+        return log
     }
 }
 

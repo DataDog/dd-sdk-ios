@@ -63,7 +63,7 @@ internal struct LogEventSanitizer {
         )
     }
 
-    private func removeInvalidAttributes(_ attributes: [String: Encodable]) -> [String: Encodable] {
+    private func removeInvalidAttributes(_ attributes: [String: AttributeValue]) -> [String: AttributeValue] {
         // Attribute name cannot be empty
         return attributes.filter { attribute in
             if attribute.key.isEmpty {
@@ -74,7 +74,7 @@ internal struct LogEventSanitizer {
         }
     }
 
-    private func removeReservedAttributes(_ attributes: [String: Encodable]) -> [String: Encodable] {
+    private func removeReservedAttributes(_ attributes: [String: AttributeValue]) -> [String: AttributeValue] {
         return attributes.filter { attribute in
             if Constraints.reservedAttributeNames.contains(attribute.key) {
                 DD.logger.error("'\(attribute.key)' is a reserved attribute name. This attribute will be ignored.")
