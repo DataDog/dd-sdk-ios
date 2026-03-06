@@ -219,7 +219,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let fakeSessionId = "8b723a25-e941-47ea-9173-910c866ccf19"
         let fakeContext: DatadogContext = .mockWith(
             additionalContext: [
-                RUMCoreContext(
+                RUMCoreContext.mockWith(
                     applicationID: .mockRandom(),
                     sessionID: fakeSessionId
                 )
@@ -231,7 +231,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
             request: request,
             headerTypes: [.datadog, .tracecontext, .b3, .b3multi],
             networkContext: NetworkContext(
-                rumContext: .init(
+                rumContext: .mockWith(
                     applicationID: .mockRandom(),
                     sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
                 )

@@ -100,7 +100,8 @@ class WebViewLogReceiverTests: XCTestCase {
                 additionalContext: [
                     RUMCoreContext(
                         applicationID: "123456",
-                        sessionID: mockSessionID.uuidString.lowercased()
+                        sessionID: mockSessionID.uuidString.lowercased(),
+                        sessionSampler: Sampler.mockKeepAll()
                     )
                 ]
             )
@@ -156,6 +157,7 @@ class WebViewLogReceiverTests: XCTestCase {
                     RUMCoreContext(
                         applicationID: applicationID,
                         sessionID: sessionID,
+                        sessionSampler: Sampler.mockKeepAll(),
                         viewID: viewID,
                         userActionID: actionID
                     )
@@ -183,6 +185,50 @@ class WebViewLogReceiverTests: XCTestCase {
         XCTAssertEqual(log["session_id"] as? String, sessionID)
         XCTAssertEqual(log["view.id"] as? String, viewID)
         XCTAssertEqual(log["user_action.id"] as? String, actionID)
+    }
+
+    func testWhenRUMContextIsAvailable_butSampledOut_itDoesNotSendTelemetryError() throws {
+        // Given
+        let messageReceiver = WebViewLogReceiver()
+        let telemetryReceiver = TelemetryReceiverMock()
+        let applicationID: String = .mockRandom()
+        let sessionID: String = .mockRandom()
+
+        let expectation = expectation(description: "Send log")
+        let core = PassthroughCoreMock(
+            context: .mockWith(
+                additionalContext: [
+                    RUMCoreContext(
+                        applicationID: applicationID,
+                        sessionID: sessionID,
+                        sessionSampler: Sampler.mockRejectAll()
+                    )
+                ]
+            ),
+            messageReceiver: telemetryReceiver
+        )
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // When
+        XCTAssert(
+            messageReceiver.receive(
+                message: .webview(.log(["test": "value"])),
+                from: core
+            )
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let logs = core.events(ofType: AnyEncodable.self)
+        XCTAssertEqual(logs.count, 1)
+
+        let log = try XCTUnwrap(logs.first?.value as? [String: Any])
+        XCTAssertNil(log["application_id"])
+        XCTAssertNil(log["session_id"])
+        XCTAssertNil(log["view.id"])
+        XCTAssertNil(log["user_action.id"])
+        XCTAssertTrue(telemetryReceiver.messages.isEmpty)
     }
 
     func testWhenNoRUMContextIsAvailable_itDoesNotSendTelemetryError() throws {

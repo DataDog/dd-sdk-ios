@@ -7,7 +7,7 @@
 import Foundation
 
 /// The RUM context received from `Core`.
-public struct RUMCoreContext: AdditionalContext, Equatable {
+public struct RUMCoreContext: AdditionalContext {
     /// RUM key in core additional context.
     public static let key = "rum"
     /// Current RUM application ID - standard UUID string, lowercased.
@@ -23,30 +23,41 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
     /// The sampler for the current RUM session, carrying the session seed and rate.
     /// Consumers use `sessionSampler.combined(with: childRate).sample()` to apply
     /// child-rate correction without UUID parsing.
-    public let sessionSampler: DeterministicSampler
+    public let sessionSampler: Sampling
 
     /// Creates a RUM context.
     ///
     /// - Parameters:
     ///   - applicationID: Current RUM application ID - standard UUID string, lowercased.
     ///   - sessionID: Current RUM session ID - standard UUID string, lowercased.
+    ///   - sessionSampler: The deterministic sampler used to sample the RUM session.
     ///   - viewID: Current RUM view ID - standard UUID string, lowercased. It can be empty when view is being loaded.
     ///   - userActionID: The ID of current RUM action (standard UUID `String`, lowercased).
     ///   - viewServerTimeOffset: Current view related server time offset
-    ///   - sessionSampleRate: The sampling rate applied to the current RUM session. Defaults to `100.0`.
     public init(
         applicationID: String,
         sessionID: String,
+        sessionSampler: Sampling,
         viewID: String? = nil,
         userActionID: String? = nil,
         viewServerTimeOffset: TimeInterval? = nil,
-        sessionSampleRate: SampleRate = 100.0
     ) {
         self.applicationID = applicationID
         self.sessionID = sessionID
+        self.sessionSampler = sessionSampler
         self.viewID = viewID
         self.userActionID = userActionID
         self.viewServerTimeOffset = viewServerTimeOffset
-        self.sessionSampler = DeterministicSampler(sessionID: sessionID, samplingRate: sessionSampleRate)
+    }
+}
+
+extension RUMCoreContext: Equatable {
+    public static func == (lhs: RUMCoreContext, rhs: RUMCoreContext) -> Bool {
+        lhs.applicationID == rhs.applicationID
+            && lhs.sessionID == rhs.sessionID
+            && lhs.viewID == rhs.viewID
+            && lhs.userActionID == rhs.userActionID
+            && lhs.viewServerTimeOffset == rhs.viewServerTimeOffset
+            && lhs.sessionSampler.samplingRate == rhs.sessionSampler.samplingRate
     }
 }

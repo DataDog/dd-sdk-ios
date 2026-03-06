@@ -15,6 +15,7 @@ extension RUMSessionState: AnyMockable, RandomMockable {
     public static func mockRandom() -> RUMSessionState {
         return .init(
             sessionUUID: .mockRandom(),
+            isSampled: .mockRandom(),
             isInitialSession: .mockRandom(),
             hasTrackedAnyView: .mockRandom(),
             didStartWithReplay: .mockRandom()
@@ -23,12 +24,14 @@ extension RUMSessionState: AnyMockable, RandomMockable {
 
     public static func mockWith(
         sessionUUID: UUID = .mockAny(),
+        isSampled: Bool = .mockAny(),
         isInitialSession: Bool = .mockAny(),
         hasTrackedAnyView: Bool = .mockAny(),
         didStartWithReplay: Bool? = .mockAny()
     ) -> RUMSessionState {
         return RUMSessionState(
             sessionUUID: sessionUUID,
+            isSampled: isSampled,
             isInitialSession: isInitialSession,
             hasTrackedAnyView: hasTrackedAnyView,
             didStartWithReplay: didStartWithReplay

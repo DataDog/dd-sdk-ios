@@ -110,7 +110,7 @@ internal class Monitor: RUMCommandSubscriber {
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
     private let telemetry: Telemetry
-    private let sessionSampler: Sampler
+    private let sampleRate: SampleRate
 
     init(
         dependencies: RUMScopeDependencies,
@@ -122,7 +122,7 @@ internal class Monitor: RUMCommandSubscriber {
         self.fatalErrorContext = dependencies.fatalErrorContext
         self.rumUUIDGenerator = dependencies.rumUUIDGenerator
         self.telemetry = dependencies.telemetry
-        self.sessionSampler = dependencies.sessionSampler
+        self.sampleRate = dependencies.samplingRate
     }
 
     func process(command: RUMCommand) {
@@ -154,18 +154,13 @@ internal class Monitor: RUMCommandSubscriber {
                                 self.scopes.activeSession?.context ??
                                 self.scopes.context
 
-                guard context.sessionID != .nullUUID else {
-                    // if Session was not sampled or not yet started
-                    return nil
-                }
-
                 return RUMCoreContext(
                     applicationID: context.rumApplicationID,
                     sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+                    sessionSampler: DeterministicSampler(uuid: context.sessionID.rawValue.uuidString, samplingRate: sampleRate),
                     viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
                     userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
-                    viewServerTimeOffset: self.scopes.activeSession?.viewScopes.last?.serverTimeOffset,
-                    sessionSampleRate: self.sessionSampler.samplingRate
+                    viewServerTimeOffset: self.scopes.activeSession?.viewScopes.last?.serverTimeOffset
                 )
             }
         )
@@ -226,14 +221,14 @@ extension Monitor: RUMMonitorProtocol {
         // Synchronise it through the context thread to make sure we return the correct
         // sessionID after all other events have been processed (also on the context thread):
         featureScope.context { [weak self] _ in
-            guard let sessionId = self?.scopes.activeSession?.sessionUUID else {
+            guard let activeSession = self?.scopes.activeSession else {
                 completion(nil)
                 return
             }
 
             var sessionIdValue: String? = nil
-            if sessionId != RUMUUID.nullUUID {
-                sessionIdValue = sessionId.rawValue.uuidString
+            if activeSession.isSampled, activeSession.sessionUUID != .nullUUID {
+                sessionIdValue = activeSession.sessionUUID.rawValue.uuidString
             }
 
             completion(sessionIdValue)

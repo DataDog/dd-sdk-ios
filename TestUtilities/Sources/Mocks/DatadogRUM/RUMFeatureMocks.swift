@@ -1045,7 +1045,7 @@ extension RUMScopeDependencies {
     static func mockWith(
         featureScope: FeatureScope = NOPFeatureScope(),
         rumApplicationID: String = .mockAny(),
-        sessionSampler: Sampler = .mockKeepAll(),
+        samplingRate: SampleRate = .maxSampleRate,
         trackBackgroundEvents: Bool = .mockAny(),
         trackFrustrations: Bool = true,
         hasAppHangsEnabled: Bool = true,
@@ -1081,7 +1081,7 @@ extension RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: rumApplicationID,
-            sessionSampler: sessionSampler,
+            samplingRate: samplingRate,
             trackBackgroundEvents: trackBackgroundEvents,
             trackFrustrations: trackFrustrations,
             hasAppHangsEnabled: hasAppHangsEnabled,
@@ -1113,7 +1113,7 @@ extension RUMScopeDependencies {
     /// Creates new instance of `RUMScopeDependencies` by replacing individual dependencies.
     public func replacing(
         rumApplicationID: String? = nil,
-        sessionSampler: Sampler? = nil,
+        samplingRate: SampleRate? = nil,
         trackBackgroundEvents: Bool? = nil,
         trackFrustrations: Bool? = nil,
         hasAppHangsEnabled: Bool? = nil,
@@ -1143,7 +1143,7 @@ extension RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
-            sessionSampler: sessionSampler ?? self.sessionSampler,
+            samplingRate: samplingRate ?? self.samplingRate,
             trackBackgroundEvents: trackBackgroundEvents ?? self.trackBackgroundEvents,
             trackFrustrations: trackFrustrations ?? self.trackFrustrations,
             hasAppHangsEnabled: hasAppHangsEnabled ?? self.hasAppHangsEnabled,
@@ -1746,26 +1746,28 @@ extension RUMCoreContext: RandomMockable {
     public static func mockWith(
         applicationID: String = .mockAny(),
         sessionID: String = .mockAny(),
+        sessionSampleRate: SampleRate = .maxSampleRate,
         viewID: String? = .mockAny(),
-        serverTimeOffset: TimeInterval = .mockAny(),
-        sessionSampler: DeterministicSampler = DeterministicSampler(seed: 0, samplingRate: 100.0)
+        userActionID: String? = nil,
+        serverTimeOffset: TimeInterval = .mockAny()
     ) -> Self {
         .init(
             applicationID: applicationID,
             sessionID: sessionID,
+            sessionSampler: DeterministicSampler(uuid: sessionID, samplingRate: sessionSampleRate),
             viewID: viewID,
-            viewServerTimeOffset: serverTimeOffset,
-            sessionSampleRate: sessionSampler.samplingRate
+            viewServerTimeOffset: serverTimeOffset
         )
     }
 
     public static func mockRandom() -> Self {
-        .init(
+        .mockWith(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
+            sessionSampleRate: .mockRandom(min: 0, max: 100),
             viewID: .mockRandom(),
             userActionID: .mockRandom(),
-            viewServerTimeOffset: .mockRandom()
+            serverTimeOffset: .mockRandom()
         )
     }
 }

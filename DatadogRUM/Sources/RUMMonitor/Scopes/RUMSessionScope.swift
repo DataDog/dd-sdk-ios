@@ -35,6 +35,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             if !state.hasTrackedAnyView && !viewScopes.isEmpty {
                 state = RUMSessionState(
                     sessionUUID: state.sessionUUID,
+                    isSampled: state.isSampled,
                     isInitialSession: state.isInitialSession,
                     hasTrackedAnyView: true,
                     didStartWithReplay: state.didStartWithReplay
@@ -75,7 +76,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// Automatically detect background events by creating "Background" view if no other view is active
     let trackBackgroundEvents: Bool
 
-    /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
+    /// This Session UUID.
     let sessionUUID: RUMUUID
     /// The precondition that led to the creation of this session.
     /// TODO: RUM-1650 This should become non-optional after all preconditions are implemented.
@@ -110,19 +111,17 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         applicationState: RUMApplicationState,
         resumingViewScope: RUMViewScope? = nil
     ) {
+        let sessionUUID = dependencies.rumUUIDGenerator.generateUnique()
+
         self.parent = parent
         self.dependencies = dependencies
         self.applicationState = applicationState
-        let candidateUUID = dependencies.rumUUIDGenerator.generateUnique()
-        let sessionIdentifier = candidateUUID.rawValue.uuidString
-            .split(separator: "-")
-            .last
-            .flatMap { UInt64($0, radix: 16) }
-        self.isSampled = sessionIdentifier.map {
-            DeterministicSampler(seed: $0, samplingRate: dependencies.sessionSampler.samplingRate).sample()
-        } ?? dependencies.sessionSampler.sample()
+        self.isSampled = DeterministicSampler(
+            uuid: sessionUUID.rawValue.uuidString,
+            samplingRate: dependencies.samplingRate
+        ).sample()
         self.startPrecondition = startPrecondition
-        self.sessionUUID = isSampled ? candidateUUID : .nullUUID
+        self.sessionUUID = sessionUUID
         self.isInitialSession = isInitialSession
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
@@ -130,18 +129,21 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.endReason = nil
         self.state = RUMSessionState(
             sessionUUID: sessionUUID.rawValue,
+            isSampled: self.isSampled,
             isInitialSession: isInitialSession,
             hasTrackedAnyView: false,
             didStartWithReplay: context.hasReplay
         )
         self.interactionToNextViewMetric = dependencies.interactionToNextViewMetricFactory()
 
-        // Start tracking "RUM Session Ended" metric for this session
-        dependencies.sessionEndedMetric.startMetric(
-            sessionID: sessionUUID,
-            precondition: startPrecondition,
-            context: context
-        )
+        if isSampled {
+            // Start tracking "RUM Session Ended" metric for this session
+            dependencies.sessionEndedMetric.startMetric(
+                sessionID: sessionUUID,
+                precondition: startPrecondition,
+                context: context
+            )
+        }
 
         if let viewScope = resumingViewScope {
             startView(

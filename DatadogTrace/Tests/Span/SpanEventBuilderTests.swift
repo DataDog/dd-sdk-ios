@@ -671,10 +671,11 @@ class SpanEventBuilderTests: XCTestCase {
     // swiftlint:disable opening_brace
     func testWhenBundleWithRUMisEnabled_itCreatesSpanWithRUMContext() {
         // Given
+        let sampler = Sampler.mockKeepAll()
         let rum = oneOf([
-            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), viewID: .mockRandom(), userActionID: .mockRandom()) },
-            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), viewID: .mockRandom(), userActionID: nil) },
-            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), viewID: nil, userActionID: nil) }
+            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), sessionSampler: sampler, viewID: .mockRandom(), userActionID: .mockRandom()) },
+            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), sessionSampler: sampler, viewID: .mockRandom(), userActionID: nil) },
+            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), sessionSampler: sampler, viewID: nil, userActionID: nil) }
         ])
         let context: DatadogContext = .mockWith(additionalContext: [rum])
 
@@ -704,11 +705,46 @@ class SpanEventBuilderTests: XCTestCase {
     }
     // swiftlint:enable opening_brace
 
+    func testWhenBundleWithRUMisEnabled_butSampledOut_itCreatesSpanWithNoRUMContext() {
+        // Given
+        let rum = RUMCoreContext(
+            applicationID: .mockRandom(),
+            sessionID: .mockRandom(),
+            sessionSampler: Sampler.mockRejectAll()
+        )
+        let context: DatadogContext = .mockWith(additionalContext: [rum])
+
+        // When
+        let builder: SpanEventBuilder = .mockWith(bundleWithRUM: true)
+        let span = builder.createSpanEvent(
+            context: context,
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        XCTAssertNil(span.tags[SpanTags.rumApplicationID])
+        XCTAssertNil(span.tags[SpanTags.rumSessionID])
+        XCTAssertNil(span.tags[SpanTags.rumViewID])
+        XCTAssertNil(span.tags[SpanTags.rumActionID])
+    }
+
     func testWhenBundleWithRUMisDisabled_itCreatesSpanWithNoRUMContext() {
         // Given
         let rum = RUMCoreContext(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
+            sessionSampler: Sampler.mockKeepAll(),
             viewID: .mockRandom(),
             userActionID: .mockRandom()
         )

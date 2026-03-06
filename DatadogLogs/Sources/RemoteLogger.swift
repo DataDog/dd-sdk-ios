@@ -136,7 +136,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
             var internalAttributes: [String: Encodable] = [:]
 
             // When bundle with RUM is enabled, link RUM context (if available):
-            if self.rumContextIntegration, let rum = context.additionalContext(ofType: RUMCoreContext.self) {
+            if self.rumContextIntegration, let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.sample() {
                 internalAttributes[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
                 internalAttributes[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
                 internalAttributes[LogEvent.Attributes.RUM.viewID] = rum.viewID

@@ -84,17 +84,6 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             timeSinceAppStart: timeSinceAppStart
         )
 
-        let shouldSampleNewSession: Bool = {
-            let newSessionUUID = uuidGenerator.generateUnique()
-            let newSessionIdentifier = newSessionUUID.rawValue.uuidString
-                .split(separator: "-")
-                .last
-                .flatMap { UInt64($0, radix: 16) }
-            return newSessionIdentifier.map {
-                DeterministicSampler(seed: $0, samplingRate: sessionSampler.samplingRate).sample()
-            } ?? sessionSampler.sample()
-        }()
-
         // RUMM-2516 if a cross-platform crash was reported, do not send its native version
         if var lastRUMViewEvent = context.lastRUMViewEvent {
             if let lastRUMAttributes = context.lastRUMAttributes {
@@ -113,16 +102,16 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 DD.logger.debug("There was a crash in previous session, but it is ignored due to another crash already present in the last view.")
                 return false
             }
-        } else if let lastRUMSessionState = context.lastRUMSessionState {
-            sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings)
-        } else if shouldSampleNewSession { // before producing a new RUM session, we must consider sampling (deterministic Knuth)
-            sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings)
-        } else {
-            DD.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")
-            return false
+
+            return true
         }
 
-        return true
+        if let lastRUMSessionState = context.lastRUMSessionState {
+            sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings)
+            return true
+        }
+
+        return sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings)
     }
 
     /// If the crash occurred in an existing RUM session and we know its `lastRUMViewEvent` we send the error using that session UUID and link
@@ -211,7 +200,18 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         _ crashReport: DDCrashReport,
         crashContext: CrashContext,
         using crashTimings: AdjustedCrashTimings
-    ) {
+    ) -> Bool {
+        let sessionID = uuidGenerator.generateUnique()
+        let sampled = DeterministicSampler(
+            uuid: sessionID.rawValue.uuidString,
+            samplingRate: sessionSampler.samplingRate
+        ).sample()
+
+        guard sampled else {
+            DD.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")
+            return false
+        }
+
         // We can ignore `sessionState` for building the rule as we can assume there was no session sent - otherwise,
         // the `lastRUMSessionState` would have been set in `CrashContext` and we could be sending the crash to previous session
         // through `sendCrashReportToPreviousSession()`.
@@ -258,6 +258,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         if let newRUMView = newRUMView {
             send(crashReport: crashReport, to: newRUMView, using: crashTimings)
         }
+
+        return true
     }
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
