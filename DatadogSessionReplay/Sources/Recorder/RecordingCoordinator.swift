@@ -22,7 +22,7 @@ internal class RecordingCoordinator {
     let srContextPublisher: SRContextPublisher
 
     private var currentRUMContext: RUMCoreContext? = nil
-    internal private(set) var isSampled = false
+    private var isSampled = false
 
     /// `recordingEnabled` is used to track when the user
     /// has enabled or disabled the recording for Session Replay.

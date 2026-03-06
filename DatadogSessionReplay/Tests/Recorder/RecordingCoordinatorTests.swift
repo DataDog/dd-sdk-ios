@@ -306,16 +306,16 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // When
         rumContextObserver.notify(rumContext: rumContext)
-        let firstDecision = recordingCoordinator?.isSampled
+        let firstDecision = scheduler.isRunning
 
         rumContextObserver.notify(rumContext: rumContext)
-        let secondDecision = recordingCoordinator?.isSampled
+        let secondDecision = scheduler.isRunning
 
         // Then
         XCTAssertEqual(firstDecision, secondDecision, "Knuth sampling must be deterministic for the same session UUID")
     }
 
-    func test_knownSessionUUID_matchesPrecomputedKnuthResult() {
+    func test_knownSessionUUID_matchesPrecomputedKnuthResult() throws {
         // UUID: "abcdef01-2345-6789-abcd-ef0123456789", last segment 0xef0123456789
         // sessionRate=50, replayRate=80 → effectiveRate=40.0
         let knownSessionID = "abcdef01-2345-6789-abcd-ef0123456789"
@@ -324,7 +324,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // Precompute using combined(with:) — canonical cross-SDK formula
         let sessionSampler = DeterministicSampler(uuid: knownSessionID, samplingRate: sessionSampleRate)
-        let expectedResult = sessionSampler.combined(with: replaySampleRate).sample()
+        let expectedResult = sessionSampler.combined(with: replaySampleRate).isSampled
 
         prepareRecordingCoordinator(replaySampleRate: replaySampleRate)
         let rumContext = RUMCoreContext(
@@ -335,14 +335,16 @@ class RecordingCoordinatorTests: XCTestCase {
         )
         rumContextObserver.notify(rumContext: rumContext)
 
+        let hasReplay = try XCTUnwrap(core.context.additionalContext(ofType: SessionReplayCoreContext.HasReplay.self))
         XCTAssertEqual(
-            recordingCoordinator?.isSampled,
+            scheduler.isRunning,
             expectedResult,
-            "RecordingCoordinator must use sessionSampler.combined(with:).sample() with the composed effective rate"
+            "RecordingCoordinator must use sessionSampler.combined(with:).isSampled with the composed effective rate"
         )
+        XCTAssertEqual(hasReplay.value, expectedResult)
     }
 
-    func test_childRateCorrectionIsApplied_replay() {
+    func test_childRateCorrectionIsApplied_replay() throws {
         // seed 0xd860b2b9437a (~68.7% hash): sampled at replay-only 80% but NOT at composed 40% (50*80/100)
         // This verifies the session rate is not ignored.
         let knownSessionID = "00000000-0000-0000-0000-d860b2b9437a"
@@ -350,8 +352,8 @@ class RecordingCoordinatorTests: XCTestCase {
         let replaySampleRate: SampleRate = 80.0
 
         let sessionSampler = DeterministicSampler(uuid: knownSessionID, samplingRate: sessionSampleRate)
-        let composedResult = sessionSampler.combined(with: replaySampleRate).sample()
-        let replayOnlyResult = DeterministicSampler(uuid: knownSessionID, samplingRate: replaySampleRate).sample()
+        let composedResult = sessionSampler.combined(with: replaySampleRate).isSampled
+        let replayOnlyResult = DeterministicSampler(uuid: knownSessionID, samplingRate: replaySampleRate).isSampled
         guard composedResult != replayOnlyResult else {
             XCTFail("Precondition: chosen vector must differ between composed and replay-only rate")
             return
@@ -366,11 +368,13 @@ class RecordingCoordinatorTests: XCTestCase {
         )
         rumContextObserver.notify(rumContext: rumContext)
 
+        let hasReplay = try XCTUnwrap(core.context.additionalContext(ofType: SessionReplayCoreContext.HasReplay.self))
         XCTAssertEqual(
-            recordingCoordinator?.isSampled,
+            scheduler.isRunning,
             composedResult,
             "RecordingCoordinator must apply child-rate correction via sessionSampler.combined(with:)"
         )
+        XCTAssertEqual(hasReplay.value, composedResult)
     }
 
     private func prepareRecordingCoordinator(
