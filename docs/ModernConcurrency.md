@@ -322,5 +322,5 @@ For each feature module:
 8. **Make types `Sendable`** where they cross isolation boundaries
 9. **Update Obj-C bridges** — `@MainActor` or `Task` + semaphore; convert non-Sendable types first (section 7)
 10. **Update tests** — `@MainActor` annotation, async throws, remove flush (section 8)
-10. **Fix deployment targets** in `.xcodeproj` test targets to match `Package.swift`
-11. **Write a module-specific `Resources/ModernConcurrency.md`** documenting decisions
+11. **Fix deployment targets** in `.xcodeproj` test targets to match `Package.swift`
+12. **Write a module-specific `Resources/ModernConcurrency.md`** documenting decisions
