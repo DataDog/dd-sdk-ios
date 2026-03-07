@@ -4720,6 +4720,22 @@
 			path = Objc;
 			sourceTree = "<group>";
 		};
+		261255962E2167E40015042B /* HeaderCapture */ = {
+			isa = PBXGroup;
+			children = (
+				261255902E2167E40015042B /* HeaderProcessor.swift */,
+			);
+			path = HeaderCapture;
+			sourceTree = "<group>";
+		};
+		261255972E2167F10015042B /* HeaderCapture */ = {
+			isa = PBXGroup;
+			children = (
+				261255932E2167F10015042B /* HeaderProcessorTests.swift */,
+			);
+			path = HeaderCapture;
+			sourceTree = "<group>";
+		};
 		3C4CF9932C47BE10006DE1C0 /* MemoryWarnings */ = {
 			isa = PBXGroup;
 			children = (
@@ -5920,14 +5936,6 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
-		261255972E2167F10015042B /* HeaderCapture */ = {
-			isa = PBXGroup;
-			children = (
-				261255932E2167F10015042B /* HeaderProcessorTests.swift */,
-			);
-			path = HeaderCapture;
-			sourceTree = "<group>";
-		};
 		6141014C251A577D00E3C2D9 /* Actions */ = {
 			isa = PBXGroup;
 			children = (
@@ -6078,14 +6086,6 @@
 				D2BCB11E29D30AF000737A9A /* URLSessionRUMResourcesHandler.swift */,
 			);
 			path = Resources;
-			sourceTree = "<group>";
-		};
-		261255962E2167E40015042B /* HeaderCapture */ = {
-			isa = PBXGroup;
-			children = (
-				261255902E2167E40015042B /* HeaderProcessor.swift */,
-			);
-			path = HeaderCapture;
 			sourceTree = "<group>";
 		};
 		615950EC291C057D00470E0C /* Integrations */ = {
@@ -12364,6 +12364,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -12377,6 +12378,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -12395,6 +12397,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -12408,6 +12411,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -12426,6 +12430,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -12439,6 +12444,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Integration;
@@ -12452,6 +12458,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -12477,6 +12484,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -12501,6 +12509,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

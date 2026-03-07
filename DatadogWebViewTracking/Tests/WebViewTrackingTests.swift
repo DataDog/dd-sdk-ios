@@ -12,6 +12,7 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogWebViewTracking
 
+@MainActor
 class WebViewTrackingTests: XCTestCase {
     func testItAddsUserScript() throws {
         let mockSanitizer = HostsSanitizerMock()
@@ -237,26 +238,8 @@ class WebViewTrackingTests: XCTestCase {
     }
 
     func testSendingWebEvents() throws {
-        let logMessageExpectation = expectation(description: "Log message received")
-        let core = PassthroughCoreMock(
-            messageReceiver: FeatureMessageReceiverMock { message in
-                switch message {
-                case let .webview(.log(event)):
-                    let matcher = JSONObjectMatcher(object: event)
-                    XCTAssertEqual(try? matcher.value("date"), 1_635_932_927_012)
-                    XCTAssertEqual(try? matcher.value("message"), "console error: error")
-                    XCTAssertEqual(try? matcher.value("status"), "error")
-                    XCTAssertEqual(try? matcher.value("view"), ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
-                    XCTAssertEqual(try? matcher.value("error"), ["origin": "console"])
-                    XCTAssertEqual(try? matcher.value("session_id"), "0110cab4-7471-480e-aa4e-7ce039ced355")
-                    logMessageExpectation.fulfill()
-                case .context:
-                    break
-                default:
-                    XCTFail("Unexpected message received: \(message)")
-                }
-            }
-        )
+        let receiverMock = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: receiverMock)
 
         let controller = DDUserContentController()
         try WebViewTracking.enableOrThrow(
@@ -290,25 +273,23 @@ class WebViewTrackingTests: XCTestCase {
         }
         """)
         messageHandler?.userContentController(controller, didReceive: webLogMessage)
-        waitForExpectations(timeout: 1)
+
+        let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
+        guard case let .log(event) = message else {
+            return XCTFail("Expected a log message")
+        }
+        let matcher = JSONObjectMatcher(object: event)
+        XCTAssertEqual(try matcher.value("date"), 1_635_932_927_012)
+        XCTAssertEqual(try matcher.value("message"), "console error: error")
+        XCTAssertEqual(try matcher.value("status"), "error")
+        XCTAssertEqual(try matcher.value("view"), ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
+        XCTAssertEqual(try matcher.value("error"), ["origin": "console"])
+        XCTAssertEqual(try matcher.value("session_id"), "0110cab4-7471-480e-aa4e-7ce039ced355")
     }
 
     func testSendingWebRUMEvent() throws {
-        let rumMessageExpectation = expectation(description: "RUM message received")
-        let core = PassthroughCoreMock(
-            messageReceiver: FeatureMessageReceiverMock { message in
-                switch message {
-                case let .webview(.rum(event)):
-                    let matcher = JSONObjectMatcher(object: event)
-                    XCTAssertEqual(try? matcher.value("view.id"), "64308fd4-83f9-48cb-b3e1-1e91f6721230")
-                    rumMessageExpectation.fulfill()
-                case .context:
-                    break
-                default:
-                    XCTFail("Unexpected message received: \(message)")
-                }
-            }
-        )
+        let receiverMock = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: receiverMock)
 
         let controller = DDUserContentController()
         try WebViewTracking.enableOrThrow(
@@ -378,30 +359,20 @@ class WebViewTrackingTests: XCTestCase {
         }
         """)
         messageHandler?.userContentController(controller, didReceive: webRUMMessage)
-        waitForExpectations(timeout: 1)
+
+        let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
+        guard case let .rum(event) = message else {
+            return XCTFail("Expected a RUM message")
+        }
+        let matcher = JSONObjectMatcher(object: event)
+        XCTAssertEqual(try matcher.value("view.id"), "64308fd4-83f9-48cb-b3e1-1e91f6721230")
     }
 
     func testSendingWebRecordEvent() throws {
-        let recordMessageExpectation = expectation(description: "Record message received")
         let webView = WKWebView()
         let controller = DDUserContentController()
-
-        let core = PassthroughCoreMock(
-            messageReceiver: FeatureMessageReceiverMock { message in
-                switch message {
-                case let .webview(.record(event, view)):
-                    XCTAssertEqual(view.id, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
-                    let matcher = JSONObjectMatcher(object: event)
-                    XCTAssertEqual(try? matcher.value("date"), 1_635_932_927_012)
-                    XCTAssertEqual(try? matcher.value("slotId"), String(webView.hash))
-                    recordMessageExpectation.fulfill()
-                case .context:
-                    break
-                default:
-                    XCTFail("Unexpected message received: \(message)")
-                }
-            }
-        )
+        let receiverMock = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: receiverMock)
 
         try WebViewTracking.enableOrThrow(
             tracking: controller,
@@ -423,7 +394,15 @@ class WebViewTrackingTests: XCTestCase {
         """, webView: webView)
 
         messageHandler?.userContentController(controller, didReceive: webLogMessage)
-        waitForExpectations(timeout: 1)
+
+        let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
+        guard case let .record(event, view) = message else {
+            return XCTFail("Expected a record message")
+        }
+        XCTAssertEqual(view.id, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
+        let matcher = JSONObjectMatcher(object: event)
+        XCTAssertEqual(try matcher.value("date"), 1_635_932_927_012)
+        XCTAssertEqual(try matcher.value("slotId"), String(webView.hash))
     }
 }
 

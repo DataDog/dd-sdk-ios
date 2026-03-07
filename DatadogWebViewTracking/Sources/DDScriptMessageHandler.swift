@@ -10,15 +10,11 @@ import Foundation
 import WebKit
 import DatadogInternal
 
+@MainActor
 internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
     static let name = "DatadogEventBridge"
 
     let emitter: MessageEmitter
-
-    let queue = DispatchQueue(
-        label: "com.datadoghq.JSEventBridge",
-        target: .global(qos: .userInteractive)
-    )
 
     init(emitter: MessageEmitter) {
         self.emitter = emitter
@@ -29,17 +25,8 @@ internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
         didReceive message: WKScriptMessage
     ) {
         let hash = message.webView.map { String($0.hash) }
-        // message.body must be called within UI thread
         let body = message.body
-        queue.async {
-            self.emitter.send(body: body, slotId: hash)
-        }
-    }
-}
-
-extension DDScriptMessageHandler: Flushable {
-    func flush() {
-        queue.sync { }
+        emitter.send(body: body, slotId: hash)
     }
 }
 

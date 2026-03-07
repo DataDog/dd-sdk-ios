@@ -29,11 +29,6 @@ public final class WKUserContentControllerMock: WKUserContentController {
     public func scriptMessageHandler(forName name: String) -> WKScriptMessageHandler? {
         handlers[name]
     }
-
-    public func flush() {
-        let handler = handlers[DDScriptMessageHandler.name] as? DDScriptMessageHandler
-        handler?.flush()
-    }
 }
 
 private final class WKScriptMessageMock: WKScriptMessage {
