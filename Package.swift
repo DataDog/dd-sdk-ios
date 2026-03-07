@@ -176,7 +176,10 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogInternal"),
             ],
-            path: "DatadogWebViewTracking/Sources"
+            path: "DatadogWebViewTracking/Sources",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
         ),
         .testTarget(
             name: "DatadogWebViewTrackingTests",

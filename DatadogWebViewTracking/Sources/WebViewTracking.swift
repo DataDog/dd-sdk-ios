@@ -34,6 +34,7 @@ public enum WebViewTracking {
     ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
     ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
     ///   - core: Datadog SDK core to use for tracking.
+    @MainActor
     public static func enable(
         webView: WKWebView,
         hosts: Set<String> = [],
@@ -41,17 +42,13 @@ public enum WebViewTracking {
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         do {
-            // To ensure the correct registration order between Core and Features,
-            // the entire initialization flow is synchronized on the main thread.
-            try runOnMainThreadSync {
-                try enableOrThrow(
-                    tracking: webView.configuration.userContentController,
-                    hosts: hosts,
-                    hostsSanitizer: HostsSanitizer(),
-                    logsSampleRate: logsSampleRate,
-                    in: core
-                )
-            }
+            try enableOrThrow(
+                tracking: webView.configuration.userContentController,
+                hosts: hosts,
+                hostsSanitizer: HostsSanitizer(),
+                logsSampleRate: logsSampleRate,
+                in: core
+            )
         } catch let error {
             consolePrint("\(error)", .error)
         }
@@ -63,6 +60,7 @@ public enum WebViewTracking {
     /// - Note: This method **must** be called when the webview can be deinitialized.
     /// 
     /// - Parameter webView: The web-view to stop tracking.
+    @MainActor
     public static func disable(webView: WKWebView) {
         let controller = webView.configuration.userContentController
         controller.removeScriptMessageHandler(forName: DDScriptMessageHandler.name)
@@ -75,6 +73,7 @@ public enum WebViewTracking {
 
     static let jsCodePrefix = "/* DatadogEventBridge */"
 
+    @MainActor
     static func enableOrThrow(
         tracking controller: WKUserContentController,
         hosts: Set<String>,

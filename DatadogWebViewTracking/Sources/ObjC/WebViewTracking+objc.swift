@@ -27,6 +27,7 @@ public final class objc_WebViewTracking: NSObject {
     ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
     ///   - core: Datadog SDK core to use for tracking.
     @objc
+    @MainActor
     public static func enable(
         webView: WKWebView,
         hosts: Set<String> = [],
@@ -46,6 +47,7 @@ public final class objc_WebViewTracking: NSObject {
     ///
     /// - Parameter webView: The web-view to stop tracking.
     @objc
+    @MainActor
     public static func disable(
         webView: WKWebView
     ) {

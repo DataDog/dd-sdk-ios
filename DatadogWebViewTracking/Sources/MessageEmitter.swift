@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Errors that can be thrown when parsing a WebView message
-internal enum WebViewMessageError: Error, Equatable {
+internal enum WebViewMessageError: Error, Equatable, Sendable {
     case dataSerialization(message: String)
     case invalidMessage(description: String)
 }
