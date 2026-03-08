@@ -100,6 +100,6 @@ class InternalProxyTests: XCTestCase {
 
         // Then
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        XCTAssertEqual(core.applicationVersionPublisher.version, randomVersion)
+        XCTAssertEqual(core.contextProvider.read().version, randomVersion)
     }
 }

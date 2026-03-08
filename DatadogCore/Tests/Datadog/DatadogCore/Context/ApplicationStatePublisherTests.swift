@@ -9,40 +9,43 @@ import DatadogInternal
 import TestUtilities
 @testable import DatadogCore
 
-class ApplicationStatePublisherTests: XCTestCase {
-    func testWhenReceivingAppLifecycleNotification_itUpdatesStatesHistory() throws {
+class ApplicationStateSourceTests: XCTestCase {
+    func testWhenReceivingAppLifecycleNotification_itUpdatesStatesHistory() async throws {
         let date = Date()
         let dateProvider = DateProviderMock(now: date)
         let notificationCenter = NotificationCenter()
 
         // Given
-        let publisher = ApplicationStatePublisher(
+        let source = ApplicationStateSource(
             appStateHistory: .mockWith(initialState: .inactive, date: dateProvider.now),
             notificationCenter: notificationCenter,
             dateProvider: dateProvider
         )
 
-        var lastPublishedValue: AppStateHistory?
-        publisher.publish { lastPublishedValue = $0 }
+        var iterator = source.values.makeAsyncIterator()
 
         // When / Then
         dateProvider.now += 1
         notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
-        XCTAssertEqual(lastPublishedValue?.currentState, .inactive)
+        var value = await iterator.next()
+        XCTAssertEqual(value?.currentState, .inactive)
 
         dateProvider.now += 1
         notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
-        XCTAssertEqual(lastPublishedValue?.currentState, .active)
+        value = await iterator.next()
+        XCTAssertEqual(value?.currentState, .active)
 
         dateProvider.now += 1
         notificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
-        XCTAssertEqual(lastPublishedValue?.currentState, .inactive)
+        value = await iterator.next()
+        XCTAssertEqual(value?.currentState, .inactive)
 
         dateProvider.now += 1
         notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
-        XCTAssertEqual(lastPublishedValue?.currentState, .background)
+        value = await iterator.next()
+        XCTAssertEqual(value?.currentState, .background)
 
-        let history = try XCTUnwrap(lastPublishedValue)
+        let history = try XCTUnwrap(value)
         XCTAssertEqual(history.state(at: date), .inactive)
         XCTAssertEqual(history.state(at: date + 1), .inactive)
         XCTAssertEqual(history.state(at: date + 2), .active)

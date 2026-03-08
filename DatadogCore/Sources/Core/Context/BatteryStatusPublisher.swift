@@ -10,71 +10,59 @@ import DatadogInternal
 #if os(iOS)
 import UIKit
 
-/// The ``BatteryStatusPublisher`` publishes the battery state and level from the ``UIDevice``.
+/// Produces `BatteryStatus` updates via `AsyncStream` by observing `UIDevice` battery
+/// notifications.
 ///
-/// The publisher will enable the battery monitoring by setting the ``UIDevice/isBatteryMonitoringEnabled``
-/// to `true`. The property will be reset to it's initial value when the publisher is deallocated.
-internal final class BatteryStatusPublisher: ContextValuePublisher {
+/// Battery monitoring is enabled at creation time and restored to its original setting
+/// when the stream terminates.
+internal struct BatteryStatusSource: ContextValueSource {
     let initialValue: BatteryStatus?
-    let device: UIDevice
-    let isBatteryMonitoringEnabled: Bool
-    private let notificationCenter: NotificationCenter
-    private var observers: [Any]? = nil
+    let values: AsyncStream<BatteryStatus?>
 
-    /// Creates a battery status publisher from the given device.
-    /// 
-    /// - Parameters:
-    ///   - notificationCenter: The notification center for observing the `UIDevice` battery changes,
-    ///   - device: The `UIDevice` instance.
     init(
         notificationCenter: NotificationCenter,
         device: UIDevice
     ) {
-        self.device = device
-        self.notificationCenter = notificationCenter
-        self.isBatteryMonitoringEnabled = device.isBatteryMonitoringEnabled
+        let wasBatteryMonitoringEnabled = device.isBatteryMonitoringEnabled
+        device.isBatteryMonitoringEnabled = true
 
-        device.isBatteryMonitoringEnabled = true // enabled to check the battery level
         self.initialValue = BatteryStatus(
             state: .init(device.batteryState),
             level: device.batteryLevel
         )
-    }
 
-    func publish(to receiver: @escaping ContextValueReceiver<BatteryStatus?>) {
-        let block = { (notification: Notification) in
-            guard let device = notification.object as? UIDevice else {
-                return
+        self.values = AsyncStream { continuation in
+            let block = { (notification: Notification) in
+                guard let device = notification.object as? UIDevice else {
+                    return
+                }
+                let status = BatteryStatus(
+                    state: .init(device.batteryState),
+                    level: device.batteryLevel
+                )
+                continuation.yield(status)
             }
 
-            let status = BatteryStatus(
-                state: .init(device.batteryState),
-                level: device.batteryLevel
-            )
+            nonisolated(unsafe) let observers = [
+                notificationCenter.addObserver(
+                    forName: UIDevice.batteryStateDidChangeNotification,
+                    object: device,
+                    queue: .main,
+                    using: block
+                ),
+                notificationCenter.addObserver(
+                    forName: UIDevice.batteryLevelDidChangeNotification,
+                    object: device,
+                    queue: .main,
+                    using: block
+                )
+            ]
 
-            receiver(status)
+            continuation.onTermination = { _ in
+                observers.forEach(notificationCenter.removeObserver)
+                device.isBatteryMonitoringEnabled = wasBatteryMonitoringEnabled
+            }
         }
-
-        observers = [
-            notificationCenter.addObserver(
-                forName: UIDevice.batteryStateDidChangeNotification,
-                object: device,
-                queue: .main,
-                using: block
-            ),
-            notificationCenter.addObserver(
-                forName: UIDevice.batteryLevelDidChangeNotification,
-                object: device,
-                queue: .main,
-                using: block
-            )
-        ]
-    }
-
-    func cancel() {
-        device.isBatteryMonitoringEnabled = isBatteryMonitoringEnabled
-        observers?.forEach(notificationCenter.removeObserver)
-        observers = nil
     }
 }
 

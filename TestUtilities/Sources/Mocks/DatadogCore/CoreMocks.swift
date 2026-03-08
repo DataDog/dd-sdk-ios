@@ -274,12 +274,12 @@ extension DataFormat {
     }
 }
 
-class NOPDataUploadWorker: DataUploadWorkerType {
-    func flushSynchronously() {}
-    func cancelSynchronously() {}
+final class NOPDataUploadWorker: DataUploadWorkerType, @unchecked Sendable {
+    func flush() async {}
+    func cancel() async {}
 }
 
-public  class DataUploaderMock: DataUploaderType {
+public class DataUploaderMock: DataUploaderType, @unchecked Sendable {
     let uploadStatuses: [DataUploadStatus]
 
     /// Notifies on each started upload.

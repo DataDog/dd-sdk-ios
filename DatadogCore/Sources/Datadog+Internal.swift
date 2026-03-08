@@ -29,7 +29,7 @@ extension InternalExtension where ExtendedType == Datadog {
             return
         }
 
-        core.applicationVersionPublisher.version = customVersion
+        core.set(version: customVersion)
     }
 }
 

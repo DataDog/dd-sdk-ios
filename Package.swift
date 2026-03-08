@@ -63,7 +63,7 @@ let package = Package(
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ],
-            swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
+            swiftSettings: [.define("SPM_BUILD"), .swiftLanguageMode(.v6)] + internalSwiftSettings
         ),
         .target(
             name: "DatadogPrivate",

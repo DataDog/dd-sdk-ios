@@ -7,48 +7,44 @@
 import Foundation
 @testable import DatadogCore
 
-public class ContextValuePublisherMock<Value>: ContextValuePublisher {
-    private let queue = DispatchQueue(
-        label: "com.datadoghq.context-value-publisher-mock"
-    )
-
+/// A mock `ContextValueSource` that lets tests push values through an `AsyncStream`.
+public class ContextValueSourceMock<Value: Sendable>: ContextValueSource, @unchecked Sendable {
     public let initialValue: Value
+    public let values: AsyncStream<Value>
+
+    private let continuation: AsyncStream<Value>.Continuation
 
     public var value: Value {
-        get { queue.sync { _value } }
-        set { queue.sync { _value = newValue } }
-    }
-
-    private var receiver: ContextValueReceiver<Value>?
-    private var _value: Value {
-        didSet { receiver?(_value) }
+        didSet { continuation.yield(value) }
     }
 
     public init(initialValue: Value) {
         self.initialValue = initialValue
         self._value = initialValue
+        var cont: AsyncStream<Value>.Continuation!
+        self.values = AsyncStream { cont = $0 }
+        self.continuation = cont
     }
 
     public init() where Value: ExpressibleByNilLiteral {
-        initialValue = nil
-        _value = nil
+        self.initialValue = nil
+        self._value = nil
+        var cont: AsyncStream<Value>.Continuation!
+        self.values = AsyncStream { cont = $0 }
+        self.continuation = cont
     }
 
-    public func publish(to receiver: @escaping ContextValueReceiver<Value>) {
-        queue.sync { self.receiver = receiver }
-    }
-
-    public func cancel() {
-        queue.sync { receiver = nil }
+    deinit {
+        continuation.finish()
     }
 }
 
-extension ContextValuePublisher {
-    public static func mockAny() -> ContextValuePublisherMock<Value> where Value: ExpressibleByNilLiteral {
+extension ContextValueSource {
+    public static func mockAny() -> ContextValueSourceMock<Value> where Value: ExpressibleByNilLiteral {
         .init()
     }
 
-    public static func mockWith(initialValue: Value) -> ContextValuePublisherMock<Value> {
+    public static func mockWith(initialValue: Value) -> ContextValueSourceMock<Value> {
         .init(initialValue: initialValue)
     }
 }

@@ -20,6 +20,7 @@ class ExtensionBackgroundTaskCoordinatorTests: XCTestCase {
         )
     }
 
+    @MainActor
     func testBeginBackgroundTask() {
         coordinator?.beginBackgroundTask()
 
@@ -27,6 +28,7 @@ class ExtensionBackgroundTaskCoordinatorTests: XCTestCase {
         XCTAssertEqual(processInfoSpy?.endBackgroundTaskCalled, false)
     }
 
+    @MainActor
     func testEndBackgroundTask() throws {
         coordinator?.beginBackgroundTask()
         coordinator?.endBackgroundTask()
@@ -35,6 +37,7 @@ class ExtensionBackgroundTaskCoordinatorTests: XCTestCase {
         XCTAssertEqual(processInfoSpy?.endBackgroundTaskCalled, true)
     }
 
+    @MainActor
     func testEndBackgroundTaskNotCalledWhenNotBegan() throws {
         coordinator?.endBackgroundTask()
 
@@ -42,6 +45,7 @@ class ExtensionBackgroundTaskCoordinatorTests: XCTestCase {
         XCTAssertEqual(processInfoSpy?.endBackgroundTaskCalled, false)
     }
 
+    @MainActor
     func testBeginEndsPreviousTask() throws {
         coordinator?.beginBackgroundTask()
         coordinator?.beginBackgroundTask()

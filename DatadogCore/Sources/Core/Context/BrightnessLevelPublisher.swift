@@ -10,45 +10,29 @@ import DatadogInternal
 #if os(iOS)
 import UIKit
 
-/// A publisher that publishes the screen brightness level from UIScreen.
-internal final class BrightnessLevelPublisher: ContextValuePublisher {
-    /// The initial brightness level.
+/// Produces screen brightness level updates via `AsyncStream` by observing
+/// `UIScreen.brightnessDidChangeNotification`.
+internal struct BrightnessLevelSource: ContextValueSource {
     let initialValue: BrightnessLevel?
+    let values: AsyncStream<BrightnessLevel?>
 
-    /// The notification center to observe brightness changes.
-    private let notificationCenter: NotificationCenter
-    private let screen: UIScreen
-    private var observers: [Any]? = nil
-
-    init(notificationCenter: NotificationCenter = .default, screen: UIScreen = .main) {
-        self.notificationCenter = notificationCenter
-        self.screen = screen
+    init(notificationCenter: NotificationCenter = .default, screen: UIScreen? = nil) {
+        let screen = screen ?? MainActor.assumeIsolated { UIScreen.main }
         self.initialValue = Float(screen.brightness)
-    }
 
-    /// Publishes the brightness level to the given receiver.
-    ///
-    /// - Parameter receiver: The receiver to publish the brightness level to.
-    func publish(to receiver: @escaping ContextValueReceiver<BrightnessLevel?>) {
-        let block = { (notification: Notification) in
-            receiver(Float(self.screen.brightness))
-        }
-
-        observers = [
-            notificationCenter.addObserver(
+        self.values = AsyncStream { continuation in
+            nonisolated(unsafe) let observer = notificationCenter.addObserver(
                 forName: UIScreen.brightnessDidChangeNotification,
                 object: nil,
-                queue: .main,
-                using: block
-            )
-        ]
+                queue: .main
+            ) { _ in
+                continuation.yield(Float(screen.brightness))
+            }
 
-        receiver(initialValue)
-    }
-
-    func cancel() {
-        observers?.forEach(notificationCenter.removeObserver)
-        observers = nil
+            continuation.onTermination = { _ in
+                notificationCenter.removeObserver(observer)
+            }
+        }
     }
 }
 

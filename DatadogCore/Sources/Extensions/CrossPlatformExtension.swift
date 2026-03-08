@@ -15,7 +15,7 @@ import DatadogInternal
 @objcMembers
 @_spi(Internal)
 public final class CrossPlatformExtension: NSObject {
-    private static var contextSharingTransformer: ContextSharingTransformer?
+    nonisolated(unsafe) private static var contextSharingTransformer: ContextSharingTransformer?
 
     /// Subscribes to shared context updates.
     ///
@@ -25,7 +25,7 @@ public final class CrossPlatformExtension: NSObject {
     ///
     /// - Parameter toSharedContext: A closure that receives `SharedContext` updates. Called on context changes.
     @objc
-    public static func subscribe(toSharedContext: @escaping (SharedContext?) -> Void) {
+    public static func subscribe(toSharedContext: @escaping @Sendable (SharedContext?) -> Void) {
         if Self.contextSharingTransformer == nil {
             let core = CoreRegistry.default
             let contextSharingTransformer = ContextSharingTransformer()

@@ -9,7 +9,7 @@ import Foundation
 /// Interface that allows storing data in encrypted format. Encryption/decryption round should
 /// return exactly the same data as it given for the encryption originally (even if decryption
 /// happens in another process/app launch).
-public protocol DataEncryption {
+public protocol DataEncryption: Sendable {
     /// Encrypts given `Data` with user-chosen encryption.
     ///
     /// - Parameter data: Data to encrypt.

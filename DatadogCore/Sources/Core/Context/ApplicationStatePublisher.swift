@@ -11,99 +11,71 @@ import DatadogInternal
 import WatchKit
 #endif
 
-internal final class ApplicationStatePublisher: ContextValuePublisher {
-    /// The initial history value.
+/// Produces `AppStateHistory` updates via `AsyncStream` by observing UIApplication
+/// lifecycle notifications.
+///
+/// The source maintains a running `AppStateHistory` and yields the latest snapshot
+/// each time a lifecycle notification fires.
+///
+/// **Note:** Must be created on the main thread (UIKit requirement).
+internal final class ApplicationStateSource: ContextValueSource, @unchecked Sendable {
     let initialValue: AppStateHistory
+    let values: AsyncStream<AppStateHistory>
 
-    /// The notification center where this publisher observes following `UIApplication` notifications:
-    /// - `.didBecomeActiveNotification`
-    /// - `.willResignActiveNotification`
-    /// - `.didEnterBackgroundNotification`
-    /// - `.willEnterForegroundNotification`
-    private let notificationCenter: NotificationCenter
-
-    /// The date provider for the Application state snapshot timestamp.
-    private let dateProvider: DateProvider
-
-    /// The current application state history.
-    ///
-    /// **Note**: It must be accessed from the main thread.
     private var history: AppStateHistory
+    private let dateProvider: DateProvider
+    private let notificationCenter: NotificationCenter
+    private var observers: [Any] = []
+    private var continuation: AsyncStream<AppStateHistory>.Continuation?
 
-    /// The receiver for publishing the state history.
-    @ReadWriteLock
-    private var receiver: ContextValueReceiver<AppStateHistory>?
-
-    /// Creates a Application state publisher for publishing application state
-    /// history.
-    ///
-    /// **Note**: It must be called on the main thread.
-    ///
-    /// - Parameters:
-    ///   - appStateHistory: The history of app state and their transitions over time.
-    ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
-    ///   - dateProvider: The date provider for the Application state snapshot timestamp.
-    ///   - queue: The queue for publishing the history.
     init(
         appStateHistory: AppStateHistory,
         notificationCenter: NotificationCenter,
         dateProvider: DateProvider
     ) {
+        dd_assert(Thread.isMainThread, "Must be called on the main thread")
+
         self.initialValue = appStateHistory
-        self.history = initialValue
+        self.history = appStateHistory
         self.dateProvider = dateProvider
         self.notificationCenter = notificationCenter
-    }
 
-    func publish(to receiver: @escaping ContextValueReceiver<AppStateHistory>) {
+        var continuation: AsyncStream<AppStateHistory>.Continuation!
+        self.values = AsyncStream { continuation = $0 }
+        self.continuation = continuation
+
         // The `notificationCenter` must be subscribed to on the main thread to ensure a deterministic subscription order.
         // By synchronizing on the main thread, Core will always receive app state change notifications before Features,
         // even if Features implement their own subscriptions (Core is always enabled before Features).
-        dd_assert(Thread.isMainThread, "Must be called on the main thread")
-
-        self.receiver = receiver
-        notificationCenter.addObserver(self, selector: #selector(applicationDidBecomeActive), name: ApplicationNotifications.didBecomeActive, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(applicationWillResignActive), name: ApplicationNotifications.willResignActive, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(applicationDidEnterBackground), name: ApplicationNotifications.didEnterBackground, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(applicationWillEnterForeground), name: ApplicationNotifications.willEnterForeground, object: nil)
+        observers = [
+            notificationCenter.addObserver(forName: ApplicationNotifications.didBecomeActive, object: nil, queue: .main) { [weak self] _ in
+                self?.append(state: .active)
+            },
+            notificationCenter.addObserver(forName: ApplicationNotifications.willResignActive, object: nil, queue: .main) { [weak self] _ in
+                self?.append(state: .inactive)
+            },
+            notificationCenter.addObserver(forName: ApplicationNotifications.didEnterBackground, object: nil, queue: .main) { [weak self] _ in
+                self?.append(state: .background)
+            },
+            notificationCenter.addObserver(forName: ApplicationNotifications.willEnterForeground, object: nil, queue: .main) { [weak self] _ in
+                self?.append(state: .inactive)
+            }
+        ]
     }
 
-    @objc
-    private func applicationDidBecomeActive() {
-        append(state: .active)
-    }
-
-    @objc
-    private func applicationWillResignActive() {
-        append(state: .inactive)
-    }
-
-    @objc
-    private func applicationDidEnterBackground() {
-        append(state: .background)
-    }
-
-    @objc
-    private func applicationWillEnterForeground() {
-        append(state: .inactive)
+    deinit {
+        observers.forEach { notificationCenter.removeObserver($0) }
+        continuation?.finish()
     }
 
     private func append(state: AppState) {
         // This must run on the main thread for two reasons:
         // - For maximum performance, `history` is lock-free and relies on synchronization through a single thread.
-        // - `receiver` must be updated from the main thread to ensure the new app state is always available
+        // - Updates must happen on the main thread to ensure the new app state is always available
         //   for the next `eventWriteContext {}` and `context {}` request on this thread.
         dd_assert(Thread.isMainThread, "Must be called on main thread")
         history.append(state: state, at: dateProvider.now)
-        receiver?(history)
-    }
-
-    func cancel() {
-        notificationCenter.removeObserver(self, name: ApplicationNotifications.didBecomeActive, object: nil)
-        notificationCenter.removeObserver(self, name: ApplicationNotifications.willResignActive, object: nil)
-        notificationCenter.removeObserver(self, name: ApplicationNotifications.didEnterBackground, object: nil)
-        notificationCenter.removeObserver(self, name: ApplicationNotifications.willEnterForeground, object: nil)
-        receiver = nil
+        continuation?.yield(history)
     }
 }
 

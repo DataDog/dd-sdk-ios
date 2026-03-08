@@ -19,7 +19,7 @@ import DatadogInternal
 
 /// An interface for tracking key timestamps in the app launch sequence, including launch time and activation events.
 internal protocol AppLaunchHandling {
-    /// The current process’s task policy role (`task_role_t`), indicating how the process was started (e.g., user vs background launch).
+    /// The current process's task policy role (`task_role_t`), indicating how the process was started (e.g., user vs background launch).
     /// On success, the property contains the raw [`policy.role`](https://developer.apple.com/documentation/kernel/task_role_t) value
     /// defined in `MachO`; otherwise, it returns one of the special constants defined in `ObjcAppLaunchHandler.h`:
     /// - `__dd_private_TASK_POLICY_KERN_FAILURE`
@@ -106,34 +106,33 @@ extension AppLaunchHandling {
 
 #if !os(macOS)
 
-internal struct LaunchInfoPublisher: ContextValuePublisher {
-    private let handler: AppLaunchHandling
-
+/// Produces `LaunchInfo` updates via `AsyncStream`.
+///
+/// A single enriched `LaunchInfo` value is yielded once the `AppLaunchHandling`
+/// callback fires with `didFinishLaunching` / `didBecomeActive` dates.
+internal struct LaunchInfoSource: ContextValueSource {
     let initialValue: LaunchInfo
+    let values: AsyncStream<LaunchInfo>
 
     init(handler: AppLaunchHandling, initialValue: LaunchInfo) {
         self.initialValue = initialValue
-        self.handler = handler
-    }
 
-    func publish(to receiver: @escaping ContextValueReceiver<LaunchInfo>) {
-        let initialValue = initialValue
-
-        handler.setApplicationNotificationCallback { didFinishLaunchingDate, didBecomeActiveDate in
-            let value = LaunchInfo(
-                launchReason: initialValue.launchReason,
-                processLaunchDate: initialValue.processLaunchDate,
-                runtimeLoadDate: initialValue.launchPhaseDates[.runtimeLoad],
-                runtimePreMainDate: initialValue.launchPhaseDates[.runtimePreMain],
-                didFinishLaunchingDate: didFinishLaunchingDate,
-                didBecomeActiveDate: didBecomeActiveDate,
-                raw: initialValue.raw
-            )
-            receiver(value)
+        let capturedInitialValue = initialValue
+        self.values = AsyncStream { continuation in
+            handler.setApplicationNotificationCallback { didFinishLaunchingDate, didBecomeActiveDate in
+                let value = LaunchInfo(
+                    launchReason: capturedInitialValue.launchReason,
+                    processLaunchDate: capturedInitialValue.processLaunchDate,
+                    runtimeLoadDate: capturedInitialValue.launchPhaseDates[.runtimeLoad],
+                    runtimePreMainDate: capturedInitialValue.launchPhaseDates[.runtimePreMain],
+                    didFinishLaunchingDate: didFinishLaunchingDate,
+                    didBecomeActiveDate: didBecomeActiveDate,
+                    raw: capturedInitialValue.raw
+                )
+                continuation.yield(value)
+            }
         }
     }
-
-    func cancel() {} // The `handler` already cleans up all callbacks after the notifications are triggered
 }
 
 #endif

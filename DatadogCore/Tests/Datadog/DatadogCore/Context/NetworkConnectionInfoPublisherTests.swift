@@ -10,18 +10,19 @@ import SystemConfiguration
 import DatadogInternal
 @testable import DatadogCore
 
-class NetworkConnectionInfoPublisherTests: XCTestCase {
-    func testNWPathMonitorPublishValue() {
-        let expectation = expectation(description: "NWPathMonitorPublisher publish value")
-        let publisher = NWPathMonitorPublisher()
-        publisher.publish { _ in expectation.fulfill() }
-        waitForExpectations(timeout: 1, handler: nil)
+class NWPathMonitorSourceTests: XCTestCase {
+    func testNWPathMonitorSourcePublishesValue() async {
+        let source = NWPathMonitorSource()
+
+        var iterator = source.values.makeAsyncIterator()
+        let value = await iterator.next()
+        XCTAssertNotNil(value, "NWPathMonitorSource should yield a value")
     }
 
     func testNWPathMonitorHandling() {
         let monitor = NWPathMonitor()
-        let publisher = NWPathMonitorPublisher(monitor: monitor)
-        publisher.publish { _ in }
+        let source = NWPathMonitorSource(monitor: monitor)
+        XCTAssertNotNil(source.initialValue)
         XCTAssertNotNil(monitor.pathUpdateHandler, "`NWPathMonitor` has a handler")
         XCTAssertNotNil(monitor.queue, "`NWPathMonitor` is started with synchronization queue")
     }

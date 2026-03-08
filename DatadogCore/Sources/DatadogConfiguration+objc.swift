@@ -127,7 +127,7 @@ public protocol objc_DataEncryption: AnyObject {
     func decrypt(data: Data) throws -> Data
 }
 
-internal struct DDDataEncryptionBridge: DataEncryption {
+internal struct DDDataEncryptionBridge: DataEncryption, @unchecked Sendable {
     let objcEncryption: objc_DataEncryption
 
     func encrypt(data: Data) throws -> Data {

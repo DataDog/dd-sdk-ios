@@ -8,14 +8,12 @@ import Foundation
 import DatadogInternal
 
 /// Abstracts the `DataUploadWorker`, so we can have no-op uploader in tests.
-internal protocol DataUploadWorkerType {
-    func flushSynchronously()
-    func cancelSynchronously()
+internal protocol DataUploadWorkerType: Sendable {
+    func flush() async
+    func cancel() async
 }
 
-internal class DataUploadWorker: DataUploadWorkerType {
-    /// Queue to execute uploads.
-    private let queue: DispatchQueue
+internal actor DataUploadWorker: DataUploadWorkerType {
     /// File reader providing data to upload.
     private let fileReader: Reader
     /// Data uploader sending data to server.
@@ -28,13 +26,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
     private let contextProvider: DatadogContextProvider
     /// Delay used to schedule consecutive uploads.
     private let delay: DataUploadDelay
-
-    /// Batch reading work scheduled by this worker.
-    @ReadWriteLock
-    private var readWork: DispatchWorkItem?
-    /// Batch upload work scheduled by this worker.
-    @ReadWriteLock
-    private var uploadWork: DispatchWorkItem?
+    /// Maximum number of batches to upload per cycle.
+    private let maxBatchesPerUpload: Int
 
     /// Telemetry interface.
     private let telemetry: Telemetry
@@ -44,8 +37,10 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
     private var previousUploadStatus: DataUploadStatus?
 
+    /// The upload loop task.
+    private var loopTask: Task<Void, Never>?
+
     init(
-        queue: DispatchQueue,
         fileReader: Reader,
         dataUploader: DataUploaderType,
         contextProvider: DatadogContextProvider,
@@ -56,7 +51,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
         maxBatchesPerUpload: Int,
         backgroundTaskCoordinator: BackgroundTaskCoordinator? = nil
     ) {
-        self.queue = queue
         self.fileReader = fileReader
         self.uploadConditions = uploadConditions
         self.dataUploader = dataUploader
@@ -65,57 +59,97 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.delay = delay
         self.featureName = featureName
         self.telemetry = telemetry
-        let readWorkItem = DispatchWorkItem { [weak self] in
-            guard let self = self else {
-                return
-            }
-
-            let context = contextProvider.read()
-            let blockersForUpload = uploadConditions.blockersForUpload(with: context)
-            let isSystemReady = blockersForUpload.isEmpty
-            let files = isSystemReady ? fileReader.readFiles(limit: maxBatchesPerUpload) : nil
-            if let files = files, !files.isEmpty {
-                DD.logger.debug("⏳ (\(self.featureName)) Uploading batches...")
-                self.backgroundTaskCoordinator?.beginBackgroundTask()
-                self.uploadFile(from: files.reversed(), context: context)
-            } else {
-                let batchLabel = files?.isEmpty == false ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
-                DD.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
-                self.delay.increase()
-                self.backgroundTaskCoordinator?.endBackgroundTask()
-                self.scheduleNextCycle()
-                sendUploadQualityMetric(blockers: blockersForUpload)
-            }
-        }
-        self.readWork = readWorkItem
-
-        // Start sending batches with jitter to avoid concurrent execution during app launch:
-        let jitter: TimeInterval = .random(in: 0...delay.maxJitter)
-        queue.asyncAfter(deadline: .now() + jitter, execute: readWorkItem)
+        self.maxBatchesPerUpload = maxBatchesPerUpload
     }
 
-    private func scheduleNextCycle() {
-        guard let readWork = self.readWork else {
-            return
+    /// Starts the upload loop with an initial jitter delay.
+    func start() {
+        loopTask = Task {
+            let jitter: TimeInterval = .random(in: 0...delay.maxJitter)
+            if jitter > 0 {
+                try? await Task.sleep(nanoseconds: UInt64(jitter * 1_000_000_000))
+            }
+
+            while !Task.isCancelled {
+                await performUploadCycle()
+                let sleepDuration = delay.current
+                try? await Task.sleep(nanoseconds: UInt64(sleepDuration * 1_000_000_000))
+            }
         }
-        queue.asyncAfter(deadline: .now() + delay.current, execute: readWork)
     }
 
-    private func uploadFile(from files: [ReadableFile], context: DatadogContext) {
-        let uploadWork = DispatchWorkItem { [weak self] in
-            guard let self = self else {
-                return
-            }
+    /// Cancels the upload loop.
+    func cancel() {
+        loopTask?.cancel()
+        loopTask = nil
+    }
 
-            var files = files
-            guard let file = files.popLast() else {
-                self.scheduleNextCycle()
-                return
-            }
+    /// Cancels the upload loop and uploads all remaining data.
+    func flush() {
+        cancel()
 
-            if let batch = self.fileReader.readBatch(from: file) {
+        for file in fileReader.readFiles(limit: .max) {
+            guard let nextBatch = fileReader.readBatch(from: file) else {
+                continue
+            }
+            defer {
+                // RUMM-3459 Delete the underlying batch with `.flushed` reason that will be ignored in reported
+                // metrics or telemetry. This is legitimate as long as `flush()` routine is only available for testing
+                // purposes and never run in production apps.
+                fileReader.markBatchAsRead(nextBatch, reason: .flushed)
+                previousUploadStatus = nil
+            }
+            do {
+                previousUploadStatus = try dataUploader.upload(
+                    events: nextBatch.events,
+                    context: contextProvider.read(),
+                    previous: previousUploadStatus
+                )
+            } catch {
+                previousUploadStatus = try? dataUploader.upload(
+                    events: nextBatch.events,
+                    context: contextProvider.read(),
+                    previous: previousUploadStatus
+                )
+            }
+        }
+    }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Exposes the current upload delay for testing.
+    var currentUploadDelay: TimeInterval {
+        delay.current
+    }
+#endif
+
+    // MARK: - Private
+
+    private func performUploadCycle() async {
+        let context = contextProvider.read()
+        let blockersForUpload = uploadConditions.blockersForUpload(with: context)
+        let isSystemReady = blockersForUpload.isEmpty
+        let files = isSystemReady ? fileReader.readFiles(limit: maxBatchesPerUpload) : nil
+
+        if let files = files, !files.isEmpty {
+            DD.logger.debug("⏳ (\(featureName)) Uploading batches...")
+            await backgroundTaskCoordinator?.beginBackgroundTask()
+            uploadBatches(from: files.reversed(), context: context)
+        } else {
+            let batchLabel = files?.isEmpty == false ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
+            let conditionsDescription = blockersForUpload.description
+            DD.logger.debug("💡 (\(featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(conditionsDescription)")
+            delay.increase()
+            await backgroundTaskCoordinator?.endBackgroundTask()
+            sendUploadQualityMetric(blockers: blockersForUpload)
+        }
+    }
+
+    private func uploadBatches(from files: [ReadableFile], context: DatadogContext) {
+        var files = files
+        while let file = files.popLast() {
+            if let batch = fileReader.readBatch(from: file) {
                 do {
-                    let uploadStatus = try self.dataUploader.upload(
+                    let uploadStatus = try dataUploader.upload(
                         events: batch.events,
                         context: context,
                         previous: previousUploadStatus
@@ -125,116 +159,52 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     sendUploadQualityMetric(status: uploadStatus)
 
                     if uploadStatus.needsRetry {
-                        DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
-                        self.delay.increase()
-                        self.scheduleNextCycle()
+                        DD.logger.debug("   → (\(featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
+                        delay.increase()
                         return
                     }
 
-                    DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
+                    DD.logger.debug("   → (\(featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
                     if files.isEmpty {
-                        self.delay.reset()
+                        delay.reset()
                     }
 
-                    self.fileReader.markBatchAsRead(
+                    fileReader.markBatchAsRead(
                         batch,
                         reason: .intakeCode(responseCode: uploadStatus.responseCode)
                     )
 #if DD_BENCHMARK
                     bench.meter.counter(metric: "ios.benchmark.upload_count")
-                        .increment(attributes: ["track": self.featureName])
+                        .increment(attributes: ["track": featureName])
 #endif
 
                     previousUploadStatus = nil
 
                     if let error = uploadStatus.error {
-                        // Throw to report the request error accordingly
                         throw error
                     }
                 } catch DataUploadError.httpError(statusCode: .unauthorized), DataUploadError.httpError(statusCode: .forbidden) {
                     DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
                 } catch DataUploadError.httpError(statusCode: let statusCode) where !telemetryIgnoredStatusCodes.contains(statusCode) {
-                    self.telemetry.error("Data upload finished with status code: \(statusCode.rawValue)")
+                    telemetry.error("Data upload finished with status code: \(statusCode.rawValue)")
                 } catch DataUploadError.networkError(let error) where !telemetryIgnoredNSURLErrorCodes.contains(error.code) {
-                    self.telemetry.error("Data upload finished with error", error: error)
+                    telemetry.error("Data upload finished with error", error: error)
                 } catch is DataUploadError {
                     // Do not report any other 'DataUploadError':
                     // - If status indicate Datadog service issue, there is no fix required client side.
                     // - If status code is unexpected, monitoring may become too verbose for old installations
                     // if we introduce a new status code in the API.
                 } catch let error {
-                    // If upload can't be initiated do not retry, so drop the batch:
-                    self.fileReader.markBatchAsRead(batch, reason: .invalid)
+                    fileReader.markBatchAsRead(batch, reason: .invalid)
                     previousUploadStatus = nil
-                    self.telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
+                    telemetry.error("Failed to initiate '\(featureName)' data upload", error: error)
                     sendUploadQualityMetric(failure: "invalid")
                 }
             }
-
-            if files.isEmpty {
-                self.scheduleNextCycle()
-            } else {
-                self.uploadFile(from: files, context: context)
-            }
-        }
-
-        self.uploadWork = uploadWork
-        queue.async(execute: uploadWork)
-    }
-
-    /// Sends all unsent data synchronously.
-    /// - It performs arbitrary upload (without checking upload condition and without re-transmitting failed uploads).
-    internal func flushSynchronously() {
-        queue.sync { [weak self] in
-            guard let self = self else {
-                return
-            }
-            for file in self.fileReader.readFiles(limit: .max) {
-                guard let nextBatch = self.fileReader.readBatch(from: file) else {
-                    continue
-                }
-                defer {
-                    // RUMM-3459 Delete the underlying batch with `.flushed` reason that will be ignored in reported
-                    // metrics or telemetry. This is legitimate as long as `flush()` routine is only available for testing
-                    // purposes and never run in production apps.
-                    self.fileReader.markBatchAsRead(nextBatch, reason: .flushed)
-                    previousUploadStatus = nil
-                }
-                do {
-                    // Try uploading the batch and do one more retry on failure.
-                    previousUploadStatus = try self.dataUploader.upload(
-                        events: nextBatch.events,
-                        context: self.contextProvider.read(),
-                        previous: previousUploadStatus
-                    )
-                } catch {
-                    previousUploadStatus = try? self.dataUploader.upload(
-                        events: nextBatch.events,
-                        context: self.contextProvider.read(),
-                        previous: previousUploadStatus
-                    )
-                }
-            }
         }
     }
 
-    /// Cancels scheduled uploads and stops scheduling next ones.
-    /// - It does not affect the upload that has already begun.
-    /// - It blocks the caller thread if called in the middle of upload execution.
-    internal func cancelSynchronously() {
-        queue.sync { [weak self] in
-            guard let self = self else {
-                return
-            }
-            // This cancellation must be performed on the `queue` to ensure that it is not called
-            // in the middle of a `DispatchWorkItem` execution - otherwise, as the pending block would be
-            // fully executed, it will schedule another upload by calling `nextScheduledWork(after:)` at the end.
-            self.uploadWork?.cancel()
-            self.uploadWork = nil
-            self.readWork?.cancel()
-            self.readWork = nil
-        }
-    }
+    // MARK: - Metrics
 
     private func sendUploadQualityMetric(blockers: [DataUploadConditions.Blocker]) {
         guard !blockers.isEmpty else {

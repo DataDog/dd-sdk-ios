@@ -53,7 +53,7 @@ internal struct RUMDataStore {
         }
     }
 
-    func value<V: Codable>(forKey key: Key, version: DataStoreKeyVersion = dataStoreDefaultKeyVersion, callback: @escaping (V?) -> Void) {
+    func value<V: Codable>(forKey key: Key, version: DataStoreKeyVersion = dataStoreDefaultKeyVersion, callback: @escaping @Sendable (V?) -> Void) {
         featureScope.dataStore.value(forKey: key.rawValue) { result in
             guard let data = result.data(expectedVersion: version) else {
                 // One of following:

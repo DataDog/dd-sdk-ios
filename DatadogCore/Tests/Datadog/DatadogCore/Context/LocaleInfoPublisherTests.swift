@@ -9,7 +9,7 @@ import TestUtilities
 @testable import DatadogInternal
 @testable import DatadogCore
 
-class LocaleInfoPublisherTests: XCTestCase {
+class LocaleInfoSourceTests: XCTestCase {
     private let notificationCenter = NotificationCenter()
 
     func testInitialValueFormatting() throws {
@@ -26,45 +26,24 @@ class LocaleInfoPublisherTests: XCTestCase {
         XCTAssertEqual(initialLocale.timeZoneIdentifier, "GMT")
     }
 
-    func testPublishLocaleInfoOnNotification() throws {
-        let expectation = self.expectation(description: "Locale info published")
-        expectation.expectedFulfillmentCount = 2
-
+    func testPublishLocaleInfoOnNotification() async throws {
         // Given
         let initialLocale = LocaleInfo(
             locales: ["en-US"],
             currentLocale: Locale(identifier: "en-US"),
             timeZone: TimeZone(identifier: "UTC")!
         )
-        let publisher = LocaleInfoPublisher(initialLocale: initialLocale, notificationCenter: notificationCenter)
-
-        var receivedLocaleInfos: [LocaleInfo] = []
+        let source = LocaleInfoSource(initialLocale: initialLocale, notificationCenter: notificationCenter)
+        var iterator = source.values.makeAsyncIterator()
 
         // When
-        publisher.publish { locale in
-            receivedLocaleInfos.append(locale)
-            expectation.fulfill()
-        }
-
-        // First notification should trigger the receiver
         notificationCenter.post(name: NSLocale.currentLocaleDidChangeNotification, object: nil)
 
-        // Second notification should also trigger the receiver
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.notificationCenter.post(name: NSLocale.currentLocaleDidChangeNotification, object: nil)
-        }
-
-        waitForExpectations(timeout: 2.0)
-
         // Then
-        XCTAssertEqual(receivedLocaleInfos.count, 2)
-
-        for localeInfo in receivedLocaleInfos {
-            XCTAssertEqual(localeInfo.locales, Locale.preferredLanguages)
-            XCTAssertEqual(localeInfo.currentLocale, Locale.current.identifier.replacingOccurrences(of: "_", with: "-"))
-            XCTAssertEqual(localeInfo.timeZoneIdentifier, TimeZone.current.identifier)
-        }
-
-        publisher.cancel()
+        let localeInfo = await iterator.next()
+        XCTAssertNotNil(localeInfo)
+        XCTAssertEqual(localeInfo?.locales, Locale.preferredLanguages)
+        XCTAssertEqual(localeInfo?.currentLocale, Locale.current.identifier.replacingOccurrences(of: "_", with: "-"))
+        XCTAssertEqual(localeInfo?.timeZoneIdentifier, TimeZone.current.identifier)
     }
 }

@@ -11,7 +11,7 @@ internal protocol AnonymousIdentifierManaging {
     func manageAnonymousIdentifier(shouldTrack: Bool)
 }
 
-internal class AnonymousIdentifierManager: AnonymousIdentifierManaging {
+internal class AnonymousIdentifierManager: AnonymousIdentifierManaging,  @unchecked Sendable {
     private let featureScope: FeatureScope
     private let uuidGenerator: RUMUUIDGenerator
 

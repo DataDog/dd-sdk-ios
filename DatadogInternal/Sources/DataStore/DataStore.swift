@@ -55,7 +55,7 @@ public protocol DataStore {
     ///
     /// Note: The implementation must log errors to console and notify them through telemetry. Callers are not required
     /// to implement logging of errors upon receiving `.error()` result.
-    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void)
+    func value(forKey key: String, callback: @escaping @Sendable (DataStoreValueResult) -> Void)
 
     /// Deletes the value associated with the specified key from the data store.
     ///
@@ -91,7 +91,7 @@ public struct NOPDataStore: DataStore {
     /// no-op
     public func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {}
     /// no-op
-    public func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {}
+    public func value(forKey key: String, callback: @escaping @Sendable (DataStoreValueResult) -> Void) {}
     /// no-op
     public func removeValue(forKey key: String) {}
     /// no-op

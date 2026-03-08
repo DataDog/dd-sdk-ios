@@ -8,33 +8,29 @@ import XCTest
 import TestUtilities
 @testable import DatadogCore
 
-class LowPowerModePublisherTests: XCTestCase {
+class LowPowerModeSourceTests: XCTestCase {
     private let notificationCenter = NotificationCenter()
 
-    func testGivenInitialLowPowerModeSettingValue_whenSettingChanges_itUpdatesIsLowPowerModeEnabledValue() {
-        let expectation = self.expectation(description: "Publish `isLowPowerModeEnabled`")
-
+    func testGivenInitialLowPowerModeSettingValue_whenSettingChanges_itUpdatesIsLowPowerModeEnabledValue() async {
         // Given
         let isLowPowerModeEnabled: Bool = .random()
-        let publisher = LowPowerModePublisher(
+        let source = LowPowerModeSource(
             notificationCenter: notificationCenter,
             processInfo: ProcessInfoMock(isLowPowerModeEnabled: isLowPowerModeEnabled)
         )
 
-        XCTAssertEqual(publisher.initialValue, isLowPowerModeEnabled)
+        XCTAssertEqual(source.initialValue, isLowPowerModeEnabled)
 
         // When
-        publisher.publish {
-            // Then
-            XCTAssertNotEqual($0, isLowPowerModeEnabled)
-            expectation.fulfill()
-        }
+        var iterator = source.values.makeAsyncIterator()
 
         notificationCenter.post(
             name: .NSProcessInfoPowerStateDidChange,
             object: ProcessInfoMock(isLowPowerModeEnabled: !isLowPowerModeEnabled)
         )
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        // Then
+        let value = await iterator.next()
+        XCTAssertEqual(value, !isLowPowerModeEnabled)
     }
 }
