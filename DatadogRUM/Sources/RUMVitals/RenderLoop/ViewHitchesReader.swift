@@ -46,7 +46,7 @@ internal protocol ViewHitchesModel {
 }
 
 /// Class that reads View Hitches or Slow frames.
-internal final class ViewHitchesReader: ViewHitchesModel {
+internal final class ViewHitchesReader: ViewHitchesModel, @unchecked Sendable {
     internal enum Constants {
         static let frozenFrameThreshold: TimeInterval = 0.7 // seconds
         /// Taking into account each Hitch takes 64B in the payload, we can have 64KB max per view event

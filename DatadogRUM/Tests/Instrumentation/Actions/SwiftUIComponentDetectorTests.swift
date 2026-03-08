@@ -13,6 +13,7 @@ import DatadogInternal
 /// Note: while we only test one iOS version in CI,
 /// make sure to test both iOS 18+ and iOS 17- locally
 /// when making changes to the automatic SwiftUI action tracking logic
+@MainActor
 class SwiftUIComponentDetectorTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let defaultPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)

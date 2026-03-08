@@ -13,7 +13,7 @@ import UIKit
 
 /// Represents the app state observed during application lifecycle events such as application start, resume and termination.
 /// This state is used to detect Watchdog Terminations.
-internal struct AppStateInfo: Codable {
+internal struct AppStateInfo: Codable, Sendable {
     /// The Application version provided by the `Bundle`.
     let appVersion: String
 

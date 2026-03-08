@@ -9,17 +9,17 @@ import DatadogInternal
 
 // MARK: - SwiftUIViewNameExtractor
 /// Protocol defining interface for extracting view names for SwiftUI views
-internal protocol SwiftUIViewNameExtractor {
+internal protocol SwiftUIViewNameExtractor: Sendable {
     func extractName(from: UIViewController) -> String?
 }
 
 // MARK: - SwiftUIReflectionBasedViewNameExtractor
 /// Default implementation that extracts SwiftUI view names using reflection and string parsing
 internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtractor {
-    private let createReflector: (Any) -> TopLevelReflector
+    private let createReflector: @Sendable (Any) -> TopLevelReflector
 
     init(
-        reflectorFactory: @escaping (Any) -> TopLevelReflector = { subject in
+        reflectorFactory: @escaping @Sendable (Any) -> TopLevelReflector = { subject in
             ReflectionMirror(reflecting: subject)
         }
     ) {

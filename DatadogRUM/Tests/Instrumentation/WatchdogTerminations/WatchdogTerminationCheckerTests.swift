@@ -10,7 +10,7 @@ import DatadogInternal
 import TestUtilities
 
 final class WatchdogTerminationCheckerTests: XCTestCase {
-    var sut: WatchdogTerminationChecker = .init(appStateManager: .mockRandom(), featureScope: FeatureScopeMock())
+    var sut: WatchdogTerminationChecker = .init(appStateManager: AppStateManagerMock(), featureScope: FeatureScopeMock())
 
     func testNoPreviousState_NoWatchdogTermination() throws {
         XCTAssertFalse(sut.isWatchdogTermination(launch: .mockRandom(), deviceInfo: .mockWith(isSimulator: false), from: nil, to: .mockRandom()))

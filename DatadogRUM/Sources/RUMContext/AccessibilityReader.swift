@@ -14,7 +14,7 @@ internal protocol AccessibilityReading {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-internal final class AccessibilityReader: AccessibilityReading {
+internal final class AccessibilityReader: AccessibilityReading, @unchecked Sendable {
     @ReadWriteLock
     private(set) var state: AccessibilityInfo
 

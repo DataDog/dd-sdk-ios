@@ -40,6 +40,13 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         // monitor reveives the launch report
         _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
 
+        // Wait for the monitor to transition from .starting to .started
+        let started = self.expectation(description: "Monitor started")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
+            started.fulfill()
+        }
+        wait(for: [started], timeout: 1)
+
         // RUM view update after start
         let viewEvent2: RUMViewEvent = .mockRandom()
         sut.update(viewEvent: viewEvent2)

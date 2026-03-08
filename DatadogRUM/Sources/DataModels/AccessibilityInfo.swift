@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal struct AccessibilityInfo: Equatable {
+internal struct AccessibilityInfo: Equatable, Sendable {
     var textSize: String? { didSet { hasAccessibilityData = true } }
     var screenReaderEnabled: Bool? { didSet { hasAccessibilityData = true } }
     var boldTextEnabled: Bool? { didSet { hasAccessibilityData = true } }

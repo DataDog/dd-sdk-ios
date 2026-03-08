@@ -19,7 +19,7 @@ internal protocol ValueObserver: AnyObject {
 }
 
 /// Manages the `Value` in a thread safe manner and notifies subscribed `ValueObservers` on its change.
-internal final class ValuePublisher<Value> {
+internal final class ValuePublisher<Value>: @unchecked Sendable {
     /// Type erasure for `ValueObserver` type.
     private struct AnyObserver<ObservedValue> {
         let notifyValueChanged: (ObservedValue, ObservedValue) -> Void
@@ -92,9 +92,10 @@ internal final class ValuePublisher<Value> {
 
     /// Removes an observer so that it will not be notified on all value changes anymore.
     func unsubscribe<Observer: ValueObserver>(_ observer: Observer) where Observer.ObservedValue == Value {
+        let observerIdentity = ObjectIdentifier(observer)
         concurrentQueue.async(flags: .barrier) {
             self.unsafeObservers.removeAll { existingObserver in
-                return existingObserver.object === observer
+                return ObjectIdentifier(existingObserver.object) == observerIdentity
             }
         }
     }

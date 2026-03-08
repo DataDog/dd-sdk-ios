@@ -1945,7 +1945,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// The specific category of the error. It provides a high-level grouping for different types of errors.
-        public enum Category: String, Codable {
+        public enum Category: String, Codable, Sendable {
             case aNR = "ANR"
             case appHang = "App Hang"
             case exception = "Exception"
@@ -2207,7 +2207,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Source type of the error (the language or platform impacting the error stacktrace format)
-        public enum SourceType: String, Codable {
+        public enum SourceType: String, Codable, Sendable {
             case android = "android"
             case browser = "browser"
             case ios = "ios"
@@ -3317,7 +3317,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
 }
 
 /// HTTP method of the resource
-public enum RUMMethod: String, Codable {
+public enum RUMMethod: String, Codable, Sendable {
     case post = "POST"
     case get = "GET"
     case head = "HEAD"
@@ -4484,7 +4484,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Resource type
-        public enum ResourceType: String, Codable {
+        public enum ResourceType: String, Codable, Sendable {
             case document = "document"
             case xhr = "xhr"
             case beacon = "beacon"
@@ -4898,7 +4898,7 @@ extension RUMUser {
 }
 
 /// Schema of all properties of a View event
-public struct RUMViewEvent: RUMDataModel {
+public struct RUMViewEvent: RUMDataModel, Sendable {
     /// Internal properties
     public let dd: DD
 
@@ -9000,14 +9000,14 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
         }
 
         /// Reason for the failure of the step, if applicable
-        public enum FailureReason: String, Codable {
+        public enum FailureReason: String, Codable, Sendable {
             case error = "error"
             case abandoned = "abandoned"
             case other = "other"
         }
 
         /// Type of the step that triggered the vital, if applicable
-        public enum StepType: String, Codable {
+        public enum StepType: String, Codable, Sendable {
             case start = "start"
             case update = "update"
             case retry = "retry"

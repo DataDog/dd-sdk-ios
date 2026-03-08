@@ -19,7 +19,7 @@ public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
 public typealias RUMFeatureOperationFailureReason = RUMVitalOperationStepEvent.Vital.FailureReason
 
 /// The type of a RUM action.
-public enum RUMActionType {
+public enum RUMActionType: Sendable {
     case tap
     case click
     case scroll
@@ -274,7 +274,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     ///   - value: the result of the evaluation
     func addFeatureFlagEvaluation(
         name: String,
-        value: Encodable
+        value: AttributeValue
     )
 
     // MARK: - features
@@ -473,7 +473,7 @@ internal class NOPMonitor: RUMMonitorProtocol {
     func addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) { warn() }
     func startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
-    func addFeatureFlagEvaluation(name: String, value: Encodable) { warn() }
+    func addFeatureFlagEvaluation(name: String, value: AttributeValue) { warn() }
     func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], completionHandler: () -> Void) {
         warn()
         completionHandler()

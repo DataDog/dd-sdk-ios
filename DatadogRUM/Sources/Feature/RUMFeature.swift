@@ -64,7 +64,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             configuration.trackWatchdogTerminations {
             let monitor = WatchdogTerminationMonitor(
                 appStateManager: appStateManager,
-                checker: .init(
+                checker: WatchdogTerminationChecker(
                     appStateManager: appStateManager,
                     featureScope: featureScope
                 ),

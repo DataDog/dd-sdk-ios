@@ -136,7 +136,7 @@ internal class Monitor: RUMCommandSubscriber {
 
             _ = self.scopes.process(command: transformedCommand, context: context, writer: writer)
 
-            if let debugging = self.debugging {
+            if let debugging {
                 debugging.debug(applicationScope: self.scopes)
             }
         }
@@ -451,7 +451,7 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - feature flags
 
-    func addFeatureFlagEvaluation(name: String, value: Encodable) {
+    func addFeatureFlagEvaluation(name: String, value: AttributeValue) {
         process(
             command: RUMAddFeatureFlagEvaluationCommand(
                 time: dateProvider.now,

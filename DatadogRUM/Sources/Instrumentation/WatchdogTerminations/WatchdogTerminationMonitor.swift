@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Monitors the Watchdog Termination events and reports them to Datadog.
-internal final class WatchdogTerminationMonitor {
+internal final class WatchdogTerminationMonitor: @unchecked Sendable {
     /// The state of the Watchdog Termination Monitor.
     enum State {
         /// The monitor has started and is listening to the changes.
@@ -28,7 +28,7 @@ internal final class WatchdogTerminationMonitor {
     }
 
     let checker: WatchdogTerminationChecker
-    let appStateManager: AppStateManager
+    let appStateManager: any AppStateManaging
     let feature: FeatureScope
     let reporter: WatchdogTerminationReporting
     let storage: Storage?
@@ -39,7 +39,7 @@ internal final class WatchdogTerminationMonitor {
     internal var currentState: State
 
     init(
-        appStateManager: AppStateManager,
+        appStateManager: any AppStateManaging,
         checker: WatchdogTerminationChecker,
         storage: Storage?,
         feature: FeatureScope,
@@ -61,7 +61,8 @@ internal final class WatchdogTerminationMonitor {
         }
 
         currentState = .starting
-        sendWatchTerminationIfFound(launch: launchReport) { [weak self] in
+        Task { [weak self] in
+            await self?.sendWatchTerminationIfFound(launch: launchReport)
             self?.currentState = .started
         }
     }
@@ -87,14 +88,11 @@ internal final class WatchdogTerminationMonitor {
 
     /// Checks if the app was terminated by Watchdog and sends the Watchdog Termination event to Datadog.
     /// - Parameter launch: The launch report containing information about the app launch.
-    private func sendWatchTerminationIfFound(launch: LaunchReport, completion: @escaping () -> Void) {
-        checker.isWatchdogTermination(launch: launch) { [weak self] isWatchdogTermination, state  in
-            if isWatchdogTermination, let state = state {
-                DD.logger.debug(ErrorMessages.detectedWatchdogTermination)
-                self?.sendWatchTermination(state: state, completion: completion)
-            } else {
-                completion()
-            }
+    private func sendWatchTerminationIfFound(launch: LaunchReport) async {
+        let result = await checker.isWatchdogTermination(launch: launch)
+        if result.isWatchdogTermination, let state = result.appState {
+            DD.logger.debug(ErrorMessages.detectedWatchdogTermination)
+            await sendWatchTermination(state: state)
         }
     }
 
@@ -102,25 +100,29 @@ internal final class WatchdogTerminationMonitor {
     /// Because Watchdog Termination are reported in the next app session, it uses the saved `RUMViewEvent`
     /// to report the event.
     /// - Parameter state: The app state when the Watchdog Termination occurred.
-    private func sendWatchTermination(state: AppStateInfo, completion: @escaping () -> Void) {
-        feature.context { [weak self] context in
-            do {
-                let likelyCrashedAt = try self?.storage?.mostRecentModifiedFileAt(before: context.launchInfo.processLaunchDate)
-                self?.feature.rumDataStore.value(forKey: .watchdogRUMViewEvent) { [weak self] (viewEvent: RUMViewEvent?) in
-                    guard let viewEvent = viewEvent else {
-                        DD.logger.error(ErrorMessages.failedToReadViewEvent)
-                        self?.feature.telemetry.error(ErrorMessages.failedToReadViewEvent)
-                        completion()
-                        return
-                    }
-                    self?.reporter.send(date: likelyCrashedAt, state: state, viewEvent: viewEvent)
-                    completion()
-                }
-            } catch {
-                DD.logger.error(ErrorMessages.failedToSendWatchdogTermination, error: error)
-                self?.feature.telemetry.error(ErrorMessages.failedToSendWatchdogTermination, error: error)
-                completion()
+    private func sendWatchTermination(state: AppStateInfo) async {
+        let context: DatadogContext = await withCheckedContinuation { continuation in
+            feature.context { context in
+                continuation.resume(returning: context)
             }
+        }
+
+        do {
+            let likelyCrashedAt = try storage?.mostRecentModifiedFileAt(before: context.launchInfo.processLaunchDate)
+            let viewEvent: RUMViewEvent? = await withCheckedContinuation { continuation in
+                feature.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (viewEvent: RUMViewEvent?) in
+                    continuation.resume(returning: viewEvent)
+                }
+            }
+            guard let viewEvent else {
+                DD.logger.error(ErrorMessages.failedToReadViewEvent)
+                feature.telemetry.error(ErrorMessages.failedToReadViewEvent)
+                return
+            }
+            reporter.send(date: likelyCrashedAt, state: state, viewEvent: viewEvent)
+        } catch {
+            DD.logger.error(ErrorMessages.failedToSendWatchdogTermination, error: error)
+            feature.telemetry.error(ErrorMessages.failedToSendWatchdogTermination, error: error)
         }
     }
 
@@ -167,7 +169,8 @@ extension WatchdogTerminationMonitor: FeatureMessageReceiver {
         }
 
         let state = context.applicationStateHistory.currentState
-        appStateManager.updateAppState(state: state)
+        let manager = appStateManager
+        Task { await manager.updateAppState(state: state) }
 
         return false
     }

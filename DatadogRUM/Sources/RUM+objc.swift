@@ -40,7 +40,7 @@ public class objc_RUMView: NSObject {
 
 @objc(DDUIKitRUMViewsPredicate)
 @_spi(objc)
-public protocol objc_UIKitRUMViewsPredicate: AnyObject {
+public protocol objc_UIKitRUMViewsPredicate: AnyObject, Sendable {
     /// The predicate deciding if the RUM View should be started or ended for given instance of the `UIViewController`.
     /// - Parameter viewController: an instance of the view controller noticed by the SDK.
     /// - Returns: RUM View parameters if received view controller should start/end the RUM View, `nil` otherwise.
@@ -50,7 +50,7 @@ public protocol objc_UIKitRUMViewsPredicate: AnyObject {
 @objc(DDDefaultUIKitRUMViewsPredicate)
 @objcMembers
 @_spi(objc)
-public class objc_DefaultUIKitRUMViewsPredicate: NSObject, objc_UIKitRUMViewsPredicate {
+public final class objc_DefaultUIKitRUMViewsPredicate: NSObject, objc_UIKitRUMViewsPredicate {
     private let swiftPredicate = DefaultUIKitRUMViewsPredicate()
 
     public func rumView(for viewController: UIViewController) -> objc_RUMView? {
@@ -81,13 +81,13 @@ public class objc_DefaultUIKitRUMActionsPredicate: NSObject, objc_UIKitRUMAction
 }
 
 internal struct UIKitRUMActionsPredicateBridge: UITouchRUMActionsPredicate & UIPressRUMActionsPredicate {
-    let objcPredicate: AnyObject?
+    nonisolated(unsafe) let objcPredicate: AnyObject?
 
-    init(objcPredicate: objc_UITouchRUMActionsPredicate) {
+    nonisolated init(objcPredicate: objc_UITouchRUMActionsPredicate) {
         self.objcPredicate = objcPredicate
     }
 
-    init(objcPredicate: objc_UIPressRUMActionsPredicate) {
+    nonisolated init(objcPredicate: objc_UIPressRUMActionsPredicate) {
         self.objcPredicate = objcPredicate
     }
 
@@ -139,6 +139,7 @@ public protocol objc_UIKitRUMActionsPredicate: objc_UITouchRUMActionsPredicate {
 
 @objc(DDUITouchRUMActionsPredicate)
 @_spi(objc)
+@MainActor
 public protocol objc_UITouchRUMActionsPredicate: AnyObject {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter targetView: an instance of the `UIView` which received the action.
@@ -148,6 +149,7 @@ public protocol objc_UITouchRUMActionsPredicate: AnyObject {
 
 @objc(DDUIPressRUMActionsPredicate)
 @_spi(objc)
+@MainActor
 public protocol objc_UIPressRUMActionsPredicate: AnyObject {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameters:
@@ -360,7 +362,7 @@ public class objc_URLSessionTracking: NSObject {
 @objc(DDRUMHeaderCaptureRule)
 @objcMembers
 @_spi(objc)
-public final class objc_HeaderCaptureRule: NSObject {
+public final class objc_HeaderCaptureRule: NSObject, @unchecked Sendable {
     internal let swiftType: RUM.Configuration.URLSessionTracking.HeaderCaptureRule
 
     private init(_ swiftType: RUM.Configuration.URLSessionTracking.HeaderCaptureRule) {
@@ -379,7 +381,7 @@ public final class objc_HeaderCaptureRule: NSObject {
 @objc(DDRUMTrackResourceHeaders)
 @objcMembers
 @_spi(objc)
-public final class objc_TrackResourceHeaders: NSObject {
+public final class objc_TrackResourceHeaders: NSObject, @unchecked Sendable {
     internal let swiftType: RUM.Configuration.URLSessionTracking.TrackResourceHeaders
 
     private init(_ swiftType: RUM.Configuration.URLSessionTracking.TrackResourceHeaders) {
@@ -536,6 +538,7 @@ public class objc_RUMConfiguration: NSObject {
 @objcMembers
 @_spi(objc)
 public class objc_RUM: NSObject {
+    @MainActor
     public static func enable(with configuration: objc_RUMConfiguration) {
         RUM.enable(with: configuration.swiftConfig)
     }

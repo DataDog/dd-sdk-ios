@@ -9,17 +9,16 @@ import DatadogInternal
 @testable import DatadogRUM
 
 /// Mock of the AppState manager.
-public final class AppStateManagerMock: AppStateManaging {
-    public var previousAppStateInfo: AppStateInfo?
-    public var currentAppStateInfo: AppStateInfo = .mockAny()
+public final class AppStateManagerMock: AppStateManaging, @unchecked Sendable {
+    public var _previousAppStateInfo: AppStateInfo?
+    public var _currentAppStateInfo: AppStateInfo = .mockAny()
+
+    public init() {}
 
     public func deleteAppState() {}
-    public func updateAppState(state: AppState) {}
-    public func previousAppStateInfo(completion: @escaping (DatadogRUM.AppStateInfo?) -> Void) {
-        completion(previousAppStateInfo)
-    }
-    public func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void) {
-        completion(currentAppStateInfo)
+    public func updateAppState(state: AppState) async {}
+    public func fetchAppStateInfo() async -> (previous: AppStateInfo?, current: AppStateInfo) {
+        (_previousAppStateInfo, _currentAppStateInfo)
     }
     public func storeCurrentAppState() {}
 }

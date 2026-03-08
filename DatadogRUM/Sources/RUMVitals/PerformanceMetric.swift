@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum PerformanceMetric {
+public enum PerformanceMetric: Sendable {
     // The amount of time Flutter spent in its `build` method for this view.
     case flutterBuildTime
 

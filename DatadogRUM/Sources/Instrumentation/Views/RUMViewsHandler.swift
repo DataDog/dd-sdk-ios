@@ -9,6 +9,7 @@ import UIKit
 import DatadogInternal
 
 // MARK: - RUMViewsHandler
+@MainActor
 internal final class RUMViewsHandler {
     /// RUM representation of a View.
     private struct View {
@@ -49,11 +50,12 @@ internal final class RUMViewsHandler {
     /// The notification center where this handler observes following `UIApplication` notifications:
     /// - `.didEnterBackgroundNotification`
     /// - `.willEnterForegroundNotification`
-    private weak var notificationCenter: NotificationCenter?
+    private let notificationCenter: NotificationCenter
 
     /// The RUM Command subscriber responsible for processing
     /// this publisher's commands.
-    internal weak var subscriber: RUMCommandSubscriber?
+    /// `nonisolated(unsafe)`: set once via `publish(to:)` during setup, only read after.
+    nonisolated(unsafe) internal weak var subscriber: RUMCommandSubscriber?
 
     /// The appearing views stack.
     ///
@@ -71,7 +73,7 @@ internal final class RUMViewsHandler {
     ///     auto-instrumentations is disabled.
     ///   - notificationCenter: The notification center where this handler
     ///    a set of `UIApplication` notifications.
-    init(
+    nonisolated init(
         dateProvider: DateProvider,
         uiKitPredicate: UIKitRUMViewsPredicate?,
         swiftUIPredicate: SwiftUIRUMViewsPredicate?,
@@ -99,19 +101,19 @@ internal final class RUMViewsHandler {
     }
 
     deinit {
-        notificationCenter?.removeObserver(
+        notificationCenter.removeObserver(
             self,
             name: UIApplication.didEnterBackgroundNotification,
             object: nil
         )
-        notificationCenter?.removeObserver(
+        notificationCenter.removeObserver(
             self,
             name: UIApplication.willEnterForegroundNotification,
             object: nil
         )
     }
 
-    func publish(to subscriber: RUMCommandSubscriber) {
+    nonisolated func publish(to subscriber: RUMCommandSubscriber) {
         self.subscriber = subscriber
     }
 

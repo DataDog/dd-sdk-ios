@@ -17,7 +17,7 @@ internal protocol FatalErrorContextNotifying: AnyObject {
     var view: RUMViewEvent? { set get }
     /// The current set of RUM attributes.
     /// It gets updated with global attributes being added or removed in `RUMMonitor`.
-    var globalAttributes: [String: Encodable] { set get }
+    var globalAttributes: [String: Encodable & Sendable] { set get }
 }
 
 /// Manages RUM information necessary for building context of fatal errors such as Crashes or Fatal App Hangs.
@@ -55,7 +55,7 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
     }
 
     @ReadWriteLock
-    var globalAttributes: [String: Encodable] = [:] {
+    var globalAttributes: [String: Encodable & Sendable] = [:] {
         didSet {
             messageBus.send(message: .payload(RUMEventAttributes(contextInfo: globalAttributes)))
         }

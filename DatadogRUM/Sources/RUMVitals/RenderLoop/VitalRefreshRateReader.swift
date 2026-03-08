@@ -8,8 +8,8 @@ import Foundation
 import UIKit
 
 /// A class reading the refresh rate (frames per second) of the main screen
-internal class VitalRefreshRateReader: ContinuousVitalReader {
-    private static var backendSupportedFrameRate = 60.0
+internal class VitalRefreshRateReader: ContinuousVitalReader, @unchecked Sendable {
+    private static let backendSupportedFrameRate = 60.0
 
     private var valuePublishers: [VitalPublisher] = []
 
@@ -19,19 +19,13 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
     /// `VitalRefreshRateReader` keeps pushing data to its `observers` at every new frame.
     /// - Parameter observer: receiver of refresh rate per frame.
     func register(_ valuePublisher: VitalPublisher) {
-        DispatchQueue.main.async {
-            self.valuePublishers.append(valuePublisher)
-        }
+        Task { @MainActor in self.valuePublishers.append(valuePublisher) }
     }
 
     /// `VitalRefreshRateReader` stops pushing data to `observer` once unregistered.
     /// - Parameter observer: already added observer; otherwise nothing happens.
     func unregister(_ valuePublisher: VitalPublisher) {
-        DispatchQueue.main.async {
-            self.valuePublishers.removeAll { existingPublisher in
-                return existingPublisher === valuePublisher
-            }
-        }
+        Task { @MainActor in self.valuePublishers.removeAll { $0 === valuePublisher } }
     }
 }
 

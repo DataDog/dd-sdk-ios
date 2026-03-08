@@ -19,7 +19,7 @@ internal struct SwiftUIRUMViewsPredicateBridge: SwiftUIRUMViewsPredicate {
 
 @objc(DDSwiftUIRUMViewsPredicate)
 @_spi(objc)
-public protocol objc_SwiftUIRUMViewsPredicate: AnyObject {
+public protocol objc_SwiftUIRUMViewsPredicate: AnyObject, Sendable {
     /// The predicate deciding if the RUM View should be tracked or dropped for given SwiftUI view name.
     /// - Parameter extractedViewName: The name of the SwiftUI view detected by the SDK.
     /// - Returns: RUM View parameters if the view should be tracked, `nil` otherwise.
@@ -28,7 +28,7 @@ public protocol objc_SwiftUIRUMViewsPredicate: AnyObject {
 
 @objc(DDDefaultSwiftUIRUMViewsPredicate)
 @_spi(objc)
-public class objc_DefaultSwiftUIRUMViewsPredicate: NSObject, objc_SwiftUIRUMViewsPredicate {
+public final class objc_DefaultSwiftUIRUMViewsPredicate: NSObject, objc_SwiftUIRUMViewsPredicate, Sendable {
     private let swiftPredicate = DefaultSwiftUIRUMViewsPredicate()
 
     public func rumView(for extractedViewName: String) -> objc_RUMView? {
@@ -50,7 +50,7 @@ internal struct SwiftUIRUMActionsPredicateBridge: SwiftUIRUMActionsPredicate {
 
 @objc(DDSwiftUIRUMActionsPredicate)
 @_spi(objc)
-public protocol objc_SwiftUIRUMActionsPredicate: AnyObject {
+public protocol objc_SwiftUIRUMActionsPredicate: AnyObject, Sendable {
     /// The predicate deciding if the RUM Action should be tracked or dropped.
     /// - Parameter componentName: The name of the SwiftUI component that received the action
     /// - Returns: RUM Action if it should be tracked, `nil` otherwise.
@@ -59,7 +59,7 @@ public protocol objc_SwiftUIRUMActionsPredicate: AnyObject {
 
 @objc(DDDefaultSwiftUIRUMActionsPredicate)
 @_spi(objc)
-public class objc_DefaultSwiftUIRUMActionsPredicate: NSObject, objc_SwiftUIRUMActionsPredicate {
+public final class objc_DefaultSwiftUIRUMActionsPredicate: NSObject, objc_SwiftUIRUMActionsPredicate, Sendable {
     private let swiftPredicate: DefaultSwiftUIRUMActionsPredicate
 
     @objc(initWithIsLegacyDetectionEnabled:)

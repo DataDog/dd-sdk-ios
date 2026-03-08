@@ -9,7 +9,7 @@ import DatadogInternal
 
 /// Predicate determining which SwiftUI component interactions should be recorded as RUM actions.
 /// Implement this protocol to customize or filter SwiftUI action tracking.
-public protocol SwiftUIRUMActionsPredicate {
+public protocol SwiftUIRUMActionsPredicate: Sendable {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter componentName: The name of the SwiftUI component that received the action
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.

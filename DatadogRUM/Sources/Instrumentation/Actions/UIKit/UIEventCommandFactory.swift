@@ -9,8 +9,10 @@ import DatadogInternal
 
 /// Factory responsible for creating RUM user action commands from UIEvents.
 /// This abstraction allows for platform-specific implementations (iOS/tvOS).
+/// Always used on the main thread since UIKit event delivery is `@MainActor`.
+@MainActor
 internal protocol UIEventCommandFactory {
-    /// Creates a RUM command from a `UIEvent` if applicable
+    /// Creates a RUM command from a `UIEvent` if applicable.
     /// - Parameter event: The `UIEvent` to process
     /// - Returns: A command to add a user action, or `nil` if the event shouldn't be tracked
     func command(from event: UIEvent) -> RUMAddUserActionCommand?
@@ -19,13 +21,14 @@ internal protocol UIEventCommandFactory {
 // MARK: iOS implementation
 /// iOS-specific implementation that detects user interactions through touches.
 /// Handles both UIKit and SwiftUI components using different detection strategies.
+@MainActor
 internal final class UITouchCommandFactory: UIEventCommandFactory {
     let dateProvider: DateProvider
     let uiKitPredicate: UITouchRUMActionsPredicate?
     let swiftUIPredicate: SwiftUIRUMActionsPredicate?
     let swiftUIDetector: SwiftUIComponentDetector?
 
-    init(
+    nonisolated init(
         dateProvider: DateProvider,
         uiKitPredicate: UITouchRUMActionsPredicate?,
         swiftUIPredicate: SwiftUIRUMActionsPredicate?,
@@ -116,11 +119,16 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
 }
 
 // MARK: tvOS implementation
-/// tvOS-specific implementation that detects user interactions through touches.
+/// tvOS-specific implementation that detects user interactions through presses.
+@MainActor
 internal struct UIPressCommandFactory: UIEventCommandFactory {
     let dateProvider: DateProvider
-
     let uiKitPredicate: UIPressRUMActionsPredicate
+
+    nonisolated init(dateProvider: DateProvider, uiKitPredicate: UIPressRUMActionsPredicate) {
+        self.dateProvider = dateProvider
+        self.uiKitPredicate = uiKitPredicate
+    }
 
     func command(from event: UIEvent) -> RUMAddUserActionCommand? {
         guard let event = event as? UIPressesEvent else {

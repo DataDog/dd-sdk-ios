@@ -185,7 +185,7 @@ public struct ResourceCompletion {
 
 /// Encapsulates key metrics retrieved either from `URLSessionTaskMetrics` or any other relevant data source.
 /// Reference: https://developer.apple.com/documentation/foundation/urlsessiontasktransactionmetrics
-public struct ResourceMetrics {
+public struct ResourceMetrics: Sendable {
     public struct DateInterval {
         public let start, end: Date
         public var duration: TimeInterval { end.timeIntervalSince(start) }

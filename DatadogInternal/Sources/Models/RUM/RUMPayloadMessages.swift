@@ -56,7 +56,7 @@ public struct RUMErrorMessage {
     /// The RUM error stack
     public let stack: String?
     /// The RUM attributes
-    public let attributes: [String: Encodable]
+    public let attributes: [String: Encodable & Sendable]
     /// Binary images if need to decode the stack trace
     public let binaryImages: [BinaryImage]?
 
@@ -76,7 +76,7 @@ public struct RUMErrorMessage {
         source: String,
         type: String?,
         stack: String?,
-        attributes: [String: Encodable],
+        attributes: [String: Encodable & Sendable],
         binaryImages: [BinaryImage]?
     ) {
         self.time = time
@@ -94,14 +94,14 @@ public struct RUMFlagEvaluationMessage {
     /// The flag key
     public let flagKey: String
     /// The evaluated value
-    public let value: any Encodable
+    public let value: any Encodable & Sendable
 
     /// Create a flag evaluation message to be sent on the message-bus.
     ///
     /// - Parameters:
     ///   - flagKey: The flag key
     ///   - value: The evaluated value
-    public init(flagKey: String, value: any Encodable) {
+    public init(flagKey: String, value: any Encodable & Sendable) {
         self.flagKey = flagKey
         self.value = value
     }

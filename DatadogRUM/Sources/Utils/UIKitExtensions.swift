@@ -8,14 +8,14 @@ import UIKit
 
 internal extension UIViewController {
     /// The canonical class name for this view controller.
-    /// If this `UIViewController` class is defined in Swift module, it will be prefixed by the module name, e.g. `Foo.CheckoutViewController`. 
-    var canonicalClassName: String {
+    /// If this `UIViewController` class is defined in Swift module, it will be prefixed by the module name, e.g. `Foo.CheckoutViewController`.
+    nonisolated var canonicalClassName: String {
         return NSStringFromClass(type(of: self))
     }
 
     /// `true` if the view controller is an instance of `UIAlertController` or one of its subclasses,
     /// `false` otherwise.
-    var isUIAlertController: Bool {
+    nonisolated var isUIAlertController: Bool {
         self is UIAlertController
     }
 }

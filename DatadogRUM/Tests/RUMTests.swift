@@ -9,6 +9,7 @@ import TestUtilities
 @testable import DatadogInternal
 @testable import DatadogRUM
 
+@MainActor
 class RUMTests: XCTestCase {
     private var core: FeatureRegistrationCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
     private var config: RUM.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -41,7 +42,7 @@ class RUMTests: XCTestCase {
         XCTAssertFalse(RUM._internal.isEnabled(in: core))
     }
 
-    func testWhenEnabledInNOPCore_itPrintsError() {
+    func testWhenEnabledInNOPCore_itPrintsError() async {
         let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
         defer { consolePrint = { message, _ in print(message) } }
@@ -56,7 +57,7 @@ class RUMTests: XCTestCase {
         )
     }
 
-    func testWhenEnabled_thenRUMMonitorIsAvailable() {
+    func testWhenEnabled_thenRUMMonitorIsAvailable() async {
         // When
         RUM.enable(with: config, in: core)
         XCTAssertNotNil(core.get(feature: RUMFeature.self))
@@ -65,7 +66,7 @@ class RUMTests: XCTestCase {
         XCTAssertTrue(RUMMonitor.shared(in: core) is Monitor)
     }
 
-    func testWhenEnabled_thenRumIsEnabledIsTrue() {
+    func testWhenEnabled_thenRumIsEnabledIsTrue() async {
         // When
         RUM.enable(with: config, in: core)
         XCTAssertNotNil(core.get(feature: RUMFeature.self))
@@ -76,7 +77,7 @@ class RUMTests: XCTestCase {
 
     // MARK: - Configuration Tests
 
-    func testWhenEnabledWithDefaultConfiguration() throws {
+    func testWhenEnabledWithDefaultConfiguration() async throws {
         // Given
         let applicationID: String = .mockRandom()
         config = RUM.Configuration(applicationID: applicationID)
@@ -97,7 +98,8 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(crashReportReceiver?.sessionSampler.samplingRate, 100)
     }
 
-    func testWhenEnabledWithAllInstrumentations() throws {
+    @MainActor
+    func testWhenEnabledWithAllInstrumentations() async throws {
         // Given
         config.uiKitViewsPredicate = UIKitRUMViewsPredicateMock()
         config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
@@ -119,7 +121,7 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
     }
 
-    func testWhenEnabledWithNoInstrumentations() throws {
+    func testWhenEnabledWithNoInstrumentations() async throws {
         // Given
         config.uiKitViewsPredicate = nil
         config.uiKitActionsPredicate = nil
@@ -150,7 +152,7 @@ class RUMTests: XCTestCase {
         XCTAssertNil(rum.instrumentation.memoryWarningMonitor)
     }
 
-    func testWhenEnabledWithInvalidLongTasksThreshold() throws {
+    func testWhenEnabledWithInvalidLongTasksThreshold() async throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -164,7 +166,7 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(dd.logger.errorLog?.message, "`RUM.Configuration.longTaskThreshold` cannot be less than 0s. Long Tasks monitoring will be disabled.")
     }
 
-    func testWhenEnabledWithInvalidAppHangThreshold() throws {
+    func testWhenEnabledWithInvalidAppHangThreshold() async throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -178,7 +180,7 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(dd.logger.warnLog?.message, "`RUM.Configuration.appHangThreshold` cannot be less than 0.1s. A value of 0.1s will be used.")
     }
 
-    func testWhenEnabledWithURLSessionTracking() throws {
+    func testWhenEnabledWithURLSessionTracking() async throws {
         // Given
         config.urlSessionTracking = .init()
 
@@ -202,7 +204,7 @@ class RUMTests: XCTestCase {
         )
     }
 
-    func testWhenEnabledWithNoURLSessionTracking() {
+    func testWhenEnabledWithNoURLSessionTracking() async {
         // Given
         config.urlSessionTracking = nil
 
@@ -217,7 +219,7 @@ class RUMTests: XCTestCase {
         )
     }
 
-    func testWhenEnabledWithVitalsUpdateFrequency() throws {
+    func testWhenEnabledWithVitalsUpdateFrequency() async throws {
         // Given
         config.vitalsUpdateFrequency = [.frequent, .average, .rare].randomElement()!
 
@@ -229,7 +231,7 @@ class RUMTests: XCTestCase {
         XCTAssertNotNil(monitor.scopes.dependencies.vitalsReaders)
     }
 
-    func testWhenEnabledWithNoVitalsUpdateFrequency() throws {
+    func testWhenEnabledWithNoVitalsUpdateFrequency() async throws {
         // Given
         config.vitalsUpdateFrequency = nil
 
@@ -241,7 +243,7 @@ class RUMTests: XCTestCase {
         XCTAssertNil(monitor.scopes.dependencies.vitalsReaders)
     }
 
-    func testWhenEnabledWithEventMappers() throws {
+    func testWhenEnabledWithEventMappers() async throws {
         // Given
         config.viewEventMapper = { $0 }
         config.resourceEventMapper = { $0 }
@@ -262,7 +264,7 @@ class RUMTests: XCTestCase {
         XCTAssertNotNil(eventsMapper.longTaskEventMapper)
     }
 
-    func testWhenEnabledWithNoEventMappers() throws {
+    func testWhenEnabledWithNoEventMappers() async throws {
         // Given
         config.viewEventMapper = nil
         config.resourceEventMapper = nil
@@ -283,7 +285,7 @@ class RUMTests: XCTestCase {
         XCTAssertNil(eventsMapper.longTaskEventMapper)
     }
 
-    func testWhenEnabledWithSessionStartListener() throws {
+    func testWhenEnabledWithSessionStartListener() async throws {
         // Given
         config.onSessionStart = { _, _ in }
 
@@ -295,7 +297,7 @@ class RUMTests: XCTestCase {
         XCTAssertNotNil(monitor.scopes.dependencies.onSessionStart)
     }
 
-    func testWhenEnabledWithNoSessionStartListener() throws {
+    func testWhenEnabledWithNoSessionStartListener() async throws {
         // Given
         config.onSessionStart = nil
 
@@ -307,7 +309,7 @@ class RUMTests: XCTestCase {
         XCTAssertNil(monitor.scopes.dependencies.onSessionStart)
     }
 
-    func testWhenEnabledWithCustomEndpoint() throws {
+    func testWhenEnabledWithCustomEndpoint() async throws {
         // Given
         let randomURL: URL = .mockRandom()
         config.customEndpoint = randomURL
@@ -320,7 +322,7 @@ class RUMTests: XCTestCase {
         XCTAssertEqual((rum.requestBuilder as? RequestBuilder)?.customIntakeURL, randomURL)
     }
 
-    func testWhenEnabledWithNoCustomEndpoint() throws {
+    func testWhenEnabledWithNoCustomEndpoint() async throws {
         // Given
         config.customEndpoint = nil
 
@@ -332,7 +334,7 @@ class RUMTests: XCTestCase {
         XCTAssertNil((rum.requestBuilder as? RequestBuilder)?.customIntakeURL)
     }
 
-    func testWhenEnabledWithDebugSDKArgument() throws {
+    func testWhenEnabledWithDebugSDKArgument() async throws {
         // Given
         config.sessionSampleRate = .mockRandom(min: 0, max: 100)
         config.debugSDK = true
@@ -348,7 +350,7 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(crashReceiver?.sessionSampler.samplingRate, 100)
     }
 
-    func testWhenEnabledWithNoDebugSDKArgument() throws {
+    func testWhenEnabledWithNoDebugSDKArgument() async throws {
         // Given
         let random: Float = .mockRandom(min: 0, max: 100)
         config.sessionSampleRate = random
@@ -365,7 +367,7 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(crashReceiver?.sessionSampler.samplingRate, random)
     }
 
-    func testWhenEnabledWithDebugViewsArgument() {
+    func testWhenEnabledWithDebugViewsArgument() async {
         // Given
         config.debugViews = true
 
@@ -376,7 +378,7 @@ class RUMTests: XCTestCase {
         XCTAssertTrue(RUMMonitor.shared(in: core).debug)
     }
 
-    func testWhenEnabledWithNoDebugViewsArgument() {
+    func testWhenEnabledWithNoDebugViewsArgument() async {
         // Given
         config.debugViews = false
 
@@ -387,7 +389,7 @@ class RUMTests: XCTestCase {
         XCTAssertFalse(RUMMonitor.shared(in: core).debug)
     }
 
-    func testWhenEnabledWithOverwritingConfigurationTelemetrySampleRate() throws {
+    func testWhenEnabledWithOverwritingConfigurationTelemetrySampleRate() async throws {
         // Given
         config._internal_mutation { $0.configurationTelemetrySampleRate = 42 }
 
@@ -400,7 +402,7 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 42)
     }
 
-    func testWhenEnabledWithNoOverwritingConfigurationTelemetrySampleRate() throws {
+    func testWhenEnabledWithNoOverwritingConfigurationTelemetrySampleRate() async throws {
         // When
         RUM.enable(with: config, in: core)
 
@@ -412,7 +414,7 @@ class RUMTests: XCTestCase {
 
     // MARK: - Behaviour Tests
 
-    func testWhenEnabled_itSetsRUMContextInCore() throws {
+    func testWhenEnabled_itSetsRUMContextInCore() async throws {
         let core = PassthroughCoreMock()
         let applicationID: String = .mockRandom()
         let sessionID: RUMUUID = .mockRandom()
@@ -433,7 +435,7 @@ class RUMTests: XCTestCase {
         XCTAssertNil(context?.userActionID)
     }
 
-    func testWhenEnabled_itNotifiesInitialSessionID() {
+    func testWhenEnabled_itNotifiesInitialSessionID() async {
         let core = PassthroughCoreMock()
 
         // Given
@@ -447,7 +449,7 @@ class RUMTests: XCTestCase {
         // When
         RUM.enable(with: config, in: core)
 
-        waitForExpectations(timeout: 2.5)
+        await fulfillment(of: [expectation], timeout: 2.5)
     }
 
     // MARK: - RUM+Internal tests
@@ -470,7 +472,7 @@ class RUMTests: XCTestCase {
         XCTAssertThrowsError(try RUM._internal.enableURLSessionTracking(with: config, in: core))
     }
 
-    func testLateEnableUrlSessionTracking() throws {
+    func testLateEnableUrlSessionTracking() async throws {
         // Given
         let core = FeatureRegistrationCoreMock()
         let debugSDK: Bool = .mockRandom()

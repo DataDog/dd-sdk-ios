@@ -1032,7 +1032,7 @@ public func mockNoOpSessionListener() -> RUM.SessionListener {
 public class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
     public var sessionState: RUMSessionState?
     public var view: RUMViewEvent?
-    public var globalAttributes: [String: Encodable] = [:]
+    public var globalAttributes: [String: Encodable & Sendable] = [:]
 
     public init() {}
 }
@@ -1460,7 +1460,7 @@ public class RUMActionsHandlerMock: RUMActionsHandling {
         onSendEvent?(application, event)
     }
 
-    public func notify_viewModifierTapped(actionName: String, actionAttributes: [String: any Encodable]) {
+    public func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable & Sendable]) {
         onViewModifierTapped?(actionName, actionAttributes)
     }
 }
