@@ -133,11 +133,37 @@ These compose multiple receivers and rely on the `Bool` short-circuit pattern:
 2. Define a new feature protocol (e.g. `AsyncFeatureMessageReceiver` or integrate into `DatadogFeature` directly).
 3. Keep the old `FeatureMessageReceiver` protocol alongside the new one for incremental migration.
 
-### Phase 2: Migrate DatadogCore
+### Phase 2: Convert `MessageBus` to an Actor
 
-1. Update `MessageBus` to support both sync receivers and async streams.
-2. Update `DatadogCore.register(feature:)` to create and vend streams.
-3. Update `send(message:else:)` — yield to async streams and call sync receivers.
+`MessageBus` is a strong candidate for actor conversion because:
+- It is an internal class with no public API surface.
+- All mutable state (`core`, `bus`, `configuration`) is already protected by a single
+  serial `DispatchQueue`, which maps directly to actor isolation.
+- All mutations (`connect`, `removeReceiver`, `send`, `save`) use `queue.async {}`,
+  which become natural actor-isolated methods.
+
+**`flush()` is not a real blocker.** `MessageBus.flush()` uses `queue.sync {}`, which
+actors cannot do. However, `flush()` is effectively test infrastructure:
+- `MessageBus.flush()` is only called from `DatadogCore.flush()`.
+- `DatadogCore.flush()` is only called from `DatadogCore.flushAndTearDown()`.
+- `flushAndTearDown()` is called from `Datadog.clearAllData()` (production) and tests.
+- The implementation itself acknowledges this: *"this is enough to get consistency in
+  tests — but won't be reliable in any public 'deinitialize' API."*
+
+The synchronous `flush()` pattern needs replacement regardless of actor conversion.
+Replace with `func drain() async` that awaits all pending work via structured
+concurrency. `Datadog.clearAllData()` can bridge with `Task { await core.drain() }`.
+
+**Steps:**
+1. Convert `MessageBus` from `final class` to `actor`.
+2. Remove the `DispatchQueue` — actor isolation replaces it.
+3. Replace `flush()` with `func drain() async` (or remove if the `AsyncStream`
+   approach from Phase 1 makes it unnecessary — finishing continuations naturally
+   drains pending messages).
+4. Update `DatadogCore` to `await` bus methods (or use `Task {}` from sync call sites).
+5. Manage `AsyncStream.Continuation` per feature instead of holding sync receivers.
+6. Update `send(message:else:)` — yield to async streams. The `else` fallback can
+   become a timeout or be replaced by feature-availability checks at registration.
 
 ### Phase 3: Migrate Features (one at a time)
 
@@ -162,9 +188,71 @@ Migrate each module independently:
 3. Remove `core:` parameter from message handling (RUM-3717).
 4. Remove sync `MessageBus` dispatch queue.
 
+## Phase 5: Transform `DatadogCoreProtocol` to Enable `DatadogCore` as an Actor
+
+Currently `DatadogCore` cannot be an actor because `DatadogCoreProtocol` defines an
+entirely synchronous API surface. Every method — `register(feature:)`,
+`feature(named:type:)`, `scope(for:)`, `send(message:)`, `set(context:)` — is
+synchronous and called without `await` from every feature module and from the public
+SDK API (`Datadog.setUserInfo`, `Datadog.set(trackingConsent:)`, etc.).
+
+Making `DatadogCore` an actor requires transforming `DatadogCoreProtocol`:
+
+1. **Add async overloads** to `DatadogCoreProtocol` for methods that mutate state
+   (`register`, `send`, `set(context:)`, `set(anonymousId:)`).
+2. **Make `FeatureScope` async** — `eventWriteContext` is a synchronous callback
+   (`@escaping (DatadogContext, Writer) -> Void`). This must become an async API
+   (e.g. returning `(DatadogContext, Writer)` via `async`). This cascades into every
+   feature module's event recording path.
+3. **Replace `flush()` with async draining** — `flush()` relies on `queue.sync {}`
+   to block the caller. Actors don't support synchronous blocking. An async
+   `flush() async` or a `withCheckedContinuation`-based approach is needed. Tests
+   must migrate to `async` test methods.
+4. **Evaluate the public API** — Customer-facing methods like `Datadog.setUserInfo()`
+   are synchronous. Options:
+   - Keep public API synchronous and use `Task { await core.setUserInfo(...) }` internally.
+   - Provide async alternatives alongside sync ones (additive, non-breaking).
+5. **Evaluate the queue architecture** — `DatadogCore` currently uses multiple
+   independent queues (`readWriteQueue`, context queue, bus queue, per-feature upload
+   queues) to allow parallelism between I/O and context reads. A single actor would
+   serialize all access. Consider whether `DatadogCore` should be one actor or whether
+   subsystems (storage, context, bus) should each be their own actor.
+
+**Prerequisite:** The AsyncStream MessageBus migration (phases 1–4 above) should be
+completed first, as it removes the synchronous `FeatureMessageReceiver` constraint.
+
+## Phase 6: Storage Subsystem as Actor
+
+The storage subsystem in `DatadogCore` (`FeatureStorage`, `FilesOrchestrator`,
+`FileWriter`, `FileReader`, `DataReader`) shares a single `readWriteQueue` for
+serializing all file I/O. All components are `@unchecked Sendable` and rely on
+external queue discipline for safety.
+
+The ideal end state is a **StorageActor** that unifies orchestration and I/O:
+
+- `FilesOrchestrator` has unprotected mutable state (`lastWritableFileName`,
+  `lastWritableFileObjectsCount`, etc.) that relies on the shared queue.
+- `FileReader` has mutable `filesRead: Set<String>` also relying on the queue.
+- `DataReader` is a thin wrapper that dispatches `FileReader` calls to the queue.
+- `FileWriter` dispatches writes to the same queue.
+
+Merging these into a single actor eliminates `DataReader`, the `queue` on `FileWriter`,
+`@unchecked Sendable` on `FilesOrchestrator`/`FeatureStorage`, and the `@ReadWriteLock`
+on `pendingBatches`.
+
+**Blocked on:** `Writer` protocol (in `DatadogInternal`) being synchronous. Making
+`Writer.write` async propagates through `FeatureScope.eventWriteContext` and into
+every feature module (25+ call sites across RUM, Logs, Trace, SessionReplay,
+CrashReporting, Flags, Profiling). This should be done alongside the `FeatureScope`
+async migration (Phase 5 above).
+
+---
+
 ## Benefits
 
 - Features can use **actors** for state management instead of `DispatchQueue` + `@unchecked Sendable`.
+- **`DatadogCore` can become an actor**, replacing `@unchecked Sendable` + `ReadWriteLock`
+  with compiler-enforced isolation.
 - Natural **backpressure** handling via `AsyncStream` buffering policies.
 - Aligns with **Swift 6 structured concurrency** across the entire SDK.
 - Eliminates the `FeatureMessageReceiver` synchronous protocol constraint that blocks actor adoption.
