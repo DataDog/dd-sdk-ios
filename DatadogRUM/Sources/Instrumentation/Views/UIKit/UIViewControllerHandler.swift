@@ -6,9 +6,11 @@
 
 import UIKit
 
-internal protocol UIViewControllerHandler: RUMCommandPublisher {
-    /// Gets called on `super.viewDidAppear()`.
+internal protocol UIViewControllerHandler: RUMCommandPublisher, Sendable {
+    /// Gets called on `super.viewDidAppear()`. Always on the main thread.
+    @MainActor
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool)
-    /// Gets called on `super.viewDidDisappear()`.
+    /// Gets called on `super.viewDidDisappear()`. Always on the main thread.
+    @MainActor
     func notify_viewDidDisappear(viewController: UIViewController, animated: Bool)
 }

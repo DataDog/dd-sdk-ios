@@ -9,9 +9,11 @@ import DatadogInternal
 
 internal protocol RUMActionsHandling: RUMCommandPublisher {
     /// Tracks RUM actions automatically for UIKit and SwiftUI by responding to `UIApplication.sendEvent(application:event:)` being called.
+    /// Always called on the main thread since UIKit event delivery is `@MainActor`.
+    @MainActor
     func notify_sendEvent(application: UIApplication, event: UIEvent)
     /// Tracks RUM actions manually with SwiftUI view modifers by being notified from `RUMTapActionModifier`.
-    func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable])
+    func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable & Sendable])
 }
 
 internal final class RUMActionsHandler: RUMActionsHandling {
@@ -82,6 +84,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
     }
 
     /// Tracks RUM actions automatically for UIKit and SwiftUI in response to `UIApplication.sendEvent(application:event:)` event.
+    @MainActor
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
         guard let command = eventCommandsFactory?.command(from: event) else {
             return // Not a "tap" event or doesn't have the view.
@@ -102,7 +105,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
 
     /// Tracks manually instrumented SwiftUI actions via `.trackRUMTapAction()` view modifier,
     /// in response to `SwiftUI.TapGesture.onEnded` event.
-    func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable]) {
+    func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable & Sendable]) {
         let command = RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: actionAttributes,

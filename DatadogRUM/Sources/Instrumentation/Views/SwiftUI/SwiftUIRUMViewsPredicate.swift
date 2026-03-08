@@ -11,7 +11,7 @@
 /// then passes that name to this predicate to convert it into RUM view parameters or filter it out.
 ///
 /// Implement this protocol to customize which SwiftUI views are tracked and how they appear in the RUM Explorer.
-public protocol SwiftUIRUMViewsPredicate {
+public protocol SwiftUIRUMViewsPredicate: Sendable {
     /// Converts an extracted SwiftUI view name into RUM view parameters, or filters it out.
     ///
     /// - Parameter extractedViewName: The name of the SwiftUI view detected by the SDK.
@@ -23,7 +23,7 @@ public protocol SwiftUIRUMViewsPredicate {
 ///
 /// This implementation tracks all detected SwiftUI views with their extracted names.
 /// The view name in RUM Explorer will match the name extracted from the SwiftUI view.
-public struct DefaultSwiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate {
+public struct DefaultSwiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate, Sendable {
     public init() {}
 
     public func rumView(for extractedViewName: String) -> RUMView? {

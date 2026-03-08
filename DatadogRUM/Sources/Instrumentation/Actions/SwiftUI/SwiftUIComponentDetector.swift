@@ -36,8 +36,9 @@ internal enum SwiftUIComponentNames {
  * - May have some false positives:
  * a `Button` can't be differentiated from a `Label`, therefore we report both interactions
  */
-internal protocol SwiftUIComponentDetector {
-    /// Processes a touch and creates a RUM action command if appropriate
+@MainActor
+internal protocol SwiftUIComponentDetector: Sendable {
+    /// Processes a touch and creates a RUM action command if appropriate.
     /// - Parameters:
     ///   - touch: The `UITouch` to process
     ///   - predicate: The predicate to use for determining if an action should be created
@@ -62,6 +63,7 @@ internal enum SwiftUIComponentFactory {
 }
 
 /// Utility class with static helper methods
+@MainActor
 internal class SwiftUIComponentHelpers {
     /// Extracts a component name from a touch, using gesture information when available
     /// - Parameters:
@@ -95,7 +97,7 @@ internal class SwiftUIComponentHelpers {
 @objc
 internal protocol TypeDescribing {
     /// Returns a string describing the type of the object
-    var typeDescription: String { get }
+    @MainActor var typeDescription: String { get }
 }
 
 /// Default implementation for UIKit views

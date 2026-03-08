@@ -7,33 +7,28 @@
 import Foundation
 import DatadogInternal
 
-internal protocol AppStateManaging {
+internal protocol AppStateManaging: Sendable {
     /// Updates the app state based on the given application state.
-    func updateAppState(state: AppState)
-    /// Returns the previous app state via `completion` callback.
-    func previousAppStateInfo(completion: @escaping (AppStateInfo?) -> Void)
-    /// Builds the current app state.
-    func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void)
+    func updateAppState(state: AppState) async
+    /// Fetches both previous and current app state.
+    func fetchAppStateInfo() async -> (previous: AppStateInfo?, current: AppStateInfo)
 }
 
 /// Manages the app state changes observed during application lifecycle events such as application start, resume and termination.
-internal final class AppStateManager: AppStateManaging {
-    private static let defaultQueue = DispatchQueue(
-        label: "com.datadoghq.app-state-manager",
-        qos: .utility
-    )
-
+internal actor AppStateManager: AppStateManaging {
     private let featureScope: FeatureScope
-    private let initialStateGroup = DispatchGroup()
-    private let initialStateQueue: DispatchQueue
 
     /// The last app state observed during application lifecycle events.
-    @ReadWriteLock
     private var lastAppState: AppState?
 
     /// The app state information of the last application run.
-    @ReadWriteLock
-    private var previousAppStateInfo: AppStateInfo?
+    private var previousAppState: AppStateInfo?
+
+    /// Whether the initial state has been loaded from the data store.
+    private var initialized = false
+
+    /// Continuations waiting for initialization to complete.
+    private var pendingContinuations: [CheckedContinuation<Void, Never>] = []
 
     /// The process identifier of the app whose state is being monitored.
     let processId: UUID
@@ -44,23 +39,31 @@ internal final class AppStateManager: AppStateManaging {
     init(
         featureScope: FeatureScope,
         processId: UUID,
-        syntheticsEnvironment: Bool,
-        queue: DispatchQueue = AppStateManager.defaultQueue
+        syntheticsEnvironment: Bool
     ) {
         self.featureScope = featureScope
         self.processId = processId
         self.syntheticsEnvironment = syntheticsEnvironment
-        self.initialStateQueue = queue
 
-        start()
+        Task { await self.start() }
     }
 
-    private func start() {
-        initialStateGroup.enter()
-        self.readAppState { [weak self] in
-            self?.previousAppStateInfo = $0
-            self?.storeCurrentAppState()
-            self?.initialStateGroup.leave()
+    /// Reads the previous app state from the data store and stores the current one.
+    private func start() async {
+        self.previousAppState = await Self.readAppState(from: featureScope)
+        await self.storeCurrentAppState()
+        self.initialized = true
+        for continuation in pendingContinuations {
+            continuation.resume()
+        }
+        pendingContinuations.removeAll()
+    }
+
+    /// Suspends until the initial state has been loaded.
+    private func waitUntilReady() async {
+        if initialized { return }
+        await withCheckedContinuation { continuation in
+            pendingContinuations.append(continuation)
         }
     }
 
@@ -71,7 +74,7 @@ internal final class AppStateManager: AppStateManaging {
     /// 2. whether the application was in the foreground or background when it was terminated.
     ///
     /// - Parameter state: The application state.
-    func updateAppState(state: AppState) {
+    func updateAppState(state: AppState) async {
         // this method can be called multiple times for the same state,
         // so we need to make sure we don't update the state multiple times
         guard state != lastAppState else {
@@ -79,82 +82,77 @@ internal final class AppStateManager: AppStateManaging {
         }
         switch state {
         case .active:
-            updateAppState { stateInfo in
-                stateInfo?.isActive = true
-            }
+            await updateAppStateInStore { $0?.isActive = true }
         case .inactive, .background:
-            updateAppState { stateInfo in
-                stateInfo?.isActive = false
-            }
+            await updateAppStateInStore { $0?.isActive = false }
         case .terminated:
-            updateAppState { stateInfo in
-                stateInfo?.wasTerminated = true
-            }
+            await updateAppStateInStore { $0?.wasTerminated = true }
         }
         lastAppState = state
     }
 
-    /// Updates the app state in the data store with the given block.
-    /// - Parameter block: The block to update the app state.
-    private func updateAppState(block: @escaping (inout AppStateInfo?) -> Void) {
-        onInitialStateLoaded { [weak self] in
-            self?.featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
-                var appState = appState
-                block(&appState)
-                DD.logger.debug("Updating app state in data store")
-                self?.featureScope.rumDataStore.setValue(appState, forKey: .appStateKey)
+    /// Reads the current app state from the data store, applies the mutation, and writes it back.
+    /// - Parameter block: The mutation to apply to the app state.
+    private func updateAppStateInStore(block: (inout AppStateInfo?) -> Void) async {
+        var appState: AppStateInfo? = await withCheckedContinuation { continuation in
+            featureScope.rumDataStore.value(forKey: .appStateKey) { (state: AppStateInfo?) in
+                continuation.resume(returning: state)
+            }
+        }
+        block(&appState)
+        DD.logger.debug("Updating app state in data store")
+        featureScope.rumDataStore.setValue(appState, forKey: .appStateKey)
+    }
+
+    /// Returns the previous app state, waiting for initialization if needed.
+    private func previousAppStateInfo() async -> AppStateInfo? {
+        await waitUntilReady()
+        return previousAppState
+    }
+
+    /// Builds the current app state asynchronously.
+    private func currentAppStateInfo() async -> AppStateInfo {
+        await withCheckedContinuation { continuation in
+            featureScope.context { [processId, syntheticsEnvironment] context in
+                let state: AppStateInfo = .init(
+                    appVersion: context.version,
+                    osVersion: context.os.version,
+                    systemBootTime: context.device.systemBootTime,
+                    appLaunchTime: context.launchInfo.processLaunchDate.timeIntervalSince1970,
+                    isDebugging: context.device.isDebugging,
+                    wasTerminated: false,
+                    isActive: true,
+                    vendorId: context.device.vendorId,
+                    processId: processId,
+                    trackingConsent: context.trackingConsent,
+                    syntheticsEnvironment: syntheticsEnvironment
+                )
+                continuation.resume(returning: state)
             }
         }
     }
 
-    /// Returns the previous app state via `completion` block.
-    /// - Parameter completion: The completion block called with the previous app state.
-    func previousAppStateInfo(completion: @escaping (AppStateInfo?) -> Void) {
-        onInitialStateLoaded { [weak self] in
-            completion(self?.previousAppStateInfo)
-        }
-    }
-
-    /// Builds the current app state asynchronously.
-    /// - Parameter completion: The completion block called with the app state.
-    func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void) {
-        featureScope.context { context in
-            let state: AppStateInfo = .init(
-                appVersion: context.version,
-                osVersion: context.os.version,
-                systemBootTime: context.device.systemBootTime,
-                appLaunchTime: context.launchInfo.processLaunchDate.timeIntervalSince1970,
-                isDebugging: context.device.isDebugging,
-                wasTerminated: false,
-                isActive: true,
-                vendorId: context.device.vendorId,
-                processId: self.processId,
-                trackingConsent: context.trackingConsent,
-                syntheticsEnvironment: self.syntheticsEnvironment
-            )
-            completion(state)
-        }
-    }
-
     /// Builds the current app state and stores it in the data store.
-    func storeCurrentAppState() {
-        currentAppStateInfo { [self] appState in
-            featureScope.rumDataStore.setValue(appState, forKey: .appStateKey)
-        }
+    func storeCurrentAppState() async {
+        let appState = await currentAppStateInfo()
+        featureScope.rumDataStore.setValue(appState, forKey: .appStateKey)
     }
 
-    /// Reads the app state from the data store asynchronously.
-    /// - Parameter completion: The completion block called with the app state.
-    func readAppState(completion: @escaping (AppStateInfo?) -> Void) {
-        featureScope.rumDataStore.value(forKey: .appStateKey) { (state: AppStateInfo?) in
-            DD.logger.debug("Reading app state from data store.")
-            completion(state)
-        }
+    /// Fetches both previous and current app state.
+    func fetchAppStateInfo() async -> (previous: AppStateInfo?, current: AppStateInfo) {
+        let previous = await previousAppStateInfo()
+        let current = await currentAppStateInfo()
+        return (previous, current)
     }
 
-    /// Runs `completion` once initial state completes.
-    private func onInitialStateLoaded(_ completion: @escaping () -> Void) {
-        initialStateGroup.notify(queue: initialStateQueue, execute: completion)
+    /// Reads the app state from the data store.
+    private static func readAppState(from featureScope: FeatureScope) async -> AppStateInfo? {
+        await withCheckedContinuation { continuation in
+            featureScope.rumDataStore.value(forKey: .appStateKey) { (state: AppStateInfo?) in
+                DD.logger.debug("Reading app state from data store.")
+                continuation.resume(returning: state)
+            }
+        }
     }
 }
 

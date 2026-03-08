@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Command processed through the tree of `RUMScopes`.
-internal protocol RUMCommand {
+internal protocol RUMCommand: Sendable {
     /// The time of command issue.
     var time: Date { set get }
     /// Global attributes when the command was issued.
@@ -686,10 +686,10 @@ internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false
     let name: String
-    let value: Encodable
+    let value: Encodable & Sendable
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 
-    init(time: Date, name: String, value: Encodable) {
+    init(time: Date, name: String, value: Encodable & Sendable) {
         self.time = time
         self.globalAttributes = [:]
         self.attributes = [:]

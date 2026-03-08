@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 @testable import DatadogRUM
 
+@MainActor
 class RUMViewsHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()

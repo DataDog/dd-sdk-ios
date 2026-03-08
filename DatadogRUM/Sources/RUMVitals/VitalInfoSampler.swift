@@ -43,10 +43,15 @@ internal final class VitalInfoSampler {
 
     private static var maximumFramesPerSecond: Double {
         get {
-            #if swift(>=5.9) && os(visionOS)
+            #if os(visionOS)
             return 120.0 // Hardcoded to enable VisionOS compilation
             #else
-            return Double(UIScreen.main.maximumFramesPerSecond)
+            guard Thread.isMainThread else {
+                return 60.0
+            }
+            return MainActor.assumeIsolated {
+                Double(UIScreen.main.maximumFramesPerSecond)
+            }
             #endif
         }
     }

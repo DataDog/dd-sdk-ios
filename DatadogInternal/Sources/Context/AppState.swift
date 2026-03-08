@@ -16,7 +16,7 @@ public protocol AppStateProvider: Sendable {
 }
 
 /// Application state.
-public enum AppState: Codable {
+public enum AppState: Codable, Sendable {
     /// The app is running in the foreground and currently receiving events.
     case active
     /// The app is running in the foreground but is not receiving events.

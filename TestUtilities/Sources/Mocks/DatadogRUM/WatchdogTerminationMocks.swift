@@ -100,18 +100,18 @@ extension WatchdogTerminationReporter: RandomMockable {
     }
 }
 
-extension WatchdogTerminationChecker: RandomMockable {
+extension WatchdogTerminationChecker {
     public static func mockRandom() -> WatchdogTerminationChecker {
         return .init(
-            appStateManager: .mockRandom(),
+            appStateManager: AppStateManagerMock(),
             featureScope: FeatureScopeMock()
         )
     }
 }
 
-extension AppStateManager: RandomMockable {
-    public static func mockRandom() -> AppStateManager {
-        return .init(
+extension AppStateManager {
+    public static func mockRandom() async -> AppStateManager {
+        return await .init(
             featureScope: FeatureScopeMock(),
             processId: .mockRandom(),
             syntheticsEnvironment: .mockRandom()
@@ -131,10 +131,10 @@ extension RUMDataStore: RandomMockable {
     }
 }
 
-extension WatchdogTerminationMonitor: RandomMockable {
+extension WatchdogTerminationMonitor {
     public static func mockRandom() -> WatchdogTerminationMonitor {
         return .init(
-            appStateManager: .mockRandom(),
+            appStateManager: AppStateManagerMock(),
             checker: .mockRandom(),
             storage: NOPDatadogCore().storage,
             feature: FeatureScopeMock(),

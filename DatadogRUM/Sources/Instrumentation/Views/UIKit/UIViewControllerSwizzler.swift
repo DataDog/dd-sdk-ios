@@ -44,9 +44,13 @@ internal class UIViewControllerSwizzler {
 
         func swizzle() {
             typealias Signature = @convention(block) (UIViewController, Bool) -> Void
+            weak var weakHandler = self.handler
             swizzle(method) { previousImplementation -> Signature in
-                return { [weak handler = self.handler] vc, animated  in
-                    handler?.notify_viewDidAppear(viewController: vc, animated: animated)
+                return { vc, animated  in
+                    let handler = weakHandler
+                    MainActor.assumeIsolated {
+                        handler?.notify_viewDidAppear(viewController: vc, animated: animated)
+                    }
                     previousImplementation(vc, Self.selector, animated)
                 }
             }
@@ -69,9 +73,13 @@ internal class UIViewControllerSwizzler {
 
         func swizzle() {
             typealias Signature = @convention(block) (UIViewController, Bool) -> Void
+            weak var weakHandler = self.handler
             swizzle(method) { previousImplementation -> Signature in
-                return { [weak handler = self.handler] vc, animated  in
-                    handler?.notify_viewDidDisappear(viewController: vc, animated: animated)
+                return { vc, animated  in
+                    let handler = weakHandler
+                    MainActor.assumeIsolated {
+                        handler?.notify_viewDidDisappear(viewController: vc, animated: animated)
+                    }
                     previousImplementation(vc, Self.selector, animated)
                 }
             }

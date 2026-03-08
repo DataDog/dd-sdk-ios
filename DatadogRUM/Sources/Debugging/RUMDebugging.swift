@@ -27,17 +27,16 @@ private struct RUMDebugInfo {
     }
 }
 
+@MainActor
 internal class RUMDebugging {
     /// An overlay view renderd on top of the app content. It is created lazily on first draw.
     private var canvas: UIView? = nil
 
     // MARK: - Initialization
 
-    #if !os(tvOS) && !(swift(>=5.9) && os(visionOS))
-    init() {
-        DispatchQueue.main.async {
-            UIDevice.current.beginGeneratingDeviceOrientationNotifications()
-        }
+    #if !os(tvOS) && !os(visionOS)
+    nonisolated init() {
+        Task { @MainActor in UIDevice.current.beginGeneratingDeviceOrientationNotifications() }
 
         NotificationCenter.default
             .addObserver(
@@ -49,7 +48,8 @@ internal class RUMDebugging {
     }
 
     deinit {
-        DispatchQueue.main.async { [weak canvas] in
+        let canvas = self.canvas
+        Task { @MainActor in
             canvas?.removeFromSuperview()
             UIDevice.current.endGeneratingDeviceOrientationNotifications()
         }
@@ -61,26 +61,22 @@ internal class RUMDebugging {
         )
     }
     #else
-    init() {
+    nonisolated init() {
     }
 
     deinit {
-        DispatchQueue.main.async { [weak canvas] in
-            canvas?.removeFromSuperview()
-        }
+        let canvas = self.canvas
+        Task { @MainActor in canvas?.removeFromSuperview() }
     }
     #endif
 
     // MARK: - Internal
 
-    func debug(applicationScope: RUMApplicationScope) {
+    /// Called from background `eventWriteContext` — must stay nonisolated.
+    nonisolated func debug(applicationScope: RUMApplicationScope) {
         // `RUMDebugInfo` must be created on the caller thread.
         let debugInfo = RUMDebugInfo(applicationScope: applicationScope)
-
-        DispatchQueue.main.async {
-            // `RUMDebugInfo` rendering must be called on the main thread.
-            self.renderOnMainThread(rumDebugInfo: debugInfo)
-        }
+        Task { @MainActor in self.renderOnMainThread(rumDebugInfo: debugInfo) }
     }
 
     // MARK: - Private
@@ -132,14 +128,18 @@ internal class RUMViewOutline: RUMDebugView {
         static let inactiveViewColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
         static let labelHeight: CGFloat = 16
 
-        static let viewNameTextAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.8, weight: .semibold),
-            .foregroundColor: UIColor.white,
-        ]
-        static let viewDetailsTextAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.5, weight: .regular),
-            .foregroundColor: UIColor.white,
-        ]
+        static var viewNameTextAttributes: [NSAttributedString.Key: Any] {
+            [
+                .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.8, weight: .semibold),
+                .foregroundColor: UIColor.white,
+            ]
+        }
+        static var viewDetailsTextAttributes: [NSAttributedString.Key: Any] {
+            [
+                .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.5, weight: .regular),
+                .foregroundColor: UIColor.white,
+            ]
+        }
     }
 
     private let label: UILabel

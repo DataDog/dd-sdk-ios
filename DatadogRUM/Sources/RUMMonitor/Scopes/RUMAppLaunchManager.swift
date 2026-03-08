@@ -7,7 +7,7 @@
 import DatadogInternal
 import Foundation
 
-internal class RUMAppLaunchManager {
+internal final class RUMAppLaunchManager: @unchecked Sendable {
     internal enum Constants {
         // Maximum time for an erroneous TTID (Time to Initial Display)
         static let maxTTIDDuration: TimeInterval = 60 // 1 minute
@@ -71,49 +71,50 @@ private extension RUMAppLaunchManager {
 
         sendProfilerStopMessage(id: ttidVitalId, activeView: activeView)
 
-        dependencies.appStateManager.previousAppStateInfo { [weak self] previousAppStateInfo in
-            self?.dependencies.appStateManager.currentAppStateInfo { [weak self] currentAppStateInfo in
-                guard let self else {
-                    return
-                }
+        let activeViewUUID = activeView?.viewUUID
+        let activeViewPath = activeView?.viewPath ?? ""
+        Task { [weak self] in
+            guard let self else { return }
+            let appState = await dependencies.appStateManager.fetchAppStateInfo()
 
-                let attributes = command.globalAttributes
-                    .merging(command.attributes) { $1 }
+            let attributes = command.globalAttributes
+                .merging(command.attributes) { $1 }
 
-                let startupType = self.startupTypeHandler.startupType(previousAppState: previousAppStateInfo, currentAppState: currentAppStateInfo)
-                self.startupType = startupType
+            let startupType = startupTypeHandler.startupType(previousAppState: appState.previous, currentAppState: appState.current)
+            self.startupType = startupType
 
-                self.writeVitalEvent(
-                    vitalId: ttidVitalId,
-                    duration: Double(ttid.dd.toInt64Nanoseconds),
-                    appLaunchMetric: .ttid,
+            writeVitalEvent(
+                vitalId: ttidVitalId,
+                duration: Double(ttid.dd.toInt64Nanoseconds),
+                appLaunchMetric: .ttid,
+                startupType: startupType,
+                attributes: attributes,
+                context: context,
+                writer: writer,
+                activeViewUUID: activeViewUUID,
+                activeViewPath: activeViewPath,
+                profiling: profiling
+            )
+
+            // The TTFD is always written after the TTID. If it exists already, means it was not written before.
+            if let timeToFullDisplay {
+                let ttfd = max(ttid, timeToFullDisplay)
+                writeVitalEvent(
+                    vitalId: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                    duration: Double(ttfd.dd.toInt64Nanoseconds),
+                    appLaunchMetric: .ttfd,
                     startupType: startupType,
                     attributes: attributes,
                     context: context,
                     writer: writer,
-                    activeView: activeView,
-                    profiling: profiling
+                    activeViewUUID: activeViewUUID,
+                    activeViewPath: activeViewPath
                 )
 
-                // The TTFD is always written after the TTID. If it exists already, means it was not written before.
-                if let timeToFullDisplay {
-                    let ttfd = max(ttid, timeToFullDisplay)
-                    self.writeVitalEvent(
-                        vitalId: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
-                        duration: Double(ttfd.dd.toInt64Nanoseconds),
-                        appLaunchMetric: .ttfd,
-                        startupType: startupType,
-                        attributes: attributes,
-                        context: context,
-                        writer: writer,
-                        activeView: activeView
-                    )
-
-                    telemetryController.trackTTFD(duration: timeToFullDisplay.dd.toInt64Nanoseconds)
-                }
-
-                telemetryController.sendMetric()
+                telemetryController.trackTTFD(duration: timeToFullDisplay.dd.toInt64Nanoseconds)
             }
+
+            telemetryController.sendMetric()
         }
     }
 
@@ -170,7 +171,8 @@ private extension RUMAppLaunchManager {
         attributes: [AttributeKey: AttributeValue],
         context: DatadogContext,
         writer: Writer,
-        activeView: RUMViewScope?,
+        activeViewUUID: RUMUUID?,
+        activeViewPath: String,
         profiling: RUMVitalAppLaunchEvent.DD.Profiling? = nil
     ) {
         let vital = RUMVitalAppLaunchEvent.Vital(
@@ -206,8 +208,8 @@ private extension RUMAppLaunchManager {
             usr: .init(context: context),
             version: context.version,
             view: .init(
-                id: (activeView?.viewUUID).orNull.toRUMDataFormat,
-                url: activeView?.viewPath ?? ""
+                id: activeViewUUID.orNull.toRUMDataFormat,
+                url: activeViewPath
             ),
             vital: vital
         )
@@ -254,7 +256,8 @@ private extension RUMAppLaunchManager {
                 attributes: attributes,
                 context: context,
                 writer: writer,
-                activeView: activeView
+                activeViewUUID: activeView?.viewUUID,
+                activeViewPath: activeView?.viewPath ?? ""
             )
         }
     }

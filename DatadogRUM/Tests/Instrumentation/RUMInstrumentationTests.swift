@@ -44,6 +44,7 @@ class RUMInstrumentationTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testWhenOnlyUIKitActionsPredicateIsConfigured_itInstrumentsUIApplication() throws {
         // When
         let instrumentation = RUMInstrumentation(
@@ -278,6 +279,7 @@ class RUMInstrumentationTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testGivenAllInstrumentationsConfigured_whenSubscribed_itSetsSubsciberInRespectiveHandlers() throws {
         // Given
         let instrumentation = RUMInstrumentation(

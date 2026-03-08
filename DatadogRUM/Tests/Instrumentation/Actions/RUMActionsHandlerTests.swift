@@ -10,7 +10,8 @@ import DatadogInternal
 import SwiftUI
 @testable import DatadogRUM
 
-class RUMActionsHandlerTests: XCTestCase {
+@MainActor
+final class RUMActionsHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
 

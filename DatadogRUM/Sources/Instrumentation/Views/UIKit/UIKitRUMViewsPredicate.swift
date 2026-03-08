@@ -15,7 +15,7 @@ import DatadogInternal
 ///
 /// Implement this protocol to customize which view controllers are tracked and how they
 /// appear in the RUM Explorer.
-public protocol UIKitRUMViewsPredicate {
+public protocol UIKitRUMViewsPredicate: Sendable {
     /// Converts a `UIViewController` into RUM view parameters, or filters it out.
     ///
     /// - Parameter viewController: The view controller that has appeared in the UI.

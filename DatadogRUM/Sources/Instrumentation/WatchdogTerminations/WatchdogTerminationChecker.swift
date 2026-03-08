@@ -14,12 +14,12 @@ import UIKit
 /// Checks if the app was terminated by Watchdog using heuristics.
 /// It uses the app state information from the last app session and the current app session
 /// to determine if the app was terminated by Watchdog.
-internal final class WatchdogTerminationChecker {
-    let appStateManager: AppStateManager
+internal final class WatchdogTerminationChecker: Sendable {
+    let appStateManager: any AppStateManaging
     let featureScope: FeatureScope
 
     init(
-        appStateManager: AppStateManager,
+        appStateManager: any AppStateManaging,
         featureScope: FeatureScope
     ) {
         self.appStateManager = appStateManager
@@ -29,16 +29,21 @@ internal final class WatchdogTerminationChecker {
     /// Checks if the app was terminated by Watchdog.
     /// - Parameters:
     ///   - launch: The launch report containing information about the app launch.
-    ///   - completion: The completion block called with the result.
-    func isWatchdogTermination(launch: LaunchReport, completion: @escaping (Bool, AppStateInfo?) -> Void) {
-        appStateManager.previousAppStateInfo { [weak self] previousAppStateInfo in
-            self?.appStateManager.currentAppStateInfo { [weak self] current in
-                self?.featureScope.context { [weak self] context in
-                    let isWatchdogTermination = self?.isWatchdogTermination(launch: launch, deviceInfo: context.device, from: previousAppStateInfo, to: current)
-                    completion(isWatchdogTermination ?? false, previousAppStateInfo)
-                }
+    /// - Returns: A tuple indicating whether a watchdog termination was detected and the previous app state.
+    func isWatchdogTermination(launch: LaunchReport) async -> (isWatchdogTermination: Bool, appState: AppStateInfo?) {
+        let appState = await appStateManager.fetchAppStateInfo()
+        let context: DatadogContext = await withCheckedContinuation { continuation in
+            featureScope.context { context in
+                continuation.resume(returning: context)
             }
         }
+        let result = isWatchdogTermination(
+            launch: launch,
+            deviceInfo: context.device,
+            from: appState.previous,
+            to: appState.current
+        )
+        return (result, appState.previous)
     }
 
     /// Checks if the app was terminated by Watchdog.

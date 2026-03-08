@@ -10,43 +10,38 @@ import DatadogInternal
 import TestUtilities
 
 final class AppStateManagerTests: XCTestCase {
-    // swiftlint:disable implicitly_unwrapped_optional
-    var sut: AppStateManager!
-    var featureScope: FeatureScopeMock!
-    // swiftlint:enable implicitly_unwrapped_optional
-
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
-        featureScope = FeatureScopeMock()
-        sut = AppStateManager(
+    func testDeleteAppState() async {
+        // Given
+        let featureScope = FeatureScopeMock()
+        let sut = AppStateManager(
             featureScope: featureScope,
             processId: .init(),
             syntheticsEnvironment: false
         )
-    }
 
-    func testDeleteAppState() {
-        sut.storeCurrentAppState()
+        await sut.storeCurrentAppState()
 
         let isActiveExpectation = expectation(description: "isActive is set")
         featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
             XCTAssertNotNil(appState)
             isActiveExpectation.fulfill()
         }
-        wait(for: [isActiveExpectation], timeout: 1)
+        await fulfillment(of: [isActiveExpectation], timeout: 1)
 
+        // When
+        await sut.deleteAppState()
+
+        // Then
         let deleteExpectation = expectation(description: "isActive is set to false")
-        sut.deleteAppState()
         featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
             XCTAssertNil(appState)
             deleteExpectation.fulfill()
         }
 
-        wait(for: [deleteExpectation], timeout: 1)
+        await fulfillment(of: [deleteExpectation], timeout: 1)
     }
 
-    func testOnInitialStateLoaded_thereIsAPreviousAppState() {
+    func testOnInitialStateLoaded_thereIsAPreviousAppState() async {
         // Given
         let dataStore = DataStoreAsyncMock()
         let featureScope = FeatureScopeMock(dataStore: dataStore)
@@ -61,21 +56,15 @@ final class AppStateManagerTests: XCTestCase {
             syntheticsEnvironment: false
         )
 
-        let appStateExpectation = expectation(description: "There is a previous app state")
-        appStateManager.previousAppStateInfo { previousAppState in
-            // Then
-            XCTAssertEqual(previousAppState?.debugDescription, mockedPreviousState.debugDescription)
-            appStateExpectation.fulfill()
-        }
-
-        wait(for: [appStateExpectation], timeout: 0.1)
+        // Then
+        let previousAppState = await appStateManager.fetchAppStateInfo().previous
+        XCTAssertEqual(previousAppState?.debugDescription, mockedPreviousState.debugDescription)
     }
 
-    func testUpdateAppState_itUpdatesCorrectly() {
+    func testUpdateAppState_itUpdatesCorrectly() async {
         // Given
         let dataStore = DataStoreAsyncMock()
         let featureScope = FeatureScopeMock(dataStore: dataStore)
-        let initialStateQueue = DispatchQueue(label: "com.datadoghq.tests.initial-state-update")
         let initialState = AppStateInfo.mockWith(wasTerminated: false, isActive: true)
         featureScope.rumDataStore.setValue(initialState, forKey: .appStateKey)
         dataStore.flush()
@@ -83,21 +72,15 @@ final class AppStateManagerTests: XCTestCase {
         let appStateManager = AppStateManager(
             featureScope: featureScope,
             processId: .init(),
-            syntheticsEnvironment: false,
-            queue: initialStateQueue
+            syntheticsEnvironment: false
         )
 
-        let initialStateExpectation = expectation(description: "Initial state is loaded")
-        appStateManager.previousAppStateInfo { previousAppState in
-            XCTAssertEqual(previousAppState?.wasTerminated, false)
-            XCTAssertEqual(previousAppState?.isActive, true)
-            initialStateExpectation.fulfill()
-        }
-        wait(for: [initialStateExpectation], timeout: 0.1)
+        let previousAppState = await appStateManager.fetchAppStateInfo().previous
+        XCTAssertEqual(previousAppState?.wasTerminated, false)
+        XCTAssertEqual(previousAppState?.isActive, true)
 
         // When
-        appStateManager.updateAppState(state: .active)
-        initialStateQueue.sync {}
+        await appStateManager.updateAppState(state: .active)
         dataStore.flush()
 
         // Then
@@ -106,11 +89,10 @@ final class AppStateManagerTests: XCTestCase {
             XCTAssertTrue(appState?.isActive == true)
             isActiveExpectation.fulfill()
         }
-        wait(for: [isActiveExpectation], timeout: 0.1)
+        await fulfillment(of: [isActiveExpectation], timeout: 0.1)
 
         // When
-        appStateManager.updateAppState(state: .background)
-        initialStateQueue.sync {}
+        await appStateManager.updateAppState(state: .background)
         dataStore.flush()
 
         // Then
@@ -120,6 +102,6 @@ final class AppStateManagerTests: XCTestCase {
             isBackgroundedExpectation.fulfill()
         }
 
-        wait(for: [isBackgroundedExpectation], timeout: 0.1)
+        await fulfillment(of: [isBackgroundedExpectation], timeout: 0.1)
     }
 }

@@ -127,8 +127,8 @@ final class RUMAppLaunchManagerTests: XCTestCase {
     func testTTIDCommand_createsAppLaunchVitalEventForWarmStart() throws {
         // Given
         let appStateInfo: AppStateInfo = .mockAny()
-        (appStateManager as? AppStateManagerMock)?.previousAppStateInfo = appStateInfo
-        (appStateManager as? AppStateManagerMock)?.currentAppStateInfo = appStateInfo // similar AppStateInfo with the previous AppStateInfo
+        (appStateManager as? AppStateManagerMock)?._previousAppStateInfo = appStateInfo
+        (appStateManager as? AppStateManagerMock)?._currentAppStateInfo = appStateInfo // similar AppStateInfo with the previous AppStateInfo
         let ttid = 1.0
         let command: RUMTimeToInitialDisplayCommand = .mockWith(time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(ttid))
 
@@ -333,8 +333,8 @@ final class RUMAppLaunchManagerTests: XCTestCase {
     func testTTFDCommand_createsAppLaunchVitalEventsForWarmStart() throws {
         // Given
         let appStateInfo: AppStateInfo = .mockAny()
-        (appStateManager as? AppStateManagerMock)?.previousAppStateInfo = appStateInfo
-        (appStateManager as? AppStateManagerMock)?.currentAppStateInfo = appStateInfo // similar AppStateInfo with the previous AppStateInfo
+        (appStateManager as? AppStateManagerMock)?._previousAppStateInfo = appStateInfo
+        (appStateManager as? AppStateManagerMock)?._currentAppStateInfo = appStateInfo // similar AppStateInfo with the previous AppStateInfo
         let ttfd = 1.0
         // The TTFD is only reported if the TTID is available
         let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(

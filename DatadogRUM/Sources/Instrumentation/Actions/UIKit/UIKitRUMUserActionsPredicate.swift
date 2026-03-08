@@ -17,7 +17,8 @@ public typealias UIKitRUMActionsPredicate = UITouchRUMActionsPredicate
 ///
 /// When the app is running, the SDK will ask the implementation of `UITouchRUMActionsPredicate` if any noticed user action on the target view should
 /// be considered as a RUM Action. The predicate implementation should return RUM Action parameters if it should be recorded or `nil` otherwise.
-public protocol UITouchRUMActionsPredicate {
+@MainActor
+public protocol UITouchRUMActionsPredicate: Sendable {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter targetView: an instance of the `UIView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
@@ -28,7 +29,8 @@ public protocol UITouchRUMActionsPredicate {
 ///
 /// When the app is running, the SDK will ask the implementation of `UIPressRUMActionsPredicate` if any noticed user action on the target view should
 /// be considered as a RUM Action. The predicate implementation should return RUM Action parameters if it should be recorded or `nil` otherwise.
-public protocol UIPressRUMActionsPredicate {
+@MainActor
+public protocol UIPressRUMActionsPredicate: Sendable {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameters:
     ///   - type: the `UIPress.PressType` which received the action.
@@ -43,14 +45,12 @@ public struct DefaultUIKitRUMActionsPredicate {
     public init () {}
 
     /// Builds the RUM Action's `target` name for given `UIView`.
+    @MainActor
     private func targetName(for view: UIView) -> String {
         let className = NSStringFromClass(type(of: view))
 
         if let accessibilityIdentifier = view.accessibilityIdentifier {
             return "\(className)(\(accessibilityIdentifier))"
-        // Some SwiftUI components are UIKit under the hood,
-        // but need to clean up tangled SwiftUI name
-        // e.g., _TtCV7SwiftUIP33_D74FE142C3C5A6C2CEA4987A69AEBD7522SystemSegmentedControl18UISegmentedControl
         } else if view.isSwiftUIView {
             return view.swiftUIViewName
         } else {

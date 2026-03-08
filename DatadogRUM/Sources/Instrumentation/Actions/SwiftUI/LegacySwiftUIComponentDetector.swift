@@ -8,7 +8,10 @@ import Foundation
 import UIKit
 import DatadogInternal
 
+@MainActor
 internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
+    nonisolated init() {}
+
     func createActionCommand(
         from touch: UITouch,
         predicate: SwiftUIRUMActionsPredicate?,
