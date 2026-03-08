@@ -7,7 +7,7 @@
 import DatadogInternal
 
 internal final class ContextSharingFeature: DatadogFeature {
-    static var name: String = "_extension_context_sharing"
+    static let name: String = "_extension_context_sharing"
 
     var messageReceiver: FeatureMessageReceiver
 

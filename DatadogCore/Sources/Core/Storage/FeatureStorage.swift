@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal struct FeatureStorage {
+internal struct FeatureStorage: @unchecked Sendable {
     /// The name of this Feature, used to distinguish storage instances in telemetry and logs.
     let featureName: String
     /// Queue for performing all I/O operations (writes, reads and files management).
@@ -26,24 +26,20 @@ internal struct FeatureStorage {
     func writer(for trackingConsent: TrackingConsent) -> Writer {
         switch trackingConsent {
         case .granted:
-            return AsyncWriter(
-                execute: FileWriter(
-                    orchestrator: authorizedFilesOrchestrator,
-                    encryption: encryption,
-                    telemetry: telemetry
-                ),
-                on: queue
+            return FileWriter(
+                orchestrator: authorizedFilesOrchestrator,
+                encryption: encryption,
+                telemetry: telemetry,
+                queue: queue
             )
         case .notGranted:
             return NOPWriter()
         case .pending:
-            return AsyncWriter(
-                execute: FileWriter(
-                    orchestrator: unauthorizedFilesOrchestrator,
-                    encryption: encryption,
-                    telemetry: telemetry
-                ),
-                on: queue
+            return FileWriter(
+                orchestrator: unauthorizedFilesOrchestrator,
+                encryption: encryption,
+                telemetry: telemetry,
+                queue: queue
             )
         }
     }

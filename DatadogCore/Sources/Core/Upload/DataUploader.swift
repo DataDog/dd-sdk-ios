@@ -9,12 +9,12 @@ import DatadogInternal
 import CommonCrypto
 
 /// A type that performs data uploads.
-internal protocol DataUploaderType {
+internal protocol DataUploaderType: Sendable {
     func upload(events: [Event], context: DatadogContext, previous: DataUploadStatus?) throws -> DataUploadStatus
 }
 
 /// Synchronously uploads data to server using `HTTPClient`.
-internal final class DataUploader: DataUploaderType {
+internal final class DataUploader: DataUploaderType, Sendable {
     /// An unreachable upload status - only meant to satisfy the compiler.
     private static let unreachableUploadStatus = DataUploadStatus(
         needsRetry: false,

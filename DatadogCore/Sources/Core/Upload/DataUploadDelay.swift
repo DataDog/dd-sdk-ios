@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Mutable interval used for periodic data uploads.
-internal class DataUploadDelay {
+internal class DataUploadDelay: @unchecked Sendable {
     private let minDelay: TimeInterval
     private let maxDelay: TimeInterval
     private let changeRate: Double

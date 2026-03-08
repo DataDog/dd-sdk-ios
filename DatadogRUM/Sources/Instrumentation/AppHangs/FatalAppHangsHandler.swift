@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal final class FatalAppHangsHandler {
+internal final class FatalAppHangsHandler:  @unchecked Sendable {
     /// RUM feature scope.
     private let featureScope: FeatureScope
     /// RUM context for fatal App Hangs monitoring.

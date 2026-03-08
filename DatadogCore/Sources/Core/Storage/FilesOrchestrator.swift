@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal protocol FilesOrchestratorType: AnyObject {
+internal protocol FilesOrchestratorType: AnyObject, Sendable {
     var performance: StoragePerformancePreset { get }
 
     func getWritableFile(writeSize: UInt64) throws -> WritableFile
@@ -19,7 +19,7 @@ internal protocol FilesOrchestratorType: AnyObject {
 }
 
 /// Orchestrates files in a single directory.
-internal class FilesOrchestrator: FilesOrchestratorType {
+internal class FilesOrchestrator: FilesOrchestratorType, @unchecked Sendable {
     enum Constants {
         /// Precision in which the timestamp is stored as part of the file name.
         static let fileNamePrecision: TimeInterval = 0.001 // millisecond precision

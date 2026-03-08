@@ -14,28 +14,29 @@ class DatadogContextProviderTests: XCTestCase {
 
     // MARK: - Test Propagation
 
-    func testPublisherPropagation() throws {
+    func testSourcePropagation() throws {
         // Given
-        let serverOffsetPublisher = ContextValuePublisherMock<TimeInterval>(initialValue: 0)
-        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo?>()
-        let carrierInfoPublisher = ContextValuePublisherMock<CarrierInfo?>()
+        let serverOffsetSource = ContextValueSourceMock<TimeInterval>(initialValue: 0)
+        let networkConnectionInfoSource = ContextValueSourceMock<NetworkConnectionInfo?>()
+        let carrierInfoSource = ContextValueSourceMock<CarrierInfo?>()
 
         let provider = DatadogContextProvider(context: context)
-        provider.subscribe(\.serverTimeOffset, to: serverOffsetPublisher)
-        provider.subscribe(\.networkConnectionInfo, to: networkConnectionInfoPublisher)
-        provider.subscribe(\.carrierInfo, to: carrierInfoPublisher)
+        provider.observe(serverOffsetSource) { $0.serverTimeOffset = $1 }
+        provider.observe(networkConnectionInfoSource) { $0.networkConnectionInfo = $1 }
+        provider.observe(carrierInfoSource) { $0.carrierInfo = $1 }
 
         // When
         let serverTimeOffset: TimeInterval = .mockRandomInThePast()
-        serverOffsetPublisher.value = serverTimeOffset
+        serverOffsetSource.value = serverTimeOffset
 
         let networkConnectionInfo: NetworkConnectionInfo = .mockRandom()
-        networkConnectionInfoPublisher.value = networkConnectionInfo
+        networkConnectionInfoSource.value = networkConnectionInfo
 
         let carrierInfo: CarrierInfo = .mockRandom()
-        carrierInfoPublisher.value = carrierInfo
+        carrierInfoSource.value = carrierInfo
 
-        // Then
+        // Then - flush to ensure async writes complete
+        provider.flush()
         let context = provider.read()
         XCTAssertEqual(context.serverTimeOffset, serverTimeOffset)
         XCTAssertEqual(context.networkConnectionInfo, networkConnectionInfo)
@@ -47,10 +48,10 @@ class DatadogContextProviderTests: XCTestCase {
         expectation.expectedFulfillmentCount = 3
 
         // Given
-        let serverOffsetPublisher = ContextValuePublisherMock<TimeInterval>(initialValue: 0)
+        let serverOffsetSource = ContextValueSourceMock<TimeInterval>(initialValue: 0)
 
         let provider = DatadogContextProvider(context: context)
-        provider.subscribe(\.serverTimeOffset, to: serverOffsetPublisher)
+        provider.observe(serverOffsetSource) { $0.serverTimeOffset = $1 }
 
         provider.publish { _ in
             expectation.fulfill()
@@ -58,7 +59,7 @@ class DatadogContextProviderTests: XCTestCase {
 
         // When
         (0..<expectation.expectedFulfillmentCount).forEach { _ in
-            serverOffsetPublisher.value = .mockRandomInThePast()
+            serverOffsetSource.value = .mockRandomInThePast()
         }
 
         wait(for: [expectation], timeout: 0.5)
@@ -67,22 +68,22 @@ class DatadogContextProviderTests: XCTestCase {
     // MARK: - Thread Safety
 
     func testThreadSafety() {
-        let serverOffsetPublisher = ContextValuePublisherMock<TimeInterval>(initialValue: 0)
-        let networkConnectionInfoPublisher = ContextValuePublisherMock<NetworkConnectionInfo?>()
-        let carrierInfoPublisher = ContextValuePublisherMock<CarrierInfo?>()
+        let serverOffsetSource = ContextValueSourceMock<TimeInterval>(initialValue: 0)
+        let networkConnectionInfoSource = ContextValueSourceMock<NetworkConnectionInfo?>()
+        let carrierInfoSource = ContextValueSourceMock<CarrierInfo?>()
 
         let provider = DatadogContextProvider(context: context)
 
-        provider.subscribe(\.serverTimeOffset, to: serverOffsetPublisher)
-        provider.subscribe(\.networkConnectionInfo, to: networkConnectionInfoPublisher)
-        provider.subscribe(\.carrierInfo, to: carrierInfoPublisher)
+        provider.observe(serverOffsetSource) { $0.serverTimeOffset = $1 }
+        provider.observe(networkConnectionInfoSource) { $0.networkConnectionInfo = $1 }
+        provider.observe(carrierInfoSource) { $0.carrierInfo = $1 }
 
         // swiftlint:disable opening_brace
         callConcurrently(
             closures: [
-                { serverOffsetPublisher.value = .mockRandom() },
-                { networkConnectionInfoPublisher.value = .mockRandom() },
-                { carrierInfoPublisher.value = .mockRandom() },
+                { serverOffsetSource.value = .mockRandom() },
+                { networkConnectionInfoSource.value = .mockRandom() },
+                { carrierInfoSource.value = .mockRandom() },
                 { provider.read { _ in } },
                 { provider.write { $0 = .mockAny() } }
             ],

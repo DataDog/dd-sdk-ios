@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// A concrete implementation of the `DataStore` protocol using file storage.
-internal final class FeatureDataStore: DataStore {
+internal final class FeatureDataStore: DataStore, @unchecked Sendable {
     enum Constants {
         /// The version of this data store implementation.
         /// If a breaking change is introduced to the format of managed files, the version must be upgraded and old data should be deleted.
@@ -55,7 +55,7 @@ internal final class FeatureDataStore: DataStore {
         }
     }
 
-    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+    func value(forKey key: String, callback: @escaping @Sendable (DataStoreValueResult) -> Void) {
         queue.async { [weak self] in
             guard let self = self else {
                 return

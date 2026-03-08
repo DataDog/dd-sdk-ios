@@ -7,38 +7,28 @@
 import Foundation
 import DatadogInternal
 
-/// The locale publisher will publish an updated ``LocaleInfo`` value with current locale properties
-/// by observing the `NSCurrentLocaleDidChangeNotification` notification on the given
-/// notification center.
-internal final class LocaleInfoPublisher: ContextValuePublisher {
+/// Produces `LocaleInfo` updates via `AsyncStream` by observing
+/// `NSLocale.currentLocaleDidChangeNotification`.
+internal struct LocaleInfoSource: ContextValueSource, @unchecked Sendable {
     let initialValue: LocaleInfo
+    let values: AsyncStream<LocaleInfo>
 
-    private let notificationCenter: NotificationCenter
-    private var observer: Any?
-
-    /// Creates a locale info publisher that updates locale information.
-    ///
-    /// - Parameters:
-    ///   - initialLocale: The initial locale info.
-    ///   - notificationCenter: The notification center for observing the `NSCurrentLocaleDidChangeNotification`.
     init(initialLocale: LocaleInfo, notificationCenter: NotificationCenter) {
         self.initialValue = initialLocale
-        self.notificationCenter = notificationCenter
-    }
 
-    func publish(to receiver: @escaping ContextValueReceiver<LocaleInfo>) {
-        self.observer = notificationCenter
-            .addObserver(
-                forName: NSLocale.currentLocaleDidChangeNotification,
-                object: nil,
-                queue: .main
-            ) { _ in
-                let updatedLocale = LocaleInfo()
-                receiver(updatedLocale)
+        self.values = AsyncStream { continuation in
+            nonisolated(unsafe) let observer = notificationCenter
+                .addObserver(
+                    forName: NSLocale.currentLocaleDidChangeNotification,
+                    object: nil,
+                    queue: .main
+                ) { _ in
+                    continuation.yield(LocaleInfo())
+                }
+
+            continuation.onTermination = { _ in
+                notificationCenter.removeObserver(observer)
             }
-    }
-
-    func cancel() {
-        observer.map(notificationCenter.removeObserver)
+        }
     }
 }

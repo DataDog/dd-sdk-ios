@@ -22,21 +22,14 @@ import DatadogInternal
 /// The provider performs reads concurrently but uses barrier block for
 /// write operations.
 ///
-/// The context provider has the ability to a assign a value reader that complies to
-/// ``ContextValueReader`` to a specific context property. e.g.:
+/// The context provider can observe a ``ContextValueSource`` and apply its
+/// updates to a specific context property:
 ///
-///     let reader = ServerOffsetReader<TimeInterval>(initialValue: 0)
-///     provider.assign(reader: reader, to: \.serverTimeOffset)
+///     let source = ServerOffsetSource(provider: serverDateProvider)
+///     provider.observe(source) { $0.serverTimeOffset = $1 }
 ///
-///
-/// The context provider can subscribe a context property to a publisher that complies
-/// to ``ContextValuePublisher``. e.g.:
-///
-///     let publisher = ServerOffsetPublisher<TimeInterval>(initialValue: 0)
-///     provider.subscribe(\.serverTimeOffset, to: publisher)
-///
-/// All subscriptions will be cancelled when the provider is deallocated.
-internal final class DatadogContextProvider {
+/// All observations will be cancelled when the provider is deallocated.
+internal final class DatadogContextProvider: @unchecked Sendable {
     static let defaultQueue = DispatchQueue(
         label: "com.datadoghq.core-context",
         qos: .utility
@@ -50,10 +43,10 @@ internal final class DatadogContextProvider {
     internal let queue: DispatchQueue
 
     /// List of receivers to invoke when the context changes.
-    private var receivers: [ContextValueReceiver<DatadogContext>]
+    private var receivers: [@Sendable (DatadogContext) -> Void]
 
-    /// List of subscription of context values.
-    private var subscriptions: [ContextValueSubscription]
+    /// Tasks consuming `ContextValueSource` streams.
+    private var observations: [Task<Void, Never>]
 
     /// Creates a context provider to perform reads and writes on the
     /// shared Datadog context.
@@ -65,17 +58,17 @@ internal final class DatadogContextProvider {
         self.context = context
         self.queue = queue
         self.receivers = []
-        self.subscriptions = []
+        self.observations = []
     }
 
     deinit {
-        subscriptions.forEach { $0.cancel() }
+        observations.forEach { $0.cancel() }
     }
 
     /// Publishes context changes to the given receiver.
     ///
     /// - Parameter receiver: The receiver closure.
-    func publish(to receiver: @escaping ContextValueReceiver<DatadogContext>) {
+    func publish(to receiver: @escaping @Sendable (DatadogContext) -> Void) {
         queue.async { self.receivers.append(receiver) }
     }
 
@@ -108,25 +101,38 @@ internal final class DatadogContextProvider {
         }
     }
 
-    /// Subscribes a context's property to a publisher.
+    /// Observes a ``ContextValueSource`` and applies each emitted value to
+    /// the context using the provided `update` closure.
     ///
-    /// The context provider can subscribe a context property to a publisher that complies
-    /// to ``ContextValuePublisher``. e.g.:
+    /// The source's ``ContextValueSource/initialValue`` is applied immediately.
+    /// Subsequent values from the source's ``ContextValueSource/values`` stream
+    /// are applied as they arrive.
     ///
-    ///     let publisher = ServerOffsetPublisher<TimeInterval>(initialValue: 0)
-    ///     provider.subscribe(\.serverTimeOffset, to: publisher)
+    /// Example:
+    ///
+    ///     provider.observe(NWPathMonitorSource()) { $0.networkConnectionInfo = $1 }
     ///
     /// - Parameters:
-    ///   - keyPath: A context's key path that supports reading from and writing to the resulting value.
-    ///   - publisher: The context value publisher.
-    func subscribe<Publisher>(_ keyPath: WritableKeyPath<DatadogContext, Publisher.Value>, to publisher: Publisher) where Publisher: ContextValuePublisher {
-        let subscription = publisher.subscribe { [weak self] value in
-            self?.write { $0[keyPath: keyPath] = value }
+    ///   - source: The context value source to observe.
+    ///   - update: A closure that applies a new value to the context.
+    func observe<Source: ContextValueSource>(
+        _ source: Source,
+        update: @escaping @Sendable (inout DatadogContext, Source.Value) -> Void
+    ) {
+        write { context in
+            update(&context, source.initialValue)
         }
 
-        write {
-            $0[keyPath: keyPath] = publisher.initialValue
-            self.subscriptions.append(subscription)
+        let task = Task { [weak self] in
+            for await value in source.values {
+                self?.write { context in
+                    update(&context, value)
+                }
+            }
+        }
+
+        queue.async {
+            self.observations.append(task)
         }
     }
 

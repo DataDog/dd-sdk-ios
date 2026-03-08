@@ -22,12 +22,6 @@ internal struct FeatureUpload {
         isRunFromExtension: Bool,
         telemetry: Telemetry
     ) {
-        let uploadQueue = DispatchQueue(
-            label: "com.datadoghq.ios-sdk-\(featureName)-upload",
-            autoreleaseFrequency: .workItem,
-            target: .global(qos: .utility)
-        )
-
         let dataUploader = DataUploader(
             httpClient: httpClient,
             requestBuilder: requestBuilder,
@@ -52,20 +46,21 @@ internal struct FeatureUpload {
         let backgroundTaskCoordinator: BackgroundTaskCoordinator? = nil
         #endif
 
-        self.init(
-            uploader: DataUploadWorker(
-                queue: uploadQueue,
-                fileReader: fileReader,
-                dataUploader: dataUploader,
-                contextProvider: contextProvider,
-                uploadConditions: DataUploadConditions(),
-                delay: DataUploadDelay(performance: performance),
-                featureName: featureName,
-                telemetry: telemetry,
-                maxBatchesPerUpload: performance.maxBatchesPerUpload,
-                backgroundTaskCoordinator: backgroundTaskCoordinator
-            )
+        let worker = DataUploadWorker(
+            fileReader: fileReader,
+            dataUploader: dataUploader,
+            contextProvider: contextProvider,
+            uploadConditions: DataUploadConditions(),
+            delay: DataUploadDelay(performance: performance),
+            featureName: featureName,
+            telemetry: telemetry,
+            maxBatchesPerUpload: performance.maxBatchesPerUpload,
+            backgroundTaskCoordinator: backgroundTaskCoordinator
         )
+
+        self.init(uploader: worker)
+
+        Task { await worker.start() }
     }
 
     init(uploader: DataUploadWorkerType) {
@@ -79,7 +74,12 @@ internal struct FeatureUpload {
     /// This method is executed synchronously. After return, the upload feature has no more
     /// pending asynchronous operations and all its authorized data should be considered uploaded.
     internal func flushAndTearDown() {
-        uploader.cancelSynchronously()
-        uploader.flushSynchronously()
+        let semaphore = DispatchSemaphore(value: 0)
+        Task {
+            await uploader.cancel()
+            await uploader.flush()
+            semaphore.signal()
+        }
+        semaphore.wait()
     }
 }

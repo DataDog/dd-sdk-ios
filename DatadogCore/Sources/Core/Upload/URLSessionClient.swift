@@ -7,7 +7,7 @@
 import Foundation
 
 /// Client for sending requests over HTTP.
-internal class URLSessionClient: HTTPClient {
+internal final class URLSessionClient: HTTPClient, Sendable {
     internal let session: URLSession
 
     convenience init(proxyConfiguration: [AnyHashable: Any]? = nil) {

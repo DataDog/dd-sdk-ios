@@ -23,7 +23,7 @@ extension Batch {
 }
 
 /// A type, reading batched data.
-internal protocol Reader {
+internal protocol Reader: Sendable {
     /// Reads files from the storage.
     /// - Parameter limit: maximum number of files to read.
     func readFiles(limit: Int) -> [ReadableFile]

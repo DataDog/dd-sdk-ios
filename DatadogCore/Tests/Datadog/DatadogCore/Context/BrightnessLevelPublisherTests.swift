@@ -10,55 +10,31 @@ import XCTest
 @testable import TestUtilities
 @testable import DatadogCore
 
-final class BrightnessLevelPublisherTests: XCTestCase {
+final class BrightnessLevelSourceTests: XCTestCase {
     private let notificationCenter = MockNotificationCenter()
 
     func testInitialValue() throws {
         // Given
-        let publisher = BrightnessLevelPublisher(notificationCenter: notificationCenter)
+        let source = BrightnessLevelSource(notificationCenter: notificationCenter)
 
         // Then
-        XCTAssertNotNil(publisher.initialValue)
-        XCTAssertEqual(publisher.initialValue, Float(UIScreen.main.brightness))
+        XCTAssertNotNil(source.initialValue)
+        XCTAssertEqual(source.initialValue, Float(UIScreen.main.brightness))
     }
 
-    func testMultipleBrightnessChanges() throws {
-        let expectation1 = self.expectation(description: "first brightness change")
-        let expectation2 = self.expectation(description: "second brightness change")
-
+    func testBrightnessChange() async throws {
         // Given
         let mockScreen = UIScreenMock(brightness: 0.2)
-        let publisher = BrightnessLevelPublisher(notificationCenter: notificationCenter, screen: mockScreen)
-        var receivedValues: [Float] = []
-
-        publisher.publish { level in
-            if let level = level {
-                receivedValues.append(level)
-
-                switch receivedValues.count {
-                case 1:
-                    expectation1.fulfill()
-                case 2:
-                    expectation2.fulfill()
-                default:
-                    break
-                }
-            }
-        }
+        let source = BrightnessLevelSource(notificationCenter: notificationCenter, screen: mockScreen)
+        var iterator = source.values.makeAsyncIterator()
 
         // When
         mockScreen.brightness = 0.5
         notificationCenter.postFakeNotification(name: UIScreen.brightnessDidChangeNotification)
-        mockScreen.brightness = 0.8
-        notificationCenter.postFakeNotification(name: UIScreen.brightnessDidChangeNotification)
-
-        wait(for: [expectation1, expectation2], timeout: 0.1)
 
         // Then
-        XCTAssertEqual(receivedValues.count, 3)
-        XCTAssertEqual(receivedValues[0], 0.2)
-        XCTAssertEqual(receivedValues[1], 0.5)
-        XCTAssertEqual(receivedValues[2], 0.8)
+        let value = await iterator.next()
+        XCTAssertEqual(value, 0.5)
     }
 }
 

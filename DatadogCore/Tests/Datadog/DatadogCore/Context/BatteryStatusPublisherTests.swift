@@ -10,45 +10,37 @@ import XCTest
 import TestUtilities
 @testable import DatadogCore
 
-final class BatteryStatusPublisherTests: XCTestCase {
+final class BatteryStatusSourceTests: XCTestCase {
     private let notificationCenter = NotificationCenter()
 
-    func testPublishBatteryState() throws {
-        let expectation = self.expectation(description: "publish battery state")
-
+    func testPublishBatteryState() async throws {
         // Given
         let device = UIDeviceMock(batteryState: .unknown)
-
-        let publisher = BatteryStatusPublisher(notificationCenter: notificationCenter, device: device)
-        publisher.publish { status in
-            // Then
-            XCTAssertEqual(status?.state, .charging)
-            expectation.fulfill()
-        }
+        let source = BatteryStatusSource(notificationCenter: notificationCenter, device: device)
+        var iterator = source.values.makeAsyncIterator()
 
         // When
         device.batteryState = .charging
         notificationCenter.post(name: UIDevice.batteryStateDidChangeNotification, object: device)
-        wait(for: [expectation], timeout: 0.1)
+
+        // Then
+        let value = await iterator.next()
+        XCTAssertEqual(value??.state, .charging)
     }
 
-    func testPublishBatteryLevel() throws {
-        let expectation = self.expectation(description: "publish battery level")
-
+    func testPublishBatteryLevel() async throws {
         // Given
         let device = UIDeviceMock(batteryLevel: 0.5)
-
-        let publisher = BatteryStatusPublisher(notificationCenter: notificationCenter, device: device)
-        publisher.publish { status in
-            // Then
-            XCTAssertEqual(status?.level, 0.75)
-            expectation.fulfill()
-        }
+        let source = BatteryStatusSource(notificationCenter: notificationCenter, device: device)
+        var iterator = source.values.makeAsyncIterator()
 
         // When
         device.batteryLevel = 0.75
         notificationCenter.post(name: UIDevice.batteryStateDidChangeNotification, object: device)
-        wait(for: [expectation], timeout: 0.1)
+
+        // Then
+        let value = await iterator.next()
+        XCTAssertEqual(value??.level, 0.75)
     }
 }
 

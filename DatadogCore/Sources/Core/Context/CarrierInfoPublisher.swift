@@ -7,35 +7,30 @@
 import Foundation
 import DatadogInternal
 
-#if os(iOS) && !targetEnvironment(macCatalyst) && !(swift(>=5.9) && os(visionOS))
+#if os(iOS) && !targetEnvironment(macCatalyst) && !os(visionOS)
 
 import CoreTelephony
 
-/// It reads `CarrierInfo?` from `CTTelephonyNetworkInfo` only when `CTCarrier` has changed (e.g. when the SIM card was swapped).
-internal struct CarrierInfoPublisher: ContextValuePublisher {
+/// Produces `CarrierInfo` updates via `AsyncStream` backed by `CTTelephonyNetworkInfo`.
+/// A new value is emitted whenever the user's cellular provider changes (e.g. SIM swap).
+internal struct CarrierInfoSource: ContextValueSource {
     let initialValue: CarrierInfo?
-
-    private let networkInfo: CTTelephonyNetworkInfo
+    let values: AsyncStream<CarrierInfo?>
 
     init(networkInfo: CTTelephonyNetworkInfo = .init()) {
-        self.networkInfo = networkInfo
         self.initialValue = CarrierInfo(networkInfo, service: networkInfo.serviceCurrentRadioAccessTechnology?.keys.first)
-    }
 
-    func publish(to receiver: @escaping ContextValueReceiver<CarrierInfo?>) {
-        // The `serviceSubscriberCellularProvidersDidUpdateNotifier` block object executes on the default priority
-        // global dispatch queue when the user’s cellular provider information changes.
-        // This occurs, for example, if a user swaps the device’s SIM card with one from another provider, while the app is running.
-        // ref.: https://developer.apple.com/documentation/coretelephony/cttelephonynetworkinfo/3024512-servicesubscribercellularprovide
-        networkInfo.serviceSubscriberCellularProvidersDidUpdateNotifier = { key in
-            // On iOS12+ `CarrierInfo` subscribers are notified on actual change to cellular provider.
-            let info = CarrierInfo(self.networkInfo, service: key)
-            receiver(info)
+        self.values = AsyncStream { continuation in
+            networkInfo.serviceSubscriberCellularProvidersDidUpdateNotifier = { key in
+                let info = CarrierInfo(networkInfo, service: key)
+                continuation.yield(info)
+            }
+
+            nonisolated(unsafe) let networkInfo = networkInfo
+            continuation.onTermination = { _ in
+                networkInfo.serviceSubscriberCellularProvidersDidUpdateNotifier = nil
+            }
         }
-    }
-
-    func cancel() {
-        networkInfo.serviceSubscriberCellularProvidersDidUpdateNotifier = nil
     }
 }
 

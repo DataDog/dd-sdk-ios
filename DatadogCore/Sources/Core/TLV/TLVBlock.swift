@@ -13,7 +13,7 @@ internal typealias TLVBlockSize = UInt32
 /// Reported errors while manipulating data blocks.
 internal enum TLVBlockError: Error {
     case readOperationFailed(streamStatus: Stream.Status, streamError: Error?)
-    case invalidDataType(got: Any)
+    case invalidDataType(got: UInt16)
     case invalidByteSequence(expected: Int, got: Int)
     case bytesLengthExceedsLimit(length: TLVBlockSize?, limit: TLVBlockSize)
     case dataAllocationFailure

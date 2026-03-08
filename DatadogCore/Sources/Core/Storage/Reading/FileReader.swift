@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Reads data from files.
-internal final class FileReader: Reader {
+internal final class FileReader: Reader, @unchecked Sendable {
     /// Orchestrator producing reference to readable file.
     private let orchestrator: FilesOrchestratorType
     private let encryption: DataEncryption?

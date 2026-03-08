@@ -7,7 +7,7 @@
 import Foundation
 
 /// Describes the format of writing and reading data from files.
-public struct DataFormat {
+public struct DataFormat: Sendable {
     /// Prefixes the batch payload read from file.
     private let prefixData: Data
     /// Suffixes the batch payload read from file.

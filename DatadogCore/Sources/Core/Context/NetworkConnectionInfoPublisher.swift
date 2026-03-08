@@ -8,46 +8,59 @@ import Foundation
 import DatadogInternal
 import Network
 
-/// Thread-safe wrapper for `NWPathMonitor`.
+/// Produces `NetworkConnectionInfo` updates via `AsyncStream` backed by `NWPathMonitor`.
 ///
-/// The `NWPathMonitor` provides two models of getting the `NWPath` info:
-/// * pulling the value with `monitor.currentPath`,
-/// * pushing the value with `monitor.pathUpdateHandler = { path in ... }`.
-///
-/// We found the pulling model to not be thread-safe: accessing `currentPath` properties lead to occasional crashes.
-/// The `ThreadSafeNWPathMonitor` listens to path updates and synchronizes the values on `.current` property.
-/// This adds the necessary thread-safety and keeps the convenience of pulling.
-internal struct NWPathMonitorPublisher: ContextValuePublisher {
-    private static let defaultQueue = DispatchQueue(
-        label: "com.datadoghq.nw-path-monitor-publisher",
-        target: .global(qos: .utility)
-    )
-
+/// On iOS 17+ / tvOS 17+ the native `AsyncSequence` conformance of `NWPathMonitor` is
+/// used directly. On earlier OS versions the stream is built from `pathUpdateHandler`.
+internal struct NWPathMonitorSource: ContextValueSource {
     let initialValue: NetworkConnectionInfo?
+    let values: AsyncStream<NetworkConnectionInfo?>
 
-    private let monitor: NWPathMonitor
-    private let queue: DispatchQueue
-
-    init(
-        monitor: NWPathMonitor = .init(),
-        queue: DispatchQueue = NWPathMonitorPublisher.defaultQueue
-    ) {
-        self.monitor = monitor
-        self.queue = queue
+    init(monitor: NWPathMonitor = .init()) {
         self.initialValue = NetworkConnectionInfo(monitor.currentPath)
-    }
 
-    func publish(to receiver: @escaping ContextValueReceiver<NetworkConnectionInfo?>) {
-        monitor.pathUpdateHandler = {
-            let info = NetworkConnectionInfo($0)
-            receiver(info)
+        if #available(iOS 17, tvOS 17, macOS 14, watchOS 10, *) {
+            self.values = Self.nativeAsyncStream(monitor: monitor)
+        } else {
+            self.values = Self.callbackAsyncStream(monitor: monitor)
         }
-
-        monitor.start(queue: queue)
     }
 
-    func cancel() {
-        monitor.cancel()
+    @available(iOS 17, tvOS 17, macOS 14, watchOS 10, *)
+    private static func nativeAsyncStream(monitor: NWPathMonitor) -> AsyncStream<NetworkConnectionInfo?> {
+        AsyncStream { continuation in
+            let task = Task {
+                for await path in monitor {
+                    continuation.yield(NetworkConnectionInfo(path))
+                }
+                continuation.finish()
+            }
+
+            continuation.onTermination = { _ in
+                task.cancel()
+                monitor.cancel()
+            }
+
+            monitor.start(queue: .global(qos: .utility))
+        }
+    }
+
+    private static func callbackAsyncStream(monitor: NWPathMonitor) -> AsyncStream<NetworkConnectionInfo?> {
+        AsyncStream { continuation in
+            monitor.pathUpdateHandler = { path in
+                continuation.yield(NetworkConnectionInfo(path))
+            }
+
+            let queue = DispatchQueue(
+                label: "com.datadoghq.nw-path-monitor-source",
+                target: .global(qos: .utility)
+            )
+            monitor.start(queue: queue)
+
+            continuation.onTermination = { _ in
+                monitor.cancel()
+            }
+        }
     }
 }
 
@@ -59,12 +72,7 @@ extension NetworkConnectionInfo {
             supportsIPv4: path.supportsIPv4,
             supportsIPv6: path.supportsIPv6,
             isExpensive: path.isExpensive,
-            isConstrained: {
-                guard #available(iOS 13, tvOS 13, *) else {
-                    return nil
-                }
-                return path.isConstrained
-            }()
+            isConstrained: path.isConstrained
         )
     }
 }

@@ -9,16 +9,14 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogCore
 
-class ServerOffsetPublisherTests: XCTestCase {
+class ServerOffsetSourceTests: XCTestCase {
     func testPickRandomDatadogNTPServers() throws {
-        let kronos = KronosClockMock()
-        let provider = DatadogNTPDateProvider(kronos: kronos)
-        let publisher = ServerOffsetPublisher(provider: provider)
-
         var pools: Set<String> = []
 
         try (0..<100).forEach { _ in
-            publisher.publish { _ in }
+            let kronos = KronosClockMock()
+            let provider = DatadogNTPDateProvider(kronos: kronos)
+            _ = ServerOffsetSource(provider: provider)
             let pool = try XCTUnwrap(kronos.currentPool)
             XCTAssertTrue(pool.hasSuffix(".datadog.pool.ntp.org"))
             pools.insert(pool)
@@ -27,48 +25,41 @@ class ServerOffsetPublisherTests: XCTestCase {
         XCTAssertEqual(pools, Set(DatadogNTPServers), "Each time Datadog NTP server should be picked randomly.")
     }
 
-    func testWhenSyncSucceedsOnce_itPublishesOffset() throws {
-        let expectation = expectation(description: "kronos publisher publishes offset")
-
+    func testWhenSyncSucceedsOnce_itPublishesOffset() async throws {
         // Given
         let kronos = KronosClockMock()
         let provider = DatadogNTPDateProvider(kronos: kronos)
-        let publisher = ServerOffsetPublisher(provider: provider)
+        let source = ServerOffsetSource(provider: provider)
+
+        var iterator = source.values.makeAsyncIterator()
 
         // When
-        publisher.publish {
-            // Then
-            XCTAssertEqual($0, -1)
-            expectation.fulfill()
-        }
-
         kronos.update(offset: -1)
 
-        // KronosClockMock publishes in sync
-        waitForExpectations(timeout: 0)
+        // Then
+        let value = await iterator.next()
+        XCTAssertEqual(value, -1)
     }
 
-    func testWhenSyncCompletesSuccessfully_itPublishesOffset() throws {
+    func testWhenSyncCompletesSuccessfully_itPublishesOffset() async throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        let expectation = expectation(description: "kronos publisher publishes offset")
-        expectation.expectedFulfillmentCount = 2
-
         // Given
         let kronos = KronosClockMock()
         let provider = DatadogNTPDateProvider(kronos: kronos)
-        let publisher = ServerOffsetPublisher(provider: provider)
+        let source = ServerOffsetSource(provider: provider)
+
+        var iterator = source.values.makeAsyncIterator()
 
         // When
-        publisher.publish {
-            // Then
-            XCTAssertEqual($0, -1)
-            expectation.fulfill()
-        }
-
         kronos.update(offset: -1)
+        let firstValue = await iterator.next()
+        XCTAssertEqual(firstValue, -1)
+
         kronos.complete()
+        let secondValue = await iterator.next()
+        XCTAssertEqual(secondValue, -1)
 
         // Then
         XCTAssertEqual(
@@ -78,32 +69,26 @@ class ServerOffsetPublisherTests: XCTestCase {
             Server time will be used for signing events (-1.0s difference with device time).
             """
         )
-
-        // KronosClockMock publishes in sync
-        waitForExpectations(timeout: 0)
     }
 
-    func testWhenSyncFails_itPublishesZero() throws {
+    func testWhenSyncFails_itPublishesZero() async throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
-
-        let expectation = expectation(description: "kronos publisher publishes 0")
 
         // Given
         let kronos = KronosClockMock()
         let provider = DatadogNTPDateProvider(kronos: kronos)
-        let publisher = ServerOffsetPublisher(provider: provider)
+        let source = ServerOffsetSource(provider: provider)
+
+        var iterator = source.values.makeAsyncIterator()
 
         // When
-        publisher.publish {
-            // Then
-            XCTAssertEqual($0, .zero)
-            expectation.fulfill()
-        }
-
         kronos.complete()
 
         // Then
+        let value = await iterator.next()
+        XCTAssertEqual(value, .zero)
+
         XCTAssertEqual(
             dd.logger.errorLog?.message,
             """
@@ -111,8 +96,5 @@ class ServerOffsetPublisherTests: XCTestCase {
             Device time will be used for signing events.
             """
         )
-
-        // KronosClockMock publishes in sync
-        waitForExpectations(timeout: 0)
     }
 }

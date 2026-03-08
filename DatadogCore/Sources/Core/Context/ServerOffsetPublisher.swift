@@ -73,34 +73,20 @@ internal class DatadogNTPDateProvider: ServerDateProvider {
     }
 }
 
-/// The Server Offset Publisher provides updates on time offset between the
-/// local time and one of the Datadog's NTP pool.
+/// Produces server time offset updates via `AsyncStream`.
 ///
-/// This publisher uses a modified version of the ``MobileNativeFoundation/Kronos``
-/// see. https://github.com/MobileNativeFoundation/Kronos
-///
-/// The ``KronosClockPublisher/publish`` will start syncing with one of the pool
-/// picked randomly from ``DatadogNTPServers``.
-///
-/// The time offset is defined in seconds.
-internal final class ServerOffsetPublisher: ContextValuePublisher {
-    /// The initial offset is 0.
+/// This source uses a ``ServerDateProvider`` (backed by Kronos NTP) to synchronize
+/// with Datadog's NTP pool.  The provider may yield multiple offsets during synchronization;
+/// each is forwarded through the stream.
+internal struct ServerOffsetSource: ContextValueSource {
     let initialValue: TimeInterval = .zero
+    let values: AsyncStream<TimeInterval>
 
-    private var provider: ServerDateProvider?
-
-    /// Creates a publisher using the given `KronosClock` implementation.
-    ///
-    /// - Parameter kronos: An object complying with `KronosClockProtocol`.
     init(provider: ServerDateProvider = DatadogNTPDateProvider()) {
-        self.provider = provider
-    }
-
-    func publish(to receiver: @escaping ContextValueReceiver<TimeInterval>) {
-        provider?.synchronize(update: receiver)
-    }
-
-    func cancel() {
-        provider = nil
+        self.values = AsyncStream { continuation in
+            provider.synchronize { offset in
+                continuation.yield(offset)
+            }
+        }
     }
 }

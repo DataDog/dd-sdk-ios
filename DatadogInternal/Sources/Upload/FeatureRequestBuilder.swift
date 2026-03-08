@@ -11,7 +11,7 @@ import Foundation
 ///
 /// A Feature should use this interface for creating requests that needs be sent to its Datadog Intake.
 /// The request will be transported by `DatadogCore`.
-public protocol FeatureRequestBuilder {
+public protocol FeatureRequestBuilder: Sendable {
     /// Builds an `URLRequest` for a list of events and the current core context to be uploaded
     /// to the Feature's Intake.
     ///

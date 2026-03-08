@@ -9,20 +9,20 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogCore
 
-class LaunchInfoPublisherTests: XCTestCase {
+class LaunchInfoSourceTests: XCTestCase {
     func testInitialValue() {
         // Given
         let handler = AppLaunchHandlerMock(didBecomeActiveDate: nil)
         let initialValue: LaunchInfo = .mockRandom()
 
         // When
-        let publisher = LaunchInfoPublisher(handler: handler, initialValue: initialValue)
+        let source = LaunchInfoSource(handler: handler, initialValue: initialValue)
 
         // Then
-        XCTAssertEqual(publisher.initialValue, initialValue)
+        XCTAssertEqual(source.initialValue, initialValue)
     }
 
-    func testUpdatingValue() {
+    func testUpdatingValue() async throws {
         let taskPolicyRole = Int(TASK_FOREGROUND_APPLICATION.rawValue)
         let processLaunchDate: Date = .mockRandom()
         let didBecomeActiveDate: Date = processLaunchDate.addingTimeInterval(TimeInterval.mockRandom(min: 1, max: 10))
@@ -31,24 +31,20 @@ class LaunchInfoPublisherTests: XCTestCase {
         let handler = AppLaunchHandlerMock(
             taskPolicyRole: taskPolicyRole,
             processLaunchDate: processLaunchDate,
-            didBecomeActiveDate: nil // it will be lazy updated
+            didBecomeActiveDate: nil
         )
         let initialValue = handler.resolveLaunchInfo(using: ProcessInfoMock())
-        let contextUpdated = expectation(description: "Update context receiver")
-        let publisher = LaunchInfoPublisher(handler: handler, initialValue: initialValue)
-
-        publisher.publish { launchInfo in
-            XCTAssertEqual(launchInfo.launchReason, .userLaunch)
-            XCTAssertEqual(launchInfo.processLaunchDate, processLaunchDate)
-            XCTAssertEqual(launchInfo.launchPhaseDates[.didBecomeActive], didBecomeActiveDate)
-            contextUpdated.fulfill()
-        }
+        let source = LaunchInfoSource(handler: handler, initialValue: initialValue)
+        var iterator = source.values.makeAsyncIterator()
 
         // When
         handler.simulateDidBecomeActive(date: didBecomeActiveDate)
 
         // Then
-        waitForExpectations(timeout: 1)
+        let launchInfo = await iterator.next()
+        XCTAssertEqual(launchInfo?.launchReason, .userLaunch)
+        XCTAssertEqual(launchInfo?.processLaunchDate, processLaunchDate)
+        XCTAssertEqual(launchInfo?.launchPhaseDates[.didBecomeActive], didBecomeActiveDate)
     }
 }
 

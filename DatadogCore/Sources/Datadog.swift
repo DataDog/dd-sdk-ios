@@ -257,7 +257,7 @@ public enum Datadog {
         consolePrint("⚠️ macOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
         #endif
 
-        #if swift(>=5.9) && os(visionOS)
+        #if os(visionOS)
         consolePrint("⚠️ visionOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
         #endif
 

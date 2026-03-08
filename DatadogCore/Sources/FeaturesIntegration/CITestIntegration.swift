@@ -12,7 +12,7 @@ private enum DDCFMessageID {
     static let forceFlush: Int32 = 0x3333
 }
 
-internal class CITestIntegration {
+internal final class CITestIntegration: Sendable {
     /// Current and active integration with CIApp.
     /// `nil` if the integration is not enabled.
     static let active: CITestIntegration? = CITestIntegration()

@@ -348,7 +348,8 @@ class DatadogCoreTests: XCTestCase {
             backgroundTasksEnabled: .mockAny()
         )
         core.set(anonymousId: "anonymous-id")
-        let userBefore = core.userInfoPublisher.current
+        core.contextProvider.flush()
+        let userBefore = core.contextProvider.read().userInfo!
         XCTAssertEqual(userBefore.anonymousId, "anonymous-id")
         XCTAssertNil(userBefore.id)
         XCTAssertNil(userBefore.name)
@@ -356,7 +357,7 @@ class DatadogCoreTests: XCTestCase {
 
         core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
 
-        let userAfter = core.userInfoPublisher.current
+        let userAfter = core.contextProvider.read().userInfo!
         XCTAssertEqual(userAfter.anonymousId, "anonymous-id")
         XCTAssertEqual(userAfter.id, "user-id")
         XCTAssertEqual(userAfter.name, "user-name")
@@ -378,7 +379,7 @@ class DatadogCoreTests: XCTestCase {
         )
         core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
 
-        let userBefore = core.userInfoPublisher.current
+        let userBefore = core.contextProvider.read().userInfo!
         XCTAssertNil(userBefore.anonymousId)
         XCTAssertEqual(userBefore.id, "user-id")
         XCTAssertEqual(userBefore.name, "user-name")
@@ -386,7 +387,7 @@ class DatadogCoreTests: XCTestCase {
 
         core.set(anonymousId: "anonymous-id")
 
-        let userAfter = core.userInfoPublisher.current
+        let userAfter = core.contextProvider.read().userInfo!
         XCTAssertEqual(userAfter.anonymousId, "anonymous-id")
         XCTAssertEqual(userAfter.id, "user-id")
         XCTAssertEqual(userAfter.name, "user-name")
@@ -406,17 +407,17 @@ class DatadogCoreTests: XCTestCase {
             maxBatchesPerUpload: .mockAny(),
             backgroundTasksEnabled: .mockAny()
         )
-        let accountBefore = core.accountInfoPublisher.current
+        let accountBefore = core.contextProvider.read().accountInfo
         XCTAssertNil(accountBefore)
 
         core.setAccountInfo(id: "account-id", name: "account-name")
-        let accountAfterInitialSet = core.accountInfoPublisher.current
+        let accountAfterInitialSet = core.contextProvider.read().accountInfo
         XCTAssertNotNil(accountAfterInitialSet)
         XCTAssertEqual(accountAfterInitialSet?.id, "account-id")
         XCTAssertEqual(accountAfterInitialSet?.name, "account-name")
 
         core.setAccountInfo(id: "account-id-2", name: "account-name-2")
-        let accountAfterUpdate = core.accountInfoPublisher.current
+        let accountAfterUpdate = core.contextProvider.read().accountInfo
         XCTAssertNotNil(accountAfterUpdate)
         XCTAssertEqual(accountAfterUpdate?.id, "account-id-2")
         XCTAssertEqual(accountAfterUpdate?.name, "account-name-2")
@@ -435,17 +436,17 @@ class DatadogCoreTests: XCTestCase {
             maxBatchesPerUpload: .mockAny(),
             backgroundTasksEnabled: .mockAny()
         )
-        let accountBefore = core.accountInfoPublisher.current
+        let accountBefore = core.contextProvider.read().accountInfo
         XCTAssertNil(accountBefore)
 
         core.setAccountInfo(id: "account-id", name: "account-name")
-        let accountAfterInitialSet = core.accountInfoPublisher.current
+        let accountAfterInitialSet = core.contextProvider.read().accountInfo
         XCTAssertNotNil(accountAfterInitialSet)
         XCTAssertEqual(accountAfterInitialSet?.id, "account-id")
         XCTAssertEqual(accountAfterInitialSet?.name, "account-name")
 
         core.addAccountExtraInfo(["test": "test"])
-        let accountAfterAddExtraInfo = core.accountInfoPublisher.current
+        let accountAfterAddExtraInfo = core.contextProvider.read().accountInfo
         XCTAssertNotNil(accountAfterAddExtraInfo)
         XCTAssertEqual(accountAfterAddExtraInfo?.id, "account-id")
         XCTAssertEqual(accountAfterAddExtraInfo?.name, "account-name")
@@ -464,17 +465,17 @@ class DatadogCoreTests: XCTestCase {
             maxBatchesPerUpload: .mockAny(),
             backgroundTasksEnabled: .mockAny()
         )
-        let accountBefore = core.accountInfoPublisher.current
+        let accountBefore = core.contextProvider.read().accountInfo
         XCTAssertNil(accountBefore)
 
         core.setAccountInfo(id: "account-id", name: "account-name")
-        let accountAfterInitialSet = core.accountInfoPublisher.current
+        let accountAfterInitialSet = core.contextProvider.read().accountInfo
         XCTAssertNotNil(accountAfterInitialSet)
         XCTAssertEqual(accountAfterInitialSet?.id, "account-id")
         XCTAssertEqual(accountAfterInitialSet?.name, "account-name")
 
         core.clearAccountInfo()
-        let accountAfterUpdate = core.accountInfoPublisher.current
+        let accountAfterUpdate = core.contextProvider.read().accountInfo
         XCTAssertNil(accountAfterUpdate)
     }
 
@@ -491,19 +492,19 @@ class DatadogCoreTests: XCTestCase {
             maxBatchesPerUpload: .mockAny(),
             backgroundTasksEnabled: .mockAny()
         )
-        let userBefore = core.userInfoPublisher.current
+        let userBefore = core.contextProvider.read().userInfo!
         XCTAssertNil(userBefore.id)
         XCTAssertNil(userBefore.name)
         XCTAssertNil(userBefore.email)
 
         core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
-        let userAfterInitialSet = core.userInfoPublisher.current
+        let userAfterInitialSet = core.contextProvider.read().userInfo!
         XCTAssertEqual(userAfterInitialSet.id, "user-id")
         XCTAssertEqual(userAfterInitialSet.name, "user-name")
         XCTAssertEqual(userAfterInitialSet.email, "user-email")
 
         core.clearUserInfo()
-        let userAfterUpdate = core.userInfoPublisher.current
+        let userAfterUpdate = core.contextProvider.read().userInfo!
         XCTAssertNil(userAfterUpdate.id)
         XCTAssertNil(userAfterUpdate.name)
         XCTAssertNil(userAfterUpdate.email)
@@ -526,7 +527,7 @@ class DatadogCoreTests: XCTestCase {
         core.setUserInfo(id: "user-id", name: "user-name", email: "user-email")
         core.set(anonymousId: nil)
 
-        let userAfter = core.userInfoPublisher.current
+        let userAfter = core.contextProvider.read().userInfo!
         XCTAssertNil(userAfter.anonymousId)
         XCTAssertEqual(userAfter.id, "user-id")
         XCTAssertEqual(userAfter.name, "user-name")

@@ -18,15 +18,19 @@ internal struct FileWriter: Writer {
     let encryption: DataEncryption?
     /// Telemetry interface.
     let telemetry: Telemetry
+    /// Queue for performing async I/O. When set, `write` dispatches work asynchronously.
+    let queue: DispatchQueue?
 
     init(
         orchestrator: FilesOrchestratorType,
         encryption: DataEncryption?,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        queue: DispatchQueue? = nil
     ) {
         self.orchestrator = orchestrator
         self.encryption = encryption
         self.telemetry = telemetry
+        self.queue = queue
     }
 
     // MARK: - Writing data
@@ -37,6 +41,14 @@ internal struct FileWriter: Writer {
     ///  - value: Encodable value to write.
     ///  - metadata: Encodable metadata to write.
     func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
+        if let queue = queue {
+            queue.async { self.performWrite(value: value, metadata: metadata, completion: completion) }
+        } else {
+            performWrite(value: value, metadata: metadata, completion: completion)
+        }
+    }
+
+    private func performWrite<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
         defer { completion() }
 
         var encoded: Data = .init()
@@ -119,5 +131,11 @@ internal struct FileWriter: Writer {
         }
 
         return try encryption.encrypt(data: data)
+    }
+}
+
+internal struct NOPWriter: Writer {
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
+        completion()
     }
 }

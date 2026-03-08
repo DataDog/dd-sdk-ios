@@ -7,13 +7,16 @@
 import Foundation
 
 /// The `BackgroundTaskCoordinator` protocol provides an abstraction for managing background tasks and includes methods for registering and ending background tasks.
-internal protocol BackgroundTaskCoordinator {
+///
+/// Methods are `@MainActor`-isolated because `UIApplication.beginBackgroundTask` requires
+/// main-thread execution enforced at runtime in Swift 6.
+internal protocol BackgroundTaskCoordinator: Sendable {
     /// Begins a background task, requesting additional background execution time for the app.
     /// Calling it multiple times will end the previous background task and start a new one.
     /// It internally implements system handler for background task expiration which will end current background task.
-    func beginBackgroundTask()
+    @MainActor func beginBackgroundTask()
     /// Marks the end of a background task.
-    func endBackgroundTask()
+    @MainActor func endBackgroundTask()
 }
 
 #if canImport(UIKit)
@@ -27,7 +30,7 @@ internal protocol UIKitAppBackgroundTaskCoordinator {
     func endBgTask(_ identifier: UIBackgroundTaskIdentifier)
 }
 
-extension UIApplication: UIKitAppBackgroundTaskCoordinator {
+extension UIApplication: @preconcurrency UIKitAppBackgroundTaskCoordinator {
     func beginBgTask(_ handler: (() -> Void)?) -> UIBackgroundTaskIdentifier {
         return beginBackgroundTask {
             handler?()
@@ -38,7 +41,7 @@ extension UIApplication: UIKitAppBackgroundTaskCoordinator {
     }
 }
 
-internal class AppBackgroundTaskCoordinator: BackgroundTaskCoordinator {
+internal class AppBackgroundTaskCoordinator: BackgroundTaskCoordinator, @unchecked Sendable {
     private let app: UIKitAppBackgroundTaskCoordinator?
 
     @ReadWriteLock
@@ -50,16 +53,15 @@ internal class AppBackgroundTaskCoordinator: BackgroundTaskCoordinator {
         self.app = app
     }
 
+    @MainActor
     internal func beginBackgroundTask() {
         endBackgroundTask()
         currentTaskId = app?.beginBgTask { [weak self] in
-            guard let self = self else {
-                return
-            }
-            self.endBackgroundTask()
+            self?.endBackgroundTask()
         }
     }
 
+    @MainActor
     internal func endBackgroundTask() {
         guard let currentTaskId = currentTaskId else {
             return
@@ -80,7 +82,7 @@ internal protocol ProcessInfoActivityCoordinator {
 
 extension ProcessInfo: ProcessInfoActivityCoordinator {}
 
-internal class ExtensionBackgroundTaskCoordinator: BackgroundTaskCoordinator {
+internal class ExtensionBackgroundTaskCoordinator: BackgroundTaskCoordinator, @unchecked Sendable {
     private let processInfo: ProcessInfoActivityCoordinator
 
     @ReadWriteLock
@@ -92,11 +94,13 @@ internal class ExtensionBackgroundTaskCoordinator: BackgroundTaskCoordinator {
         self.processInfo = processInfo
     }
 
+    @MainActor
     internal func beginBackgroundTask() {
         endBackgroundTask()
         currentActivity = processInfo.beginActivity(options: [.background], reason: "Datadog SDK background upload")
     }
 
+    @MainActor
     internal func endBackgroundTask() {
         guard let currentActivity = currentActivity else {
             return

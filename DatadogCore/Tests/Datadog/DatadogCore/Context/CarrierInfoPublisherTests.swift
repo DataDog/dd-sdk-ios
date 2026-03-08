@@ -13,13 +13,13 @@ import TestUtilities
 
 @testable import DatadogCore
 
-class CarrierInfoPublisherTests: XCTestCase {
-    /// Mock `CTTelephonyNetworkInfo` when user’s cellular service provider is available.
+class CarrierInfoSourceTests: XCTestCase {
+    /// Mock `CTTelephonyNetworkInfo` when user's cellular service provider is available.
     private let availableCTTelephonyNetworkInfo = CTTelephonyNetworkInfoMock(
         serviceCurrentRadioAccessTechnology: ["000001": CTRadioAccessTechnologyLTE],
         serviceSubscriberCellularProviders: ["000001": CTCarrierMock(carrierName: "Carrier", isoCountryCode: "US", allowsVOIP: true)]
     )
-    /// Mock `CTTelephonyNetworkInfo` when user’s cellular service provider is unavailable.
+    /// Mock `CTTelephonyNetworkInfo` when user's cellular service provider is unavailable.
     private let unavailableCTTelephonyNetworkInfo = CTTelephonyNetworkInfoMock(
         serviceCurrentRadioAccessTechnology: [:],
         serviceSubscriberCellularProviders: [:]
@@ -27,32 +27,26 @@ class CarrierInfoPublisherTests: XCTestCase {
 
     func testGivenCellularServiceAvailable_itProvidesInitialValue() {
         // Given
-        let publisher = CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
+        let source = CarrierInfoSource(networkInfo: availableCTTelephonyNetworkInfo)
 
         // Then
-        XCTAssertEqual(publisher.initialValue?.carrierName, "Carrier")
-        XCTAssertEqual(publisher.initialValue?.carrierISOCountryCode, "US")
-        XCTAssertEqual(publisher.initialValue?.carrierAllowsVOIP, true)
+        XCTAssertEqual(source.initialValue?.carrierName, "Carrier")
+        XCTAssertEqual(source.initialValue?.carrierISOCountryCode, "US")
+        XCTAssertEqual(source.initialValue?.carrierAllowsVOIP, true)
     }
 
     func testGivenCellularServiceUnAvailable_itProvidesNoInitialValue() {
         // Given
-        let publisher = CarrierInfoPublisher(networkInfo: unavailableCTTelephonyNetworkInfo)
+        let source = CarrierInfoSource(networkInfo: unavailableCTTelephonyNetworkInfo)
 
         // Then
-        XCTAssertNil(publisher.initialValue)
+        XCTAssertNil(source.initialValue)
     }
 
-    func testGivenSubscribedInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber() throws {
-        let expectation = expectation(description: "Notify `CarrierInfo` change")
+    func testGivenSubscribedInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber() async throws {
         var info: CarrierInfo? = nil
-        let publisher = CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
-
-        // Given
-        publisher.publish {
-            info = $0
-            expectation.fulfill()
-        }
+        let source = CarrierInfoSource(networkInfo: availableCTTelephonyNetworkInfo)
+        var iterator = source.values.makeAsyncIterator()
 
         let newCarrierName: String = .mockRandom()
         let newISOCountryCode: String = .mockRandom()
@@ -68,7 +62,7 @@ class CarrierInfoPublisherTests: XCTestCase {
         )
 
         // Then
-        waitForExpectations(timeout: 1, handler: nil)
+        info = await iterator.next() ?? nil
 
         XCTAssertEqual(info?.carrierName, newCarrierName)
         XCTAssertEqual(info?.carrierISOCountryCode, newISOCountryCode)

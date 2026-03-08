@@ -6,11 +6,11 @@
 
 import DatadogInternal
 
-internal final class ContextSharingTransformer: FeatureMessageReceiver, ContextValuePublisher {
+internal final class ContextSharingTransformer: FeatureMessageReceiver {
     @ReadWriteLock
     private var sharedContext: SharedContext? = nil
     @ReadWriteLock
-    private var receiver: ContextValueReceiver<SharedContext?>? = nil
+    private var receiver: (@Sendable (SharedContext?) -> Void)? = nil
 
     // MARK: - FeatureMessageReceiver
 
@@ -26,11 +26,9 @@ internal final class ContextSharingTransformer: FeatureMessageReceiver, ContextV
         }
     }
 
-    // MARK: - ContextValuePublisher
+    // MARK: - Shared Context Updates
 
-    var initialValue: SharedContext? = nil
-
-    func publish(to receiver: @escaping ContextValueReceiver<SharedContext?>) {
+    func publish(to receiver: @escaping @Sendable (SharedContext?) -> Void) {
         self.receiver = receiver
         receiver(sharedContext)
     }

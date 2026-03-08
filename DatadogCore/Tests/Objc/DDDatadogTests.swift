@@ -105,11 +105,11 @@ class DDDatadogTests: XCTestCase {
         )
 
         let core = CoreRegistry.default as? DatadogCore
-        XCTAssertEqual(core?.consentPublisher.consent, initialConsent.swift)
+        XCTAssertEqual(core?.contextProvider.read().trackingConsent, initialConsent.swift)
 
         objc_Datadog.setTrackingConsent(consent: nextConsent.objc)
 
-        XCTAssertEqual(core?.consentPublisher.consent, nextConsent.swift)
+        XCTAssertEqual(core?.contextProvider.read().trackingConsent, nextConsent.swift)
 
         Datadog.flushAndDeinitialize()
     }
@@ -122,8 +122,7 @@ class DDDatadogTests: XCTestCase {
             trackingConsent: randomConsent().objc
         )
 
-        let core = CoreRegistry.default as? DatadogCore
-        let userInfo = try XCTUnwrap(core?.userInfoPublisher)
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
 
         objc_Datadog.setUserInfo(
             userId: "id",
@@ -136,20 +135,22 @@ class DDDatadogTests: XCTestCase {
             ]
         )
         objc_Datadog.addUserExtraInfo(["foo": "bar"])
-        XCTAssertEqual(userInfo.current.id, "id")
-        XCTAssertEqual(userInfo.current.name, "name")
-        XCTAssertEqual(userInfo.current.email, "email")
-        let extraInfo = userInfo.current.extraInfo
+        var current = core.contextProvider.read().userInfo
+        XCTAssertEqual(current?.id, "id")
+        XCTAssertEqual(current?.name, "name")
+        XCTAssertEqual(current?.email, "email")
+        let extraInfo = current!.extraInfo
         XCTAssertEqual(extraInfo["attribute-int"]?.dd.decode(), 42)
         XCTAssertEqual(extraInfo["attribute-double"]?.dd.decode(), 42.5)
         XCTAssertEqual(extraInfo["attribute-string"]?.dd.decode(), "string value")
         XCTAssertEqual(extraInfo["foo"]?.dd.decode(), "bar")
 
         objc_Datadog.setUserInfo(userId: "id", name: nil, email: nil, extraInfo: [:])
-        XCTAssertNotNil(userInfo.current.id)
-        XCTAssertNil(userInfo.current.name)
-        XCTAssertNil(userInfo.current.email)
-        XCTAssertTrue(userInfo.current.extraInfo.isEmpty)
+        current = core.contextProvider.read().userInfo
+        XCTAssertNotNil(current?.id)
+        XCTAssertNil(current?.name)
+        XCTAssertNil(current?.email)
+        XCTAssertTrue(current!.extraInfo.isEmpty)
 
         Datadog.flushAndDeinitialize()
     }

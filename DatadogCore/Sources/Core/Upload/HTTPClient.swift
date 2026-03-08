@@ -7,7 +7,7 @@
 import Foundation
 
 /// Defines a type responsible for sending HTTP requests.
-internal protocol HTTPClient {
+internal protocol HTTPClient: Sendable {
     /// Sends the provided request using HTTP.
     /// - Parameters:
     ///   - request: The request to be sent.
