@@ -5,6 +5,7 @@ Each module also has its own `Resources/ModernConcurrency.md` with
 module-specific details:
 
 - `DatadogLogs/Resources/ModernConcurrency.md`
+- `DatadogRUM/Resources/ModernConcurrency.md`
 - `DatadogWebViewTracking/Resources/ModernConcurrency.md`
 
 ---
@@ -30,6 +31,95 @@ removed the wrapper, and simplified everything downstream.
 - The module does heavy computation (image processing, large batch encoding)
 - The module has no UI dependency (Logs, Trace)
 - Making it `@MainActor` would force callers to `await` unnecessarily
+
+### Types and protocols that handle UI components should be `@MainActor`
+
+Even in modules that are **not** entirely `@MainActor` (e.g. RUM), individual
+types and protocols whose sole purpose is to interact with UIKit should be
+marked `@MainActor` at the **type level**, not just on individual methods.
+
+**Signs a type should be `@MainActor`:**
+- All its methods access `@MainActor`-isolated UIKit types (`UITouch`,
+  `UIView`, `UIGestureRecognizer`, `UIScreen`, etc.)
+- It has no callers that need synchronous, non-main-actor access to its
+  stored properties
+- Its stored state is logically tied to the main thread (e.g. pending touch
+  tracking, display link state)
+
+**Pattern — `@MainActor` class with `nonisolated init()`:**
+
+```swift
+@MainActor
+internal final class MyUIKitHandler: SomeProtocol {
+    private var state: [ObjectIdentifier: PendingAction] = [:]
+
+    // Allow creation from any context (e.g. factory methods during SDK init)
+    nonisolated init() {
+        self.state = [:]
+    }
+
+    // All methods are implicitly @MainActor — no per-method annotations needed
+    func process(touch: UITouch) -> Command? { ... }
+}
+```
+
+When all conforming types of a protocol exclusively handle UI components,
+mark the **protocol** `@MainActor` too. This removes redundant per-method
+`@MainActor` annotations and makes the intent clear:
+
+```swift
+@MainActor
+protocol UIComponentDetector {
+    func createCommand(from touch: UITouch) -> Command?
+}
+```
+
+**Prefer `Sendable` protocols over `nonisolated(unsafe) let`:**
+
+When a `@MainActor` class has a `nonisolated init` that stores protocol-typed
+properties, the compiler rejects assigning non-`Sendable` values to main-actor-
+isolated storage. The **preferred** fix is to make the protocol `Sendable`:
+
+```swift
+// ✅ Preferred — protocol is Sendable, so nonisolated init works cleanly
+@MainActor
+protocol UserPredicate: Sendable {
+    func evaluate(targetView: UIView) -> Action?
+}
+
+@MainActor
+internal final class MyFactory {
+    let predicate: UserPredicate?    // no nonisolated(unsafe) needed
+
+    nonisolated init(predicate: UserPredicate?) {
+        self.predicate = predicate  // compiles — value is Sendable
+    }
+}
+```
+
+**Fallback — `nonisolated(unsafe) let`** when the stored type genuinely can't
+be `Sendable` (e.g. `AnyObject`, Obj-C bridge types):
+
+```swift
+@MainActor
+internal struct ObjCBridge {
+    // AnyObject can't conform to Sendable
+    nonisolated(unsafe) let objcPredicate: AnyObject?
+
+    nonisolated init(objcPredicate: AnyObject?) {
+        self.objcPredicate = objcPredicate
+    }
+}
+```
+
+This is safe because `let` properties are immutable after init and post-init
+access happens only from `@MainActor` methods.
+
+**When to use method-level `@MainActor` instead:**
+- The protocol has conformers with mixed isolation needs (some methods touch
+  UIKit, others don't)
+- The type has properties that must be accessed synchronously from background
+  threads
 
 ---
 
@@ -63,10 +153,39 @@ Is the queued work tied to UI / @MainActor types?
 
 | Before | After | When |
 |--------|-------|------|
+| `DispatchQueue.main.async { /* UIKit work */ }` | `Task { @MainActor in /* UIKit work */ }` | Hopping to main thread for UI updates from a nonisolated context |
 | `DispatchQueue` + `.async` in `@MainActor` class | Remove queue, run synchronously | Work is lightweight, class is already `@MainActor` |
 | `DispatchQueue` serialising mutable state | `actor` | All callers can be `async` |
 | `DispatchQueue` + `ReadWriteLock` | Keep as-is | Synchronous reads required for correctness |
 | `DispatchQueue.global().async` for CPU work | `Task { @concurrent in }` | Heavy computation that shouldn't block caller |
+
+### `Task { @MainActor in }` replaces `DispatchQueue.main.async`
+
+`Task { @MainActor in }` is the idiomatic Swift concurrency replacement for
+`DispatchQueue.main.async`. It also eliminates the need for
+`MainActor.assumeIsolated` inside the closure, since the `Task` already
+provides the correct isolation:
+
+```swift
+// ❌ Before — DispatchQueue + MainActor.assumeIsolated bridge
+DispatchQueue.main.async {
+    MainActor.assumeIsolated {
+        self.renderOnMainThread(rumDebugInfo: debugInfo)
+    }
+}
+
+// ✅ After — idiomatic structured concurrency
+Task { @MainActor in self.renderOnMainThread(rumDebugInfo: debugInfo) }
+```
+
+**When NOT to replace:**
+- **`deinit`** — `DispatchQueue.main.async { [weak ref] in }` captures a weak
+  reference before the object is deallocated. `Task` in `deinit` has different
+  lifetime semantics and is not idiomatic.
+- **Ordering-critical sequences** — multiple `DispatchQueue.main.async` calls
+  from the same queue are guaranteed FIFO. Multiple `Task { @MainActor in }`
+  calls are also serialised on the main actor, but if strict ordering relative
+  to other non-Task dispatches matters, keep the queue.
 
 ### ReadWriteLock — modern alternatives
 
@@ -185,7 +304,72 @@ Task {
 
 ---
 
-## 5. Synchronous `flush()` is usually only needed for tests
+## 5. Avoid `@unchecked Sendable` boxes for non-Sendable captures
+
+A common workaround when a `Task` closure captures a non-Sendable value is
+to wrap it in a generic `@unchecked Sendable` box:
+
+```swift
+// ❌ Avoid — hides the real problem and bypasses compiler checks
+private struct UncheckedBox<T>: @unchecked Sendable {
+    let value: T
+}
+
+let boxedCompletion = UncheckedBox(value: completion)
+Task {
+    boxedCompletion.value(result)
+}
+```
+
+This silences the compiler but provides **no safety guarantee**. The wrapped
+value is still used across isolation boundaries without any protection.
+
+**Preferred alternatives:**
+
+| Situation | Fix |
+|-----------|-----|
+| Completion handler captured in `Task` | Convert the method to `async` and return the value directly |
+| Non-Sendable class `self` in `Task` | Make the class `@unchecked Sendable` (if its state is already protected by locks or serial queues) |
+| Non-Sendable parameter in `Task` | Extract only the `Sendable` values you need before the `Task` |
+| Protocol type is not `Sendable` | Add `Sendable` conformance to the protocol |
+
+**Example — extracting Sendable values instead of boxing:**
+
+```swift
+// ❌ Before — boxing the entire non-Sendable RUMViewScope
+let boxedView = UncheckedBox(value: activeView)
+Task { [weak self] in
+    let view = boxedView.value
+    self?.write(viewUUID: view?.viewUUID, viewPath: view?.viewPath)
+}
+
+// ✅ After — extract Sendable values before the Task
+let activeViewUUID = activeView?.viewUUID   // RUMUUID (value type)
+let activeViewPath = activeView?.viewPath   // String
+Task { [weak self] in
+    self?.write(viewUUID: activeViewUUID, viewPath: activeViewPath)
+}
+```
+
+**When an `@unchecked Sendable` box is truly unavoidable** (e.g. wrapping a
+generated model from a Swift 5 module to cross a `withCheckedContinuation`
+boundary), keep it **local to the call site** and document why:
+
+```swift
+// Generated RUMViewEvent from DatadogInternal (Swift 5, not Sendable).
+// Safe because the value is produced inside the callback and consumed
+// immediately after the continuation resumes.
+let viewEvent: RUMViewEvent? = await withCheckedContinuation { continuation in
+    dataStore.value(forKey: key) { (event: RUMViewEvent?) in
+        struct Box: @unchecked Sendable { let value: RUMViewEvent? }
+        continuation.resume(returning: Box(value: event))
+    }
+}.value
+```
+
+---
+
+## 6. Synchronous `flush()` is usually only needed for tests
 
 The `Flushable` protocol (`func flush()` — blocks until pending work completes)
 exists primarily to make tests deterministic. It synchronises with a background
@@ -209,7 +393,7 @@ counterparts can be removed entirely.
 
 ---
 
-## 6. `@MainActor` replaces `runOnMainThreadSync`
+## 7. `@MainActor` replaces `runOnMainThreadSync`
 
 The SDK has a utility `runOnMainThreadSync { }` that dispatches work to the
 main thread at runtime. In Swift 6, `@MainActor` provides the same guarantee
@@ -228,7 +412,7 @@ callable from a synchronous, non-isolated context without `await`.
 
 ---
 
-## 7. Obj-C bridges can be `@MainActor`
+## 8. Obj-C bridges can be `@MainActor`
 
 `@objc` methods support `@MainActor`. When the underlying Swift API is
 `@MainActor`, the Obj-C bridge should be too — it's the same thread
@@ -270,7 +454,7 @@ Task {
 
 ---
 
-## 8. Test migration patterns
+## 9. Test migration patterns
 
 | Production change | Test change |
 |-------------------|-------------|
@@ -294,7 +478,7 @@ class MyFeatureTests: XCTestCase {
 
 ---
 
-## 9. Module boundary: DatadogInternal stays Swift 5
+## 10. Module boundary: DatadogInternal stays Swift 5
 
 `DatadogInternal` compiles in Swift 5 mode. Feature modules compile in
 Swift 6 mode. This means:
@@ -308,7 +492,23 @@ Swift 6 mode. This means:
 
 ---
 
-## 10. General migration checklist
+## 11. Clean up obsolete `#if swift(>=5.9)` checks
+
+The codebase uses `#if swift(>=5.9) && os(visionOS)` because `os(visionOS)`
+was not a valid platform check before Swift 5.9 / Xcode 15. Since the SDK
+now targets Swift 6.x, `swift(>=5.9)` is always true and can be removed.
+
+| Before | After |
+|--------|-------|
+| `#if swift(>=5.9) && os(visionOS)` | `#if os(visionOS)` |
+| `#if !os(tvOS) && !(swift(>=5.9) && os(visionOS))` | `#if !os(tvOS) && !os(visionOS)` |
+
+**When migrating each module**, search for `swift(>=5.9)` and simplify the
+conditionals. This is a safe, mechanical change with no behavioral impact.
+
+---
+
+## 12. General migration checklist
 
 For each feature module:
 
@@ -317,10 +517,12 @@ For each feature module:
 3. **Evaluate each `DispatchQueue`** — `@MainActor`, actor, or keep? (section 2)
 4. **Convert callbacks to `async/await`** — event mappers, completion handlers (section 3)
 5. **Watch for `sending` parameter errors** — make types `Sendable`, not `nonisolated(unsafe)` (section 4)
-6. **Remove `Flushable` if the queue is gone** — no async work = nothing to flush (section 5)
-7. **Replace `runOnMainThreadSync` with `@MainActor`** where applicable (section 6)
-8. **Make types `Sendable`** where they cross isolation boundaries
-9. **Update Obj-C bridges** — `@MainActor` or `Task` + semaphore; convert non-Sendable types first (section 7)
-10. **Update tests** — `@MainActor` annotation, async throws, remove flush (section 8)
-11. **Fix deployment targets** in `.xcodeproj` test targets to match `Package.swift`
-12. **Write a module-specific `Resources/ModernConcurrency.md`** documenting decisions
+6. **Avoid `@unchecked Sendable` boxes** — extract Sendable values instead (section 5)
+7. **Remove `Flushable` if the queue is gone** — no async work = nothing to flush (section 6)
+8. **Replace `runOnMainThreadSync` with `@MainActor`** where applicable (section 7)
+9. **Make types `Sendable`** where they cross isolation boundaries
+10. **Update Obj-C bridges** — `@MainActor` or `Task` + semaphore; convert non-Sendable types first (section 8)
+11. **Update tests** — `@MainActor` annotation, async throws, remove flush (section 9)
+12. **Clean up `#if swift(>=5.9)`** — simplify to `#if os(visionOS)` (section 11)
+13. **Fix deployment targets** in `.xcodeproj` test targets to match `Package.swift`
+14. **Write a module-specific `Resources/ModernConcurrency.md`** documenting decisions
