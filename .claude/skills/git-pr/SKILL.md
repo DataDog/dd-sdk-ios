@@ -5,6 +5,17 @@ description: Use when creating a pull request in dd-sdk-ios. Use when writing PR
 
 # Pull Requests in dd-sdk-ios
 
+## PR Title Format
+
+```
+[PROJECT-XXXX] Short imperative description
+```
+
+**Examples:**
+- `[RUM-1234] Add baggage header merging support`
+- `[FFL-213] Add Feature Flags support`
+- `[RUM-14655] Fix WebView log events attaching incomplete ddTags`
+
 ## Requirements
 
 - **Title prefix**: `[PROJECT-XXXX]` matching the JIRA ticket

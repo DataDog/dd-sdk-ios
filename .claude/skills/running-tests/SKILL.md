@@ -25,9 +25,10 @@ xcrun simctl list devices available | grep -E "iPhone|Apple TV"
 | UI / integration tests | `make ui-test TEST_PLAN="<Plan>"` |
 | Session Replay snapshots | `make sr-snapshot-test` |
 
-**Default devices** (from Makefile — may not match your local simulators):
-- iOS: `iPhone 15 Pro`
-- tvOS: `Apple TV`
+**Default devices** (authoritative values from Makefile):
+```bash
+grep "DEFAULT_" Makefile
+```
 
 Always pass `DEVICE=` explicitly if the default simulator is not installed locally. Check `xcrun simctl list devices available` first.
 
@@ -38,7 +39,13 @@ grep "test-ios-all" Makefile -A 20  # shows all iOS schemes used in CI
 
 ### 2. Xcode MCP — selective, fast, single test or class
 
-Requires **Xcode 26.3+** with the Xcode MCP server enabled in Claude Code settings. Verify it's active by checking that `XcodeListWindows` is available — if not, fall back to `xcodebuild -only-testing` for selective tests.
+Requires **Xcode 26.3+** with the Xcode MCP server enabled in Claude Code settings.
+
+**Before using Xcode MCP**, verify the setup:
+1. Check Xcode version: `xcodebuild -version`
+   - If Xcode < 26.3 → ask the user to upgrade Xcode
+   - If Xcode ≥ 26.3 → check that `XcodeListWindows` is available
+2. If `XcodeListWindows` is unavailable → ask the user to enable the Xcode MCP server in Xcode settings
 
 `RunSomeTests` is limited to targets in the **currently active Xcode scheme**. The MCP has no tool to switch schemes — that must be done manually in Xcode.
 
