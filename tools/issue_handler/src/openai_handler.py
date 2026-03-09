@@ -54,7 +54,7 @@ class OpenAIHandler:
     
     # Content limits to prevent abuse
     MAX_CONTENT_LENGTH = 4000
-    MAX_RESPONSE_TOKENS = int(os.environ.get("OPENAI_MAX_RESPONSE_TOKENS", "500"))
+    MAX_COMPLETION_TOKENS = int(os.environ.get("OPENAI_MAX_COMPLETION_TOKENS", "500"))
 
     def __init__(self, api_key: str):
         """
@@ -117,8 +117,7 @@ class OpenAIHandler:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                temperature=float(os.environ.get("OPENAI_TEMPERATURE", "0.4")),
-                max_tokens=self.MAX_RESPONSE_TOKENS,
+                max_completion_tokens=self.MAX_COMPLETION_TOKENS,
                 response_format={"type": "json_object"}
             )
 

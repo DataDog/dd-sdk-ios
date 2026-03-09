@@ -47,8 +47,7 @@ jobs:
           OPENAI_TOKEN: ${{ secrets.OPENAI_TOKEN }}
           OPENAI_SYSTEM_PROMPT: ${{ vars.OPENAI_SYSTEM_PROMPT }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
-          OPENAI_TEMPERATURE: ${{ vars.OPENAI_TEMPERATURE }}
-          OPENAI_MAX_RESPONSE_TOKENS: ${{ vars.OPENAI_MAX_RESPONSE_TOKENS }}
+          OPENAI_MAX_COMPLETION_TOKENS: ${{ vars.OPENAI_MAX_COMPLETION_TOKENS }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}

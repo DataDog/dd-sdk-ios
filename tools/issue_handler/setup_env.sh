@@ -31,8 +31,7 @@ GITHUB_REPOSITORY=DataDog/dd-sdk-ios
 
 # Optional: Override OpenAI defaults
 # OPENAI_MODEL=gpt-5.2-chat-latest
-# OPENAI_TEMPERATURE=0.4
-# OPENAI_MAX_RESPONSE_TOKENS=500
+# OPENAI_MAX_COMPLETION_TOKENS=500
 EOL
 
 echo "✨ Created .env file"
