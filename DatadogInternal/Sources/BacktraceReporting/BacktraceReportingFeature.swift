@@ -7,7 +7,7 @@
 import Foundation
 
 internal final class BacktraceReportingFeature: DatadogFeature {
-    static var name: String = "backtrace-reporting"
+    static let name: String = "backtrace-reporting"
 
     let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
 

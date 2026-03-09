@@ -9,7 +9,7 @@ import Foundation
 /// Network connection details.
 public struct NetworkConnectionInfo: Codable, Equatable, Sendable {
     /// Tells if network is reachable.
-    public enum Reachability: String, Codable, CaseIterable {
+    public enum Reachability: String, Codable, CaseIterable, Sendable {
         /// The network is reachable.
         case yes
         /// The network might be reachable after trying.
@@ -19,7 +19,7 @@ public struct NetworkConnectionInfo: Codable, Equatable, Sendable {
     }
 
     /// Network connection interfaces.
-    public enum Interface: String, Codable, CaseIterable {
+    public enum Interface: String, Codable, CaseIterable, Sendable {
         case wifi
         case wiredEthernet
         case cellular

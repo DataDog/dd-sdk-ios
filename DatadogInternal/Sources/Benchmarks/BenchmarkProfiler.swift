@@ -22,7 +22,7 @@ public let bench: (profiler: BenchmarkProfiler, meter: BenchmarkMeter) = (NOPBen
 /// injected to collect data during execution of the SDK.
 ///
 /// In production, the profiler is no-op and immutable.
-public protocol BenchmarkProfiler {
+public protocol BenchmarkProfiler: Sendable {
     /// Returns a `BenchmarkTracer` instance for the given operation.
     ///
     /// The profiler must return the same instance of a tracer for the same operation.
@@ -40,7 +40,7 @@ public protocol BenchmarkProfiler {
 /// injected to collect data during execution of the SDK.
 ///
 /// In production, the profiler is no-op and immutable.
-public protocol BenchmarkMeter {
+public protocol BenchmarkMeter: Sendable {
     /// Returns a `BenchmarkCounter` instance for a given metric name.
     ///
     /// The counter metric will sum up added values.
@@ -136,7 +136,7 @@ extension BenchmarkGauge {
     }
 }
 
-public final class NOPBench: BenchmarkProfiler, BenchmarkTracer, BenchmarkSpan, BenchmarkMeter, BenchmarkCounter, BenchmarkGauge {
+public final class NOPBench: BenchmarkProfiler, BenchmarkTracer, BenchmarkSpan, BenchmarkMeter, BenchmarkCounter, BenchmarkGauge, @unchecked Sendable {
     public init() { }
     /// no-op
     public func tracer(operation: @autoclosure () -> String) -> BenchmarkTracer { self }

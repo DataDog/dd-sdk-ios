@@ -49,4 +49,4 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
     }
 }
 
-private var hasCompletionKey: Void?
+nonisolated(unsafe) private var hasCompletionKey: Void?

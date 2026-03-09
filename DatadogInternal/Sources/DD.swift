@@ -20,13 +20,17 @@ public struct DD {
     ///
     /// The lock prevents race conditions when the logger is replaced
     /// during SDK initialization while being accessed from other threads.
-    @ReadWriteLock
-    public static var logger: CoreLogger = InternalLogger(
+    private static let _logger = ReadWriteLock<CoreLogger>(wrappedValue: InternalLogger(
         dateProvider: SystemDateProvider(),
         timeZone: .current,
         printFunction: consolePrint,
         verbosityLevel: { .debug }
-    )
+    ))
+
+    public static var logger: CoreLogger {
+        get { _logger.wrappedValue }
+        set { _logger.wrappedValue = newValue }
+    }
 }
 
 #if canImport(OSLog)

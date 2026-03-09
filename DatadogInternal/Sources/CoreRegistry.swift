@@ -19,8 +19,12 @@ public final class CoreRegistry {
     /// Features should use this name as default parameter.
     public static let defaultInstanceName = "main"
 
-    @ReadWriteLock
-    internal private(set) static var instances: [String: DatadogCoreProtocol] = [:]
+    private static let _instances = ReadWriteLock<[String: DatadogCoreProtocol]>(wrappedValue: [:])
+
+    internal static var instances: [String: DatadogCoreProtocol] {
+        get { _instances.wrappedValue }
+        set { _instances.wrappedValue = newValue }
+    }
 
     private init() { }
 

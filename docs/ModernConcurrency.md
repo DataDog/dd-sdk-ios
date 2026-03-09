@@ -4,6 +4,7 @@ Cross-cutting lessons learned from migrating SDK feature modules to Swift 6.
 Each module also has its own `Resources/ModernConcurrency.md` with
 module-specific details:
 
+- `DatadogInternal/Resources/ModernConcurrency.md`
 - `DatadogLogs/Resources/ModernConcurrency.md`
 - `DatadogRUM/Resources/ModernConcurrency.md`
 - `DatadogWebViewTracking/Resources/ModernConcurrency.md`
@@ -478,17 +479,19 @@ class MyFeatureTests: XCTestCase {
 
 ---
 
-## 10. Module boundary: DatadogInternal stays Swift 5
+## 10. Module boundary: DatadogInternal now compiles in Swift 6
 
-`DatadogInternal` compiles in Swift 5 mode. Feature modules compile in
-Swift 6 mode. This means:
+`DatadogInternal` was migrated from Swift 5 to Swift 6 mode. This means:
 
-- `Sendable` conformances added to `DatadogInternal` types are not enforced
-  within `DatadogInternal` itself, but Swift 6 consumers rely on them.
-- Use `@unchecked Sendable` in `DatadogInternal` for types with non-Sendable
-  existentials (`Any`, protocol types), with a documented safety invariant.
-- Protocol changes (e.g. `Writer: Sendable`) don't break Swift 5 conformers —
-  enforcement kicks in only when they migrate to Swift 6.
+- All `Sendable` conformances on `DatadogInternal` types are now fully
+  enforced by the compiler.
+- Nested enums and structs inside `Sendable` types needed explicit `Sendable`
+  conformance (previously unenforced).
+- `@ReadWriteLock` property wrappers on static vars needed to be refactored
+  to manual `ReadWriteLock` + computed properties (Swift 6 does not allow
+  `nonisolated(unsafe)` on properties with property wrappers).
+- See `DatadogInternal/Resources/ModernConcurrency.md` for the full list of
+  changes and patterns applied.
 
 ---
 

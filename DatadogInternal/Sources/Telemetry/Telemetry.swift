@@ -511,7 +511,7 @@ public struct NOPTelemetry: Telemetry {
     public func stopMethodCalled(_ metric: MethodCalledTrace?, isSuccessful: Bool) { }
 }
 
-internal struct CoreTelemetry: Telemetry {
+internal struct CoreTelemetry: Telemetry, @unchecked Sendable {
     /// A weak core reference.
     private weak var core: DatadogCoreProtocol?
 

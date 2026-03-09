@@ -20,7 +20,7 @@ internal enum Swizzling {
     }
 
     /// The hierarchy of swizzling per method.
-    private static var swizzlings: [Method: MethodSwizzling] = [:]
+    nonisolated(unsafe) private static var swizzlings: [Method: MethodSwizzling] = [:]
 
     /// lock for synchronizing `swizzlings` mutuations.
     private static let lock = NSLock()

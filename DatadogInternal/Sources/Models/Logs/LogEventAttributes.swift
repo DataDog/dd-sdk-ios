@@ -7,7 +7,7 @@
 import Foundation
 
 /// User provided log attributes
-public struct LogEventAttributes {
+public struct LogEventAttributes: @unchecked Sendable {
     public var attributes: [String: Encodable]
 
     /// User provided log attributes

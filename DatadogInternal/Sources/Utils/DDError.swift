@@ -87,7 +87,7 @@ public struct ObjcException: Error {
     /// in Objective-C, ARC is not exception-safe and  does not perform releases which would occur at the end of a
     /// full-expression if that full-expression throws an exception. Therefore, ARC-generated code leaks by default
     /// on exceptions.
-    public static var rethrow: ((() -> Void) throws -> Void) = { $0() }
+    nonisolated(unsafe) public static var rethrow: ((() -> Void) throws -> Void) = { $0() }
 
     /// The underlying `NSError` describing the `NSException`
     /// thrown by Objective-C runtime.
