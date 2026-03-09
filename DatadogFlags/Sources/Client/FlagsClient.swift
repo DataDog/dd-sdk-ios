@@ -251,12 +251,12 @@ extension FlagsClient: FlagsClientProtocol {
             reason: flagAssignment.reason
         )
 
-        trackEvaluation(key: key, assignment: flagAssignment, value: value, context: context)
+        trackEvaluation(key: key, assignment: flagAssignment, context: context)
 
         return details
     }
 
-    internal func trackEvaluation(key: String, assignment: FlagAssignment, value: FlagValue, context: FlagsEvaluationContext) {
+    private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
         exposureLogger.logExposure(
             for: key,
             assignment: assignment,
@@ -287,16 +287,6 @@ extension FlagsClient: FlagsClientInternal {
 
     @_spi(Internal)
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
-        var value: FlagValue
-        switch assignment.variation {
-        case .boolean(let v): value = v
-        case .string(let v): value = v
-        case .integer(let v): value = v
-        case .double(let v): value = v
-        case .object(let v): value = v
-        case .unknown: value = AnyValue.null
-        }
-
-        trackEvaluation(key: key, assignment: assignment, value: value, context: context)
+        trackEvaluation(key: key, assignment: assignment, context: context)
     }
 }
