@@ -11,7 +11,7 @@
 public protocol RUMDataModel: Codable {}
 
 /// Device properties
-public struct Device: Codable, Sendable {
+public struct Device: Codable, @unchecked Sendable {
     /// The CPU architecture of the device that is reporting the error
     public let architecture: String?
 
@@ -2433,7 +2433,7 @@ extension RUMErrorEvent.FeatureFlags {
 }
 
 /// User provided context
-public struct RUMEventAttributes: Codable {
+public struct RUMEventAttributes: Codable, @unchecked Sendable {
     public var contextInfo: [String: Encodable]
 
     /// User provided context
@@ -4898,7 +4898,7 @@ extension RUMUser {
 }
 
 /// Schema of all properties of a View event
-public struct RUMViewEvent: RUMDataModel, Sendable {
+public struct RUMViewEvent: RUMDataModel, @unchecked Sendable {
     /// Internal properties
     public let dd: DD
 

@@ -10,7 +10,7 @@ import Foundation
 public struct DDCrashReport: Sendable {
     /// Meta information about the process.
     /// Ref.: https://developer.apple.com/documentation/xcode/examining-the-fields-in-a-crash-report
-    public struct Meta: Encodable {
+    public struct Meta: Encodable, Sendable {
         /// A client-generated 16-byte UUID of the incident.
         public let incidentIdentifier: String?
         /// The name of the crashed process.

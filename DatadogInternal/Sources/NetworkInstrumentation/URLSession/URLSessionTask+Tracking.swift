@@ -49,7 +49,7 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
     }
 }
 
-private var hasCompletionKey: Void?
+nonisolated(unsafe) private var hasCompletionKey: Void?
 
 extension URLSessionTask {
     /// `URLSessionTask` subclasses that declare most of their inherited properties as `NS_UNAVAILABLE`

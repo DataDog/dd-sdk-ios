@@ -73,7 +73,7 @@ let package = Package(
         .target(
             name: "DatadogInternal",
             path: "DatadogInternal/Sources",
-            swiftSettings: internalSwiftSettings
+            swiftSettings: [.swiftLanguageMode(.v6)] + internalSwiftSettings
         ),
         .testTarget(
             name: "DatadogInternalTests",
