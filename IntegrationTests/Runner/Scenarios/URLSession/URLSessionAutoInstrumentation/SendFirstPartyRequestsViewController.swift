@@ -20,19 +20,19 @@ internal class SendFirstPartyRequestsViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        callSuccessfullFirstPartyURL()
-        callSuccessfullFirstPartyURLRequest()
+        callSuccessfulFirstPartyURL()
+        callSuccessfulFirstPartyURLRequest()
         callBadFirstPartyURL()
     }
 
-    private func callSuccessfullFirstPartyURL() {
+    private func callSuccessfulFirstPartyURL() {
         let task = session.dataTask(with: testScenario.customGETResourceURL) { _, _, error in
             assert(error == nil)
         }
         task.resume()
     }
 
-    private func callSuccessfullFirstPartyURLRequest() {
+    private func callSuccessfulFirstPartyURLRequest() {
         let task = session.dataTask(with: testScenario.customPOSTRequest) { _, _, error in
             assert(error == nil)
         }
