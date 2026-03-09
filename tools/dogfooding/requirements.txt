@@ -3,6 +3,6 @@ gitdb==4.0.12
 iniconfig==2.3.0
 packaging==26.0
 pluggy==1.6.0
-pytest==7.4.4
+pytest==9.0.2
 smmap==5.0.2
 tomli==2.0.2
