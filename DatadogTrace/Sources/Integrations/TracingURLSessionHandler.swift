@@ -319,7 +319,12 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             span.setTag(key: SpanTags.isBackground, value: didStartInBackground || doesEndInBackground)
         }
 
-        spanCustomization?(interception.request.unsafeOriginal, span)
+        spanCustomization?(
+            interception.request.unsafeOriginal,
+            span,
+            resourceCompletion.httpResponse,
+            resourceCompletion.error
+        )
 
         span.finish(at: endTime)
     }
