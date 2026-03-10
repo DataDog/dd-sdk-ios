@@ -53,7 +53,7 @@ internal final class ViewHitchesMetric {
 extension ViewHitchesMetric: MetricAttributesConvertible {
     var metricName: String { Constants.name }
 
-    func asMetricAttributes() -> [String: Encodable]? {
+    func asMetricAttributes() -> [String: AttributeValue]? {
         guard let viewDurationNs else {
             return nil
         }

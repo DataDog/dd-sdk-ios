@@ -7,7 +7,7 @@
 import Foundation
 
 /// The set of messages that can be transmitted on the Features message bus.
-public enum FeatureMessage {
+public enum FeatureMessage: @unchecked Sendable {
     /// A custom payload message.
     case payload(Any)
 

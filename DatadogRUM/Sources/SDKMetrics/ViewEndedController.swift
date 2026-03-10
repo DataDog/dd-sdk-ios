@@ -12,7 +12,7 @@ internal protocol MetricAttributesConvertible {
     /// Indicates the metric being tracked.
     var metricName: String { get }
     /// Transforms the telemetry data in an encodable dictionary.
-    func asMetricAttributes() -> [String: Encodable]?
+    func asMetricAttributes() -> [String: AttributeValue]?
 }
 
 internal final class ViewEndedController {

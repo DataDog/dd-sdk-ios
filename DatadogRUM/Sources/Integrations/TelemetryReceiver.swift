@@ -111,7 +111,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///   - id: Identity of the debug log, this can be used to prevent duplicates.
     ///   - message: The debug message.
     ///   - attributes: Custom attributes attached to the log (optional).
-    private func debug(id: String, message: String, attributes: [String: Encodable]?) {
+    private func debug(id: String, message: String, attributes: [String: AttributeValue]?) {
         let date = dateProvider.now
 
         record(event: id) { context, writer in
@@ -163,7 +163,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             let rum = context.additionalContext(ofType: RUMCoreContext.self)
 
             let uptimeMs = date.timeIntervalSince(context.launchInfo.processLaunchDate).dd.toInt64Milliseconds
-            let attributes: [String: Encodable] = [
+            let attributes: [String: AttributeValue] = [
                 TelemetryReceiver.uptimeAttributeName: uptimeMs
             ]
 
@@ -357,16 +357,6 @@ private extension TelemetryUsageEvent.Telemetry.Usage {
             self = .telemetryCommonFeaturesUsage(value: .setAccount(value: .init()))
         case .addFeatureFlagEvaluation:
             self = .telemetryCommonFeaturesUsage(value: .addFeatureFlagEvaluation(value: .init()))
-        case .addViewLoadingTime(let viewLoadingTime):
-            self = .telemetryMobileFeaturesUsage(
-                value: .addViewLoadingTime(
-                    value: .init(
-                        noActiveView: viewLoadingTime.noActiveView,
-                        noView: viewLoadingTime.noView,
-                        overwritten: viewLoadingTime.overwritten
-                    )
-                )
-            )
         case .addOperationStepVital(let addOperationStepVital):
             self = .telemetryCommonFeaturesUsage(
                 value: .addOperationStepVital(
@@ -377,6 +367,16 @@ private extension TelemetryUsageEvent.Telemetry.Usage {
             )
         case .addGraphQLRequest:
             self = .telemetryCommonFeaturesUsage(value: .graphQLRequest(value: .init()))
+        case .addViewLoadingTime(let viewLoadingTime):
+            self = .telemetryCommonFeaturesUsage(value:
+                    .addViewLoadingTime(value:
+                            .init(
+                                noActiveView: viewLoadingTime.noActiveView,
+                                noView: viewLoadingTime.noView,
+                                overwritten: viewLoadingTime.overwritten
+                            )
+                    )
+            )
         }
     }
 }

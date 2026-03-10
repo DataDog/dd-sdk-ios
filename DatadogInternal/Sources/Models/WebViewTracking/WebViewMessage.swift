@@ -10,7 +10,7 @@ import Foundation
 /// on the message-bus.
 /// 
 /// Such message is decoded from Browser SDK events sent over the JS bridge.
-public enum WebViewMessage {
+public enum WebViewMessage: @unchecked Sendable {
     /// The Browser event types that can be transmitted over the bridge.
     public enum EventType: String, Decodable {
         case log

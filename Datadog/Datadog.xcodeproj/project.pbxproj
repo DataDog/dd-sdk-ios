@@ -1675,6 +1675,7 @@
 		D28F836C29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28F836A29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift */; };
 		D28FB6962DB7D3F000CD76D0 /* RUMDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28FB6952DB7D3F000CD76D0 /* RUMDataModels.swift */; };
 		D28FB6972DB7D3F000CD76D0 /* RUMDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28FB6952DB7D3F000CD76D0 /* RUMDataModels.swift */; };
+
 		D28FCC352B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D28FCC342B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy */; };
 		D28FCC362B5FCBD100CCC077 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D28FCC342B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy */; };
 		D29294E3291D652C00F8EFF9 /* ApplicationVersionPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */; };
@@ -3820,6 +3821,7 @@
 		D28F836729C9E71C00EF8EA2 /* DDSpanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSpanTests.swift; sourceTree = "<group>"; };
 		D28F836A29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingURLSessionHandlerTests.swift; sourceTree = "<group>"; };
 		D28FB6952DB7D3F000CD76D0 /* RUMDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModels.swift; sourceTree = "<group>"; };
+
 		D28FCC342B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationVersionPublisherTests.swift; sourceTree = "<group>"; };
 		D293302B2A137DAD0029C9EA /* CrashReportingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingFeature.swift; sourceTree = "<group>"; };
@@ -12568,6 +12570,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -12581,6 +12584,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -12601,6 +12605,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -12614,6 +12619,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -12634,6 +12640,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -12647,6 +12654,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Integration;
@@ -12678,7 +12686,9 @@
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13;
 			};
 			name = Debug;
 		};
@@ -12709,7 +12719,9 @@
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13;
 			};
 			name = Release;
 		};
@@ -12740,7 +12752,9 @@
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13;
 			};
 			name = Integration;
 		};

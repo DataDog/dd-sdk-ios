@@ -49,7 +49,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private(set) var customTimings: [String: Int64] = [:]
 
     /// Feature flags evaluated for the view
-    private(set) var featureFlags: [String: Encodable] = [:]
+    private(set) var featureFlags: [String: AttributeValue] = [:]
 
     /// This View's UUID.
     let viewUUID: RUMUUID

@@ -46,7 +46,7 @@ internal struct FatalErrorBuilder {
     let errorWasTruncated: Bool?
     let errorMeta: RUMErrorEvent.Error.Meta?
 
-    let additionalAttributes: [String: Encodable]?
+    let additionalAttributes: [String: AttributeValue]?
 
     var timeSinceAppStart: TimeInterval?
 

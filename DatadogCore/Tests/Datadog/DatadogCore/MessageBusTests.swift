@@ -11,7 +11,7 @@ import DatadogInternal
 @testable import DatadogCore
 
 class MessageBusTests: XCTestCase {
-    func testMessageBus() throws {
+    func testMessageBus() async throws {
         let expectation = XCTestExpectation(description: "dispatch message")
         expectation.expectedFulfillmentCount = 2
 
@@ -29,20 +29,19 @@ class MessageBusTests: XCTestCase {
         }
 
         let bus = MessageBus()
-        bus.connect(core: core)
+        await bus.connect(core: core)
 
-        bus.connect(receiver, forKey: "receiver 1")
-        bus.connect(receiver, forKey: "receiver 2")
+        await bus.connect(receiver, forKey: "receiver 1")
+        await bus.connect(receiver, forKey: "receiver 2")
 
         // When
-        bus.send(message: .payload("value"))
+        await bus.send(message: .payload("value"))
 
         // Then
-        wait(for: [expectation], timeout: 0.5)
-        bus.flush()
+        await fulfillment(of: [expectation], timeout: 0.5)
     }
 
-    func testItForwardConfigurationAfterDispatch() throws {
+    func testItForwardConfigurationAfterDispatch() async throws {
         let expectation = XCTestExpectation(description: "dispatch configuration")
         let receiver = FeatureMessageReceiverMock { message in
             guard
@@ -59,22 +58,15 @@ class MessageBusTests: XCTestCase {
 
         // Given
         let core = PassthroughCoreMock()
-        let bus = MessageBus(configurationDispatchTime: .milliseconds(90))
-        bus.connect(core: core)
-        bus.connect(receiver, forKey: "test")
+        let bus = MessageBus(configurationDispatchDelay: 90_000_000)
+        await bus.connect(core: core)
+        await bus.connect(receiver, forKey: "test")
 
         // When
-        bus.configuration(batchSize: 1)
-        bus.configuration(trackErrors: true)
+        await bus.send(message: .telemetry(.configuration(.init(batchSize: 1))))
+        await bus.send(message: .telemetry(.configuration(.init(trackErrors: true))))
 
         // Then
-        wait(for: [expectation], timeout: 0.5)
-        bus.flush()
-    }
-}
-
-extension MessageBus: @retroactive Telemetry {
-    public func send(telemetry: DatadogInternal.TelemetryMessage) {
-        send(message: .telemetry(telemetry))
+        await fulfillment(of: [expectation], timeout: 0.5)
     }
 }

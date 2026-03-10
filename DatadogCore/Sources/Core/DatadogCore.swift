@@ -103,7 +103,7 @@ internal final class DatadogCore: @unchecked Sendable {
 
         // connect the core to the message bus.
         // the bus will keep a weak ref to the core.
-        bus.connect(core: self)
+        Task { await bus.connect(core: self) }
 
         // forward any context change on the message-bus
         self.contextProvider.publish { [weak self] context in
@@ -251,15 +251,16 @@ internal final class DatadogCore: @unchecked Sendable {
 
     /// Adds a message receiver to the bus.
     ///
-    /// After being added to the bus, the core will send the current context to receiver.
+    /// After being added to the bus, the core will send the current context to the receiver.
     ///
     /// - Parameters:
     ///   - messageReceiver: The new message receiver.
     ///   - key: The key associated with the receiver.
     private func add(messageReceiver: FeatureMessageReceiver, forKey key: String) {
-        bus.connect(messageReceiver, forKey: key)
-        contextProvider.read { context in
-            self.bus.queue.async { messageReceiver.receive(message: .context(context), from: self) }
+        Task { await bus.connect(messageReceiver, forKey: key) }
+        contextProvider.read { [weak self] context in
+            guard let self else { return }
+            Task { await self.bus.sendInitialContext(context, forKey: key) }
         }
     }
 
@@ -387,7 +388,8 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
-        bus.send(message: message, else: fallback)
+        let box = UnsafeSendableBox(fallback)
+        Task { await bus.send(message: message, else: { box.value() }) }
     }
 
     func set(anonymousId: String?) {
@@ -627,6 +629,13 @@ extension DatadogCore: Storage {
     #endif
 #endif
 // swiftlint:enable duplicate_imports
+
+/// Wraps a non-Sendable value to safely cross an isolation boundary.
+/// The caller must ensure the value is not accessed concurrently.
+private struct UnsafeSendableBox<T>: @unchecked Sendable {
+    let value: T
+    init(_ value: T) { self.value = value }
+}
 
 nonisolated(unsafe) internal let registerObjcExceptionHandlerOnce: () -> Void = {
     ObjcException.rethrow = __dd_private_ObjcExceptionHandler.rethrow
