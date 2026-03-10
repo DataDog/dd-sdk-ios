@@ -6,7 +6,11 @@
 
 import Foundation
 import DatadogInternal
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 /// Tracks the memory warnings history and publishes it to the subscribers.
 internal final class MemoryWarningMonitor {
