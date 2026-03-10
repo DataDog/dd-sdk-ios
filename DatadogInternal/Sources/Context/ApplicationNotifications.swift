@@ -8,8 +8,10 @@ import Foundation
 
 #if canImport(UIKit)
 import UIKit
-#if canImport(WatchKit)
+#elseif canImport(WatchKit)
 import WatchKit
+#elseif canImport(AppKit)
+import AppKit
 #endif
 
 /// Convenient wrapper to get system notifications independent from platform
@@ -17,41 +19,50 @@ public enum ApplicationNotifications {
     public static var didFinishLaunching: Notification.Name {
         #if canImport(WatchKit)
         WKExtension.applicationDidFinishLaunchingNotification
-        #else
+        #elseif canImport(UIKit)
         UIApplication.didFinishLaunchingNotification
+        #elseif canImport(AppKit)
+        NSApplication.didFinishLaunchingNotification
         #endif
     }
 
     public static var didBecomeActive: Notification.Name {
         #if canImport(WatchKit)
         WKExtension.applicationDidBecomeActiveNotification
-        #else
+        #elseif canImport(UIKit)
         UIApplication.didBecomeActiveNotification
+        #elseif canImport(AppKit)
+        NSApplication.didBecomeActiveNotification
         #endif
     }
 
     public static var willResignActive: Notification.Name {
         #if canImport(WatchKit)
         WKExtension.applicationWillResignActiveNotification
-        #else
+        #elseif canImport(UIKit)
         UIApplication.willResignActiveNotification
+        #elseif canImport(AppKit)
+        NSApplication.willResignActiveNotification
         #endif
     }
 
     public static var didEnterBackground: Notification.Name {
         #if canImport(WatchKit)
         WKExtension.applicationDidEnterBackgroundNotification
-        #else
+        #elseif canImport(UIKit)
         UIApplication.didEnterBackgroundNotification
+        #elseif canImport(AppKit)
+        NSApplication.didHideNotification
         #endif
     }
 
     public static var willEnterForeground: Notification.Name {
         #if canImport(WatchKit)
         WKExtension.applicationWillEnterForegroundNotification
-        #else
+        #elseif canImport(UIKit)
         UIApplication.willEnterForegroundNotification
+        #elseif canImport(AppKit)
+        NSApplication.willUnhideNotification
         #endif
     }
 }
-#endif

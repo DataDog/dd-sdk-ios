@@ -51,8 +51,10 @@ internal final class VitalInfoSampler {
             return 120.0 // Hardcoded to enable VisionOS compilation
             #elseif os(watchOS)
             return 60.0 // Default refresh rate for watchOS
-            #else
+            #elseif canImport(UIKit)
             return Double(DDScreen.main.maximumFramesPerSecond)
+            #elseif canImport(AppKit)
+            return Double(DDScreen.main.map { $0.maximumFramesPerSecond } ?? 60)
             #endif
         }
     }
