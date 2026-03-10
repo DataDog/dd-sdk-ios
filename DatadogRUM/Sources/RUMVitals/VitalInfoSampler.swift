@@ -5,7 +5,11 @@
  */
 
 import Foundation
-import class UIKit.UIScreen
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 internal protocol SamplingBasedVitalReader {
     func readVitalData() -> Double?

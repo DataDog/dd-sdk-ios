@@ -6,7 +6,11 @@
 
 import DatadogInternal
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 internal protocol RenderLoopReader: AnyObject {
     var isActive: Bool { get }

@@ -6,7 +6,11 @@
 
 import Foundation
 import DatadogInternal
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 /// Defines operations used for reporting memory warnings.
 internal protocol MemoryWarningReporting: RUMCommandPublisher {

@@ -4,7 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 import DatadogInternal
 
 // MARK: - SwiftUIViewNameExtractor

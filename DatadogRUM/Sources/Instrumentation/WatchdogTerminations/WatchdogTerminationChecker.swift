@@ -9,6 +9,8 @@ import DatadogInternal
 
 #if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
 #endif
 
 /// Checks if the app was terminated by Watchdog using heuristics.

@@ -6,7 +6,11 @@
 
 import Foundation
 import DatadogInternal
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 internal final class RUMFeature: DatadogRemoteFeature {
     static let name = "rum"
