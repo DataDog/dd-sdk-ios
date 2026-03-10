@@ -529,3 +529,21 @@ For each feature module:
 12. **Clean up `#if swift(>=5.9)`** — simplify to `#if os(visionOS)` (section 11)
 13. **Fix deployment targets** in `.xcodeproj` test targets to match `Package.swift`
 14. **Write a module-specific `Resources/ModernConcurrency.md`** documenting decisions
+
+---
+
+## 13. Actor-based MessageBus
+
+The `MessageBus` has been converted from a `final class` with `DispatchQueue`
+to a Swift **actor**. The actor's isolation replaces the queue — receivers are
+dispatched synchronously within the actor, no streams or continuations needed.
+
+Callers in `DatadogCore` wrap actor calls in `Task { await ... }`, preserving
+the same fire-and-forget semantics as the old `queue.async`. The `Flushable`
+conformance bridges to blocking via `nonisolated` + `DispatchSemaphore`.
+
+See `DatadogInternal/Resources/ModernConcurrency.md` section 10 for details.
+
+See `DatadogInternal/Resources/TODO.md` for the full migration plan (Phases 3–6)
+and `DatadogInternal/Resources/ModernConcurrency.md` §10 for implementation
+details.
