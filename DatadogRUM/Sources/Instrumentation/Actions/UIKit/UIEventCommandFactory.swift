@@ -47,6 +47,7 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
     }
 
     func command(from event: DDEvent) -> RUMAddUserActionCommand? {
+        #if canImport(UIKit)
         guard let allTouches = event.allTouches else {
             return nil // not a touch event
         }
@@ -65,6 +66,7 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
 
     // MARK: UIKit
 
+#if canImport(UIKit)
     private func createUIKitActionCommand(from tap: DDTouch) -> RUMAddUserActionCommand? {
         guard let uiKitPredicate else {
             return nil
@@ -110,6 +112,7 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
             heatmapAttributes: heatmapAttributes
         )
     }
+#endif
 
     /// Traverses the hierarchy of the `view` bottom-up to find the best view which could be considered for RUM Action's target,
     /// e.g. if the tapped `view` is a `UILabel` embedded in a `UIStackView` inside the `UITableViewCell` it will
@@ -169,4 +172,6 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
         )
     }
 }
+#endif
+
 #endif
