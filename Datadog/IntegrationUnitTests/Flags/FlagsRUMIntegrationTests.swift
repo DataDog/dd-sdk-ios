@@ -98,7 +98,7 @@ final class FlagsRUMIntegrationTests: XCTestCase {
         )
 
         XCTAssertEqual(featureFlags.count, 2)
-        XCTAssertEqual(featureFlags["boolean-flag"] as? Bool, boolValue)
-        XCTAssertEqual(featureFlags["string-flag"] as? String, stringValue)
+        XCTAssertEqual(featureFlags["boolean-flag"] as? String, "variation-124")
+        XCTAssertEqual(featureFlags["string-flag"] as? String, "variation-123")
     }
 }
