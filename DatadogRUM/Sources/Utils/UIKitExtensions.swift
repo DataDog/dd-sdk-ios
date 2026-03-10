@@ -5,7 +5,12 @@
  */
 
 #if !os(watchOS)
+
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 internal extension UIViewController {
     /// The canonical class name for this view controller.
