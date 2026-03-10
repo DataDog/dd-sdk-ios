@@ -29,7 +29,7 @@ internal final class MemoryWarningMonitor {
     func start() {
         #if os(watchOS)
         consolePrint("Memory warnings instrumentation is not available on watchOS.", .warn)
-        #else
+        #elseif canImport(UIKit)
         notificationCenter.addObserver(self, selector: #selector(didReceiveMemoryWarning), name: DDApplication.didReceiveMemoryWarningNotification, object: nil)
         #endif
     }
