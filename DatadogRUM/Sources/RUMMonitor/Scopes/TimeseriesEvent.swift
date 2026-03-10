@@ -21,6 +21,7 @@ internal struct TimeseriesEventBuilder {
     ///   - date: Event date in ms from epoch
     ///   - batchSize: Maximum number of data points per event (configurable for staging)
     /// - Returns: Array of RUMTimeseriesEvent (multiple if samples exceed batchSize)
+    /// - Note: Event start/end are in milliseconds; data point timestamps are in nanoseconds
     static func createEvents(
         from samples: [(timestamp: Int64, footprint: UInt64)],
         sessionID: RUMUUID,
@@ -45,12 +46,16 @@ internal struct TimeseriesEventBuilder {
             )
         }
 
+        // Get start/end in milliseconds from original samples (not converted data points)
+        let startMs = batchSamples.first!.timestamp
+        let endMs = batchSamples.last!.timestamp
+
         let timeseries = RUMTimeseriesEvent.Timeseries(
             data: dataPoints,
-            end: dataPoints.last!.timestamp,
+            end: endMs,  // milliseconds (RUM common schema)
             id: UUID().uuidString,
             name: .memoryUsage,
-            start: dataPoints.first!.timestamp
+            start: startMs  // milliseconds (RUM common schema)
         )
 
         let event = RUMTimeseriesEvent(
