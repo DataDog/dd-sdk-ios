@@ -73,6 +73,7 @@ public enum Trace {
                 samplingRate: configuration.debugSDK ? 100 : tracingSampleRate,
                 firstPartyHosts: firstPartyHosts,
                 traceContextInjection: traceContextInjection,
+                spanCustomization: configuration.urlSessionTracking?.spanCustomization,
                 telemetry: core.telemetry,
                 redactedStatusCodes: urlSessionTracking.redactedStatusCodes,
                 sessionSampler: core.sessionSampler
