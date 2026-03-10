@@ -44,6 +44,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     /// Safe to store: it holds the core weakly and resolves the RUM feature on every call, so a
     /// session created after `Trace.enable()` is still seen.
     let sessionSampler: SessionSampler?
+    /// Optional callback to customize the span for each intercepted request.
+    let spanCustomization: Trace.Configuration.SpanCustomization?
 
     weak var tracer: DatadogTracer?
 
@@ -74,6 +76,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         samplingRate: SampleRate,
         firstPartyHosts: FirstPartyHosts,
         traceContextInjection: TraceContextInjection,
+        spanCustomization: Trace.Configuration.SpanCustomization? = nil,
         telemetry: Telemetry,
         redactedStatusCodes: Set<Int> = Trace.Configuration.URLSessionTracking.defaultRedactedStatusCodes,
         sessionSampler: SessionSampler? = nil
@@ -83,6 +86,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         self.samplingRate = samplingRate
         self.firstPartyHosts = firstPartyHosts
         self.traceContextInjection = traceContextInjection
+        self.spanCustomization = spanCustomization
         self.telemetry = telemetry
         self.redactedStatusCodes = redactedStatusCodes
         self.sessionSampler = sessionSampler
@@ -418,6 +422,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             span.setTag(key: SpanTags.isBackground, value: didStartInBackground || doesEndInBackground)
             #endif
         }
+
+        spanCustomization?(interception.request.unsafeOriginal, span)
 
         span.finish(at: safeEndTime)
     }
