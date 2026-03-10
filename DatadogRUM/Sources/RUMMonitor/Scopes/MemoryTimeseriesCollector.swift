@@ -136,9 +136,10 @@ internal class MemoryTimeseriesCollector {
     /// - [ ] Event type is "timeseries"
     ///
     /// - Parameters:
+    ///   - context: DatadogContext for service and version info
     ///   - writer: Writer for sending events to DatadogCore
     /// - Returns: Number of events sent.
-    func flushEvents(writer: Writer) -> Int {
+    func flushEvents(context: DatadogContext, writer: Writer) -> Int {
         var eventCount = 0
 
         bufferQueue.sync {
@@ -147,14 +148,16 @@ internal class MemoryTimeseriesCollector {
             // Only flush if we have enough samples for at least one batch
             guard samples.count >= batchSize else { return }
 
-            // Create events with current date
+            // Create events with current date and context
             let currentDate = Date().timeIntervalSince1970.dd.toInt64Milliseconds
             let events = TimeseriesEventBuilder.createEvents(
                 from: samples,
                 sessionID: sessionID,
                 applicationID: applicationID,
                 date: currentDate,
-                batchSize: batchSize
+                batchSize: batchSize,
+                service: context.service,
+                version: context.version
             )
 
             DD.logger.debug("MemoryTimeseriesCollector: Created \(events.count) timeseries event(s)")

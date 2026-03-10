@@ -20,6 +20,8 @@ internal struct TimeseriesEventBuilder {
     ///   - applicationID: Application identifier
     ///   - date: Event date in ms from epoch
     ///   - batchSize: Maximum number of data points per event (configurable for staging)
+    ///   - service: Service name from DatadogContext
+    ///   - version: App version from DatadogContext
     /// - Returns: Array of RUMTimeseriesEvent (multiple if samples exceed batchSize)
     /// - Note: Event start/end are in milliseconds; data point timestamps are in nanoseconds
     static func createEvents(
@@ -27,7 +29,9 @@ internal struct TimeseriesEventBuilder {
         sessionID: RUMUUID,
         applicationID: String,
         date: Int64,
-        batchSize: Int = 120
+        batchSize: Int = 120,
+        service: String? = nil,
+        version: String? = nil
     ) -> [RUMTimeseriesEvent] {
         // TODO: Implement batching logic
         // For Phase 2: Create single event with all samples (up to batchSize)
@@ -53,7 +57,7 @@ internal struct TimeseriesEventBuilder {
         let timeseries = RUMTimeseriesEvent.Timeseries(
             data: dataPoints,
             end: endMs,  // milliseconds (RUM common schema)
-            id: UUID().uuidString,
+            id: UUID().uuidString.lowercased(),
             name: .memoryUsage,
             start: startMs  // milliseconds (RUM common schema)
         )
@@ -62,15 +66,15 @@ internal struct TimeseriesEventBuilder {
             dd: RUMTimeseriesEvent.DD(),
             application: RUMTimeseriesEvent.Application(id: applicationID),
             date: date,
-            service: nil,
+            service: service,
             session: RUMTimeseriesEvent.Session(
-                id: sessionID.rawValue.uuidString,
+                id: sessionID.toRUMDataFormat,
                 type: .user
             ),
             source: .ios,
             timeseries: timeseries,
             view: nil,
-            version: nil
+            version: version
         )
 
         return [event]

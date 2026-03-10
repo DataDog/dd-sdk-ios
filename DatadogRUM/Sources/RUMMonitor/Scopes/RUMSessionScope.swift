@@ -348,7 +348,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Phase 02.1: Flush timeseries events when batch size reached
         if let collector = memoryCollector, collector.shouldFlush() {
             DD.logger.debug("🔄 Timeseries batch ready - flushing to RUM pipeline...")
-            let sentCount = collector.flushEvents(writer: writer)
+            let sentCount = collector.flushEvents(context: context, writer: writer)
             if sentCount > 0 {
                 DD.logger.debug("✅ Flushed \(sentCount) timeseries event(s) - awaiting upload status")
             }
