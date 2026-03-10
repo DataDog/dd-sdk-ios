@@ -36,6 +36,59 @@ final class KronosNTPPacketTests: XCTestCase {
         XCTAssertEqual(PDU?.precision, -23)
     }
 
+    // MARK: - Overflow Protection Tests (Issue #2568)
+
+    func testPrepareToSendWithFarFutureTime_doesNotCrash() {
+        // Time far in the future where time + kEpochDelta > UInt32.max
+        // kEpochDelta = 2_208_988_800, UInt32.max = 4_294_967_295
+        // So time > 2_085_978_495 (approx year 2036) causes overflow
+        var packet = KronosNTPPacket()
+        let farFutureTime: TimeInterval = 2_200_000_000.0 // ~year 2039
+        // This should NOT crash — before the fix it crashes with:
+        // "Fatal error: Double value cannot be converted to UInt32 because the result would be greater than UInt32.max"
+        let data = packet.prepareToSend(transmitTime: farFutureTime)
+        XCTAssertEqual(data.count, 48, "NTP packet should always be 48 bytes")
+    }
+
+    func testPrepareToSendWithNegativeTime_doesNotCrash() {
+        // Negative fractional part causes UInt64 conversion crash
+        var packet = KronosNTPPacket()
+        let negativeTime: TimeInterval = -1000.5
+        let data = packet.prepareToSend(transmitTime: negativeTime)
+        XCTAssertEqual(data.count, 48, "NTP packet should always be 48 bytes")
+    }
+
+    func testPrepareToSendWithExtremelyLargeTime_doesNotCrash() {
+        // Extremely large time value (e.g. corrupted system clock)
+        var packet = KronosNTPPacket()
+        let extremeTime: TimeInterval = Double(UInt32.max) * 2
+        let data = packet.prepareToSend(transmitTime: extremeTime)
+        XCTAssertEqual(data.count, 48, "NTP packet should always be 48 bytes")
+    }
+
+    func testPrepareToSendWithMaxDateBoundary_producesValidPacket() {
+        // Just below the overflow boundary should produce a valid, non-clamped packet
+        var packet = KronosNTPPacket()
+        // time + kEpochDelta should be just under UInt32.max
+        let epochDelta = 2_208_988_800.0
+        let justBelowOverflow: TimeInterval = Double(UInt32.max) - epochDelta - 1.0
+        let data = packet.prepareToSend(transmitTime: justBelowOverflow)
+        XCTAssertEqual(data.count, 48)
+    }
+
+    // MARK: - Integration: NTP round-trip with overflow-safe encoding
+
+    func testNTPPacketRoundTrip_farFutureTime_doesNotCrash() {
+        // Simulates the real flow: create a client packet, encode it (prepareToSend),
+        // then verify it can be parsed back without errors
+        var clientPacket = KronosNTPPacket()
+        let farFutureTime: TimeInterval = 2_200_000_000.0
+        let encoded = clientPacket.prepareToSend(transmitTime: farFutureTime)
+
+        // The encoded packet should be parseable
+        XCTAssertNoThrow(try KronosNTPPacket(data: encoded, destinationTime: farFutureTime))
+    }
+
     func testParseTimeData() {
         let network = Data(hex: "1c0203e90000065700000a68ada2c09cdae2d084a5a76d5fdae2d3354a529000dae2d32b" +
                                 "b38bab46dae2d32bb38d9e00")!

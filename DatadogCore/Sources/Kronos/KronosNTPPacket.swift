@@ -158,15 +158,20 @@ internal struct KronosNTPPacket {
     // MARK: - Private helpers
 
     private func dateToNTPFormat(_ time: TimeInterval) -> UInt64 {
-        let integer = UInt32(time + kEpochDelta)
-        let decimal = modf(time).1 * 4_294_967_296.0 // 2 ^ 32
-        return UInt64(integer) << 32 | UInt64(decimal)
+        let ntpTime = time + kEpochDelta
+        let clampedInteger = max(0, min(ntpTime, Double(UInt32.max)))
+        let integer = UInt32(clampedInteger)
+        let fractional = modf(time).1
+        let clampedDecimal = max(0, fractional) * 4_294_967_296.0 // 2 ^ 32
+        return UInt64(integer) << 32 | UInt64(clampedDecimal)
     }
 
     private func intervalToNTPFormat(_ time: TimeInterval) -> UInt32 {
-        let integer = UInt16(time)
-        let decimal = modf(time).1 * 65_536 // 2 ^ 16
-        return UInt32(integer) << 16 | UInt32(decimal)
+        let clampedInteger = max(0, min(time, Double(UInt16.max)))
+        let integer = UInt16(clampedInteger)
+        let fractional = modf(time).1
+        let clampedDecimal = max(0, fractional) * 65_536 // 2 ^ 16
+        return UInt32(integer) << 16 | UInt32(clampedDecimal)
     }
 
     private static func dateFromNTPFormat(_ time: UInt64) -> TimeInterval {
