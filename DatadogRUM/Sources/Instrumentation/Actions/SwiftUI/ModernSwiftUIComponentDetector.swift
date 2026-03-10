@@ -60,6 +60,7 @@ internal final class ModernSwiftUIComponentDetector: SwiftUIComponentDetector {
     /// Processes a touch in the `.began` phase,
     /// which is when we can detect the Button gesture.
     private func handleTouchBegan(_ touch: DDTouch, dateProvider: DateProvider) -> Bool {
+        #if canImport(UIKit)
         guard let view = touch.view,
               view.isSwiftUIView else {
             return false
@@ -73,6 +74,7 @@ internal final class ModernSwiftUIComponentDetector: SwiftUIComponentDetector {
             )
             return true
         }
+        #endif
 
         return false
     }

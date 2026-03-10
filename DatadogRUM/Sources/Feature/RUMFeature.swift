@@ -90,6 +90,17 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
         let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
 
+        let displayLinker: DisplayLinker?
+
+        #if canImport(UIKit)
+        displayLinker = DisplayLinker(
+            notificationCenter: configuration.notificationCenter,
+            frameInfoProviderFactory: configuration.frameInfoProviderFactory
+        )
+        #elseif canImport(AppKit)
+        displayLinker = nil
+        #endif
+
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
@@ -121,10 +132,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     return nil
                 }
             }(),
-            renderLoopObserver: DisplayLinker(
-                notificationCenter: configuration.notificationCenter,
-                frameInfoProviderFactory: configuration.frameInfoProviderFactory
-            ),
+            renderLoopObserver: displayLinker,
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
                 configuration.trackSlowFrames

@@ -20,7 +20,11 @@ internal extension DDViewController {
     /// `true` if the view controller is an instance of `UIAlertController` or one of its subclasses,
     /// `false` otherwise.
     var isUIAlertController: Bool {
+        #if canImport(UIKit)
         self is UIAlertController
+        #elseif canImport(AppKit)
+        false
+        #endif
     }
 }
 

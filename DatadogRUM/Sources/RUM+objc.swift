@@ -16,7 +16,7 @@ import DatadogInternal
 internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
     let objcPredicate: objc_UIKitRUMViewsPredicate
 
-    func rumView(for viewController: UIViewController) -> RUMView? {
+    func rumView(for viewController: DDViewController) -> RUMView? {
         return objcPredicate.rumView(for: viewController)?.swiftView
     }
 }
@@ -45,10 +45,10 @@ public class objc_RUMView: NSObject {
 @objc(DDUIKitRUMViewsPredicate)
 @_spi(objc)
 public protocol objc_UIKitRUMViewsPredicate: AnyObject {
-    /// The predicate deciding if the RUM View should be started or ended for given instance of the `UIViewController`.
+    /// The predicate deciding if the RUM View should be started or ended for given instance of the `DDViewController`.
     /// - Parameter viewController: an instance of the view controller noticed by the SDK.
     /// - Returns: RUM View parameters if received view controller should start/end the RUM View, `nil` otherwise.
-    func rumView(for viewController: UIViewController) -> objc_RUMView?
+    func rumView(for viewController: DDViewController) -> objc_RUMView?
 }
 
 @objc(DDDefaultUIKitRUMViewsPredicate)
@@ -57,13 +57,14 @@ public protocol objc_UIKitRUMViewsPredicate: AnyObject {
 public class objc_DefaultUIKitRUMViewsPredicate: NSObject, objc_UIKitRUMViewsPredicate {
     private let swiftPredicate = DefaultUIKitRUMViewsPredicate()
 
-    public func rumView(for viewController: UIViewController) -> objc_RUMView? {
+    public func rumView(for viewController: DDViewController) -> objc_RUMView? {
         return swiftPredicate.rumView(for: viewController).map {
             objc_RUMView(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
         }
     }
 }
 
+#if canImport(UIKit)
 @objc(DDDefaultUIKitRUMActionsPredicate)
 @objcMembers
 @_spi(objc)
@@ -76,7 +77,7 @@ public class objc_DefaultUIKitRUMActionsPredicate: NSObject, objc_UIKitRUMAction
         }
     }
     #else
-    public func rumAction(targetView: UIView) -> objc_RUMAction? {
+    public func rumAction(targetView: DDView) -> objc_RUMAction? {
         swiftPredicate.rumAction(targetView: targetView).map {
             objc_RUMAction(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
         }
@@ -95,20 +96,21 @@ internal struct UIKitRUMActionsPredicateBridge: UITouchRUMActionsPredicate & UIP
         self.objcPredicate = objcPredicate
     }
 
-    func rumAction(targetView: UIView) -> RUMAction? {
+    func rumAction(targetView: DDView) -> RUMAction? {
         guard let objcPredicate = objcPredicate as? objc_UITouchRUMActionsPredicate else {
             return nil
         }
         return objcPredicate.rumAction(targetView: targetView)?.swiftAction
     }
 
-    func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
+    func rumAction(press type: UIPress.PressType, targetView: DDView) -> RUMAction? {
         guard let objcPredicate = objcPredicate as? objc_UIPressRUMActionsPredicate else {
             return nil
         }
         return objcPredicate.rumAction(press: type, targetView: targetView)?.swiftAction
     }
 }
+#endif
 
 @objc(DDRUMAction)
 @objcMembers
@@ -147,9 +149,10 @@ public protocol objc_UITouchRUMActionsPredicate: AnyObject {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter targetView: an instance of the `UIView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
-    func rumAction(targetView: UIView) -> objc_RUMAction?
+    func rumAction(targetView: DDView) -> objc_RUMAction?
 }
 
+#if canImport(UIKit)
 @objc(DDUIPressRUMActionsPredicate)
 @_spi(objc)
 public protocol objc_UIPressRUMActionsPredicate: AnyObject {
@@ -158,8 +161,9 @@ public protocol objc_UIPressRUMActionsPredicate: AnyObject {
     ///   - type: the `UIPress.PressType` which received the action.
     ///   - targetView: an instance of the `UIView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
-    func rumAction(press type: UIPress.PressType, targetView: UIView) -> objc_RUMAction?
+    func rumAction(press type: UIPress.PressType, targetView: DDView) -> objc_RUMAction?
 }
+#endif
 
 @objc(DDRUMErrorSource)
 @_spi(objc)
@@ -431,10 +435,12 @@ public class objc_RUMConfiguration: NSObject {
         get { (swiftConfig.uiKitViewsPredicate as? UIKitRUMViewsPredicateBridge)?.objcPredicate  }
     }
 
+    #if canImport(UIKit)
     public var uiKitActionsPredicate: objc_UIKitRUMActionsPredicate? {
         set { swiftConfig.uiKitActionsPredicate = newValue.map { UIKitRUMActionsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.uiKitActionsPredicate as? UIKitRUMActionsPredicateBridge)?.objcPredicate as? objc_UIKitRUMActionsPredicate  }
     }
+    #endif
 
     public var swiftUIViewsPredicate: objc_SwiftUIRUMViewsPredicate? {
         set { swiftConfig.swiftUIViewsPredicate = newValue.map { SwiftUIRUMViewsPredicateBridge(objcPredicate: $0) } }
@@ -592,7 +598,7 @@ public class objc_RUMMonitor: NSObject {
     }
 
     public func startView(
-        viewController: UIViewController,
+        viewController: DDViewController,
         name: String?,
         attributes: [String: Any]
     ) {
@@ -600,7 +606,7 @@ public class objc_RUMMonitor: NSObject {
     }
 
     public func stopView(
-        viewController: UIViewController,
+        viewController: DDViewController,
         attributes: [String: Any]
     ) {
         swiftRUMMonitor.stopView(viewController: viewController, attributes: attributes.dd.swiftAttributes)

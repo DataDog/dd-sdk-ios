@@ -43,7 +43,13 @@ internal class DisplayLinker {
 
     init(
         notificationCenter: NotificationCenter,
-        frameInfoProviderFactory: @escaping (Any, Selector) -> FrameInfoProvider = { CADisplayLink(target: $0, selector: $1) }
+        frameInfoProviderFactory: @escaping (Any, Selector) -> FrameInfoProvider = {
+            #if canImport(UIKit)
+            CADisplayLink(target: $0, selector: $1)
+            #elseif canImport(AppKit)
+            NoopFrameInfoProvider(target: $0, selector: $1)
+            #endif
+        }
     ) {
         self.notificationCenter = notificationCenter
         self.frameInfoProviderFactory = frameInfoProviderFactory

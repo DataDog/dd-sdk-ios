@@ -391,8 +391,10 @@ extension RUM {
         internal var processID: UUID = currentProcessID
         /// The default notification center used for subscribing to app lifecycle events and system notifications.
         internal var notificationCenter: NotificationCenter = .default
+        #if canImport(UIKit)
         /// The factory to create the frame info provider. Defaults to the `CADisplayLink`.
         internal var frameInfoProviderFactory: (Any, Selector) -> FrameInfoProvider = { CADisplayLink(target: $0, selector: $1) }
+        #endif
         /// The bundle object that contains the current executable.
         internal var bundle: Bundle = .main
 

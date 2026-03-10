@@ -45,6 +45,9 @@ public typealias DDFont = UIFont
 public typealias DDTableViewCell = UITableViewCell
 public typealias DDCollectionViewCell = UICollectionViewCell
 
+// MARK: - Accessibility
+public typealias DDAccessibility = UIAccessibility
+
 #elseif canImport(AppKit)
 import AppKit
 
@@ -85,6 +88,12 @@ public typealias DDFont = NSFont
 public typealias DDTableViewCell = NSTableCellView
 /// `NSCollectionViewItem` is the AppKit equivalent; note it is an `NSViewController` subclass.
 public typealias DDCollectionViewCell = NSCollectionViewItem
+
+// MARK: - Accessibility
+/// Stub namespace matching `UIAccessibility` API surface used in DatadogRUM.
+/// AppKit exposes accessibility via `NSAccessibility` (a protocol) and top-level functions;
+/// this enum provides a compilation target — actual macOS values are not supported.
+public typealias DDAccessibility = NSAccessibility
 
 // MARK: - Application lifecycle notifications
 /// Maps `UIApplication.didEnterBackgroundNotification` → `NSApplication.didResignActiveNotification`.

@@ -967,6 +967,7 @@
 		619F1A242DEE493F003954BD /* LaunchReasonResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619F1A232DEE491D003954BD /* LaunchReasonResolver.swift */; };
 		619F1A252DEE493F003954BD /* LaunchReasonResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619F1A232DEE491D003954BD /* LaunchReasonResolver.swift */; };
 		619F1A282DEF0B3F003954BD /* LaunchReasonResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619F1A262DEF0B3F003954BD /* LaunchReasonResolverTests.swift */; };
+		619F6D8395D345A4B734EA7E /* DDPlatformTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3CFF5B3A4314A8C9C965D15 /* DDPlatformTypes.swift */; };
 		61A2CC212A443D330000FF25 /* DDRUMConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A2CC202A443D330000FF25 /* DDRUMConfigurationTests.swift */; };
 		61A2CC222A443D330000FF25 /* DDRUMConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A2CC202A443D330000FF25 /* DDRUMConfigurationTests.swift */; };
 		61A2CC242A44454D0000FF25 /* DDRUMTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A2CC232A44454D0000FF25 /* DDRUMTests.swift */; };
@@ -1489,7 +1490,6 @@
 		D23F8E6029DDCD28001CFAE8 /* PerformanceMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = E179FB4D28F80A6400CC2698 /* PerformanceMetric.swift */; };
 		D23F8E6129DDCD28001CFAE8 /* RUMConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25FF2EA29CC6D6F0063802D /* RUMConfiguration.swift */; };
 		D23F8E6429DDCD28001CFAE8 /* SwiftUIViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24985A12728048B00B4F72D /* SwiftUIViewHandler.swift */; };
-		ED60AA5A1BD34A3EBF66A1DF /* DDPlatformTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3CFF5B3A4314A8C9C965D15 /* DDPlatformTypes.swift */; };
 		D23F8E6529DDCD28001CFAE8 /* RUMFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25FF2E729CC6B680063802D /* RUMFeature.swift */; };
 		D23F8E6629DDCD28001CFAE8 /* RUMDebugging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B22E5924F3E6B700DC26D2 /* RUMDebugging.swift */; };
 		D23F8E6729DDCD28001CFAE8 /* RUMUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD624C7265300589570 /* RUMUUID.swift */; };
@@ -1726,7 +1726,6 @@
 		D29A9F6F29DD85BB005C54A4 /* RUMInstrumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616CCE15250A467E009FED46 /* RUMInstrumentation.swift */; };
 		D29A9F7029DD85BB005C54A4 /* RUMContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */; };
 		D29A9F7329DD85BB005C54A4 /* RUMApplicationScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */; };
-		619F6D8395D345A4B734EA7E /* DDPlatformTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3CFF5B3A4314A8C9C965D15 /* DDPlatformTypes.swift */; };
 		D29A9F7429DD85BB005C54A4 /* RUMFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25FF2E729CC6B680063802D /* RUMFeature.swift */; };
 		D29A9F7529DD85BB005C54A4 /* RUMViewScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C21124C5951400C0321C /* RUMViewScope.swift */; };
 		D29A9F7629DD85BB005C54A4 /* RUMViewsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */; };
@@ -2192,6 +2191,7 @@
 		E2AA55E82C32C6D9002FEF28 /* ApplicationNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E62C32C6D9002FEF28 /* ApplicationNotifications.swift */; };
 		E2AA55EA2C32C76A002FEF28 /* WatchKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E92C32C76A002FEF28 /* WatchKitExtensions.swift */; };
 		E2AA55EC2C32C78B002FEF28 /* WatchKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E92C32C76A002FEF28 /* WatchKitExtensions.swift */; };
+		ED60AA5A1BD34A3EBF66A1DF /* DDPlatformTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3CFF5B3A4314A8C9C965D15 /* DDPlatformTypes.swift */; };
 		F603F12B2CAEA4FA0088E6B7 /* DDInternalLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F603F1282CAEA4E90088E6B7 /* DDInternalLoggerTests.swift */; };
 		F603F12C2CAEA7180088E6B7 /* DDInternalLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F603F1282CAEA4E90088E6B7 /* DDInternalLoggerTests.swift */; };
 		F603F1302CAEA7620088E6B7 /* DDInternalLogger+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F603F12D2CAEA7590088E6B7 /* DDInternalLogger+apiTests.m */; };
@@ -3622,6 +3622,7 @@
 		A7FA98CD2BA1A6930018D6B5 /* MethodCalledMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodCalledMetric.swift; sourceTree = "<group>"; };
 		B3BBBCB0265E71C600943419 /* VitalMemoryReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalMemoryReader.swift; sourceTree = "<group>"; };
 		B3BBBCBB265E71D100943419 /* VitalMemoryReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalMemoryReaderTests.swift; sourceTree = "<group>"; };
+		B3CFF5B3A4314A8C9C965D15 /* DDPlatformTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDPlatformTypes.swift; sourceTree = "<group>"; };
 		B3E46CAA2D91B3A400BABF66 /* NetworkContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkContextProvider.swift; sourceTree = "<group>"; };
 		B3E46CAD2D91B3FC00BABF66 /* NetworkContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkContext.swift; sourceTree = "<group>"; };
 		B3FC3C0626526EFF00DEED9E /* VitalInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalInfo.swift; sourceTree = "<group>"; };
@@ -3783,7 +3784,6 @@
 		D25CFAA129C8644E00E3A43D /* Casting+Tracing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Casting+Tracing.swift"; sourceTree = "<group>"; };
 		D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogTrace.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D25EE93B29C4C3C300CE3839 /* DatadogTraceTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogTraceTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		B3CFF5B3A4314A8C9C965D15 /* DDPlatformTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDPlatformTypes.swift; sourceTree = "<group>"; };
 		D25FF2E729CC6B680063802D /* RUMFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeature.swift; sourceTree = "<group>"; };
 		D25FF2EA29CC6D6F0063802D /* RUMConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMConfiguration.swift; sourceTree = "<group>"; };
 		D25FF2ED29CC73240063802D /* RequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestBuilder.swift; sourceTree = "<group>"; };
@@ -14720,6 +14720,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogRUM;
 				PRODUCT_NAME = DatadogRUM;
@@ -14752,6 +14753,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogRUM;
 				PRODUCT_NAME = DatadogRUM;
@@ -14783,6 +14785,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogRUM;
 				PRODUCT_NAME = DatadogRUM;

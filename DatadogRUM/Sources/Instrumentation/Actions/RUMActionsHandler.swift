@@ -49,6 +49,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
         )
     }
 
+    #if canImport(UIKit)
     /// Convenience initializer for tvOS
     ///
     /// Note: On tvOS, user interactions come through the remote's physical buttons
@@ -72,6 +73,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
             )
         )
     }
+    #endif
 
     init(
         dateProvider: DateProvider,
