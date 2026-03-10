@@ -25,12 +25,12 @@ internal final class MemoryWarningMonitor {
         self.reporter = memoryWarningReporter
     }
 
-    /// Starts monitoring memory warnings by subscribing to `UIApplication.didReceiveMemoryWarningNotification`.
+    /// Starts monitoring memory warnings by subscribing to `DDApplication.didReceiveMemoryWarningNotification`.
     func start() {
         #if os(watchOS)
         consolePrint("Memory warnings instrumentation is not available on watchOS.", .warn)
         #else
-        notificationCenter.addObserver(self, selector: #selector(didReceiveMemoryWarning), name: UIApplication.didReceiveMemoryWarningNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(didReceiveMemoryWarning), name: DDApplication.didReceiveMemoryWarningNotification, object: nil)
         #endif
     }
 
