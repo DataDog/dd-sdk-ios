@@ -25,12 +25,13 @@ extension Trace {
 
         /// A callback that allows customizing the span created for each intercepted network request.
         ///
-        /// This closure receives the original `URLRequest` and the `OTSpan` created for it. You can use
-        /// the span's `setTag(key:value:)` or `setOperationName(_:)` methods to add custom attributes.
+        /// This closure receives the original `URLRequest`, the `OTSpan` created for it, the HTTP response
+        /// (if any), and an error (if any). You can use the span's `setTag(key:value:)` or
+        /// `setOperationName(_:)` methods to add custom attributes.
         ///
         /// Example — tagging GraphQL requests with the operation name:
         /// ```swift
-        /// Trace.Configuration.SpanCustomization { request, span in
+        /// Trace.Configuration.SpanCustomization { request, span, response, error in
         ///     if let body = request.httpBody,
         ///        let json = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
         ///        let operationName = json["operationName"] as? String {
@@ -41,7 +42,7 @@ extension Trace {
         /// ```
         ///
         /// - Note: Keep the implementation fast and do not make any assumptions on the thread used to run it.
-        public typealias SpanCustomization = (URLRequest, OTSpan) -> Void
+        public typealias SpanCustomization = (URLRequest, OTSpan, URLResponse?, Error?) -> Void
 
         /// The sampling rate for spans created with the default tracer.
         ///
