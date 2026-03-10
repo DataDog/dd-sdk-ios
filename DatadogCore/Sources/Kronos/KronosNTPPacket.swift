@@ -126,8 +126,20 @@ internal struct KronosNTPPacket {
 
     /// Convert this NTPPacket to a buffer that can be sent over a socket.
     ///
-    /// - returns: A bytes buffer representing this packet.
-    mutating func prepareToSend(transmitTime: TimeInterval? = nil) -> Data {
+    /// - returns: A bytes buffer representing this packet, or `nil` if any timestamp
+    ///   cannot be represented in NTP format (e.g. system clock set beyond year 2036).
+    mutating func prepareToSend(transmitTime: TimeInterval? = nil) -> Data? {
+        self.transmitTime = transmitTime ?? kronosCurrentTime()
+
+        // Validate all timestamps before serialization to avoid sending
+        // corrupted NTP data that would produce incorrect time offsets.
+        let timestamps = [self.referenceTime, self.originTime, self.receiveTime, self.transmitTime]
+        for timestamp in timestamps {
+            guard dateToNTPFormat(timestamp) != nil else {
+                return nil
+            }
+        }
+
         var data = Data()
         data.append(byte: self.leap.rawValue << 6 | self.version << 3 | self.mode.rawValue)
         data.append(byte: self.stratum.rawValue)
@@ -136,12 +148,10 @@ internal struct KronosNTPPacket {
         data.append(unsignedInteger: self.intervalToNTPFormat(self.rootDelay))
         data.append(unsignedInteger: self.intervalToNTPFormat(self.rootDispersion))
         data.append(unsignedInteger: self.clockSource.ID)
-        data.append(unsignedLong: self.dateToNTPFormat(self.referenceTime))
-        data.append(unsignedLong: self.dateToNTPFormat(self.originTime))
-        data.append(unsignedLong: self.dateToNTPFormat(self.receiveTime))
-
-        self.transmitTime = transmitTime ?? kronosCurrentTime()
-        data.append(unsignedLong: self.dateToNTPFormat(self.transmitTime))
+        data.append(unsignedLong: self.dateToNTPFormat(self.referenceTime)!)
+        data.append(unsignedLong: self.dateToNTPFormat(self.originTime)!)
+        data.append(unsignedLong: self.dateToNTPFormat(self.receiveTime)!)
+        data.append(unsignedLong: self.dateToNTPFormat(self.transmitTime)!)
         return data
     }
 
@@ -157,21 +167,23 @@ internal struct KronosNTPPacket {
 
     // MARK: - Private helpers
 
-    private func dateToNTPFormat(_ time: TimeInterval) -> UInt64 {
+    private func dateToNTPFormat(_ time: TimeInterval) -> UInt64? {
         let ntpTime = time + kEpochDelta
-        let clampedInteger = max(0, min(ntpTime, Double(UInt32.max)))
-        let integer = UInt32(clampedInteger)
+        guard ntpTime >= 0, ntpTime <= Double(UInt32.max) else {
+            return nil
+        }
+        let integer = UInt32(ntpTime)
         let fractional = modf(time).1
-        let clampedDecimal = max(0, fractional) * 4_294_967_296.0 // 2 ^ 32
-        return UInt64(integer) << 32 | UInt64(clampedDecimal)
+        let decimal = max(0, fractional) * 4_294_967_296.0 // 2 ^ 32
+        return UInt64(integer) << 32 | UInt64(decimal)
     }
 
     private func intervalToNTPFormat(_ time: TimeInterval) -> UInt32 {
-        let clampedInteger = max(0, min(time, Double(UInt16.max)))
-        let integer = UInt16(clampedInteger)
+        let safeTime = max(0, min(time, Double(UInt16.max)))
+        let integer = UInt16(safeTime)
         let fractional = modf(time).1
-        let clampedDecimal = max(0, fractional) * 65_536 // 2 ^ 16
-        return UInt32(integer) << 16 | UInt32(clampedDecimal)
+        let decimal = max(0, fractional) * 65_536 // 2 ^ 16
+        return UInt32(integer) << 16 | UInt32(decimal)
     }
 
     private static func dateFromNTPFormat(_ time: UInt64) -> TimeInterval {
