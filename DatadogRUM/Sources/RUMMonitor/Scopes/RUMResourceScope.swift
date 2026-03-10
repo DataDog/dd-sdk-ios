@@ -156,6 +156,10 @@ internal class RUMResourceScope: RUMScope {
             )
         }
 
+        // Extract captured HTTP headers
+        let requestHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.requestHeaders)?.dd.decode()
+        let responseHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.responseHeaders)?.dd.decode()
+
         // Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
             resourceStartTime = metrics.fetch.start
@@ -170,6 +174,26 @@ internal class RUMResourceScope: RUMScope {
 
         let encodedBodySize = resourceMetrics?.responseBodySize?.encoded
         let decodedBodySize = resourceMetrics?.responseBodySize?.decoded
+
+        let requestHeadersObj = requestHeaders.flatMap { $0.isEmpty ? nil : RUMResourceEvent.Resource.Request.Headers(headersInfo: $0) }
+        let request: RUMResourceEvent.Resource.Request? = {
+            let hasBodySize = resourceMetrics?.requestBodySize != nil
+            let hasHeaders = requestHeadersObj != nil
+
+            guard hasBodySize || hasHeaders else {
+                return nil
+            }
+
+            return .init(
+                decodedBodySize: resourceMetrics?.requestBodySize?.decoded,
+                encodedBodySize: resourceMetrics?.requestBodySize?.encoded,
+                headers: requestHeadersObj
+            )
+        }()
+
+        let response: RUMResourceEvent.Resource.Response? = responseHeaders.flatMap { headers in
+            headers.isEmpty ? nil : .init(headers: .init(headersInfo: headers))
+        }
 
         // Write resource event
         let resourceEvent = RUMResourceEvent(
@@ -245,6 +269,8 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 renderBlockingStatus: nil,
+                request: request,
+                response: response,
                 size: size ?? 0,
                 ssl: resourceMetrics?.ssl.map { metric in
                     .init(

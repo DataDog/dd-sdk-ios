@@ -736,6 +736,48 @@ class CrashReportReceiverTests: XCTestCase {
         DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes)
     }
 
+    func testGivenCrashDuringRUMSessionWithActiveViewAndFeatureFlags_itSendsEventsWithFeatureFlags() throws {
+        let featureFlags: RUMViewEvent.FeatureFlags = .init(featureFlagsInfo: ["flag1": "value1", "flag2": true])
+        let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0, featureFlags: featureFlags)
+
+        // Given
+        let crashDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted,
+            lastRUMViewEvent: lastRUMViewEvent
+        )
+
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: crashDate),
+            sessionSampler: .mockKeepAll(),
+            trackBackgroundEvents: .mockRandom()
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .payload(
+                Crash(report: crashReport, context: crashContext)
+            ), from: NOPDatadogCore())
+        )
+
+        // Then
+        let sentRUMViewEvent = featureScope.eventsWritten(ofType: RUMViewEvent.self)[0]
+        let sentRUMErrorEvent = featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0]
+
+        DDAssertJSONEqual(
+            AnyEncodable(sentRUMErrorEvent.featureFlags?.featureFlagsInfo),
+            AnyEncodable(lastRUMViewEvent.featureFlags?.featureFlagsInfo),
+            "The `RUMErrorEvent` must propagate feature flags from the last `RUMViewEvent`."
+        )
+        DDAssertJSONEqual(
+            AnyEncodable(sentRUMViewEvent.featureFlags?.featureFlagsInfo),
+            AnyEncodable(lastRUMViewEvent.featureFlags?.featureFlagsInfo),
+            "The `RUMViewEvent` must propagate feature flags from the original `RUMViewEvent`."
+        )
+    }
+
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With No Active View
 
     func testGivenCrashDuringRUMSessionWithNoActiveView_whenSendingRUMViewEvent_itIsLinkedToPreviousRUMSessionAndIncludesErrorInformation() throws {

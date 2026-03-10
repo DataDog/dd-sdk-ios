@@ -167,6 +167,7 @@
 		118ACA3D2EEED247004E7F20 /* AppLaunchMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA392EEED247004E7F20 /* AppLaunchMetric.swift */; };
 		118ACA422EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA402EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift */; };
 		118ACA442EEEED24004E7F20 /* AppLaunchMetricControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA432EEEED1F004E7F20 /* AppLaunchMetricControllerTests.swift */; };
+		11A6D68E2E0AC8960055B3A9 /* DataStoreAsyncMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A6D68E2E0AC8960055B3A9 /* DataStoreAsyncMock.swift */; };
 		11A2F24A2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */; };
 		11A2F24B2E70CC08006EDC52 /* MediaTimeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2492E70CC08006EDC52 /* MediaTimeProvider.swift */; };
 		11A2F2532E71B730006EDC52 /* MediaTimeProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2512E71B730006EDC52 /* MediaTimeProviderMock.swift */; };
@@ -208,6 +209,8 @@
 		144CDB9AFBDFF0B7EB10B4A3 /* EvaluationAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA681535D980BA99B12659B /* EvaluationAggregatorTests.swift */; };
 		261255872E2167E40015042B /* BaggageHeaderMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255862E2167E40015042B /* BaggageHeaderMerger.swift */; };
 		2612558B2E2167F10015042B /* BaggageHeaderMergerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255892E2167F10015042B /* BaggageHeaderMergerTests.swift */; };
+		261255912E2167E40015042B /* HeaderProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255902E2167E40015042B /* HeaderProcessor.swift */; };
+		261255952E2167F10015042B /* HeaderProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255932E2167F10015042B /* HeaderProcessorTests.swift */; };
 		265496D42D81C5B10094B6E2 /* RUMAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 265496D22D81C5AE0094B6E2 /* RUMAccount.swift */; };
 		266BFA5E2D6F4E31003041A5 /* AccountInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 266BFA5D2D6F4E2A003041A5 /* AccountInfoPublisherTests.swift */; };
 		2671348E2D688AD60048CB54 /* AccountInfoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2671348C2D688ACD0048CB54 /* AccountInfoPublisher.swift */; };
@@ -763,6 +766,10 @@
 		A7EA88562B17639A00FE2580 /* ResourcesWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7EA88552B17639A00FE2580 /* ResourcesWriter.swift */; };
 		A7F651302B7655DE004B0EDB /* UIImageResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F6512F2B7655DE004B0EDB /* UIImageResourceTests.swift */; };
 		A7FA98CE2BA1A6930018D6B5 /* MethodCalledMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7FA98CD2BA1A6930018D6B5 /* MethodCalledMetric.swift */; };
+		AA0001012A000001000B0001 /* RUMScrollHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000001000A0001 /* RUMScrollHandler.swift */; };
+		AA0001012A000002000B0001 /* UIScrollViewDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000002000A0001 /* UIScrollViewDelegateProxy.swift */; };
+		AA0001012A000003000C0001 /* UIScrollViewSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000003000A0001 /* UIScrollViewSwizzler.swift */; };
+		AA0001012A000005000C0001 /* UIScrollViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000005000A0001 /* UIScrollViewHandler.swift */; };
 		AF9357FB8B8BF79EDD56F7C0 /* FlagsEvaluationFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD117A3F5E4EFA0335A8268F /* FlagsEvaluationFeature.swift */; };
 		B3E46CAB2D91B3AD00BABF66 /* NetworkContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E46CAA2D91B3A400BABF66 /* NetworkContextProvider.swift */; };
 		B3E46CAE2D91B40000BABF66 /* NetworkContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E46CAD2D91B3FC00BABF66 /* NetworkContext.swift */; };
@@ -895,6 +902,96 @@
 		D233E8002E4B588B00E7CFDE /* dd_pprof.h in Headers */ = {isa = PBXBuildFile; fileRef = D233E7FE2E4B588B00E7CFDE /* dd_pprof.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D233E8022E4B653F00E7CFDE /* dd_pprof.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D233E8012E4B653F00E7CFDE /* dd_pprof.cpp */; };
 		D234613228B7713000055D4C /* FeatureContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D234613028B7712F00055D4C /* FeatureContextTests.swift */; };
+		D23F8E5229DDCD28001CFAE8 /* UIViewControllerHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA2251118FB00C816E5 /* UIViewControllerHandler.swift */; };
+		D23F8E5329DDCD28001CFAE8 /* RUMCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63A24BF1A4B008053F2 /* RUMCommand.swift */; };
+		D23F8E5429DDCD28001CFAE8 /* ValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611529A425E3DD51004F740E /* ValuePublisher.swift */; };
+		D23F8E5529DDCD28001CFAE8 /* RUMEventSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122ED325B1B84D00F9C7F5 /* RUMEventSanitizer.swift */; };
+		D23F8E5729DDCD28001CFAE8 /* RUMScopeDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6122514727FDFF82004F5AE4 /* RUMScopeDependencies.swift */; };
+		D23F8E5829DDCD28001CFAE8 /* VitalMemoryReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BBBCB0265E71C600943419 /* VitalMemoryReader.swift */; };
+		D23F8E5929DDCD28001CFAE8 /* WebViewEventReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2CBC26A294383F200134409 /* WebViewEventReceiver.swift */; };
+		D23F8E5A29DDCD28001CFAE8 /* RUMResourceScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB024C839460082C633 /* RUMResourceScope.swift */; };
+		D23F8E5C29DDCD28001CFAE8 /* RUMApplicationScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */; };
+		D23F8E5D29DDCD28001CFAE8 /* SwiftUIViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D249859F2728042200B4F72D /* SwiftUIViewModifier.swift */; };
+		D23F8E5E29DDCD28001CFAE8 /* VitalInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FC3C0626526EFF00DEED9E /* VitalInfo.swift */; };
+		D23F8E5F29DDCD28001CFAE8 /* UIApplicationSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6141014E251A57AF00E3C2D9 /* UIApplicationSwizzler.swift */; };
+		D23F8E6029DDCD28001CFAE8 /* PerformanceMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = E179FB4D28F80A6400CC2698 /* PerformanceMetric.swift */; };
+		D23F8E6129DDCD28001CFAE8 /* RUMConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25FF2EA29CC6D6F0063802D /* RUMConfiguration.swift */; };
+		D23F8E6429DDCD28001CFAE8 /* SwiftUIViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24985A12728048B00B4F72D /* SwiftUIViewHandler.swift */; };
+		D23F8E6529DDCD28001CFAE8 /* RUMFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25FF2E729CC6B680063802D /* RUMFeature.swift */; };
+		D23F8E6629DDCD28001CFAE8 /* RUMDebugging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B22E5924F3E6B700DC26D2 /* RUMDebugging.swift */; };
+		D23F8E6729DDCD28001CFAE8 /* RUMUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD624C7265300589570 /* RUMUUID.swift */; };
+		D23F8E6829DDCD28001CFAE8 /* UIKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */; };
+		D23F8E6929DDCD28001CFAE8 /* RUMContextAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2CBC26D294395A300134409 /* RUMContextAttributes.swift */; };
+		D23F8E6B29DDCD28001CFAE8 /* RUMMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333524B84B43003D6C4E /* RUMMonitor.swift */; };
+		D23F8E6C29DDCD28001CFAE8 /* RUMContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */; };
+		D23F8E6D29DDCD28001CFAE8 /* ViewIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */; };
+		D23F8E6E29DDCD28001CFAE8 /* RUMViewsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */; };
+		D23F8E6F29DDCD28001CFAE8 /* RequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25FF2ED29CC73240063802D /* RequestBuilder.swift */; };
+		D23F8E7029DDCD28001CFAE8 /* URLSessionRUMResourcesHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BCB11E29D30AF000737A9A /* URLSessionRUMResourcesHandler.swift */; };
+		D23F8E7129DDCD28001CFAE8 /* RUMEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF281D24B8968D000B3D9B /* RUMEventBuilder.swift */; };
+		D23F8E7229DDCD28001CFAE8 /* ErrorMessageReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D215ED6A29D2E1080046B721 /* ErrorMessageReceiver.swift */; };
+		D23F8E7329DDCD28001CFAE8 /* SwiftUIActionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */; };
+		D23F8E7429DDCD28001CFAE8 /* RUMCommandSubscriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616CCE12250A1868009FED46 /* RUMCommandSubscriber.swift */; };
+		D23F8E7529DDCD28001CFAE8 /* RUMUserActionScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB924CB126F0082C633 /* RUMUserActionScope.swift */; };
+		D23F8E7629DDCD28001CFAE8 /* RUMConnectivityInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A4E24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift */; };
+		D23F8E7729DDCD28001CFAE8 /* UIKitRUMViewsPredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA62512144600C816E5 /* UIKitRUMViewsPredicate.swift */; };
+		D23F8E7829DDCD28001CFAE8 /* LongTaskObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E359F4D26CD518D001E25E9 /* LongTaskObserver.swift */; };
+		D23F8E7A29DDCD28001CFAE8 /* SessionReplayDependency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615950ED291C058F00470E0C /* SessionReplayDependency.swift */; };
+		D23F8E7C29DDCD28001CFAE8 /* RUMOffViewEventsHandlingRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A614E7276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift */; };
+		D23F8E7D29DDCD28001CFAE8 /* RUMScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63624BF191F008053F2 /* RUMScope.swift */; };
+		D23F8E7E29DDCD28001CFAE8 /* CrashReportReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D236BE2729520FED00676E67 /* CrashReportReceiver.swift */; };
+		D23F8E7F29DDCD28001CFAE8 /* UIViewControllerSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA42511190E00C816E5 /* UIViewControllerSwizzler.swift */; };
+		D23F8E8029DDCD28001CFAE8 /* VitalInfoSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9973F0268DF69500D8059B /* VitalInfoSampler.swift */; };
+		D23F8E8129DDCD28001CFAE8 /* RUMViewScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C21124C5951400C0321C /* RUMViewScope.swift */; };
+		D23F8E8229DDCD28001CFAE8 /* RUMSessionScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C20624C098FC00C0321C /* RUMSessionScope.swift */; };
+		D23F8E8329DDCD28001CFAE8 /* RUMUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A4A24EBC43D00A2A780 /* RUMUser.swift */; };
+		D23F8E8429DDCD28001CFAE8 /* UIKitRUMUserActionsPredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F637AED12697404200516F32 /* UIKitRUMUserActionsPredicate.swift */; };
+		D23F8E8529DDCD28001CFAE8 /* SwiftUIExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA238271D896E0020286F /* SwiftUIExtensions.swift */; };
+		D23F8E8629DDCD28001CFAE8 /* RUMDataModelsMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F824DC13A100FC0F69 /* RUMDataModelsMapping.swift */; };
+		D23F8E8729DDCD28001CFAE8 /* RUMInstrumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616CCE15250A467E009FED46 /* RUMInstrumentation.swift */; };
+		D23F8E8829DDCD28001CFAE8 /* VitalCPUReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC8B5D92668197B000F7529 /* VitalCPUReader.swift */; };
+		D23F8E8A29DDCD28001CFAE8 /* RUMEventsMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E81EF25A740140084B751 /* RUMEventsMapper.swift */; };
+		D23F8E8B29DDCD28001CFAE8 /* RUMContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63824BF19B4008053F2 /* RUMContext.swift */; };
+		D23F8E8E29DDCD28001CFAE8 /* UIEventCommandFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6141015A251A601D00E3C2D9 /* UIEventCommandFactory.swift */; };
+		D23F8E8F29DDCD28001CFAE8 /* RUMUUIDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD824C7269500589570 /* RUMUUIDGenerator.swift */; };
+		D23F8EA029DDCD38001CFAE8 /* RUMOffViewEventsHandlingRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A614E9276B9D4C00A06CE7 /* RUMOffViewEventsHandlingRuleTests.swift */; };
+		D23F8EA229DDCD38001CFAE8 /* RUMSessionScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C20824C0C75500C0321C /* RUMSessionScopeTests.swift */; };
+		D23F8EA329DDCD38001CFAE8 /* RUMUserActionScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617CD0DC24CEDDD300B0B557 /* RUMUserActionScopeTests.swift */; };
+		D23F8EA629DDCD38001CFAE8 /* RUMDeviceInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FD9FCE28534EBD00214BD9 /* RUMDeviceInfoTests.swift */; };
+		D23F8EA829DDCD38001CFAE8 /* RUMResourceScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB424C864680082C633 /* RUMResourceScopeTests.swift */; };
+		D23F8EAC29DDCD38001CFAE8 /* RUMDataModelsMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715FB24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift */; };
+		D23F8EAD29DDCD38001CFAE8 /* RUMEventBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282024B8981D000B3D9B /* RUMEventBuilderTests.swift */; };
+		D23F8EAE29DDCD38001CFAE8 /* DDTAssertValidRUMUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29A9FCB29DDBCC5005C54A4 /* DDTAssertValidRUMUUID.swift */; };
+		D23F8EAF29DDCD38001CFAE8 /* RUMScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFDE24C75FD300589570 /* RUMScopeTests.swift */; };
+		D23F8EB029DDCD38001CFAE8 /* SessionReplayDependencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615950EA291C029700470E0C /* SessionReplayDependencyTests.swift */; };
+		D23F8EB129DDCD38001CFAE8 /* RUMViewScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */; };
+		D23F8EB229DDCD38001CFAE8 /* ValuePublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611529AD25E3E429004F740E /* ValuePublisherTests.swift */; };
+		D23F8EB329DDCD38001CFAE8 /* ErrorMessageReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */; };
+		D23F8EB429DDCD38001CFAE8 /* RUMApplicationScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617B953F24BF4DB300E6F443 /* RUMApplicationScopeTests.swift */; };
+		D23F8EB629DDCD38001CFAE8 /* RUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */; };
+		AA0001012A000004000B0001 /* RUMScrollHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000004000A0001 /* RUMScrollHandlerTests.swift */; };
+		AA0001012A000006000B0001 /* UIScrollViewDelegateProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000006000A0001 /* UIScrollViewDelegateProxyTests.swift */; };
+		AA0001012A000007000B0001 /* UIScrollViewSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000007000A0001 /* UIScrollViewSwizzlerTests.swift */; };
+		D23F8EB829DDCD38001CFAE8 /* RUMActionsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615C3195251DD5080018781C /* RUMActionsHandlerTests.swift */; };
+		D23F8EBA29DDCD38001CFAE8 /* ViewIdentifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C1510C25AC8C1B00362D4B /* ViewIdentifierTests.swift */; };
+		D23F8EBE29DDCD38001CFAE8 /* WebViewEventReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E53889B2773C4B300A7DC42 /* WebViewEventReceiverTests.swift */; };
+		D23F8EBF29DDCD38001CFAE8 /* URLSessionRUMResourcesHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BCB12129D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests.swift */; };
+		D23F8EC029DDCD38001CFAE8 /* RUMEventSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122EED25B1D75B00F9C7F5 /* RUMEventSanitizerTests.swift */; };
+		D23F8EC129DDCD38001CFAE8 /* RUMEventsMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E81F625A743600084B751 /* RUMEventsMapperTests.swift */; };
+		D23F8EC429DDCD38001CFAE8 /* RUMCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F624DC0CDE00FC0F69 /* RUMCommandTests.swift */; };
+		D23F8EC629DDCD38001CFAE8 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; };
+		D23F8EC729DDCD38001CFAE8 /* DatadogRUM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D29A9F3429DD84AA005C54A4 /* DatadogRUM.framework */; };
+		D23F8ECE29DDCD53001CFAE8 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
+		D240680827CE6C9E00C04F44 /* ConsoleOutputInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C902461A648003D8BB8 /* ConsoleOutputInterceptor.swift */; };
+		D240681E27CE6C9E00C04F44 /* ExampleAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C0424616DE9003D8BB8 /* ExampleAppDelegate.swift */; };
+		D240682B27CE6C9E00C04F44 /* UIButton+Disabling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C912461A648003D8BB8 /* UIButton+Disabling.swift */; };
+		D240682D27CE6C9E00C04F44 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614CADD62510BAC000B93D2D /* Environment.swift */; };
+		D240683D27CE6C9E00C04F44 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 61441C0D24616DEC003D8BB8 /* Assets.xcassets */; };
+		D240685527CF5D0100C04F44 /* DatadogCore.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = D2CB6ED127C50EAE00A62B57 /* DatadogCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D240685927CF5D0100C04F44 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D240686827CF642900C04F44 /* SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61776D4D273E6D9F00F93802 /* SwiftUI.swift */; };
+		D240687127CF971C00C04F44 /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6ED127C50EAE00A62B57 /* DatadogCore.framework */; };
+		D240687227CF971C00C04F44 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; };
 		D240687B27CF982C00C04F44 /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; };
 		D240687C27CF982C00C04F44 /* DatadogCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D240687D27CF982D00C04F44 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
@@ -1040,6 +1137,9 @@
 		D29A9FA729DDB483005C54A4 /* RUMCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618715F624DC0CDE00FC0F69 /* RUMCommandTests.swift */; };
 		D29A9FAA29DDB483005C54A4 /* RUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */; };
 		D29A9FAB29DDB483005C54A4 /* RUMUserActionScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617CD0DC24CEDDD300B0B557 /* RUMUserActionScopeTests.swift */; };
+		AA0001012A000004000C0001 /* RUMScrollHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000004000A0001 /* RUMScrollHandlerTests.swift */; };
+		AA0001012A000006000C0001 /* UIScrollViewDelegateProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000006000A0001 /* UIScrollViewDelegateProxyTests.swift */; };
+		AA0001012A000007000C0001 /* UIScrollViewSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000007000A0001 /* UIScrollViewSwizzlerTests.swift */; };
 		D29A9FAC29DDB483005C54A4 /* RUMActionsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615C3195251DD5080018781C /* RUMActionsHandlerTests.swift */; };
 		D29A9FAE29DDB483005C54A4 /* SessionReplayDependencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615950EA291C029700470E0C /* SessionReplayDependencyTests.swift */; };
 		D29A9FB329DDB483005C54A4 /* RUMScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFDE24C75FD300589570 /* RUMScopeTests.swift */; };
@@ -1701,6 +1801,7 @@
 		118ACA3A2EEED247004E7F20 /* AppLaunchMetricController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchMetricController.swift; sourceTree = "<group>"; };
 		118ACA402EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingTelemetryControllerTests.swift; sourceTree = "<group>"; };
 		118ACA432EEEED1F004E7F20 /* AppLaunchMetricControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchMetricControllerTests.swift; sourceTree = "<group>"; };
+		119F75F32F438C2100845833 /* DataStoreAsyncMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStoreAsyncMock.swift; sourceTree = "<group>"; };
 		11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameInfoProvider.swift; sourceTree = "<group>"; };
 		11A2F2492E70CC08006EDC52 /* MediaTimeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTimeProvider.swift; sourceTree = "<group>"; };
 		11A2F2512E71B730006EDC52 /* MediaTimeProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTimeProviderMock.swift; sourceTree = "<group>"; };
@@ -1737,6 +1838,8 @@
 		1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugOTelTracingViewController.swift; sourceTree = "<group>"; };
 		261255862E2167E40015042B /* BaggageHeaderMerger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaggageHeaderMerger.swift; sourceTree = "<group>"; };
 		261255892E2167F10015042B /* BaggageHeaderMergerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaggageHeaderMergerTests.swift; sourceTree = "<group>"; };
+		261255902E2167E40015042B /* HeaderProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderProcessor.swift; sourceTree = "<group>"; };
+		261255932E2167F10015042B /* HeaderProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderProcessorTests.swift; sourceTree = "<group>"; };
 		265496D22D81C5AE0094B6E2 /* RUMAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAccount.swift; sourceTree = "<group>"; };
 		266BFA5D2D6F4E2A003041A5 /* AccountInfoPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountInfoPublisherTests.swift; sourceTree = "<group>"; };
 		2671348C2D688ACD0048CB54 /* AccountInfoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountInfoPublisher.swift; sourceTree = "<group>"; };
@@ -2103,6 +2206,9 @@
 		615A4A8824A34FD700233986 /* DDTracerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDTracerTests.swift; sourceTree = "<group>"; };
 		615B0F8A2BB33C2800E9ED6C /* AppHangsMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHangsMonitorTests.swift; sourceTree = "<group>"; };
 		615C3195251DD5080018781C /* RUMActionsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMActionsHandlerTests.swift; sourceTree = "<group>"; };
+		AA0001012A000004000A0001 /* RUMScrollHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScrollHandlerTests.swift; sourceTree = "<group>"; };
+		AA0001012A000006000A0001 /* UIScrollViewDelegateProxyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIScrollViewDelegateProxyTests.swift; sourceTree = "<group>"; };
+		AA0001012A000007000A0001 /* UIScrollViewSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIScrollViewSwizzlerTests.swift; sourceTree = "<group>"; };
 		615D52B72C888C1F00F8B8FC /* SynchronizedAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedAttributes.swift; sourceTree = "<group>"; };
 		615D52BA2C88A83A00F8B8FC /* SynchronizedTags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedTags.swift; sourceTree = "<group>"; };
 		615D52BD2C88A98300F8B8FC /* SynchronizedTagsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedTagsTests.swift; sourceTree = "<group>"; };
@@ -2426,6 +2532,10 @@
 		A7F773DB29253F8B00AC1A62 /* B3HTTPHeadersWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = B3HTTPHeadersWriter.swift; sourceTree = "<group>"; };
 		A7F773DC29253F8B00AC1A62 /* B3HTTPHeadersReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = B3HTTPHeadersReader.swift; sourceTree = "<group>"; };
 		A7FA98CD2BA1A6930018D6B5 /* MethodCalledMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodCalledMetric.swift; sourceTree = "<group>"; };
+		AA0001012A000001000A0001 /* RUMScrollHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScrollHandler.swift; sourceTree = "<group>"; };
+		AA0001012A000002000A0001 /* UIScrollViewDelegateProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIScrollViewDelegateProxy.swift; sourceTree = "<group>"; };
+		AA0001012A000003000A0001 /* UIScrollViewSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIScrollViewSwizzler.swift; sourceTree = "<group>"; };
+		AA0001012A000005000A0001 /* UIScrollViewHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIScrollViewHandler.swift; sourceTree = "<group>"; };
 		B3BBBCB0265E71C600943419 /* VitalMemoryReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalMemoryReader.swift; sourceTree = "<group>"; };
 		B3BBBCBB265E71D100943419 /* VitalMemoryReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalMemoryReaderTests.swift; sourceTree = "<group>"; };
 		B3E46CAA2D91B3A400BABF66 /* NetworkContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkContextProvider.swift; sourceTree = "<group>"; };
@@ -3109,6 +3219,7 @@
 				1182F9DF2DA2F827007FE71A /* AttributesMocks.swift */,
 				1182F9E02DA2F827007FE71A /* DatadogContextMock.swift */,
 				1182F9E12DA2F827007FE71A /* DatadogRemoteFeatureMock.swift */,
+				119F75F32F438C2100845833 /* DataStoreAsyncMock.swift */,
 				1182F9E22DA2F827007FE71A /* DataStoreMock.swift */,
 				1182F9E32DA2F827007FE71A /* DateProviderMock.swift */,
 				1182F9E42DA2F827007FE71A /* DDErrorMocks.swift */,
@@ -3120,7 +3231,9 @@
 				1182F9EB2DA2F827007FE71A /* FileWriterMock.swift */,
 				1182F9EC2DA2F827007FE71A /* HostsSanitizerMock.swift */,
 				1182F9ED2DA2F827007FE71A /* MockFeature.swift */,
+				D233E7D72E463DDD00E7CFDE /* MultipartBuilderSpy.swift */,
 				1182F9EE2DA2F827007FE71A /* PassthroughCoreMock.swift */,
+				D266ECF82DBA5B1800CB9B3A /* RUMDataModelMocks.swift */,
 				1182F9EF2DA2F827007FE71A /* SamplerMock.swift */,
 				1182F9F02DA2F827007FE71A /* SingleFeatureCoreMock.swift */,
 				1182F9F12DA2F827007FE71A /* TelemetryMocks.swift */,
@@ -3128,8 +3241,6 @@
 				1182F9F32DA2F827007FE71A /* UploadMock.swift */,
 				1182F9F42DA2F827007FE71A /* UploadMocks.swift */,
 				269035A12E41F93F00F1A830 /* UserConfigurationContextMocks.swift */,
-				D266ECF82DBA5B1800CB9B3A /* RUMDataModelMocks.swift */,
-				D233E7D72E463DDD00E7CFDE /* MultipartBuilderSpy.swift */,
 			);
 			path = DatadogInternal;
 			sourceTree = "<group>";
@@ -4510,10 +4621,19 @@
 		613F23EF252B1287006CD2D7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				261255972E2167F10015042B /* HeaderCapture */,
 				261255892E2167F10015042B /* BaggageHeaderMergerTests.swift */,
 				D2BCB12129D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests.swift */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		261255972E2167F10015042B /* HeaderCapture */ = {
+			isa = PBXGroup;
+			children = (
+				261255932E2167F10015042B /* HeaderProcessorTests.swift */,
+			);
+			path = HeaderCapture;
 			sourceTree = "<group>";
 		};
 		6141014C251A577D00E3C2D9 /* Actions */ = {
@@ -4521,8 +4641,19 @@
 			children = (
 				96F70D572DDE253C00D3736B /* SwiftUIComponentDetectorTests.swift */,
 				615C3195251DD5080018781C /* RUMActionsHandlerTests.swift */,
+				AA0001012A000004000A0001 /* RUMScrollHandlerTests.swift */,
+				AA0001012A000008000A0001 /* UIKit */,
 			);
 			path = Actions;
+			sourceTree = "<group>";
+		};
+		AA0001012A000008000A0001 /* UIKit */ = {
+			isa = PBXGroup;
+			children = (
+				AA0001012A000006000A0001 /* UIScrollViewDelegateProxyTests.swift */,
+				AA0001012A000007000A0001 /* UIScrollViewSwizzlerTests.swift */,
+			);
+			path = UIKit;
 			sourceTree = "<group>";
 		};
 		6141014D251A578D00E3C2D9 /* Actions */ = {
@@ -4530,6 +4661,7 @@
 			children = (
 				96F70D442DD793C400D3736B /* RUMAction.swift */,
 				61193AAD2CB54C7300C3CDF5 /* RUMActionsHandler.swift */,
+				AA0001012A000001000A0001 /* RUMScrollHandler.swift */,
 				D29D5A4A273BF81500A687C1 /* UIKit */,
 				D29D5A4B273BF82200A687C1 /* SwiftUI */,
 			);
@@ -4661,10 +4793,19 @@
 		6157FA5C252767B3009A8A3B /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				261255962E2167E40015042B /* HeaderCapture */,
 				261255862E2167E40015042B /* BaggageHeaderMerger.swift */,
 				D2BCB11E29D30AF000737A9A /* URLSessionRUMResourcesHandler.swift */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		261255962E2167E40015042B /* HeaderCapture */ = {
+			isa = PBXGroup;
+			children = (
+				261255902E2167E40015042B /* HeaderProcessor.swift */,
+			);
+			path = HeaderCapture;
 			sourceTree = "<group>";
 		};
 		615950EC291C057D00470E0C /* Integrations */ = {
@@ -6105,6 +6246,9 @@
 				6141015A251A601D00E3C2D9 /* UIEventCommandFactory.swift */,
 				6141014E251A57AF00E3C2D9 /* UIApplicationSwizzler.swift */,
 				F637AED12697404200516F32 /* UIKitRUMUserActionsPredicate.swift */,
+				AA0001012A000002000A0001 /* UIScrollViewDelegateProxy.swift */,
+				AA0001012A000005000A0001 /* UIScrollViewHandler.swift */,
+				AA0001012A000003000A0001 /* UIScrollViewSwizzler.swift */,
 			);
 			path = UIKit;
 			sourceTree = "<group>";
@@ -8200,6 +8344,224 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D23F8E5129DDCD28001CFAE8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6167E6D42B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */,
+				615E2B8F2D39444300D85243 /* ViewEndedController.swift in Sources */,
+				D23F8E5229DDCD28001CFAE8 /* UIViewControllerHandler.swift in Sources */,
+				D23F8E5329DDCD28001CFAE8 /* RUMCommand.swift in Sources */,
+				D23F8E5429DDCD28001CFAE8 /* ValuePublisher.swift in Sources */,
+				D23F8E5529DDCD28001CFAE8 /* RUMEventSanitizer.swift in Sources */,
+				D23F8E5729DDCD28001CFAE8 /* RUMScopeDependencies.swift in Sources */,
+				D23F8E5829DDCD28001CFAE8 /* VitalMemoryReader.swift in Sources */,
+				5B1D02852E8EB78800AB2391 /* FlagEvaluationReceiver.swift in Sources */,
+				962900252D8351AB008DFE39 /* TopLevelReflector.swift in Sources */,
+				6194B9342BB451DB00179430 /* FatalAppHangsHandler.swift in Sources */,
+				D23F8E5929DDCD28001CFAE8 /* WebViewEventReceiver.swift in Sources */,
+				265496D32D81C5B10094B6E2 /* RUMAccount.swift in Sources */,
+				D253EE972B988CA90010B589 /* ViewCache.swift in Sources */,
+				11EA5C252DC288DD00E8DFA2 /* RUM+objc.swift in Sources */,
+				D23F8E5A29DDCD28001CFAE8 /* RUMResourceScope.swift in Sources */,
+				D23F8E5C29DDCD28001CFAE8 /* RUMApplicationScope.swift in Sources */,
+				3CFF4F982C09E64C006F191D /* WatchdogTerminationMonitor.swift in Sources */,
+				61193AAF2CB54C7300C3CDF5 /* RUMActionsHandler.swift in Sources */,
+				86DE9C5F2EB22417006DADE7 /* GraphQLResponse.swift in Sources */,
+				114FFDE82E0031BA00330C91 /* SwiftUIRUMViewsPredicate+objc.swift in Sources */,
+				D23F8E5D29DDCD28001CFAE8 /* SwiftUIViewModifier.swift in Sources */,
+				D23F8E5E29DDCD28001CFAE8 /* VitalInfo.swift in Sources */,
+				D23F8E5F29DDCD28001CFAE8 /* UIApplicationSwizzler.swift in Sources */,
+				D23F8E6029DDCD28001CFAE8 /* PerformanceMetric.swift in Sources */,
+				D23F8E6129DDCD28001CFAE8 /* RUMConfiguration.swift in Sources */,
+				61F930CC2BA213AC005F0EE2 /* AppHang.swift in Sources */,
+				112877992D708D300082D11B /* VitalRefreshRateReader.swift in Sources */,
+				1128779B2D708D300082D11B /* RenderLoopObserver.swift in Sources */,
+				1128779C2D708D300082D11B /* ViewHitchesReader.swift in Sources */,
+				61C713AB2A3B790B00FA735A /* Monitor.swift in Sources */,
+				D23F8E6429DDCD28001CFAE8 /* SwiftUIViewHandler.swift in Sources */,
+				965497002D761E2B006428EE /* RUMView.swift in Sources */,
+				D23F8E6529DDCD28001CFAE8 /* RUMFeature.swift in Sources */,
+				D23F8E6629DDCD28001CFAE8 /* RUMDebugging.swift in Sources */,
+				3C4CF9912C47BE07006DE1C0 /* MemoryWarningMonitor.swift in Sources */,
+				864A707A2DDF742A00AC0619 /* AccessibilityInfo.swift in Sources */,
+				9632900C2DF1F01400E9199E /* ModernSwiftUIComponentDetector.swift in Sources */,
+				D23F8E6729DDCD28001CFAE8 /* RUMUUID.swift in Sources */,
+				D23F8E6829DDCD28001CFAE8 /* UIKitExtensions.swift in Sources */,
+				61C713A82A3B78F900FA735A /* RUMMonitorProtocol+Convenience.swift in Sources */,
+				D23F8E6929DDCD28001CFAE8 /* RUMContextAttributes.swift in Sources */,
+				11E6D5A02E6B1468004D2F87 /* FirstFrameReader.swift in Sources */,
+				D23F8E6B29DDCD28001CFAE8 /* RUMMonitor.swift in Sources */,
+				D23F8E6C29DDCD28001CFAE8 /* RUMContextProvider.swift in Sources */,
+				61DA6F6D2BB57E32009537E5 /* FatalErrorBuilder.swift in Sources */,
+				619F1A242DEE493F003954BD /* LaunchReasonResolver.swift in Sources */,
+				D23F8E6D29DDCD28001CFAE8 /* ViewIdentifier.swift in Sources */,
+				49D8C0B82AC5D2160075E427 /* RUM+Internal.swift in Sources */,
+				96F70D512DDDBDA600D3736B /* SwiftUIComponentDetector.swift in Sources */,
+				D23F8E6E29DDCD28001CFAE8 /* RUMViewsHandler.swift in Sources */,
+				61C713BA2A3C935C00FA735A /* RUM.swift in Sources */,
+				3C0CB3462C19A1ED003B0E9B /* WatchdogTerminationReporter.swift in Sources */,
+				D23F8E6F29DDCD28001CFAE8 /* RequestBuilder.swift in Sources */,
+				9629FFE12D81C348008DFE39 /* SwiftUIControllerType.swift in Sources */,
+				1124D5362EA6D4390002E053 /* RUMAppLaunchManager.swift in Sources */,
+				1124D5372EA6D4390002E053 /* RUMFeatureOperationManager.swift in Sources */,
+				D224430529E9588500274EC7 /* TelemetryReceiver.swift in Sources */,
+				D23F8E7029DDCD28001CFAE8 /* URLSessionRUMResourcesHandler.swift in Sources */,
+				965497062D761FCB006428EE /* SwiftUIViewNameExtractor.swift in Sources */,
+				11F55FDA2DCE183500DE4944 /* RUMDataModels+objc.swift in Sources */,
+				D23F8E7129DDCD28001CFAE8 /* RUMEventBuilder.swift in Sources */,
+				118ACA3E2EEED247004E7F20 /* AppLaunchMetricController.swift in Sources */,
+				118ACA3F2EEED247004E7F20 /* AppLaunchMetric.swift in Sources */,
+				D23F8E7229DDCD28001CFAE8 /* ErrorMessageReceiver.swift in Sources */,
+				96F70D462DD793C400D3736B /* RUMAction.swift in Sources */,
+				D23F8E7329DDCD28001CFAE8 /* SwiftUIActionModifier.swift in Sources */,
+				D23F8E7429DDCD28001CFAE8 /* RUMCommandSubscriber.swift in Sources */,
+				6194B92B2BB4116A00179430 /* RUMDataStore.swift in Sources */,
+				6105C4F72CEBA7A100C4C5EE /* TNSMetric.swift in Sources */,
+				6194B9312BB451C100179430 /* NonFatalAppHangsHandler.swift in Sources */,
+				D23F8E7529DDCD28001CFAE8 /* RUMUserActionScope.swift in Sources */,
+				6167E6D72B7F8C3400C3CA2D /* AppHangsWatchdogThread.swift in Sources */,
+				965497032D761EA3006428EE /* SwiftUIRUMViewsPredicate.swift in Sources */,
+				61C713A42A3B78F900FA735A /* RUMMonitorProtocol.swift in Sources */,
+				6174D6112BFDEA4600EC7469 /* SessionEndedMetric.swift in Sources */,
+				3C0D5DED2A54405A00446CF9 /* RUMViewEventsFilter.swift in Sources */,
+				D23F8E7629DDCD28001CFAE8 /* RUMConnectivityInfoProvider.swift in Sources */,
+				D23F8E7729DDCD28001CFAE8 /* UIKitRUMViewsPredicate.swift in Sources */,
+				261255882E2167E40015042B /* BaggageHeaderMerger.swift in Sources */,
+				261255912E2167E40015042B /* HeaderProcessor.swift in Sources */,
+				9629FFDE2D81C317008DFE39 /* SwiftUIViewPath.swift in Sources */,
+				111201C12E93C13000375DA3 /* AppStateManager.swift in Sources */,
+				111201C22E93C13000375DA3 /* AppStateInfo.swift in Sources */,
+				61C713A62A3B78F900FA735A /* RUMMonitorProtocol+Internal.swift in Sources */,
+				D23F8E7829DDCD28001CFAE8 /* LongTaskObserver.swift in Sources */,
+				615E2B962D425F5600D85243 /* ViewEndedMetric.swift in Sources */,
+				864A707C2DDF743900AC0619 /* AccessibilityReader.swift in Sources */,
+				D23F8E7A29DDCD28001CFAE8 /* SessionReplayDependency.swift in Sources */,
+				1124D52F2EA6D23C0002E053 /* StartupTypeHandler.swift in Sources */,
+				9632900E2DF1F04200E9199E /* LegacySwiftUIComponentDetector.swift in Sources */,
+				616F8C282BB1CD990061EA53 /* ProcessIdentifier.swift in Sources */,
+				D23F8E7C29DDCD28001CFAE8 /* RUMOffViewEventsHandlingRule.swift in Sources */,
+				D23F8E7D29DDCD28001CFAE8 /* RUMScope.swift in Sources */,
+				D23F8E7E29DDCD28001CFAE8 /* CrashReportReceiver.swift in Sources */,
+				D23F8E7F29DDCD28001CFAE8 /* UIViewControllerSwizzler.swift in Sources */,
+				D23F8E8029DDCD28001CFAE8 /* VitalInfoSampler.swift in Sources */,
+				D23F8E8129DDCD28001CFAE8 /* RUMViewScope.swift in Sources */,
+				96F70D492DD79B3D00D3736B /* SwiftUIRUMActionsPredicate.swift in Sources */,
+				11030D762D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */,
+				D2D748242DC0FF7E00C61353 /* FatalErrorContextNotifier.swift in Sources */,
+				D23F8E8229DDCD28001CFAE8 /* RUMSessionScope.swift in Sources */,
+				A7E6EA812D3146AD00997201 /* AnonymousIdentifierManager.swift in Sources */,
+				D23F8E8329DDCD28001CFAE8 /* RUMUser.swift in Sources */,
+				D23F8E8429DDCD28001CFAE8 /* UIKitRUMUserActionsPredicate.swift in Sources */,
+				3C5CD8CE2C3ECB9400B12303 /* MemoryWarningReporter.swift in Sources */,
+				D23F8E8529DDCD28001CFAE8 /* SwiftUIExtensions.swift in Sources */,
+				3CFF4F952C09E63C006F191D /* WatchdogTerminationChecker.swift in Sources */,
+				D23F8E8629DDCD28001CFAE8 /* RUMDataModelsMapping.swift in Sources */,
+				618F2B042D146BB300A647C4 /* NetworkSettledResourcePredicate.swift in Sources */,
+				D23F8E8729DDCD28001CFAE8 /* RUMInstrumentation.swift in Sources */,
+				D23F8E8829DDCD28001CFAE8 /* VitalCPUReader.swift in Sources */,
+				D23F8E8A29DDCD28001CFAE8 /* RUMEventsMapper.swift in Sources */,
+				D23F8E8B29DDCD28001CFAE8 /* RUMContext.swift in Sources */,
+				6174D6212C009C6300EC7469 /* SessionEndedMetricController.swift in Sources */,
+				618F2B072D15922400A647C4 /* NextViewActionPredicate.swift in Sources */,
+				6105C50A2CFA222400C4C5EE /* INVMetric.swift in Sources */,
+				D23F8E8E29DDCD28001CFAE8 /* UIEventCommandFactory.swift in Sources */,
+				AA0001012A000002000C0001 /* UIScrollViewDelegateProxy.swift in Sources */,
+				AA0001012A000001000C0001 /* RUMScrollHandler.swift in Sources */,
+				AA0001012A000003000C0001 /* UIScrollViewSwizzler.swift in Sources */,
+				AA0001012A000005000C0001 /* UIScrollViewHandler.swift in Sources */,
+				11A2F24C2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */,
+				11A2F24D2E70CC08006EDC52 /* MediaTimeProvider.swift in Sources */,
+				D23F8E8F29DDCD28001CFAE8 /* RUMUUIDGenerator.swift in Sources */,
+				61DCC84F2C071DCD00CB59E5 /* TelemetryInterceptor.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D23F8E9F29DDCD38001CFAE8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6188697D2A4376F700E8996B /* RUMConfigurationTests.swift in Sources */,
+				61DCC8482C05CD0000CB59E5 /* SessionEndedMetricControllerTests.swift in Sources */,
+				D23F8EA029DDCD38001CFAE8 /* RUMOffViewEventsHandlingRuleTests.swift in Sources */,
+				61C4534B2C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift in Sources */,
+				D23F8EA229DDCD38001CFAE8 /* RUMSessionScopeTests.swift in Sources */,
+				0904F9F52EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */,
+				3C4CF9992C47CC92006DE1C0 /* MemoryWarningMonitorTests.swift in Sources */,
+				D23F8EA329DDCD38001CFAE8 /* RUMUserActionScopeTests.swift in Sources */,
+				864A70812DE092AD00AC0619 /* AccessibilityReaderTests.swift in Sources */,
+				615B0F8C2BB33C2800E9ED6C /* AppHangsMonitorTests.swift in Sources */,
+				61C713B42A3C3A0B00FA735A /* RUMMonitorProtocol+InternalTests.swift in Sources */,
+				D23F8EA629DDCD38001CFAE8 /* RUMDeviceInfoTests.swift in Sources */,
+				D23F8EA829DDCD38001CFAE8 /* RUMResourceScopeTests.swift in Sources */,
+				3CFF4FA52C0E0FE9006F191D /* WatchdogTerminationCheckerTests.swift in Sources */,
+				619F1A282DEF0B3F003954BD /* LaunchReasonResolverTests.swift in Sources */,
+				D23F8EAC29DDCD38001CFAE8 /* RUMDataModelsMappingTests.swift in Sources */,
+				D23F8EAD29DDCD38001CFAE8 /* RUMEventBuilderTests.swift in Sources */,
+				61CE2E602BF2177100EC7D42 /* Monitor+GlobalAttributesTests.swift in Sources */,
+				3CEC57782C16FDD80042B5F2 /* AppStateManagerTests.swift in Sources */,
+				D23F8EAE29DDCD38001CFAE8 /* DDTAssertValidRUMUUID.swift in Sources */,
+				D23F8EAF29DDCD38001CFAE8 /* RUMScopeTests.swift in Sources */,
+				2612558A2E2167F10015042B /* BaggageHeaderMergerTests.swift in Sources */,
+				261255942E2167F10015042B /* HeaderProcessorTests.swift in Sources */,
+				A7E6EA842D314A9B00997201 /* AnonymousIdentifierManagerTests.swift in Sources */,
+				D23F8EB029DDCD38001CFAE8 /* SessionReplayDependencyTests.swift in Sources */,
+				61C713B72A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */,
+				D23F8EB129DDCD38001CFAE8 /* RUMViewScopeTests.swift in Sources */,
+				D224431029E977A100274EC7 /* TelemetryReceiverTests.swift in Sources */,
+				96155A2A2D79A4E50029034E /* SwiftUIViewNameExtractorIntegrationTests.swift in Sources */,
+				5B1D02952E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */,
+				3C4CF99C2C47DAA5006DE1C0 /* MemoryWarningMocks.swift in Sources */,
+				3C43A3892C188975000BFB21 /* WatchdogTerminationMonitorTests.swift in Sources */,
+				D23F8EB229DDCD38001CFAE8 /* ValuePublisherTests.swift in Sources */,
+				6174D61B2BFE449300EC7469 /* SessionEndedMetricTests.swift in Sources */,
+				9654971E2D774060006428EE /* SwiftUIViewNameExtractorTests.swift in Sources */,
+				61181CDD2BF35BC000632A7A /* FatalErrorContextNotifierTests.swift in Sources */,
+				61C713BD2A3C95AD00FA735A /* RUMInstrumentationTests.swift in Sources */,
+				D23F8EB329DDCD38001CFAE8 /* ErrorMessageReceiverTests.swift in Sources */,
+				61C713C12A3C9DAD00FA735A /* RequestBuilderTests.swift in Sources */,
+				D23F8EB429DDCD38001CFAE8 /* RUMApplicationScopeTests.swift in Sources */,
+				6105C5152D0C584F00C4C5EE /* INVMetricTests.swift in Sources */,
+				D23F8EB629DDCD38001CFAE8 /* RUMViewsHandlerTests.swift in Sources */,
+				61C713CB2A3DC22700FA735A /* RUMTests.swift in Sources */,
+				D23F8EB829DDCD38001CFAE8 /* RUMActionsHandlerTests.swift in Sources */,
+				AA0001012A000004000B0001 /* RUMScrollHandlerTests.swift in Sources */,
+				AA0001012A000006000B0001 /* UIScrollViewDelegateProxyTests.swift in Sources */,
+				AA0001012A000007000B0001 /* UIScrollViewSwizzlerTests.swift in Sources */,
+				61C713AE2A3B793E00FA735A /* RUMMonitorProtocolTests.swift in Sources */,
+				6105C4FB2CEBD72600C4C5EE /* TNSMetricTests.swift in Sources */,
+				D23F8EBA29DDCD38001CFAE8 /* ViewIdentifierTests.swift in Sources */,
+				96F70D582DDE253F00D3736B /* SwiftUIComponentDetectorTests.swift in Sources */,
+				D23F8EBE29DDCD38001CFAE8 /* WebViewEventReceiverTests.swift in Sources */,
+				D23F8EBF29DDCD38001CFAE8 /* URLSessionRUMResourcesHandlerTests.swift in Sources */,
+				117ADDDA2EAA8A90008BD9D8 /* StartupTypeHandlerTests.swift in Sources */,
+				D23F8EC029DDCD38001CFAE8 /* RUMEventSanitizerTests.swift in Sources */,
+				D253EE9C2B98B37C0010B589 /* ViewCacheTests.swift in Sources */,
+				6176C1732ABDBA2E00131A70 /* MonitorTests.swift in Sources */,
+				D23F8EC129DDCD38001CFAE8 /* RUMEventsMapperTests.swift in Sources */,
+				6167E6DB2B8004A500C3CA2D /* AppHangsWatchdogThreadTests.swift in Sources */,
+				3C0D5DEA2A543EA300446CF9 /* RUMViewEventsFilterTests.swift in Sources */,
+				1124D5332EA6D4050002E053 /* RUMAppLaunchManagerTests.swift in Sources */,
+				118ACA452EEEED24004E7F20 /* AppLaunchMetricControllerTests.swift in Sources */,
+				D23F8EC429DDCD38001CFAE8 /* RUMCommandTests.swift in Sources */,
+				9678E2762E55CD200094B106 /* RUMFeatureOperationManagerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D24067FD27CE6C9E00C04F44 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1434A4672B7F8D880072E3BB /* DebugOTelTracingViewController.swift in Sources */,
+				D2F44FC3299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift in Sources */,
+				D240680827CE6C9E00C04F44 /* ConsoleOutputInterceptor.swift in Sources */,
+				D240681E27CE6C9E00C04F44 /* ExampleAppDelegate.swift in Sources */,
+				D240682B27CE6C9E00C04F44 /* UIButton+Disabling.swift in Sources */,
+				D240682D27CE6C9E00C04F44 /* Environment.swift in Sources */,
+				D240686827CF642900C04F44 /* SwiftUI.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D257953A298ABA65008A1BE5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -8267,6 +8629,7 @@
 				1182FA542DA2F827007FE71A /* DDCrashReportMocks.swift in Sources */,
 				1182FA552DA2F827007FE71A /* WebViewTrackingMocks.swift in Sources */,
 				1182FA562DA2F827007FE71A /* SnapshotProducerMocks.swift in Sources */,
+				119F75F52F438C2100845833 /* DataStoreAsyncMock.swift in Sources */,
 				1182FA572DA2F827007FE71A /* FeatureRegistrationCoreMock.swift in Sources */,
 				1182FA582DA2F827007FE71A /* DDThreadMocks.swift in Sources */,
 				1182FA592DA2F827007FE71A /* Mockable.swift in Sources */,
@@ -8296,6 +8659,106 @@
 				1182FA712DA2F827007FE71A /* RUMSessionMatcher.swift in Sources */,
 				1182FA722DA2F827007FE71A /* BacktraceReportMocks.swift in Sources */,
 				1182FA732DA2F827007FE71A /* DatadogRemoteFeatureMock.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D2579577298ABB83008A1BE5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1182FA742DA2F827007FE71A /* AttributesMocks.swift in Sources */,
+				1182FA752DA2F827007FE71A /* DatadogCoreProxy+Utils.swift in Sources */,
+				116506152E9533A700FD815C /* AppStateManagerMock.swift in Sources */,
+				11A6D68F2E0AC8A90055B3A9 /* SessionDataDelegateMock.swift in Sources */,
+				D266ECF92DBA5B1800CB9B3A /* RUMDataModelMocks.swift in Sources */,
+				1182FA762DA2F827007FE71A /* ResourceProcessorSpy.swift in Sources */,
+				269035A52E41FAAC00F1A830 /* AccountConfigurationContextMocks.swift in Sources */,
+				1182FA772DA2F827007FE71A /* RecorderMocks.swift in Sources */,
+				1182FA782DA2F827007FE71A /* CrashReportingFeatureMocks.swift in Sources */,
+				1182FA792DA2F827007FE71A /* FoundationMocks.swift in Sources */,
+				1182FA7A2DA2F827007FE71A /* SnapshotProcessorSpy.swift in Sources */,
+				1182FA7B2DA2F827007FE71A /* FeatureScopeMock.swift in Sources */,
+				1182FA7C2DA2F827007FE71A /* SRRequestMatcher.swift in Sources */,
+				1182FA7D2DA2F827007FE71A /* PassthroughCoreMock.swift in Sources */,
+				6119DDBF2DD2443B00DA80F9 /* DateAndTime.swift in Sources */,
+				1182FA7E2DA2F827007FE71A /* SpanMatcher.swift in Sources */,
+				1182FA7F2DA2F827007FE71A /* DirectoriesMock.swift in Sources */,
+				1182FA802DA2F827007FE71A /* AppStateProvider.swift in Sources */,
+				1182FA812DA2F827007FE71A /* FeatureFlagsMock.swift in Sources */,
+				1182FA822DA2F827007FE71A /* CoreTelephonyMocks.swift in Sources */,
+				1182FA842DA2F827007FE71A /* HostsSanitizerMock.swift in Sources */,
+				1182FA852DA2F827007FE71A /* Encoding.swift in Sources */,
+				1182FA862DA2F827007FE71A /* BinaryImageMocks.swift in Sources */,
+				1182FA872DA2F827007FE71A /* JSONDataMatcher.swift in Sources */,
+				116506182E9535A500FD815C /* WatchdogTerminationMocks.swift in Sources */,
+				1182FA882DA2F827007FE71A /* BacktraceReportingMocks.swift in Sources */,
+				D233E7D92E463DDD00E7CFDE /* MultipartBuilderSpy.swift in Sources */,
+				1182FA892DA2F827007FE71A /* RUMContextObserverMock.swift in Sources */,
+				1182FA8A2DA2F827007FE71A /* CoreMocks.swift in Sources */,
+				1182FA8B2DA2F827007FE71A /* ReflectionMocks.swift in Sources */,
+				1182FA8C2DA2F827007FE71A /* ResourceMocks.swift in Sources */,
+				1182FA8D2DA2F827007FE71A /* DatadogCoreProxy.swift in Sources */,
+				11A2F2522E71B730006EDC52 /* MediaTimeProviderMock.swift in Sources */,
+				1182FA8F2DA2F827007FE71A /* RUMEventMatcher.swift in Sources */,
+				1182FA902DA2F827007FE71A /* ServerMock.swift in Sources */,
+				1182FA912DA2F827007FE71A /* JSONObjectMatcher.swift in Sources */,
+				11A6D6932E0AC9D10055B3A9 /* SessionTaskDelegateMock.swift in Sources */,
+				1182FA922DA2F827007FE71A /* DateProviderMock.swift in Sources */,
+				1182FA932DA2F827007FE71A /* NetworkInstrumentationMocks.swift in Sources */,
+				1182FA942DA2F827007FE71A /* KronosClockMock.swift in Sources */,
+				1182FA952DA2F827007FE71A /* QueueMocks.swift in Sources */,
+				1182FA962DA2F827007FE71A /* LogMatcher.swift in Sources */,
+				1182FA972DA2F827007FE71A /* ModuleName.swift in Sources */,
+				1182FA982DA2F827007FE71A /* DDAssert.swift in Sources */,
+				1182FA992DA2F827007FE71A /* FuzzyHelpers.swift in Sources */,
+				1182FA9A2DA2F827007FE71A /* UploadMocks.swift in Sources */,
+				1182FA9B2DA2F827007FE71A /* FileWriterMock.swift in Sources */,
+				1182FA9C2DA2F827007FE71A /* DatadogContextMock.swift in Sources */,
+				1182FA9D2DA2F827007FE71A /* CoreGraphicsMocks.swift in Sources */,
+				1182FA9E2DA2F827007FE71A /* EventMocks.swift in Sources */,
+				1182FA9F2DA2F827007FE71A /* TelemetryMocks.swift in Sources */,
+				1182FAA02DA2F827007FE71A /* TestsDirectory.swift in Sources */,
+				1182FAA12DA2F827007FE71A /* SingleFeatureCoreMock.swift in Sources */,
+				1182FAA22DA2F827007FE71A /* SessionReplayConfigurationMocks.swift in Sources */,
+				1182FAA32DA2F827007FE71A /* ContextValuePublisherMock.swift in Sources */,
+				1182FAA42DA2F827007FE71A /* PrintFunctionSpy.swift in Sources */,
+				862B0B282DEF2D8000F61E73 /* MockNotificationCenter.swift in Sources */,
+				1182FAA52DA2F827007FE71A /* XCTestCase.swift in Sources */,
+				1182FAA62DA2F827007FE71A /* FeatureMessageReceiverMock.swift in Sources */,
+				1182FAA72DA2F827007FE71A /* TracingFeatureMocks.swift in Sources */,
+				1182FAA82DA2F827007FE71A /* DDCrashReportMocks.swift in Sources */,
+				1182FAA92DA2F827007FE71A /* WebViewTrackingMocks.swift in Sources */,
+				1182FAAA2DA2F827007FE71A /* SnapshotProducerMocks.swift in Sources */,
+				119F75F42F438C2100845833 /* DataStoreAsyncMock.swift in Sources */,
+				1182FAAB2DA2F827007FE71A /* FeatureRegistrationCoreMock.swift in Sources */,
+				1182FAAC2DA2F827007FE71A /* DDThreadMocks.swift in Sources */,
+				1182FAAD2DA2F827007FE71A /* Mockable.swift in Sources */,
+				1182FAAE2DA2F827007FE71A /* HTTPClientMock.swift in Sources */,
+				1182FAAF2DA2F827007FE71A /* SwiftExtensions.swift in Sources */,
+				1182FAB02DA2F827007FE71A /* Decompression.swift in Sources */,
+				1182FAB12DA2F827007FE71A /* RUMFeatureMocks.swift in Sources */,
+				1182FAB32DA2F827007FE71A /* DatadogContextProviderMock.swift in Sources */,
+				1182FAB42DA2F827007FE71A /* SRDataModelsMocks.swift in Sources */,
+				1182FAB52DA2F827007FE71A /* FeatureMessageMocks.swift in Sources */,
+				1182FAB62DA2F827007FE71A /* SRSegmentMatcher.swift in Sources */,
+				1182FAB72DA2F827007FE71A /* UploadMock.swift in Sources */,
+				1182FAB82DA2F827007FE71A /* UIKitHelpers.swift in Sources */,
+				1182FAB92DA2F827007FE71A /* MockFeature.swift in Sources */,
+				1182FABA2DA2F827007FE71A /* TelemetryReceiverMock.swift in Sources */,
+				269035A32E41F94800F1A830 /* UserConfigurationContextMocks.swift in Sources */,
+				1182FABB2DA2F827007FE71A /* DDErrorMocks.swift in Sources */,
+				1182FABC2DA2F827007FE71A /* PrivacyOverridesMock+objc.swift in Sources */,
+				1182FABD2DA2F827007FE71A /* LoggingFeatureMocks.swift in Sources */,
+				86092FDD2DEDC6830075D63B /* AccessibilityValuesMock.swift in Sources */,
+				1182FABE2DA2F827007FE71A /* WebKitMocks.swift in Sources */,
+				1182FABF2DA2F827007FE71A /* VitalMocks.swift in Sources */,
+				1182FAC02DA2F827007FE71A /* SamplerMock.swift in Sources */,
+				1182FAC12DA2F827007FE71A /* UIKitMocks.swift in Sources */,
+				1182FAC22DA2F827007FE71A /* TestScheduler.swift in Sources */,
+				1182FAC42DA2F827007FE71A /* DataStoreMock.swift in Sources */,
+				1182FAC52DA2F827007FE71A /* RUMSessionMatcher.swift in Sources */,
+				1182FAC62DA2F827007FE71A /* BacktraceReportMocks.swift in Sources */,
+				1182FAC72DA2F827007FE71A /* DatadogRemoteFeatureMock.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8469,6 +8932,7 @@
 				D29A9F5829DD85BB005C54A4 /* RUMConnectivityInfoProvider.swift in Sources */,
 				D29A9F5E29DD85BB005C54A4 /* UIKitRUMViewsPredicate.swift in Sources */,
 				261255872E2167E40015042B /* BaggageHeaderMerger.swift in Sources */,
+				261255922E2167E40015042B /* HeaderProcessor.swift in Sources */,
 				9629FFDF2D81C317008DFE39 /* SwiftUIViewPath.swift in Sources */,
 				111201C32E93C13000375DA3 /* AppStateManager.swift in Sources */,
 				111201C42E93C13000375DA3 /* AppStateInfo.swift in Sources */,
@@ -8506,6 +8970,10 @@
 				618F2B062D15922400A647C4 /* NextViewActionPredicate.swift in Sources */,
 				6105C5092CFA222400C4C5EE /* INVMetric.swift in Sources */,
 				D29A9F6929DD85BB005C54A4 /* UIEventCommandFactory.swift in Sources */,
+				AA0001012A000002000B0001 /* UIScrollViewDelegateProxy.swift in Sources */,
+				AA0001012A000001000B0001 /* RUMScrollHandler.swift in Sources */,
+				AA0001012A000003000B0001 /* UIScrollViewSwizzler.swift in Sources */,
+				AA0001012A000005000B0001 /* UIScrollViewHandler.swift in Sources */,
 				11A2F24A2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */,
 				11A2F24B2E70CC08006EDC52 /* MediaTimeProvider.swift in Sources */,
 				D29A9F5229DD85BB005C54A4 /* RUMUUIDGenerator.swift in Sources */,
@@ -8538,6 +9006,7 @@
 				D29A9FCC29DDBCC5005C54A4 /* DDTAssertValidRUMUUID.swift in Sources */,
 				D29A9FB329DDB483005C54A4 /* RUMScopeTests.swift in Sources */,
 				2612558B2E2167F10015042B /* BaggageHeaderMergerTests.swift in Sources */,
+				261255952E2167F10015042B /* HeaderProcessorTests.swift in Sources */,
 				A7E6EA852D314A9B00997201 /* AnonymousIdentifierManagerTests.swift in Sources */,
 				D29A9FAE29DDB483005C54A4 /* SessionReplayDependencyTests.swift in Sources */,
 				61C713B62A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */,
@@ -8559,6 +9028,9 @@
 				D29A9FAA29DDB483005C54A4 /* RUMViewsHandlerTests.swift in Sources */,
 				61C713CA2A3DC22700FA735A /* RUMTests.swift in Sources */,
 				D29A9FAC29DDB483005C54A4 /* RUMActionsHandlerTests.swift in Sources */,
+				AA0001012A000004000C0001 /* RUMScrollHandlerTests.swift in Sources */,
+				AA0001012A000006000C0001 /* UIScrollViewDelegateProxyTests.swift in Sources */,
+				AA0001012A000007000C0001 /* UIScrollViewSwizzlerTests.swift in Sources */,
 				61C713AD2A3B793E00FA735A /* RUMMonitorProtocolTests.swift in Sources */,
 				6105C4FA2CEBD72600C4C5EE /* TNSMetricTests.swift in Sources */,
 				D29A9FB729DDB483005C54A4 /* ViewIdentifierTests.swift in Sources */,
@@ -11228,7 +11700,7 @@
 			repositoryURL = "https://github.com/DataDog/dd-sdk-swift-testing.git";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 2.6.3;
+				minimumVersion = 2.6.6;
 			};
 		};
 		D22689B72EB12C3100875E44 /* XCRemoteSwiftPackageReference "KSCrash" */ = {
