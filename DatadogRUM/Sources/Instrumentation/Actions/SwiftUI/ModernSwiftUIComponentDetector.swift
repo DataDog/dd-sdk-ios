@@ -7,7 +7,11 @@
 #if !os(watchOS)
 
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 import DatadogInternal
 
 @available(iOS 18.0, tvOS 18.0, visionOS 2.0, *)
