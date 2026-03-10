@@ -25,9 +25,9 @@ internal final class MemoryWarningMonitor {
         self.reporter = memoryWarningReporter
     }
 
-    /// Starts monitoring memory warnings by subscribing to `UIApplication.didReceiveMemoryWarningNotification`.
+    /// Starts monitoring memory warnings by subscribing to `DDApplication.didReceiveMemoryWarningNotification`.
     func start() {
-        notificationCenter.addObserver(self, selector: #selector(didReceiveMemoryWarning), name: UIApplication.didReceiveMemoryWarningNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(didReceiveMemoryWarning), name: DDApplication.didReceiveMemoryWarningNotification, object: nil)
     }
 
     @objc

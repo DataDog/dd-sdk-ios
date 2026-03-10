@@ -10,9 +10,9 @@ import UIKit
 import AppKit
 #endif
 
-internal extension UIViewController {
+internal extension DDViewController {
     /// The canonical class name for this view controller.
-    /// If this `UIViewController` class is defined in Swift module, it will be prefixed by the module name, e.g. `Foo.CheckoutViewController`. 
+    /// If this `DDViewController` class is defined in Swift module, it will be prefixed by the module name, e.g. `Foo.CheckoutViewController`.
     var canonicalClassName: String {
         return NSStringFromClass(type(of: self))
     }
@@ -24,10 +24,10 @@ internal extension UIViewController {
     }
 }
 
-internal extension UIView {
+internal extension DDView {
     /// Traverses the hierarchy of this view from bottom-up to find any parent view matching
     /// the given predicate. It starts from `self`.
-    func findInParentHierarchy(viewMatching predicate: (UIView) -> Bool) -> UIView? {
+    func findInParentHierarchy(viewMatching predicate: (DDView) -> Bool) -> DDView? {
         if predicate(self) {
             return self
         } else if let superview = superview {

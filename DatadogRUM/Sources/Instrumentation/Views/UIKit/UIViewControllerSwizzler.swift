@@ -11,7 +11,7 @@ import AppKit
 #endif
 import DatadogInternal
 
-internal class UIViewControllerSwizzler {
+internal class DDViewControllerSwizzler {
     let viewDidAppear: ViewDidAppear
     let viewDidDisappear: ViewDidDisappear
 
@@ -32,22 +32,22 @@ internal class UIViewControllerSwizzler {
 
     // MARK: - Swizzlings
 
-    /// Swizzles the `UIViewController.viewDidAppear()`
+    /// Swizzles the `DDViewController.viewDidAppear()`
     class ViewDidAppear: MethodSwizzler <
-        @convention(c) (UIViewController, Selector, Bool) -> Void,
-        @convention(block) (UIViewController, Bool) -> Void
+        @convention(c) (DDViewController, Selector, Bool) -> Void,
+        @convention(block) (DDViewController, Bool) -> Void
     > {
-        private static let selector = #selector(UIViewController.viewDidAppear(_:))
+        private static let selector = #selector(DDViewController.viewDidAppear(_:))
         private let method: Method
         private let handler: UIViewControllerHandler
 
         init(handler: UIViewControllerHandler) throws {
-            self.method = try dd_class_getInstanceMethod(UIViewController.self, Self.selector)
+            self.method = try dd_class_getInstanceMethod(DDViewController.self, Self.selector)
             self.handler = handler
         }
 
         func swizzle() {
-            typealias Signature = @convention(block) (UIViewController, Bool) -> Void
+            typealias Signature = @convention(block) (DDViewController, Bool) -> Void
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] vc, animated  in
                     handler?.notify_viewDidAppear(viewController: vc, animated: animated)
@@ -57,22 +57,22 @@ internal class UIViewControllerSwizzler {
         }
     }
 
-    /// Swizzles the `UIViewController.viewDidDisappear()`
+    /// Swizzles the `DDViewController.viewDidDisappear()`
     class ViewDidDisappear: MethodSwizzler <
-        @convention(c) (UIViewController, Selector, Bool) -> Void,
-        @convention(block) (UIViewController, Bool) -> Void
+        @convention(c) (DDViewController, Selector, Bool) -> Void,
+        @convention(block) (DDViewController, Bool) -> Void
     > {
-        private static let selector = #selector(UIViewController.viewDidDisappear(_:))
+        private static let selector = #selector(DDViewController.viewDidDisappear(_:))
         private let method: Method
         private let handler: UIViewControllerHandler
 
         init(handler: UIViewControllerHandler) throws {
-            self.method = try dd_class_getInstanceMethod(UIViewController.self, Self.selector)
+            self.method = try dd_class_getInstanceMethod(DDViewController.self, Self.selector)
             self.handler = handler
         }
 
         func swizzle() {
-            typealias Signature = @convention(block) (UIViewController, Bool) -> Void
+            typealias Signature = @convention(block) (DDViewController, Bool) -> Void
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] vc, animated  in
                     handler?.notify_viewDidDisappear(viewController: vc, animated: animated)

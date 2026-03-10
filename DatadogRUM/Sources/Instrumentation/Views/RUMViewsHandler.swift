@@ -50,7 +50,7 @@ internal final class RUMViewsHandler {
     /// Extracts `SwiftUI` view name from view hierarchy.
     private let swiftUIViewNameExtractor: SwiftUIViewNameExtractor?
 
-    /// The notification center where this handler observes following `UIApplication` notifications:
+    /// The notification center where this handler observes following `DDApplication` notifications:
     /// - `.didEnterBackgroundNotification`
     /// - `.willEnterForegroundNotification`
     private weak var notificationCenter: NotificationCenter?
@@ -74,7 +74,7 @@ internal final class RUMViewsHandler {
     ///   - predicate: `UIKit` view predicate. `nil`, if `UIKit`
     ///     auto-instrumentations is disabled.
     ///   - notificationCenter: The notification center where this handler
-    ///    a set of `UIApplication` notifications.
+    ///    a set of `DDApplication` notifications.
     init(
         dateProvider: DateProvider,
         uiKitPredicate: UIKitRUMViewsPredicate?,
@@ -91,13 +91,13 @@ internal final class RUMViewsHandler {
         notificationCenter.addObserver(
             self,
             selector: #selector(applicationDidEnterBackground),
-            name: UIApplication.didEnterBackgroundNotification,
+            name: DDApplication.didEnterBackgroundNotification,
             object: nil
         )
         notificationCenter.addObserver(
             self,
             selector: #selector(applicationWillEnterForeground),
-            name: UIApplication.willEnterForegroundNotification,
+            name: DDApplication.willEnterForegroundNotification,
             object: nil
         )
     }
@@ -105,12 +105,12 @@ internal final class RUMViewsHandler {
     deinit {
         notificationCenter?.removeObserver(
             self,
-            name: UIApplication.didEnterBackgroundNotification,
+            name: DDApplication.didEnterBackgroundNotification,
             object: nil
         )
         notificationCenter?.removeObserver(
             self,
-            name: UIApplication.willEnterForegroundNotification,
+            name: DDApplication.willEnterForegroundNotification,
             object: nil
         )
     }
@@ -230,7 +230,7 @@ internal final class RUMViewsHandler {
 
 // MARK: - UIViewControllerHandler
 extension RUMViewsHandler: UIViewControllerHandler {
-    func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
+    func notify_viewDidAppear(viewController: DDViewController, animated: Bool) {
         let identity = ViewIdentifier(viewController)
         if let view = stack.first(where: { $0.identity == identity }) {
             // If the stack already contains the view controller, just restarts the view.
@@ -265,7 +265,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
         }
     }
 
-    func notify_viewDidDisappear(viewController: UIViewController, animated: Bool) {
+    func notify_viewDidDisappear(viewController: DDViewController, animated: Bool) {
         remove(identity: ViewIdentifier(viewController))
     }
 }

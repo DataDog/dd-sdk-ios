@@ -25,7 +25,7 @@ public protocol UITouchRUMActionsPredicate {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter targetView: an instance of the `UIView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
-    func rumAction(targetView: UIView) -> RUMAction?
+    func rumAction(targetView: DDView) -> RUMAction?
 }
 
 /// The predicate for tvOS interactions deciding if a given RUM Action should be recorded.
@@ -36,9 +36,9 @@ public protocol UIPressRUMActionsPredicate {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameters:
     ///   - type: the `UIPress.PressType` which received the action.
-    ///   - targetView: an instance of the `UIView` which received the action.
+    ///   - targetView: an instance of the `DDView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
-    func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
+    func rumAction(press type: UIPress.PressType, targetView: DDView) -> RUMAction?
 }
 
 /// Default implementation of `UIKitRUMActionsPredicate`.
@@ -46,8 +46,8 @@ public protocol UIPressRUMActionsPredicate {
 public struct DefaultUIKitRUMActionsPredicate {
     public init () {}
 
-    /// Builds the RUM Action's `target` name for given `UIView`.
-    private func targetName(for view: UIView) -> String {
+    /// Builds the RUM Action's `target` name for given `DDView`.
+    private func targetName(for view: DDView) -> String {
         let className = NSStringFromClass(type(of: view))
 
         if let accessibilityIdentifier = view.accessibilityIdentifier {
@@ -65,7 +65,7 @@ public struct DefaultUIKitRUMActionsPredicate {
 
 // MARK: iOS DefaultUIKitRUMActionsPredicate
 extension DefaultUIKitRUMActionsPredicate: UITouchRUMActionsPredicate {
-    public func rumAction(targetView: UIView) -> RUMAction? {
+    public func rumAction(targetView: DDView) -> RUMAction? {
         return RUMAction(
             name: targetName(for: targetView),
             attributes: [:]
@@ -75,7 +75,7 @@ extension DefaultUIKitRUMActionsPredicate: UITouchRUMActionsPredicate {
 
 // MARK: tvOS DefaultUIKitRUMActionsPredicate
 extension DefaultUIKitRUMActionsPredicate: UIPressRUMActionsPredicate {
-    public func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
+    public func rumAction(press type: UIPress.PressType, targetView: DDView) -> RUMAction? {
         var name: String
 
         switch type {
@@ -93,7 +93,7 @@ extension DefaultUIKitRUMActionsPredicate: UIPressRUMActionsPredicate {
     }
 }
 
-private extension UIView {
+private extension DDView {
     var swiftUIViewName: String {
         if typeDescription.hasPrefix("ViewBasedUIButton") {
             return "SwiftUI_Menu"

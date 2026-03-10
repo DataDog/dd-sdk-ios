@@ -12,14 +12,14 @@ import AppKit
 import DatadogInternal
 
 internal protocol RUMActionsHandling: RUMCommandPublisher {
-    /// Tracks RUM actions automatically for UIKit and SwiftUI by responding to `UIApplication.sendEvent(application:event:)` being called.
-    func notify_sendEvent(application: UIApplication, event: UIEvent)
+    /// Tracks RUM actions automatically for UIKit and SwiftUI by responding to `DDApplication.sendEvent(application:event:)` being called.
+    func notify_sendEvent(application: DDApplication, event: DDEvent)
     /// Tracks RUM actions manually with SwiftUI view modifers by being notified from `RUMTapActionModifier`.
     func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable])
 }
 
 internal final class RUMActionsHandler: RUMActionsHandling {
-    /// Factory that processes `UIEvents` and creates RUM action commands.
+    /// Factory that processes `DDEvents` and creates RUM action commands.
     /// It is `nil` when both UIKit and SwiftUI automatic instrumentations are not enabled.
     private let eventCommandsFactory: UIEventCommandFactory?
     private let dateProvider: DateProvider
@@ -85,8 +85,8 @@ internal final class RUMActionsHandler: RUMActionsHandling {
         self.subscriber = subscriber
     }
 
-    /// Tracks RUM actions automatically for UIKit and SwiftUI in response to `UIApplication.sendEvent(application:event:)` event.
-    func notify_sendEvent(application: UIApplication, event: UIEvent) {
+    /// Tracks RUM actions automatically for UIKit and SwiftUI in response to `DDApplication.sendEvent(application:event:)` event.
+    func notify_sendEvent(application: DDApplication, event: DDEvent) {
         guard let command = eventCommandsFactory?.command(from: event) else {
             return // Not a "tap" event or doesn't have the view.
         }

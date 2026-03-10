@@ -375,21 +375,21 @@ public protocol RUMMonitorViewProtocol: AnyObject {
 
     /// Starts RUM view.
     /// - Parameters:
-    ///   - viewController: the instance of `UIViewController` representing this view.
+    ///   - viewController: the instance of `DDViewController` representing this view.
     ///   - name: the name of the view. If not provided, the `viewController` class name will be used.
     ///   - attributes: custom attributes to attach to this view.
     func startView(
-        viewController: UIViewController,
+        viewController: DDViewController,
         name: String?,
         attributes: [AttributeKey: AttributeValue]
     )
 
     /// Stops RUM view.
     /// - Parameters:
-    ///   - viewController: the instance of `UIViewController` representing this view.
+    ///   - viewController: the instance of `DDViewController` representing this view.
     ///   - attributes: custom attributes to attach to this view.
     func stopView(
-        viewController: UIViewController,
+        viewController: DDViewController,
         attributes: [AttributeKey: AttributeValue]
     )
 
@@ -500,8 +500,8 @@ extension NOPMonitor: RUMMonitorViewProtocol {
     func removeViewAttribute(forKey key: AttributeKey) { warn() }
     func removeViewAttributes(forKeys keys: [AttributeKey]) { warn() }
 
-    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
-    func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func startView(viewController: DDViewController, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopView(viewController: DDViewController, attributes: [AttributeKey: AttributeValue]) { warn() }
     func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopView(key: String, attributes: [AttributeKey: AttributeValue]) { warn() }
 

@@ -14,7 +14,7 @@ import DatadogInternal
 
 internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
     func createActionCommand(
-        from touch: UITouch,
+        from touch: DDTouch,
         predicate: SwiftUIRUMActionsPredicate?,
         dateProvider: DateProvider
     ) -> RUMAddUserActionCommand? {

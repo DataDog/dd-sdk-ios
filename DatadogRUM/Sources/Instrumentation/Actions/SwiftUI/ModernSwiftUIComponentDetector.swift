@@ -25,7 +25,7 @@ internal final class ModernSwiftUIComponentDetector: SwiftUIComponentDetector {
     }
 
     func createActionCommand(
-        from touch: UITouch,
+        from touch: DDTouch,
         predicate: SwiftUIRUMActionsPredicate?,
         dateProvider: DateProvider
     ) -> RUMAddUserActionCommand? {
@@ -59,7 +59,7 @@ internal final class ModernSwiftUIComponentDetector: SwiftUIComponentDetector {
 
     /// Processes a touch in the `.began` phase,
     /// which is when we can detect the Button gesture.
-    private func handleTouchBegan(_ touch: UITouch, dateProvider: DateProvider) -> Bool {
+    private func handleTouchBegan(_ touch: DDTouch, dateProvider: DateProvider) -> Bool {
         guard let view = touch.view,
               view.isSwiftUIView else {
             return false
@@ -79,7 +79,7 @@ internal final class ModernSwiftUIComponentDetector: SwiftUIComponentDetector {
 
     /// Creates a command from a pending touch if one exists for the given touch
     private func createCommandFromPendingTouch(
-        for touch: UITouch,
+        for touch: DDTouch,
         predicate: SwiftUIRUMActionsPredicate?,
         dateProvider: DateProvider
     ) -> RUMAddUserActionCommand? {

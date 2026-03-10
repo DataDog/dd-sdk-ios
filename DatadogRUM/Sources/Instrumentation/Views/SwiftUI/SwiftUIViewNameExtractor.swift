@@ -14,7 +14,7 @@ import DatadogInternal
 // MARK: - SwiftUIViewNameExtractor
 /// Protocol defining interface for extracting view names for SwiftUI views
 internal protocol SwiftUIViewNameExtractor {
-    func extractName(from: UIViewController) -> String?
+    func extractName(from: DDViewController) -> String?
 }
 
 // MARK: - SwiftUIReflectionBasedViewNameExtractor
@@ -30,10 +30,10 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
         self.createReflector = reflectorFactory
     }
 
-    /// Attempts to extract a meaningful SwiftUI view name from a `UIViewController`
-    /// - Parameter viewController: The `UIViewController` potentially hosting a SwiftUI view
+    /// Attempts to extract a meaningful SwiftUI view name from a `DDViewController`
+    /// - Parameter viewController: The `DDViewController` potentially hosting a SwiftUI view
     /// - Returns: The extracted view name or `nil`
-    func extractName(from viewController: UIViewController) -> String? {
+    func extractName(from viewController: DDViewController) -> String? {
         // We ignore UIKit container view controllers
         if Bundle(for: type(of: viewController)).dd.isUIKit {
             return nil
@@ -59,7 +59,7 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
     }
 
     private func extractViewName(
-        from viewController: UIViewController,
+        from viewController: DDViewController,
         controllerType: ControllerType,
         withReflector reflector: TopLevelReflector
     ) -> String? {
@@ -188,7 +188,7 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
         return nil
     }
 
-    internal func shouldSkipViewController(viewController: UIViewController, className: String) -> Bool {
+    internal func shouldSkipViewController(viewController: DDViewController, className: String) -> Bool {
         // Skip TabBar controllers
         if className == "SwiftUI.UIKitTabBarController" {
             return true
@@ -203,7 +203,7 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
         }
 
         // Skip Navigation controllers
-        if viewController is UINavigationController {
+        if viewController is DDNavigationController {
             return true
         }
 

@@ -22,7 +22,7 @@ extension ViewIdentifier {
 import UIKit
 
 extension ViewIdentifier {
-    init(_ vc: UIViewController) {
+    init(_ vc: DDViewController) {
         self = .viewController(ObjectIdentifier(vc))
     }
 }

@@ -33,7 +33,7 @@ private struct RUMDebugInfo {
 
 internal class RUMDebugging {
     /// An overlay view renderd on top of the app content. It is created lazily on first draw.
-    private var canvas: UIView? = nil
+    private var canvas: DDView? = nil
 
     // MARK: - Initialization
 
@@ -117,7 +117,7 @@ internal class RUMDebugging {
             canvas.addSubview(view)
         }
         if canvas.superview == nil,
-           let someWindow = UIApplication.dd.managedShared?.windows.first(where: { $0.isKeyWindow }) {
+           let someWindow = DDApplication.dd.managedShared?.windows.first(where: { $0.isKeyWindow }) {
             canvas.frame.size = someWindow.bounds.size
             someWindow.addSubview(canvas)
         }
@@ -137,20 +137,20 @@ internal class RUMViewOutline: RUMDebugView {
         static let labelHeight: CGFloat = 16
 
         static let viewNameTextAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.8, weight: .semibold),
-            .foregroundColor: UIColor.white,
+            .font: DDFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.8, weight: .semibold),
+            .foregroundColor: DDColor.white,
         ]
         static let viewDetailsTextAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.5, weight: .regular),
-            .foregroundColor: UIColor.white,
+            .font: DDFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.5, weight: .regular),
+            .foregroundColor: DDColor.white,
         ]
     }
 
-    private let label: UILabel
+    private let label: DDLabel
     private let stackOffset: CGFloat
 
     fileprivate init(viewInfo: RUMDebugInfo.View, stack: (index: Int, total: Int)) {
-        self.label = UILabel(frame: .zero)
+        self.label = DDLabel(frame: .zero)
         self.stackOffset = CGFloat(stack.index) * Constants.labelHeight
 
         let viewName = viewInfo.name
@@ -191,7 +191,7 @@ internal class RUMViewOutline: RUMDebugView {
     }
 }
 
-internal class RUMDebugView: UIView {
+internal class RUMDebugView: DDView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.backgroundColor = .clear

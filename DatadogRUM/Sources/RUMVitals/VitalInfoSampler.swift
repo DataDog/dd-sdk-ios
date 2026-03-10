@@ -50,7 +50,7 @@ internal final class VitalInfoSampler {
             #if swift(>=5.9) && os(visionOS)
             return 120.0 // Hardcoded to enable VisionOS compilation
             #else
-            return Double(UIScreen.main.maximumFramesPerSecond)
+            return Double(DDScreen.main.maximumFramesPerSecond)
             #endif
         }
     }

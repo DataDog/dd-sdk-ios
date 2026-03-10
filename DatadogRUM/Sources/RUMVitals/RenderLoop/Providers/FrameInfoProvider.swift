@@ -51,7 +51,7 @@ extension CADisplayLink: FrameInfoProvider {
         // https://developer.apple.com/documentation/visionos/analyzing-the-performance-of-your-visionos-app#Inspect-frame-rendering-performance
         90
         #else
-        UIScreen.main.maximumFramesPerSecond
+        DDScreen.main.maximumFramesPerSecond
         #endif
     }
 

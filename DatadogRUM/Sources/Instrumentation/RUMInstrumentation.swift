@@ -23,14 +23,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     /// Swizzles `UIViewController` for intercepting its lifecycle callbacks.
     /// It is `nil` (no swizzling) if RUM View automatic instrumentation is not enabled.
-    let viewControllerSwizzler: UIViewControllerSwizzler?
+    let viewControllerSwizzler: DDViewControllerSwizzler?
     /// Receives interceptions of both automatic and manual instrumentations.
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
     let viewsHandler: RUMViewsHandler
 
     /// Swizzles `UIApplication` for intercepting `UIEvents` passed to the app.
     /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
-    let uiApplicationSwizzler: UIApplicationSwizzler?
+    let uiApplicationSwizzler: DDApplicationSwizzler?
     /// Receives interceptions of both automatic and manual instrumentations.
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
     let actionsHandler: RUMActionsHandling
@@ -76,11 +76,11 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
             notificationCenter: notificationCenter
         )
-        let viewControllerSwizzler: UIViewControllerSwizzler? = {
+        let viewControllerSwizzler: DDViewControllerSwizzler? = {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic view tracking is enabled
                 if uiKitRUMViewsPredicate != nil || swiftUIRUMViewsPredicate != nil {
-                    return try UIViewControllerSwizzler(handler: viewsHandler)
+                    return try DDViewControllerSwizzler(handler: viewsHandler)
                 }
             } catch {
                 consolePrint(
@@ -109,11 +109,11 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             #endif
         }()
 
-        let uiApplicationSwizzler: UIApplicationSwizzler? = {
+        let uiApplicationSwizzler: DDApplicationSwizzler? = {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic action tracking is enabled
                 if uiKitRUMActionsPredicate != nil || swiftUIRUMActionsPredicate != nil {
-                    return try UIApplicationSwizzler(handler: actionsHandler)
+                    return try DDApplicationSwizzler(handler: actionsHandler)
                 }
             } catch {
                 consolePrint(

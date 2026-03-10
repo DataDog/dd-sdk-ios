@@ -26,11 +26,11 @@ public extension RUMMonitorProtocol {
 
     /// Starts RUM view.
     /// - Parameters:
-    ///   - viewController: the instance of `UIViewController` representing this view.
+    ///   - viewController: the instance of `DDViewController` representing this view.
     ///   - name: the name of the view. If not provided, the `viewController` class name will be used.
     ///   - attributes: custom attributes to attach to this view.
     func startView(
-        viewController: UIViewController,
+        viewController: DDViewController,
         name: String? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
@@ -39,10 +39,10 @@ public extension RUMMonitorProtocol {
 
     /// Stops RUM view.
     /// - Parameters:
-    ///   - viewController: the instance of `UIViewController` representing this view.
+    ///   - viewController: the instance of `DDViewController` representing this view.
     ///   - attributes: custom attributes to attach to this view.
     func stopView(
-        viewController: UIViewController,
+        viewController: DDViewController,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
         stopView(viewController: viewController, attributes: attributes)

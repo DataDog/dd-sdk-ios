@@ -48,7 +48,7 @@ internal protocol SwiftUIComponentDetector {
     ///   - dateProvider: Provider for current time
     /// - Returns: A RUM action command if one should be created, `nil` otherwise
     func createActionCommand(
-        from touch: UITouch,
+        from touch: DDTouch,
         predicate: SwiftUIRUMActionsPredicate?,
         dateProvider: DateProvider
     ) -> RUMAddUserActionCommand?
@@ -78,7 +78,7 @@ internal class SwiftUIComponentHelpers {
     /// identify common components like buttons and navigation links.
     /// Note: We check gestures' names both during the `.began` and `.ended` phases
     /// as we can collect different information.
-    static func extractComponentName(touch: UITouch, defaultName: String) -> String {
+    static func extractComponentName(touch: DDTouch, defaultName: String) -> String {
         // Check gesture recognizers' names for more specific info
         if let gestures = touch.gestureRecognizers {
             for gesture in gestures {
@@ -103,7 +103,7 @@ internal protocol TypeDescribing {
 }
 
 /// Default implementation for UIKit views
-extension UIView: TypeDescribing {
+extension DDView: TypeDescribing {
     /// Returns a string describing the type of the view
     @objc var typeDescription: String {
         return String(describing: type(of: self))
