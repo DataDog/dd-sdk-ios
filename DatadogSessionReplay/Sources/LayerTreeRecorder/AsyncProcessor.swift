@@ -4,6 +4,15 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Lightweight async processing primitive used by the layer-tree pipeline.
+//
+// `AsyncProcessor` accepts inputs from producer actors (for example, the recorder)
+// and forwards them to a processor implementation in submission order. It behaves
+// like a serial async queue powered by `AsyncStream`, while allowing callers to
+// continue without awaiting downstream processing.
+
 #if os(iOS)
 import Foundation
 
@@ -21,6 +30,7 @@ internal actor AsyncProcessor<Input> {
         let (stream, continuation) = AsyncStream<Input>.makeStream()
         self.continuation = continuation
 
+        // Detached consumer task that drains the stream sequentially.
         Task(priority: priority) {
             for await input in stream {
                 await processor.process(input)
@@ -29,6 +39,7 @@ internal actor AsyncProcessor<Input> {
     }
 
     deinit {
+        // Finishing the stream lets the consumer task exit naturally.
         continuation.finish()
     }
 

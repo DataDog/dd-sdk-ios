@@ -4,12 +4,23 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// MARK: - Overview
+//
+// Builds and writes Session Replay records for the layer-tree recording strategy.
+//
+// For each captured frame, this processor:
+// - Builds wireframes and resources from layer snapshots and rendered images
+// - Produces segment records (meta/focus/full or incremental)
+// - Appends touch interaction records when available
+// - Writes enriched records and forwards resources for deduplicated persistence
+
 #if os(iOS)
 import Foundation
 import DatadogInternal
 
 @available(iOS 13.0, tvOS 13.0, *)
 internal final class LayerSnapshotProcessor: Processor {
+    /// Frame payload produced by `LayerRecorder`.
     struct Input {
         var layerTreeSnapshot: LayerTreeSnapshot
         var targetSnapshots: [LayerSnapshot]
@@ -26,6 +37,7 @@ internal final class LayerSnapshotProcessor: Processor {
     private let resourceProcessor: any LayerResourceProcessing
     private let telemetry: any Telemetry
 
+    // State used to decide segment boundaries and to generate incremental snapshots.
     private var lastSnapshot: LayerTreeSnapshot?
     private var lastWireframes: [SRWireframe]?
     private var recordsByView: [String: Int64] = [:]
@@ -59,6 +71,7 @@ internal final class LayerSnapshotProcessor: Processor {
 
         let layerTreeSnapshot = input.layerTreeSnapshot
 
+        // A segment boundary is defined by application/session/view identity changes.
         if
             layerTreeSnapshot.context.applicationID != lastSnapshot?.context.applicationID ||
             layerTreeSnapshot.context.sessionID != lastSnapshot?.context.sessionID ||
@@ -134,7 +147,8 @@ internal final class LayerSnapshotProcessor: Processor {
         lastSnapshot = layerTreeSnapshot
         lastWireframes = wireframes
 
-        // Process resources
+        // Process resources after writing records to keep record emission on the
+        // critical path and resource writing offloaded.
         await resourceProcessor.process(
             .init(
                 resources: resources,
