@@ -46,7 +46,7 @@ class RUMAndTracingURLSessionBaseScenario: URLSessionBaseScenario, TestScenario 
             )
         case .delegateWithAdditionalFirstPartyHosts:
             rumConfig.urlSessionTracking = .init(
-                firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100), // hosts will be set through `DDURLSessionDelegate`
+                firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100) // hosts will be set through `DDURLSessionDelegate`
             )
         }
         RUM.enable(with: rumConfig)
