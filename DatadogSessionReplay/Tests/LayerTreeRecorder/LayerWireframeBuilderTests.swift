@@ -52,19 +52,19 @@ struct LayerWireframeBuilderTests {
         let builder = LayerWireframeBuilder()
 
         // when
-        let output = builder.createWireframes(
+        let (wireframes, resources) = builder.createWireframes(
             for: [snapshot],
             layerImages: [snapshot.replayID: .success(layerImage)],
             webViewSlotIDs: []
         )
 
         // then
-        let wireframe = try #require(output.wireframes.first?.imageWireframe)
+        let wireframe = try #require(wireframes.first?.imageWireframe)
 
         #expect(wireframe.id == snapshot.replayID)
         #expect(wireframe.x == Int64.ddWithNoOverflow(layerImage.frame.minX))
         #expect(wireframe.y == Int64.ddWithNoOverflow(layerImage.frame.minY))
-        #expect(output.resources.count == 1)
+        #expect(resources.count == 1)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -75,14 +75,14 @@ struct LayerWireframeBuilderTests {
         let builder = LayerWireframeBuilder()
 
         // when
-        let output = builder.createWireframes(
+        let (wireframes, _) = builder.createWireframes(
             for: [snapshot],
             layerImages: [snapshot.replayID: .failure(.timedOut)],
             webViewSlotIDs: []
         )
 
         // then
-        let wireframe = try #require(output.wireframes.first?.placeholderWireframe)
+        let wireframe = try #require(wireframes.first?.placeholderWireframe)
 
         #expect(wireframe.id == snapshot.replayID)
         #expect(wireframe.label == LayerWireframeBuilder.timedOutLabel)
@@ -96,14 +96,14 @@ struct LayerWireframeBuilderTests {
         let builder = LayerWireframeBuilder()
 
         // when
-        let output = builder.createWireframes(
+        let (wireframes, _) = builder.createWireframes(
             for: [snapshot],
             layerImages: [snapshot.replayID: .failure(.discarded)],
             webViewSlotIDs: []
         )
 
         // then
-        #expect(output.wireframes.isEmpty)
+        #expect(wireframes.isEmpty)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -117,14 +117,14 @@ struct LayerWireframeBuilderTests {
         let builder = LayerWireframeBuilder()
 
         // when
-        let output = builder.createWireframes(
+        let (wireframes, _) = builder.createWireframes(
             for: [snapshot],
             layerImages: [:],
             webViewSlotIDs: []
         )
 
         // then
-        let wireframe = try #require(output.wireframes.first?.shapeWireframe)
+        let wireframe = try #require(wireframes.first?.shapeWireframe)
 
         #expect(wireframe.id == snapshot.replayID)
     }
@@ -137,14 +137,14 @@ struct LayerWireframeBuilderTests {
         let builder = LayerWireframeBuilder()
 
         // when
-        let output = builder.createWireframes(
+        let (wireframes, _) = builder.createWireframes(
             for: [snapshot],
             layerImages: [:],
             webViewSlotIDs: []
         )
 
         // then
-        #expect(output.wireframes.isEmpty)
+        #expect(wireframes.isEmpty)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -155,20 +155,20 @@ struct LayerWireframeBuilderTests {
         let builder = LayerWireframeBuilder()
 
         // when
-        let output = builder.createWireframes(
+        let (wireframes, _) = builder.createWireframes(
             for: [snapshot],
             layerImages: [:],
             webViewSlotIDs: [42, 84]
         )
 
         // then
-        #expect(output.wireframes.count == 2)
+        #expect(wireframes.count == 2)
 
-        let hidden = try #require(output.wireframes[0].webviewWireframe)
+        let hidden = try #require(wireframes[0].webviewWireframe)
         #expect(hidden.id == 84)
         #expect(hidden.isVisible == false)
 
-        let visible = try #require(output.wireframes[1].webviewWireframe)
+        let visible = try #require(wireframes[1].webviewWireframe)
         #expect(visible.id == 42)
         #expect(visible.isVisible == true)
     }

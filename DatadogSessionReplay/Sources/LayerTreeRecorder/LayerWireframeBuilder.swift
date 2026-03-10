@@ -29,18 +29,13 @@ import Foundation
 
 @available(iOS 13.0, tvOS 13.0, *)
 internal struct LayerWireframeBuilder {
-    struct Output {
-        let wireframes: [SRWireframe]
-        let resources: [Resource]
-    }
-
     static let timedOutLabel = "Timed Out"
 
     func createWireframes(
         for snapshots: [LayerSnapshot],
         layerImages: [Int64: LayerImageRenderer.Result],
         webViewSlotIDs: Set<Int>
-    ) -> Output {
+    ) -> ([SRWireframe], [Resource]) {
         let builder = WireframesBuilder(webViewSlotIDs: webViewSlotIDs)
 
         let wireframes = snapshots.compactMap { snapshot in
@@ -48,9 +43,9 @@ internal struct LayerWireframeBuilder {
         }
 
         // Hidden webview wireframes must be emitted before regular wireframes.
-        return Output(
-            wireframes: builder.hiddenWebViewWireframes() + wireframes,
-            resources: builder.resources
+        return (
+            builder.hiddenWebViewWireframes() + wireframes,
+            builder.resources
         )
     }
 

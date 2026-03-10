@@ -522,6 +522,8 @@
 		49D8C0B82AC5D2160075E427 /* RUM+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */; };
 		49D8C0BD2AC5F2BB0075E427 /* Logs+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */; };
 		49D8C0BE2AC5F2BC0075E427 /* Logs+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */; };
+		5B02234F2F6017F200ADF41B /* AsyncProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B02234E2F6017ED00ADF41B /* AsyncProcessor.swift */; };
+		5B0223512F6020D500ADF41B /* LayerResourceProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0223502F6020CF00ADF41B /* LayerResourceProcessor.swift */; };
 		5B0A9B8B2E3BB98E00A8131C /* GraphicsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */; };
 		5B0A9B8D2E3BBB4500A8131C /* GraphicsFilter+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */; };
 		5B0E75DA2E9690D200F66739 /* ExposureTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E75D92E9690C400F66739 /* ExposureTracker.swift */; };
@@ -587,6 +589,7 @@
 		5B6084C72F5AD13000E6551A /* WKWebView+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6084C62F5AD12600E6551A /* WKWebView+SessionReplay.swift */; };
 		5B6084CB2F5AD23100E6551A /* WKWebView+SessionReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6084CA2F5AD22A00E6551A /* WKWebView+SessionReplayTests.swift */; };
 		5BC5D9A5334A9A6200A1B2C3 /* TestWKWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC5D9A4334A9A6200A1B2C3 /* TestWKWebView.swift */; };
+		5B6084C92F5B1DCC00E6551A /* LayerSnapshotProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6084C82F5B1DC300E6551A /* LayerSnapshotProcessor.swift */; };
 		5B69166B2F3B823B0074A909 /* TimerScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B69166A2F3B82340074A909 /* TimerScheduler.swift */; };
 		5B69166D2F3B854C0074A909 /* TimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B69166C2F3B85480074A909 /* TimeSource.swift */; };
 		5B69166F2F3B89060074A909 /* TestTimerScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B69166E2F3B88FE0074A909 /* TestTimerScheduler.swift */; };
@@ -3006,6 +3009,8 @@
 		49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUM+Internal.swift"; sourceTree = "<group>"; };
 		49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+Internal.swift"; sourceTree = "<group>"; };
 		5AA681535D980BA99B12659B /* EvaluationAggregatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationAggregatorTests.swift; sourceTree = "<group>"; };
+		5B02234E2F6017ED00ADF41B /* AsyncProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncProcessor.swift; sourceTree = "<group>"; };
+		5B0223502F6020CF00ADF41B /* LayerResourceProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerResourceProcessor.swift; sourceTree = "<group>"; };
 		5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphicsFilter.swift; sourceTree = "<group>"; };
 		5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphicsFilter+Reflection.swift"; sourceTree = "<group>"; };
 		5B0E75D92E9690C400F66739 /* ExposureTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureTracker.swift; sourceTree = "<group>"; };
@@ -3046,6 +3051,7 @@
 		5B6084C62F5AD12600E6551A /* WKWebView+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKWebView+SessionReplay.swift"; sourceTree = "<group>"; };
 		5B6084CA2F5AD22A00E6551A /* WKWebView+SessionReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKWebView+SessionReplayTests.swift"; sourceTree = "<group>"; };
 		5BC5D9A4334A9A6200A1B2C3 /* TestWKWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestWKWebView.swift; sourceTree = "<group>"; };
+		5B6084C82F5B1DC300E6551A /* LayerSnapshotProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerSnapshotProcessor.swift; sourceTree = "<group>"; };
 		5B69166A2F3B82340074A909 /* TimerScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerScheduler.swift; sourceTree = "<group>"; };
 		5B69166C2F3B85480074A909 /* TimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSource.swift; sourceTree = "<group>"; };
 		5B69166E2F3B88FE0074A909 /* TestTimerScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTimerScheduler.swift; sourceTree = "<group>"; };
@@ -5005,6 +5011,7 @@
 		5BC91D002F3C8B7C00D0241D /* LayerTreeRecorder */ = {
 			isa = PBXGroup;
 			children = (
+				5B02234E2F6017ED00ADF41B /* AsyncProcessor.swift */,
 				5B870BD42F41CB75008106A5 /* CALayer+ReplayID.swift */,
 				5BC91D482F3CB53A00D0241D /* LayerRecording.swift */,
 				5BC91D442F3C9E2E00D0241D /* LayerProvider.swift */,
@@ -5018,6 +5025,8 @@
 				5B870BE52F433110008106A5 /* LayerSnapshot+Culling.swift */,
 				5B2275F42F45BC6F001EF869 /* LayerSnapshot+Rendering.swift */,
 				5B2A5E253322B5F300A1B2C3 /* LayerTreeSnapshotBuilder.swift */,
+				5B6084C82F5B1DC300E6551A /* LayerSnapshotProcessor.swift */,
+				5B0223502F6020CF00ADF41B /* LayerResourceProcessor.swift */,
 				5BC91D402F3C8DF300D0241D /* LayerTreeRecordingCoordinator.swift */,
 				5B2275F22F449F4B001EF869 /* MediaTimeSource.swift */,
 				5BC91D012F3C8B9600D0241D /* RecordingController.swift */,
@@ -10075,6 +10084,7 @@
 				A7B932FB2B1F6A0A00AE6477 /* EnrichedRecord.swift in Sources */,
 				61054E8D2A6EE10A00AAA894 /* RUMContextReceiver.swift in Sources */,
 				A7B932FD2B1F6A0A00AE6477 /* EnrichedResource.swift in Sources */,
+				5B0223512F6020D500ADF41B /* LayerResourceProcessor.swift in Sources */,
 				5BE0EA2D2E66EFA300216E1C /* Path+SessionReplay.swift in Sources */,
 				61054E622A6EE10A00AAA894 /* RecordWriter.swift in Sources */,
 				61054E692A6EE10A00AAA894 /* UIImage+SessionReplay.swift in Sources */,
@@ -10105,6 +10115,7 @@
 				61054E892A6EE10A00AAA894 /* NodeIDGenerator.swift in Sources */,
 				5BE0EA2B2E66E8A800216E1C /* ShapeResourceBuilder.swift in Sources */,
 				61054E962A6EE10A00AAA894 /* Diff+SRWireframes.swift in Sources */,
+				5B02234F2F6017F200ADF41B /* AsyncProcessor.swift in Sources */,
 				61054E672A6EE10A00AAA894 /* Recorder.swift in Sources */,
 				61054E6B2A6EE10A00AAA894 /* CFType+Safety.swift in Sources */,
 				5B69166D2F3B854C0074A909 /* TimeSource.swift in Sources */,
@@ -10179,6 +10190,7 @@
 				61054E792A6EE10A00AAA894 /* UITextViewRecorder.swift in Sources */,
 				5BFE7B7B2E3CFCDE00B8FAA8 /* ImageRenderer.swift in Sources */,
 				61054E9B2A6EE10B00AAA894 /* CGRectExtensions.swift in Sources */,
+				5B6084C92F5B1DCC00E6551A /* LayerSnapshotProcessor.swift in Sources */,
 				5B870BE22F423DD8008106A5 /* LayerSnapshot+Flattening.swift in Sources */,
 				5B74482F2EFAB819003E622C /* CALayerSwizzler.swift in Sources */,
 				5B7448302EFAB819003E622C /* CALayerChange.swift in Sources */,

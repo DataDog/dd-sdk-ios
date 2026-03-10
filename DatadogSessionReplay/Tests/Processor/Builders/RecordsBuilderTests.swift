@@ -20,7 +20,7 @@ class RecordsBuilderTests: XCTestCase {
 
         // When
         XCTAssertNil(
-            builder.createIncrementalSnapshotRecord(from: .mockAny(), with: wireframes, lastWireframes: wireframes),
+            builder.createIncrementalSnapshotRecord(date: .mockAny(), with: wireframes, lastWireframes: wireframes),
             "If wireframes did not change, it should return no record"
         )
     }
@@ -33,7 +33,7 @@ class RecordsBuilderTests: XCTestCase {
         let next: [SRWireframe] = previous + [.mockRandomWith(id: 2)]
 
         // When
-        let record = builder.createIncrementalSnapshotRecord(from: .mockAny(), with: next, lastWireframes: previous)
+        let record = builder.createIncrementalSnapshotRecord(date: .mockAny(), with: next, lastWireframes: previous)
 
         // Then
         let incrementalRecord = try XCTUnwrap(record?.incrementalSnapshot)
@@ -56,7 +56,7 @@ class RecordsBuilderTests: XCTestCase {
         let next: [SRWireframe] = [.mockRandomWith(id: 2)] + previous
 
         // When
-        let record = builder.createIncrementalSnapshotRecord(from: .mockAny(), with: next, lastWireframes: previous)
+        let record = builder.createIncrementalSnapshotRecord(date: .mockAny(), with: next, lastWireframes: previous)
 
         // Then
         let incrementalRecord = try XCTUnwrap(record?.incrementalSnapshot)
@@ -79,7 +79,7 @@ class RecordsBuilderTests: XCTestCase {
         let next: [SRWireframe] = [.shapeWireframe(value: .mockRandomWith(id: 1))]
 
         // When
-        let record = builder.createIncrementalSnapshotRecord(from: .mockAny(), with: next, lastWireframes: previous)
+        let record = builder.createIncrementalSnapshotRecord(date: .mockAny(), with: next, lastWireframes: previous)
 
         // Then
         let incrementalRecord = try XCTUnwrap(record?.incrementalSnapshot)
@@ -98,7 +98,7 @@ class RecordsBuilderTests: XCTestCase {
         let next: [SRWireframe] = [.textWireframe(value: .mockRandomWith(id: 1))] // illegal: different wireframe type for the same ID
 
         // When
-        let record = builder.createIncrementalSnapshotRecord(from: .mockAny(), with: next, lastWireframes: previous)
+        let record = builder.createIncrementalSnapshotRecord(date: .mockAny(), with: next, lastWireframes: previous)
 
         // Then
         let fullRecord = try XCTUnwrap(record?.fullSnapshot)

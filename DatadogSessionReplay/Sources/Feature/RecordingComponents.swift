@@ -51,7 +51,7 @@ internal struct RecordingComponents {
             queue: telemetryQueue
         )
 
-        let resourceProcessor = ResourceProcessor(
+        let resourceProcessor = ResourceProcessorQueue(
             queue: processorsQueue,
             resourcesWriter: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
         )
@@ -97,20 +97,36 @@ internal struct RecordingComponents {
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) throws -> Self {
+        let telemetryQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.telemetry", qos: .background)
+        let telemetry = SessionReplayTelemetry(
+            telemetry: core.telemetry,
+            queue: telemetryQueue
+        )
         // ScreenChangeMonitor delivers changes at most every 0.1s. We budget 0.09s
         // for one recording pass to keep a small headroom for scheduling and handoff
         let snapshotBuilder = LayerTreeSnapshotBuilder(layerProvider: KeyWindowObserver())
         let layerRecorder = LayerRecorder(
             snapshotBuilder: snapshotBuilder,
             layerImageRenderer: LayerImageRenderer(scale: 1.0),
+            layerSnapshotProcessor: AsyncProcessor(
+                processor: LayerSnapshotProcessor(
+                    recordWriter: RecordWriter(core: core),
+                    contextPublisher: SRContextPublisher(core: core),
+                    resourceProcessor: AsyncProcessor(
+                        processor: ResourceProcessor(
+                            resourcesWriter: ResourcesWriter(
+                                scope: core.scope(for: ResourcesFeature.self)
+                            )
+                        ),
+                        priority: .utility
+                    ),
+                    telemetry: telemetry
+                ),
+                priority: .utility
+            ),
             timeoutInterval: 0.09
         )
         let screenChangeMonitor = try ScreenChangeMonitor(minimumDeliveryInterval: 0.1)
-        let telemetryQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.telemetry", qos: .background)
-        let telemetry = SessionReplayTelemetry(
-            telemetry: core.telemetry,
-            queue: telemetryQueue
-        )
         let layerTreeRecordingCoordinator = LayerTreeRecordingCoordinator(
             recorder: layerRecorder,
             screenChangeMonitor: screenChangeMonitor,

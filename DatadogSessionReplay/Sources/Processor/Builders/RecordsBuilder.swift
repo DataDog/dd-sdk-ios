@@ -8,7 +8,7 @@
 import Foundation
 import DatadogInternal
 
-/// Builds SR records from VTS snapshots to transport wireframes (see `WireframesBuilder`).
+/// Builds SR records to transport wireframes (see `WireframesBuilder`).
 /// There are several types of records in SR format, including Full Snapshot Record (FSR contains all wireframes
 /// of a single replay frame), Incremental Snapshot Record (ISR describes only changes since prior ISR and FSR)
 /// and several meta records (for providing other information to the player).
@@ -23,26 +23,26 @@ internal class RecordsBuilder {
     }
 
     /// Creates Meta Record, defining the viewport size of the player.
-    func createMetaRecord(from snapshot: ViewTreeSnapshot) -> SRRecord {
+    func createMetaRecord(date: Date, viewportSize: CGSize) -> SRRecord {
         let record = SRMetaRecord(
             data: .init(
-                height: Int64.ddWithNoOverflow(snapshot.viewportSize.height),
+                height: Int64.ddWithNoOverflow(viewportSize.height),
                 href: nil,
-                width: Int64.ddWithNoOverflow(snapshot.viewportSize.width)
+                width: Int64.ddWithNoOverflow(viewportSize.width)
             ),
             slotId: nil,
-            timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
+            timestamp: date.timeIntervalSince1970.dd.toInt64Milliseconds
         )
         return .metaRecord(value: record)
     }
 
     /// Creates Focus Record - 🚧 it's required by the contract with the player, but doesn't bring anything for mobile.
     /// TODO: RUMM-2250 remove if we decide to not go with FRs.
-    func createFocusRecord(from snapshot: ViewTreeSnapshot) -> SRRecord {
+    func createFocusRecord(date: Date) -> SRRecord {
         let record = SRFocusRecord(
             data: SRFocusRecord.Data(hasFocus: true),
             slotId: nil,
-            timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
+            timestamp: date.timeIntervalSince1970.dd.toInt64Milliseconds
         )
         return .focusRecord(value: record)
     }
@@ -50,10 +50,10 @@ internal class RecordsBuilder {
     // MARK: - Creating FSR and ISR
 
     /// Creates Full Snapshot Record - a self-contained description of a single frame of the replay.
-    func createFullSnapshotRecord(from snapshot: ViewTreeSnapshot, wireframes: [SRWireframe]) -> SRRecord {
+    func createFullSnapshotRecord(date: Date, wireframes: [SRWireframe]) -> SRRecord {
         let record = SRFullSnapshotRecord(
             data: .init(wireframes: wireframes),
-            timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
+            timestamp: date.timeIntervalSince1970.dd.toInt64Milliseconds
         )
 
         return .fullSnapshotRecord(value: record)
@@ -65,17 +65,17 @@ internal class RecordsBuilder {
     /// It may return `nil` if there is no diff between `wireframes` and `lastWireframes`.
     /// In case of unexpected failure, it will fallback to creating FSR instead.
     /// If the root wireframe has changed, we trigger a full snapshot so it is added first in the replay.
-    func createIncrementalSnapshotRecord(from snapshot: ViewTreeSnapshot, with wireframes: [SRWireframe], lastWireframes: [SRWireframe]) -> SRRecord? {
+    func createIncrementalSnapshotRecord(date: Date, with wireframes: [SRWireframe], lastWireframes: [SRWireframe]) -> SRRecord? {
         do {
-            return try createIncrementalSnapshotRecord(from: snapshot, newWireframes: wireframes, lastWireframes: lastWireframes)
+            return try createIncrementalSnapshotRecord(date: date, newWireframes: wireframes, lastWireframes: lastWireframes)
         } catch {
             // In case of any trouble, fallback to FSR which is always possible:
             telemetry.error("[SR] Failed to create incremental record", error: DDError(error: error))
-            return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
+            return createFullSnapshotRecord(date: date, wireframes: wireframes)
         }
     }
 
-    private func createIncrementalSnapshotRecord(from snapshot: ViewTreeSnapshot, newWireframes: [SRWireframe], lastWireframes: [SRWireframe]) throws -> SRRecord? {
+    private func createIncrementalSnapshotRecord(date: Date, newWireframes: [SRWireframe], lastWireframes: [SRWireframe]) throws -> SRRecord? {
         let diff = try computeDiff(oldArray: lastWireframes, newArray: newWireframes)
 
         if diff.isEmpty {
@@ -92,7 +92,7 @@ internal class RecordsBuilder {
                     }
                 )
             ),
-            timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
+            timestamp: date.timeIntervalSince1970.dd.toInt64Milliseconds
         )
 
         return .incrementalSnapshotRecord(value: record)
@@ -123,21 +123,22 @@ internal class RecordsBuilder {
     }
 
     func createViewport(
-        from snapshot: ViewTreeSnapshot,
-        lastSnapshot: ViewTreeSnapshot
+        date: Date,
+        viewportSize: CGSize,
+        lastViewportSize: CGSize
     ) -> SRRecord? {
-        guard lastSnapshot.viewportSize.dd.aspectRatio != snapshot.viewportSize.dd.aspectRatio else {
+        guard lastViewportSize.dd.aspectRatio != viewportSize.dd.aspectRatio else {
             return nil
         }
         return .incrementalSnapshotRecord(
             value: SRIncrementalSnapshotRecord(
                 data: .viewportResizeData(
                     value: .init(
-                        height: Int64.ddWithNoOverflow(snapshot.viewportSize.height),
-                        width: Int64.ddWithNoOverflow(snapshot.viewportSize.width)
+                        height: Int64.ddWithNoOverflow(viewportSize.height),
+                        width: Int64.ddWithNoOverflow(viewportSize.width)
                     )
                 ),
-                timestamp: snapshot.date.timeIntervalSince1970.dd.toInt64Milliseconds
+                timestamp: date.timeIntervalSince1970.dd.toInt64Milliseconds
             )
         )
     }
