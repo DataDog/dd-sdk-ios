@@ -5,7 +5,12 @@
  */
 
 #if !os(watchOS)
+
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 import DatadogInternal
 
 /// Factory responsible for creating RUM user action commands from UIEvents.
