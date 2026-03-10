@@ -4,8 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if canImport(UIKit) && !os(watchOS)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 import DatadogInternal
 
 internal final class UIApplicationSwizzler {

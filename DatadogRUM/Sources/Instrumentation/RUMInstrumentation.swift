@@ -7,6 +7,12 @@
 import Foundation
 import DatadogInternal
 
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
 /// Bundles RUM instrumentation components.
 internal final class RUMInstrumentation: RUMCommandPublisher {
     fileprivate enum Constants {
