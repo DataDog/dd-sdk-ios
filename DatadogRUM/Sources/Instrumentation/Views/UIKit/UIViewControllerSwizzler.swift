@@ -39,7 +39,11 @@ internal class DDViewControllerSwizzler {
         @convention(c) (DDViewController, Selector, Bool) -> Void,
         @convention(block) (DDViewController, Bool) -> Void
     > {
+        #if canImport(UIKit)
         private static let selector = #selector(DDViewController.viewDidAppear(_:))
+        #elseif canImport(AppKit)
+        private static let selector = #selector(DDViewController.viewDidAppear)
+        #endif
         private let method: Method
         private let handler: UIViewControllerHandler
 
@@ -64,7 +68,11 @@ internal class DDViewControllerSwizzler {
         @convention(c) (DDViewController, Selector, Bool) -> Void,
         @convention(block) (DDViewController, Bool) -> Void
     > {
+        #if canImport(UIKit)
         private static let selector = #selector(DDViewController.viewDidDisappear(_:))
+        #elseif canImport(AppKit)
+        private static let selector = #selector(DDViewController.viewDidDisappear)
+        #endif
         private let method: Method
         private let handler: UIViewControllerHandler
 
