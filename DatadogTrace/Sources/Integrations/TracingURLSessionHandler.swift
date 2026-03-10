@@ -32,6 +32,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     let traceContextInjection: TraceContextInjection
     /// Telemetry interface for tracking SDK usage
     let telemetry: Telemetry
+    /// Optional callback to customize the span for each intercepted request.
+    let spanCustomization: Trace.Configuration.SpanCustomization?
 
     weak var tracer: DatadogTracer?
 
@@ -54,6 +56,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         samplingRate: SampleRate,
         firstPartyHosts: FirstPartyHosts,
         traceContextInjection: TraceContextInjection,
+        spanCustomization: Trace.Configuration.SpanCustomization? = nil,
         telemetry: Telemetry
     ) {
         self.tracer = tracer
@@ -61,6 +64,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         self.samplingRate = samplingRate
         self.firstPartyHosts = firstPartyHosts
         self.traceContextInjection = traceContextInjection
+        self.spanCustomization = spanCustomization
         self.telemetry = telemetry
     }
 
@@ -314,6 +318,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             let doesEndInBackground = history.state(at: endTime) == .background
             span.setTag(key: SpanTags.isBackground, value: didStartInBackground || doesEndInBackground)
         }
+
+        spanCustomization?(interception.request.unsafeOriginal, span)
 
         span.finish(at: endTime)
     }

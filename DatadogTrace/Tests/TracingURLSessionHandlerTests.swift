@@ -851,6 +851,152 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(span.resource, "404", "404 responses should have resource set to '404'")
     }
 
+    // MARK: - Span Customization Tests
+
+    func testGivenSpanCustomization_whenInterceptionCompletes_itCallsCustomizationWithRequestAndSpan() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        var receivedRequest: URLRequest?
+        var receivedSpan: OTSpan?
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init([
+                "www.example.com": [.datadog]
+            ]),
+            traceContextInjection: .all,
+            spanCustomization: { request, span in
+                receivedRequest = request
+                receivedSpan = span
+                span.setTag(key: "graphql.operation.name", value: "GetUser")
+            },
+            telemetry: NOPTelemetry()
+        )
+
+        // Given
+        let request: ImmutableRequest = .mockWith(
+            url: URL(string: "https://www.example.com/graphql")!,
+            httpMethod: "POST"
+        )
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        XCTAssertNotNil(receivedRequest, "Customization callback should receive the request")
+        XCTAssertEqual(receivedRequest?.url?.absoluteString, "https://www.example.com/graphql")
+        XCTAssertEqual(receivedRequest?.httpMethod, "POST")
+        XCTAssertNotNil(receivedSpan, "Customization callback should receive the span")
+
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertEqual(span.tags["graphql.operation.name"], "GetUser")
+    }
+
+    func testGivenNoSpanCustomization_whenInterceptionCompletes_itCreatesSpanNormally() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init([
+                "www.example.com": [.datadog]
+            ]),
+            traceContextInjection: .all,
+            spanCustomization: nil,
+            telemetry: NOPTelemetry()
+        )
+
+        // Given
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertEqual(span.operationName, "urlsession.request")
+        XCTAssertFalse(span.isError)
+    }
+
+    func testGivenSpanCustomization_whenInterceptionCompletes_customTagsCoexistWithDefaultTags() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init([
+                "www.example.com": [.datadog]
+            ]),
+            traceContextInjection: .all,
+            spanCustomization: { _, span in
+                span.setTag(key: "custom.tag", value: "custom_value")
+                span.setOperationName("graphql.query")
+            },
+            telemetry: NOPTelemetry()
+        )
+
+        // Given
+        let request: ImmutableRequest = .mockWith(httpMethod: "POST")
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        // Custom tags set via callback
+        XCTAssertEqual(span.tags["custom.tag"], "custom_value")
+        XCTAssertEqual(span.operationName, "graphql.query")
+        // Default tags still present
+        XCTAssertEqual(span.tags[OTTags.httpMethod], "POST")
+        XCTAssertEqual(span.tags[OTTags.httpStatusCode], "200")
+        XCTAssertEqual(span.tags[OTTags.spanKind], "client")
+    }
+
     private func assert(capturedState: URLSessionHandlerCapturedState?, has span: OTSpan?) {
         guard let state = capturedState as? TracingURLSessionHandler.TracingURLSessionHandlerCapturedState else {
             XCTFail("Expected TracingURLSessionHandlerCapturedState instance, got \(String(describing: capturedState))")
