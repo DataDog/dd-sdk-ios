@@ -44,9 +44,10 @@ internal final class AccessibilityReader: AccessibilityReading {
     }
 
     private func startObserving() {
+        #if canImport(UIKit)
         if #available(iOS 14.0, tvOS 14.0, *) {
             let buttonShapesObserver = notificationCenter.addObserver(
-                forName: UIAccessibility.buttonShapesEnabledStatusDidChangeNotification,
+                forName: DDAccessibility.buttonShapesEnabledStatusDidChangeNotification,
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
@@ -55,7 +56,7 @@ internal final class AccessibilityReader: AccessibilityReading {
             observers.append(buttonShapesObserver)
 
             let crossFadeTransitionsObserver = notificationCenter.addObserver(
-                forName: UIAccessibility.prefersCrossFadeTransitionsStatusDidChange,
+                forName: DDAccessibility.prefersCrossFadeTransitionsStatusDidChange,
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
@@ -65,7 +66,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         }
 
         let videoAutoplayObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.videoAutoplayStatusDidChangeNotification,
+            forName: DDAccessibility.videoAutoplayStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -74,7 +75,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(videoAutoplayObserver)
 
         let differentiateWithoutColorObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.differentiateWithoutColorDidChangeNotification,
+            forName: DDAccessibility.differentiateWithoutColorDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -83,7 +84,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(differentiateWithoutColorObserver)
 
         let onOffSwitchLabelsObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.onOffSwitchLabelsDidChangeNotification,
+            forName: DDAccessibility.onOffSwitchLabelsDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -92,7 +93,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(onOffSwitchLabelsObserver)
 
         let voiceOverObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.voiceOverStatusDidChangeNotification,
+            forName: DDAccessibility.voiceOverStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -101,7 +102,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(voiceOverObserver)
 
         let switchControlObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.switchControlStatusDidChangeNotification,
+            forName: DDAccessibility.switchControlStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -110,7 +111,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(switchControlObserver)
 
         let assistiveTouchObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.assistiveTouchStatusDidChangeNotification,
+            forName: DDAccessibility.assistiveTouchStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -119,7 +120,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(assistiveTouchObserver)
 
         let boldTextObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.boldTextStatusDidChangeNotification,
+            forName: DDAccessibility.boldTextStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -128,7 +129,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(boldTextObserver)
 
         let closedCaptioningObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.closedCaptioningStatusDidChangeNotification,
+            forName: DDAccessibility.closedCaptioningStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -137,7 +138,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(closedCaptioningObserver)
 
         let reduceTransparencyObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.reduceTransparencyStatusDidChangeNotification,
+            forName: DDAccessibility.reduceTransparencyStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -146,7 +147,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(reduceTransparencyObserver)
 
         let reduceMotionObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.reduceMotionStatusDidChangeNotification,
+            forName: DDAccessibility.reduceMotionStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -155,7 +156,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(reduceMotionObserver)
 
         let invertColorsObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.invertColorsStatusDidChangeNotification,
+            forName: DDAccessibility.invertColorsStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -164,7 +165,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(invertColorsObserver)
 
         let increaseContrastObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.darkerSystemColorsStatusDidChangeNotification,
+            forName: DDAccessibility.darkerSystemColorsStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -173,7 +174,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(increaseContrastObserver)
 
         let monoAudioObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.monoAudioStatusDidChangeNotification,
+            forName: DDAccessibility.monoAudioStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -182,7 +183,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(monoAudioObserver)
 
         let shakeToUndoObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.shakeToUndoDidChangeNotification,
+            forName: DDAccessibility.shakeToUndoDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -191,7 +192,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(shakeToUndoObserver)
 
         let grayscaleObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.grayscaleStatusDidChangeNotification,
+            forName: DDAccessibility.grayscaleStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -200,7 +201,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(grayscaleObserver)
 
         let guidedAccessObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.guidedAccessStatusDidChangeNotification,
+            forName: DDAccessibility.guidedAccessStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -209,7 +210,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(guidedAccessObserver)
 
         let speakScreenObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.speakScreenStatusDidChangeNotification,
+            forName: DDAccessibility.speakScreenStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -218,13 +219,14 @@ internal final class AccessibilityReader: AccessibilityReading {
         observers.append(speakScreenObserver)
 
         let speakSelectionObserver = notificationCenter.addObserver(
-            forName: UIAccessibility.speakSelectionStatusDidChangeNotification,
+            forName: DDAccessibility.speakSelectionStatusDidChangeNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             self?.updateState()
         }
         observers.append(speakSelectionObserver)
+        #endif
     }
 
     private func stopObserving() {
@@ -235,36 +237,38 @@ internal final class AccessibilityReader: AccessibilityReading {
     @MainActor private var currentState: AccessibilityInfo {
         var state = AccessibilityInfo()
 
+        #if canImport(UIKit)
         if let contentSize = UIApplication.dd.managedShared?.preferredContentSizeCategory.rawValue as String? {
             state.textSize = contentSize
         } else {
             state.textSize = UIContentSizeCategory.unspecified.rawValue
         }
 
-        state.videoAutoplayEnabled = UIAccessibility.isVideoAutoplayEnabled
-        state.shouldDifferentiateWithoutColor = UIAccessibility.shouldDifferentiateWithoutColor
-        state.onOffSwitchLabelsEnabled = UIAccessibility.isOnOffSwitchLabelsEnabled
-        state.screenReaderEnabled = UIAccessibility.isVoiceOverRunning
-        state.boldTextEnabled = UIAccessibility.isBoldTextEnabled
-        state.reduceTransparencyEnabled = UIAccessibility.isReduceTransparencyEnabled
-        state.reduceMotionEnabled = UIAccessibility.isReduceMotionEnabled
-        state.invertColorsEnabled = UIAccessibility.isInvertColorsEnabled
-        state.increaseContrastEnabled = UIAccessibility.isDarkerSystemColorsEnabled
-        state.assistiveSwitchEnabled = UIAccessibility.isSwitchControlRunning
-        state.assistiveTouchEnabled = UIAccessibility.isAssistiveTouchRunning
-        state.closedCaptioningEnabled = UIAccessibility.isClosedCaptioningEnabled
-        state.monoAudioEnabled = UIAccessibility.isMonoAudioEnabled
-        state.shakeToUndoEnabled = UIAccessibility.isShakeToUndoEnabled
-        state.grayscaleEnabled = UIAccessibility.isGrayscaleEnabled
-        state.singleAppModeEnabled = UIAccessibility.isGuidedAccessEnabled
-        state.speakScreenEnabled = UIAccessibility.isSpeakScreenEnabled
-        state.speakSelectionEnabled = UIAccessibility.isSpeakSelectionEnabled
+        state.videoAutoplayEnabled = DDAccessibility.isVideoAutoplayEnabled
+        state.shouldDifferentiateWithoutColor = DDAccessibility.shouldDifferentiateWithoutColor
+        state.onOffSwitchLabelsEnabled = DDAccessibility.isOnOffSwitchLabelsEnabled
+        state.screenReaderEnabled = DDAccessibility.isVoiceOverRunning
+        state.boldTextEnabled = DDAccessibility.isBoldTextEnabled
+        state.reduceTransparencyEnabled = DDAccessibility.isReduceTransparencyEnabled
+        state.reduceMotionEnabled = DDAccessibility.isReduceMotionEnabled
+        state.invertColorsEnabled = DDAccessibility.isInvertColorsEnabled
+        state.increaseContrastEnabled = DDAccessibility.isDarkerSystemColorsEnabled
+        state.assistiveSwitchEnabled = DDAccessibility.isSwitchControlRunning
+        state.assistiveTouchEnabled = DDAccessibility.isAssistiveTouchRunning
+        state.closedCaptioningEnabled = DDAccessibility.isClosedCaptioningEnabled
+        state.monoAudioEnabled = DDAccessibility.isMonoAudioEnabled
+        state.shakeToUndoEnabled = DDAccessibility.isShakeToUndoEnabled
+        state.grayscaleEnabled = DDAccessibility.isGrayscaleEnabled
+        state.singleAppModeEnabled = DDAccessibility.isGuidedAccessEnabled
+        state.speakScreenEnabled = DDAccessibility.isSpeakScreenEnabled
+        state.speakSelectionEnabled = DDAccessibility.isSpeakSelectionEnabled
         state.rtlEnabled = UIApplication.dd.managedShared?.userInterfaceLayoutDirection == .rightToLeft
 
         if #available(iOS 14.0, tvOS 14.0, *) {
-            state.buttonShapesEnabled = UIAccessibility.buttonShapesEnabled
-            state.reducedAnimationsEnabled = UIAccessibility.prefersCrossFadeTransitions
+            state.buttonShapesEnabled = DDAccessibility.buttonShapesEnabled
+            state.reducedAnimationsEnabled = DDAccessibility.prefersCrossFadeTransitions
         }
+        #endif
 
         return state
     }
