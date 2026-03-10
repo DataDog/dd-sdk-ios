@@ -461,7 +461,7 @@ internal class SessionEndedMetric {
     ///
     /// - Parameter context: the SDK context valid at the moment of this call
     /// - Returns: metric attributes
-    func asMetricAttributes(with context: DatadogContext) -> [String: Encodable] {
+    func asMetricAttributes(with context: DatadogContext) -> [String: AttributeValue] {
         var lifecycleInfo: Attributes.LifecycleInfo?
 
         // Compute duration

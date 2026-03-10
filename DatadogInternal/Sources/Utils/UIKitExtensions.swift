@@ -16,7 +16,7 @@ extension DatadogExtension where ExtendedType == UIApplication {
     /// As a workaround, this `managedShared` utility provides a key-path access to the `UIApplication.shared` to make the compiler pass.
     public static var managedShared: UIApplication? {
         return UIApplication
-            .value(forKeyPath: #keyPath(UIApplication.shared)) as? UIApplication // swiftlint:disable:this unsafe_uiapplication_shared
+            .value(forKeyPath: "sharedApplication") as? UIApplication // swiftlint:disable:this unsafe_uiapplication_shared
     }
 }
 

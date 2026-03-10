@@ -112,7 +112,7 @@ internal final class ViewEndedMetric {
 extension ViewEndedMetric: MetricAttributesConvertible {
     var metricName: String { Constants.name }
 
-    func asMetricAttributes() -> [String: Encodable]? {
+    func asMetricAttributes() -> [String: AttributeValue]? {
         guard let durationNs else {
             return nil
         }

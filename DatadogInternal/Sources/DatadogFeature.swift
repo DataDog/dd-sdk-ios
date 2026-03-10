@@ -15,7 +15,14 @@ public protocol DatadogFeature {
     ///
     /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
     /// from a bus that is shared between Features registered in a core.
+    ///
+    /// Features that do not consume messages can rely on the default `NOPFeatureMessageReceiver`.
     var messageReceiver: FeatureMessageReceiver { get }
+}
+
+extension DatadogFeature {
+    /// Default no-op receiver for features that do not consume messages.
+    public var messageReceiver: FeatureMessageReceiver { NOPFeatureMessageReceiver() }
 }
 
 /// A Datadog Feature with remote data store.

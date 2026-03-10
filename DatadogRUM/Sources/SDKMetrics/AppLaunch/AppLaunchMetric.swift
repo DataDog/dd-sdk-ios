@@ -104,7 +104,7 @@ extension AppLaunchMetric {
 extension AppLaunchMetric: MetricAttributesConvertible {
     var metricName: String { Constants.name }
 
-    func asMetricAttributes() -> [String: Encodable]? {
+    func asMetricAttributes() -> [String: AttributeValue]? {
         [
             SDKMetricFields.typeKey: Constants.typeValue,
             Constants.appLaunchKey: Attributes(

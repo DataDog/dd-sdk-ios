@@ -79,7 +79,7 @@ public struct MetricTelemetry: SampledTelemetry {
     public let name: String
 
     /// The attributes associated with this metric.
-    public let attributes: [String: Encodable]
+    public let attributes: [String: AttributeValue]
 
     /// The sample rate for this metric, applied in addition to the telemetry sample rate.
     ///
@@ -169,9 +169,9 @@ public struct MethodCalledTrace {
 }
 
 /// Defines different types of telemetry messages supported by the SDK.
-public enum TelemetryMessage {
+public enum TelemetryMessage: @unchecked Sendable {
     /// A debug log message.
-    case debug(id: String, message: String, attributes: [String: Encodable]?)
+    case debug(id: String, message: String, attributes: [String: AttributeValue]?)
     /// An execution error.
     case error(id: String, message: String, kind: String, stack: String)
     /// A configuration telemetry.
@@ -268,7 +268,7 @@ extension Telemetry {
     ///   - id: Identity of the debug log, this can be used to prevent duplicates.
     ///   - message: The debug message.
     ///   - attributes: Custom attributes attached to the log (optional).
-    public func debug(id: String, message: String, attributes: [String: Encodable]? = nil) {
+    public func debug(id: String, message: String, attributes: [String: AttributeValue]? = nil) {
         send(telemetry: .debug(id: id, message: message, attributes: attributes))
     }
 
@@ -300,7 +300,7 @@ extension Telemetry {
     ///   - attributes: Custom attributes attached to the log (optional).
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func debug(_ message: String, attributes: [String: Encodable]? = nil, file: String = #fileID, line: Int = #line) {
+    public func debug(_ message: String, attributes: [String: AttributeValue]? = nil, file: String = #fileID, line: Int = #line) {
         debug(id: "\(file):\(line):\(message)", message: message, attributes: attributes)
     }
 
@@ -498,7 +498,7 @@ extension Telemetry {
     ///     and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
     ///
     ///     This sample rate is applied in the telemetry receiver, after the metric has been processed by the SDK core (tail-based sampling).
-    public func metric(name: String, attributes: [String: Encodable], sampleRate: SampleRate = MetricTelemetry.defaultSampleRate) {
+    public func metric(name: String, attributes: [String: AttributeValue], sampleRate: SampleRate = MetricTelemetry.defaultSampleRate) {
         send(telemetry: .metric(MetricTelemetry(name: name, attributes: attributes, sampleRate: sampleRate)))
     }
 }
