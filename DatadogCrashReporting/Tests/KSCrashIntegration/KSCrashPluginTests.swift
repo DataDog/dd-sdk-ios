@@ -8,7 +8,7 @@ import XCTest
 @testable import DatadogCrashReporting
 import KSCrashRecording
 
-class KSCrashPluginTests: XCTestCase {
+final class KSCrashPluginTests: XCTestCase {
     // MARK: - Configuration Tests
 
     func testConfiguration() throws {
@@ -19,5 +19,34 @@ class KSCrashPluginTests: XCTestCase {
         XCTAssertTrue(config.installPath?.contains("/Library/Caches/com.datadoghq.crash-reporting/v2") ?? false)
         XCTAssertEqual(config.reportStoreConfiguration.maxReportCount, 1)
         XCTAssertEqual(config.reportStoreConfiguration.reportCleanupPolicy, .never)
+    }
+
+    func testCStringFromContextAppendsTrailingNullTerminator() {
+        // Given
+        let context = Data("{\"context\":\"value\"}".utf8)
+
+        // When
+        let cString = cStringBytesFrom(context: context)
+
+        // Then
+        XCTAssertEqual(cString.dropLast(), context[...])
+        XCTAssertEqual(cString.last, 0)
+    }
+
+    func testCStringFromContextPreservesExplicitTrailingNullCharacter() {
+        // Given
+        let context = Data([123, 125, 0])
+
+        // When
+        let cString = cStringBytesFrom(context: context)
+
+        // Then
+        XCTAssertEqual(cString, Data([123, 125, 0, 0]))
+    }
+
+    /// Rebuilds the exact C-string bytes (`utf8` payload + trailing `\0`) used by `inject(context:)`.
+    private func cStringBytesFrom(context: Data) -> Data {
+        let contextString = String(decoding: context, as: UTF8.self)
+        return Data(contextString.utf8CString.map(UInt8.init(bitPattern:)))
     }
 }
