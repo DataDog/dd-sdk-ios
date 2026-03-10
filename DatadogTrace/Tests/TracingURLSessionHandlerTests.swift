@@ -1599,12 +1599,14 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     // MARK: - Span Customization Tests
 
-    func testGivenSpanCustomization_whenInterceptionCompletes_itCallsCustomizationWithRequestAndSpan() throws {
+    func testGivenSpanCustomization_whenInterceptionCompletes_itCallsCustomizationWithAllParameters() throws {
         let expectation = expectation(description: "Send span")
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         var receivedRequest: URLRequest?
         var receivedSpan: OTSpan?
+        var receivedResponse: URLResponse?
+        var receivedError: Error?
 
         let handler = TracingURLSessionHandler(
             tracer: tracer,
@@ -1614,9 +1616,11 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "www.example.com": [.datadog]
             ]),
             traceContextInjection: .all,
-            spanCustomization: { request, span in
+            spanCustomization: { request, span, response, error in
                 receivedRequest = request
                 receivedSpan = span
+                receivedResponse = response
+                receivedError = error
                 span.setTag(key: "graphql.operation.name", value: "GetUser")
             },
             telemetry: NOPTelemetry()
@@ -1648,6 +1652,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(receivedRequest?.url?.absoluteString, "https://www.example.com/graphql")
         XCTAssertEqual(receivedRequest?.httpMethod, "POST")
         XCTAssertNotNil(receivedSpan, "Customization callback should receive the span")
+        XCTAssertNotNil(receivedResponse, "Customization callback should receive the response")
+        XCTAssertEqual((receivedResponse as? HTTPURLResponse)?.statusCode, 200)
+        XCTAssertNil(receivedError, "Error should be nil for successful requests")
 
         let envelope: SpanEventsEnvelope? = core.events().last
         let span = try XCTUnwrap(envelope?.spans.first)
@@ -1706,7 +1713,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "www.example.com": [.datadog]
             ]),
             traceContextInjection: .all,
-            spanCustomization: { _, span in
+            spanCustomization: { _, span, _, _ in
                 span.setTag(key: "custom.tag", value: "custom_value")
                 span.setOperationName("graphql.query")
             },

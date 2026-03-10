@@ -423,7 +423,12 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             #endif
         }
 
-        spanCustomization?(interception.request.unsafeOriginal, span)
+        spanCustomization?(
+            interception.request.unsafeOriginal,
+            span,
+            resourceCompletion.httpResponse,
+            resourceCompletion.error
+        )
 
         span.finish(at: safeEndTime)
     }
