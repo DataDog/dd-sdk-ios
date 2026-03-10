@@ -11,7 +11,9 @@
 // It serializes recording work and intentionally drops new scheduling requests while
 // a capture task is in flight to avoid re-entrancy. The current pipeline scaffolding
 // captures a snapshot, removes invisible branches, flattens the tree, and culls fully
-// obscured layers before image rendering and wireframe generation.
+// obscured layers before image rendering and wireframe generation. It also owns touch
+// capture (`UIApplicationSwizzler` + `TouchSnapshotProducer`) and forwards touch
+// snapshots together with layer snapshots for record generation.
 
 #if os(iOS)
 import Foundation
