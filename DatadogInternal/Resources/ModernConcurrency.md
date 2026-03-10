@@ -191,3 +191,182 @@ DatadogInternal is imported by every feature module. These changes are
 
 ### Obj-C bridges
 - `Sources/NetworkInstrumentation/TracingHeaderType+objc.swift` — `@unchecked Sendable` on `objc_TracingHeaderType`
+
+---
+
+## 10. Actor-based MessageBus
+
+### Problem
+
+The `MessageBus` was a `final class` using a `DispatchQueue` for thread safety.
+This prevented further concurrency migration because:
+- The queue was accessed directly from `DatadogCore` (`bus.queue.async { ... }`)
+- The bus couldn't be an actor while callers were synchronous
+- An earlier dual-mode design (sync receivers + `AsyncStream` continuations)
+  added complexity without clear benefit, since receivers don't do blocking work
+  inside `receive()`
+
+### Solution
+
+Converted `MessageBus` from a `final class` with `DispatchQueue` to a Swift
+**actor**. The actor's isolation replaces the queue — no streams, no
+continuations, just direct dispatch to receivers within the actor.
+
+```swift
+internal actor MessageBus {
+    private weak var core: DatadogCoreProtocol?
+    private var receivers: [String: FeatureMessageReceiver] = [:]
+
+    func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void = {}) {
+        guard let core else { return }
+        let handled = receivers.values.filter {
+            $0.receive(message: message, from: core)
+        }
+        if handled.isEmpty { fallback() }
+    }
+}
+```
+
+Callers in `DatadogCore` wrap actor calls in `Task { await ... }`, which has
+the same fire-and-forget semantics as the old `queue.async { ... }`.
+
+#### Flush bridging
+
+The `Flushable` protocol requires a blocking `flush()`. Since actor methods are
+async, the bridge uses a semaphore:
+
+```swift
+nonisolated func flush() {
+    let semaphore = DispatchSemaphore(value: 0)
+    Task {
+        await self.barrierFlush()
+        semaphore.signal()
+    }
+    semaphore.wait()
+}
+```
+
+This is safe because `flush()` is only called from test/teardown contexts, never
+from the actor's own executor.
+
+#### Removed
+
+- **`AsyncDatadogFeature`** protocol — no longer needed; the actor dispatches
+  to existing `FeatureMessageReceiver`s directly.
+- **`MockAsyncFeature`** test mock — removed along with the protocol.
+- **Per-feature continuations** — the bus no longer manages `AsyncStream`
+  continuations.
+- **`addStream()` / `yieldInitialContext()`** — removed from `MessageBus`.
+- **`addStream(for:forKey:)`** — removed from `DatadogCore`.
+
+#### Sendable conformances for message types
+
+To allow `FeatureMessage` to cross isolation boundaries (passed into `Task`
+closures), these types were made `@unchecked Sendable`:
+
+| Type | Non-Sendable property | Safety invariant |
+|------|-----------------------|------------------|
+| `FeatureMessage` | `.payload(Any)` | Enum value type; payloads are immutable after creation |
+| `WebViewMessage` | `Event` (`[String: Any]`) | Enum value type; decoded from JSON, never mutated |
+| `TelemetryMessage` | `attributes: [String: Encodable]?` | Enum value type; created and consumed without mutation |
+
+### Files Modified
+
+#### DatadogInternal
+- `Sources/MessageBus/AsyncDatadogFeature.swift` — **Deleted**
+- `Sources/DatadogFeature.swift` — Cleaned doc comments
+
+#### DatadogCore
+- `Sources/Core/MessageBus.swift` — Converted from `final class` to `actor`
+- `Sources/Core/DatadogCore.swift` — `Task { await bus.* }` calls, removed `addStream`
+
+#### TestUtilities
+- `Sources/Mocks/DatadogInternal/MockAsyncFeature.swift` — **Deleted**
+
+---
+
+## 11. Storage Subsystem Actor Conversion
+
+### What Changed
+
+The storage subsystem was migrated from `DispatchQueue`-based serialization
+(`readWriteQueue`) to actor-based isolation. `FilesOrchestrator` is now a Swift
+**actor**, and the `DataReader` wrapper was eliminated.
+
+### Design Rationale
+
+Previously, `FileWriter`, `FileReader`, and `FilesOrchestrator` all shared a
+single `readWriteQueue` to serialize file I/O. The orchestrator held mutable
+state (`lastWritableFileName`, `lastWritableFileObjectsCount`, `pendingBatches`)
+protected by queue discipline and `@ReadWriteLock`.
+
+Converting `FilesOrchestrator` to an actor:
+- Replaces `@unchecked Sendable` with compiler-enforced isolation.
+- Removes `@ReadWriteLock` on `pendingBatches`.
+- Makes the protocol (`FilesOrchestratorType`) methods `async`, so callers
+  express the concurrency boundary explicitly.
+
+### FileWriter Changes
+
+`FileWriter` no longer takes a `DispatchQueue`. Writes are split into two phases:
+1. **Encoding** (synchronous, on the caller thread) — avoids sending non-Sendable
+   generics across isolation boundaries.
+2. **File I/O** (async, on the actor) — `Task { await orchestrator.getWritableFile(); file.append() }`.
+
+This preserves the fire-and-forget semantics of the old `queue.async { performWrite() }`.
+
+### DataReader Removal
+
+`DataReader` was a thin class that dispatched `FileReader` calls to the
+`readWriteQueue` via `queue.sync { }`. With the orchestrator as an actor,
+`FileReader` methods are now `async` and serialization is provided by the actor.
+`DataReader` became unnecessary and was deleted.
+
+### Reader Protocol
+
+The internal `Reader` protocol (in DatadogCore) was made `async`:
+- `readFiles(limit:) async -> [ReadableFile]`
+- `markBatchAsRead(_:reason:) async`
+- `readBatch(from:)` remains synchronous (pure decryption/parsing).
+
+`DataUploadWorker` (already an actor) trivially adopted `await` for reader calls.
+
+### FeatureStorage
+
+`FeatureStorage` was simplified:
+- `writer(for:)` creates `FileWriter` without a queue.
+- `reader` returns `FileReader` directly (no `DataReader` wrapper).
+- `setIgnoreFilesAgeWhenReading(to:)` is now `async` (delegates to actor).
+- Changed from `@unchecked Sendable` to plain `Sendable`.
+- Directory management methods still use the `readWriteQueue` for serialization.
+
+### Sendable Protocol Additions
+
+To allow file references to cross actor isolation boundaries:
+- `WritableFile: Sendable`
+- `ReadableFile: Sendable`
+- `StoragePerformancePreset: Sendable`
+
+### Files Modified
+
+#### DatadogCore
+- `Sources/Core/Storage/FilesOrchestrator.swift` — `class` → `actor`
+- `Sources/Core/Storage/Writing/FileWriter.swift` — removed queue, split encoding/IO
+- `Sources/Core/Storage/Reading/FileReader.swift` — async methods
+- `Sources/Core/Storage/Reading/Reader.swift` — async protocol
+- `Sources/Core/Storage/Reading/DataReader.swift` — **Deleted**
+- `Sources/Core/Storage/FeatureStorage.swift` — simplified
+- `Sources/Core/Storage/Files/File.swift` — `Sendable` protocols
+- `Sources/Core/Upload/DataUploadWorker.swift` — `await` reader calls
+- `Sources/Core/DatadogCore.swift` — async `setIgnoreFilesAgeWhenReading` bridge
+- `Sources/PerformancePreset.swift` — `StoragePerformancePreset: Sendable`
+
+#### TestUtilities
+- `Sources/Mocks/DatadogCore/CoreMocks.swift` — async `NOPReader`, `NOPFilesOrchestrator` as actor
+
+#### Tests
+- `Tests/.../FilesOrchestratorTests.swift` — async test methods
+- `Tests/.../FilesOrchestrator+MetricsTests.swift` — async test methods
+- `Tests/.../FileWriterTests.swift` — async writes with completion expectations
+- `Tests/.../FileReaderTests.swift` — async reader methods
+- `Tests/.../RUMEventFileOutputTests.swift` — async write expectations
