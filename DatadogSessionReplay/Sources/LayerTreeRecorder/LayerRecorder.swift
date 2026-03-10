@@ -20,6 +20,8 @@ import Foundation
 internal actor LayerRecorder: LayerRecording {
     private let snapshotBuilder: any LayerTreeSnapshotBuilding
     private let layerImageRenderer: any LayerImageRendering
+    private let uiApplicationSwizzler: UIApplicationSwizzler
+    private let touchSnapshotProducer: any TouchSnapshotProducer
     private let layerSnapshotProcessor: any Processor<LayerSnapshotProcessor.Input>
     private let timeoutInterval: TimeInterval
     private let timeSource: any TimeSource
@@ -29,15 +31,25 @@ internal actor LayerRecorder: LayerRecording {
     init(
         snapshotBuilder: any LayerTreeSnapshotBuilding,
         layerImageRenderer: any LayerImageRendering,
+        uiApplicationSwizzler: UIApplicationSwizzler,
+        touchSnapshotProducer: any TouchSnapshotProducer,
         layerSnapshotProcessor: any Processor<LayerSnapshotProcessor.Input>,
         timeoutInterval: TimeInterval,
         timeSource: any TimeSource = .mediaTime
     ) {
         self.snapshotBuilder = snapshotBuilder
         self.layerImageRenderer = layerImageRenderer
+        self.uiApplicationSwizzler = uiApplicationSwizzler
+        self.touchSnapshotProducer = touchSnapshotProducer
         self.layerSnapshotProcessor = layerSnapshotProcessor
         self.timeoutInterval = max(0, timeoutInterval)
         self.timeSource = timeSource
+
+        uiApplicationSwizzler.swizzle()
+    }
+
+    deinit {
+        uiApplicationSwizzler.unswizzle()
     }
 
     func scheduleRecording(_ changes: CALayerChangeset, context: LayerRecordingContext) {
@@ -57,9 +69,21 @@ extension LayerRecorder {
     private func record(_ changes: CALayerChangeset, context: LayerRecordingContext) async {
         let startTime = timeSource.now
 
+        // Capture layer tree and touch snapshots
+        let (layerTreeSnapshot, touchSnapshot) = await MainActor.run { [snapshotBuilder, touchSnapshotProducer] in
+            (
+                snapshotBuilder.createSnapshot(context: context),
+                touchSnapshotProducer.takeSnapshot(
+                    context: .init(
+                        touchPrivacy: context.touchPrivacy,
+                        viewServerTimeOffset: context.viewServerTimeOffset
+                    )
+                )
+            )
+        }
+
         guard
-            // Capture layer tree snapshot
-            let layerTreeSnapshot = await snapshotBuilder.createSnapshot(context: context),
+            let layerTreeSnapshot,
             // Prune, flatten and cull layer snapshots
             let targetSnapshots = layerTreeSnapshot.root
                 .removingInvisible()?
@@ -85,7 +109,8 @@ extension LayerRecorder {
             .init(
                 layerTreeSnapshot: layerTreeSnapshot,
                 targetSnapshots: targetSnapshots,
-                layerImages: layerImages
+                layerImages: layerImages,
+                touchSnapshot: touchSnapshot
             )
         )
     }

@@ -102,28 +102,32 @@ internal struct RecordingComponents {
             telemetry: core.telemetry,
             queue: telemetryQueue
         )
-        // ScreenChangeMonitor delivers changes at most every 0.1s. We budget 0.09s
-        // for one recording pass to keep a small headroom for scheduling and handoff
-        let snapshotBuilder = LayerTreeSnapshotBuilder(layerProvider: KeyWindowObserver())
+        let keyWindowObserver = KeyWindowObserver()
+        let snapshotBuilder = LayerTreeSnapshotBuilder(layerProvider: keyWindowObserver)
+        let touchSnapshotProducer = WindowTouchSnapshotProducer(windowObserver: keyWindowObserver)
+        let resourceProcessor = AsyncProcessor(
+            processor: ResourceProcessor(
+                resourcesWriter: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
+            ),
+            priority: .utility
+        )
+        let layerSnapshotProcessor = AsyncProcessor(
+            processor: LayerSnapshotProcessor(
+                recordWriter: RecordWriter(core: core),
+                contextPublisher: SRContextPublisher(core: core),
+                resourceProcessor: resourceProcessor,
+                telemetry: telemetry
+            ),
+            priority: .utility
+        )
         let layerRecorder = LayerRecorder(
             snapshotBuilder: snapshotBuilder,
             layerImageRenderer: LayerImageRenderer(scale: 1.0),
-            layerSnapshotProcessor: AsyncProcessor(
-                processor: LayerSnapshotProcessor(
-                    recordWriter: RecordWriter(core: core),
-                    contextPublisher: SRContextPublisher(core: core),
-                    resourceProcessor: AsyncProcessor(
-                        processor: ResourceProcessor(
-                            resourcesWriter: ResourcesWriter(
-                                scope: core.scope(for: ResourcesFeature.self)
-                            )
-                        ),
-                        priority: .utility
-                    ),
-                    telemetry: telemetry
-                ),
-                priority: .utility
-            ),
+            uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
+            touchSnapshotProducer: touchSnapshotProducer,
+            layerSnapshotProcessor: layerSnapshotProcessor,
+            // ScreenChangeMonitor delivers changes at most every 0.1s. We budget 0.09s
+            // for one recording pass to keep a small headroom for scheduling and handoff
             timeoutInterval: 0.09
         )
         let screenChangeMonitor = try ScreenChangeMonitor(minimumDeliveryInterval: 0.1)
