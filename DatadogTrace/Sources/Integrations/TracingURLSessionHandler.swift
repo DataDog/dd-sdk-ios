@@ -76,20 +76,20 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         samplingRate: SampleRate,
         firstPartyHosts: FirstPartyHosts,
         traceContextInjection: TraceContextInjection,
-        spanCustomization: Trace.Configuration.SpanCustomization? = nil,
         telemetry: Telemetry,
         redactedStatusCodes: Set<Int> = Trace.Configuration.URLSessionTracking.defaultRedactedStatusCodes,
-        sessionSampler: SessionSampler? = nil
+        sessionSampler: SessionSampler? = nil,
+        spanCustomization: Trace.Configuration.SpanCustomization? = nil
     ) {
         self.tracer = tracer
         self.contextReceiver = contextReceiver
         self.samplingRate = samplingRate
         self.firstPartyHosts = firstPartyHosts
         self.traceContextInjection = traceContextInjection
-        self.spanCustomization = spanCustomization
         self.telemetry = telemetry
         self.redactedStatusCodes = redactedStatusCodes
         self.sessionSampler = sessionSampler
+        self.spanCustomization = spanCustomization
     }
 
     func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
