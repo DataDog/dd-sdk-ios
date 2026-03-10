@@ -7,7 +7,6 @@
 #if os(iOS)
 import Testing
 import QuartzCore
-import UIKit
 import WebKit
 
 @testable import DatadogSessionReplay
@@ -15,21 +14,7 @@ import WebKit
 @MainActor
 struct LayerSnapshotTests {
     @available(iOS 13.0, tvOS 13.0, *)
-    enum Fixtures {
-        static var anyImage: CGImage {
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let context = CGContext(
-                data: nil,
-                width: 1,
-                height: 1,
-                bitsPerComponent: 8,
-                bytesPerRow: 4,
-                space: colorSpace,
-                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-            )!
-            return context.makeImage()!
-        }
-    }
+    typealias Fixtures = LayerTreeRecorderFixtures
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test

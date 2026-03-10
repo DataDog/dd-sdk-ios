@@ -10,29 +10,6 @@ import Testing
 
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, tvOS 13.0, *)
-extension LayerSnapshotTests.Fixtures {
-    static let rootBounds = CGRect(x: 0, y: 0, width: 200, height: 300)
-
-    static var rootLayer: CALayer {
-        let root = CALayer()
-        root.bounds = rootBounds
-        return root
-    }
-
-    static func changeset(
-        for layer: CALayer,
-        aspects: CALayerChange.Aspect.Set
-    ) -> CALayerChangeset {
-        CALayerChangeset([
-            ObjectIdentifier(layer): .init(
-                layer: .init(layer),
-                aspects: aspects
-            )
-        ])
-    }
-}
-
 extension LayerSnapshotTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test
