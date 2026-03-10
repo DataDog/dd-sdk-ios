@@ -7,12 +7,17 @@
 #if os(iOS)
 import Foundation
 
+internal struct TouchSnapshotContext {
+    let touchPrivacy: TouchPrivacyLevel
+    let viewServerTimeOffset: TimeInterval?
+}
+
 /// Produces `TouchSnapshots` that describe touch interactions.
 internal protocol TouchSnapshotProducer {
     /// Produces the snapshot of (touch) interactions that happened since last call to `takeSnapshot()`.
     ///
-    /// - Parameter context: context of the recorder used for sharing common data
+    /// - Parameter context: context used for sharing common data
     /// - Returns: the snapshot or `nil` if no new touch information is available
-    func takeSnapshot(context: Recorder.Context) -> TouchSnapshot?
+    func takeSnapshot(context: TouchSnapshotContext) -> TouchSnapshot?
 }
 #endif

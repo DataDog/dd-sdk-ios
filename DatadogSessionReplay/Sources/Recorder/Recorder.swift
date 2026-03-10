@@ -123,7 +123,12 @@ public class Recorder: Recording {
             return
         }
 
-        let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
+        let touchSnapshot = touchSnapshotProducer.takeSnapshot(
+            context: .init(
+                touchPrivacy: recorderContext.touchPrivacy,
+                viewServerTimeOffset: recorderContext.viewServerTimeOffset
+            )
+        )
         snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
     }
 }

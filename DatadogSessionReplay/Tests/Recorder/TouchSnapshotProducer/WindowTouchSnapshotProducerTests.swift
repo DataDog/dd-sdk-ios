@@ -114,7 +114,7 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
 
         // When
         producer.notify_sendEvent(application: mockApplication, event: touchEvent1)
-        let snapshot1 = producer.takeSnapshot(context: .mockWith(rumContext: .mockWith(serverTimeOffset: 1_000)))
+        let snapshot1 = producer.takeSnapshot(context: .init(touchPrivacy: .mockAny(), viewServerTimeOffset: 1_000))
 
         // Then
         XCTAssertGreaterThan(snapshot1!.date, Date())
