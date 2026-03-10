@@ -5,7 +5,11 @@
  */
 
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 /// Facade for `CADisplayLink` to provide frame timestamps & device information
 /// It decouple FPS calculation from `CADisplayLink` implementation.
