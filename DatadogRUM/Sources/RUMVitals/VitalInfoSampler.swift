@@ -52,7 +52,7 @@ internal final class VitalInfoSampler {
             #elseif os(watchOS)
             return 60.0 // Default refresh rate for watchOS
             #else
-            return Double(UIScreen.main.maximumFramesPerSecond)
+            return Double(DDScreen.main.maximumFramesPerSecond)
             #endif
         }
     }
