@@ -41,6 +41,16 @@ extension LayerSnapshot {
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
     @MainActor
+    func frame(relativeTo rootLayer: CALayer) -> CGRect {
+        let frame = convert(bounds, to: rootLayer)
+        guard let webView = delegate as? WKWebView else {
+            return frame
+        }
+        // Adjust the frame for webviews that extends beyond safe area (RUM-6227)
+        return webView.contentInsetAdjustedFrame(for: frame)
+    }
+
+    @MainActor
     func semantics(in context: LayerSnapshotContext) -> LayerSnapshot.Semantics {
         if let webView = delegate as? WKWebView {
             // Record the instance to preserve slot IDs for hidden but alive web views across captures

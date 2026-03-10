@@ -68,6 +68,27 @@ struct LayerSnapshotTests {
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test
+    func adjustsWKWebViewFrameForContentInsetBehavior() throws {
+        // given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+        let webView = TestWKWebView(topSafeAreaInset: 44, contentInsetAdjustmentBehavior: .always)
+        webView.layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 50)
+        webView.layer.position = CGPoint(x: 50, y: 25) // minY is 0 in root coordinates
+        rootLayer.addSublayer(webView.layer)
+
+        // when
+        let snapshot = LayerSnapshot(from: rootLayer, in: .mockAny())
+        let webViewSnapshot = try #require(snapshot.children.first)
+
+        // then
+        #expect(webViewSnapshot.semantics == .webView(slotID: webView.hash))
+        #expect(webViewSnapshot.frame == CGRect(x: 0, y: 44, width: 100, height: 50))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test
     func snapshotNestedHierarchy() {
         CALayer.withReplayIDGenerator(.autoincrementing) {
             // given
