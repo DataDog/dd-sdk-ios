@@ -44,4 +44,3 @@ public protocol TraceActiveSpanProvider: Sendable {
     /// - returns: An ``ActiveSpanContext`` instance with the active span and trace IDs, or `nil` otherwise.
     func activeSpanContext() -> ActiveSpanContext?
 }
-
