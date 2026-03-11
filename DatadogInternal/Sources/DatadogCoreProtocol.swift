@@ -74,7 +74,7 @@ public protocol MessageSending {
     ///   - message: The message.
     ///   - fallback: The fallback closure to call when the message could not be
     ///               processed by any Features on the bus.
-    func send(message: FeatureMessage, else fallback: @escaping () -> Void)
+    func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void)
 }
 
 extension MessageSending {
@@ -196,7 +196,7 @@ public protocol FeatureScope: MessageSending, AdditionalContextSharing, Anonymou
     /// A feature can use this method to request the Datadog context valid at the moment of the call.
     ///
     /// - Parameter block: The block to execute; it is called on the context queue.
-    func context(_ block: @escaping (DatadogContext) -> Void)
+    func context(_ block: @escaping @Sendable (DatadogContext) -> Void)
 
     /// Data store endpoint.
     ///
@@ -224,9 +224,10 @@ public extension FeatureScope {
     /// of the call, meaning that it includes all changes that happened earlier on the same thread.
     ///
     /// - Parameter block: The block to execute; it is called on the context queue.
-    func dataStoreContext(_ block: @escaping (DatadogContext, DataStore) -> Void) {
+    func dataStoreContext(_ block: @escaping @Sendable (DatadogContext, DataStore) -> Void) {
+        nonisolated(unsafe) let store = dataStore
         context { context in
-            block(context, dataStore)
+            block(context, store)
         }
     }
 }
@@ -243,7 +244,7 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { }
     /// no-op
-    public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
+    public func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) { }
     /// no-op
     public func mostRecentModifiedFileAt(before: Date) throws -> Date? { return nil }
 }
@@ -253,13 +254,13 @@ public struct NOPFeatureScope: FeatureScope {
     /// no-op
     public func eventWriteContext(bypassConsent: Bool) async -> (DatadogContext, Writer)? { nil }
     /// no-op
-    public func context(_ block: @escaping (DatadogContext) -> Void) { }
+    public func context(_ block: @escaping @Sendable (DatadogContext) -> Void) { }
     /// no-op
     public var dataStore: DataStore { NOPDataStore() }
     /// no-op
     public var telemetry: Telemetry { NOPTelemetry() }
     /// no-op
-    public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
+    public func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) { }
     /// no-op
     public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { }
     /// no-op

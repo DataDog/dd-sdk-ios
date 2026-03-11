@@ -218,9 +218,7 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - session
 
-    func currentSessionID(completion: @escaping (String?) -> Void) {
-        // Synchronise it through the context thread to make sure we return the correct
-        // sessionID after all other events have been processed (also on the context thread):
+    func currentSessionID(completion: @escaping @Sendable (String?) -> Void) {
         featureScope.context { [weak self] _ in
             guard let sessionId = self?.scopes.activeSession?.sessionUUID else {
                 completion(nil)

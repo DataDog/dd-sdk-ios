@@ -76,7 +76,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     /// - Parameters:
     ///   - completion: the callback that will receive the current session ID. This will be called from a
     ///   background thread
-    func currentSessionID(completion: @escaping (String?) -> Void)
+    func currentSessionID(completion: @escaping @Sendable (String?) -> Void)
 
     /// Stops the current RUM session.
     /// A new session will start in response to a call to `startView` or `addAction`.
@@ -453,7 +453,7 @@ internal class NOPMonitor: RUMMonitorProtocol {
         )
     }
 
-    func currentSessionID(completion: (String?) -> Void) { completion(nil) }
+    func currentSessionID(completion: @Sendable (String?) -> Void) { completion(nil) }
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) { warn() }
     func addAttributes(_ attributes: [AttributeKey: AttributeValue]) { warn() }
     func removeAttribute(forKey key: AttributeKey) { warn() }

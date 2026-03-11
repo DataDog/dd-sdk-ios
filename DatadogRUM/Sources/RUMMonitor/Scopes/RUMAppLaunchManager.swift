@@ -214,7 +214,7 @@ private extension RUMAppLaunchManager {
             vital: vital
         )
 
-        writer.write(value: vitalEvent)
+        Task { await writer.write(value: vitalEvent) }
         telemetryController.track(ttidEvent: vitalEvent, context: context)
     }
 

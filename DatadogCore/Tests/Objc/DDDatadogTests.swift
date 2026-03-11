@@ -26,7 +26,7 @@ class DDDatadogTests: XCTestCase {
 
     // MARK: - SDK initialization / stop lifecycle
 
-    func testItForwardsInitializationToSwift() throws {
+    func testItForwardsInitializationToSwift() async throws {
         let config = objc_Configuration(
             clientToken: "abcefghi",
             env: "tests"
@@ -41,7 +41,7 @@ class DDDatadogTests: XCTestCase {
 
         XCTAssertTrue(Datadog.isInitialized())
 
-        let context = try XCTUnwrap(CoreRegistry.default as? DatadogCore).contextProvider.read()
+        let context = try await XCTUnwrap(CoreRegistry.default as? DatadogCore).contextProvider.read()
         XCTAssertEqual(context.applicationName, "app-name")
         XCTAssertEqual(context.env, "tests")
 
@@ -95,7 +95,7 @@ class DDDatadogTests: XCTestCase {
 
     // MARK: - Changing Tracking Consent
 
-    func testItForwardsTrackingConsentToSwift() {
+    func testItForwardsTrackingConsentToSwift() async {
         let initialConsent = randomConsent()
         let nextConsent = randomConsent()
 
@@ -105,18 +105,18 @@ class DDDatadogTests: XCTestCase {
         )
 
         let core = CoreRegistry.default as? DatadogCore
-        XCTAssertEqual(core?.contextProvider.read().trackingConsent, initialConsent.swift)
+        XCTAssertEqual(await core?.contextProvider.read().trackingConsent, initialConsent.swift)
 
         objc_Datadog.setTrackingConsent(consent: nextConsent.objc)
 
-        XCTAssertEqual(core?.contextProvider.read().trackingConsent, nextConsent.swift)
+        XCTAssertEqual(await core?.contextProvider.read().trackingConsent, nextConsent.swift)
 
         Datadog.flushAndDeinitialize()
     }
 
     // MARK: - Setting user info
 
-    func testItForwardsUserInfoToSwift() throws {
+    func testItForwardsUserInfoToSwift() async throws {
         objc_Datadog.initialize(
             configuration: objc_Configuration(clientToken: "abcefghi", env: "tests"),
             trackingConsent: randomConsent().objc
@@ -135,7 +135,7 @@ class DDDatadogTests: XCTestCase {
             ]
         )
         objc_Datadog.addUserExtraInfo(["foo": "bar"])
-        var current = core.contextProvider.read().userInfo
+        var current = await core.contextProvider.read().userInfo
         XCTAssertEqual(current?.id, "id")
         XCTAssertEqual(current?.name, "name")
         XCTAssertEqual(current?.email, "email")
@@ -146,7 +146,7 @@ class DDDatadogTests: XCTestCase {
         XCTAssertEqual(extraInfo["foo"]?.dd.decode(), "bar")
 
         objc_Datadog.setUserInfo(userId: "id", name: nil, email: nil, extraInfo: [:])
-        current = core.contextProvider.read().userInfo
+        current = await core.contextProvider.read().userInfo
         XCTAssertNotNil(current?.id)
         XCTAssertNil(current?.name)
         XCTAssertNil(current?.email)

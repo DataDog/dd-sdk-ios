@@ -19,7 +19,7 @@ import Foundation
 ///
 internal protocol ContextValueSource: Sendable {
     /// The kind of values produced by this source.
-    associatedtype Value
+    associatedtype Value: Sendable
 
     /// The value before any asynchronous updates arrive.
     var initialValue: Value { get }

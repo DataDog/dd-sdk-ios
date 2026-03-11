@@ -82,7 +82,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
         self.context.set(additionalContext: context())
     }
 
-    public func send(message: FeatureMessage, else fallback: () -> Void) {
+    public func send(message: FeatureMessage, else fallback: @Sendable () -> Void) {
         if !messageReceiver.receive(message: message, from: self) {
             fallback()
         }
@@ -99,7 +99,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
         return (context, writer)
     }
 
-    public func context(_ block: @escaping (DatadogContext) -> Void) {
+    public func context(_ block: @escaping @Sendable (DatadogContext) -> Void) {
         block(context)
     }
 

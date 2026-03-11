@@ -56,22 +56,29 @@ public final class DatadogCoreProxy: DatadogCoreProtocol {
     }
 
     public init(core: DatadogCore) {
-        self.context = core.contextProvider.read()
+        self._context = .mockAny()
         self.core = core
 
         // override the message-bus's core instance
         core.bus.connect(core: self)
         DatadogCoreProxy.referenceCount += 1
+
+        Task {
+            self._context = await core.contextProvider.read()
+        }
     }
 
     deinit {
         DatadogCoreProxy.referenceCount -= 1
     }
 
+    private var _context: DatadogContext
     public var context: DatadogContext {
-        didSet {
+        get { _context }
+        set {
+            _context = newValue
 #if DD_SDK_COMPILED_FOR_TESTING
-            core.contextProvider.replace(context: context)
+            Task { await core.contextProvider.replace(context: newValue) }
 #endif
         }
     }
@@ -125,7 +132,7 @@ public final class DatadogCoreProxy: DatadogCoreProtocol {
         core.set(context: context)
     }
 
-    public func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+    public func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) {
         core.send(message: message, else: fallback)
     }
 
@@ -162,7 +169,7 @@ private struct FeatureScopeProxy: FeatureScope {
         return (context, interceptor.intercept(writer: writer))
     }
 
-    func context(_ block: @escaping (DatadogContext) -> Void) {
+    func context(_ block: @escaping @Sendable (DatadogContext) -> Void) {
         interceptor.enter()
         proxy.context { context in
             block(context)
@@ -173,7 +180,7 @@ private struct FeatureScopeProxy: FeatureScope {
     var telemetry: Telemetry { proxy.telemetry }
     var dataStore: DataStore { proxy.dataStore }
 
-    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+    func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) {
         proxy.send(message: message, else: fallback)
     }
 

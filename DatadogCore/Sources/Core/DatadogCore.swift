@@ -95,19 +95,20 @@ internal final class DatadogCore: @unchecked Sendable {
         self.backgroundTasksEnabled = backgroundTasksEnabled
         self.isRunFromExtension = isRunFromExtension
 
-        contextProvider.write { context in
-            context.userInfo = .empty
-            context.trackingConsent = initialConsent
-            context.version = applicationVersion
-        }
+        Task {
+            await contextProvider.write { context in
+                context.userInfo = .empty
+                context.trackingConsent = initialConsent
+                context.version = applicationVersion
+            }
 
-        // connect the core to the message bus.
-        // the bus will keep a weak ref to the core.
-        Task { await bus.connect(core: self) }
+            // connect the core to the message bus.
+            await bus.connect(core: self)
 
-        // forward any context change on the message-bus
-        self.contextProvider.publish { [weak self] context in
-            self?.send(message: .context(context))
+            // forward any context change on the message-bus
+            await contextProvider.publish { [weak self] context in
+                self?.send(message: .context(context))
+            }
         }
     }
 
@@ -126,14 +127,16 @@ internal final class DatadogCore: @unchecked Sendable {
         email: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        contextProvider.write { context in
-            context.userInfo = UserInfo(
-                anonymousId: context.userInfo?.anonymousId,
-                id: id,
-                name: name,
-                email: email,
-                extraInfo: extraInfo
-            )
+        Task {
+            await contextProvider.write { context in
+                context.userInfo = UserInfo(
+                    anonymousId: context.userInfo?.anonymousId,
+                    id: id,
+                    name: name,
+                    email: email,
+                    extraInfo: extraInfo
+                )
+            }
         }
     }
 
@@ -142,10 +145,12 @@ internal final class DatadogCore: @unchecked Sendable {
     ///  - Parameters:
     ///    - extraInfo: The user's custom attributes to add or override
     func addUserExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
-        contextProvider.write { context in
-            var extraInfo = context.userInfo?.extraInfo ?? [:]
-            newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
-            context.userInfo?.extraInfo = extraInfo
+        Task {
+            await contextProvider.write { context in
+                var extraInfo = context.userInfo?.extraInfo ?? [:]
+                newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
+                context.userInfo?.extraInfo = extraInfo
+            }
         }
     }
 
@@ -163,8 +168,10 @@ internal final class DatadogCore: @unchecked Sendable {
     /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
     ///
     func clearUserInfo() {
-        contextProvider.write { context in
-            context.userInfo = UserInfo(anonymousId: context.userInfo?.anonymousId)
+        Task {
+            await contextProvider.write { context in
+                context.userInfo = UserInfo(anonymousId: context.userInfo?.anonymousId)
+            }
         }
     }
 
@@ -181,12 +188,14 @@ internal final class DatadogCore: @unchecked Sendable {
         name: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        contextProvider.write { context in
-            context.accountInfo = AccountInfo(
-                id: id,
-                name: name,
-                extraInfo: extraInfo
-            )
+        Task {
+            await contextProvider.write { context in
+                context.accountInfo = AccountInfo(
+                    id: id,
+                    name: name,
+                    extraInfo: extraInfo
+                )
+            }
         }
     }
 
@@ -195,19 +204,21 @@ internal final class DatadogCore: @unchecked Sendable {
     ///  - Parameters:
     ///    - extraInfo: The account's custom attributes to add or override
     func addAccountExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
-        contextProvider.write { context in
-            guard context.accountInfo != nil else {
-                DD.logger.error(
-                    "Failed to add Account ExtraInfo because no Account Info exist yet. Please call `setAccountInfo` first."
-                )
-                #if DEBUG
-                assertionFailure("Failed to add Account ExtraInfo because no Account Info exist yet. Please call `setAccountInfo` first.")
-                #endif
-                return
+        Task {
+            await contextProvider.write { context in
+                guard context.accountInfo != nil else {
+                    DD.logger.error(
+                        "Failed to add Account ExtraInfo because no Account Info exist yet. Please call `setAccountInfo` first."
+                    )
+                    #if DEBUG
+                    assertionFailure("Failed to add Account ExtraInfo because no Account Info exist yet. Please call `setAccountInfo` first.")
+                    #endif
+                    return
+                }
+                var extraInfo = context.accountInfo?.extraInfo ?? [:]
+                newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
+                context.accountInfo?.extraInfo = extraInfo
             }
-            var extraInfo = context.accountInfo?.extraInfo ?? [:]
-            newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
-            context.accountInfo?.extraInfo = extraInfo
         }
     }
 
@@ -225,7 +236,7 @@ internal final class DatadogCore: @unchecked Sendable {
     /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
     ///
     func clearAccountInfo() {
-        contextProvider.write { $0.accountInfo = nil }
+        Task { await contextProvider.write { $0.accountInfo = nil } }
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
@@ -233,13 +244,12 @@ internal final class DatadogCore: @unchecked Sendable {
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
         let allStorages = allStorages
-        contextProvider.write { context in
-            guard trackingConsent != context.trackingConsent else { return }
-            // RUM-3175: To prevent race conditions with ongoing "event write" operations,
-            // data migration must be synchronized on the context queue. This guarantees that
-            // all latest events have been written before migration occurs.
-            allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
-            context.trackingConsent = trackingConsent
+        Task {
+            await contextProvider.write { context in
+                guard trackingConsent != context.trackingConsent else { return }
+                allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
+                context.trackingConsent = trackingConsent
+            }
         }
     }
 
@@ -257,10 +267,10 @@ internal final class DatadogCore: @unchecked Sendable {
     ///   - messageReceiver: The new message receiver.
     ///   - key: The key associated with the receiver.
     private func add(messageReceiver: FeatureMessageReceiver, forKey key: String) {
-        Task { await bus.connect(messageReceiver, forKey: key) }
-        contextProvider.read { [weak self] context in
-            guard let self else { return }
-            Task { await self.bus.sendInitialContext(context, forKey: key) }
+        Task {
+            await bus.connect(messageReceiver, forKey: key)
+            let context = await contextProvider.read()
+            await bus.sendInitialContext(context, forKey: key)
         }
     }
 
@@ -401,21 +411,21 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 
     func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
-        contextProvider.write { $0.set(additionalContext: context()) }
+        nonisolated(unsafe) let value = context()
+        Task { await contextProvider.write { $0.set(additionalContext: value) } }
     }
 
-    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
-        let box = UnsafeSendableBox(fallback)
-        Task { await bus.send(message: message, else: { box.value() }) }
+    func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) {
+        Task { await bus.send(message: message, else: fallback) }
     }
 
     func set(anonymousId: String?) {
-        contextProvider.write { $0.userInfo?.anonymousId = anonymousId }
+        Task { await contextProvider.write { $0.userInfo?.anonymousId = anonymousId } }
     }
 
     /// Sets the application version on the context.
     func set(version: String) {
-        contextProvider.write { $0.version = version }
+        Task { await contextProvider.write { $0.version = version } }
     }
 }
 
@@ -449,15 +459,15 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
             return nil
         }
 
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
         return (context, writer)
     }
 
-    func context(_ block: @escaping (DatadogContext) -> Void) {
-        // (on user thread) request SDK context
-        core?.contextProvider.read { context in
-            // (on context thread) call the block
+    func context(_ block: @escaping @Sendable (DatadogContext) -> Void) {
+        Task {
+            guard let core = core else { return }
+            let context = await core.contextProvider.read()
             block(context)
         }
     }
@@ -466,7 +476,7 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
         return (core != nil) ? store : NOPDataStore() // only available when the core exists
     }
 
-    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+    func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) {
         core?.send(message: message, else: fallback)
     }
 
@@ -484,8 +494,8 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
 }
 
 extension DatadogContextProvider {
-    /// Creates a core context provider with the given configuration,
-    convenience init(
+    /// Creates a core context provider with the given configuration.
+    static func create(
         site: DatadogSite,
         clientToken: String,
         service: String,
@@ -512,11 +522,7 @@ extension DatadogContextProvider {
         notificationCenter: NotificationCenter,
         appLaunchHandler: AppLaunchHandling,
         appStateProvider: AppStateProvider
-    ) {
-        // `ContextProvider` must be initialized on the main thread for two key reasons:
-        // - It interacts with UIKit APIs to read the initial app state, which is only safe on the main thread.
-        // - It subscribes to app state change notifications, and we need this subscription to occur
-        //   before any Feature subscriptions. This ensures that Core always processes state changes first.
+    ) -> DatadogContextProvider {
         dd_assert(Thread.isMainThread, "Must be called on main thread")
 
         let initialAppState = appStateProvider.current
@@ -547,38 +553,55 @@ extension DatadogContextProvider {
             applicationStateHistory: appStateHistory
         )
 
-        self.init(context: context)
+        let provider = DatadogContextProvider(context: context)
 
-        observe(ServerOffsetSource(provider: serverDateProvider)) { $0.serverTimeOffset = $1 }
-
+        let serverOffsetSource = ServerOffsetSource(provider: serverDateProvider)
         #if !os(macOS)
-        observe(LaunchInfoSource(handler: appLaunchHandler, initialValue: launchInfo)) { $0.launchInfo = $1 }
+        let launchInfoSource = LaunchInfoSource(handler: appLaunchHandler, initialValue: launchInfo)
         #endif
-
-        observe(NWPathMonitorSource()) { $0.networkConnectionInfo = $1 }
-
+        let nwPathSource = NWPathMonitorSource()
         #if os(iOS) && !targetEnvironment(macCatalyst) && !os(visionOS)
-        observe(CarrierInfoSource()) { $0.carrierInfo = $1 }
+        let carrierInfoSource = CarrierInfoSource()
         #endif
-
         #if os(iOS) && !targetEnvironment(simulator)
-        observe(BatteryStatusSource(notificationCenter: notificationCenter, device: .current)) { $0.batteryStatus = $1 }
-        observe(LowPowerModeSource(notificationCenter: notificationCenter, processInfo: processInfo)) { $0.isLowPowerModeEnabled = $1 }
+        let batterySource = BatteryStatusSource(notificationCenter: notificationCenter, device: .current)
+        let lowPowerSource = LowPowerModeSource(notificationCenter: notificationCenter, processInfo: processInfo)
         #endif
-
         #if os(iOS)
-        observe(BrightnessLevelSource(notificationCenter: notificationCenter)) { $0.brightnessLevel = $1 }
+        let brightnessSource = BrightnessLevelSource(notificationCenter: notificationCenter)
         #endif
-
-        observe(LocaleInfoSource(initialLocale: locale, notificationCenter: notificationCenter)) { $0.localeInfo = $1 }
-
+        let localeSource = LocaleInfoSource(initialLocale: locale, notificationCenter: notificationCenter)
         #if os(iOS) || os(tvOS)
-        observe(ApplicationStateSource(
+        let appStateSource = ApplicationStateSource(
             appStateHistory: appStateHistory,
             notificationCenter: notificationCenter,
             dateProvider: dateProvider
-        )) { $0.applicationStateHistory = $1 }
+        )
         #endif
+
+        Task {
+            await provider.subscribe(to: serverOffsetSource) { $0.serverTimeOffset = $1 }
+            #if !os(macOS)
+            await provider.subscribe(to: launchInfoSource) { $0.launchInfo = $1 }
+            #endif
+            await provider.subscribe(to: nwPathSource) { $0.networkConnectionInfo = $1 }
+            #if os(iOS) && !targetEnvironment(macCatalyst) && !os(visionOS)
+            await provider.subscribe(to: carrierInfoSource) { $0.carrierInfo = $1 }
+            #endif
+            #if os(iOS) && !targetEnvironment(simulator)
+            await provider.subscribe(to: batterySource) { $0.batteryStatus = $1 }
+            await provider.subscribe(to: lowPowerSource) { $0.isLowPowerModeEnabled = $1 }
+            #endif
+            #if os(iOS)
+            await provider.subscribe(to: brightnessSource) { $0.brightnessLevel = $1 }
+            #endif
+            await provider.subscribe(to: localeSource) { $0.localeInfo = $1 }
+            #if os(iOS) || os(tvOS)
+            await provider.subscribe(to: appStateSource) { $0.applicationStateHistory = $1 }
+            #endif
+        }
+
+        return provider
     }
 }
 
@@ -609,10 +632,6 @@ extension DatadogCore: Flushable {
             // Next, flush flushable Features - finish current data collection to open "event write contexts":
             features.forEach { $0.flush() }
 
-            // Next, flush context queue - because it indicates the entry point to "event write context" and
-            // actual writes dispatched from it:
-            contextProvider.flush()
-
             // Last, flush read-write queue - it always comes last, no matter if the write operation is dispatched
             // from "event write context" started on user thread OR if it happens upon receiving an "event" message
             // in other Feature:
@@ -642,12 +661,6 @@ extension DatadogCore: Storage {
 #endif
 // swiftlint:enable duplicate_imports
 
-/// Wraps a non-Sendable value to safely cross an isolation boundary.
-/// The caller must ensure the value is not accessed concurrently.
-private struct UnsafeSendableBox<T>: @unchecked Sendable {
-    let value: T
-    init(_ value: T) { self.value = value }
-}
 
 nonisolated(unsafe) internal let registerObjcExceptionHandlerOnce: () -> Void = {
     ObjcException.rethrow = __dd_private_ObjcExceptionHandler.rethrow

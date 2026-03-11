@@ -31,7 +31,7 @@ class DatadogConfigurationTests: XCTestCase {
 
     // MARK: - Initializing with different configurations
 
-    func testDefaultConfiguration() throws {
+    func testDefaultConfiguration() async throws {
         var configuration = defaultConfig
 
         configuration.bundle = .mockWith(
@@ -58,7 +58,7 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertNil(urlSessionClient.session.configuration.connectionProxyDictionary)
         XCTAssertNil(core.encryption)
 
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.clientToken, "abc-123")
         XCTAssertEqual(context.env, "tests")
         XCTAssertEqual(context.site, .us1)
@@ -72,7 +72,7 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertEqual(context.trackingConsent, .granted)
     }
 
-    func testAdvancedConfiguration() throws {
+    func testAdvancedConfiguration() async throws {
         var configuration = defaultConfig
 
         configuration.service = "service-name"
@@ -126,7 +126,7 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertEqual(connectionProxyDictionary[kCFProxyUsernameKey] as? String, "proxyuser")
         XCTAssertEqual(connectionProxyDictionary[kCFProxyPasswordKey] as? String, "proxypass")
 
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.clientToken, "abc-123")
         XCTAssertEqual(context.env, "tests")
         XCTAssertEqual(context.site, .eu1)
@@ -184,7 +184,7 @@ class DatadogConfigurationTests: XCTestCase {
         Datadog.flushAndDeinitialize()
     }
 
-    func testGivenNoExecutable_itUsesBundleTypeAsApplicationName() throws {
+    func testGivenNoExecutable_itUsesBundleTypeAsApplicationName() async throws {
         var configuration = defaultConfig
 
         configuration.bundle = .mockWith(
@@ -198,11 +198,11 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.applicationName, "iOSApp")
     }
 
-    func testGivenNoExecutable_andWidgetExecutable_itUsesBundleTypeAsApplicationName() throws {
+    func testGivenNoExecutable_andWidgetExecutable_itUsesBundleTypeAsApplicationName() async throws {
         var configuration = defaultConfig
 
         configuration.bundle = .mockWith(
@@ -217,11 +217,11 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.applicationName, "iOSAppExtension")
     }
 
-    func testGivenNoBundleVersion_itUsesShortVersionString() throws {
+    func testGivenNoBundleVersion_itUsesShortVersionString() async throws {
         var configuration = defaultConfig
 
         configuration.bundle = .mockWith(
@@ -236,11 +236,11 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.version, "1.2.3")
     }
 
-    func testGivenNoBundleShortVersion_itUsesDefaultValue() throws {
+    func testGivenNoBundleShortVersion_itUsesDefaultValue() async throws {
         var configuration = defaultConfig
 
         configuration.bundle = .mockWith(
@@ -255,12 +255,12 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.version, "0.0.0")
         XCTAssertEqual(context.buildNumber, "0")
     }
 
-    func testGivenNoBundleVersion_itUsesDefaultValue() throws {
+    func testGivenNoBundleVersion_itUsesDefaultValue() async throws {
         var configuration = defaultConfig
 
         configuration.bundle = .mockWith(
@@ -275,11 +275,11 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.buildNumber, "FFFFF")
     }
 
-    func testGivenNoBundleIdentifier_itUsesDefaultValues() throws {
+    func testGivenNoBundleIdentifier_itUsesDefaultValues() async throws {
         var configuration = defaultConfig
 
         configuration.bundle = .mockWith(
@@ -293,12 +293,12 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.applicationBundleIdentifier, "unknown")
         XCTAssertEqual(context.service, "ios")
     }
 
-    func testGivenNoBundleIdentifier_itUsesUnknown() throws {
+    func testGivenNoBundleIdentifier_itUsesUnknown() async throws {
         var configuration = defaultConfig
 
         configuration.bundle = .mockWith(
@@ -312,11 +312,11 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.applicationBundleIdentifier, "unknown")
     }
 
-    func testiOSAppBundleType() throws {
+    func testiOSAppBundleType() async throws {
         var configuration = defaultConfig
         configuration.bundle = .mockWith(bundlePath: "bundle.path.app")
 
@@ -327,11 +327,11 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.applicationBundleType, .iOSApp)
     }
 
-    func testiOSAppExtensionBundleType() throws {
+    func testiOSAppExtensionBundleType() async throws {
         var configuration = defaultConfig
         configuration.bundle = .mockWith(bundlePath: "bundle.path.appex")
 
@@ -342,7 +342,7 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.applicationBundleType, .iOSAppExtension)
     }
 
@@ -380,7 +380,7 @@ class DatadogConfigurationTests: XCTestCase {
         verify(invalidEnv: String(repeating: "a", count: 197))
     }
 
-    func testApplicationVersionOverride() throws {
+    func testApplicationVersionOverride() async throws {
         var configuration = defaultConfig
         configuration.additionalConfiguration[CrossPlatformAttributes.version] = "5.23.2"
 
@@ -388,12 +388,12 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
 
         XCTAssertEqual(context.version, "5.23.2")
     }
 
-    func testPublicVersionProperty() throws {
+    func testPublicVersionProperty() async throws {
         var configuration = defaultConfig
         configuration.version = "my-completely-custom-version"
         configuration.bundle = .mockWith(
@@ -404,12 +404,12 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
 
         XCTAssertEqual(context.version, "my-completely-custom-version")
     }
 
-    func testPublicVersionPropertyWithNilUsesBundle() throws {
+    func testPublicVersionPropertyWithNilUsesBundle() async throws {
         var configuration = defaultConfig
         configuration.version = nil
         configuration.bundle = .mockWith(
@@ -420,12 +420,12 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
 
         XCTAssertEqual(context.version, "1.5.0")
     }
 
-    func testCrossPlatformVersionOverridesTakePrecedenceOverPublicVersion() throws {
+    func testCrossPlatformVersionOverridesTakePrecedenceOverPublicVersion() async throws {
         var configuration = defaultConfig
         configuration.version = "2.0.0-native"
         configuration.bundle = .mockWith(
@@ -437,13 +437,13 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
 
         // Cross-platform override should take precedence
         XCTAssertEqual(context.version, "3.0.0-crossplatform")
     }
 
-    func testGivenBuildId_itSetsContext() throws {
+    func testGivenBuildId_itSetsContext() async throws {
         // Given
         let buildId: String = .mockRandom(length: 32)
         var configuration = defaultConfig
@@ -454,13 +454,13 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
 
         // Then
         XCTAssertEqual(context.buildId, buildId)
     }
 
-    func testGivenNativeSourceType_itSetsInContext() throws {
+    func testGivenNativeSourceType_itSetsInContext() async throws {
         // Given
         let nativeSourceType: String = .mockRandom()
         var configuration = defaultConfig
@@ -471,7 +471,7 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
 
         // Then
         XCTAssertEqual(context.nativeSourceOverride, nativeSourceType)

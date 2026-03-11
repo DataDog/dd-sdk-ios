@@ -10,7 +10,7 @@ import TestUtilities
 @testable import DatadogCore
 
 class FeatureContextTests: XCTestCase {
-    func testFeatureContextSharing() throws {
+    func testFeatureContextSharing() async throws {
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -37,7 +37,7 @@ class FeatureContextTests: XCTestCase {
         core.set(context: ContextMock(attribute: attributes))
 
         // Then
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.additionalContext(ofType: ContextMock.self)?.attribute, attributes)
     }
 }

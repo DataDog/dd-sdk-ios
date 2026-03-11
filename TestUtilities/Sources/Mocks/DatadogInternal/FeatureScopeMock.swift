@@ -37,13 +37,13 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
         return (contextMock, EventWriterMock(scope: self, bypassConsent: bypassConsent))
     }
 
-    public func context(_ block: @escaping (DatadogContext) -> Void) {
+    public func context(_ block: @escaping @Sendable (DatadogContext) -> Void) {
         block(contextMock)
     }
 
     public var telemetry: Telemetry { telemetryMock }
 
-    public func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+    public func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) {
         messages.append(message)
     }
     public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {

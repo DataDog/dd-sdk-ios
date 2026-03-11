@@ -7,7 +7,7 @@
 import Foundation
 
 /// Describes current locale information.
-public struct LocaleInfo: Codable, Equatable {
+public struct LocaleInfo: Codable, Equatable, Sendable {
     /// Device locale(s) - list of preferred languages set by the user in system settings, in order of priority
     public let locales: [String]
 

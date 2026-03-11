@@ -416,7 +416,7 @@ extension DatadogCore {
             performance: performance,
             httpClient: configuration.httpClientFactory(configuration.proxyConfiguration),
             encryption: configuration.encryption,
-            contextProvider: DatadogContextProvider(
+            contextProvider: DatadogContextProvider.create(
                 site: configuration.site,
                 clientToken: configuration.clientToken,
                 service: service,

@@ -14,16 +14,16 @@ class DatadogContextProviderTests: XCTestCase {
 
     // MARK: - Test Propagation
 
-    func testSourcePropagation() throws {
+    func testSourcePropagation() async throws {
         // Given
         let serverOffsetSource = ContextValueSourceMock<TimeInterval>(initialValue: 0)
         let networkConnectionInfoSource = ContextValueSourceMock<NetworkConnectionInfo?>()
         let carrierInfoSource = ContextValueSourceMock<CarrierInfo?>()
 
         let provider = DatadogContextProvider(context: context)
-        provider.observe(serverOffsetSource) { $0.serverTimeOffset = $1 }
-        provider.observe(networkConnectionInfoSource) { $0.networkConnectionInfo = $1 }
-        provider.observe(carrierInfoSource) { $0.carrierInfo = $1 }
+        await provider.subscribe(to: serverOffsetSource) { $0.serverTimeOffset = $1 }
+        await provider.subscribe(to: networkConnectionInfoSource) { $0.networkConnectionInfo = $1 }
+        await provider.subscribe(to: carrierInfoSource) { $0.carrierInfo = $1 }
 
         // When
         let serverTimeOffset: TimeInterval = .mockRandomInThePast()
@@ -35,15 +35,17 @@ class DatadogContextProviderTests: XCTestCase {
         let carrierInfo: CarrierInfo = .mockRandom()
         carrierInfoSource.value = carrierInfo
 
-        // Then - flush to ensure async writes complete
-        provider.flush()
-        let context = provider.read()
-        XCTAssertEqual(context.serverTimeOffset, serverTimeOffset)
-        XCTAssertEqual(context.networkConnectionInfo, networkConnectionInfo)
-        XCTAssertEqual(context.carrierInfo, carrierInfo)
+        // Allow async stream propagation
+        try await Task.sleep(nanoseconds: 100_000_000)
+
+        // Then
+        let readContext = await provider.read()
+        XCTAssertEqual(readContext.serverTimeOffset, serverTimeOffset)
+        XCTAssertEqual(readContext.networkConnectionInfo, networkConnectionInfo)
+        XCTAssertEqual(readContext.carrierInfo, carrierInfo)
     }
 
-    func testPublishNewContextOnValueChange() throws {
+    func testPublishNewContextOnValueChange() async throws {
         let expectation = self.expectation(description: "publish new context")
         expectation.expectedFulfillmentCount = 3
 
@@ -51,9 +53,9 @@ class DatadogContextProviderTests: XCTestCase {
         let serverOffsetSource = ContextValueSourceMock<TimeInterval>(initialValue: 0)
 
         let provider = DatadogContextProvider(context: context)
-        provider.observe(serverOffsetSource) { $0.serverTimeOffset = $1 }
+        await provider.subscribe(to: serverOffsetSource) { $0.serverTimeOffset = $1 }
 
-        provider.publish { _ in
+        await provider.publish { _ in
             expectation.fulfill()
         }
 
@@ -62,33 +64,30 @@ class DatadogContextProviderTests: XCTestCase {
             serverOffsetSource.value = .mockRandomInThePast()
         }
 
-        wait(for: [expectation], timeout: 0.5)
+        await fulfillment(of: [expectation], timeout: 0.5)
     }
 
     // MARK: - Thread Safety
 
-    func testThreadSafety() {
+    func testThreadSafety() async {
         let serverOffsetSource = ContextValueSourceMock<TimeInterval>(initialValue: 0)
         let networkConnectionInfoSource = ContextValueSourceMock<NetworkConnectionInfo?>()
         let carrierInfoSource = ContextValueSourceMock<CarrierInfo?>()
 
         let provider = DatadogContextProvider(context: context)
 
-        provider.observe(serverOffsetSource) { $0.serverTimeOffset = $1 }
-        provider.observe(networkConnectionInfoSource) { $0.networkConnectionInfo = $1 }
-        provider.observe(carrierInfoSource) { $0.carrierInfo = $1 }
+        await provider.subscribe(to: serverOffsetSource) { $0.serverTimeOffset = $1 }
+        await provider.subscribe(to: networkConnectionInfoSource) { $0.networkConnectionInfo = $1 }
+        await provider.subscribe(to: carrierInfoSource) { $0.carrierInfo = $1 }
 
-        // swiftlint:disable opening_brace
-        callConcurrently(
-            closures: [
-                { serverOffsetSource.value = .mockRandom() },
-                { networkConnectionInfoSource.value = .mockRandom() },
-                { carrierInfoSource.value = .mockRandom() },
-                { provider.read { _ in } },
-                { provider.write { $0 = .mockAny() } }
-            ],
-            iterations: 1_000
-        )
-        // swiftlint:enable opening_brace
+        await withTaskGroup(of: Void.self) { group in
+            for _ in 0..<1_000 {
+                group.addTask { serverOffsetSource.value = .mockRandom() }
+                group.addTask { networkConnectionInfoSource.value = .mockRandom() }
+                group.addTask { carrierInfoSource.value = .mockRandom() }
+                group.addTask { _ = await provider.read() }
+                group.addTask { await provider.write { $0 = .mockAny() } }
+            }
+        }
     }
 }
