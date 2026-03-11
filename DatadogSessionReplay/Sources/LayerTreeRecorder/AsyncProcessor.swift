@@ -17,13 +17,13 @@
 import Foundation
 
 @available(iOS 13.0, tvOS 13.0, *)
-internal protocol Processor {
+internal protocol Processor<Input> {
     associatedtype Input
     func process(_ input: Input) async
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-internal actor AsyncProcessor<Input> {
+internal actor AsyncProcessor<Input>: Processor {
     private let continuation: AsyncStream<Input>.Continuation
 
     init<P>(processor: P, priority: TaskPriority) where P: Processor, P.Input == Input {

@@ -34,7 +34,7 @@ internal final class LayerSnapshotProcessor: Processor {
     private let recordWriter: any RecordWriting
     private let contextPublisher: SRContextPublisher
     private let recordsBuilder: RecordsBuilder
-    private let resourceProcessor: any LayerResourceProcessing
+    private let resourceProcessor: any Processor<ResourceProcessor.Input>
     private let telemetry: any Telemetry
 
     // State used to decide segment boundaries and to generate incremental snapshots.
@@ -45,7 +45,7 @@ internal final class LayerSnapshotProcessor: Processor {
     init(
         recordWriter: any RecordWriting,
         contextPublisher: SRContextPublisher,
-        resourceProcessor: any LayerResourceProcessing,
+        resourceProcessor: any Processor<ResourceProcessor.Input>,
         telemetry: any Telemetry
     ) {
         self.recordWriter = recordWriter
@@ -161,14 +161,5 @@ internal final class LayerSnapshotProcessor: Processor {
         recordsByView[key, default: 0] += value
         contextPublisher.setRecordsCountByViewID(recordsByView)
     }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-internal protocol LayerSnapshotProcessing {
-    func process(_ input: LayerSnapshotProcessor.Input) async
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension AsyncProcessor: LayerSnapshotProcessing where Input == LayerSnapshotProcessor.Input {
 }
 #endif

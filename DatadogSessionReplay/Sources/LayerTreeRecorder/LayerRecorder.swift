@@ -20,7 +20,7 @@ import Foundation
 internal actor LayerRecorder: LayerRecording {
     private let snapshotBuilder: any LayerTreeSnapshotBuilding
     private let layerImageRenderer: any LayerImageRendering
-    private let layerSnapshotProcessor: any LayerSnapshotProcessing
+    private let layerSnapshotProcessor: any Processor<LayerSnapshotProcessor.Input>
     private let timeoutInterval: TimeInterval
     private let timeSource: any TimeSource
 
@@ -29,7 +29,7 @@ internal actor LayerRecorder: LayerRecording {
     init(
         snapshotBuilder: any LayerTreeSnapshotBuilding,
         layerImageRenderer: any LayerImageRendering,
-        layerSnapshotProcessor: any LayerSnapshotProcessing,
+        layerSnapshotProcessor: any Processor<LayerSnapshotProcessor.Input>,
         timeoutInterval: TimeInterval,
         timeSource: any TimeSource = .mediaTime
     ) {

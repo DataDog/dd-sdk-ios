@@ -248,7 +248,7 @@ struct LayerSnapshotProcessorTests {
 private extension LayerSnapshotProcessorTests {
     func makeProcessor(
         recordWriter: any RecordWriting,
-        resourceProcessor: any LayerResourceProcessing,
+        resourceProcessor: any Processor<ResourceProcessor.Input>,
         core: DatadogCoreProtocol
     ) -> LayerSnapshotProcessor {
         LayerSnapshotProcessor(
@@ -312,7 +312,7 @@ private final class RecordWriterSpy: RecordWriting {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-private final class LayerResourceProcessorSpy: LayerResourceProcessing {
+private final class LayerResourceProcessorSpy: Processor {
     var inputs: [ResourceProcessor.Input] = []
 
     func process(_ input: ResourceProcessor.Input) async {

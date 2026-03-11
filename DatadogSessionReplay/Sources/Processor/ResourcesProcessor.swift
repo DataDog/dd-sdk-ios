@@ -43,6 +43,10 @@ internal final class ResourceProcessor {
     }
 }
 
+@available(iOS 13.0, tvOS 13.0, *)
+extension ResourceProcessor: Processor {
+}
+
 internal protocol ResourceProcessing {
     func process(resources: [Resource], context: EnrichedResource.Context)
 }
