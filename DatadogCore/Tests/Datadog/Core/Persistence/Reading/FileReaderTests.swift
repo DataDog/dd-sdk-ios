@@ -22,7 +22,7 @@ class FileReaderTests: XCTestCase {
         super.tearDown()
     }
 
-    func testItReadsBatches() throws {
+    func testItReadsBatches() async throws {
         let reader = FileReader(
             orchestrator: FilesOrchestrator(
                 directory: directory,
@@ -46,8 +46,8 @@ class FileReaderTests: XCTestCase {
             .append(data: data)
 
         XCTAssertEqual(try directory.files().count, 1)
-        XCTAssertEqual(reader.readNextBatches(.max).count, 1)
-        let batch = reader.readNextBatches(1).first
+        XCTAssertEqual(await reader.readNextBatches(.max).count, 1)
+        let batch = await reader.readNextBatches(1).first
 
         let expected = [
             Event(data: "ABCD".utf8Data, metadata: "EFGH".utf8Data)
@@ -60,11 +60,11 @@ class FileReaderTests: XCTestCase {
             .append(data: data)
 
         XCTAssertEqual(try directory.files().count, 2)
-        XCTAssertEqual(reader.readNextBatches(2).count, 2)
-        XCTAssertEqual(reader.readNextBatches(.max).count, 2)
+        XCTAssertEqual(await reader.readNextBatches(2).count, 2)
+        XCTAssertEqual(await reader.readNextBatches(.max).count, 2)
     }
 
-    func testItReadsEncryptedBatches() throws {
+    func testItReadsEncryptedBatches() async throws {
         let dataBlocks = [
             BatchDataBlock(type: .eventMetadata, data: "foo".utf8Data),
             BatchDataBlock(type: .event, data: "foo".utf8Data),
@@ -95,8 +95,8 @@ class FileReaderTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        XCTAssertEqual(reader.readNextBatches(.max).count, 1)
-        let batch = reader.readNextBatches(1).first
+        XCTAssertEqual(await reader.readNextBatches(.max).count, 1)
+        let batch = await reader.readNextBatches(1).first
 
         let expected = [
             Event(data: "bar".utf8Data, metadata: "bar".utf8Data),
@@ -110,11 +110,11 @@ class FileReaderTests: XCTestCase {
             .createFile(named: dataProvider.now.toFileName)
             .append(data: data)
 
-        XCTAssertEqual(reader.readNextBatches(2).count, 2)
-        XCTAssertEqual(reader.readNextBatches(.max).count, 2)
+        XCTAssertEqual(await reader.readNextBatches(2).count, 2)
+        XCTAssertEqual(await reader.readNextBatches(.max).count, 2)
     }
 
-    func testItMarksBatchesAsRead() throws {
+    func testItMarksBatchesAsRead() async throws {
         let dateProvider = RelativeDateProvider(advancingBySeconds: 60)
         let reader = FileReader(
             orchestrator: FilesOrchestrator(
@@ -144,22 +144,24 @@ class FileReaderTests: XCTestCase {
         ]
 
         let batch: Batch
-        batch = try reader.readNextBatches(1).first.unwrapOrThrow()
+        batch = try await reader.readNextBatches(1).first.unwrapOrThrow()
         XCTAssertEqual(batch.events.first, expected[0])
-        reader.markBatchAsRead(batch)
+        await reader.markBatchAsRead(batch)
 
-        let batches = reader.readNextBatches(2)
+        let batches = await reader.readNextBatches(2)
         XCTAssertEqual(batches[0].events.first, expected[1])
         XCTAssertEqual(batches[1].events.first, expected[2])
-        batches.forEach { reader.markBatchAsRead($0) }
+        for b in batches {
+            await reader.markBatchAsRead(b)
+        }
 
-        XCTAssertTrue(reader.readNextBatches(1).isEmpty)
+        XCTAssertTrue(await reader.readNextBatches(1).isEmpty)
         XCTAssertEqual(try directory.files().count, 0)
     }
 }
 
 extension Reader {
-    func readNextBatches(_ limit: Int = .max) -> [Batch] {
-        return readFiles(limit: limit).compactMap { readBatch(from: $0) }
+    func readNextBatches(_ limit: Int = .max) async -> [Batch] {
+        return await readFiles(limit: limit).compactMap { readBatch(from: $0) }
     }
 }

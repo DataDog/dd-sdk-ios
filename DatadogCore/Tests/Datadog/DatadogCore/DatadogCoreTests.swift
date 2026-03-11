@@ -53,18 +53,21 @@ class DatadogCoreTests: XCTestCase {
 
         // When
         core.set(trackingConsent: .notGranted)
-        scope.eventWriteContext { context, writer in
-            writer.write(value: FeatureMock.Event(event: "not granted"))
+        Task {
+            guard let (_, writer) = await scope.eventWriteContext() else { return }
+            await writer.write(value: FeatureMock.Event(event: "not granted"))
         }
 
         core.set(trackingConsent: .granted)
-        scope.eventWriteContext { context, writer in
-            writer.write(value: FeatureMock.Event(event: "granted"))
+        Task {
+            guard let (_, writer) = await scope.eventWriteContext() else { return }
+            await writer.write(value: FeatureMock.Event(event: "granted"))
         }
 
         core.set(trackingConsent: .pending)
-        scope.eventWriteContext { context, writer in
-            writer.write(value: FeatureMock.Event(event: "pending"))
+        Task {
+            guard let (_, writer) = await scope.eventWriteContext() else { return }
+            await writer.write(value: FeatureMock.Event(event: "pending"))
         }
 
         // Then
@@ -108,15 +111,17 @@ class DatadogCoreTests: XCTestCase {
         // When
         let scope = core.scope(for: FeatureMock.self)
         core.set(trackingConsent: .pending)
-        scope.eventWriteContext { context, writer in
+        Task {
+            guard let (context, writer) = await scope.eventWriteContext() else { return }
             XCTAssertEqual(context.trackingConsent, .pending)
-            writer.write(value: FeatureMock.Event(event: "pending"))
+            await writer.write(value: FeatureMock.Event(event: "pending"))
         }
 
         core.set(trackingConsent: .granted)
-        scope.eventWriteContext { context, writer in
+        Task {
+            guard let (context, writer) = await scope.eventWriteContext() else { return }
             XCTAssertEqual(context.trackingConsent, .granted)
-            writer.write(value: FeatureMock.Event(event: "granted"))
+            await writer.write(value: FeatureMock.Event(event: "granted"))
         }
 
         // Then
@@ -158,18 +163,21 @@ class DatadogCoreTests: XCTestCase {
 
         // When
         core.set(trackingConsent: .notGranted)
-        scope.eventWriteContext(bypassConsent: true) { context, writer in
-            writer.write(value: FeatureMock.Event(event: "not granted"))
+        Task {
+            guard let (_, writer) = await scope.eventWriteContext(bypassConsent: true) else { return }
+            await writer.write(value: FeatureMock.Event(event: "not granted"))
         }
 
         core.set(trackingConsent: .granted)
-        scope.eventWriteContext(bypassConsent: true) { context, writer in
-            writer.write(value: FeatureMock.Event(event: "granted"))
+        Task {
+            guard let (_, writer) = await scope.eventWriteContext(bypassConsent: true) else { return }
+            await writer.write(value: FeatureMock.Event(event: "granted"))
         }
 
         core.set(trackingConsent: .pending)
-        scope.eventWriteContext(bypassConsent: true) { context, writer in
-            writer.write(value: FeatureMock.Event(event: "pending"))
+        Task {
+            guard let (_, writer) = await scope.eventWriteContext(bypassConsent: true) else { return }
+            await writer.write(value: FeatureMock.Event(event: "pending"))
         }
 
         // Then
@@ -226,7 +234,8 @@ class DatadogCoreTests: XCTestCase {
             XCTAssertEqual(context.additionalContext(ofType: ContextMock.self)?.value, "value 1")
             expectation1.fulfill()
         }
-        scope.eventWriteContext { context, _ in
+        Task {
+            guard let (context, _) = await scope.eventWriteContext() else { return }
             XCTAssertEqual(context.additionalContext(ofType: ContextMock.self)?.value, "value 1")
             expectation2.fulfill()
         }
@@ -236,7 +245,8 @@ class DatadogCoreTests: XCTestCase {
             XCTAssertEqual(context.additionalContext(ofType: ContextMock.self)?.value, "value 1")
             expectation1.fulfill()
         }
-        scope.eventWriteContext { context, _ in
+        Task {
+            guard let (context, _) = await scope.eventWriteContext() else { return }
             XCTAssertEqual(context.additionalContext(ofType: ContextMock.self)?.value, "value 1")
             expectation2.fulfill()
         }
@@ -324,8 +334,9 @@ class DatadogCoreTests: XCTestCase {
         // When
         core.stop()
 
-        scope.eventWriteContext { context, writer in
-            writer.write(value: FeatureMock.Event(event: "should not be sent"))
+        Task {
+            guard let (_, writer) = await scope.eventWriteContext() else { return }
+            await writer.write(value: FeatureMock.Event(event: "should not be sent"))
         }
 
         // Then

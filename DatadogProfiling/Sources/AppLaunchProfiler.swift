@@ -68,7 +68,8 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
         let pprof = Data(bytes: data, count: size)
         dd_pprof_free_serialized_data(data)
 
-        core.scope(for: ProfilerFeature.self).eventWriteContext { context, writer in
+        Task {
+            guard let (context, writer) = await core.scope(for: ProfilerFeature.self).eventWriteContext() else { return }
             let event = ProfileEvent(
                 family: "ios",
                 runtime: "ios",
@@ -92,7 +93,7 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                 additionalAttributes: cmd.context
             )
 
-            writer.write(value: pprof, metadata: event)
+            await writer.write(value: pprof, metadata: event)
             self.telemetryController.send(metric: AppLaunchMetric(status: .init(profileStatus), durationNs: duration, fileSize: Int64(size)))
         }
 

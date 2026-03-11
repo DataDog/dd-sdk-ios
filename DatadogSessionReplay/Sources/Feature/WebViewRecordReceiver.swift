@@ -27,8 +27,8 @@ internal struct WebViewRecordReceiver: FeatureMessageReceiver {
             return false
         }
 
-        scope.eventWriteContext { context, writer in
-            // Extract the `RUMContext` or `nil` if RUM session is not sampled:
+        Task {
+            guard let (context, writer) = await scope.eventWriteContext() else { return }
             guard let rumContext = context.additionalContext(ofType: RUMCoreContext.self) else {
                 return
             }
@@ -48,7 +48,7 @@ internal struct WebViewRecordReceiver: FeatureMessageReceiver {
                 records: [AnyEncodable(event)]
             )
 
-            writer.write(value: record)
+            await writer.write(value: record)
         }
 
         return true

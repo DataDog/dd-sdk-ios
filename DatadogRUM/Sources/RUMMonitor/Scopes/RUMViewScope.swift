@@ -671,11 +671,8 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            writer.write(
-                value: event,
-                metadata: event.metadata(viewIndexInSession: viewIndexInSession),
-                completion: completionHandler
-            )
+            writer.write(value: event, metadata: event.metadata(viewIndexInSession: viewIndexInSession))
+            completionHandler()
 
             // Update fatal error context with recent RUM view:
             dependencies.fatalErrorContext.view = event

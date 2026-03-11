@@ -30,8 +30,8 @@ internal final class FileReader: Reader, @unchecked Sendable {
 
     // MARK: - Reading batches
 
-    func readFiles(limit: Int) -> [ReadableFile] {
-        return orchestrator.getReadableFiles(excludingFilesNamed: filesRead, limit: limit)
+    func readFiles(limit: Int) async -> [ReadableFile] {
+        return await orchestrator.getReadableFiles(excludingFilesNamed: filesRead, limit: limit)
     }
 
     func readBatch(from file: ReadableFile) -> Batch? {
@@ -96,8 +96,8 @@ internal final class FileReader: Reader, @unchecked Sendable {
 
     // MARK: - Accepting batches
 
-    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {
-        orchestrator.delete(readableFile: batch.file, deletionReason: reason)
+    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) async {
+        await orchestrator.delete(readableFile: batch.file, deletionReason: reason)
         filesRead.insert(batch.file.name)
     }
 }

@@ -138,25 +138,27 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
 
     /// Sends span event for given `DDSpan`.
     private func sendSpan(finishTime: Date, sampler: Sampler) {
-        eventWriter.spanWriteContext { context, writer in
-            let event = self.eventBuilder.createSpanEvent(
+        Task { [weak self] in
+            guard let self else { return }
+            guard let (context, writer) = await eventWriter.spanWriteContext() else { return }
+            let event = eventBuilder.createSpanEvent(
                 context: context,
-                traceID: self.ddContext.traceID,
-                spanID: self.ddContext.spanID,
-                parentSpanID: self.ddContext.parentSpanID,
-                operationName: self.operationName,
-                startTime: self.startTime,
+                traceID: ddContext.traceID,
+                spanID: ddContext.spanID,
+                parentSpanID: ddContext.parentSpanID,
+                operationName: operationName,
+                startTime: startTime,
                 finishTime: finishTime,
-                samplingRate: self.ddContext.sampleRate / 100.0,
-                samplingPriority: self.ddContext.samplingDecision.samplingPriority,
-                samplingDecisionMaker: self.ddContext.samplingDecision.decisionMaker,
-                tags: self.tags,
-                baggageItems: self.ddContext.baggageItems.all,
-                logFields: self.logFields
+                samplingRate: ddContext.sampleRate / 100.0,
+                samplingPriority: ddContext.samplingDecision.samplingPriority,
+                samplingDecisionMaker: ddContext.samplingDecision.decisionMaker,
+                tags: tags,
+                baggageItems: ddContext.baggageItems.all,
+                logFields: logFields
             )
 
             let envelope = SpanEventsEnvelope(span: event, environment: context.env)
-            writer.write(value: envelope)
+            await writer.write(value: envelope)
         }
     }
 

@@ -16,7 +16,7 @@ import DatadogInternal
 ///
 ///         let feature = MyCustomFeature()
 ///         let core = SingleFeatureCoreMock(feature: feature)
-///         core.scope(for: "my-custom-feature")?.eventWriteContext { context, writer in
+///         if let (context, writer) = await core.scope(for: "my-custom-feature")?.eventWriteContext() {
 ///             // will open a scope for the custom Feature only.
 ///         }
 ///

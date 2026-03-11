@@ -10,16 +10,16 @@ import DatadogInternal
 internal protocol FilesOrchestratorType: AnyObject, Sendable {
     var performance: StoragePerformancePreset { get }
 
-    func getWritableFile(writeSize: UInt64) throws -> WritableFile
-    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String>, limit: Int) -> [ReadableFile]
-    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason)
+    func getWritableFile(writeSize: UInt64) async throws -> WritableFile
+    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String>, limit: Int) async -> [ReadableFile]
+    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) async
+    func setIgnoreFilesAgeWhenReading(_ value: Bool) async
 
-    var ignoreFilesAgeWhenReading: Bool { get set }
     var trackName: String { get }
 }
 
 /// Orchestrates files in a single directory.
-internal class FilesOrchestrator: FilesOrchestratorType, @unchecked Sendable {
+internal actor FilesOrchestrator: FilesOrchestratorType {
     enum Constants {
         /// Precision in which the timestamp is stored as part of the file name.
         static let fileNamePrecision: TimeInterval = 0.001 // millisecond precision
@@ -46,7 +46,7 @@ internal class FilesOrchestrator: FilesOrchestratorType, @unchecked Sendable {
     let telemetry: Telemetry
 
     /// Extra information for metrics set from this orchestrator.
-    struct MetricsData {
+    struct MetricsData: @unchecked Sendable {
         /// The name of the track reported for this orchestrator.
         let trackName: String
         /// The label indicating the value of tracking consent that this orchestrator manages files for.
@@ -61,10 +61,9 @@ internal class FilesOrchestrator: FilesOrchestratorType, @unchecked Sendable {
     let metricsData: MetricsData?
 
     /// Tracks number of pending batches in the track's directory
-    @ReadWriteLock
     private var pendingBatches: Int = 0
 
-    var trackName: String {
+    nonisolated var trackName: String {
         metricsData?.trackName ?? "Unknown"
     }
 
@@ -134,8 +133,7 @@ internal class FilesOrchestrator: FilesOrchestratorType, @unchecked Sendable {
         lastWritableFileApproximatedSize = writeSize
         lastWritableFileLastWriteDate = dateProvider.now
 
-        // Increment pending batches for telemetry
-        _pendingBatches.mutate { $0 += 1 }
+        pendingBatches += 1
         return newFile
     }
 
@@ -227,8 +225,7 @@ internal class FilesOrchestrator: FilesOrchestratorType, @unchecked Sendable {
             }
 #endif
             try readableFile.delete()
-            // Decrement pending batches at each batch deletion
-            _pendingBatches.mutate { $0 -= 1 }
+            pendingBatches -= 1
             sendBatchDeletedMetric(batchFile: readableFile, deletionReason: deletionReason)
         } catch {
             telemetry.error("Failed to delete file", error: error)
@@ -237,6 +234,14 @@ internal class FilesOrchestrator: FilesOrchestratorType, @unchecked Sendable {
 
     /// If files age should be ignored for obtaining `ReadableFile`.
     internal var ignoreFilesAgeWhenReading = false
+
+    func setIgnoreFilesAgeWhenReading(_ value: Bool) {
+        ignoreFilesAgeWhenReading = value
+    }
+
+    /// Acts as a barrier: callers can `await` this to ensure all previously
+    /// enqueued actor work has completed.
+    func barrier() { }
 
     // MARK: - Directory size management
 
@@ -258,8 +263,7 @@ internal class FilesOrchestrator: FilesOrchestratorType, @unchecked Sendable {
             while sizeFreed < sizeToFree && !filesWithSizeSortedByCreationDate.isEmpty {
                 let fileWithSize = filesWithSizeSortedByCreationDate.removeFirst()
                 try fileWithSize.file.delete()
-                // Decrement pending batches at each batch deletion
-                _pendingBatches.mutate { $0 -= 1 }
+                pendingBatches -= 1
                 sendBatchDeletedMetric(batchFile: fileWithSize.file, deletionReason: .purged)
                 sizeFreed += fileWithSize.size
             }
@@ -271,8 +275,7 @@ internal class FilesOrchestrator: FilesOrchestratorType, @unchecked Sendable {
 
         if fileAge > performance.maxFileAgeForRead {
             try file.delete()
-            // Decrement pending batches at each batch deletion
-            _pendingBatches.mutate { $0 -= 1 }
+            pendingBatches -= 1
             sendBatchDeletedMetric(batchFile: file, deletionReason: .obsolete)
             return nil
         } else {

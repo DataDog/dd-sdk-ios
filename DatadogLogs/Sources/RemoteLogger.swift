@@ -163,12 +163,8 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
 
     /// Async write path — bridges `eventWriteContext`, builds the event, and writes it.
     private func writeLog(_ prepared: PreparedLogContext) async {
-        // SDK context must be requested on the user thread to ensure that it provides values
-        // that are up-to-date for the caller.
-        let (context, writer) = await withCheckedContinuation { continuation in
-            featureScope.eventWriteContext { context, writer in
-                continuation.resume(returning: (context, writer))
-            }
+        guard let (context, writer) = await featureScope.eventWriteContext() else {
+            return
         }
 
         var internalAttributes: [String: AttributeValue] = [:]
@@ -219,7 +215,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
             return
         }
 
-        writer.write(value: log)
+        await writer.write(value: log)
 
         guard log.status == .error || log.status == .critical else {
             return

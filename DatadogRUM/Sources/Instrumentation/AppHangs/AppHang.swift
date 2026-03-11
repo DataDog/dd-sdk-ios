@@ -31,7 +31,7 @@ internal struct AppHang: Codable {
 /// Persisted information on App Hang that may likely become fatal.
 ///
 /// It encodes all information necessary to report error on app restart.
-internal struct FatalAppHang: Codable {
+internal struct FatalAppHang: Codable, @unchecked Sendable {
     /// An identifier of the process that the hang was recorded in.
     let processID: UUID
     /// The actual hang that was recorded.

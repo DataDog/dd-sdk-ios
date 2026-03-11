@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal protocol StoragePerformancePreset {
+internal protocol StoragePerformancePreset: Sendable {
     /// Maximum size of a single file (in bytes).
     /// Each feature (logging, tracing, ...) serializes its objects data to that file for later upload.
     /// If last written file is too big to append next data, new file is created.

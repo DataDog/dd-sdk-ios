@@ -7,10 +7,10 @@
 import Foundation
 import DatadogInternal
 
-internal struct FeatureStorage: @unchecked Sendable {
+internal struct FeatureStorage: Sendable {
     /// The name of this Feature, used to distinguish storage instances in telemetry and logs.
     let featureName: String
-    /// Queue for performing all I/O operations (writes, reads and files management).
+    /// Queue for performing directory management operations (consent migration, data clearing).
     let queue: DispatchQueue
     /// Directories for managing data in this Feature.
     let directories: FeatureDirectories
@@ -29,8 +29,7 @@ internal struct FeatureStorage: @unchecked Sendable {
             return FileWriter(
                 orchestrator: authorizedFilesOrchestrator,
                 encryption: encryption,
-                telemetry: telemetry,
-                queue: queue
+                telemetry: telemetry
             )
         case .notGranted:
             return NOPWriter()
@@ -38,20 +37,16 @@ internal struct FeatureStorage: @unchecked Sendable {
             return FileWriter(
                 orchestrator: unauthorizedFilesOrchestrator,
                 encryption: encryption,
-                telemetry: telemetry,
-                queue: queue
+                telemetry: telemetry
             )
         }
     }
 
     var reader: Reader {
-        DataReader(
-            readWriteQueue: queue,
-            fileReader: FileReader(
-                orchestrator: authorizedFilesOrchestrator,
-                encryption: encryption,
-                telemetry: telemetry
-            )
+        FileReader(
+            orchestrator: authorizedFilesOrchestrator,
+            encryption: encryption,
+            telemetry: telemetry
         )
     }
 
@@ -96,11 +91,9 @@ internal struct FeatureStorage: @unchecked Sendable {
         }
     }
 
-    func setIgnoreFilesAgeWhenReading(to value: Bool) {
-        queue.sync {
-            authorizedFilesOrchestrator.ignoreFilesAgeWhenReading = value
-            unauthorizedFilesOrchestrator.ignoreFilesAgeWhenReading = value
-        }
+    func setIgnoreFilesAgeWhenReading(to value: Bool) async {
+        await authorizedFilesOrchestrator.setIgnoreFilesAgeWhenReading(value)
+        await unauthorizedFilesOrchestrator.setIgnoreFilesAgeWhenReading(value)
     }
 }
 

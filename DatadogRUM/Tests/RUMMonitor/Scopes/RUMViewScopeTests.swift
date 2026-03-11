@@ -3729,7 +3729,8 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // When
-        featureScope.eventWriteContext { context, writer in
+        Task {
+            guard let (context, writer) = await featureScope.eventWriteContext() else { return }
             _ = scope.process(
                 command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,

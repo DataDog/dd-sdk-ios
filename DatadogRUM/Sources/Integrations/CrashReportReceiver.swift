@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Receiver to consume crash reports as RUM events.
-internal struct CrashReportReceiver: FeatureMessageReceiver {
+internal struct CrashReportReceiver: FeatureMessageReceiver, @unchecked Sendable {
     private struct AdjustedCrashTimings {
         /// Crash date read from `CrashReport`. It uses device time.
         let crashDate: Date
@@ -127,15 +127,16 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
             // To avoid inconsistency, we only send the RUM error.
             DD.logger.debug("Sending crash as RUM error.")
-            featureScope.eventWriteContext(bypassConsent: true) { context, writer in
+            Task {
+                guard let (context, writer) = await featureScope.eventWriteContext(bypassConsent: true) else { return }
                 let builder = createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
                 let rumError = builder.createRUMError(with: lastRUMViewEvent)
 
-                if let mappedError = self.eventsMapper.map(event: rumError) {
-                    writer.write(value: mappedError)
+                if let mappedError = eventsMapper.map(event: rumError) {
+                    await writer.write(value: mappedError)
                 } else {
                     DD.logger.warn("errorEventMapper returned 'nil' for a crash. Discarding crashes is not supported. The unmodified event will be sent.")
-                    writer.write(value: rumError)
+                    await writer.write(value: rumError)
                 }
             }
         }
@@ -255,19 +256,20 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
-        featureScope.eventWriteContext(bypassConsent: true) { context, writer in
+        Task {
+            guard let (context, writer) = await featureScope.eventWriteContext(bypassConsent: true) else { return }
             let builder = createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
             let updatedRUMView = builder.updateRUMViewWithError(rumView)
             let rumError = builder.createRUMError(with: updatedRUMView)
 
-            if let mappedError = self.eventsMapper.map(event: rumError) {
-                writer.write(value: mappedError)
+            if let mappedError = eventsMapper.map(event: rumError) {
+                await writer.write(value: mappedError)
             } else {
                 DD.logger.warn("errorEventMapper returned 'nil' for a crash. Discarding crashes is not supported. The unmodified event will be sent.")
-                writer.write(value: rumError)
+                await writer.write(value: rumError)
             }
-            if let mappedView = self.eventsMapper.map(event: updatedRUMView) {
-                writer.write(value: self.eventsMapper.map(event: mappedView))
+            if let mappedView = eventsMapper.map(event: updatedRUMView) {
+                await writer.write(value: eventsMapper.map(event: mappedView))
             }
         }
     }

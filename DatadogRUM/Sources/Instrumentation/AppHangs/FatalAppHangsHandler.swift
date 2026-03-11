@@ -73,64 +73,50 @@ internal final class FatalAppHangsHandler:  @unchecked Sendable {
             guard fatalHang.processID != self?.processID else {
                 return // skip as possible false-positive
             }
-            self?.send(fatalHang: fatalHang)
+            Task { [weak self] in await self?.send(fatalHang: fatalHang) }
         }
 
         // Remove pending app hang
         featureScope.rumDataStore.removeValue(forKey: .fatalAppHangKey)
     }
 
-    private func send(fatalHang: FatalAppHang) {
-        guard fatalHang.trackingConsent == .granted else { // consider the user consent from previous session
+    private func send(fatalHang: FatalAppHang) async {
+        guard fatalHang.trackingConsent == .granted else {
             DD.logger.debug("Skipped sending fatal App Hang as it was recorded with \(fatalHang.trackingConsent) consent")
             return
         }
 
-        featureScope.eventWriteContext(bypassConsent: true) { [dateProvider] context, writer in // bypass the current consent
-            // Below we only consider the "happy path" scenario, when fatal App Hang has occurred within an active RUM session
-            // with an existing active view and the app was restarted in less than `viewEventAvailabilityThreshold` after
-            // termination. This is only subset of logic implemented for RUM crashes in `RUM.CrashReportReceiver`.
-            //
-            // Remaining edge cases include:
-            // - sending fatal App Hang if there was no active view in previous RUM session (vs BET enabled or not)
-            // - sending fatal App Hang before RUM session has started (vs "in foreground" or "in background" vs BET enabled or not)
-            //
-            // There is an oportunity for covering these cases through massive code reuse between fatal hangs and crashes through `FatalErrorBuilder`.
-            // TODO: RUM-3840 Track fatal App Hangs if there is no active RUM view
+        guard let (context, writer) = await featureScope.eventWriteContext(bypassConsent: true) else { return }
 
-            let realErrorDate = fatalHang.hang.startDate.addingTimeInterval(fatalHang.serverTimeOffset)
-            let realDateNow = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
-            let timeSinceAppStart = fatalHang.appLaunchDate.map { realErrorDate.timeIntervalSince($0) }
+        let realErrorDate = fatalHang.hang.startDate.addingTimeInterval(fatalHang.serverTimeOffset)
+        let realDateNow = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
+        let timeSinceAppStart = fatalHang.appLaunchDate.map { realErrorDate.timeIntervalSince($0) }
 
-            let builder = FatalErrorBuilder(
-                context: context,
-                error: .hang,
-                errorUUID: self.uuidGenerator.generateUnique(),
-                errorDate: realErrorDate,
-                errorType: AppHangsMonitor.Constants.appHangErrorType,
-                errorMessage: AppHangsMonitor.Constants.appHangErrorMessage,
-                errorStack: fatalHang.hang.backtraceResult.stack,
-                errorThreads: fatalHang.hang.backtraceResult.threads?.toRUMDataFormat,
-                errorBinaryImages: fatalHang.hang.backtraceResult.binaryImages?.toRUMDataFormat,
-                errorWasTruncated: fatalHang.hang.backtraceResult.wasTruncated,
-                errorMeta: nil,
-                additionalAttributes: nil,
-                timeSinceAppStart: timeSinceAppStart
-            )
-            let error = builder.createRUMError(with: fatalHang.lastRUMView)
-            let view = builder.updateRUMViewWithError(fatalHang.lastRUMView)
+        let builder = FatalErrorBuilder(
+            context: context,
+            error: .hang,
+            errorUUID: uuidGenerator.generateUnique(),
+            errorDate: realErrorDate,
+            errorType: AppHangsMonitor.Constants.appHangErrorType,
+            errorMessage: AppHangsMonitor.Constants.appHangErrorMessage,
+            errorStack: fatalHang.hang.backtraceResult.stack,
+            errorThreads: fatalHang.hang.backtraceResult.threads?.toRUMDataFormat,
+            errorBinaryImages: fatalHang.hang.backtraceResult.binaryImages?.toRUMDataFormat,
+            errorWasTruncated: fatalHang.hang.backtraceResult.wasTruncated,
+            errorMeta: nil,
+            additionalAttributes: nil,
+            timeSinceAppStart: timeSinceAppStart
+        )
+        let error = builder.createRUMError(with: fatalHang.lastRUMView)
+        let view = builder.updateRUMViewWithError(fatalHang.lastRUMView)
 
-            if realDateNow.timeIntervalSince(realErrorDate) < FatalErrorBuilder.Constants.viewEventAvailabilityThreshold {
-                DD.logger.debug("Sending fatal App hang as RUM error with issuing RUM view update")
-                // It is still OK to send RUM view to previous RUM session.
-                writer.write(value: error)
-                writer.write(value: view)
-            } else {
-                // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
-                // To avoid inconsistency, we only send the RUM error.
-                DD.logger.debug("Sending fatal App hang as RUM error without updating RUM view")
-                writer.write(value: error)
-            }
+        if realDateNow.timeIntervalSince(realErrorDate) < FatalErrorBuilder.Constants.viewEventAvailabilityThreshold {
+            DD.logger.debug("Sending fatal App hang as RUM error with issuing RUM view update")
+            await writer.write(value: error)
+            await writer.write(value: view)
+        } else {
+            DD.logger.debug("Sending fatal App hang as RUM error without updating RUM view")
+            await writer.write(value: error)
         }
     }
 }

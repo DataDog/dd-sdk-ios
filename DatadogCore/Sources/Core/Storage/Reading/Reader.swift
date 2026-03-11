@@ -26,12 +26,12 @@ extension Batch {
 internal protocol Reader: Sendable {
     /// Reads files from the storage.
     /// - Parameter limit: maximum number of files to read.
-    func readFiles(limit: Int) -> [ReadableFile]
+    func readFiles(limit: Int) async -> [ReadableFile]
     /// Reads batch from given file.
     /// - Parameter file: file to read batch from.
     func readBatch(from file: ReadableFile) -> Batch?
     /// Marks given batch as read.
     /// - Parameter batch: batch to mark as read.
     /// - Parameter reason: reason for removing the batch.
-    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason)
+    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) async
 }

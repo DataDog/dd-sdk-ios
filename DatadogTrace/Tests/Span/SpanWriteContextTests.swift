@@ -12,10 +12,7 @@ import DatadogInternal
 class SpanWriteContextTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
-    @MainActor
-    func testWhenRequestingSpanWriteContext_itProvidesInitialCoreContext() {
-        let retrieveContext = expectation(description: "provide core context")
-
+    func testWhenRequestingSpanWriteContext_itProvidesInitialCoreContext() async {
         let initialContext: DatadogContext = .mockRandom()
         featureScope.contextMock = initialContext
 
@@ -25,22 +22,22 @@ class SpanWriteContextTests: XCTestCase {
         // When
         featureScope.contextMock = .mockRandom()
 
-        writer.spanWriteContext { providedContext, _ in
-            // Then
-            DDAssertReflectionEqual(providedContext, initialContext)
-            retrieveContext.fulfill()
-        }
+        let result = await writer.spanWriteContext()
 
-        waitForExpectations(timeout: 0.5)
+        // Then
+        XCTAssertNotNil(result)
+        if let (providedContext, _) = result {
+            DDAssertReflectionEqual(providedContext, initialContext)
+        }
     }
 
-    func testWhenWritingEvent_itDoesNotBypassConsent() {
+    func testWhenWritingEvent_itDoesNotBypassConsent() async {
         // Given
         let writer = LazySpanWriteContext(featureScope: featureScope)
 
         // When
-        writer.spanWriteContext { _, writer in
-            writer.write(value: SpanEvent.mockAny())
+        if let (_, eventWriter) = await writer.spanWriteContext() {
+            await eventWriter.write(value: SpanEvent.mockAny())
         }
 
         // Then
