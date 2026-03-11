@@ -57,11 +57,12 @@ internal final class LayerSnapshotProcessor: Processor {
 
     func process(_ input: Input) async {
         let wireframeBuilder = LayerWireframeBuilder()
-        let (wireframes, resources) = wireframeBuilder.createWireframes(
+        let output = wireframeBuilder.createWireframes(
             for: input.targetSnapshots,
             layerImages: input.layerImages,
             webViewSlotIDs: input.layerTreeSnapshot.webViewSlotIDs
         )
+        let wireframes = output.wireframes
 
         interceptWireframes?(wireframes)
 
@@ -151,7 +152,7 @@ internal final class LayerSnapshotProcessor: Processor {
         // critical path and resource writing offloaded.
         await resourceProcessor.process(
             .init(
-                resources: resources,
+                resources: output.resources,
                 context: .init(layerTreeSnapshot.context.applicationID)
             )
         )
