@@ -53,11 +53,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     // - Index efficiency for nested fields (timeseries.name, start/end filters)
     //
     // Configuration:
-    // - Batch size: 15 points (15 seconds at 1Hz) - reduced for faster testing
+    // - Batch size: 5 points (5 seconds at 1Hz) - balanced for efficiency and latency
     // - Flushing: Every batchSize samples
     // - Buffer: Cleared after successful send
     //
-    // Phase 02.1 note: Reduced from 120 to 15 for faster upload verification
+    // Phase 02.1 note: Reduced from 120 to 5 for reasonable batching overhead
 
     /// Phase 1 prototype: Memory timeseries collector for session-scoped memory sampling
     private var memoryCollector: MemoryTimeseriesCollector?
@@ -173,11 +173,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         dependencies.fatalErrorContext.sessionState = state
 
         // Phase 1 prototype: Start memory timeseries collection for this session
-        // Phase 02.1: Using batchSize=15 for faster upload testing (15 seconds at 1Hz)
+        // Phase 02.1: Using batchSize=5 for efficient batching (5 seconds at 1Hz)
         self.memoryCollector = MemoryTimeseriesCollector(
             sessionID: sessionUUID,
             applicationID: parent.context.rumApplicationID,
-            batchSize: 15,
+            batchSize: 5,
             reader: VitalMemoryReader()
         )
         self.memoryCollector?.start()

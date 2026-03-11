@@ -46,12 +46,12 @@ internal class MemoryTimeseriesCollector {
     /// - Parameters:
     ///   - sessionID: The RUM session ID to associate collected data with.
     ///   - applicationID: The application ID for event creation.
-    ///   - batchSize: Batch size for event creation (configurable for staging validation). Defaults to 120 (2 minutes at 1Hz).
+    ///   - batchSize: Batch size for event creation (configurable). Defaults to 5 (5 seconds at 1Hz).
     ///   - reader: The memory reader to use for sampling. Defaults to VitalMemoryReader.
     init(
         sessionID: RUMUUID,
         applicationID: String,
-        batchSize: Int = 120,
+        batchSize: Int = 5,
         reader: VitalMemoryReader = VitalMemoryReader()
     ) {
         self.sessionID = sessionID
