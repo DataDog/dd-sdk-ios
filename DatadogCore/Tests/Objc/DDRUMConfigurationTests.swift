@@ -75,6 +75,33 @@ class DDRUMConfigurationTests: XCTestCase {
         DDAssertReflectionEqual(swift.urlSessionTracking, .init(firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: ["foo.com": [.b3, .datadog]], sampleRate: 99)))
     }
 
+    func testSetDDRUMURLSessionTrackingWithTrackResourceHeaders() {
+        let tracking = objc_URLSessionTracking()
+
+        objc.setURLSessionTracking(tracking)
+        DDAssertReflectionEqual(swift.urlSessionTracking, RUM.Configuration.URLSessionTracking())
+
+        tracking.setTrackResourceHeaders(.disabled)
+        objc.setURLSessionTracking(tracking)
+        DDAssertReflectionEqual(swift.urlSessionTracking, .init(trackResourceHeaders: .disabled))
+
+        tracking.setTrackResourceHeaders(.defaults)
+        objc.setURLSessionTracking(tracking)
+        DDAssertReflectionEqual(swift.urlSessionTracking, .init(trackResourceHeaders: .defaults))
+
+        tracking.setTrackResourceHeaders(.custom([.defaults]))
+        objc.setURLSessionTracking(tracking)
+        DDAssertReflectionEqual(swift.urlSessionTracking, .init(trackResourceHeaders: .custom([.defaults])))
+
+        tracking.setTrackResourceHeaders(.custom([.matchHeaders(["x-request-id", "x-trace-id"])]))
+        objc.setURLSessionTracking(tracking)
+        DDAssertReflectionEqual(swift.urlSessionTracking, .init(trackResourceHeaders: .custom([.matchHeaders(["x-request-id", "x-trace-id"])])))
+
+        tracking.setTrackResourceHeaders(.custom([.defaults, .matchHeaders(["x-request-id"])]))
+        objc.setURLSessionTracking(tracking)
+        DDAssertReflectionEqual(swift.urlSessionTracking, .init(trackResourceHeaders: .custom([.defaults, .matchHeaders(["x-request-id"])])))
+    }
+
     func testSetDDRUMURLSessionTrackingWithResourceAttributesProvider() {
         let tracking = objc_URLSessionTracking()
 

@@ -131,6 +131,9 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.ssl)
         XCTAssertNil(event.resource.firstByte)
         XCTAssertNil(event.resource.download)
+        XCTAssertNil(event.resource.decodedBodySize)
+        XCTAssertNil(event.resource.encodedBodySize)
+        XCTAssertNil(event.resource.request)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.dd.traceId, "64")
@@ -955,7 +958,8 @@ class RUMResourceScopeTests: XCTestCase {
                     start: resourceFetchStart.addingTimeInterval(9),
                     end: resourceFetchStart.addingTimeInterval(10)
                 ),
-                responseBodySize: (encoded: 1_500, decoded: 2_048)
+                responseBodySize: (encoded: 1_500, decoded: 2_048),
+                requestBodySize: (encoded: 512, decoded: 1_024)
             )
         )
 
@@ -1007,6 +1011,10 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.resource.firstByte?.duration, 1_000_000_000)
         XCTAssertEqual(event.resource.download?.start, 9_000_000_000)
         XCTAssertEqual(event.resource.download?.duration, 1_000_000_000)
+        XCTAssertEqual(event.resource.encodedBodySize, 1_500)
+        XCTAssertEqual(event.resource.decodedBodySize, 2_048)
+        XCTAssertEqual(event.resource.request?.encodedBodySize, 512)
+        XCTAssertEqual(event.resource.request?.decodedBodySize, 1_024)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), provider.context.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.source, .ios)
@@ -1016,9 +1024,6 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
-        // Body size metrics (only response body size was provided)
-        XCTAssertEqual(event.resource.encodedBodySize, 1_500)
-        XCTAssertEqual(event.resource.decodedBodySize, 2_048)
     }
 
     func testGivenStartedResource_whenResourceReceivesMetricsWithRequestAndResponseBodySizes_itAggregatesThemInSentResourceEvent() throws {
@@ -1786,5 +1791,168 @@ class RUMResourceScopeTests: XCTestCase {
         let graphql = try XCTUnwrap(event.resource.graphql)
         XCTAssertNil(graphql.errors)
         XCTAssertNil(graphql.errorCount)
+    }
+
+    // MARK: - Header Capture Tests
+
+    func testWhenStopCommandContainsRequestHeaders_itPopulatesResourceRequestHeaders() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/api/data",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/data",
+            httpMethod: .get
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/api/data",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    attributes: [
+                        CrossPlatformAttributes.requestHeaders: ["content-type": "application/json", "cache-control": "no-cache"]
+                    ],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        let request = try XCTUnwrap(event.resource.request)
+        let headers = try XCTUnwrap(request.headers)
+        XCTAssertEqual(headers.headersInfo["content-type"], "application/json")
+        XCTAssertEqual(headers.headersInfo["cache-control"], "no-cache")
+    }
+
+    func testWhenStopCommandContainsResponseHeaders_itPopulatesResourceResponseHeaders() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/api/data",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/data",
+            httpMethod: .get
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/api/data",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    attributes: [
+                        CrossPlatformAttributes.responseHeaders: ["content-type": "text/html", "etag": "\"abc\""]
+                    ],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        let response = try XCTUnwrap(event.resource.response)
+        let headers = try XCTUnwrap(response.headers)
+        XCTAssertEqual(headers.headersInfo["content-type"], "text/html")
+        XCTAssertEqual(headers.headersInfo["etag"], "\"abc\"")
+    }
+
+    func testWhenStopCommandContainsRequestHeadersAndBodySizeMetrics_itPopulatesBoth() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/api/data",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/data",
+            httpMethod: .post
+        )
+
+        let resourceFetchStart = Date.mockDecember15th2019At10AMUTC()
+        let metricsCommand = RUMAddResourceMetricsCommand(
+            resourceKey: "/api/data",
+            time: .mockDecember15th2019At10AMUTC(),
+            attributes: [:],
+            metrics: .mockWith(
+                fetch: .init(
+                    start: resourceFetchStart,
+                    end: resourceFetchStart.addingTimeInterval(10)
+                ),
+                requestBodySize: (encoded: 512, decoded: 1_024)
+            )
+        )
+
+        // When
+        XCTAssertTrue(scope.process(command: metricsCommand, context: context, writer: writer))
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/api/data",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    attributes: [
+                        CrossPlatformAttributes.requestHeaders: ["content-type": "application/json"]
+                    ],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        let request = try XCTUnwrap(event.resource.request)
+        XCTAssertEqual(request.encodedBodySize, 512)
+        XCTAssertEqual(request.decodedBodySize, 1_024)
+        let headers = try XCTUnwrap(request.headers)
+        XCTAssertEqual(headers.headersInfo["content-type"], "application/json")
+    }
+
+    func testWhenStopCommandHasNoHeaders_requestAndResponseAreUnaffected() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/api/data",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/data",
+            httpMethod: .get
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/api/data",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    attributes: [:],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertNil(event.resource.request)
+        XCTAssertNil(event.resource.response)
     }
 }

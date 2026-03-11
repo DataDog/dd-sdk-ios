@@ -185,6 +185,8 @@ class ResourceMetricsTests: XCTestCase {
         XCTAssertEqual(resourceMetrics.download?.end, taskTransaction.responseEndDate!)
         XCTAssertEqual(resourceMetrics.responseBodySize?.encoded, taskTransaction.countOfResponseBodyBytesReceived)
         XCTAssertEqual(resourceMetrics.responseBodySize?.decoded, taskTransaction.countOfResponseBodyBytesAfterDecoding)
+        XCTAssertEqual(resourceMetrics.requestBodySize?.decoded, taskTransaction.countOfRequestBodyBytesBeforeEncoding)
+        XCTAssertEqual(resourceMetrics.requestBodySize?.encoded, taskTransaction.countOfRequestBodyBytesSent)
     }
 
     func testWhenTaskMakesMultipleFetchesFromNetwork_thenAllMetricsAreCollected() {
@@ -247,6 +249,8 @@ class ResourceMetricsTests: XCTestCase {
         XCTAssertEqual(resourceMetrics.download?.end, transaction3.responseEndDate!)
         XCTAssertEqual(resourceMetrics.responseBodySize?.encoded, transaction3.countOfResponseBodyBytesReceived)
         XCTAssertEqual(resourceMetrics.responseBodySize?.decoded, transaction3.countOfResponseBodyBytesAfterDecoding)
+        XCTAssertEqual(resourceMetrics.requestBodySize?.decoded, transaction3.countOfRequestBodyBytesBeforeEncoding)
+        XCTAssertEqual(resourceMetrics.requestBodySize?.encoded, transaction3.countOfRequestBodyBytesSent)
     }
 
     func testWhenTaskMakesFetchFromLocalCache_thenOnlyFetchMetricIsCollected() {
@@ -301,6 +305,10 @@ class ResourceMetricsTests: XCTestCase {
         XCTAssertNil(
             resourceMetrics.responseBodySize,
             "`responseBodySize` should not be tracked for cache transactions."
+        )
+        XCTAssertNil(
+            resourceMetrics.requestBodySize,
+            "`requestBodySize` should not be tracked for cache transactions."
         )
     }
 }

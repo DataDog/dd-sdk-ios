@@ -549,6 +549,38 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.action.target?.name, differentName)
     }
 
+    func testWhenContinuousUserActionStopsWithDifferentActionType_itChangesActionType() throws {
+        var currentTime = Date()
+        let scope = RUMUserActionScope.mockWith(
+            parent: parent,
+            actionType: .scroll,
+            startTime: currentTime,
+            isContinuous: true
+        )
+
+        currentTime.addTimeInterval(0.5)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMCommandMock(),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopUserActionCommand.mockWith(time: currentTime, actionType: .swipe),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(event.action.type, .swipe, "Action type should be updated from .scroll to .swipe")
+    }
+
     // MARK: - Discrete User Action
 
     func testWhenDiscreteUserActionTimesOut_itSendsActionEvent() throws {

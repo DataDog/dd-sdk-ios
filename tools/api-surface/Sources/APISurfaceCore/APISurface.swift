@@ -14,6 +14,7 @@ public struct APISurfaceError: Error, CustomStringConvertible {
 public struct APISurface {
     private let module: Module
     private let language: Language
+    private let patchedPackageWorkspace: PatchedPackageWorkspace
     private let generator = Generator()
     private let printer = Printer()
 
@@ -26,7 +27,7 @@ public struct APISurface {
     ///   - language: the language of the API surface.
     public init(spmLibraryName libraryName: String, inPath path: String, language: Language) throws {
         // Create patch folder:
-        let newPath = try patchXcodebuildConfusionAndReturnNewPath(originalPath: path)
+        let patchedPackageWorkspace = try PatchedPackageWorkspace(originalPath: path)
 
         let module = Module(
             xcodeBuildArguments: [
@@ -34,11 +35,8 @@ public struct APISurface {
                 "-destination", "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.3.1",
                 "-sdk", "iphonesimulator",
             ],
-            inPath: newPath
+            inPath: patchedPackageWorkspace.path
         )
-
-        // Delete patch folder:
-        try FileManager.default.removeItem(atPath: newPath)
 
         guard let module = module else {
             throw APISurfaceError(description: "Failed to generate module interface with `SourceKittenFramework`.")
@@ -46,6 +44,7 @@ public struct APISurface {
 
         self.module = module
         self.language = language
+        self.patchedPackageWorkspace = patchedPackageWorkspace
     }
 
     // MARK: - Output
@@ -56,42 +55,56 @@ public struct APISurface {
     }
 }
 
-/// When a folder contains both `Package.swift` and `.xcworkspace` then `xcodebuild` gets
-/// confused and instead of processing swift package, it builds the workspace. There is no option in `xcodebuild`
-/// to force required behaviour, hence we patch the entire concept by copying `Package.swift` to temporary folder
-/// and creating symbolic links to all source folders from original location.
-private func patchXcodebuildConfusionAndReturnNewPath(originalPath: String) throws -> String {
-    let fm = FileManager.default
+/// Holds a temporary patched package workspace used to run `xcodebuild` and
+/// automatically removes it when no longer referenced.
+private final class PatchedPackageWorkspace {
+    let path: String
 
-    func tempURL() throws -> URL {
-        let osTemporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-        let testDirectoryName = "com.datadoghq.api-surface-\(UUID().uuidString)"
-        let url = osTemporaryDirectoryURL.appending(component: testDirectoryName, directoryHint: .isDirectory)
-        try fm.createDirectory(at: url, withIntermediateDirectories: true)
-        return url
+    init(originalPath: String) throws {
+        self.path = try Self.patchXcodebuildConfusionAndReturnNewPath(originalPath: originalPath)
     }
 
-    func isDirectory(url: URL) -> Bool {
-        (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
+    deinit {
+        try? FileManager.default.removeItem(atPath: path)
     }
 
-    let source = URL(filePath: originalPath, directoryHint: .isDirectory).standardizedFileURL
-    let target = try tempURL()
+    /// When a folder contains both `Package.swift` and `.xcworkspace` then `xcodebuild` gets
+    /// confused and instead of processing swift package, it builds the workspace. There is no option in `xcodebuild`
+    /// to force required behaviour, hence we patch the entire concept by copying `Package.swift` to temporary folder
+    /// and creating symbolic links to all source folders from original location.
+    private static func patchXcodebuildConfusionAndReturnNewPath(originalPath: String) throws -> String {
+        let fm = FileManager.default
 
-    let copyFrom = source.appending(component: "Package.swift")
-    let copyTo = target.appending(component: "Package.swift")
-    try fm.copyItem(at: copyFrom, to: copyTo)
+        func tempURL() throws -> URL {
+            let osTemporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+            let testDirectoryName = "com.datadoghq.api-surface-\(UUID().uuidString)"
+            let url = osTemporaryDirectoryURL.appending(component: testDirectoryName, directoryHint: .isDirectory)
+            try fm.createDirectory(at: url, withIntermediateDirectories: true)
+            return url
+        }
 
-    let folders = try fm.contentsOfDirectory(at: source, includingPropertiesForKeys: [])
-        .filter { isDirectory(url: $0) } // `includingPropertiesForKeys: [.isDirectoryKey]` doesn't work
-        .filter { !$0.lastPathComponent.starts(with: ".") } // skip hidden
-        .filter { $0.pathExtension != "xcworkspace" }
+        func isDirectory(url: URL) -> Bool {
+            (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
+        }
 
-    for folder in folders {
-        let linkSource = folder
-        let linkLocation = target.appending(component: folder.lastPathComponent)
-        try fm.createSymbolicLink(at: linkLocation, withDestinationURL: linkSource)
+        let source = URL(filePath: originalPath, directoryHint: .isDirectory).standardizedFileURL
+        let target = try tempURL()
+
+        let copyFrom = source.appending(component: "Package.swift")
+        let copyTo = target.appending(component: "Package.swift")
+        try fm.copyItem(at: copyFrom, to: copyTo)
+
+        let folders = try fm.contentsOfDirectory(at: source, includingPropertiesForKeys: [])
+            .filter { isDirectory(url: $0) } // `includingPropertiesForKeys: [.isDirectoryKey]` doesn't work
+            .filter { !$0.lastPathComponent.starts(with: ".") } // skip hidden
+            .filter { $0.pathExtension != "xcworkspace" }
+
+        for folder in folders {
+            let linkSource = folder
+            let linkLocation = target.appending(component: folder.lastPathComponent)
+            try fm.createSymbolicLink(at: linkLocation, withDestinationURL: linkSource)
+        }
+
+        return target.path()
     }
-
-    return target.path()
 }
