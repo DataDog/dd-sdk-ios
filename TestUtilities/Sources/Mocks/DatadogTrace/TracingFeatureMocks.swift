@@ -374,3 +374,15 @@ extension SamplingMechanismType: AnyMockable, RandomMockable {
         [SamplingMechanismType.fallback, .agentRate, .manual].randomElement()!
     }
 }
+
+public struct MockActiveSpanProvider: TraceActiveSpanProvider {
+    public init(storedActiveSpanContext: ActiveSpanContext?) {
+        self.storedActiveSpanContext = storedActiveSpanContext
+    }
+
+    public let storedActiveSpanContext: ActiveSpanContext?
+
+    public func activeSpanContext() -> ActiveSpanContext? {
+        storedActiveSpanContext
+    }
+}

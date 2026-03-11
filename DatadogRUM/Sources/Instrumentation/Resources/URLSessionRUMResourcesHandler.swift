@@ -89,7 +89,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             headerTypes: headerTypes,
             rumSessionId: networkContext?.rumContext?.sessionID,
             userId: networkContext?.userConfigurationContext?.id,
-            accountId: networkContext?.accountConfigurationContext?.id
+            accountId: networkContext?.accountConfigurationContext?.id,
+            activeSpanContext: networkContext?.activeSpanProvider?.activeSpanContext()
         ) ?? (request, nil, nil)
 
         // Note: DistributedTracing.modify() currently returns nil for captured state.
@@ -249,9 +250,13 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 }
 
 extension DistributedTracing {
-    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
-        let traceID = traceIDGenerator.generate()
+    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?, activeSpanContext: ActiveSpanContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+        // In case there is, we use the same traceID so the backend can link the span generated from the RUM resource
+        // with the trace.
+        let traceID = activeSpanContext?.traceID ?? traceIDGenerator.generate()
         let spanID = spanIDGenerator.generate()
+        let samplingPriority = activeSpanContext?.samplingPriority ?? (sampler(sessionID: rumSessionId).sample() ? .autoKeep : .autoDrop)
+        let samplingDecisionMaker = activeSpanContext?.samplingMechanismType ?? .agentRate
 
         // Extract GraphQL attributes from request before they are removed
         let graphql = GraphQLRequestAttributes(
@@ -261,14 +266,15 @@ extension DistributedTracing {
             payload: request.value(forHTTPHeaderField: GraphQLHeaders.payload)
         )
 
-        let sampler = sampler(sessionID: rumSessionId)
         let injectedSpanContext = TraceContext(
             traceID: traceID,
             spanID: spanID,
-            parentSpanID: nil,
-            sampleRate: samplingRate,
-            samplingPriority: sampler.sample() ? .autoKeep : .autoDrop,
-            samplingDecisionMaker: .agentRate,
+            // If there is an active span, use it as parent span for the span
+            // the backend creates out of the RUM resource:
+            parentSpanID: activeSpanContext?.activeSpanID,
+            sampleRate: activeSpanContext?.samplingRate ?? samplingRate,
+            samplingPriority: samplingPriority,
+            samplingDecisionMaker: samplingDecisionMaker,
             rumSessionId: rumSessionId,
             userId: userId,
             accountId: accountId,
@@ -333,6 +339,7 @@ extension DistributedTracing {
             .init(
                 traceID: $0.traceID,
                 spanID: $0.spanID,
+                parentSpanID: $0.parentSpanID,
                 samplingRate: Double(samplingRate.percentageProportion)
             )
         }

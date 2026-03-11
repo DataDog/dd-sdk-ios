@@ -10,6 +10,8 @@
 		0904F9F42EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F52EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
+		093AC3292F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
+		093AC32A2F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
 		09A9369D2F0EB989000B6379 /* SamplingMechanismType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */; };
 		09A9369E2F0EB989000B6379 /* SamplingPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369B2F0EB989000B6379 /* SamplingPriority.swift */; };
 		09A9369F2F0EB989000B6379 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369C2F0EB989000B6379 /* SpanContext.swift */; };
@@ -2766,6 +2768,7 @@
 
 /* Begin PBXFileReference section */
 		0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensionsTests.swift; sourceTree = "<group>"; };
+		093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpanProvider.swift; sourceTree = "<group>"; };
 		09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingMechanismType.swift; sourceTree = "<group>"; };
 		09A9369B2F0EB989000B6379 /* SamplingPriority.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingPriority.swift; sourceTree = "<group>"; };
 		09A9369C2F0EB989000B6379 /* SpanContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanContext.swift; sourceTree = "<group>"; };
@@ -7726,6 +7729,7 @@
 		D2D748342DC223EE00C61353 /* Trace */ = {
 			isa = PBXGroup;
 			children = (
+				093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */,
 				09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */,
 				09A9369B2F0EB989000B6379 /* SamplingPriority.swift */,
 				09A9369C2F0EB989000B6379 /* SpanContext.swift */,
@@ -10423,6 +10427,7 @@
 				960A0D3D2D6E2490004BB999 /* ReflectionMirror.swift in Sources */,
 				D2BEEDB52B3360820065F3AC /* URLSessionSwizzler.swift in Sources */,
 				96E746A82F30E317006B3419 /* AttributeEncoding.swift in Sources */,
+				093AC32A2F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */,
 				D2EBEE2129BA160F00B15732 /* W3CHTTPHeaders.swift in Sources */,
 				6167E6F62B81E94C00C3CA2D /* DDThread.swift in Sources */,
 				D2BEEDAC2B3356710065F3AC /* URLSessionTaskSwizzler.swift in Sources */,
@@ -11683,6 +11688,7 @@
 				D2DA2364298D57AA00C6C7E6 /* LaunchInfo.swift in Sources */,
 				D2DA2364298D57AA00C6C7E6 /* LaunchInfo.swift in Sources */,
 				D2E8A8E72DCBBA5100CF7C63 /* RUMCoreContext.swift in Sources */,
+				093AC3292F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */,
 				6175C3522BCE66DB006FAAB0 /* TraceContext.swift in Sources */,
 				D227A0A52C7622EA00C83324 /* BenchmarkProfiler.swift in Sources */,
 				D2DA2365298D57AA00C6C7E6 /* FeatureMessageReceiver.swift in Sources */,
