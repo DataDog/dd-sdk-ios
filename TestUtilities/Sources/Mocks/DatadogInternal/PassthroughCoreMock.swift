@@ -16,7 +16,7 @@ import DatadogInternal
 /// Usage:
 ///
 ///     let core = PassthroughCoreMock()
-///     core.scope(for: "any-feature-name")?.eventWriteContext { context, writer in
+///     if let (context, writer) = await core.scope(for: "any-feature-name")?.eventWriteContext() {
 ///         // will always open a scope
 ///     }
 ///
@@ -94,9 +94,9 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
     /// Execute `block` with the current context and a `writer` to record events.
     ///
     /// - Parameter block: The block to execute.
-    public func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
-        block(context, writer)
+    public func eventWriteContext(bypassConsent: Bool) async -> (DatadogContext, Writer)? {
         onEventWriteContext?(bypassConsent)
+        return (context, writer)
     }
 
     public func context(_ block: @escaping (DatadogContext) -> Void) {

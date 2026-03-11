@@ -24,7 +24,7 @@ class RUMEventFileOutputTests: XCTestCase {
         super.tearDown()
     }
 
-    func testItWritesRUMEventToFileAsJSON() throws {
+    func testItWritesRUMEventToFileAsJSON() async throws {
         let fileCreationDateProvider = RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC())
         let builder = RUMEventBuilder(eventsMapper: .mockNoOp())
         let writer = FileWriter(
@@ -46,11 +46,11 @@ class RUMEventFileOutputTests: XCTestCase {
         let event1 = try XCTUnwrap(builder.build(from: dataModel1))
         let event2 = try XCTUnwrap(builder.build(from: dataModel2))
 
-        writer.write(value: event1)
+        await writer.write(value: event1)
 
         fileCreationDateProvider.advance(bySeconds: 1)
 
-        writer.write(value: event2)
+        await writer.write(value: event2)
 
         let event1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
         let event1FileEvents = try directory.file(named: event1FileName).readBatchEvents()

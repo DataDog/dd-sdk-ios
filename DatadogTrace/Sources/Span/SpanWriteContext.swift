@@ -9,8 +9,8 @@ import DatadogInternal
 /// A type providing core context and writer for writing span events.
 internal protocol SpanWriteContext {
     /// Requests core context and writer for writing span events.
-    /// - Parameter block: The block to execute; it is called on the core's context queue.
-    func spanWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void)
+    /// - Returns: A tuple of `(DatadogContext, Writer)` if available, `nil` otherwise.
+    func spanWriteContext() async -> (DatadogContext, Writer)?
 }
 
 /// A `SpanWriteContext` that captures core context at the moment of initialization and provides it
@@ -19,7 +19,7 @@ internal protocol SpanWriteContext {
 /// It ensures that spans are constructed with the context valid at the moment of span creation (_start span_)
 /// instead of completion (_finish span_). This enables the proper linking of attributes from other products, like
 /// associating started span with the current RUM information.
-internal final class LazySpanWriteContext: SpanWriteContext {
+internal final class LazySpanWriteContext: SpanWriteContext, @unchecked Sendable {
     /// Trace feature scope.
     let featureScope: FeatureScope
 
@@ -36,13 +36,9 @@ internal final class LazySpanWriteContext: SpanWriteContext {
         }
     }
 
-    func spanWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void) {
-        // Ignore the current context and use the one captured at initialization:
-        featureScope.eventWriteContext { _, writer in
-            guard let context = self.context else {
-                return // unexpected
-            }
-            block(context, writer)
-        }
+    func spanWriteContext() async -> (DatadogContext, Writer)? {
+        guard let (_, writer) = await featureScope.eventWriteContext() else { return nil }
+        guard let context = context else { return nil }
+        return (context, writer)
     }
 }

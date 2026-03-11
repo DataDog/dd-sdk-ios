@@ -14,7 +14,7 @@ internal protocol WatchdogTerminationReporting {
 }
 
 /// Default implementation of `WatchdogTerminationReporting`.
-internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
+internal final class WatchdogTerminationReporter: WatchdogTerminationReporting, @unchecked Sendable {
     enum Constants {
         /// The standardized `error.message` for RUM errors describing a Watchdog Termination.
         static let errorMessage = "The operating system watchdog terminated the application."
@@ -42,7 +42,7 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
 
     /// Sends the Watchdog Termination event to Datadog.
     func send(date: Date?, state: AppStateInfo, viewEvent: RUMViewEvent) {
-        guard state.trackingConsent == .granted else { // consider the user consent from previous session
+        guard state.trackingConsent == .granted else {
             DD.logger.debug("Skipped sending Watchdog Termination as it was recorded with \(state.trackingConsent) consent")
             return
         }
@@ -50,37 +50,39 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
         let errorDate = date ?? Date(timeIntervalSinceReferenceDate: TimeInterval(viewEvent.date))
 
         DD.logger.debug("Sending Watchdog Termination event")
-        featureScope.eventWriteContext(bypassConsent: true) { [dateProvider] context, writer in
-            let realDateNow = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
+        Task { [self] in
+            await sendAsync(errorDate: errorDate, viewEvent: viewEvent)
+        }
+    }
 
-            let builder = FatalErrorBuilder(
-                context: context,
-                error: .watchdogTermination,
-                errorUUID: self.uuidGenerator.generateUnique(),
-                errorDate: errorDate,
-                errorType: Constants.errorType,
-                errorMessage: Constants.errorMessage,
-                errorStack: Constants.stackNotAvailableErrorMessage,
-                errorThreads: nil,
-                errorBinaryImages: nil,
-                errorWasTruncated: nil,
-                errorMeta: nil,
-                additionalAttributes: nil
-            )
-            let error = builder.createRUMError(with: viewEvent)
-            let view = builder.updateRUMViewWithError(viewEvent)
+    private func sendAsync(errorDate: Date, viewEvent: RUMViewEvent) async {
+        guard let (context, writer) = await featureScope.eventWriteContext(bypassConsent: true) else { return }
+        let realDateNow = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
 
-            if realDateNow.timeIntervalSince(errorDate) < FatalErrorBuilder.Constants.viewEventAvailabilityThreshold {
-                DD.logger.debug("Sending Watchdog Termination as RUM error with issuing RUM view update")
-                // It is still OK to send RUM view to previous RUM session.
-                writer.write(value: error)
-                writer.write(value: view)
-            } else {
-                // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
-                // To avoid inconsistency, we only send the RUM error.
-                DD.logger.debug("Sending Watchdog Termination as RUM error without updating RUM view")
-                writer.write(value: error)
-            }
+        let builder = FatalErrorBuilder(
+            context: context,
+            error: .watchdogTermination,
+            errorUUID: uuidGenerator.generateUnique(),
+            errorDate: errorDate,
+            errorType: Constants.errorType,
+            errorMessage: Constants.errorMessage,
+            errorStack: Constants.stackNotAvailableErrorMessage,
+            errorThreads: nil,
+            errorBinaryImages: nil,
+            errorWasTruncated: nil,
+            errorMeta: nil,
+            additionalAttributes: nil
+        )
+        let error = builder.createRUMError(with: viewEvent)
+        let view = builder.updateRUMViewWithError(viewEvent)
+
+        if realDateNow.timeIntervalSince(errorDate) < FatalErrorBuilder.Constants.viewEventAvailabilityThreshold {
+            DD.logger.debug("Sending Watchdog Termination as RUM error with issuing RUM view update")
+            await writer.write(value: error)
+            await writer.write(value: view)
+        } else {
+            DD.logger.debug("Sending Watchdog Termination as RUM error without updating RUM view")
+            await writer.write(value: error)
         }
     }
 }

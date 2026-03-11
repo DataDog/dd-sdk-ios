@@ -291,9 +291,26 @@ internal final class DatadogCore: @unchecked Sendable {
         // At this point we can assume that all write operations completed and resulted with writing events to
         // storage. We now temporarily authorize storage for making all files readable ("uploadable") and perform
         // arbitrary uploads (without retrying on failure).
-        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: true) }
+        let storages = allStorages
+        let sem = DispatchSemaphore(value: 0)
+        Task {
+            for storage in storages {
+                await storage.setIgnoreFilesAgeWhenReading(to: true)
+            }
+            sem.signal()
+        }
+        sem.wait()
+
         allUploads.forEach { $0.flushAndTearDown() }
-        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
+
+        let sem2 = DispatchSemaphore(value: 0)
+        Task {
+            for storage in storages {
+                await storage.setIgnoreFilesAgeWhenReading(to: false)
+            }
+            sem2.signal()
+        }
+        sem2.wait()
 
         stop()
     }
@@ -416,14 +433,12 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
         )
     }
 
-    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+    func eventWriteContext(bypassConsent: Bool) async -> (DatadogContext, Writer)? {
         guard let core = core else {
-            return  // core is deinitialized
+            return nil
         }
-        // Capture the storage reference so it is available until async block completion. This is to ensure
-        // that we write events which were collected on the caller thread even if the core was released in the meantime.
         guard let storage = core.stores[Feature.name]?.storage else {
-            if core.get(feature: Feature.self) != nil { // the feature is running, but has no storage
+            if core.get(feature: Feature.self) != nil {
                 DD.logger.error(
                     "Failed to obtain Event Write Context for '\(Feature.name)' because it is not a `DatadogRemoteFeature`."
                 )
@@ -431,15 +446,12 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
                 assertionFailure("Obtaining Event Write Context for '\(Feature.name)' but it is not a `DatadogRemoteFeature`.")
                 #endif
             }
-            return
+            return nil
         }
 
-        // (on user thread) request SDK context
-        context { context in
-            // (on context thread) call the block
-            let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
-            block(context, writer)
-        }
+        let context = core.contextProvider.read()
+        let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
+        return (context, writer)
     }
 
     func context(_ block: @escaping (DatadogContext) -> Void) {

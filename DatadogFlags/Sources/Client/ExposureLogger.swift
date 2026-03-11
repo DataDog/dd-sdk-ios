@@ -34,8 +34,11 @@ internal final class ExposureLogger: ExposureLogging {
             return
         }
 
-        featureScope.eventWriteContext { [weak self] context, writer in
+        Task { [weak self] in
             guard let self else {
+                return
+            }
+            guard let (context, writer) = await self.featureScope.eventWriteContext() else {
                 return
             }
 
@@ -63,7 +66,7 @@ internal final class ExposureLogger: ExposureLogging {
                 )
             )
 
-            writer.write(value: exposureEvent)
+            await writer.write(value: exposureEvent)
         }
     }
 }

@@ -95,7 +95,7 @@ internal enum RUMInternalErrorSource: String, Decodable {
 /// A mobile-specific category of the error. It provides a high-level grouping for different types of errors.
 internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 
-internal class Monitor: RUMCommandSubscriber {
+internal class Monitor: RUMCommandSubscriber, @unchecked Sendable {
     /// RUM feature scope.
     let featureScope: FeatureScope
     let scopes: RUMApplicationScope
@@ -127,10 +127,9 @@ internal class Monitor: RUMCommandSubscriber {
         var command = command
         command.globalAttributes = attributes
         // process command in event context
-        featureScope.eventWriteContext { [weak self] context, writer in
-            guard let self = self else {
-                return
-            }
+        Task { [weak self] in
+            guard let self = self else { return }
+            guard let (context, writer) = await self.featureScope.eventWriteContext() else { return }
 
             let transformedCommand = self.transform(command: command)
 

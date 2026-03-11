@@ -19,7 +19,7 @@ internal protocol FileProtocol {
 }
 
 /// Provides convenient interface for reading metadata and appending data to the file.
-internal protocol WritableFile {
+internal protocol WritableFile: Sendable {
     /// Name of this file.
     var name: String { get }
 
@@ -31,7 +31,7 @@ internal protocol WritableFile {
 }
 
 /// Provides convenient interface for reading contents and metadata of the file.
-internal protocol ReadableFile {
+internal protocol ReadableFile: Sendable {
     /// Name of this file.
     var name: String { get }
 

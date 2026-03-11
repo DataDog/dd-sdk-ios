@@ -12,9 +12,8 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
         weak var scope: FeatureScopeMock?
         let bypassConsent: Bool
 
-        func write<T, M>(value: T, metadata: M?, completion: @escaping CompletionHandler) where T: Encodable, M: Encodable {
+        func write<T, M>(value: T, metadata: M?) async where T: Encodable, M: Encodable {
             scope?.events.append((value, metadata, bypassConsent))
-            completion()
         }
     }
 
@@ -34,8 +33,8 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
         self.dataStore = dataStore
     }
 
-    public func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
-        block(contextMock, EventWriterMock(scope: self, bypassConsent: bypassConsent))
+    public func eventWriteContext(bypassConsent: Bool) async -> (DatadogContext, Writer)? {
+        return (contextMock, EventWriterMock(scope: self, bypassConsent: bypassConsent))
     }
 
     public func context(_ block: @escaping (DatadogContext) -> Void) {

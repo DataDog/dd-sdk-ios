@@ -85,18 +85,14 @@ internal actor DataUploadWorker: DataUploadWorkerType {
     }
 
     /// Cancels the upload loop and uploads all remaining data.
-    func flush() {
+    func flush() async {
         cancel()
 
-        for file in fileReader.readFiles(limit: .max) {
+        for file in await fileReader.readFiles(limit: .max) {
             guard let nextBatch = fileReader.readBatch(from: file) else {
                 continue
             }
             defer {
-                // RUMM-3459 Delete the underlying batch with `.flushed` reason that will be ignored in reported
-                // metrics or telemetry. This is legitimate as long as `flush()` routine is only available for testing
-                // purposes and never run in production apps.
-                fileReader.markBatchAsRead(nextBatch, reason: .flushed)
                 previousUploadStatus = nil
             }
             do {
@@ -112,6 +108,7 @@ internal actor DataUploadWorker: DataUploadWorkerType {
                     previous: previousUploadStatus
                 )
             }
+            await fileReader.markBatchAsRead(nextBatch, reason: .flushed)
         }
     }
 
@@ -128,12 +125,12 @@ internal actor DataUploadWorker: DataUploadWorkerType {
         let context = contextProvider.read()
         let blockersForUpload = uploadConditions.blockersForUpload(with: context)
         let isSystemReady = blockersForUpload.isEmpty
-        let files = isSystemReady ? fileReader.readFiles(limit: maxBatchesPerUpload) : nil
+        let files = isSystemReady ? await fileReader.readFiles(limit: maxBatchesPerUpload) : nil
 
         if let files = files, !files.isEmpty {
             DD.logger.debug("⏳ (\(featureName)) Uploading batches...")
             await backgroundTaskCoordinator?.beginBackgroundTask()
-            uploadBatches(from: files.reversed(), context: context)
+            await uploadBatches(from: files.reversed(), context: context)
         } else {
             let batchLabel = files?.isEmpty == false ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
             let conditionsDescription = blockersForUpload.description
@@ -144,7 +141,7 @@ internal actor DataUploadWorker: DataUploadWorkerType {
         }
     }
 
-    private func uploadBatches(from files: [ReadableFile], context: DatadogContext) {
+    private func uploadBatches(from files: [ReadableFile], context: DatadogContext) async {
         var files = files
         while let file = files.popLast() {
             if let batch = fileReader.readBatch(from: file) {
@@ -169,7 +166,7 @@ internal actor DataUploadWorker: DataUploadWorkerType {
                         delay.reset()
                     }
 
-                    fileReader.markBatchAsRead(
+                    await fileReader.markBatchAsRead(
                         batch,
                         reason: .intakeCode(responseCode: uploadStatus.responseCode)
                     )
@@ -195,7 +192,7 @@ internal actor DataUploadWorker: DataUploadWorkerType {
                     // - If status code is unexpected, monitoring may become too verbose for old installations
                     // if we introduce a new status code in the API.
                 } catch let error {
-                    fileReader.markBatchAsRead(batch, reason: .invalid)
+                    await fileReader.markBatchAsRead(batch, reason: .invalid)
                     previousUploadStatus = nil
                     telemetry.error("Failed to initiate '\(featureName)' data upload", error: error)
                     sendUploadQualityMetric(failure: "invalid")

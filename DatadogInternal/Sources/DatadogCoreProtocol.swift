@@ -108,7 +108,7 @@ public protocol AdditionalContextSharing {
     ///     core.set(context: { MyContext(value: "value") })
     ///
     ///     // Bar.swift
-    ///     core.scope(for: "bar").eventWriteContext { context, writer in
+    ///     if let (context, writer) = await core.scope(for: "bar").eventWriteContext() {
     ///         if let value = context.additionalContext(ofType: MyContext.self) {
     ///             // If success, handle the `value`.
     ///         }
@@ -140,7 +140,7 @@ extension AdditionalContextSharing {
     ///     core.set(context: MyContext(value: "value"))
     ///
     ///     // Bar.swift
-    ///     core.scope(for: "bar").eventWriteContext { context, writer in
+    ///     if let (context, writer) = await core.scope(for: "bar").eventWriteContext() {
     ///         if let value = context.additionalContext(ofType: MyContext.self) {
     ///             // If success, handle the `value`.
     ///         }
@@ -179,8 +179,7 @@ public protocol FeatureScope: MessageSending, AdditionalContextSharing, Anonymou
     /// Retrieve the core context and event writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer for building and recording events.
-    /// The provided context is valid at the moment of the call, meaning that it includes all changes that happened
-    /// earlier on the same thread.
+    /// The provided context is valid at the moment of the call.
     ///
     /// A Feature has the ability to bypass the current user consent for data collection. Set `bypassConsent` to `true`
     /// only if the Feature is already aware of the user's consent for the event it is about to write.
@@ -189,8 +188,8 @@ public protocol FeatureScope: MessageSending, AdditionalContextSharing, Anonymou
     ///   - bypassConsent: `true` to bypass the current core consent and write events as authorized.
     ///                    Default is `false`, setting `true` must still respect user's consent for
     ///                    collecting information.
-    ///   - block: The block to execute; it is called on the context queue.
-    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void)
+    /// - Returns: A tuple of `(DatadogContext, Writer)` if the scope is available, `nil` otherwise.
+    func eventWriteContext(bypassConsent: Bool) async -> (DatadogContext, Writer)?
 
     /// Retrieve the core context.
     ///
@@ -212,26 +211,11 @@ public protocol FeatureScope: MessageSending, AdditionalContextSharing, Anonymou
 
 /// Feature scope provides a context and a writer to build a record event.
 public extension FeatureScope {
-    /// Retrieve the core context and event writer.
+    /// Retrieve the core context and event writer with default consent behavior.
     ///
-    /// The Feature scope provides the current Datadog context and event writer for building and recording events.
-    /// The provided context is valid at the moment of the call, meaning that it includes all changes that happened
-    /// earlier on the same thread.
-    ///
-    /// A Feature has the ability to bypass the current user consent for data collection. Set `bypassConsent` to `true`
-    /// only if the Feature is already aware of the user's consent for the event it is about to write.
-    ///
-    /// - Parameters:
-    ///   - bypassConsent: `true` to bypass the current core consent and write events as authorized.
-    ///                    Default is `false`, setting `true` must still respect user's consent for
-    ///                    collecting information.
-    ///   - forceNewBatch: `true` to enforce that event will be written to a separate batch than previous events.
-    ///                     Default is `false`, which means the core uses its own heuristic to split events between
-    ///                     batches. This parameter can be leveraged in Features which require a clear separation
-    ///                     of group of events for preparing their upload (a single upload is always constructed from a single batch).
-    ///   - block: The block to execute; it is called on the context queue.
-    func eventWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void) {
-        eventWriteContext(bypassConsent: false, block)
+    /// - Returns: A tuple of `(DatadogContext, Writer)` if the scope is available, `nil` otherwise.
+    func eventWriteContext() async -> (DatadogContext, Writer)? {
+        await eventWriteContext(bypassConsent: false)
     }
 
     /// Retrieve the core context and data store.
@@ -267,7 +251,7 @@ public class NOPDatadogCore: DatadogCoreProtocol {
 public struct NOPFeatureScope: FeatureScope {
     public init() { }
     /// no-op
-    public func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) { }
+    public func eventWriteContext(bypassConsent: Bool) async -> (DatadogContext, Writer)? { nil }
     /// no-op
     public func context(_ block: @escaping (DatadogContext) -> Void) { }
     /// no-op

@@ -218,26 +218,24 @@ extension FeatureUpload {
 }
 
 extension Reader {
-    public func markBatchAsRead(_ batch: Batch) {
-        // We can ignore `reason` in most tests (used for sending metric), so we provide this convenience variant.
-        markBatchAsRead(batch, reason: .flushed)
+    public func markBatchAsRead(_ batch: Batch) async {
+        await markBatchAsRead(batch, reason: .flushed)
     }
 }
 
 extension FilesOrchestratorType {
-    public func delete(readableFile: ReadableFile) {
-        // We can ignore `deletionReason` in most tests (used for sending metric), so we provide this convenience variant.
-        delete(readableFile: readableFile, deletionReason: .flushed)
+    public func delete(readableFile: ReadableFile) async {
+        await delete(readableFile: readableFile, deletionReason: .flushed)
     }
 }
 
 public class NOPReader: Reader {
-    public func readFiles(limit: Int) -> [ReadableFile] { [] }
+    public func readFiles(limit: Int) async -> [ReadableFile] { [] }
     public func readBatch(from file: ReadableFile) -> Batch? { nil }
-    public func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {}
+    public func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) async {}
 }
 
-internal class NOPFilesOrchestrator: FilesOrchestratorType {
+internal actor NOPFilesOrchestrator: FilesOrchestratorType {
     struct NOPFile: WritableFile, ReadableFile {
         var name: String = .mockAny()
         func size() throws -> UInt64 { .mockAny() }
@@ -246,14 +244,14 @@ internal class NOPFilesOrchestrator: FilesOrchestratorType {
         func delete() throws { }
     }
 
-    var performance: StoragePerformancePreset { StoragePerformanceMock.noOp }
+    nonisolated var performance: StoragePerformancePreset { StoragePerformanceMock.noOp }
 
     func getWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
     func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String>, limit: Int) -> [ReadableFile] { [] }
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) { }
+    func setIgnoreFilesAgeWhenReading(_ value: Bool) { }
 
-    var ignoreFilesAgeWhenReading = false
-    var trackName: String = "nop"
+    nonisolated var trackName: String { "nop" }
 }
 
 extension DataFormat {

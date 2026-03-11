@@ -18,39 +18,20 @@ internal struct FileWriter: Writer {
     let encryption: DataEncryption?
     /// Telemetry interface.
     let telemetry: Telemetry
-    /// Queue for performing async I/O. When set, `write` dispatches work asynchronously.
-    let queue: DispatchQueue?
 
     init(
         orchestrator: FilesOrchestratorType,
         encryption: DataEncryption?,
-        telemetry: Telemetry,
-        queue: DispatchQueue? = nil
+        telemetry: Telemetry
     ) {
         self.orchestrator = orchestrator
         self.encryption = encryption
         self.telemetry = telemetry
-        self.queue = queue
     }
 
     // MARK: - Writing data
 
-    /// Encodes given encodable value and metadata, and writes it to the file.
-    /// If encryption is available, the data is encrypted before writing.
-    /// - Parameters:
-    ///  - value: Encodable value to write.
-    ///  - metadata: Encodable metadata to write.
-    func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
-        if let queue = queue {
-            queue.async { self.performWrite(value: value, metadata: metadata, completion: completion) }
-        } else {
-            performWrite(value: value, metadata: metadata, completion: completion)
-        }
-    }
-
-    private func performWrite<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
-        defer { completion() }
-
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) async {
         var encoded: Data = .init()
         if let metadata = metadata {
             do {
@@ -71,13 +52,14 @@ internal struct FileWriter: Writer {
             return
         }
 
-        // Make sure both event and event metadata are written to the same file.
-        // This is to avoid a situation where event is written to one file and event metadata to another.
-        // If this happens, the reader will not be able to match event with its metadata.
+        await performWrite(encoded: encoded)
+    }
+
+    private func performWrite(encoded: Data) async {
         let writeSize = UInt64(encoded.count)
         let file: WritableFile
         do {
-            file = try orchestrator.getWritableFile(writeSize: writeSize)
+            file = try await orchestrator.getWritableFile(writeSize: writeSize)
         } catch {
             DD.logger.error("(\(orchestrator.trackName)) Failed to get writable file for \(writeSize) bytes", error: error)
             telemetry.error("(\(orchestrator.trackName)) Failed to get writable file for \(writeSize) bytes", error: error)
@@ -135,7 +117,5 @@ internal struct FileWriter: Writer {
 }
 
 internal struct NOPWriter: Writer {
-    func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
-        completion()
-    }
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) async {}
 }

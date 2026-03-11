@@ -76,10 +76,12 @@ internal class ResourcesWriter: ResourcesWriting {
     // MARK: - Writing
 
     func write(resources: [EnrichedResource]) {
-        scope.eventWriteContext { [weak self] _, recordWriter in
+        Task { [weak self] in
+            guard let scope = self?.scope else { return }
+            guard let (_, recordWriter) = await scope.eventWriteContext() else { return }
             let unknownResources = resources.filter { self?.knownIdentifiers.contains($0.identifier) == false }
             for resource in unknownResources {
-                recordWriter.write(value: resource)
+                await recordWriter.write(value: resource)
             }
             self?.knownIdentifiers.formUnion(Set(unknownResources.map { $0.identifier }))
         }
