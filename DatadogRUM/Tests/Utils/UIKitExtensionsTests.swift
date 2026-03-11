@@ -41,11 +41,19 @@ struct UIKitExtensionsTests {
     func expectedControlTypesInAlerts(numberOfActionButtons: Int, numberOfTextFields: Int) throws {
         let hostViewController = UIViewController()
         mockAppWindow.rootViewController = hostViewController
+        mockAppWindow.makeKeyAndVisible()
 
         // Test all the button styles.
         let alertButtonStyles = [UIAlertAction.Style.cancel, .destructive, .default]
 
-        [UIAlertController.Style.alert, .actionSheet].forEach { style in
+        // visionOS does not support .actionSheet style (requires popoverPresentationController setup).
+        #if os(visionOS)
+        let stylesToTest: [UIAlertController.Style] = [.alert]
+        #else
+        let stylesToTest: [UIAlertController.Style] = [.alert, .actionSheet]
+        #endif
+
+        stylesToTest.forEach { style in
             let alertController = UIAlertController(title: .mockRandom(), message: .mockRandom(), preferredStyle: style)
 
             for i in 0..<numberOfActionButtons {
@@ -67,9 +75,14 @@ struct UIKitExtensionsTests {
 
             #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertActionView }).count == numberOfActionButtons)
 
+            // On visionOS, UIAlertController renders text fields as cells in a UICollectionView.
+            // In a unit test environment (no live window scene), the collection view only renders
+            // one visible cell at a time, so counting text fields is unreliable when multiple are added.
+            #if !os(visionOS)
             if style == .alert {
                 #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertTextField }).count == numberOfTextFields)
             }
+            #endif
 
             alertController.dismiss(animated: false)
         }
@@ -93,21 +106,21 @@ struct UIKitExtensionsTests {
     }
 
     /// Calculates the difference between expected buttons on most platforms and versions, and
-    /// the specific case of iOS 26.
+    /// the specific case of iOS 26 and visionOS 26.
     ///
     /// There are multiple rules around buttons using `.cancel` role on confirmation dialogs:
-    /// - iOS 26 will not show any `.cancel` button. The dialogs are displayed on a popover,
-    ///   and it's assumed clicking outside of the popover is the cancel action.
+    /// - iOS 26 and visionOS 26 will not show any `.cancel` button. The dialogs are displayed
+    ///   on a popover, and it's assumed clicking outside of the popover is the cancel action.
     /// - All previous versions of iOS, and all tvOS versions at the time of this writing
     ///   will show only one `.cancel` button, even if there are multiple in the dialog.
     ///
     /// To test this properly, we add one (and only one) `.cancel` button as the first item of
     /// the buttonRoles array above, guaranteeing all dialogs have one and only one `.cancel`
-    /// button. We also add a special way of handling iOS 26 below, since on that specific
-    /// iOS version, that button will be missing from the UI.
+    /// button. We also add a special way of handling iOS 26 and visionOS 26 below, since on
+    /// those specific OS versions, that button will be missing from the UI.
     private var buttonCountOffset: Int {
-        #if os(iOS)
-        if #available(iOS 26.0, *) {
+        #if os(iOS) || os(visionOS)
+        if #available(iOS 26.0, visionOS 26.0, *) {
             return -1
         } else {
             return 0
@@ -159,7 +172,12 @@ struct UIKitExtensionsTests {
 
         #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertActionView }).count == numberOfActionButtons)
 
+        // On visionOS, UIAlertController renders text fields as cells in a UICollectionView.
+        // In a unit test environment (no live window scene), the collection view only renders
+        // one visible cell at a time, so counting text fields is unreliable when multiple are added.
+        #if !os(visionOS)
         #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertTextField }).count == numberOfTextFields)
+        #endif
     }
 
     @available(iOS 15.0, tvOS 15.0, *)

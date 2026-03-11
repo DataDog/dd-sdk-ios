@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 
 /// The ``BatteryStatusPublisher`` publishes the battery state and level from the ``UIDevice``.
