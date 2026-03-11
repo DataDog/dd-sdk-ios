@@ -528,6 +528,25 @@ class LoggerTests: XCTestCase {
         logMatchers[1].assertValue(forKeyPath: "network.client.supports_ipv6", equals: false)
     }
 
+    func testSendingNetworkLinkQualityInfo() throws {
+        core.context = .mockWith(networkConnectionInfo: nil)
+
+        let feature: LogsFeature = .mockAny()
+        try core.register(feature: feature)
+
+        let logger = Logger.create(with: Logger.Configuration(networkInfoEnabled: true), in: core)
+
+        core.context.networkConnectionInfo = .mockWith(linkQuality: "good")
+        logger.debug("message with link quality")
+
+        core.context.networkConnectionInfo = .mockWith(linkQuality: nil)
+        logger.debug("message without link quality")
+
+        let logMatchers = try core.waitAndReturnLogMatchers()
+        logMatchers[0].assertValue(forKeyPath: "network.client.link_quality", equals: "good")
+        logMatchers[1].assertNoValue(forKeyPath: "network.client.link_quality")
+    }
+
     // MARK: - Sending attributes
 
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {

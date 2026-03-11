@@ -64,6 +64,12 @@ extension NetworkConnectionInfo {
                     return nil
                 }
                 return path.isConstrained
+            }(),
+            linkQuality: {
+                guard #available(iOS 26.0, tvOS 26.0, macOS 26.0, *) else {
+                    return nil
+                }
+                return NetworkConnectionInfo.LinkQuality(path.linkQuality)
             }()
         )
     }
@@ -92,3 +98,17 @@ extension NetworkConnectionInfo.Interface {
         }
     }
 }
+
+extension NetworkConnectionInfo.LinkQuality {
+  @available(iOS 26.0, tvOS 26.0, macOS 26.0, *)
+    init(_ linkQuality: NWPath.LinkQuality) {
+        switch linkQuality {
+        case .good: self = .good
+        case .moderate: self = .moderate
+        case .minimal: self = .minimal
+        case .unknown: self = .unknown
+        @unknown default: self = .unknown
+        }
+    }
+}
+

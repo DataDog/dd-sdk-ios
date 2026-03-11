@@ -527,6 +527,24 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(try spanMatchers[1].meta.networkConnectionSupportsIPv6(), "0")
     }
 
+    func testSendingNetworkLinkQualityInfo() throws {
+        core.context = .mockWith(networkConnectionInfo: nil)
+
+        config.networkInfoEnabled = true
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core).dd
+
+        core.context.networkConnectionInfo = .mockWith(linkQuality: "moderate")
+        tracer.startSpan(operationName: "span with link quality").finish()
+
+        core.context.networkConnectionInfo = .mockWith(linkQuality: nil)
+        tracer.startSpan(operationName: "span without link quality").finish()
+
+        let spanMatchers = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(try spanMatchers[0].meta.networkConnectionLinkQuality(), "moderate")
+        XCTAssertNil(try? spanMatchers[1].meta.networkConnectionLinkQuality())
+    }
+
     // MARK: - Sending tags
 
     func testSendingSpanTagsOfDifferentEncodableValues() throws {

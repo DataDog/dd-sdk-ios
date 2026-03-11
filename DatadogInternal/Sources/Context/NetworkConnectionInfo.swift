@@ -27,6 +27,18 @@ public struct NetworkConnectionInfo: Codable, Equatable {
         case other
     }
 
+    /// Represents the link quality measurement of the link layer network attachment
+    public enum LinkQuality: String, Codable, CaseIterable {
+        /// Link quality is good
+        case good
+        /// Link quality is minimal
+        case minimal
+        /// Link quality is moderate
+        case moderate
+        /// No link quality measurement is available
+        case unknown
+  }
+
     /// Network reachability status.
     public let reachability: Reachability
     /// Available network interfaces.
@@ -39,6 +51,8 @@ public struct NetworkConnectionInfo: Codable, Equatable {
     public let isExpensive: Bool?
     /// A Boolean indicating if the connection uses an interface in Low Data Mode.
     public let isConstrained: Bool?
+    /// A string representing the link quality measurement of the link layer network attachment.
+    public let linkQuality: LinkQuality?
 
     public init(
         reachability: Reachability,
@@ -46,7 +60,8 @@ public struct NetworkConnectionInfo: Codable, Equatable {
         supportsIPv4: Bool?,
         supportsIPv6: Bool?,
         isExpensive: Bool?,
-        isConstrained: Bool?
+        isConstrained: Bool?,
+        linkQuality: LinkQuality?
     ) {
         self.reachability = reachability
         self.availableInterfaces = availableInterfaces
@@ -54,6 +69,7 @@ public struct NetworkConnectionInfo: Codable, Equatable {
         self.supportsIPv6 = supportsIPv6
         self.isExpensive = isExpensive
         self.isConstrained = isConstrained
+        self.linkQuality = linkQuality
     }
 }
 
@@ -66,7 +82,8 @@ extension NetworkConnectionInfo {
             supportsIPv4: nil,
             supportsIPv6: nil,
             isExpensive: nil,
-            isConstrained: nil
+            isConstrained: nil,
+            linkQuality: nil
         )
     }
 }
