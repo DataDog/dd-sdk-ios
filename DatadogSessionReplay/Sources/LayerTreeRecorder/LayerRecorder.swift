@@ -73,15 +73,16 @@ extension LayerRecorder {
 
         // Capture layer tree and touch snapshots
         let (layerTreeSnapshot, touchSnapshot) = await MainActor.run { [snapshotBuilder, touchSnapshotProducer] in
-            (
-                snapshotBuilder.createSnapshot(context: context),
+            let layerTreeSnapshot = snapshotBuilder.createSnapshot(context: context)
+            let touchSnapshot = layerTreeSnapshot.flatMap { _ in
                 touchSnapshotProducer.takeSnapshot(
                     context: .init(
                         touchPrivacy: context.touchPrivacy,
                         viewServerTimeOffset: context.viewServerTimeOffset
                     )
                 )
-            )
+            }
+            return (layerTreeSnapshot, touchSnapshot)
         }
 
         guard
