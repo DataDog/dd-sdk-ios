@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// An intermediate representation of an App Hang.
-internal struct AppHang: Codable {
+internal struct AppHang: Codable, Sendable {
     /// The result of generating backtrace for this hang.
     enum BacktraceGenerationResult: Codable {
         /// Indicates that backtrace generation succeeded.

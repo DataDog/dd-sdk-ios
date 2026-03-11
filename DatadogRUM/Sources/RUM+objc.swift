@@ -562,7 +562,7 @@ public class objc_RUMMonitor: NSObject {
         objc_RUMMonitor(swiftRUMMonitor: RUMMonitor.shared())
     }
 
-    public func currentSessionID(completion: @escaping (String?) -> Void) {
+    public func currentSessionID(completion: @escaping @Sendable (String?) -> Void) {
         swiftRUMMonitor.currentSessionID(completion: completion)
     }
 

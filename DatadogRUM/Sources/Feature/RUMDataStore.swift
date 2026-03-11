@@ -14,9 +14,10 @@ internal extension FeatureScope {
     }
 
     /// RUM data store endpoint within SDK context.
-    func rumDataStoreContext(_ block: @escaping (DatadogContext, RUMDataStore) -> Void) {
-        dataStoreContext { context, dataStore in
-            block(context, rumDataStore)
+    func rumDataStoreContext(_ block: @escaping @Sendable (DatadogContext, RUMDataStore) -> Void) {
+        let store = rumDataStore
+        dataStoreContext { context, _ in
+            block(context, store)
         }
     }
 }

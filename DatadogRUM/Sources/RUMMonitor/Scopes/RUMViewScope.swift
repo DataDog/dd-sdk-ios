@@ -671,9 +671,10 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            writer.write(value: event, metadata: event.metadata(viewIndexInSession: viewIndexInSession))
-            completionHandler()
-
+            Task { [viewIndexInSession] in
+                await writer.write(value: event, metadata: event.metadata(viewIndexInSession: viewIndexInSession))
+                completionHandler()
+            }
             // Update fatal error context with recent RUM view:
             dependencies.fatalErrorContext.view = event
 
@@ -794,7 +795,7 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: errorEvent) {
-            writer.write(value: event)
+            Task { await writer.write(value: event) }
             needsViewUpdate = true
         } else {
             errorsCount -= 1
@@ -872,7 +873,7 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: longTaskEvent) {
-            writer.write(value: event)
+            Task { await writer.write(value: event) }
             longTasksCount += 1
             needsViewUpdate = true
 

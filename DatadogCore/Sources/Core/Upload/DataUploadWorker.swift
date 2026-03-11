@@ -96,15 +96,17 @@ internal actor DataUploadWorker: DataUploadWorkerType {
                 previousUploadStatus = nil
             }
             do {
+                let ctx = await contextProvider.read()
                 previousUploadStatus = try dataUploader.upload(
                     events: nextBatch.events,
-                    context: contextProvider.read(),
+                    context: ctx,
                     previous: previousUploadStatus
                 )
             } catch {
+                let ctx = await contextProvider.read()
                 previousUploadStatus = try? dataUploader.upload(
                     events: nextBatch.events,
-                    context: contextProvider.read(),
+                    context: ctx,
                     previous: previousUploadStatus
                 )
             }
@@ -122,7 +124,7 @@ internal actor DataUploadWorker: DataUploadWorkerType {
     // MARK: - Private
 
     private func performUploadCycle() async {
-        let context = contextProvider.read()
+        let context = await contextProvider.read()
         let blockersForUpload = uploadConditions.blockersForUpload(with: context)
         let isSystemReady = blockersForUpload.isEmpty
         let files = isSystemReady ? await fileReader.readFiles(limit: maxBatchesPerUpload) : nil

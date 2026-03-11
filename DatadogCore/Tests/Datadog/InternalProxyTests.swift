@@ -86,7 +86,7 @@ class InternalProxyTests: XCTestCase {
         XCTAssertEqual(error.message, randomErrorMessage)
     }
 
-    func testWhenNewVersionIsSetInConfigurationProxy_thenItChangesAppVersionInCore() throws {
+    func testWhenNewVersionIsSetInConfigurationProxy_thenItChangesAppVersionInCore() async throws {
         // Given
         Datadog.initialize(
             with: .mockAny(),
@@ -100,6 +100,6 @@ class InternalProxyTests: XCTestCase {
 
         // Then
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        XCTAssertEqual(core.contextProvider.read().version, randomVersion)
+        XCTAssertEqual(await core.contextProvider.read().version, randomVersion)
     }
 }

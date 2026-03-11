@@ -33,7 +33,7 @@ class DatadogTests: XCTestCase {
 
     // MARK: - Initializing with different configurations
 
-    func testDefaultConfiguration() throws {
+    func testDefaultConfiguration() async throws {
         var configuration = defaultConfig
 
         configuration.bundle = .mockWith(
@@ -60,7 +60,7 @@ class DatadogTests: XCTestCase {
         XCTAssertNil(urlSessionClient.session.configuration.connectionProxyDictionary)
         XCTAssertNil(core.encryption)
 
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.clientToken, "abc-123")
         XCTAssertEqual(context.env, "tests")
         XCTAssertEqual(context.site, .us1)
@@ -74,7 +74,7 @@ class DatadogTests: XCTestCase {
         XCTAssertEqual(context.trackingConsent, .granted)
     }
 
-    func testAdvancedConfiguration() throws {
+    func testAdvancedConfiguration() async throws {
         var configuration = defaultConfig
 
         configuration.service = "service-name"
@@ -126,7 +126,7 @@ class DatadogTests: XCTestCase {
         XCTAssertEqual(connectionProxyDictionary[kCFProxyUsernameKey] as? String, "proxyuser")
         XCTAssertEqual(connectionProxyDictionary[kCFProxyPasswordKey] as? String, "proxypass")
 
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.clientToken, "abc-123")
         XCTAssertEqual(context.env, "tests")
         XCTAssertEqual(context.site, .eu1)
@@ -185,7 +185,7 @@ class DatadogTests: XCTestCase {
 
     // MARK: - Public APIs
 
-    func testTrackingConsent() {
+    func testTrackingConsent() async {
         let initialConsent: TrackingConsent = .mockRandom()
         let nextConsent: TrackingConsent = .mockRandom()
 
@@ -195,16 +195,18 @@ class DatadogTests: XCTestCase {
         )
 
         let core = CoreRegistry.default as? DatadogCore
-        XCTAssertEqual(core?.contextProvider.read().trackingConsent, initialConsent)
+        let initialContext = await core?.contextProvider.read()
+        XCTAssertEqual(initialContext?.trackingConsent, initialConsent)
 
         Datadog.set(trackingConsent: nextConsent)
 
-        XCTAssertEqual(core?.contextProvider.read().trackingConsent, nextConsent)
+        let updatedContext = await core?.contextProvider.read()
+        XCTAssertEqual(updatedContext?.trackingConsent, nextConsent)
 
         Datadog.flushAndDeinitialize()
     }
 
-    func testUserInfo() {
+    func testUserInfo() async {
         Datadog.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
@@ -212,10 +214,11 @@ class DatadogTests: XCTestCase {
 
         let core = CoreRegistry.default as? DatadogCore
 
-        XCTAssertNil(core?.contextProvider.read().userInfo.id)
-        XCTAssertNil(core?.contextProvider.read().userInfo.email)
-        XCTAssertNil(core?.contextProvider.read().userInfo.name)
-        XCTAssertEqual(core?.contextProvider.read().userInfo.extraInfo as? [String: Int], [:])
+        var context = await core?.contextProvider.read()
+        XCTAssertNil(context?.userInfo.id)
+        XCTAssertNil(context?.userInfo.email)
+        XCTAssertNil(context?.userInfo.name)
+        XCTAssertEqual(context?.userInfo.extraInfo as? [String: Int], [:])
 
         Datadog.setUserInfo(
             id: "foo",
@@ -225,24 +228,26 @@ class DatadogTests: XCTestCase {
         )
         core?.set(anonymousId: "anonymous-id")
 
-        XCTAssertEqual(core?.contextProvider.read().userInfo.anonymousId, "anonymous-id")
-        XCTAssertEqual(core?.contextProvider.read().userInfo.id, "foo")
-        XCTAssertEqual(core?.contextProvider.read().userInfo.name, "bar")
-        XCTAssertEqual(core?.contextProvider.read().userInfo.email, "foo@bar.com")
-        XCTAssertEqual(core?.contextProvider.read().userInfo.extraInfo as? [String: Int], ["abc": 123])
+        context = await core?.contextProvider.read()
+        XCTAssertEqual(context?.userInfo.anonymousId, "anonymous-id")
+        XCTAssertEqual(context?.userInfo.id, "foo")
+        XCTAssertEqual(context?.userInfo.name, "bar")
+        XCTAssertEqual(context?.userInfo.email, "foo@bar.com")
+        XCTAssertEqual(context?.userInfo.extraInfo as? [String: Int], ["abc": 123])
 
         Datadog.clearUserInfo()
 
-        XCTAssertEqual(core?.contextProvider.read().userInfo.anonymousId, "anonymous-id")
-        XCTAssertNil(core?.contextProvider.read().userInfo.id)
-        XCTAssertNil(core?.contextProvider.read().userInfo.email)
-        XCTAssertNil(core?.contextProvider.read().userInfo.name)
-        XCTAssertEqual(core?.contextProvider.read().userInfo.extraInfo as? [String: Int], [:])
+        context = await core?.contextProvider.read()
+        XCTAssertEqual(context?.userInfo.anonymousId, "anonymous-id")
+        XCTAssertNil(context?.userInfo.id)
+        XCTAssertNil(context?.userInfo.email)
+        XCTAssertNil(context?.userInfo.name)
+        XCTAssertEqual(context?.userInfo.extraInfo as? [String: Int], [:])
 
         Datadog.flushAndDeinitialize()
     }
 
-    func testAddUserProperties_mergesProperties() {
+    func testAddUserProperties_mergesProperties() async {
         Datadog.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
@@ -259,18 +264,19 @@ class DatadogTests: XCTestCase {
 
         Datadog.addUserExtraInfo(["second": 667])
 
-        XCTAssertEqual(core?.contextProvider.read().userInfo.id, "foo")
-        XCTAssertEqual(core?.contextProvider.read().userInfo.name, "bar")
-        XCTAssertEqual(core?.contextProvider.read().userInfo.email, "foo@bar.com")
+        let context = await core?.contextProvider.read()
+        XCTAssertEqual(context?.userInfo.id, "foo")
+        XCTAssertEqual(context?.userInfo.name, "bar")
+        XCTAssertEqual(context?.userInfo.email, "foo@bar.com")
         XCTAssertEqual(
-            core?.contextProvider.read().userInfo.extraInfo as? [String: Int],
+            context?.userInfo.extraInfo as? [String: Int],
             ["abc": 123, "second": 667]
         )
 
         Datadog.flushAndDeinitialize()
     }
 
-    func testAddUserProperties_removesProperties() {
+    func testAddUserProperties_removesProperties() async {
         Datadog.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
@@ -287,15 +293,16 @@ class DatadogTests: XCTestCase {
 
         Datadog.addUserExtraInfo(["abc": nil, "second": 667])
 
-        XCTAssertEqual(core?.contextProvider.read().userInfo.id, "foo")
-        XCTAssertEqual(core?.contextProvider.read().userInfo.name, "bar")
-        XCTAssertEqual(core?.contextProvider.read().userInfo.email, "foo@bar.com")
-        XCTAssertEqual(core?.contextProvider.read().userInfo.extraInfo as? [String: Int], ["second": 667])
+        let context = await core?.contextProvider.read()
+        XCTAssertEqual(context?.userInfo.id, "foo")
+        XCTAssertEqual(context?.userInfo.name, "bar")
+        XCTAssertEqual(context?.userInfo.email, "foo@bar.com")
+        XCTAssertEqual(context?.userInfo.extraInfo as? [String: Int], ["second": 667])
 
         Datadog.flushAndDeinitialize()
     }
 
-    func testAddUserProperties_overwritesProperties() {
+    func testAddUserProperties_overwritesProperties() async {
         Datadog.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
@@ -312,15 +319,16 @@ class DatadogTests: XCTestCase {
 
         Datadog.addUserExtraInfo(["abc": 444])
 
-        XCTAssertEqual(core?.contextProvider.read().userInfo.id, "foo")
-        XCTAssertEqual(core?.contextProvider.read().userInfo.name, "bar")
-        XCTAssertEqual(core?.contextProvider.read().userInfo.email, "foo@bar.com")
-        XCTAssertEqual(core?.contextProvider.read().userInfo.extraInfo as? [String: Int], ["abc": 444])
+        let context = await core?.contextProvider.read()
+        XCTAssertEqual(context?.userInfo.id, "foo")
+        XCTAssertEqual(context?.userInfo.name, "bar")
+        XCTAssertEqual(context?.userInfo.email, "foo@bar.com")
+        XCTAssertEqual(context?.userInfo.extraInfo as? [String: Int], ["abc": 444])
 
         Datadog.flushAndDeinitialize()
     }
 
-    func testAccountInfo() {
+    func testAccountInfo() async {
         Datadog.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
@@ -328,7 +336,8 @@ class DatadogTests: XCTestCase {
 
         let core = CoreRegistry.default as? DatadogCore
 
-        XCTAssertNil(core?.contextProvider.read().accountInfo)
+        var context = await core?.contextProvider.read()
+        XCTAssertNil(context?.accountInfo)
 
         Datadog.setAccountInfo(
             id: "foo",
@@ -336,14 +345,15 @@ class DatadogTests: XCTestCase {
             extraInfo: ["abc": 123]
         )
 
-        XCTAssertEqual(core?.contextProvider.read().accountInfo?.id, "foo")
-        XCTAssertEqual(core?.contextProvider.read().accountInfo?.name, "bar")
-        XCTAssertEqual(core?.contextProvider.read().accountInfo?.extraInfo as? [String: Int], ["abc": 123])
+        context = await core?.contextProvider.read()
+        XCTAssertEqual(context?.accountInfo?.id, "foo")
+        XCTAssertEqual(context?.accountInfo?.name, "bar")
+        XCTAssertEqual(context?.accountInfo?.extraInfo as? [String: Int], ["abc": 123])
 
         Datadog.flushAndDeinitialize()
     }
 
-    func testAddAccountProperties_mergesProperties() {
+    func testAddAccountProperties_mergesProperties() async {
         Datadog.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
@@ -359,17 +369,18 @@ class DatadogTests: XCTestCase {
 
         Datadog.addAccountExtraInfo(["second": 667])
 
-        XCTAssertEqual(core?.contextProvider.read().accountInfo?.id, "foo")
-        XCTAssertEqual(core?.contextProvider.read().accountInfo?.name, "bar")
+        let context = await core?.contextProvider.read()
+        XCTAssertEqual(context?.accountInfo?.id, "foo")
+        XCTAssertEqual(context?.accountInfo?.name, "bar")
         XCTAssertEqual(
-            core?.contextProvider.read().accountInfo?.extraInfo as? [String: Int],
+            context?.accountInfo?.extraInfo as? [String: Int],
             ["abc": 123, "second": 667]
         )
 
         Datadog.flushAndDeinitialize()
     }
 
-    func testAddAccountProperties_removesProperties() {
+    func testAddAccountProperties_removesProperties() async {
         Datadog.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
@@ -385,14 +396,15 @@ class DatadogTests: XCTestCase {
 
         Datadog.addAccountExtraInfo(["abc": nil, "second": 667])
 
-        XCTAssertEqual(core?.contextProvider.read().accountInfo?.id, "foo")
-        XCTAssertEqual(core?.contextProvider.read().accountInfo?.name, "bar")
-        XCTAssertEqual(core?.contextProvider.read().accountInfo?.extraInfo as? [String: Int], ["second": 667])
+        let context = await core?.contextProvider.read()
+        XCTAssertEqual(context?.accountInfo?.id, "foo")
+        XCTAssertEqual(context?.accountInfo?.name, "bar")
+        XCTAssertEqual(context?.accountInfo?.extraInfo as? [String: Int], ["second": 667])
 
         Datadog.flushAndDeinitialize()
     }
 
-    func testAddAccountProperties_overwritesProperties() {
+    func testAddAccountProperties_overwritesProperties() async {
         Datadog.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
@@ -408,9 +420,10 @@ class DatadogTests: XCTestCase {
 
         Datadog.addAccountExtraInfo(["abc": 444])
 
-        XCTAssertEqual(core?.contextProvider.read().accountInfo?.id, "foo")
-        XCTAssertEqual(core?.contextProvider.read().accountInfo?.name, "bar")
-        XCTAssertEqual(core?.contextProvider.read().accountInfo?.extraInfo as? [String: Int], ["abc": 444])
+        let context = await core?.contextProvider.read()
+        XCTAssertEqual(context?.accountInfo?.id, "foo")
+        XCTAssertEqual(context?.accountInfo?.name, "bar")
+        XCTAssertEqual(context?.accountInfo?.extraInfo as? [String: Int], ["abc": 444])
 
         Datadog.flushAndDeinitialize()
     }
@@ -469,7 +482,7 @@ class DatadogTests: XCTestCase {
         Datadog.flushAndDeinitialize()
     }
 
-    func testServerDateProvider() throws {
+    func testServerDateProvider() async throws {
         // Given
         var config = defaultConfig
         let serverDateProvider = ServerDateProviderMock()
@@ -485,7 +498,7 @@ class DatadogTests: XCTestCase {
 
         // Then
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        let context = core.contextProvider.read()
+        let context = await core.contextProvider.read()
         XCTAssertEqual(context.serverTimeOffset, -1)
 
         Datadog.flushAndDeinitialize()

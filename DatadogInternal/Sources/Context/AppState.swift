@@ -39,7 +39,7 @@ public enum AppState: Codable, Sendable {
 }
 
 /// Records app state transitions over time.
-public struct AppStateHistory: Codable, Equatable {
+public struct AppStateHistory: Codable, Equatable, Sendable {
     /// A snapshot representing the app state at a specific point in time.
     private struct Snapshot: Codable, Equatable {
         let state: AppState

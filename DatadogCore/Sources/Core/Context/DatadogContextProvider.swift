@@ -7,40 +7,18 @@
 import Foundation
 import DatadogInternal
 
-/// Provides thread-safe access to Datadog Context.
+/// Provides serialized access to Datadog Context.
 ///
-/// The context can be accessed asynchronously for reads and writes.
+/// The context can be read or mutated through async calls:
 ///
-///     provider.read { context in
-///         // read value from the current context
+///     let context = await provider.read()
+///     await provider.write { context in
+///         context.version = "2.0"
 ///     }
 ///
-///     provider.write { context in
-///         // set mutable values of the context
-///     }
-///
-/// The provider performs reads concurrently but uses barrier block for
-/// write operations.
-///
-/// The context provider can observe a ``ContextValueSource`` and apply its
-/// updates to a specific context property:
-///
-///     let source = ServerOffsetSource(provider: serverDateProvider)
-///     provider.observe(source) { $0.serverTimeOffset = $1 }
-///
-/// All observations will be cancelled when the provider is deallocated.
-internal final class DatadogContextProvider: @unchecked Sendable {
-    static let defaultQueue = DispatchQueue(
-        label: "com.datadoghq.core-context",
-        qos: .utility
-    )
+internal actor DatadogContextProvider {
     /// The current `context`.
-    ///
-    /// The value must be accessed from the `queue` only.
     private var context: DatadogContext
-
-    /// The queue used to synchronize the access to the `DatadogContext`.
-    internal let queue: DispatchQueue
 
     /// List of receivers to invoke when the context changes.
     private var receivers: [@Sendable (DatadogContext) -> Void]
@@ -51,12 +29,9 @@ internal final class DatadogContextProvider: @unchecked Sendable {
     /// Creates a context provider to perform reads and writes on the
     /// shared Datadog context.
     ///
-    /// - Parameters:
-    ///   - context: The initial context value.
-    ///   - queue: The queue to synchronize the access to the `DatadogContext`.
-    init(context: DatadogContext, queue: DispatchQueue = DatadogContextProvider.defaultQueue) {
+    /// - Parameter context: The initial context value.
+    init(context: DatadogContext) {
         self.context = context
-        self.queue = queue
         self.receivers = []
         self.observations = []
     }
@@ -69,40 +44,26 @@ internal final class DatadogContextProvider: @unchecked Sendable {
     ///
     /// - Parameter receiver: The receiver closure.
     func publish(to receiver: @escaping @Sendable (DatadogContext) -> Void) {
-        queue.async { self.receivers.append(receiver) }
+        receivers.append(receiver)
     }
 
-    /// Reads to the `context` synchronously, by blocking the caller thread.
-    ///
-    /// **Warning:** This method will block the caller thread by reading the context
-    /// synchronously on a concurrent queue.
-    /// 
-    /// - Returns: The current context.
+    /// Returns a snapshot of the current context.
     func read() -> DatadogContext {
-        queue.sync { context }
+        context
     }
 
-    /// Reads to the `context` asynchronously, without blocking the caller thread.
+    /// Mutates the context and notifies all receivers.
     ///
-    /// - Parameter block: The block closure called with the current context.
-    func read(block: @escaping (DatadogContext) -> Void) {
-        queue.async { block(self.context) }
-    }
-
-    /// Writes to the `context` asynchronously, without blocking the caller thread.
-    ///
-    /// - Parameter block: The block closure called with the current context.
-    func write(block: @escaping (inout DatadogContext) -> Void) {
-        queue.async {
-            block(&self.context)
-            self.receivers.forEach { receiver in
-                receiver(self.context)
-            }
+    /// - Parameter block: The mutation block applied to the context.
+    func write(block: @Sendable (inout DatadogContext) -> Void) {
+        block(&context)
+        for receiver in receivers {
+            receiver(context)
         }
     }
 
-    /// Observes a ``ContextValueSource`` and applies each emitted value to
-    /// the context using the provided `update` closure.
+    /// Subscribes to a ``ContextValueSource`` and applies each emitted value
+    /// to the context using the provided `update` closure.
     ///
     /// The source's ``ContextValueSource/initialValue`` is applied immediately.
     /// Subsequent values from the source's ``ContextValueSource/values`` stream
@@ -110,13 +71,13 @@ internal final class DatadogContextProvider: @unchecked Sendable {
     ///
     /// Example:
     ///
-    ///     provider.observe(NWPathMonitorSource()) { $0.networkConnectionInfo = $1 }
+    ///     await provider.subscribe(to: NWPathMonitorSource()) { $0.networkConnectionInfo = $1 }
     ///
     /// - Parameters:
-    ///   - source: The context value source to observe.
+    ///   - source: The context value source to subscribe to.
     ///   - update: A closure that applies a new value to the context.
-    func observe<Source: ContextValueSource>(
-        _ source: Source,
+    func subscribe<Source: ContextValueSource>(
+        to source: Source,
         update: @escaping @Sendable (inout DatadogContext, Source.Value) -> Void
     ) {
         write { context in
@@ -125,31 +86,18 @@ internal final class DatadogContextProvider: @unchecked Sendable {
 
         let task = Task { [weak self] in
             for await value in source.values {
-                self?.write { context in
+                await self?.write { context in
                     update(&context, value)
                 }
             }
         }
 
-        queue.async {
-            self.observations.append(task)
-        }
+        observations.append(task)
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
     func replace(context newContext: DatadogContext) {
-        queue.async {
-            self.context = newContext
-        }
+        context = newContext
     }
 #endif
-}
-
-extension DatadogContextProvider: Flushable {
-    /// Awaits completion of all asynchronous operations.
-    ///
-    /// **blocks the caller thread**
-    func flush() {
-        queue.sync { }
-    }
 }

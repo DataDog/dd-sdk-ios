@@ -35,7 +35,7 @@ internal struct TracingWithLoggingIntegration {
         message: String? = nil,
         fields: [String: AttributeValue],
         date: Date,
-        else fallback: @escaping () -> Void
+        else fallback: @escaping @Sendable () -> Void
     ) {
         guard let core = core else {
             return
