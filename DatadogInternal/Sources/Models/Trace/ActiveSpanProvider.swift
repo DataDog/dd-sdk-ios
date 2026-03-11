@@ -21,12 +21,15 @@ public struct ActiveSpanContext: Sendable {
     public let samplingPriority: SamplingPriority
     /// Sampling decision mechanism of the trace with ID ``traceID``.
     public let samplingMechanismType: SamplingMechanismType
+    /// The sample rate used for sampling this span.
+    public let samplingRate: Float
 
-    public init(traceID: TraceID, activeSpanID: SpanID, samplingPriority: SamplingPriority, samplingMechanismType: SamplingMechanismType) {
+    public init(traceID: TraceID, activeSpanID: SpanID, samplingPriority: SamplingPriority, samplingMechanismType: SamplingMechanismType, samplingRate: Float) {
         self.traceID = traceID
         self.activeSpanID = activeSpanID
         self.samplingPriority = samplingPriority
         self.samplingMechanismType = samplingMechanismType
+        self.samplingRate = samplingRate
     }
 }
 
@@ -34,7 +37,7 @@ public struct ActiveSpanContext: Sendable {
 ///
 /// These entities act as a bridge between Trace and RUM. If Trace is enabled, they provide the active span and trace ID,
 /// and sampling priority information. RUM (or any other module) can obtain this information from it.
-public protocol ActiveSpanProvider: Sendable {
+public protocol TraceActiveSpanProvider: Sendable {
     /// If there is a currently active span, returns an ``ActiveSpanContext`` instance with the active span and trace IDs,
     /// or `nil` otherwise.
     ///
@@ -42,25 +45,3 @@ public protocol ActiveSpanProvider: Sendable {
     func activeSpanContext() -> ActiveSpanContext?
 }
 
-/// This entity acts as a bridge between Trace and RUM. If Trace is enabled, it will provide an ``ActiveSpanProvider/ProviderFunction``
-/// that itself provides the active span and trace ID. RUM (or any other module) can obtain this information from it.
-public struct ActiveSpanProviderAdditionalContext: ActiveSpanProvider, AdditionalContext {
-    public static var key: String { "active_span_provider" }
-
-    /// Function that returns a ``ActiveSpanContext`` struct with the currently active span and trace IDs, or `nil` if
-    /// there is no currently active span.
-    public typealias ProviderFunction = @Sendable () -> (ActiveSpanContext?)
-
-    /// The provider function that obtains the active span and trace IDs.
-    private let providerFunction: ProviderFunction
-
-    /// Creates a new provider with the given provider function.
-    /// - parameter providerFunction: The provider function. See ``ActiveSpanProvider/ProviderFunction`` for details.
-    public init(providerFunction: @escaping ProviderFunction) {
-        self.providerFunction = providerFunction
-    }
-
-    public func activeSpanContext() -> ActiveSpanContext? {
-        providerFunction()
-    }
-}

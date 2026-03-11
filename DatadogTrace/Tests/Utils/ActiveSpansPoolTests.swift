@@ -180,7 +180,7 @@ class ActiveSpansPoolTests: XCTestCase {
         let tracer = Tracer.shared(in: core)
 
         core.scope(for: TraceFeature.self).context { context in
-            guard let provider = context.additionalContext(ofType: ActiveSpanProviderAdditionalContext.self) else {
+            guard let provider = context.additionalContext(ofType: TraceCoreContext.ActiveSpanProvider.self) else {
                 XCTFail("Additional context for ActiveSpanProvider is nil unexpectedly.")
                 return
             }

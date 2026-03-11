@@ -375,10 +375,12 @@ extension SamplingMechanismType: AnyMockable, RandomMockable {
     }
 }
 
-public class MockActiveSpanProvider: ActiveSpanProvider {
-    public init() { }
+public struct MockActiveSpanProvider: TraceActiveSpanProvider {
+    public init(storedActiveSpanContext: ActiveSpanContext?) {
+        self.storedActiveSpanContext = storedActiveSpanContext
+    }
 
-    public var storedActiveSpanContext: ActiveSpanContext?
+    public let storedActiveSpanContext: ActiveSpanContext?
 
     public func activeSpanContext() -> ActiveSpanContext? {
         storedActiveSpanContext

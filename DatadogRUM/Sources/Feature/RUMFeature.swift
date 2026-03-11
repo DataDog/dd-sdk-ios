@@ -23,12 +23,6 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
 
-    /// If Trace is enabled, this will contain a ``DatadogInternal/ActiveSpanProvider``.
-    ///
-    /// If RUM is running with URLSession tracking, this will be used to obtain the active span and tracer IDs that are
-    /// then used to link RUM Resources to the parent spans.
-    let activeSpanProviderReceiver: ActiveSpanProviderReceiver
-
     /// Overrides the max file age.
     let performanceOverride: PerformancePresetOverride? = PerformancePresetOverride(
         maxFileAgeForRead: 24.hours // RUM intake can ingest events up to 24hrs old
@@ -230,8 +224,6 @@ internal final class RUMFeature: DatadogRemoteFeature {
             telemetry: core.telemetry
         )
 
-        self.activeSpanProviderReceiver = ActiveSpanProviderReceiver()
-
         var messageReceivers: [FeatureMessageReceiver] = [
             TelemetryInterceptor(sessionEndedMetric: sessionEndedMetric),
             TelemetryReceiver(
@@ -267,8 +259,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     }
                 }(),
                 eventsMapper: eventsMapper
-            ),
-            activeSpanProviderReceiver
+            )
         ]
 
         if let watchdogTermination = watchdogTermination {

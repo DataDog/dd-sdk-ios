@@ -56,8 +56,7 @@ extension InternalExtension where ExtendedType == RUM {
                 firstPartyHosts: FirstPartyHosts(hosts),
                 traceIDGenerator: rumConfiguration.traceIDGenerator,
                 spanIDGenerator: rumConfiguration.spanIDGenerator,
-                traceContextInjection: traceContextInjection,
-                activeSpanProviderContainer: rum.activeSpanProviderReceiver
+                traceContextInjection: traceContextInjection
             )
         case let .traceWithHeaders(hostsWithHeaders, sampleRate, traceContextInjection):
             distributedTracing = DistributedTracing(
@@ -65,8 +64,7 @@ extension InternalExtension where ExtendedType == RUM {
                 firstPartyHosts: FirstPartyHosts(hostsWithHeaders),
                 traceIDGenerator: rumConfiguration.traceIDGenerator,
                 spanIDGenerator: rumConfiguration.spanIDGenerator,
-                traceContextInjection: traceContextInjection,
-                activeSpanProviderContainer: rum.activeSpanProviderReceiver
+                traceContextInjection: traceContextInjection
             )
         case .none:
             distributedTracing = nil

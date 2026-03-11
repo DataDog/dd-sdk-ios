@@ -10,8 +10,6 @@
 		0904F9F42EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F52EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
-		093AC3262F56F88900267CE1 /* ActiveSpanProviderReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3252F56F88900267CE1 /* ActiveSpanProviderReceiver.swift */; };
-		093AC3272F56F88900267CE1 /* ActiveSpanProviderReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3252F56F88900267CE1 /* ActiveSpanProviderReceiver.swift */; };
 		093AC3292F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
 		093AC32A2F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
 		09A9369D2F0EB989000B6379 /* SamplingMechanismType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */; };
@@ -2770,7 +2768,6 @@
 
 /* Begin PBXFileReference section */
 		0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensionsTests.swift; sourceTree = "<group>"; };
-		093AC3252F56F88900267CE1 /* ActiveSpanProviderReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpanProviderReceiver.swift; sourceTree = "<group>"; };
 		093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpanProvider.swift; sourceTree = "<group>"; };
 		09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingMechanismType.swift; sourceTree = "<group>"; };
 		09A9369B2F0EB989000B6379 /* SamplingPriority.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingPriority.swift; sourceTree = "<group>"; };
@@ -6140,7 +6137,6 @@
 				61DCC84D2C071DCD00CB59E5 /* TelemetryInterceptor.swift */,
 				D2D748222DC0FF7E00C61353 /* FatalErrorContextNotifier.swift */,
 				5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */,
-				093AC3252F56F88900267CE1 /* ActiveSpanProviderReceiver.swift */,
 			);
 			path = Integrations;
 			sourceTree = "<group>";
@@ -10574,7 +10570,6 @@
 				D23F8E6829DDCD28001CFAE8 /* UIKitExtensions.swift in Sources */,
 				61C713A82A3B78F900FA735A /* RUMMonitorProtocol+Convenience.swift in Sources */,
 				D23F8E6929DDCD28001CFAE8 /* RUMContextAttributes.swift in Sources */,
-				093AC3262F56F88900267CE1 /* ActiveSpanProviderReceiver.swift in Sources */,
 				11E6D5A02E6B1468004D2F87 /* FirstFrameReader.swift in Sources */,
 				D23F8E6B29DDCD28001CFAE8 /* RUMMonitor.swift in Sources */,
 				D23F8E6C29DDCD28001CFAE8 /* RUMContextProvider.swift in Sources */,
@@ -11079,7 +11074,6 @@
 				D29A9F8D29DD8665005C54A4 /* UIKitExtensions.swift in Sources */,
 				61C713A72A3B78F900FA735A /* RUMMonitorProtocol+Convenience.swift in Sources */,
 				D29A9F6829DD85BB005C54A4 /* RUMContextAttributes.swift in Sources */,
-				093AC3272F56F88900267CE1 /* ActiveSpanProviderReceiver.swift in Sources */,
 				11E6D59F2E6B1468004D2F87 /* FirstFrameReader.swift in Sources */,
 				D29A9F6329DD85BB005C54A4 /* RUMMonitor.swift in Sources */,
 				D29A9F7029DD85BB005C54A4 /* RUMContextProvider.swift in Sources */,

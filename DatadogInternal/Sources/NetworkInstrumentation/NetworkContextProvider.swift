@@ -41,6 +41,7 @@ extension NetworkContextCoreProvider: FeatureMessageReceiver {
 
         currentNetworkContext = NetworkContext(
             rumContext: context.additionalContext(ofType: RUMCoreContext.self),
+            activeSpanProvider: context.additionalContext(ofType: TraceCoreContext.ActiveSpanProvider.self),
             userConfigurationContext: userConfigurationContext,
             accountConfigurationContext: accountConfigurationContext
         )

@@ -17,23 +17,19 @@ internal struct DistributedTracing {
     let firstPartyHosts: FirstPartyHosts
     /// Trace context injection configuration to determine whether the trace context should be injected or not.
     let traceContextInjection: TraceContextInjection
-    /// Used to obtain a currently active span and trace IDs, if any, when Trace feature is enabled.
-    let activeSpanProviderContainer: ActiveSpanProviderContainer
 
     init(
         samplingRate: SampleRate,
         firstPartyHosts: FirstPartyHosts,
         traceIDGenerator: TraceIDGenerator,
         spanIDGenerator: SpanIDGenerator,
-        traceContextInjection: TraceContextInjection,
-        activeSpanProviderContainer: ActiveSpanProviderContainer
+        traceContextInjection: TraceContextInjection
     ) {
         self.samplingRate = samplingRate
         self.traceIDGenerator = traceIDGenerator
         self.spanIDGenerator = spanIDGenerator
         self.firstPartyHosts = firstPartyHosts
         self.traceContextInjection = traceContextInjection
-        self.activeSpanProviderContainer = activeSpanProviderContainer
     }
 }
 
@@ -93,7 +89,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             headerTypes: headerTypes,
             rumSessionId: networkContext?.rumContext?.sessionID,
             userId: networkContext?.userConfigurationContext?.id,
-            accountId: networkContext?.accountConfigurationContext?.id
+            accountId: networkContext?.accountConfigurationContext?.id,
+            activeSpanContext: networkContext?.activeSpanProvider?.activeSpanContext()
         ) ?? (request, nil, nil)
 
         // Note: DistributedTracing.modify() currently returns nil for captured state.
@@ -253,13 +250,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 }
 
 extension DistributedTracing {
-    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
-        // If there is an active trace span, we get the active span and trace ID on traceInfo.
-        let activeSpanContext = activeSpanProviderContainer.activeSpanProvider?.activeSpanContext()
-
+    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?, activeSpanContext: ActiveSpanContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
         // In case there is, we use the same traceID so the backend can link the span generated from the RUM resource
         // with the trace.
-        let traceID = activeSpanContext.map { $0.traceID } ?? traceIDGenerator.generate()
+        let traceID = activeSpanContext?.traceID ?? traceIDGenerator.generate()
         let spanID = spanIDGenerator.generate()
         let samplingPriority = activeSpanContext?.samplingPriority ?? (sampler(sessionID: rumSessionId).sample() ? .autoKeep : .autoDrop)
         let samplingDecisionMaker = activeSpanContext?.samplingMechanismType ?? .agentRate
@@ -278,7 +272,7 @@ extension DistributedTracing {
             // If there is an active span, use it as parent span for the span
             // the backend creates out of the RUM resource:
             parentSpanID: activeSpanContext?.activeSpanID,
-            sampleRate: samplingRate,
+            sampleRate: activeSpanContext?.samplingRate ?? samplingRate,
             samplingPriority: samplingPriority,
             samplingDecisionMaker: samplingDecisionMaker,
             rumSessionId: rumSessionId,

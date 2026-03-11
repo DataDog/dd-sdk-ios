@@ -1879,11 +1879,3 @@ public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate {
         return resultByName[componentName] ?? result
     }
 }
-
-public final class MockActiveSpanProviderContainer: ActiveSpanProviderContainer {
-    public let activeSpanProvider: ActiveSpanProvider?
-
-    public init(activeSpanProvider: ActiveSpanProvider? = nil) {
-        self.activeSpanProvider = activeSpanProvider
-    }
-}
