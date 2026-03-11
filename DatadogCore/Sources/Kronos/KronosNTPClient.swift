@@ -168,14 +168,14 @@ internal final class KronosNTPClient {
         let callback: CFSocketCallBack = { socket, callbackType, _, data, info in
             if callbackType == .writeCallBack {
                 var packet = KronosNTPPacket()
-                guard let PDU = packet.prepareToSend() as CFData? else {
+                guard let PDU = packet.prepareToSend() else {
                     // System clock is outside representable NTP range (e.g. far future).
                     // Skip sending to avoid corrupted time offsets — the client will
                     // fall back to the system clock.
                     CFSocketInvalidate(socket)
                     return
                 }
-                CFSocketSendData(socket, nil, PDU, kronosDefaultTimeout)
+                CFSocketSendData(socket, nil, PDU as CFData, kronosDefaultTimeout)
                 return
             }
 
