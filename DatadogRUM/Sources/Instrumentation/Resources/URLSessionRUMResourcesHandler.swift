@@ -334,13 +334,13 @@ extension DistributedTracing {
         return (request, (hasSetAnyHeader && injectedSpanContext.samplingPriority.isKept) ? injectedSpanContext : nil, nil)
     }
 
-    func trace(from interception: DatadogInternal.URLSessionTaskInterception) -> RUMSpanContext? {
+    fileprivate func trace(from interception: DatadogInternal.URLSessionTaskInterception) -> RUMSpanContext? {
         return interception.trace.map {
             .init(
                 traceID: $0.traceID,
                 spanID: $0.spanID,
                 parentSpanID: $0.parentSpanID,
-                samplingRate: Double(samplingRate.percentageProportion)
+                samplingRate: Double($0.sampleRate.percentageProportion)
             )
         }
     }

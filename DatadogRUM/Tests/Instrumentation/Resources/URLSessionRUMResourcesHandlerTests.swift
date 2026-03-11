@@ -641,7 +641,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             traceID: 100,
             spanID: 200,
             parentSpanID: nil,
-            sampleRate: .mockAny(),
+            sampleRate: traceSamplingRate,
             samplingPriority: .mockAny(),
             samplingDecisionMaker: .mockAny(),
             rumSessionId: .mockAny()
