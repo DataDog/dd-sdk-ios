@@ -4,6 +4,7 @@
 - [IMPROVEMENT] Rename `DDRUMErrorEventErrorMeta` to `DDRUMErrorEventErrorMetaInfo`, add support of custom Objective-C runtime names for generated RUM models. See [#2705][]
 - [FEATURE] Add `trackResourceHeaders` configuration to capture HTTP request and response headers in RUM Resource events. See [#2721][]
 - [FEATURE] RUM Resources will now be augmented with the currently active span information, specifically the parent span and trace IDs, and sampling priority and decision maker. See [#2726][]
+- [FIX] Fix crash context C-string conversion in KSCrash injection. See [#2740][]
 
 # 3.7.0 / 18-02-2026
 
@@ -1066,6 +1067,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2721]: https://github.com/DataDog/dd-sdk-ios/pull/2721
 [#2726]: https://github.com/DataDog/dd-sdk-ios/pull/2726
 [#2717]: https://github.com/DataDog/dd-sdk-ios/pull/2717
+[#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
