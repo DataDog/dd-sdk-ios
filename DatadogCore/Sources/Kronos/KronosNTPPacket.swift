@@ -133,11 +133,13 @@ internal struct KronosNTPPacket {
 
         // Validate all timestamps before serialization to avoid sending
         // corrupted NTP data that would produce incorrect time offsets.
-        let timestamps = [self.referenceTime, self.originTime, self.receiveTime, self.transmitTime]
-        for timestamp in timestamps {
-            guard dateToNTPFormat(timestamp) != nil else {
-                return nil
-            }
+        guard
+            let ntpReferenceTime = dateToNTPFormat(self.referenceTime),
+            let ntpOriginTime = dateToNTPFormat(self.originTime),
+            let ntpReceiveTime = dateToNTPFormat(self.receiveTime),
+            let ntpTransmitTime = dateToNTPFormat(self.transmitTime)
+        else {
+            return nil
         }
 
         var data = Data()
@@ -148,10 +150,10 @@ internal struct KronosNTPPacket {
         data.append(unsignedInteger: self.intervalToNTPFormat(self.rootDelay))
         data.append(unsignedInteger: self.intervalToNTPFormat(self.rootDispersion))
         data.append(unsignedInteger: self.clockSource.ID)
-        data.append(unsignedLong: self.dateToNTPFormat(self.referenceTime)!)
-        data.append(unsignedLong: self.dateToNTPFormat(self.originTime)!)
-        data.append(unsignedLong: self.dateToNTPFormat(self.receiveTime)!)
-        data.append(unsignedLong: self.dateToNTPFormat(self.transmitTime)!)
+        data.append(unsignedLong: ntpReferenceTime)
+        data.append(unsignedLong: ntpOriginTime)
+        data.append(unsignedLong: ntpReceiveTime)
+        data.append(unsignedLong: ntpTransmitTime)
         return data
     }
 
