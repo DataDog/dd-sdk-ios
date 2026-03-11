@@ -257,7 +257,7 @@ private final class TouchSnapshotProducerSpy: TouchSnapshotProducer {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-private final class LayerSnapshotProcessorSpy: LayerSnapshotProcessing {
+private final class LayerSnapshotProcessorSpy: Processor {
     var inputs: [LayerSnapshotProcessor.Input] = []
 
     var inputsCount: Int {
