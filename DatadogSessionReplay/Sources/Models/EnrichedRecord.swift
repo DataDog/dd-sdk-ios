@@ -33,9 +33,18 @@ internal struct EnrichedRecord: Encodable {
     }
 
     init(context: Recorder.Context, records: [SRRecord]) {
-        self.applicationID = context.applicationID
-        self.sessionID = context.sessionID
-        self.viewID = context.viewID
+        self.init(
+            applicationID: context.applicationID,
+            sessionID: context.sessionID,
+            viewID: context.viewID,
+            records: records
+        )
+    }
+
+    init(applicationID: String, sessionID: String, viewID: String, records: [SRRecord]) {
+        self.applicationID = applicationID
+        self.sessionID = sessionID
+        self.viewID = viewID
         self.records = records
     }
 }

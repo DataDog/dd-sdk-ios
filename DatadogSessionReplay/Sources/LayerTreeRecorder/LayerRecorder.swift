@@ -20,6 +20,7 @@ import Foundation
 internal actor LayerRecorder: LayerRecording {
     private let snapshotBuilder: any LayerTreeSnapshotBuilding
     private let layerImageRenderer: any LayerImageRendering
+    private let layerSnapshotProcessor: any Processor<LayerSnapshotProcessor.Input>
     private let timeoutInterval: TimeInterval
     private let timeSource: any TimeSource
 
@@ -28,11 +29,13 @@ internal actor LayerRecorder: LayerRecording {
     init(
         snapshotBuilder: any LayerTreeSnapshotBuilding,
         layerImageRenderer: any LayerImageRendering,
+        layerSnapshotProcessor: any Processor<LayerSnapshotProcessor.Input>,
         timeoutInterval: TimeInterval,
         timeSource: any TimeSource = .mediaTime
     ) {
         self.snapshotBuilder = snapshotBuilder
         self.layerImageRenderer = layerImageRenderer
+        self.layerSnapshotProcessor = layerSnapshotProcessor
         self.timeoutInterval = max(0, timeoutInterval)
         self.timeSource = timeSource
     }
@@ -78,19 +81,13 @@ extension LayerRecorder {
             timeoutInterval: remaining
         )
 
-        let wireframeBuilder = LayerWireframeBuilder()
-        let output = wireframeBuilder.createWireframes(
-            for: targetSnapshots,
-            layerImages: layerImages,
-            webViewSlotIDs: layerTreeSnapshot.webViewSlotIDs
+        await layerSnapshotProcessor.process(
+            .init(
+                layerTreeSnapshot: layerTreeSnapshot,
+                targetSnapshots: targetSnapshots,
+                layerImages: layerImages
+            )
         )
-
-        guard !output.wireframes.isEmpty else {
-            return
-        }
-
-        // Pending stages:
-        // - Hand over `output` to the layer snapshot processor.
     }
 }
 #endif

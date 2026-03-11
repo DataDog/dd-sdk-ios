@@ -100,27 +100,32 @@ internal class SnapshotProcessor: SnapshotProcessing {
             viewTreeSnapshot.context.viewID != lastSnapshot?.context.viewID {
             // If RUM context ids have changed, new segment should be started.
             // Segment must always start with "meta" → "focus" → "full snapshot" records.
-            records.append(recordsBuilder.createMetaRecord(from: viewTreeSnapshot))
-            records.append(recordsBuilder.createFocusRecord(from: viewTreeSnapshot))
-            records.append(recordsBuilder.createFullSnapshotRecord(from: viewTreeSnapshot, wireframes: wireframes))
+            records.append(recordsBuilder.createMetaRecord(date: viewTreeSnapshot.date, viewportSize: viewTreeSnapshot.viewportSize))
+            records.append(recordsBuilder.createFocusRecord(date: viewTreeSnapshot.date))
+            records.append(recordsBuilder.createFullSnapshotRecord(date: viewTreeSnapshot.date, wireframes: wireframes))
         } else if let lastWireframes = lastWireframes {
             // No change to RUM context means we're recording new records within the same RUM view.
             // Such can be added to current segment.
             // Prefer creating "incremental snapshot" records but fallback to "full snapshot" (unexpected):
-            let record = recordsBuilder.createIncrementalSnapshotRecord(from: viewTreeSnapshot, with: wireframes, lastWireframes: lastWireframes)
+            let record = recordsBuilder.createIncrementalSnapshotRecord(
+                date: viewTreeSnapshot.date,
+                with: wireframes,
+                lastWireframes: lastWireframes
+            )
             record.flatMap { records.append($0) }
 
             // Create viewport orientation change record
             if let lastSnapshot = lastSnapshot {
                 recordsBuilder.createViewport(
-                    from: viewTreeSnapshot,
-                    lastSnapshot: lastSnapshot
+                    date: viewTreeSnapshot.date,
+                    viewportSize: viewTreeSnapshot.viewportSize,
+                    lastViewportSize: lastSnapshot.viewportSize
                 )
                 .flatMap { records.append($0) }
             }
         } else {
             telemetry.error("[SR] Unexpected flow in `Processor`: no previous wireframes and no previous RUM context")
-            records.append(recordsBuilder.createFullSnapshotRecord(from: viewTreeSnapshot, wireframes: wireframes))
+            records.append(recordsBuilder.createFullSnapshotRecord(date: viewTreeSnapshot.date, wireframes: wireframes))
         }
 
         // Create records for denoting touch interaction:

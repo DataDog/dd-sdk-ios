@@ -23,7 +23,7 @@ private class ResourceWriterMock: ResourcesWriting {
 class ResourceProcessorTests: XCTestCase {
     func testItWritesResources() {
         let writer = ResourceWriterMock()
-        let processor = ResourceProcessor(
+        let processor = ResourceProcessorQueue(
             queue: NoQueue(),
             resourcesWriter: writer
         )
@@ -56,7 +56,7 @@ class ResourceProcessorTests: XCTestCase {
 
     func testItDoesNotTryToWriteEmptyResources() {
         let writer = ResourceWriterMock()
-        let processor = ResourceProcessor(
+        let processor = ResourceProcessorQueue(
             queue: NoQueue(),
             resourcesWriter: writer
         )
@@ -68,7 +68,7 @@ class ResourceProcessorTests: XCTestCase {
 
     func testItRemovedDuplicates() {
         let writer = ResourceWriterMock()
-        let processor = ResourceProcessor(
+        let processor = ResourceProcessorQueue(
             queue: NoQueue(),
             resourcesWriter: writer
         )
