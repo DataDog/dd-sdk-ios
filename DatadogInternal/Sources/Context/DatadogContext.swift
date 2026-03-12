@@ -40,7 +40,7 @@ public struct DatadogContext {
     /// The id of the build, specifically for cross platform frameworks
     public let buildId: String?
 
-    /// The variant of the build, equivelent to Android's "Flavor".  Only used by cross platform SDKs
+    /// The variant of the build, equivalent to Android's "Flavor".  Only used by cross platform SDKs
     public let variant: String?
 
     /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.

@@ -116,8 +116,7 @@ internal struct KSCrashBacktrace: BacktraceReporting {
     private func getThreadName(pthread: pthread_t) -> String? {
         var buffer = [CChar](repeating: 0, count: 256)
         guard pthread_getname_np(pthread, &buffer, buffer.count) == KERN_SUCCESS, buffer[0] != 0 else {
-            telemetry.error("Failed to get pthread name")
-            return nil // fails or empty
+            return nil // Failed to get pthread name
         }
         return String(cString: buffer)
     }

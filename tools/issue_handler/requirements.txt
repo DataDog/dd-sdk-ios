@@ -2,4 +2,4 @@
 openai==2.24.0
 pytest==9.0.2
 requests==2.32.5
-python-dotenv==1.2.1
+python-dotenv==1.2.2

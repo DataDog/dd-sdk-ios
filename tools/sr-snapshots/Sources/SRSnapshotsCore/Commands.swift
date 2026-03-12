@@ -11,6 +11,8 @@ import ArgumentParser
 
 /// Git clone ssh for snapshots repo.
 private let ssh = "git@github.com:DataDog/dd-mobile-session-replay-snapshots.git"
+/// GitHub owner/repo identifier (used with token authentication on CI via gh CLI over HTTPS).
+private let repo = "DataDog/dd-mobile-session-replay-snapshots"
 /// Default branch in snapshots repo.
 private let defaultBranch = "main"
 
@@ -65,7 +67,7 @@ public struct PullSnapshotsCommand: ParsableCommand {
         if options.dryRun {
             git = NOPGitClient()
         } else if let token = ProcessInfo.processInfo.environment["GH_TOKEN"] {
-            git = GitHubClient(repository: ssh, branch: options.remoteBranch, token: token)
+            git = GitHubClient(repository: repo, branch: options.remoteBranch, token: token)
         } else {
             git = BasicGitClient(ssh: ssh, branch: options.remoteBranch)
         }

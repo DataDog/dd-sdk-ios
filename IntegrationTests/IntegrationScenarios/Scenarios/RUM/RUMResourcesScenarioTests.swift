@@ -15,7 +15,7 @@ private extension ExampleApplication {
     }
 }
 
-class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
+class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, URLSessionTestsHelpers {
     private struct Expectations {
         let expectedFirstPartyRequestsViewControllerName: String
         let expectedThirdPartyRequestsViewControllerName: String
@@ -280,33 +280,4 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             XCTAssertNotNil(try? errorEvent.attribute(forKeyPath: "context.response.error") as String)
         }
     }
-
-    private func getTraceID(from request: Request) -> TraceID? {
-        guard let traceIDLoValue = request.httpHeaders["x-datadog-trace-id"] else {
-            return nil
-        }
-
-        // tags are comma separated key=value pairs
-        let tags = request.httpHeaders[TracingHTTPHeaders.tagsField]?.split(separator: ",")
-            .map { $0.split(separator: "=") }
-            .reduce(into: [String: String]()) { result, pair in
-                if pair.count == 2 {
-                    result[String(pair[0])] = String(pair[1])
-                }
-            } ?? [:]
-
-        let traceIDHiValue = tags[TracingHTTPHeaders.TagKeys.traceIDHi] ?? "0"
-        
-        return .init(
-            idHi: UInt64(traceIDHiValue, radix: 16) ?? 0,
-            idLo: UInt64(traceIDLoValue, radix: 10) ?? 0
-        )
-    }
-    private func getSpanID(from request: Request) -> SpanID? {
-        guard let spanId = request.httpHeaders["x-datadog-parent-id"] else {
-            return nil
-        }
-        return .init(spanId, representation: .decimal)
-    }
-    private func isValid(sampleRate: Double) -> Bool { sampleRate >= 0 && sampleRate <= 1 }
 }

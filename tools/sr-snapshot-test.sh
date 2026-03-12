@@ -42,7 +42,7 @@ TEST_WORKSPACE="$REPO_ROOT/DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.
 TEST_ARTIFACTS_PATH="$REPO_ROOT/$artifacts_path/sr-snapshot-tests"
 
 # On CI, get GitHub token for accessing snapshots repository
-if [ "$CI" = "true" ] && [ -z "$GH_TOKEN" ]; then
+if [ "$CI" = "true" ]; then
     export GH_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/dd-mobile-session-replay-snapshots --policy dd-sdk-ios)
     # Set up trap to always revoke token on script exit (success, failure, or interruption)
     trap 'dd-octo-sts --disable-tracing revoke --token $GH_TOKEN' EXIT

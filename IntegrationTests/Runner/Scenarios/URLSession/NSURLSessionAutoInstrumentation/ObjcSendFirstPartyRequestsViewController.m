@@ -27,12 +27,12 @@
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    [self callSuccessfullFirstPartyURL];
-    [self callSuccessfullFirstPartyURLRequest];
+    [self callSuccessfulFirstPartyURL];
+    [self callSuccessfulFirstPartyURLRequest];
     [self callBadFirstPartyURL];
 }
 
-- (void)callSuccessfullFirstPartyURL {
+- (void)callSuccessfulFirstPartyURL {
     NSURLSessionTask *task = [self.session dataTaskWithURL:self.testScenario.customGETResourceURL
                                          completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         assert(error == nil);
@@ -40,7 +40,7 @@
     [task resume];
 }
 
-- (void)callSuccessfullFirstPartyURLRequest {
+- (void)callSuccessfulFirstPartyURLRequest {
     NSURLSessionTask *task = [self.session dataTaskWithRequest:self.testScenario.customPOSTRequest
                                              completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         assert(error == nil);

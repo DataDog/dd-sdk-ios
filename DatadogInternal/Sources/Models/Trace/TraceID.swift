@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct TraceID: RawRepresentable, Equatable, Hashable {
+public struct TraceID: RawRepresentable, Equatable, Hashable, Sendable {
     /// The `String` representation format of a `TraceID`.
     public enum Representation {
         case decimal
