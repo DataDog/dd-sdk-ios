@@ -4,72 +4,61 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
-
-#if canImport(UIKit)
-import UIKit
+import AppKit
 import DatadogInternal
 
 /// Factory responsible for creating RUM user action commands from UIEvents.
 /// This abstraction allows for platform-specific implementations (iOS/tvOS).
-internal protocol UIEventCommandFactory {
+internal protocol AppKitEventCommandFactory {
     /// Creates a RUM command from a `UIEvent` if applicable
     /// - Parameter event: The `UIEvent` to process
     /// - Returns: A command to add a user action, or `nil` if the event shouldn't be tracked
     func command(from event: DDEvent) -> RUMAddUserActionCommand?
 }
 
-// MARK: iOS implementation
-/// iOS-specific implementation that detects user interactions through touches.
+// MARK: macOS implementation
+/// macOS-specific implementation that detects user interactions through touches.
 /// Handles both UIKit and SwiftUI components using different detection strategies.
-internal final class UITouchCommandFactory: UIEventCommandFactory {
+internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     let dateProvider: DateProvider
-    let heatmapIdentifierRegistry: any HeatmapIdentifierRegistry
-    let uiKitPredicate: UITouchRUMActionsPredicate?
+    let appKitPredicate: AppKitRUMActionsPredicate?
     let swiftUIPredicate: SwiftUIRUMActionsPredicate?
     let swiftUIDetector: SwiftUIComponentDetector?
 
     init(
         dateProvider: DateProvider,
-        heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
-        uiKitPredicate: UITouchRUMActionsPredicate?,
+        appKitPredicate: AppKitRUMActionsPredicate?,
         swiftUIPredicate: SwiftUIRUMActionsPredicate?,
         swiftUIDetector: SwiftUIComponentDetector?
     ) {
         self.dateProvider = dateProvider
-        self.heatmapIdentifierRegistry = heatmapIdentifierRegistry
-        self.uiKitPredicate = uiKitPredicate
+        self.appKitPredicate = appKitPredicate
         self.swiftUIPredicate = swiftUIPredicate
         self.swiftUIDetector = swiftUIDetector
     }
 
     func command(from event: DDEvent) -> RUMAddUserActionCommand? {
-        guard let allTouches = event.allTouches else {
-            return nil // not a touch event
-        }
-        guard allTouches.count == 1, let tap = allTouches.first else {
-            return nil // not a single touch event
-        }
+//        guard let allTouches = event.allTouches else {
+//            return nil // not a touch event
+//        }
+//        guard allTouches.count == 1, let tap = allTouches.first else {
+//            return nil // not a single touch event
+//        }
 
         // Detect UIKit interactions first,
         // as they are more likely to happen.
-        let actionCommand = createUIKitActionCommand(from: tap)
-            ?? swiftUIDetector?.createActionCommand(
-                from: tap,
-                predicate: swiftUIPredicate,
-                dateProvider: dateProvider
-            )
-
-        guard var actionCommand else {
-            return nil
+        if let rumAction = createAppKitActionCommand(from: event) {
+            return rumAction
         }
 
-        actionCommand.heatmapAttributes = tap.heatmapAttributes(in: heatmapIdentifierRegistry)
-        return actionCommand
+//        return swiftUIDetector?.createActionCommand(from: tap, predicate: swiftUIPredicate, dateProvider: dateProvider)
+
+        return nil
     }
 
     // MARK: UIKit
 
+#if canImport(UIKit)
     private func createUIKitActionCommand(from tap: DDTouch) -> RUMAddUserActionCommand? {
         guard let uiKitPredicate else {
             return nil
@@ -94,7 +83,6 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
         guard let action = uiKitPredicate.rumAction(targetView: targetView) else {
             return nil
         }
-
         return RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: action.attributes,
@@ -103,6 +91,42 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
             name: action.name
         )
     }
+#elseif canImport(AppKit)
+    private func createAppKitActionCommand(from event: NSEvent) -> RUMAddUserActionCommand? {
+        guard let appKitPredicate else {
+            return nil
+        }
+
+        guard event.type == .leftMouseUp, let window = event.window else {
+            return nil
+        }
+
+//
+//
+//
+//        guard view.isSafeForPrivacy else {
+//            return nil // no valid view
+//        }
+//
+//        guard let targetView = bestActionTarget(for: view) else {
+//            return nil // Tapped view is not eligible for producing RUM Action
+//        }
+
+        switch event.type {
+        case .leftMouseUp:
+            return RUMAddUserActionCommand(
+                time: dateProvider.now,
+                attributes: [:],
+                instrumentation: .uikit,
+                actionType: .click,
+                name: "Some button"
+            )
+
+        default:
+            return nil
+        }
+    }
+#endif
 
     /// Traverses the hierarchy of the `view` bottom-up to find the best view which could be considered for RUM Action's target,
     /// e.g. if the tapped `view` is a `UILabel` embedded in a `UIStackView` inside the `UITableViewCell` it will
@@ -130,52 +154,7 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
     }
 }
 
-private extension UITouch {
-    /// Resolves heatmap attributes for the touch.
-    func heatmapAttributes(in registry: any HeatmapIdentifierRegistry) -> HeatmapAttributes? {
-        guard let view else {
-            return nil
-        }
-
-        let locationInView = location(in: view)
-
-        guard registry.requiresDescendantLookup else {
-            guard let heatmapIdentifier = registry.heatmapIdentifier(for: ObjectIdentifier(view.layer)) else {
-                return nil
-            }
-            return HeatmapAttributes(
-                identifier: heatmapIdentifier,
-                size: view.bounds.size,
-                location: locationInView
-            )
-        }
-
-        let hitTestLocation = view.layer.convert(locationInView, to: view.layer.superlayer)
-        var candidateLayer: CALayer? = view.layer.hitTest(hitTestLocation) ?? view.layer
-
-        while let layer = candidateLayer {
-            if let heatmapIdentifier = registry.heatmapIdentifier(for: ObjectIdentifier(layer)) {
-                let locationInLayer = layer.convert(locationInView, from: view.layer)
-                return HeatmapAttributes(
-                    identifier: heatmapIdentifier,
-                    size: layer.bounds.size,
-                    location: CGPoint(
-                        x: locationInLayer.x - layer.bounds.minX,
-                        y: locationInLayer.y - layer.bounds.minY
-                    )
-                )
-            }
-
-            guard layer !== view.layer else {
-                return nil
-            }
-            candidateLayer = layer.superlayer
-        }
-
-        return nil
-    }
-}
-
+#if canImport(UIKit)
 // MARK: tvOS implementation
 /// tvOS-specific implementation that detects user interactions through touches.
 internal struct UIPressCommandFactory: UIEventCommandFactory {
@@ -210,4 +189,3 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
 }
 #endif
 
-#endif
