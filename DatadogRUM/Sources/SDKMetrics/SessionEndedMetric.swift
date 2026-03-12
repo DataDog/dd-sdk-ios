@@ -619,7 +619,11 @@ extension InstrumentationType: Encodable {
 
     var metricKey: String {
         switch self {
+#if canImport(UIKit)
         case .uikit: return "uikit"
+#elseif canImport(AppKit)
+        case .appKit: return "appKit"
+#endif
         case .swiftuiAutomatic: return "swiftuiAutomatic"
         case .swiftui: return "swiftui"
         case .manual: return "manual"

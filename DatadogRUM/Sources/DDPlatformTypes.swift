@@ -102,4 +102,7 @@ extension NSApplication {
     static var willEnterForegroundNotification: Notification.Name { NSApplication.didBecomeActiveNotification }
 }
 
+// MARK: - SDK specific
+public typealias FrameworkKitRUMActionsPredicate = AppKitRUMActionsPredicate
+
 #endif
