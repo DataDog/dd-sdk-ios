@@ -97,7 +97,7 @@ extension RUM {
         /// Default: `nil` - which means automatic RUM action tracking for UIKit is not enabled by default.
         ///
         /// - Important: This feature is unavailable on watchOS. Use manual action tracking with `addAction(type:name:attributes:)` instead.
-        public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
+        public var uiKitActionsPredicate: FrameworkKitRUMActionsPredicate?
         #endif
 
         #if !os(watchOS)
@@ -557,7 +557,7 @@ extension RUM.Configuration {
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,
         uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
-        uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
+        uiKitActionsPredicate: FrameworkKitRUMActionsPredicate? = nil,
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
         swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
