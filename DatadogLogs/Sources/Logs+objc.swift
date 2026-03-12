@@ -85,6 +85,7 @@ public final class objc_LogsConfiguration: NSObject {
 @objc(DDLogs)
 @objcMembers
 @_spi(objc)
+@MainActor
 public final class objc_Logs: NSObject {
     public static func enable(
         with configuration: objc_LogsConfiguration = .init()

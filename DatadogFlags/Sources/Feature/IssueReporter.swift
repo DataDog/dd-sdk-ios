@@ -47,6 +47,6 @@ internal func reportIssue(
     file: StaticString = #file,
     line: UInt = #line
 ) {
-    let issueReporter = core?.get(feature: FlagsFeature.self)?.issueReporter ?? .default
+    let issueReporter: IssueReporter = core?.get(feature: FlagsFeature.self)?.issueReporter ?? .default
     issueReporter.reportIssue(message(), file, line)
 }

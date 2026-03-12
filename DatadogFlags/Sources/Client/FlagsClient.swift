@@ -103,11 +103,7 @@ public final class FlagsClient {
         name: String = FlagsClient.defaultName,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> FlagsClientProtocol {
-        // To ensure the correct registration order between Core and Features,
-        // the entire initialization flow is synchronized on the main thread.
-        runOnMainThreadSync {
-            doCreate(name: name, in: core)
-        }
+        doCreate(name: name, in: core)
     }
 
     /// Returns an existing `FlagsClient` instance by name.

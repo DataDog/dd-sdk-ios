@@ -19,7 +19,7 @@ internal final class DatadogCore: @unchecked Sendable {
     /// For each Feature a set of subdirectories is created inside `CoreDirectory` based on their storage configuration.
     let directory: CoreDirectory
 
-    /// The storage r/w GDC queue.
+    /// The storage r/w GDC queue for file I/O operations.
     let readWriteQueue = DispatchQueue(
         label: "com.datadoghq.ios-sdk-read-write",
         autoreleaseFrequency: .workItem,
@@ -41,13 +41,8 @@ internal final class DatadogCore: @unchecked Sendable {
     /// The message-bus instance.
     let bus = MessageBus()
 
-    /// Registry for Features.
-    @ReadWriteLock
-    private(set) var stores: [String: (storage: FeatureStorage, upload: FeatureUpload)] = [:]
-
-    /// Registry for Features.
-    @ReadWriteLock
-    private var features: [String: DatadogFeature] = [:]
+    /// The actor managing feature registrations, storage, and upload.
+    let featureStore = FeatureStore()
 
     /// The core context provider.
     internal let contextProvider: DatadogContextProvider
@@ -155,18 +150,6 @@ internal final class DatadogCore: @unchecked Sendable {
     }
 
     /// Clear the current user information
-    ///
-    /// User information will be `nil`
-    /// Following Logs, Traces, RUM Events will not include the user information anymore
-    ///
-    /// Any active RUM Session, active RUM View at the time of call will have their `user` attribute emptied
-    ///
-    /// If you want to retain the current `user` on the active RUM session,
-    /// you need to stop the session first by using `RUMMonitor.stopSession()`
-    ///
-    /// If you want to retain the current `user` on the active RUM views,
-    /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
-    ///
     func clearUserInfo() {
         Task {
             await contextProvider.write { context in
@@ -223,18 +206,6 @@ internal final class DatadogCore: @unchecked Sendable {
     }
 
     /// Clear the current account information
-    ///
-    /// Account information will be `nil`
-    /// Following Logs, Traces, RUM Events will not include the account information anymore
-    ///
-    /// Any active RUM Session, active RUM View at the time of call will have their `account` attribute emptied
-    ///
-    /// If you want to retain the current `account` on the active RUM session,
-    /// you need to stop the session first by using `RUMMonitor.stopSession()`
-    ///
-    /// If you want to retain the current `account` on the active RUM views,
-    /// you need to stop the view first by using `RUMMonitor.stopView(viewController:attributes:)`
-    ///
     func clearAccountInfo() {
         Task { await contextProvider.write { $0.accountInfo = nil } }
     }
@@ -243,11 +214,11 @@ internal final class DatadogCore: @unchecked Sendable {
     ///
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
-        let allStorages = allStorages
+        let storages = featureStore.allStorages
         Task {
             await contextProvider.write { context in
                 guard trackingConsent != context.trackingConsent else { return }
-                allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
+                storages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
                 context.trackingConsent = trackingConsent
             }
         }
@@ -255,8 +226,10 @@ internal final class DatadogCore: @unchecked Sendable {
 
     /// Clears all data that has not already yet been uploaded Datadog servers.
     func clearAllData() {
-        allStorages.forEach { $0.clearAllData() }
-        allDataStores.forEach { $0.clearAllData() }
+        let storages = featureStore.allStorages
+        let dataStores = featureStore.allDataStores(in: self)
+        storages.forEach { $0.clearAllData() }
+        dataStores.forEach { $0.clearAllData() }
     }
 
     /// Adds a message receiver to the bus.
@@ -267,60 +240,33 @@ internal final class DatadogCore: @unchecked Sendable {
     ///   - messageReceiver: The new message receiver.
     ///   - key: The key associated with the receiver.
     private func add(messageReceiver: FeatureMessageReceiver, forKey key: String) {
-        Task {
-            await bus.connect(messageReceiver, forKey: key)
+        nonisolated(unsafe) let receiver = messageReceiver
+        Task { @Sendable in
+            await bus.connect(receiver, forKey: key)
             let context = await contextProvider.read()
             await bus.sendInitialContext(context, forKey: key)
         }
     }
 
-    /// A list of storage units of currently registered Features.
-    private var allStorages: [FeatureStorage] {
-        stores.values.map { $0.storage }
-    }
-
-    /// A list of upload units of currently registered Features.
-    private var allUploads: [FeatureUpload] {
-        stores.values.map { $0.upload }
-    }
-
-    private var allDataStores: [DataStore] {
-        features.values.compactMap { feature in
-            let featureType = type(of: feature) as DatadogFeature.Type
-            return scope(for: featureType).dataStore
-        }
-    }
-
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
-    /// this instance of the SDK. It **blocks the caller thread**.
+    /// this instance of the SDK.
     ///
     /// Upon return, it is safe to assume that all events were stored and got uploaded. The SDK was deinitialised so this instance of core is non-functional.
-    func flushAndTearDown() {
-        flush()
+    func flushAndTearDown() async {
+        await flush()
 
-        // At this point we can assume that all write operations completed and resulted with writing events to
-        // storage. We now temporarily authorize storage for making all files readable ("uploadable") and perform
-        // arbitrary uploads (without retrying on failure).
-        let storages = allStorages
-        let sem = DispatchSemaphore(value: 0)
-        Task {
-            for storage in storages {
-                await storage.setIgnoreFilesAgeWhenReading(to: true)
-            }
-            sem.signal()
+        let storages = featureStore.allStorages
+        let uploads = featureStore.allUploads
+
+        for storage in storages {
+            await storage.setIgnoreFilesAgeWhenReading(to: true)
         }
-        sem.wait()
 
-        allUploads.forEach { $0.flushAndTearDown() }
+        uploads.forEach { $0.flushAndTearDown() }
 
-        let sem2 = DispatchSemaphore(value: 0)
-        Task {
-            for storage in storages {
-                await storage.setIgnoreFilesAgeWhenReading(to: false)
-            }
-            sem2.signal()
+        for storage in storages {
+            await storage.setIgnoreFilesAgeWhenReading(to: false)
         }
-        sem2.wait()
 
         stop()
     }
@@ -328,27 +274,18 @@ internal final class DatadogCore: @unchecked Sendable {
     /// Stops all processes for this instance of the Datadog core by
     /// deallocating all Features and their storage & upload units.
     func stop() {
-        stores = [:]
-        features = [:]
+        featureStore.stop()
     }
 }
 
 extension DatadogCore: DatadogCoreProtocol {
     /// Registers a Feature instance.
-    ///
-    /// A Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). A registered Feature can
-    /// open a `FeatureScope` to write events, the core will then be responsible for storing and uploading events
-    /// in a efficient manner. Performance presets for storage and upload are define when instanciating the core instance.
-    ///
-    /// A Feature can also communicate to other Features by sending message on the bus that is managed by the core.
-    ///
-    /// - Parameter feature: The Feature instance.
     func register<T>(feature: T) throws where T: DatadogFeature {
-        if let feature = feature as? DatadogRemoteFeature {
+        if let remoteFeature = feature as? DatadogRemoteFeature {
             let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: T.name)
 
             let performancePreset: PerformancePreset
-            if let override = feature.performanceOverride {
+            if let override = remoteFeature.performanceOverride {
                 performancePreset = performance.updated(with: override)
             } else {
                 performancePreset = performance
@@ -369,7 +306,7 @@ extension DatadogCore: DatadogCoreProtocol {
                 featureName: T.name,
                 contextProvider: contextProvider,
                 fileReader: storage.reader,
-                requestBuilder: feature.requestBuilder,
+                requestBuilder: remoteFeature.requestBuilder,
                 httpClient: httpClient,
                 performance: performancePreset,
                 backgroundTasksEnabled: backgroundTasksEnabled,
@@ -377,33 +314,18 @@ extension DatadogCore: DatadogCoreProtocol {
                 telemetry: telemetry
             )
 
-            stores[T.name] = (
-                storage: storage,
-                upload: upload
-            )
+            featureStore.addStore(name: T.name, storage: storage, upload: upload)
 
-            // If there is any persisted data recorded with `.pending` consent,
-            // it should be deleted on Feature startup:
             storage.clearUnauthorizedData()
         }
 
-        features[T.name] = feature
+        featureStore.addFeature(name: T.name, feature: feature)
         add(messageReceiver: feature.messageReceiver, forKey: T.name)
     }
 
     /// Retrieves a Feature by its name and type.
-    ///
-    /// A Feature type can be specified as parameter or inferred from the return type:
-    ///
-    ///     let feature = core.feature(named: "foo", type: Foo.self)
-    ///     let feature: Foo? = core.feature(named: "foo")
-    ///
-    /// - Parameters:
-    ///   - name: The Feature's name.
-    ///   - type: The Feature instance type.
-    /// - Returns: The Feature if any.
     func feature<T>(named name: String, type: T.Type) -> T? {
-        features[name] as? T
+        featureStore.feature(named: name, type: type)
     }
 
     func scope<Feature>(for featureType: Feature.Type) -> FeatureScope where Feature: DatadogFeature {
@@ -412,7 +334,7 @@ extension DatadogCore: DatadogCoreProtocol {
 
     func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
         nonisolated(unsafe) let value = context()
-        Task { await contextProvider.write { $0.set(additionalContext: value) } }
+        Task { @Sendable in await contextProvider.write { $0.set(additionalContext: value) } }
     }
 
     func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) {
@@ -429,7 +351,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope where Feature: DatadogFeature {
+internal final class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope where Feature: DatadogFeature {
     private weak var core: DatadogCore?
     private let store: FeatureDataStore
 
@@ -447,7 +369,7 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
         guard let core = core else {
             return nil
         }
-        guard let storage = core.stores[Feature.name]?.storage else {
+        guard let storage = core.featureStore.storage(for: Feature.name) else {
             if core.get(feature: Feature.self) != nil {
                 DD.logger.error(
                     "Failed to obtain Event Write Context for '\(Feature.name)' because it is not a `DatadogRemoteFeature`."
@@ -460,7 +382,7 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
         }
 
         let context = await core.contextProvider.read()
-        let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
+        let writer = await storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
         return (context, writer)
     }
 
@@ -473,7 +395,7 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
     }
 
     var dataStore: DataStore {
-        return (core != nil) ? store : NOPDataStore() // only available when the core exists
+        return (core != nil) ? store : NOPDataStore()
     }
 
     func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) {
@@ -605,45 +527,22 @@ extension DatadogContextProvider {
     }
 }
 
-extension DatadogCore: Flushable {
-    /// Flushes asynchronous operations related to events write, context and message bus propagation in this instance of the SDK
-    /// with **blocking the caller thread** till their completion.
-    ///
-    /// Upon return, it is safe to assume that all events are stored. No assumption on their upload should be made - to force events upload
-    /// use `flushAndTearDown()` instead.
-    func flush() {
-        // The order of flushing below must be considered cautiously and
-        // follow our design choices around SDK core's threading.
-
-        // Reset baggages that need not be persisted across flushes.
+extension DatadogCore {
+    /// Flushes asynchronous operations related to events write, context and message bus propagation in this instance of the SDK.
+    func flush() async {
         removeContext(ofType: LaunchReport.self)
 
-        let features = features.values.compactMap { $0 as? Flushable }
+        let flushables = featureStore.flushableFeatures
 
-        // The flushing is repeated few times, to make sure that operations spawned from other operations
-        // on these queues are also awaited. Effectively, this is no different than short-time sleep() on current
-        // thread and it has the same drawbacks (including: it might become flaky). Until we find a better solution
-        // this is enough to get consistency in tests - but won't be reliable in any public "deinitialize" API.
         for _ in 0..<5 {
-            // First, flush bus queue - because messages can lead to obtaining "event write context" (reading
-            // context & performing write) in other Features:
             bus.flush()
-
-            // Next, flush flushable Features - finish current data collection to open "event write contexts":
-            features.forEach { $0.flush() }
-
-            // Last, flush read-write queue - it always comes last, no matter if the write operation is dispatched
-            // from "event write context" started on user thread OR if it happens upon receiving an "event" message
-            // in other Feature:
+            flushables.forEach { $0.flush() }
             readWriteQueue.sync { }
         }
     }
 }
 
 extension DatadogCore: Storage {
-    /// Returns the most recent modification date of a file in the core directory.
-    /// - Parameter before: The date to compare the last modification date of files.
-    /// - Returns: The latest modified file or `nil` if no files were modified before given date.
     func mostRecentModifiedFileAt(before: Date) throws -> Date? {
         try readWriteQueue.sync {
             let file = try directory.coreDirectory.mostRecentModifiedFile(before: before)

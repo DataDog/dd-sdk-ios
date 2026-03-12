@@ -25,7 +25,7 @@ import DatadogInternal
 ///     XCTAssertEqual(events[0].serviceName, "foo-bar")
 ///     ```
 ///
-public final class DatadogCoreProxy: DatadogCoreProtocol {
+public final class DatadogCoreProxy: DatadogCoreProtocol, @unchecked Sendable {
     /// Counts references to `DatadogCoreProxy` instances, so we can prevent memory
     /// leaks of SDK core in `DatadogTestsObserver`.
     public private(set) static var referenceCount = 0
@@ -142,12 +142,12 @@ public final class DatadogCoreProxy: DatadogCoreProtocol {
 }
 
 extension DatadogCoreProxy {
-    public func flush() {
-        core.flush()
+    public func flush() async {
+        await core.flush()
     }
 
-    public func flushAndTearDown() throws {
-        core.flushAndTearDown()
+    public func flushAndTearDown() async throws {
+        await core.flushAndTearDown()
 
         if temporaryCoreDirectory.coreDirectory.exists() {
             try temporaryCoreDirectory.coreDirectory.delete()

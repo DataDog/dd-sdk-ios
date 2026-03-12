@@ -98,6 +98,7 @@ public final class objc_TraceURLSessionTracking: NSObject {
 @objc(DDTrace)
 @objcMembers
 @_spi(objc)
+@MainActor
 public final class objc_Trace: NSObject {
     public static func enable(with configuration: objc_TraceConfiguration) {
         Trace.enable(with: configuration.swiftConfig)

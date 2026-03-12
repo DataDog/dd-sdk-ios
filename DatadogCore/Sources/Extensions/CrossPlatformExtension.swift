@@ -29,7 +29,8 @@ public final class CrossPlatformExtension: NSObject {
         if Self.contextSharingTransformer == nil {
             let core = CoreRegistry.default
             let contextSharingTransformer = ContextSharingTransformer()
-            try? core.register(feature: ContextSharingFeature(messageReceiver: contextSharingTransformer))
+            let feature = ContextSharingFeature(messageReceiver: contextSharingTransformer)
+            try? core.register(feature: feature)
             Self.contextSharingTransformer = contextSharingTransformer
         }
         contextSharingTransformer?.publish(to: toSharedContext)

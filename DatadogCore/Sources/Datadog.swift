@@ -186,7 +186,7 @@ public enum Datadog {
     /// Clears all data that has not already been sent to Datadog servers.
     public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default) {
         let core = core as? DatadogCore
-        core?.clearAllData()
+        Task { await core?.clearAllData() }
     }
 
     /// Stops the initialized SDK instance attached to the given name.
@@ -292,7 +292,7 @@ public enum Datadog {
         try isValid(clientToken: configuration.clientToken)
         try isValid(env: configuration.env)
 
-        let core = try DatadogCore(
+        let core = try DatadogCore.create(
             configuration: configuration,
             trackingConsent: trackingConsent,
             instanceName: instanceName
@@ -336,10 +336,13 @@ public enum Datadog {
 #endif
 
     internal static func internalFlushAndDeinitialize(instanceName: String = CoreRegistry.defaultInstanceName) {
-        // Unregister core instance:
         let core = CoreRegistry.unregisterInstance(named: instanceName) as? DatadogCore
-        // Flush and tear down SDK core:
-        core?.flushAndTearDown()
+        let sem = DispatchSemaphore(value: 0)
+        Task {
+            await core?.flushAndTearDown()
+            sem.signal()
+        }
+        sem.wait()
     }
 }
 
@@ -367,11 +370,11 @@ extension DatadogCore {
     ///     passed to SDK's downstream components.
     ///   - trackingConsent: The user's consent regarding data tracking for the SDK.
     ///   - instanceName: A unique name for this SDK instance.
-    convenience init(
+    static func create(
         configuration: Datadog.Configuration,
         trackingConsent: TrackingConsent,
         instanceName: String
-    ) throws {
+    ) throws -> DatadogCore {
         let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
         if debug {
             consolePrint("⚠️ Overriding verbosity, upload frequency, and sample rates due to \(LaunchArguments.Debug) launch argument", .warn)
@@ -405,7 +408,7 @@ extension DatadogCore {
         )
         let isRunFromExtension = bundleType == .iOSAppExtension
 
-        self.init(
+        let core = DatadogCore(
             directory: try CoreDirectory(
                 in: configuration.systemDirectory(),
                 instanceName: instanceName,
@@ -450,7 +453,7 @@ extension DatadogCore {
             isRunFromExtension: isRunFromExtension
         )
 
-        telemetry.configuration(
+        core.telemetry.configuration(
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
             batchProcessingLevel: Int64(exactly: configuration.batchProcessingLevel.maxBatchesPerUpload),
             batchSize: performance.uploaderWindow.dd.toInt64Milliseconds,
@@ -458,5 +461,7 @@ extension DatadogCore {
             useLocalEncryption: configuration.encryption != nil,
             useProxy: configuration.proxyConfiguration != nil
         )
+
+        return core
     }
 }

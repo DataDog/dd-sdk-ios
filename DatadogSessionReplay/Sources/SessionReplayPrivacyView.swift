@@ -89,7 +89,7 @@ public struct SessionReplayPrivacyView<Content: View>: View {
     }
 
     private var isSessionReplayEnabled: Bool {
-        core.get(feature: SessionReplayFeature.self) != nil
+        return core.get(feature: SessionReplayFeature.self) != nil
     }
 
     private var isRunningForPreviews: Bool {

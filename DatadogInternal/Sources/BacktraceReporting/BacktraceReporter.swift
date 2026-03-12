@@ -59,7 +59,7 @@ internal struct CoreBacktraceReporter: BacktraceReporting, @unchecked Sendable {
             return nil
         }
 
-        guard let backtraceFeature = core.get(feature: BacktraceReportingFeature.self) else {
+        guard let feature = core.get(feature: BacktraceReportingFeature.self) else {
             DD.logger.warn(
                 """
                 Backtrace will not be generated as this capability is not available.
@@ -68,7 +68,7 @@ internal struct CoreBacktraceReporter: BacktraceReporting, @unchecked Sendable {
             )
             return nil
         }
-        return try backtraceFeature.reporter.generateBacktrace(threadID: threadID)
+        return try feature.reporter.generateBacktrace(threadID: threadID)
     }
 }
 

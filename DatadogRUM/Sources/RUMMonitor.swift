@@ -32,6 +32,7 @@ public class RUMMonitor {
                     description: "Datadog SDK must be initialized and RUM feature must be enabled before calling `RUMMonitor.shared(in:)`."
                 )
             }
+
             guard let feature = core.get(feature: RUMFeature.self) else {
                 throw ProgrammerError(
                     description: "RUM feature must be enabled before calling `RUMMonitor.shared(in:)`."

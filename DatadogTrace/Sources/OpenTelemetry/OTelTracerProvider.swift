@@ -75,13 +75,13 @@ public class OTelTracerProvider: OpenTelemetryApi.TracerProvider {
                     description: "Datadog SDK must be initialized and Trace feature must be enabled before calling `OTelTracerProvider.get(instrumentationName:instrumentationVersion:)`."
                 )
             }
+
             guard let feature = core?.get(feature: TraceFeature.self) else {
                 throw ProgrammerError(
                     description: "Trace feature must be enabled before calling `OTelTracerProvider.get(instrumentationName:instrumentationVersion:)`."
                 )
             }
 
-            // Send tracer API usage to telemetry
             core?.telemetry.configuration(tracerAPI: "OpenTelemetry", tracerAPIVersion: OpenTelemetry.version)
 
             return feature.tracer

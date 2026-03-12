@@ -11,7 +11,7 @@ import Foundation
 ///
 /// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
 /// retain cycle of core holding the Feature and vice-versa.
-public protocol DatadogCoreProtocol: AnyObject, MessageSending, AdditionalContextSharing, Storage {
+public protocol DatadogCoreProtocol: AnyObject, Sendable, MessageSending, AdditionalContextSharing, Storage {
     // Remove `DatadogCoreProtocol` conformance to `MessageSending` and `BaggageSharing` once
     // all features are migrated to depend on `FeatureScope` interface.
 
@@ -233,7 +233,7 @@ public extension FeatureScope {
 }
 
 /// No-op implementation of `DatadogFeatureRegistry`.
-public class NOPDatadogCore: DatadogCoreProtocol {
+public final class NOPDatadogCore: DatadogCoreProtocol, @unchecked Sendable {
     public init() { }
     /// no-op
     public func register<T>(feature: T) throws where T: DatadogFeature { }

@@ -18,19 +18,22 @@ public enum URLSessionInstrumentation {
     /// - Parameters:
     ///   - configuration: Configuration of the feature.
     ///   - core: The instance of Datadog SDK to enable URLSession instrumentation in (global instance by default).
+    @MainActor
     public static func enableDurationBreakdown(with configuration: URLSessionInstrumentation.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) {
-        do {
-            try enableOrThrow(with: configuration, in: core)
+        runOnMainThreadSync {
+            do {
+                try enableOrThrow(with: configuration, in: core)
 
-            core.telemetry.debug(
-                id: "URLSessionInstrumentation:enableDurationBreakdown",
-                message: "URLSession duration breakdown enabled " + isFirstPartyHostsTracing(for: configuration)
-            )
-        } catch let error {
-            consolePrint("\(error)", .error)
+                core.telemetry.debug(
+                    id: "URLSessionInstrumentation:enableDurationBreakdown",
+                    message: "URLSession duration breakdown enabled " + isFirstPartyHostsTracing(for: configuration)
+                )
+            } catch let error {
+                consolePrint("\(error)", .error)
 
-            if error is InternalError { // SDK error, send to telemetry
-                core.telemetry.error(error)
+                if error is InternalError {
+                    core.telemetry.error(error)
+                }
             }
         }
     }
@@ -41,19 +44,22 @@ public enum URLSessionInstrumentation {
     ///   - configuration: Configuration of the feature.
     ///   - core: The instance of Datadog SDK to enable URLSession instrumentation in (global instance by default).
     @available(*, deprecated, renamed: "enableDurationBreakdown(with:in:)", message: "Use enableDurationBreakdown(with:in:) instead.")
+    @MainActor
     public static func enable(with configuration: URLSessionInstrumentation.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) {
-        do {
-            try enableOrThrow(with: configuration, in: core)
+        runOnMainThreadSync {
+            do {
+                try enableOrThrow(with: configuration, in: core)
 
-            core.telemetry.debug(
-                id: "URLSessionInstrumentation:enable",
-                message: "URLSession duration breakdown enabled " + isFirstPartyHostsTracing(for: configuration) + " (deprecated API)"
-            )
-        } catch let error {
-            consolePrint("\(error)", .error)
+                core.telemetry.debug(
+                    id: "URLSessionInstrumentation:enable",
+                    message: "URLSession duration breakdown enabled " + isFirstPartyHostsTracing(for: configuration) + " (deprecated API)"
+                )
+            } catch let error {
+                consolePrint("\(error)", .error)
 
-            if error is InternalError { // SDK error, send to telemetry
-                core.telemetry.error(error)
+                if error is InternalError {
+                    core.telemetry.error(error)
+                }
             }
         }
     }

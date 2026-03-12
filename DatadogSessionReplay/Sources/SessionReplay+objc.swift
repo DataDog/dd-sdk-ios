@@ -13,6 +13,7 @@ import DatadogInternal
 @objc(DDSessionReplay)
 @objcMembers
 @_spi(objc)
+@MainActor
 public final class objc_SessionReplay: NSObject {
     override private init() { }
 

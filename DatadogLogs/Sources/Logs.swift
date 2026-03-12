@@ -54,18 +54,20 @@ public enum Logs {
     /// - Parameters:
     ///   - configuration: The Logs configuration.
     ///   - core: The instance of Datadog SDK to enable Logs in (global instance by default).
+    @MainActor
     public static func enable(
         with configuration: Logs.Configuration = .init(),
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
-        do {
-            // To ensure the correct registration order between Core and Features,
-            // the entire initialization flow is synchronized on the main thread.
-            try runOnMainThreadSync {
+        // Belt-and-suspenders: @MainActor provides compile-time guarantees in structured
+        // concurrency, but GCD callers (DispatchQueue.global().async) bypass actor isolation
+        // at runtime. runOnMainThreadSync catches those cases.
+        runOnMainThreadSync {
+            do {
                 try enableOrThrow(with: configuration, in: core)
+            } catch let error {
+                consolePrint("\(error)", .error)
             }
-        } catch let error {
-            consolePrint("\(error)", .error)
         }
     }
 

@@ -55,6 +55,7 @@ public final class objc_URLSessionInstrumentationFirstPartyHostsTracing: NSObjec
 @objc(DDURLSessionInstrumentation)
 @objcMembers
 @_spi(objc)
+@MainActor
 public final class objc_URLSessionInstrumentation: NSObject {
     /// Enables duration breakdown capture for URLSession tasks.
     ///

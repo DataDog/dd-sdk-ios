@@ -41,16 +41,21 @@ public enum WebViewTracking {
         logsSampleRate: SampleRate = .maxSampleRate,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
-        do {
-            try enableOrThrow(
-                tracking: webView.configuration.userContentController,
-                hosts: hosts,
-                hostsSanitizer: HostsSanitizer(),
-                logsSampleRate: logsSampleRate,
-                in: core
-            )
-        } catch let error {
-            consolePrint("\(error)", .error)
+        // Belt-and-suspenders: @MainActor provides compile-time guarantees in structured
+        // concurrency, but GCD callers (DispatchQueue.global().async) bypass actor isolation
+        // at runtime. runOnMainThreadSync catches those cases.
+        runOnMainThreadSync {
+            do {
+                try enableOrThrow(
+                    tracking: webView.configuration.userContentController,
+                    hosts: hosts,
+                    hostsSanitizer: HostsSanitizer(),
+                    logsSampleRate: logsSampleRate,
+                    in: core
+                )
+            } catch let error {
+                consolePrint("\(error)", .error)
+            }
         }
     }
 

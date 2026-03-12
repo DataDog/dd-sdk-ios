@@ -21,6 +21,7 @@ import DatadogInternal
 public final class CrashReporting {
     /// Initializes the Datadog Crash Reporter using the default
     /// `KSCrash` plugin.
+    @MainActor
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
         enable(with: try KSCrashPlugin(telemetry: core.telemetry), in: core)
     }
@@ -31,15 +32,17 @@ public final class CrashReporting {
     /// - Provide crash report
     /// - Store context data associated with crashes
     /// - Provide backtraces
+    @MainActor
     public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default) {
-        do {
-            // To ensure the correct registration order between Core and Features,
-            // the entire initialization flow is synchronized on the main thread.
-            try runOnMainThreadSync {
-                try enableOrThrow(with: plugin(), in: core)
+        // Belt-and-suspenders: @MainActor provides compile-time guarantees in structured
+        // concurrency, but GCD callers (DispatchQueue.global().async) bypass actor isolation
+        // at runtime. runOnMainThreadSync catches those cases.
+        runOnMainThreadSync {
+            do {
+                try enableOrThrow(with: try plugin(), in: core)
+            } catch let error {
+                consolePrint("\(error)", .error)
             }
-        } catch let error {
-            consolePrint("\(error)", .error)
         }
     }
 
@@ -85,6 +88,7 @@ public final class CrashReporting {
 /// Your crash reports appear in [Error Tracking](https://app.datadoghq.com/rum/error-tracking).
 @available(swift, obsoleted: 1)
 @objc(DDCrashReporter)
+@MainActor
 public final class objc_CrashReporting: NSObject {
     /// Initializes the Datadog Crash Reporter.
     @objc

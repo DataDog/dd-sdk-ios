@@ -537,8 +537,8 @@ public class objc_RUMConfiguration: NSObject {
 @objc(DDRUM)
 @objcMembers
 @_spi(objc)
+@MainActor
 public class objc_RUM: NSObject {
-    @MainActor
     public static func enable(with configuration: objc_RUMConfiguration) {
         RUM.enable(with: configuration.swiftConfig)
     }

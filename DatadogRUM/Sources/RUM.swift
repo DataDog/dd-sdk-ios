@@ -17,6 +17,7 @@ public enum RUM {
     /// - Parameters:
     ///   - configuration: Configuration of the feature.
     ///   - core: The instance of Datadog SDK to enable RUM in (global instance by default).
+    @MainActor
     public static func enable(
         with configuration: RUM.Configuration,
         in core: DatadogCoreProtocol = CoreRegistry.default
@@ -43,6 +44,8 @@ public enum RUM {
             )
         }
 
+        let debugViews = configuration.debugViews
+
         // Register RUM feature:
         let rum = try RUMFeature(in: core, configuration: configuration)
         try core.register(feature: rum)
@@ -52,7 +55,7 @@ public enum RUM {
             try RUM._internal.enableURLSessionTracking(with: urlSessionConfig, in: core)
         }
 
-        if configuration.debugViews {
+        if debugViews {
             consolePrint("⚠️ Overriding RUM debugging with DD_DEBUG_RUM launch argument", .warn)
             rum.monitor.debug = true
         }

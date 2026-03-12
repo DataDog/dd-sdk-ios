@@ -77,13 +77,13 @@ public class Tracer {
                     description: "Datadog SDK must be initialized and RUM feature must be enabled before calling `Tracer.shared(in:)`."
                 )
             }
+
             guard let feature = core.get(feature: TraceFeature.self) else {
                 throw ProgrammerError(
                     description: "Trace feature must be enabled before calling `Tracer.shared(in:)`."
                 )
             }
 
-            // Send tracer API usage to telemetry
             core.telemetry.configuration(tracerAPI: "OpenTracing")
 
             return feature.tracer
