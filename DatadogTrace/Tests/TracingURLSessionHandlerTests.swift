@@ -870,14 +870,14 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "www.example.com": [.datadog]
             ]),
             traceContextInjection: .all,
+            telemetry: NOPTelemetry(),
             spanCustomization: { request, span, response, error in
                 receivedRequest = request
                 receivedSpan = span
                 receivedResponse = response
                 receivedError = error
                 span.setTag(key: "graphql.operation.name", value: "GetUser")
-            },
-            telemetry: NOPTelemetry()
+            }
         )
 
         // Given
@@ -927,8 +927,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "www.example.com": [.datadog]
             ]),
             traceContextInjection: .all,
-            spanCustomization: nil,
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            spanCustomization: nil
         )
 
         // Given
@@ -967,11 +967,11 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "www.example.com": [.datadog]
             ]),
             traceContextInjection: .all,
+            telemetry: NOPTelemetry(),
             spanCustomization: { _, span, _, _ in
                 span.setTag(key: "custom.tag", value: "custom_value")
                 span.setOperationName("graphql.query")
-            },
-            telemetry: NOPTelemetry()
+            }
         )
 
         // Given
