@@ -24,7 +24,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
         self.windowObserver = windowObserver
     }
 
-    func takeSnapshot(context: Recorder.Context) -> TouchSnapshot? {
+    func takeSnapshot(context: TouchSnapshotContext) -> TouchSnapshot? {
         buffer = buffer.compactMap { touch in
             var updatedTouch = touch
             if let offset = context.viewServerTimeOffset {
@@ -87,10 +87,9 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
     /// Determines whether the touch event should be recorded based on its privacy override and the global privacy settings.
     /// If the touch has a specific privacy override, that override is used.
     /// Otherwise, the global touch privacy setting is applied.
-    /// - Parameter touchId: The unique identifier for the touch event.
+    /// - Parameter touch: The touch to evaluate.
     /// - Returns: `true` if the touch should be recorded, `false` otherwise.
-    internal func shouldRecordTouch(_ touch: TouchSnapshot.Touch, in context: Recorder.Context
-    ) -> Bool {
+    internal func shouldRecordTouch(_ touch: TouchSnapshot.Touch, in context: TouchSnapshotContext) -> Bool {
         let privacy: TouchPrivacyLevel = touch.touchOverride ?? context.touchPrivacy
         return privacy == .show
     }

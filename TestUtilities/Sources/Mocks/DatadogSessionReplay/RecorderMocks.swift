@@ -550,6 +550,16 @@ extension Recorder.Context: AnyMockable, RandomMockable {
     }
 }
 
+extension TouchSnapshotContext: AnyMockable, RandomMockable {
+    public static func mockAny() -> TouchSnapshotContext {
+        TouchSnapshotContext(touchPrivacy: .mockAny(), viewServerTimeOffset: .mockAny())
+    }
+
+    public static func mockRandom() -> TouchSnapshotContext {
+        TouchSnapshotContext(touchPrivacy: .mockRandom(), viewServerTimeOffset: .mockRandom())
+    }
+}
+
 extension UIApplicationSwizzler: AnyMockable {
     public static func mockAny() -> UIApplicationSwizzler {
         class HandlerMock: UIEventHandler {
