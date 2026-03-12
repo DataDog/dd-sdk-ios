@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol MultipartFormDataBuilder {
+public protocol MultipartFormDataBuilder: Sendable {
     /// The boundary  of this multipart form.
     var boundary: String { get }
     /// Adds a field.

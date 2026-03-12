@@ -44,7 +44,7 @@ internal final class AppLaunchMetric {
         self.errorMessage = errorMessage
     }
 
-    func asMetricAttributes() -> [String: Encodable]? {
+    func asMetricAttributes() -> [String: AttributeValue]? {
         var stoppedReason: String?
         switch status {
         case .running:

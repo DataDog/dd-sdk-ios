@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 #if !os(watchOS)
 
@@ -17,7 +18,7 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 /// Tracks the profiling configuration to be added to telemetry metrics.
-internal final class ConfigurationMetric {
+internal final class ConfigurationMetric: Sendable {
     internal enum Constants {
         /// Namespace for bundling the profiling configuration.
         static let configurationKey = "profiling_config"
@@ -48,7 +49,7 @@ internal final class ConfigurationMetric {
         self.samplingFrequency = samplingFrequency
     }
 
-    func asMetricAttributes() -> [String: Encodable]? {
+    func asMetricAttributes() -> [String: AttributeValue]? {
         [Constants.configurationKey: self]
     }
 }

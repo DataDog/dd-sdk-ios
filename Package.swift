@@ -216,12 +216,14 @@ let package = Package(
                 .target(name: "DatadogInternal"),
                 .target(name: "DatadogMachProfiler")
             ],
-            path: "DatadogProfiling/Sources",
+            path: "DatadogProfiling",
+            sources: ["Sources"],
             resources: [
-                .copy("../Resources/PrivacyInfo.xcprivacy")
+                .copy("Resources/PrivacyInfo.xcprivacy")
             ],
-            swiftSettings: internalSwiftSettings
+            swiftSettings: [.swiftLanguageMode(.v6)] + internalSwiftSettings
         ),
+
         .target(
             name: "DatadogMachProfiler",
             path: "DatadogProfiling/Mach",
