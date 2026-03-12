@@ -8,21 +8,6 @@ import Foundation
 
 /// The Trace context received from `Core`.
 public enum TraceCoreContext {
-    /// The APM configuration.
-    public struct Configuration: AdditionalContext {
-        public static let key = "trace_configuration"
-
-        /// The sample rate for traces
-        public let sampleRate: SampleRate
-
-        /// Creates a Trace configuration.
-        ///
-        /// - Parameter sampleRate: The sample rate for traces
-        public init(sampleRate: SampleRate) {
-            self.sampleRate = sampleRate
-        }
-    }
-
     /// The Span context received from `Core`.
     public struct Span: AdditionalContext {
         public static let key = "span_context"

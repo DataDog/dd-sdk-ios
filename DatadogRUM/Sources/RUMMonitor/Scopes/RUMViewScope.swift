@@ -572,8 +572,7 @@ extension RUMViewScope {
                     sessionReplaySampleRate: sessionReplayConfig.map { Double($0.sampleRate) },
                     sessionSampleRate: Double(dependencies.sessionSampler.samplingRate),
                     startSessionReplayRecordingManually: sessionReplayConfig?.startRecordingManually,
-                    traceSampleRate: context.additionalContext(ofType: TraceCoreContext.Configuration.self)
-                        .map { Double($0.sampleRate) }
+                    traceSampleRate: dependencies.distributedTracingSampleRate.map(Double.init)
                 ),
                 documentVersion: version.toInt64,
                 pageStates: nil,

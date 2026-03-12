@@ -35,6 +35,7 @@ internal struct RUMScopeDependencies {
     let trackFrustrations: Bool
     let hasAppHangsEnabled: Bool
     let firstPartyHosts: FirstPartyHosts?
+    let distributedTracingSampleRate: SampleRate?
     let eventBuilder: RUMEventBuilder
     let rumUUIDGenerator: RUMUUIDGenerator
     let backtraceReporter: BacktraceReporting?
@@ -77,6 +78,7 @@ internal struct RUMScopeDependencies {
         trackFrustrations: Bool,
         hasAppHangsEnabled: Bool,
         firstPartyHosts: FirstPartyHosts?,
+        distributedTracingSampleRate: SampleRate?,
         eventBuilder: RUMEventBuilder,
         rumUUIDGenerator: RUMUUIDGenerator,
         backtraceReporter: BacktraceReporting?,
@@ -105,6 +107,7 @@ internal struct RUMScopeDependencies {
         self.trackFrustrations = trackFrustrations
         self.hasAppHangsEnabled = hasAppHangsEnabled
         self.firstPartyHosts = firstPartyHosts
+        self.distributedTracingSampleRate = distributedTracingSampleRate
         self.eventBuilder = eventBuilder
         self.rumUUIDGenerator = rumUUIDGenerator
         self.backtraceReporter = backtraceReporter
