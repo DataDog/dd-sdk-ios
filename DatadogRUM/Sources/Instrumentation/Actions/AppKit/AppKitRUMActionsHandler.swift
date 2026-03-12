@@ -9,8 +9,6 @@ import AppKit
 import DatadogInternal
 
 internal protocol RUMActionsHandling: RUMCommandPublisher {
-    /// Tracks RUM actions automatically for UIKit and SwiftUI by responding to `DDApplication.sendEvent(application:event:)` being called.
-    func notify_sendEvent(application: DDApplication, event: DDEvent)
     /// Tracks RUM actions manually with SwiftUI view modifers by being notified from `RUMTapActionModifier`.
     func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable])
 
@@ -58,25 +56,6 @@ internal final class RUMActionsHandler: RUMActionsHandling {
 
     func publish(to subscriber: RUMCommandSubscriber) {
         self.subscriber = subscriber
-    }
-
-    /// Tracks RUM actions automatically for UIKit and SwiftUI in response to `DDApplication.sendEvent(application:event:)` event.
-    func notify_sendEvent(application: DDApplication, event: DDEvent) {
-        guard let command = eventCommandsFactory?.command(from: event) else {
-            return // Not a "tap" event or doesn't have the view.
-        }
-
-        guard let subscriber = subscriber else {
-            DD.logger.warn(
-                """
-                A RUM action was detected, but RUM tracking appears to be disabled.
-                Ensure `RUM.enable()` is called before any actions are triggered.
-                """
-            )
-            return
-        }
-
-        subscriber.process(command: command)
     }
 
     /// Tracks manually instrumented SwiftUI actions via `.trackRUMTapAction()` view modifier,
