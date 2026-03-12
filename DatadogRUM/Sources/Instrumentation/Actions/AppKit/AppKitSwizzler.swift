@@ -9,50 +9,50 @@ import AppKit
 import DatadogInternal
 
 internal final class DDApplicationSwizzler {
-    let sendEvent: SendEvent
+//    let sendEvent: SendEvent
     let sendAction: NSControlSendAction
 
     init(handler: RUMActionsHandling) throws {
-        sendEvent = try SendEvent(handler: handler)
+//        sendEvent = try SendEvent(handler: handler)
         sendAction = try NSControlSendAction(handler: handler)
     }
 
     func swizzle() {
-        sendEvent.swizzle()
+//        sendEvent.swizzle()
         sendAction.swizzle()
     }
 
     internal func unswizzle() {
-        sendEvent.unswizzle()
+//        sendEvent.unswizzle()
         sendAction.unswizzle()
     }
 
     // MARK: - Swizzlings
 
     /// Swizzles the `DDApplication.sendEvent(_:)`
-    class SendEvent: MethodSwizzler <
-        @convention(c) (DDApplication, Selector, DDEvent) -> Bool,
-        @convention(block) (DDApplication, DDEvent) -> Bool
-    > {
-        private static let selector = #selector(DDApplication.sendEvent(_:))
-        private let method: Method
-        private let handler: RUMActionsHandling
-
-        init(handler: RUMActionsHandling) throws {
-            self.method = try dd_class_getInstanceMethod(DDApplication.self, Self.selector)
-            self.handler = handler
-        }
-
-        func swizzle() {
-            typealias Signature = @convention(block) (DDApplication, DDEvent) -> Bool
-            swizzle(method) { previousImplementation -> Signature in
-                return { [weak handler = self.handler] application, event  in
-//                    handler?.notify_sendEvent(application: application, event: event)
-                    return previousImplementation(application, Self.selector, event)
-                }
-            }
-        }
-    }
+//    class SendEvent: MethodSwizzler <
+//        @convention(c) (DDApplication, Selector, DDEvent) -> Bool,
+//        @convention(block) (DDApplication, DDEvent) -> Bool
+//    > {
+//        private static let selector = #selector(DDApplication.sendEvent(_:))
+//        private let method: Method
+//        private let handler: RUMActionsHandling
+//
+//        init(handler: RUMActionsHandling) throws {
+//            self.method = try dd_class_getInstanceMethod(DDApplication.self, Self.selector)
+//            self.handler = handler
+//        }
+//
+//        func swizzle() {
+//            typealias Signature = @convention(block) (DDApplication, DDEvent) -> Bool
+//            swizzle(method) { previousImplementation -> Signature in
+//                return { [weak handler = self.handler] application, event  in
+////                    handler?.notify_sendEvent(application: application, event: event)
+//                    return previousImplementation(application, Self.selector, event)
+//                }
+//            }
+//        }
+//    }
 
     class NSControlSendAction: MethodSwizzler <
         @convention(c) (NSControl, Selector, Selector?, Any?) -> Bool,
