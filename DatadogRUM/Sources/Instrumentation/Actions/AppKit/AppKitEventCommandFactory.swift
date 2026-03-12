@@ -4,59 +4,61 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if canImport(UIKit)
-import UIKit
+import AppKit
 import DatadogInternal
 
 /// Factory responsible for creating RUM user action commands from UIEvents.
 /// This abstraction allows for platform-specific implementations (iOS/tvOS).
-internal protocol UIEventCommandFactory {
+internal protocol AppKitEventCommandFactory {
     /// Creates a RUM command from a `UIEvent` if applicable
     /// - Parameter event: The `UIEvent` to process
     /// - Returns: A command to add a user action, or `nil` if the event shouldn't be tracked
     func command(from event: DDEvent) -> RUMAddUserActionCommand?
 }
 
-// MARK: iOS implementation
-/// iOS-specific implementation that detects user interactions through touches.
+// MARK: macOS implementation
+/// macOS-specific implementation that detects user interactions through touches.
 /// Handles both UIKit and SwiftUI components using different detection strategies.
-internal final class UITouchCommandFactory: UIEventCommandFactory {
+internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     let dateProvider: DateProvider
-    let uiKitPredicate: UITouchRUMActionsPredicate?
+    let appKitPredicate: AppKitRUMActionsPredicate?
     let swiftUIPredicate: SwiftUIRUMActionsPredicate?
     let swiftUIDetector: SwiftUIComponentDetector?
 
     init(
         dateProvider: DateProvider,
-        uiKitPredicate: UITouchRUMActionsPredicate?,
+        appKitPredicate: AppKitRUMActionsPredicate?,
         swiftUIPredicate: SwiftUIRUMActionsPredicate?,
         swiftUIDetector: SwiftUIComponentDetector?
     ) {
         self.dateProvider = dateProvider
-        self.uiKitPredicate = uiKitPredicate
+        self.appKitPredicate = appKitPredicate
         self.swiftUIPredicate = swiftUIPredicate
         self.swiftUIDetector = swiftUIDetector
     }
 
     func command(from event: DDEvent) -> RUMAddUserActionCommand? {
-        guard let allTouches = event.allTouches else {
-            return nil // not a touch event
-        }
-        guard allTouches.count == 1, let tap = allTouches.first else {
-            return nil // not a single touch event
-        }
+//        guard let allTouches = event.allTouches else {
+//            return nil // not a touch event
+//        }
+//        guard allTouches.count == 1, let tap = allTouches.first else {
+//            return nil // not a single touch event
+//        }
 
         // Detect UIKit interactions first,
         // as they are more likely to happen.
-        if let rumAction = createUIKitActionCommand(from: tap) {
+        if let rumAction = createAppKitActionCommand(from: event) {
             return rumAction
         }
 
-        return swiftUIDetector?.createActionCommand(from: tap, predicate: swiftUIPredicate, dateProvider: dateProvider)
+//        return swiftUIDetector?.createActionCommand(from: tap, predicate: swiftUIPredicate, dateProvider: dateProvider)
+
+        return nil
     }
 
     // MARK: UIKit
 
+#if canImport(UIKit)
     private func createUIKitActionCommand(from tap: DDTouch) -> RUMAddUserActionCommand? {
         guard let uiKitPredicate else {
             return nil
@@ -89,6 +91,42 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
             name: action.name
         )
     }
+#elseif canImport(AppKit)
+    private func createAppKitActionCommand(from event: NSEvent) -> RUMAddUserActionCommand? {
+        guard let appKitPredicate else {
+            return nil
+        }
+
+        guard event.type == .leftMouseUp, let window = event.window else {
+            return nil
+        }
+
+//
+//
+//
+//        guard view.isSafeForPrivacy else {
+//            return nil // no valid view
+//        }
+//
+//        guard let targetView = bestActionTarget(for: view) else {
+//            return nil // Tapped view is not eligible for producing RUM Action
+//        }
+
+        switch event.type {
+        case .leftMouseUp:
+            return RUMAddUserActionCommand(
+                time: dateProvider.now,
+                attributes: [:],
+                instrumentation: .uikit,
+                actionType: .click,
+                name: "Some button"
+            )
+
+        default:
+            return nil
+        }
+    }
+#endif
 
     /// Traverses the hierarchy of the `view` bottom-up to find the best view which could be considered for RUM Action's target,
     /// e.g. if the tapped `view` is a `UILabel` embedded in a `UIStackView` inside the `UITableViewCell` it will
@@ -116,6 +154,7 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
     }
 }
 
+#if canImport(UIKit)
 // MARK: tvOS implementation
 /// tvOS-specific implementation that detects user interactions through touches.
 internal struct UIPressCommandFactory: UIEventCommandFactory {
@@ -149,3 +188,4 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
     }
 }
 #endif
+

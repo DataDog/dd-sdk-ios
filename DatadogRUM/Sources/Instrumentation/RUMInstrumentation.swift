@@ -99,6 +99,13 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
                 dateProvider: dateProvider,
                 uiKitPredicate: uiKitRUMActionsPredicate
             )
+            #elseif os(macOS)
+            return RUMActionsHandler(
+                dateProvider: dateProvider,
+                appKitPredicate: uiKitRUMActionsPredicate,
+                swiftUIPredicate: swiftUIRUMActionsPredicate,
+                swiftUIDetector: SwiftUIComponentFactory.createDetector()
+            )
             #else
             return RUMActionsHandler(
                 dateProvider: dateProvider,

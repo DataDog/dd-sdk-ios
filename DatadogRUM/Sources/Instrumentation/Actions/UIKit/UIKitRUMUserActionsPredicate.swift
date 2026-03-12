@@ -6,9 +6,6 @@
 
 #if canImport(UIKit)
 import UIKit
-#elseif canImport(AppKit)
-import AppKit
-#endif
 import DatadogInternal
 
 #if os(tvOS)
@@ -28,7 +25,6 @@ public protocol UITouchRUMActionsPredicate {
     func rumAction(targetView: DDView) -> RUMAction?
 }
 
-#if canImport(UIKit)
 /// The predicate for tvOS interactions deciding if a given RUM Action should be recorded.
 ///
 /// When the app is running, the SDK will ask the implementation of `UIPressRUMActionsPredicate` if any noticed user action on the target view should
@@ -93,7 +89,6 @@ extension DefaultUIKitRUMActionsPredicate: UIPressRUMActionsPredicate {
         return RUMAction(name: name, attributes: [:])
     }
 }
-#endif
 
 private extension DDView {
     var swiftUIViewName: String {
@@ -104,3 +99,4 @@ private extension DDView {
         return typeDescription
     }
 }
+#endif
