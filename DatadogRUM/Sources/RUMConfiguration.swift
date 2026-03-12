@@ -85,7 +85,7 @@ extension RUM {
         /// Note: Automatic RUM action tracking involves swizzling the `UIApplication.sendEvent(_:)` method.
         ///
         /// Default: `nil` - which means automatic RUM action tracking for UIKit is not enabled by default.
-        public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
+        public var uiKitActionsPredicate: FrameworkKitRUMActionsPredicate?
 
         /// The predicate for automatically tracking SwiftUI views as RUM views.
         ///
@@ -519,7 +519,7 @@ extension RUM.Configuration {
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,
         uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
-        uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
+        uiKitActionsPredicate: FrameworkKitRUMActionsPredicate? = nil,
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
         swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,

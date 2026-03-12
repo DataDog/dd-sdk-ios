@@ -14,6 +14,8 @@ internal protocol AppKitEventCommandFactory {
     /// - Parameter event: The `UIEvent` to process
     /// - Returns: A command to add a user action, or `nil` if the event shouldn't be tracked
     func command(from event: DDEvent) -> RUMAddUserActionCommand?
+
+    func command(from control: NSControl, action: Selector?, target: Any?) -> RUMAddUserActionCommand?
 }
 
 // MARK: macOS implementation
@@ -52,6 +54,14 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         }
 
 //        return swiftUIDetector?.createActionCommand(from: tap, predicate: swiftUIPredicate, dateProvider: dateProvider)
+
+        return nil
+    }
+
+    func command(from control: NSControl, action: Selector?, target: Any?) -> RUMAddUserActionCommand? {
+        if let rumAction = createAppKitActionCommand(from: control) {
+            return rumAction
+        }
 
         return nil
     }
@@ -117,7 +127,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return RUMAddUserActionCommand(
                 time: dateProvider.now,
                 attributes: [:],
-                instrumentation: .uikit,
+                instrumentation: .appKit,
                 actionType: .click,
                 name: "Some button"
             )
@@ -125,6 +135,24 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         default:
             return nil
         }
+    }
+
+    private func createAppKitActionCommand(from control: NSControl) -> RUMAddUserActionCommand? {
+        guard let appKitPredicate else {
+            return nil
+        }
+
+        guard let action = appKitPredicate.rumAction(targetView: control) else {
+            return nil
+        }
+
+        return RUMAddUserActionCommand(
+            time: dateProvider.now,
+            attributes: action.attributes,
+            instrumentation: .appKit,
+            actionType: .click,
+            name: action.name
+        )
     }
 #endif
 
@@ -153,39 +181,4 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         }
     }
 }
-
-#if canImport(UIKit)
-// MARK: tvOS implementation
-/// tvOS-specific implementation that detects user interactions through touches.
-internal struct UIPressCommandFactory: UIEventCommandFactory {
-    let dateProvider: DateProvider
-
-    let uiKitPredicate: UIPressRUMActionsPredicate
-
-    func command(from event: DDEvent) -> RUMAddUserActionCommand? {
-        guard let event = event as? UIPressesEvent else {
-            return nil // not a press event
-        }
-        guard event.allPresses.count == 1, let press = event.allPresses.first else {
-            return nil // not a single press event
-        }
-        guard press.phase == .ended else {
-            return nil // not in `.ended` phase
-        }
-        guard let view = press.responder as? DDView, view.isSafeForPrivacy else {
-            return nil // no valid view
-        }
-        guard let action = uiKitPredicate.rumAction(press: press.type, targetView: view) else {
-            return nil
-        }
-        return RUMAddUserActionCommand(
-            time: dateProvider.now,
-            attributes: action.attributes,
-            instrumentation: .uikit,
-            actionType: .click,
-            name: action.name
-        )
-    }
-}
-#endif
 

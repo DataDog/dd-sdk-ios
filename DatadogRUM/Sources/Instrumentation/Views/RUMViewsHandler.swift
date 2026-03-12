@@ -237,6 +237,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
             // This prevents from calling the predicate when unnecessary.
             add(view: view)
         } else if let rumView = uiKitPredicate?.rumView(for: viewController) {
+#if canImport(UIKit)
             add(
                 view: .init(
                     identity: identity,
@@ -247,6 +248,18 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     instrumentationType: .uikit
                 )
             )
+#elseif canImport(AppKit)
+            add(
+                view: .init(
+                    identity: identity,
+                    name: rumView.name,
+                    path: rumView.path ?? viewController.canonicalClassName,
+                    isUntrackedModal: rumView.isUntrackedModal,
+                    attributes: rumView.attributes,
+                    instrumentationType: .appKit
+                )
+            )
+#endif
         } else if let swiftUIPredicate,
                   let swiftUIViewNameExtractor,
                   let rumViewName = swiftUIViewNameExtractor.extractName(from: viewController),
