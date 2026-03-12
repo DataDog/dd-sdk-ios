@@ -213,6 +213,12 @@ The `ENV=ci` flag is used in CI to enable special behaviors (e.g., different API
 - Code must pass `make lint`, `make test-ios-all`, `make test-tvos-all`, and API surface checks
 - Follow patterns established in the codebase (OOP, SOLID principles, dependency injection)
 
+## Code Navigation
+
+**NEVER use Grep, Glob, or Bash to search for Swift symbols.** For any Swift symbol navigation — finding definitions, call sites, protocol conformers, method overrides, or module dependencies — you MUST use the `code-index` skill (`.claude/skills/code-index/`). It queries the compiler's index store for accurate, compiler-level symbol resolution. Using Grep or Glob for Swift symbol lookups is a violation of these instructions.
+
+Grep/Glob are permitted ONLY for text pattern matching: string literals, comments, file names, or non-Swift-symbol searches.
+
 ## Claude additional Agent documentation
 
 Claude can look at the Agents.md to gather more information about the project.

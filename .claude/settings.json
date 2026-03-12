@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "mcp__xcode__*"
+      "mcp__xcode__*",
+      "Bash(.claude/skills/code-index/tools/.build/release/indexstore-query *)",
+      "Bash(swift build*)",
+      "Bash(ls *)",
+      "Bash(find *)"
     ]
   }
 }
