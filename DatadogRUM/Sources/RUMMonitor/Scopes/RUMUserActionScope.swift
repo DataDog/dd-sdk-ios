@@ -24,7 +24,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     let dependencies: RUMScopeDependencies
 
     /// The type of this User Action.
-    internal let actionType: RUMActionType
+    internal var actionType: RUMActionType
     /// The name of this User Action.
     private(set) var name: String
     /// User Action attributes.
@@ -118,6 +118,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             return false
         case let command as RUMStopUserActionCommand:
             name = command.name ?? name
+            actionType = command.actionType
             sendActionEvent(completionTime: command.time, on: command, context: context, writer: writer)
             return false
         case is RUMStartResourceCommand:

@@ -489,7 +489,7 @@ extension String {
         env: String = .mockAny(),
         variant: String? = .mockAny()
     ) -> String {
-        "service:\(service),version:\(version),sdk_version:\(sdkVersion),env:\(env)\(variant != nil ? ",variant:\(variant!)" : "")"
+        "\(DDTag.service):\(service),\(DDTag.version):\(version),\(DDTag.sdkVersion):\(sdkVersion),\(DDTag.env):\(env)\(variant != nil ? ",\(DDTag.variant):\(variant!)" : "")"
     }
 }
 

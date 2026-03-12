@@ -7,7 +7,7 @@
 import Foundation
 
 /// The `W3CHTTPHeadersWriter` class facilitates the injection of trace propagation headers into network requests
-/// targeted at a backend expecting [W3C propagation format](https://github.com/openzipkin/b3-propagation).
+/// targeted at a backend expecting [W3C propagation format](https://www.w3.org/TR/trace-context/#traceparent-header).
 ///
 /// Usage:
 ///

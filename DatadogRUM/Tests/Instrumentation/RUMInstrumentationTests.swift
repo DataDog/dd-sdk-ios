@@ -68,7 +68,11 @@ class RUMInstrumentationTests: XCTestCase {
 
         // Then
         withExtendedLifetime(instrumentation) {
+            #if os(tvOS)
             DDAssertActiveSwizzlings(["sendEvent:"])
+            #else
+            DDAssertActiveSwizzlings(["sendEvent:", "setDelegate:"])
+            #endif
             XCTAssertNil(instrumentation.longTasks)
         }
     }

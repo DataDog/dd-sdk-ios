@@ -99,4 +99,33 @@ final class DatadogContextTests: XCTestCase {
         XCTAssertEqual(ddTags["sdk_version"] as! String, sdkVersion)
         XCTAssertNil(ddTags["variant"])
     }
+
+    // MARK: - ddTags caching
+
+    func testDDTagsUpdatesWhenVersionChanges() throws {
+        // Given
+        var context: DatadogContext = .mockWith(version: "1.0.0")
+        let originalDDTags = context.ddTags
+        XCTAssertTrue(originalDDTags.contains("version:1.0.0"))
+
+        // When
+        context.version = "2.0.0"
+
+        // Then
+        XCTAssertTrue(context.ddTags.contains("version:2.0.0"))
+        XCTAssertFalse(context.ddTags.contains("version:1.0.0"))
+        XCTAssertNotEqual(context.ddTags, originalDDTags)
+    }
+
+    func testDDTagsSanitizesVersionOnUpdate() throws {
+        // Given
+        var context: DatadogContext = .mockWith(version: "1.0.0")
+
+        // When
+        context.version = "2,0:0"
+
+        // Then
+        XCTAssertEqual(context.version, "200")
+        XCTAssertTrue(context.ddTags.contains("version:200"))
+    }
 }

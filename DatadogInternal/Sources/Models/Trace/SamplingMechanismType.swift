@@ -8,7 +8,7 @@
 ///
 /// The raw values are the ones used in propagation headers like `_dd.p.dm`. They do not include the `-` character,
 /// since that character is a separator and not part of the value itself.
-public enum SamplingMechanismType: String, Equatable, Comparable {
+public enum SamplingMechanismType: String, Equatable, Comparable, Sendable {
     /// Fallback mechanism. This mechanism samples all spans. It should never be used, but it's included for completion.
     case fallback = "0"
     /// The main decision mechanism. Although the SDK runs in an agent-less scenario, we consider the SDK sampling

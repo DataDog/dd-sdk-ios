@@ -1,5 +1,15 @@
 # Unreleased
 
+# 3.8.0 / 12-03-2026
+
+- [FEATURE] Add OOB scroll and swipe action tracking. See [#2717][]
+- [FEATURE] Add `trackResourceHeaders` configuration to capture HTTP request and response headers in RUM Resource events. See [#2721][]
+- [FEATURE] RUM Resources will now be augmented with the currently active span information, specifically the parent span and trace IDs, and sampling priority and decision maker. See [#2726][]
+- [IMPROVEMENT] Rename `DDRUMErrorEventErrorMeta` to `DDRUMErrorEventErrorMetaInfo`, add support of custom Objective-C runtime names for generated RUM models. See [#2705][]
+- [IMPROVEMENT] Add encoded and decoded body sizes to RUM resource events. See [#2697][] and [#2699][]
+- [IMPROVEMENT] Align the tags of WebView log events with the native Logs. See [#2710][]
+- [FIX] Fix crash context C-string conversion in KSCrash injection. See [#2740][]
+
 # 3.7.0 / 18-02-2026
 
 - [FEATURE] Add evaluation logging to `DatadogFlags` module. See [#2646][]
@@ -1057,6 +1067,14 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2674]: https://github.com/DataDog/dd-sdk-ios/pull/2674
 [#2676]: https://github.com/DataDog/dd-sdk-ios/pull/2676
 [#2688]: https://github.com/DataDog/dd-sdk-ios/pull/2688
+[#2697]: https://github.com/DataDog/dd-sdk-ios/pull/2697
+[#2699]: https://github.com/DataDog/dd-sdk-ios/pull/2699
+[#2705]: https://github.com/DataDog/dd-sdk-ios/pull/2705
+[#2710]: https://github.com/DataDog/dd-sdk-ios/pull/2710
+[#2717]: https://github.com/DataDog/dd-sdk-ios/pull/2717
+[#2721]: https://github.com/DataDog/dd-sdk-ios/pull/2721
+[#2726]: https://github.com/DataDog/dd-sdk-ios/pull/2726
+[#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

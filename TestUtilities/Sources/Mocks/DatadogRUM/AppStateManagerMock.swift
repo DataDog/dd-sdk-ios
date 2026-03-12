@@ -15,6 +15,9 @@ public final class AppStateManagerMock: AppStateManaging {
 
     public func deleteAppState() {}
     public func updateAppState(state: AppState) {}
+    public func previousAppStateInfo(completion: @escaping (DatadogRUM.AppStateInfo?) -> Void) {
+        completion(previousAppStateInfo)
+    }
     public func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void) {
         completion(currentAppStateInfo)
     }

@@ -7,7 +7,7 @@
 import Foundation
 
 /// The sampling priority for a trace span.
-public enum SamplingPriority: Int {
+public enum SamplingPriority: Int, Sendable {
     /// The span is not sampled based on a manual override.
     case manualDrop = -1
     /// The span is not sampled based on a sampler decision.

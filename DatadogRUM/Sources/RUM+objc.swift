@@ -351,6 +351,51 @@ public class objc_URLSessionTracking: NSObject {
             return objcAttributes?.dd.swiftAttributes
         }
     }
+
+    public func setTrackResourceHeaders(_ trackResourceHeaders: objc_TrackResourceHeaders) {
+        swiftConfig.trackResourceHeaders = trackResourceHeaders.swiftType
+    }
+}
+
+@objc(DDRUMHeaderCaptureRule)
+@objcMembers
+@_spi(objc)
+public final class objc_HeaderCaptureRule: NSObject {
+    internal let swiftType: RUM.Configuration.URLSessionTracking.HeaderCaptureRule
+
+    private init(_ swiftType: RUM.Configuration.URLSessionTracking.HeaderCaptureRule) {
+        self.swiftType = swiftType
+    }
+
+    /// Include the predefined set of default headers.
+    public static let defaults = objc_HeaderCaptureRule(.defaults)
+
+    /// Match headers by exact name (case-insensitive).
+    public static func matchHeaders(_ names: [String]) -> objc_HeaderCaptureRule {
+        objc_HeaderCaptureRule(.matchHeaders(names))
+    }
+}
+
+@objc(DDRUMTrackResourceHeaders)
+@objcMembers
+@_spi(objc)
+public final class objc_TrackResourceHeaders: NSObject {
+    internal let swiftType: RUM.Configuration.URLSessionTracking.TrackResourceHeaders
+
+    private init(_ swiftType: RUM.Configuration.URLSessionTracking.TrackResourceHeaders) {
+        self.swiftType = swiftType
+    }
+
+    /// No header capture. This is the default.
+    public static let disabled = objc_TrackResourceHeaders(.disabled)
+
+    /// Capture a predefined set of common request and response headers.
+    public static let defaults = objc_TrackResourceHeaders(.defaults)
+
+    /// Capture headers based on custom rules.
+    public static func custom(_ rules: [objc_HeaderCaptureRule]) -> objc_TrackResourceHeaders {
+        objc_TrackResourceHeaders(.custom(rules.map { $0.swiftType }))
+    }
 }
 
 @objc(DDRUMConfiguration)
