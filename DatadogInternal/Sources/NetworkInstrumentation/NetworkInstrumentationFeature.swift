@@ -54,6 +54,20 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The interceptions **must** be accessed using the `queue`.
     private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
 
+    /// `URLSessionTask` subclasses that declare most of their inherited properties as `NS_UNAVAILABLE`
+    /// and throw `NSGenericException` at runtime when those properties are accessed.
+    /// Resolved once at startup using `NSClassFromString` to avoid importing AVFoundation.
+    static let unsupportedTaskClasses: [AnyClass] = {
+        ["AVAssetDownloadTask", "AVAggregateAssetDownloadTask"]
+            .compactMap { NSClassFromString($0) }
+    }()
+
+    /// Returns `true` if `task` is an instance of a class that doesn't support standard
+    /// `URLSessionTask` properties and must be skipped by the instrumentation.
+    static func isUnsupportedTask(_ task: URLSessionTask) -> Bool {
+        unsupportedTaskClasses.contains { task.isKind(of: $0) }
+    }
+
     init(
         networkContextProvider: NetworkContextProvider,
         messageReceiver: FeatureMessageReceiver
@@ -91,8 +105,19 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 }
 
+                // Skip task types that declare standard URLSessionTask properties as
+                // NS_UNAVAILABLE and throw NSGenericException at runtime when accessed
+                // (e.g. AVAssetDownloadTask, AVAggregateAssetDownloadTask, BackgroundAVAssetDownloadTask).
+                guard !NetworkInstrumentationFeature.isUnsupportedTask(task) else {
+                    return
+                }
+
+                guard let currentRequest = task.currentRequest else {
+                    return
+                }
+
                 // Skip Datadog's own intake requests to prevent infinite recursion
-                if self.isDatadogIntakeRequest(task.currentRequest) {
+                if self.isDatadogIntakeRequest(currentRequest) {
                     return
                 }
 
@@ -106,11 +131,9 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                 var injectedTraceContexts = [RequestInstrumentationContext]()
 
                 let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration?.firstPartyHostsTracing) ?? .init()
-                if let currentRequest = task.currentRequest {
-                    let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
-                    task.dd.override(currentRequest: request)
-                    injectedTraceContexts = traceContexts
-                }
+                let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
+                task.dd.override(currentRequest: request)
+                injectedTraceContexts = traceContexts
 
                 self.intercept(task: task, with: injectedTraceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode)
             }

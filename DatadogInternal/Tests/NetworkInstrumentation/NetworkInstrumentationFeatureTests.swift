@@ -1887,6 +1887,32 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.trace, traceContexts.first, "It should register first injected Trace Context")
     }
 
+    func testIsUnsupportedTask_returnsFalseForRegularTasks() throws {
+        // AVAssetDownloadTask detection must not interfere with ordinary tasks.
+
+        // Given
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.dataTask(with: URL.mockAny())
+        defer { task.cancel() }
+
+        // Then
+        XCTAssertFalse(
+            NetworkInstrumentationFeature.isUnsupportedTask(task),
+            "Regular URLSessionDataTask should not be flagged as unsupported"
+        )
+    }
+
+    func testIsUnsupportedTask_returnsTrueForAVAssetDownloadTask() throws {
+        // Verify that an AVAssetDownloadTask instance is detected as unsupported.
+        // Uses the ObjC runtime to allocate an instance without importing AVFoundation.
+        let task = try XCTUnwrap(NSClassFromString("AVAssetDownloadTask")?.alloc() as? URLSessionTask)
+
+        XCTAssertTrue(
+            NetworkInstrumentationFeature.isUnsupportedTask(task),
+            "AVAssetDownloadTask should be flagged as unsupported"
+        )
+    }
+
     // MARK: - First Party Hosts
 
     func testAutomaticMode_detectsFirstPartyHosts() throws {
