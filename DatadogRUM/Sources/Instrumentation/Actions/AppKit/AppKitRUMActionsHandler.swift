@@ -13,6 +13,8 @@ internal protocol RUMActionsHandling: RUMCommandPublisher {
     func notify_sendEvent(application: DDApplication, event: DDEvent)
     /// Tracks RUM actions manually with SwiftUI view modifers by being notified from `RUMTapActionModifier`.
     func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable])
+
+    func notify_sendAction(control: NSControl, action: Selector?, target: Any?)
 }
 
 internal final class RUMActionsHandler: RUMActionsHandling {
@@ -92,6 +94,24 @@ internal final class RUMActionsHandler: RUMActionsHandling {
             DD.logger.warn(
                 """
                 A RUM action was detected in SwiftUI, but RUM tracking appears to be disabled.
+                Ensure `RUM.enable()` is called before any actions are triggered.
+                """
+            )
+            return
+        }
+
+        subscriber.process(command: command)
+    }
+
+    func notify_sendAction(control: NSControl, action: Selector?, target: Any?) {
+        guard let command = eventCommandsFactory?.command(from: control, action: action, target: target) else {
+            return
+        }
+
+        guard let subscriber = subscriber else {
+            DD.logger.warn(
+                """
+                A RUM action was detected, but RUM tracking appears to be disabled.
                 Ensure `RUM.enable()` is called before any actions are triggered.
                 """
             )
