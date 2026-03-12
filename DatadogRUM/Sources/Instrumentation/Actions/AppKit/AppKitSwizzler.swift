@@ -47,7 +47,7 @@ internal final class DDApplicationSwizzler {
             typealias Signature = @convention(block) (DDApplication, DDEvent) -> Bool
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] application, event  in
-                    handler?.notify_sendEvent(application: application, event: event)
+//                    handler?.notify_sendEvent(application: application, event: event)
                     return previousImplementation(application, Self.selector, event)
                 }
             }
@@ -71,9 +71,12 @@ internal final class DDApplicationSwizzler {
             typealias Signature = @convention(block) (NSControl, Selector?, Any?) -> Bool
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] control, selector, target  in
-//                    handler?.notify_sendEvent(application: application, event: event)
-                    print("Swizzled sendAction(\(selector), to:\(target)) on \(control)")
-                    return previousImplementation(control, Self.selector, selector, target)
+//                    print("Swizzled sendAction(\(selector), to:\(target)) on \(control)")
+                    let result = previousImplementation(control, Self.selector, selector, target)
+                    if result {
+                        handler?.notify_sendAction(control: control, action: selector, target: target)
+                    }
+                    return result
                 }
             }
         }
