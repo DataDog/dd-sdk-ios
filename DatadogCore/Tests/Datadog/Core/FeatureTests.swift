@@ -11,14 +11,12 @@ import TestUtilities
 @testable import DatadogCore
 
 class FeatureStorageTests: XCTestCase {
-    private let queue = DispatchQueue(label: "feature-storage-test")
     private var storage: FeatureStorage! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
         storage = FeatureStorage(
             featureName: .mockAny(),
-            queue: queue,
             directories: temporaryFeatureDirectories,
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
             performance: .mockRandom(),
@@ -37,84 +35,89 @@ class FeatureStorageTests: XCTestCase {
 
     // MARK: - Writing data
 
-    func testWhenWritingEventsWithoutForcingNewBatch_itShouldWriteAllEventsToTheSameBatch() throws {
+    func testWhenWritingEventsWithoutForcingNewBatch_itShouldWriteAllEventsToTheSameBatch() async throws {
         // When
-        storage.writer(for: .granted).write(value: ["event1": "1"])
-        storage.writer(for: .granted).write(value: ["event2": "2"])
-        storage.writer(for: .granted).write(value: ["event3": "3"])
+        await storage.writer(for: .granted).write(value: ["event1": "1"])
+        await storage.writer(for: .granted).write(value: ["event2": "2"])
+        await storage.writer(for: .granted).write(value: ["event3": "3"])
 
         // Then
-        storage.setIgnoreFilesAgeWhenReading(to: true)
+        await storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        let batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
+        let batch = try XCTUnwrap(await storage.reader.readNextBatches(1).first)
         XCTAssertEqual(batch.events.count, 3, "All 3 events should be written to the same batch")
-        storage.reader.markBatchAsRead(batch)
+        await storage.reader.markBatchAsRead(batch)
 
-        XCTAssertTrue(storage.reader.readNextBatches(1).isEmpty, "There must be no other batches")
+        let remaining = await storage.reader.readNextBatches(1)
+        XCTAssertTrue(remaining.isEmpty, "There must be no other batches")
     }
 
     // MARK: - Behaviours on tracking consent
 
-    func testWhenWritingEventsInDifferentConsents_itOnlyReadsGrantedEvents() throws {
+    func testWhenWritingEventsInDifferentConsents_itOnlyReadsGrantedEvents() async throws {
         // When
-        storage.writer(for: .granted).write(value: ["event.consent": "granted"])
-        storage.writer(for: .pending).write(value: ["event.consent": "pending"])
-        storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
+        await storage.writer(for: .granted).write(value: ["event.consent": "granted"])
+        await storage.writer(for: .pending).write(value: ["event.consent": "pending"])
+        await storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
 
         // Then
-        storage.setIgnoreFilesAgeWhenReading(to: true)
+        await storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        let batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
+        let batch = try XCTUnwrap(await storage.reader.readNextBatches(1).first)
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
-        storage.reader.markBatchAsRead(batch)
+        await storage.reader.markBatchAsRead(batch)
 
-        XCTAssertTrue(storage.reader.readNextBatches(1).isEmpty, "There must be no other batches")
+        let remaining = await storage.reader.readNextBatches(1)
+        XCTAssertTrue(remaining.isEmpty, "There must be no other batches")
     }
 
-    func testGivenEventsWrittenInDifferentConsents_whenChangingConsentToGranted_itMakesPendingEventsReadable() throws {
+    func testGivenEventsWrittenInDifferentConsents_whenChangingConsentToGranted_itMakesPendingEventsReadable() async throws {
         // Given
-        storage.writer(for: .granted).write(value: ["event.consent": "granted"])
-        storage.writer(for: .pending).write(value: ["event.consent": "pending"])
-        storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
+        await storage.writer(for: .granted).write(value: ["event.consent": "granted"])
+        await storage.writer(for: .pending).write(value: ["event.consent": "pending"])
+        await storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
 
         // When
-        storage.migrateUnauthorizedData(toConsent: .granted)
+        await storage.migrateUnauthorizedData(toConsent: .granted)
 
         // Then
-        storage.setIgnoreFilesAgeWhenReading(to: true)
+        await storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        var batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
+        var batch = try XCTUnwrap(await storage.reader.readNextBatches(1).first)
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
-        storage.reader.markBatchAsRead(batch)
+        await storage.reader.markBatchAsRead(batch)
 
-        batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
+        batch = try XCTUnwrap(await storage.reader.readNextBatches(1).first)
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"pending"}"#])
-        storage.reader.markBatchAsRead(batch)
+        await storage.reader.markBatchAsRead(batch)
 
-        XCTAssertTrue(storage.reader.readNextBatches(1).isEmpty, "There must be no other batches")
+        let remaining = await storage.reader.readNextBatches(1)
+        XCTAssertTrue(remaining.isEmpty, "There must be no other batches")
     }
 
-    func testGivenEventsWrittenInDifferentConsents_whenChangingConsentToNotGranted_itDeletesPendingEvents() throws {
+    func testGivenEventsWrittenInDifferentConsents_whenChangingConsentToNotGranted_itDeletesPendingEvents() async throws {
         // Given
-        storage.writer(for: .granted).write(value: ["event.consent": "granted"])
-        storage.writer(for: .pending).write(value: ["event.consent": "pending"])
-        storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
+        await storage.writer(for: .granted).write(value: ["event.consent": "granted"])
+        await storage.writer(for: .pending).write(value: ["event.consent": "pending"])
+        await storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
 
         // When
-        storage.migrateUnauthorizedData(toConsent: .notGranted)
+        await storage.migrateUnauthorizedData(toConsent: .notGranted)
 
         // Then
-        storage.setIgnoreFilesAgeWhenReading(to: true)
+        await storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        let batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
+        let batch = try XCTUnwrap(await storage.reader.readNextBatches(1).first)
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
-        storage.reader.markBatchAsRead(batch)
+        await storage.reader.markBatchAsRead(batch)
 
-        XCTAssertTrue(storage.reader.readNextBatches(1).isEmpty, "There must be no other batches")
+        var remaining = await storage.reader.readNextBatches(1)
+        XCTAssertTrue(remaining.isEmpty, "There must be no other batches")
 
-        storage.migrateUnauthorizedData(toConsent: .granted)
+        await storage.migrateUnauthorizedData(toConsent: .granted)
+        remaining = await storage.reader.readNextBatches(1)
         XCTAssertTrue(
-            storage.reader.readNextBatches(1).isEmpty,
+            remaining.isEmpty,
             "There must be no other batches, because pending events were deleted"
         )
     }
@@ -124,21 +127,19 @@ class FeatureStorageTests: XCTestCase {
     private let unauthorizedDirectory = temporaryFeatureDirectories.unauthorized
     private let authorizedDirectory = temporaryFeatureDirectories.authorized
 
-    func testDeletingPendingData() throws {
+    func testDeletingPendingData() async throws {
         // Given
         unauthorizedDirectory.createMockFiles(count: 10)
         XCTAssertEqual(try unauthorizedDirectory.files().count, 10)
 
         // When
-        storage.clearUnauthorizedData()
+        await storage.clearUnauthorizedData()
 
         // Then
-        try queue.sync {
-            XCTAssertEqual(try unauthorizedDirectory.files().count, 0)
-        }
+        XCTAssertEqual(try unauthorizedDirectory.files().count, 0)
     }
 
-    func testDeletingAllData() throws {
+    func testDeletingAllData() async throws {
         // Given
         unauthorizedDirectory.createMockFiles(count: 10)
         authorizedDirectory.createMockFiles(count: 10)
@@ -146,12 +147,10 @@ class FeatureStorageTests: XCTestCase {
         XCTAssertEqual(try authorizedDirectory.files().count, 10)
 
         // When
-        storage.clearAllData()
+        await storage.clearAllData()
 
         // Then
-        try queue.sync {
-            XCTAssertEqual(try unauthorizedDirectory.files().count, 0)
-            XCTAssertEqual(try authorizedDirectory.files().count, 0)
-        }
+        XCTAssertEqual(try unauthorizedDirectory.files().count, 0)
+        XCTAssertEqual(try authorizedDirectory.files().count, 0)
     }
 }

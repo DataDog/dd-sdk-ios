@@ -8,7 +8,11 @@ import Foundation
 import DatadogInternal
 
 /// A concrete implementation of the `DataStore` protocol using file storage.
-internal final class FeatureDataStore: DataStore, @unchecked Sendable {
+///
+/// Actor isolation replaces the `DispatchQueue` previously used for serialising
+/// file I/O. The `DataStore` protocol methods remain synchronous (fire-and-forget)
+/// by bridging through `Task`, matching the original queue-based semantics.
+internal actor FeatureDataStore: DataStore {
     enum Constants {
         /// The version of this data store implementation.
         /// If a breaking change is introduced to the format of managed files, the version must be upgraded and old data should be deleted.
@@ -21,89 +25,83 @@ internal final class FeatureDataStore: DataStore, @unchecked Sendable {
     private let coreDirectory: CoreDirectory
     /// The data store directory path specific to the `feature`.
     /// It is relative path inside `coreDirectory`.
-    internal let directoryPath: String
-    /// The queue for managing data store operations.
-    private let queue: DispatchQueue
+    nonisolated let directoryPath: String
     /// The telemetry endpoint for sending data store errors.
     private let telemetry: Telemetry
 
     init(
         feature: String,
         directory: CoreDirectory,
-        queue: DispatchQueue,
         telemetry: Telemetry
     ) {
         self.feature = feature
         self.coreDirectory = directory
-        self.directoryPath = coreDirectory.getDataStorePath(forFeatureNamed: feature)
-        self.queue = queue
+        self.directoryPath = directory.getDataStorePath(forFeatureNamed: feature)
         self.telemetry = telemetry
     }
 
-    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
-        queue.async { [weak self] in
-            guard let self = self else {
-                return
-            }
+    // MARK: - DataStore (nonisolated bridging to actor)
 
-            do {
-                try self.write(data: value, forKey: key, version: version)
-            } catch let error {
-                DD.logger.error("[Data Store] Error on setting `\(key)` value for `\(self.feature)`", error: error)
-                self.telemetry.error("[Data Store] Error on setting `\(key)` value for `\(self.feature)`", error: DDError(error: error))
-            }
+    nonisolated func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        Task { await _setValue(value, forKey: key, version: version) }
+    }
+
+    nonisolated func value(forKey key: String, callback: @escaping @Sendable (DataStoreValueResult) -> Void) {
+        Task { await _value(forKey: key, callback: callback) }
+    }
+
+    nonisolated func removeValue(forKey key: String) {
+        Task { await _removeValue(forKey: key) }
+    }
+
+    nonisolated func clearAllData() {
+        Task { await _clearAllData() }
+    }
+
+    // MARK: - Actor-isolated implementations
+
+    private func _setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        do {
+            try write(data: value, forKey: key, version: version)
+        } catch let error {
+            DD.logger.error("[Data Store] Error on setting `\(key)` value for `\(feature)`", error: error)
+            telemetry.error("[Data Store] Error on setting `\(key)` value for `\(feature)`", error: DDError(error: error))
         }
     }
 
-    func value(forKey key: String, callback: @escaping @Sendable (DataStoreValueResult) -> Void) {
-        queue.async { [weak self] in
-            guard let self = self else {
-                return
-            }
-
-            do {
-                let result = try self.readData(forKey: key)
-                callback(result)
-            } catch let error {
-                callback(.error(error))
-                DD.logger.error("[Data Store] Error on getting `\(key)` value for `\(self.feature)`", error: error)
-                self.telemetry.error("[Data Store] Error on getting `\(key)` value for `\(self.feature)`", error: DDError(error: error))
-            }
+    private func _value(forKey key: String, callback: @escaping @Sendable (DataStoreValueResult) -> Void) {
+        do {
+            let result = try readData(forKey: key)
+            callback(result)
+        } catch let error {
+            callback(.error(error))
+            DD.logger.error("[Data Store] Error on getting `\(key)` value for `\(feature)`", error: error)
+            telemetry.error("[Data Store] Error on getting `\(key)` value for `\(feature)`", error: DDError(error: error))
         }
     }
 
-    func removeValue(forKey key: String) {
-        queue.async { [weak self] in
-            guard let self = self else {
-                return
-            }
-
-            do {
-                try self.deleteData(forKey: key)
-            } catch let error {
-                DD.logger.error("[Data Store] Error on deleting `\(key)` value for `\(self.feature)`", error: error)
-                self.telemetry.error("[Data Store] Error on deleting `\(key)` value for `\(self.feature)`", error: DDError(error: error))
-            }
+    private func _removeValue(forKey key: String) {
+        do {
+            try deleteData(forKey: key)
+        } catch let error {
+            DD.logger.error("[Data Store] Error on deleting `\(key)` value for `\(feature)`", error: error)
+            telemetry.error("[Data Store] Error on deleting `\(key)` value for `\(feature)`", error: DDError(error: error))
         }
     }
 
-    func clearAllData() {
-        queue.async {
-            do {
-                let directory = try self.coreDirectory.coreDirectory.subdirectoryIfExists(path: self.directoryPath)
-                try directory?.deleteAllFiles()
-            } catch let error {
-                DD.logger.error("[Data Store] Error on clearing all data for `\(self.feature)`", error: error)
-                self.telemetry.error("[Data Store] Error on clearing all data for `\(self.feature)`", error: DDError(error: error))
-            }
+    private func _clearAllData() {
+        do {
+            let directory = try coreDirectory.coreDirectory.subdirectoryIfExists(path: directoryPath)
+            try directory?.deleteAllFiles()
+        } catch let error {
+            DD.logger.error("[Data Store] Error on clearing all data for `\(feature)`", error: error)
+            telemetry.error("[Data Store] Error on clearing all data for `\(feature)`", error: DDError(error: error))
         }
     }
 
     // MARK: - Persistence
 
     private func write(data: Data, forKey key: String, version: DataStoreKeyVersion) throws {
-        // Get or create storage directory. We call it each time, to take into account that
-        // the parent `cache/` location might be erased by the OS at any moment.
         let directory = try coreDirectory.coreDirectory.createSubdirectory(path: directoryPath)
 
         let file: File
@@ -118,7 +116,6 @@ internal final class FeatureDataStore: DataStore, @unchecked Sendable {
     }
 
     private func readData(forKey key: String) throws -> DataStoreValueResult {
-        // Get storage directory if it exists.
         guard let directory = try? coreDirectory.coreDirectory.subdirectory(path: directoryPath) else {
             return .noValue
         }
@@ -134,7 +131,6 @@ internal final class FeatureDataStore: DataStore, @unchecked Sendable {
     }
 
     private func deleteData(forKey key: String) throws {
-        // Get storage directory if it exists.
         guard let directory = try? coreDirectory.coreDirectory.subdirectory(path: directoryPath) else {
             return
         }
@@ -146,7 +142,14 @@ internal final class FeatureDataStore: DataStore, @unchecked Sendable {
 }
 
 extension FeatureDataStore: Flushable {
-    func flush() {
-        queue.sync {}
+    /// Blocks the caller thread until all pending actor work completes.
+    nonisolated func flush() {
+        let sem = DispatchSemaphore(value: 0)
+        Task { await _drain(); sem.signal() }
+        sem.wait()
+    }
+
+    private func _drain() {
+        // Actor processes this after any pending tasks, effectively draining the mailbox.
     }
 }

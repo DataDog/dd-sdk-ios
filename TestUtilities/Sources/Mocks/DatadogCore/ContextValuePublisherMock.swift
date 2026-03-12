@@ -20,7 +20,7 @@ public class ContextValueSourceMock<Value: Sendable>: ContextValueSource, @unche
 
     public init(initialValue: Value) {
         self.initialValue = initialValue
-        self._value = initialValue
+        self.value = initialValue
         var cont: AsyncStream<Value>.Continuation!
         self.values = AsyncStream { cont = $0 }
         self.continuation = cont
@@ -28,7 +28,7 @@ public class ContextValueSourceMock<Value: Sendable>: ContextValueSource, @unche
 
     public init() where Value: ExpressibleByNilLiteral {
         self.initialValue = nil
-        self._value = nil
+        self.value = nil
         var cont: AsyncStream<Value>.Continuation!
         self.values = AsyncStream { cont = $0 }
         self.continuation = cont

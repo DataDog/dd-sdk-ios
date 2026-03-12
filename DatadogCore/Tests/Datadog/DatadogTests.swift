@@ -432,7 +432,7 @@ class DatadogTests: XCTestCase {
         XCTAssertNil(Datadog.verbosityLevel)
     }
 
-    func testGivenDataStoredInAllFeatureDirectories_whenClearAllDataIsUsed_allFilesAreRemoved() throws {
+    func testGivenDataStoredInAllFeatureDirectories_whenClearAllDataIsUsed_allFilesAreRemoved() async throws {
         Datadog.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
@@ -446,7 +446,7 @@ class DatadogTests: XCTestCase {
         // On SDK init, underlying `ConsentAwareDataWriter` performs data migration for each feature, which includes
         // data removal in `unauthorised` (`.pending`) directory. To not cause test flakiness, we must ensure that
         // mock data is written only after this operation completes - otherwise, migration may delete mocked files.
-        core.readWriteQueue.sync {}
+        await core.flush()
 
         // Given
         let featureDirectories: [FeatureDirectories] = [
@@ -457,8 +457,7 @@ class DatadogTests: XCTestCase {
         let scope = core.scope(for: TraceFeature.self)
         scope.dataStore.setValue("foo".data(using: .utf8)!, forKey: "bar")
 
-        // Wait for async clear completion in all features:
-        core.readWriteQueue.sync {}
+        await core.flush()
         let tracingDataStoreDir = try core.directory.coreDirectory.subdirectory(path: core.directory.getDataStorePath(forFeatureNamed: "tracing"))
         XCTAssertTrue(tracingDataStoreDir.hasFile(named: "bar"))
 
@@ -469,8 +468,7 @@ class DatadogTests: XCTestCase {
         // When
         Datadog.clearAllData()
 
-        // Wait for async clear completion in all features:
-        core.readWriteQueue.sync {}
+        await core.flush()
 
         // Then
         let files: [File] = allDirectories.reduce([], { acc, nextDirectory in
@@ -504,7 +502,7 @@ class DatadogTests: XCTestCase {
         Datadog.flushAndDeinitialize()
     }
 
-    func testRemoveV1DeprecatedFolders() throws {
+    func testRemoveV1DeprecatedFolders() async throws {
         // Given
         let cache = try Directory.cache()
         let directories = ["com.datadoghq.logs", "com.datadoghq.traces", "com.datadoghq.rum"]
@@ -520,9 +518,8 @@ class DatadogTests: XCTestCase {
 
         defer { Datadog.flushAndDeinitialize() }
 
-        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        // Wait for async deletion
-        core.readWriteQueue.sync {}
+        // Wait for async Task.detached deletion to complete
+        try await Task.sleep(nanoseconds: 500_000_000)
 
         // Then
         XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.logs"))

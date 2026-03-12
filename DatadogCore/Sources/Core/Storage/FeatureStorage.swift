@@ -7,23 +7,43 @@
 import Foundation
 import DatadogInternal
 
-internal struct FeatureStorage: Sendable {
+/// Actor that manages file storage for a single SDK feature.
+///
+/// Replaces the shared `readWriteQueue` (`DispatchQueue`) previously passed from `DatadogCore`.
+/// Each feature now has its own actor-isolated storage, eliminating cross-feature contention.
+/// `writer(for:)` and `reader` are `nonisolated` because they construct new value types
+/// from immutable state.
+internal actor FeatureStorage {
     /// The name of this Feature, used to distinguish storage instances in telemetry and logs.
-    let featureName: String
-    /// Queue for performing directory management operations (consent migration, data clearing).
-    let queue: DispatchQueue
+    nonisolated let featureName: String
     /// Directories for managing data in this Feature.
-    let directories: FeatureDirectories
+    nonisolated let directories: FeatureDirectories
     /// Orchestrates files collected in `.granted` consent.
-    let authorizedFilesOrchestrator: FilesOrchestratorType
+    nonisolated let authorizedFilesOrchestrator: FilesOrchestratorType
     /// Orchestrates files collected in `.pending` consent.
-    let unauthorizedFilesOrchestrator: FilesOrchestratorType
+    nonisolated let unauthorizedFilesOrchestrator: FilesOrchestratorType
     /// Encryption algorithm applied to persisted data.
-    let encryption: DataEncryption?
+    nonisolated let encryption: DataEncryption?
     /// Telemetry interface.
-    let telemetry: Telemetry
+    nonisolated let telemetry: Telemetry
 
-    func writer(for trackingConsent: TrackingConsent) -> Writer {
+    init(
+        featureName: String,
+        directories: FeatureDirectories,
+        authorizedFilesOrchestrator: FilesOrchestratorType,
+        unauthorizedFilesOrchestrator: FilesOrchestratorType,
+        encryption: DataEncryption?,
+        telemetry: Telemetry
+    ) {
+        self.featureName = featureName
+        self.directories = directories
+        self.authorizedFilesOrchestrator = authorizedFilesOrchestrator
+        self.unauthorizedFilesOrchestrator = unauthorizedFilesOrchestrator
+        self.encryption = encryption
+        self.telemetry = telemetry
+    }
+
+    nonisolated func writer(for trackingConsent: TrackingConsent) -> Writer {
         switch trackingConsent {
         case .granted:
             return FileWriter(
@@ -42,7 +62,7 @@ internal struct FeatureStorage: Sendable {
         }
     }
 
-    var reader: Reader {
+    nonisolated var reader: Reader {
         FileReader(
             orchestrator: authorizedFilesOrchestrator,
             encryption: encryption,
@@ -51,43 +71,37 @@ internal struct FeatureStorage: Sendable {
     }
 
     func migrateUnauthorizedData(toConsent consent: TrackingConsent) {
-        queue.async {
-            do {
-                switch consent {
-                case .notGranted:
-                    try directories.unauthorized.deleteAllFiles()
-                case .granted:
-                    try directories.unauthorized.moveAllFiles(to: directories.authorized)
-                case .pending:
-                    break
-                }
-            } catch {
-                telemetry.error(
-                    "Failed to migrate unauthorized data in \(featureName) after consent change to to \(consent)",
-                    error: error
-                )
+        do {
+            switch consent {
+            case .notGranted:
+                try directories.unauthorized.deleteAllFiles()
+            case .granted:
+                try directories.unauthorized.moveAllFiles(to: directories.authorized)
+            case .pending:
+                break
             }
+        } catch {
+            telemetry.error(
+                "Failed to migrate unauthorized data in \(featureName) after consent change to to \(consent)",
+                error: error
+            )
         }
     }
 
     func clearUnauthorizedData() {
-        queue.async {
-            do {
-                try directories.unauthorized.deleteAllFiles()
-            } catch {
-                telemetry.error("Failed clear unauthorized data in \(featureName)", error: error)
-            }
+        do {
+            try directories.unauthorized.deleteAllFiles()
+        } catch {
+            telemetry.error("Failed clear unauthorized data in \(featureName)", error: error)
         }
     }
 
     func clearAllData() {
-        queue.async {
-            do {
-                try directories.unauthorized.deleteAllFiles()
-                try directories.authorized.deleteAllFiles()
-            } catch {
-                telemetry.error("Failed clear all data in \(featureName)", error: error)
-            }
+        do {
+            try directories.unauthorized.deleteAllFiles()
+            try directories.authorized.deleteAllFiles()
+        } catch {
+            telemetry.error("Failed clear all data in \(featureName)", error: error)
         }
     }
 
@@ -100,7 +114,6 @@ internal struct FeatureStorage: Sendable {
 extension FeatureStorage {
     init(
         featureName: String,
-        queue: DispatchQueue,
         directories: FeatureDirectories,
         dateProvider: DateProvider,
         performance: PerformancePreset,
@@ -145,7 +158,6 @@ extension FeatureStorage {
 
         self.init(
             featureName: featureName,
-            queue: queue,
             directories: directories,
             authorizedFilesOrchestrator: authorizedFilesOrchestrator,
             unauthorizedFilesOrchestrator: unauthorizedFilesOrchestrator,

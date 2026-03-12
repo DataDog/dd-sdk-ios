@@ -315,11 +315,10 @@ public enum Datadog {
 
     private static func deleteV1Folders(in core: DatadogCore) {
         let deprecated = ["com.datadoghq.logs", "com.datadoghq.traces", "com.datadoghq.rum"].compactMap {
-            try? Directory.cache().subdirectory(path: $0) // ignore errors - deprecated paths likely do not exist
+            try? Directory.cache().subdirectory(path: $0)
         }
 
-        core.readWriteQueue.async {
-            // ignore errors
+        Task.detached(priority: .utility) {
             deprecated.forEach { try? FileManager.default.removeItem(at: $0.url) }
         }
     }

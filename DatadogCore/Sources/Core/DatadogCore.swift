@@ -19,13 +19,6 @@ internal final class DatadogCore: @unchecked Sendable {
     /// For each Feature a set of subdirectories is created inside `CoreDirectory` based on their storage configuration.
     let directory: CoreDirectory
 
-    /// The storage r/w GDC queue for file I/O operations.
-    let readWriteQueue = DispatchQueue(
-        label: "com.datadoghq.ios-sdk-read-write",
-        autoreleaseFrequency: .workItem,
-        target: .global(qos: .utility)
-    )
-
     /// The system date provider.
     let dateProvider: DateProvider
 
@@ -218,8 +211,10 @@ internal final class DatadogCore: @unchecked Sendable {
         Task {
             await contextProvider.write { context in
                 guard trackingConsent != context.trackingConsent else { return }
-                storages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
                 context.trackingConsent = trackingConsent
+            }
+            for storage in storages {
+                await storage.migrateUnauthorizedData(toConsent: trackingConsent)
             }
         }
     }
@@ -228,7 +223,11 @@ internal final class DatadogCore: @unchecked Sendable {
     func clearAllData() {
         let storages = featureStore.allStorages
         let dataStores = featureStore.allDataStores(in: self)
-        storages.forEach { $0.clearAllData() }
+        Task {
+            for storage in storages {
+                await storage.clearAllData()
+            }
+        }
         dataStores.forEach { $0.clearAllData() }
     }
 
@@ -293,7 +292,6 @@ extension DatadogCore: DatadogCoreProtocol {
 
             let storage = FeatureStorage(
                 featureName: T.name,
-                queue: readWriteQueue,
                 directories: featureDirectories,
                 dateProvider: dateProvider,
                 performance: performancePreset,
@@ -316,7 +314,7 @@ extension DatadogCore: DatadogCoreProtocol {
 
             featureStore.addStore(name: T.name, storage: storage, upload: upload)
 
-            storage.clearUnauthorizedData()
+            Task { await storage.clearUnauthorizedData() }
         }
 
         featureStore.addFeature(name: T.name, feature: feature)
@@ -360,7 +358,6 @@ internal final class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScop
         self.store = FeatureDataStore(
             feature: Feature.name,
             directory: core.directory,
-            queue: core.readWriteQueue,
             telemetry: core.telemetry
         )
     }
@@ -537,17 +534,14 @@ extension DatadogCore {
         for _ in 0..<5 {
             bus.flush()
             flushables.forEach { $0.flush() }
-            readWriteQueue.sync { }
         }
     }
 }
 
 extension DatadogCore: Storage {
     func mostRecentModifiedFileAt(before: Date) throws -> Date? {
-        try readWriteQueue.sync {
-            let file = try directory.coreDirectory.mostRecentModifiedFile(before: before)
-            return try file?.modifiedAt()
-        }
+        let file = try directory.coreDirectory.mostRecentModifiedFile(before: before)
+        return try file?.modifiedAt()
     }
 }
 // swiftlint:disable duplicate_imports

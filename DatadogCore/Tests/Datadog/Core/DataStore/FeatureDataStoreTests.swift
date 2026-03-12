@@ -10,7 +10,6 @@ import TestUtilities
 @testable import DatadogCore
 
 class FeatureDataStoreTests: XCTestCase {
-    private let queue = DispatchQueue(label: "mock-queue")
     private var store: FeatureDataStore! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
@@ -18,7 +17,6 @@ class FeatureDataStoreTests: XCTestCase {
         store = FeatureDataStore(
             feature: "feature",
             directory: temporaryCoreDirectory,
-            queue: queue,
             telemetry: TelemetryMock()
         )
     }
@@ -156,13 +154,11 @@ class FeatureDataStoreTests: XCTestCase {
         let storeA = FeatureDataStore(
             feature: "featureA",
             directory: temporaryCoreDirectory,
-            queue: queue,
             telemetry: TelemetryMock()
         )
         let storeB = FeatureDataStore(
             feature: "featureB",
             directory: temporaryCoreDirectory,
-            queue: queue,
             telemetry: TelemetryMock()
         )
         var results: [DataStoreValueResult] = []
@@ -190,7 +186,6 @@ class FeatureDataStoreTests: XCTestCase {
         let nextStoreInstance = FeatureDataStore(
             feature: "feature",
             directory: temporaryCoreDirectory,
-            queue: queue,
             telemetry: TelemetryMock()
         )
         nextStoreInstance.value(forKey: "key") { result = $0 }
@@ -209,7 +204,6 @@ class FeatureDataStoreTests: XCTestCase {
         let store = FeatureDataStore(
             feature: "feature",
             directory: temporaryCoreDirectory,
-            queue: queue,
             telemetry: telemetry
         )
 
@@ -232,7 +226,6 @@ class FeatureDataStoreTests: XCTestCase {
         let store = FeatureDataStore(
             feature: "feature",
             directory: temporaryCoreDirectory,
-            queue: queue,
             telemetry: telemetry
         )
         store.setValue("foo".utf8Data, forKey: "key")

@@ -78,7 +78,6 @@ internal final class FeatureStore: @unchecked Sendable {
             FeatureDataStore(
                 feature: type(of: feature).name,
                 directory: core.directory,
-                queue: core.readWriteQueue,
                 telemetry: core.telemetry
             )
         }

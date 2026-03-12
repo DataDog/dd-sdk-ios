@@ -201,7 +201,6 @@ extension FeatureStorage {
     public static func mockNoOp(directories: FeatureDirectories) -> FeatureStorage {
         return FeatureStorage(
             featureName: .mockAny(),
-            queue: DispatchQueue(label: "nop"),
             directories: directories,
             authorizedFilesOrchestrator: NOPFilesOrchestrator(),
             unauthorizedFilesOrchestrator: NOPFilesOrchestrator(),

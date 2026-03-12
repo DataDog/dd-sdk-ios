@@ -13,7 +13,7 @@ import DatadogInternal
 
 public struct NOPSpanWriteContext: SpanWriteContext {
     public init() {}
-    public func spanWriteContext(_ block: @escaping (DatadogContext, Writer) async -> Void) {}
+    public func spanWriteContext() async -> (DatadogContext, Writer)? { nil }
 }
 
 extension DDSpan {
