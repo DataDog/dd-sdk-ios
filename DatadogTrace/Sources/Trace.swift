@@ -67,8 +67,8 @@ public enum Trace {
                 samplingRate: configuration.debugSDK ? 100 : tracingSampleRate,
                 firstPartyHosts: firstPartyHosts,
                 traceContextInjection: traceContextInjection,
-                spanCustomization: configuration.urlSessionTracking?.spanCustomization,
-                telemetry: core.telemetry
+                telemetry: core.telemetry,
+                spanCustomization: configuration.urlSessionTracking?.spanCustomization
             )
 
             try core.register(urlSessionHandler: urlSessionHandler)
