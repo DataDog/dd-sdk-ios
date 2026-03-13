@@ -13,6 +13,7 @@
 - [IMPROVEMENT] Add encoded and decoded body sizes to RUM resource events. See [#2697][] and [#2699][]
 - [IMPROVEMENT] Align the tags of WebView log events with the native Logs. See [#2710][]
 - [FIX] Fix crash context C-string conversion in KSCrash injection. See [#2740][]
+- [IMPROVEMENT] Add `NWPath.linkQuality` to network info attached to Logs and Traces on supported platforms. See [#2751][]
 
 # 3.7.0 / 18-02-2026
 
@@ -1080,6 +1081,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2726]: https://github.com/DataDog/dd-sdk-ios/pull/2726
 [#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
 [#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
+[#2751]: https://github.com/DataDog/dd-sdk-ios/pull/2751
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
@@ -1117,3 +1119,4 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@jbluntz]: https://github.com/jbluntz
 [@tdr-alays]: https://github.com/tdr-alays
 [@blimmer]: https://github.com/blimmer
+[@thedavidharris]: https://github.com/thedavidharris
