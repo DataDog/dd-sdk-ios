@@ -1925,18 +1925,20 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertTrue(task.isSupportedForInstrumentation)
     }
 
-    func testIsSupportedForInstrumentation_returnsFalseForAVAssetDownloadTask() throws {
-        // Uses the ObjC runtime to create an instance without importing AVFoundation.
-        // Swift's `is` operator for ObjC types delegates to `isKind(of:)`, so this works correctly.
-        let task = try XCTUnwrap(NSClassFromString("AVAssetDownloadTask")?.alloc() as? URLSessionTask)
-        XCTAssertFalse(task.isSupportedForInstrumentation)
-    }
-
-    func testIsSupportedForInstrumentation_returnsFalseForAVAggregateAssetDownloadTask() throws {
-        // Uses the ObjC runtime to create an instance without importing AVFoundation.
-        // Swift's `is` operator for ObjC types delegates to `isKind(of:)`, so this works correctly.
-        let task = try XCTUnwrap(NSClassFromString("AVAggregateAssetDownloadTask")?.alloc() as? URLSessionTask)
-        XCTAssertFalse(task.isSupportedForInstrumentation)
+    func testIsSupportedForInstrumentation_returnsFalseForUnsupportedAVTaskTypes() {
+        let unsupportedClassNames = [
+            "AVAssetDownloadTask",
+            "NSURLSessionAVAssetDownloadTask",
+            "AVAggregateAssetDownloadTask",
+            "NSURLSessionAVAggregateAssetDownloadTask",
+            "__NSCFBackgroundAVAssetDownloadTask"
+        ]
+        for className in unsupportedClassNames {
+            guard let task = NSClassFromString(className)?.alloc() as? URLSessionTask else {
+                continue // class unavailable on this platform/OS version
+            }
+            XCTAssertFalse(task.isSupportedForInstrumentation, "\(className) should not be instrumented")
+        }
     }
 
     // MARK: - Crash regression: resume() on various task types
