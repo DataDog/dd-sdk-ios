@@ -1,5 +1,9 @@
 # Unreleased
 
+# 3.8.1 / 13-03-2026
+
+- [FIX] Fix crash when network instrumentation intercepts `AVAssetDownloadTask` or `AVAggregateAssetDownloadTask`. See [#2750][]
+
 # 3.8.0 / 12-03-2026
 
 - [FEATURE] Add OOB scroll and swipe action tracking. See [#2717][]
@@ -1075,6 +1079,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2721]: https://github.com/DataDog/dd-sdk-ios/pull/2721
 [#2726]: https://github.com/DataDog/dd-sdk-ios/pull/2726
 [#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
+[#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
