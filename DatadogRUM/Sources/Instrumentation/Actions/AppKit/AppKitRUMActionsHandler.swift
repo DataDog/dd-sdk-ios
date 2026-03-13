@@ -12,7 +12,7 @@ internal protocol RUMActionsHandling: RUMCommandPublisher {
     /// Tracks RUM actions manually with SwiftUI view modifers by being notified from `RUMTapActionModifier`.
     func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable])
 
-    func notify_sendAction(control: NSControl, action: Selector?, target: Any?)
+    func notify_sendAction(app: NSApplication, action: Selector?, target: Any?, from: Any?)
 
     func notify_sendEvent(event: NSEvent)
 }
@@ -102,8 +102,8 @@ internal final class RUMActionsHandler: RUMActionsHandling {
         subscriber.process(command: command)
     }
 
-    func notify_sendAction(control: NSControl, action: Selector?, target: Any?) {
-        guard let command = eventCommandsFactory?.command(from: control, action: action, target: target) else {
+    func notify_sendAction(app: NSApplication, action: Selector?, target: Any?, from: Any?) {
+        guard let command = eventCommandsFactory?.command(from: app, action: action, target: target, from: from) else {
             return
         }
 

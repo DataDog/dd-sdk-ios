@@ -19,6 +19,8 @@ public protocol AppKitRUMActionsPredicate {
     /// - Parameter targetView: an instance of the `UIView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
     func rumAction(targetView: DDView) -> RUMAction?
+
+    func rumAction(targetMenuItem: NSMenuItem) -> RUMAction?
 }
 
 
@@ -53,6 +55,13 @@ extension DefaultAppKitRUMActionsPredicate: AppKitRUMActionsPredicate {
     public func rumAction(targetView: DDView) -> RUMAction? {
         return RUMAction(
             name: targetName(for: targetView),
+            attributes: [:]
+        )
+    }
+
+    public func rumAction(targetMenuItem: NSMenuItem) -> RUMAction? {
+        return RUMAction(
+            name: "'\(targetMenuItem.title)' Menu Item",
             attributes: [:]
         )
     }
