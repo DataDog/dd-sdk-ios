@@ -912,7 +912,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         let envelope: SpanEventsEnvelope? = core.events().last
         let span = try XCTUnwrap(envelope?.spans.first)
+        // Custom tags set via callback
         XCTAssertEqual(span.tags["graphql.operation.name"], "GetUser")
+        // Default tags still present
+        XCTAssertEqual(span.tags[OTTags.httpMethod], "POST")
+        XCTAssertEqual(span.tags[OTTags.httpStatusCode], "200")
+        XCTAssertEqual(span.tags[OTTags.spanKind], "client")
     }
 
     func testGivenNoSpanCustomization_whenInterceptionCompletes_itCreatesSpanNormally() throws {
@@ -955,9 +960,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertFalse(span.isError)
     }
 
-    func testGivenSpanCustomization_whenInterceptionCompletes_customTagsCoexistWithDefaultTags() throws {
+    func testGivenSpanCustomization_whenInterceptionCompletesWithError_itCallsCustomizationWithError() throws {
         let expectation = expectation(description: "Send span")
         core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        var receivedResponse: URLResponse?
+        var receivedError: Error?
 
         let handler = TracingURLSessionHandler(
             tracer: tracer,
@@ -968,16 +976,21 @@ class TracingURLSessionHandlerTests: XCTestCase {
             ]),
             traceContextInjection: .all,
             telemetry: NOPTelemetry(),
-            spanCustomization: { _, span, _, _ in
-                span.setTag(key: "custom.tag", value: "custom_value")
-                span.setOperationName("graphql.query")
+            spanCustomization: { _, span, response, error in
+                receivedResponse = response
+                receivedError = error
+                span.setTag(key: "custom.error.tag", value: "handled")
             }
         )
 
         // Given
-        let request: ImmutableRequest = .mockWith(httpMethod: "POST")
+        let request: ImmutableRequest = .mockWith(
+            url: URL(string: "https://www.example.com/api")!,
+            httpMethod: "GET"
+        )
+        let networkError = NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut, userInfo: nil)
         let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
-        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(response: nil, error: networkError)
         interception.register(
             metrics: .mockWith(
                 fetch: .init(
@@ -993,15 +1006,14 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
+        XCTAssertNil(receivedResponse, "Response should be nil for error-only requests")
+        XCTAssertNotNil(receivedError, "Customization callback should receive the error")
+        XCTAssertEqual((receivedError as? NSError)?.code, NSURLErrorTimedOut)
+
         let envelope: SpanEventsEnvelope? = core.events().last
         let span = try XCTUnwrap(envelope?.spans.first)
-        // Custom tags set via callback
-        XCTAssertEqual(span.tags["custom.tag"], "custom_value")
-        XCTAssertEqual(span.operationName, "graphql.query")
-        // Default tags still present
-        XCTAssertEqual(span.tags[OTTags.httpMethod], "POST")
-        XCTAssertEqual(span.tags[OTTags.httpStatusCode], "200")
-        XCTAssertEqual(span.tags[OTTags.spanKind], "client")
+        XCTAssertTrue(span.isError)
+        XCTAssertEqual(span.tags["custom.error.tag"], "handled")
     }
 
     private func assert(capturedState: URLSessionHandlerCapturedState?, has span: OTSpan?) {

@@ -115,15 +115,9 @@ extension Trace {
             /// If your backend is also instrumented with Datadog, you will see the full trace (app → backend).
             public var firstPartyHostsTracing: FirstPartyHostsTracing
 
-            /// Custom span customization callback for intercepted network requests.
+            /// Optional callback to customize spans for intercepted network requests.
             ///
-            /// This closure is called for each network request intercepted by the tracer, after the span is created
-            /// and default tags are set, but before the span is finished. Use it to add request-specific tags
-            /// (e.g., GraphQL operation name) or override the operation name.
-            ///
-            /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
-            ///
-            /// Default: `nil`.
+            /// - SeeAlso: ``SpanCustomization``
             public var spanCustomization: SpanCustomization?
 
             /// Defines configuration for first-party hosts in distributed tracing.
