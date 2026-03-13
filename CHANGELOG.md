@@ -1,5 +1,9 @@
 # Unreleased
 
+# 3.8.1 / 13-03-2026
+
+- [FIX] Fix crash when network instrumentation intercepts `AVAssetDownloadTask` or `AVAggregateAssetDownloadTask`. See [#2750][]
+
 # 3.8.0 / 12-03-2026
 
 - [FEATURE] Add OOB scroll and swipe action tracking. See [#2717][]
