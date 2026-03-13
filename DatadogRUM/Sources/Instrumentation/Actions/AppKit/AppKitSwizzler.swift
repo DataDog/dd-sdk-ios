@@ -36,25 +36,25 @@ internal final class DDApplicationSwizzler {
     // MARK: - Swizzlings
 
     class NSControlSendAction: MethodSwizzler <
-        @convention(c) (NSControl, Selector, Selector?, Any?) -> Bool,
-        @convention(block) (NSControl, Selector?, Any?) -> Bool
+        @convention(c) (NSApplication, Selector, Selector?, Any?, Any?) -> Bool,
+        @convention(block) (NSApplication, Selector?, Any?, Any?) -> Bool
     > {
-        private static let selector = #selector(NSControl.sendAction(_:to:))
+        private static let selector = #selector(NSApplication.sendAction(_:to:from:))
         private let method: Method
         private let handler: RUMActionsHandling
 
         init(handler: RUMActionsHandling) throws {
-            self.method = try dd_class_getInstanceMethod(NSControl.self, Self.selector)
+            self.method = try dd_class_getInstanceMethod(NSApplication.self, Self.selector)
             self.handler = handler
         }
 
         func swizzle() {
-            typealias Signature = @convention(block) (NSControl, Selector?, Any?) -> Bool
+            typealias Signature = @convention(block) (NSApplication, Selector?, Any?, Any?) -> Bool
             swizzle(method) { previousImplementation -> Signature in
-                return { [weak handler = self.handler] control, selector, target  in
-                    let result = previousImplementation(control, Self.selector, selector, target)
+                return { [weak handler = self.handler] app, selector, target, from in
+                    let result = previousImplementation(app, Self.selector, selector, target, from)
                     if result {
-                        handler?.notify_sendAction(control: control, action: selector, target: target)
+                        handler?.notify_sendAction(app: app, action: selector, target: target, from: from)
                     }
                     return result
                 }
