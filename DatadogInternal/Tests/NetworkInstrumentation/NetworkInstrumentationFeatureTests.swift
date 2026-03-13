@@ -1873,8 +1873,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // When
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
 
-        feature.intercept(
-            task: .mockAny(),
+        feature.interceptTask(
+            .mockAny(),
             with: traceContexts.map { NetworkInstrumentationFeature.RequestInstrumentationContext(traceContext: $0, capturedState: nil) },
             additionalFirstPartyHosts: nil,
             trackingMode: .mockRandom()
@@ -2142,10 +2142,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             closures: [
                 { feature.handlers = [self.handler] },
                 { _ = feature.intercept(request: requests.randomElement()!, additionalFirstPartyHosts: nil) },
-                { feature.intercept(task: tasks.randomElement()!, with: [], additionalFirstPartyHosts: nil, trackingMode: .automatic) },
-                { feature.task(tasks.randomElement()!, didReceive: .mockRandom()) },
-                { feature.task(tasks.randomElement()!, didFinishCollecting: .mockAny()) },
-                { feature.task(tasks.randomElement()!, didCompleteWithError: nil) },
+                { feature.interceptTask(tasks.randomElement()!, with: [], additionalFirstPartyHosts: nil, trackingMode: .automatic) },
+                { feature.taskDidReceive(tasks.randomElement()!, data: .mockRandom()) },
+                { feature.taskDidFinishCollecting(tasks.randomElement()!, metrics: .mockAny()) },
+                { feature.taskDidComplete(tasks.randomElement()!, error: nil) },
                 { try? feature.bind(configuration: .init(delegateClass: SessionDataDelegateMock.self)) },
                 { feature.unbind(delegateClass: SessionDataDelegateMock.self) }
             ],

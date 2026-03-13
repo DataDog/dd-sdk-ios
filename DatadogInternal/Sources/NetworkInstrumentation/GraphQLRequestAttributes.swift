@@ -7,7 +7,7 @@
 import Foundation
 
 /// GraphQL request attributes extracted from the request.
-public struct GraphQLRequestAttributes: Equatable {
+public struct GraphQLRequestAttributes: Equatable, Sendable {
     /// GraphQL operation name.
     public let operationName: String?
 

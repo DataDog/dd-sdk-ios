@@ -7,7 +7,7 @@
 import Foundation
 
 /// A context used to propagate trace through HTTP request headers.
-public struct TraceContext: Equatable {
+public struct TraceContext: Equatable, Sendable {
     /// The unique identifier for the trace.
     public let traceID: TraceID
     /// The unique identifier for the span.

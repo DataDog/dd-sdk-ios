@@ -13,7 +13,7 @@ internal protocol NetworkContextProvider: AnyObject {
 }
 
 /// Manages the `NetworkContext` reads and writes in a thread-safe manner.
-internal class NetworkContextCoreProvider: NetworkContextProvider {
+internal class NetworkContextCoreProvider: NetworkContextProvider, @unchecked Sendable {
     // MARK: - NetworkContextProviderType
     @ReadWriteLock
     var currentNetworkContext: NetworkContext?

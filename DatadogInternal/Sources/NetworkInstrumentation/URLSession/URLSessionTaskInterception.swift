@@ -7,7 +7,7 @@
 import Foundation
 
 /// Defines the tracking mode for network instrumentation.
-public enum TrackingMode {
+public enum TrackingMode: Sendable {
     /// Automatic mode: tracks all tasks without requiring delegate registration.
     /// Does not capture detailed timing data.
     case automatic

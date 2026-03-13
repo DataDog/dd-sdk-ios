@@ -11,7 +11,7 @@ import Foundation
 /// Introduced in response to concerns raised in https://github.com/DataDog/dd-sdk-ios/issues/1638
 /// it makes a copy of request attributes, safeguarding against potential thread safety issues arising from concurrent
 /// mutations (see more context in https://github.com/DataDog/dd-sdk-ios/pull/1767 ).
-public struct ImmutableRequest {
+public struct ImmutableRequest: Sendable {
     /// The URL of the request.
     public let url: URL?
     /// The HTTP method of the request.

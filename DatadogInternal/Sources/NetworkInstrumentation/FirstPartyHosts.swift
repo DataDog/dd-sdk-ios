@@ -7,7 +7,7 @@
 import Foundation
 
 /// A struct that represents a dictionary of host names and tracing header types.
-public struct FirstPartyHosts: Equatable {
+public struct FirstPartyHosts: Equatable, Sendable {
     internal var hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>]
 
     public var hosts: Set<String> {
