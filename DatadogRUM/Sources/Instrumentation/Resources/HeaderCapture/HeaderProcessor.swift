@@ -144,10 +144,11 @@ internal struct HeaderProcessor {
         guard let headers else {
             return [:]
         }
-        // Build a case-insensitive lookup, keeping only String values (keys will be lowercased in output)
+        // Build a case-insensitive lookup (keys will be lowercased in output).
         var normalized: [String: String] = [:]
         for (rawKey, rawValue) in headers {
-            guard let key = rawKey as? String, let value = rawValue as? String else { continue }
+            guard let key = rawKey as? String else { continue }
+            let value = (rawValue as? String) ?? String(describing: rawValue)
             normalized[key.lowercased()] = value
         }
         return filterHeaders(normalized, capturedHeaders: capturedHeaders)
