@@ -31,10 +31,9 @@ public struct DefaultAppKitRUMActionsPredicate {
     private func targetName(for view: DDView) -> String {
         let className = NSStringFromClass(type(of: view))
 
-//        if let accessibilityIdentifier = view.accessibilityIdentifier {
-//            return "\(className)(\(accessibilityIdentifier))"
-
-        if let button = view as? NSButton, button.title.isEmpty == false {
+        if view.accessibilityIdentifier().isEmpty == false {
+            return "\(className)(\(view.accessibilityIdentifier()))"
+        } else if let button = view as? NSButton, button.title.isEmpty == false {
             return button.title
         } else if let control = view as? NSControl {
             return className + (control.action.map { " \($0.description)" } ?? "")
