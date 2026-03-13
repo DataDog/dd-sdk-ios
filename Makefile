@@ -15,7 +15,8 @@ all: env-check repo-setup dependencies templates
 		dogfood-shopist dogfood-datadog-app \
 		release-build release-validate release-publish-github \
 		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs \
-		set-ci-secret
+		set-ci-secret \
+		octo-sts-check
 
 REPO_ROOT := $(PWD)
 include tools/utils/common.mk
@@ -457,6 +458,11 @@ release-publish-dependent-podspecs:
 set-ci-secret:
 	@$(ECHO_TITLE) "make set-ci-secret"
 	@./tools/secrets/set-secret.sh
+
+octo-sts-check:
+	@$(ECHO_TITLE) "make octo-sts-check"
+	dd-octo-sts check --scope DataDog/dd-sdk-ios --policy self.carthage
+	dd-octo-sts debug --scope DataDog/dd-sdk-ios --policy self.carthage
 
 bump:
 	@read -p "Enter version number: " version;  \

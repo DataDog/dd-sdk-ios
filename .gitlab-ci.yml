@@ -91,6 +91,16 @@ ENV check:
     - ./tools/runner-setup.sh --datadog-ci
     - make env-check
 
+Octo STS Check:
+  stage: pre
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
+  script:
+    - make octo-sts-check
+
 # ┌──────────────┐
 # │ Local Cache: │
 # └──────────────┘
