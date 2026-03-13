@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import ObjectiveC
 
 /// The Network Instrumentation Feature that can be registered into a core if
 /// any handler is provided.
@@ -54,20 +55,6 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The interceptions **must** be accessed using the `queue`.
     private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
 
-    /// `URLSessionTask` subclasses that declare most of their inherited properties as `NS_UNAVAILABLE`
-    /// and throw `NSGenericException` at runtime when those properties are accessed.
-    /// Resolved once at startup using `NSClassFromString` to avoid importing AVFoundation.
-    static let unsupportedTaskClasses: [AnyClass] = {
-        ["AVAssetDownloadTask", "AVAggregateAssetDownloadTask"]
-            .compactMap { NSClassFromString($0) }
-    }()
-
-    /// Returns `true` if `task` is an instance of a class that doesn't support standard
-    /// `URLSessionTask` properties and must be skipped by the instrumentation.
-    static func isUnsupportedTask(_ task: URLSessionTask) -> Bool {
-        unsupportedTaskClasses.contains { task.isKind(of: $0) }
-    }
-
     init(
         networkContextProvider: NetworkContextProvider,
         messageReceiver: FeatureMessageReceiver
@@ -107,8 +94,8 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
                 // Skip task types that declare standard URLSessionTask properties as
                 // NS_UNAVAILABLE and throw NSGenericException at runtime when accessed
-                // (e.g. AVAssetDownloadTask, AVAggregateAssetDownloadTask, BackgroundAVAssetDownloadTask).
-                guard !NetworkInstrumentationFeature.isUnsupportedTask(task) else {
+                // (e.g. AVAssetDownloadTask, AVAggregateAssetDownloadTask).
+                guard task.isSupportedForInstrumentation else {
                     return
                 }
 

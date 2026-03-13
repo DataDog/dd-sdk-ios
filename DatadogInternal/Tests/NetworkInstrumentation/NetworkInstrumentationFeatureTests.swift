@@ -1887,30 +1887,29 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.trace, traceContexts.first, "It should register first injected Trace Context")
     }
 
-    func testIsUnsupportedTask_returnsFalseForRegularTasks() throws {
+    func testIsSupportedForInstrumentation_returnsTrueForRegularTasks() throws {
         // AVAssetDownloadTask detection must not interfere with ordinary tasks.
-
-        // Given
         let session = URLSession(configuration: .ephemeral)
         let task = session.dataTask(with: URL.mockAny())
         defer { task.cancel() }
 
-        // Then
-        XCTAssertFalse(
-            NetworkInstrumentationFeature.isUnsupportedTask(task),
-            "Regular URLSessionDataTask should not be flagged as unsupported"
-        )
+        XCTAssertTrue(task.isSupportedForInstrumentation, "Regular URLSessionDataTask should be supported for instrumentation")
     }
 
-    func testIsUnsupportedTask_returnsTrueForAVAssetDownloadTask() throws {
+    func testIsSupportedForInstrumentation_returnsFalseForAVAssetDownloadTask() throws {
         // Verify that an AVAssetDownloadTask instance is detected as unsupported.
         // Uses the ObjC runtime to allocate an instance without importing AVFoundation.
         let task = try XCTUnwrap(NSClassFromString("AVAssetDownloadTask")?.alloc() as? URLSessionTask)
 
-        XCTAssertTrue(
-            NetworkInstrumentationFeature.isUnsupportedTask(task),
-            "AVAssetDownloadTask should be flagged as unsupported"
-        )
+        XCTAssertFalse(task.isSupportedForInstrumentation, "AVAssetDownloadTask should not be supported for instrumentation")
+    }
+
+    func testIsSupportedForInstrumentation_returnsFalseForAVAggregateAssetDownloadTask() throws {
+        // Verify that an AVAggregateAssetDownloadTask instance is detected as unsupported.
+        // Uses the ObjC runtime to allocate an instance without importing AVFoundation.
+        let task = try XCTUnwrap(NSClassFromString("AVAggregateAssetDownloadTask")?.alloc() as? URLSessionTask)
+
+        XCTAssertFalse(task.isSupportedForInstrumentation, "AVAggregateAssetDownloadTask should not be supported for instrumentation")
     }
 
     // MARK: - First Party Hosts

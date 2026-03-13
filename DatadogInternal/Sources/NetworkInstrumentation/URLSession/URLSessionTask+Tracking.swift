@@ -50,3 +50,21 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
 }
 
 private var hasCompletionKey: Void?
+
+extension URLSessionTask {
+    /// `URLSessionTask` subclasses that declare most of their inherited properties as `NS_UNAVAILABLE`
+    /// and throw `NSGenericException` at runtime when those properties are accessed.
+    /// Resolved once using `NSClassFromString` to avoid importing AVFoundation.
+    private static let unsupportedTaskClasses: [AnyClass] = {
+        ["AVAssetDownloadTask", "AVAggregateAssetDownloadTask"]
+            .compactMap { NSClassFromString($0) }
+    }()
+
+    /// Returns `true` if the task supports standard `URLSessionTask` property access and
+    /// can be instrumented. Some subclasses (e.g. `AVAssetDownloadTask`) declare properties
+    /// like `currentRequest` and `response` as `NS_UNAVAILABLE` and throw `NSGenericException`
+    /// at runtime when accessed.
+    var isSupportedForInstrumentation: Bool {
+        !Self.unsupportedTaskClasses.contains { self.isKind(of: $0) }
+    }
+}
