@@ -10,7 +10,7 @@ import DatadogInternal
 /// Factory responsible for creating RUM user action commands from UIEvents.
 /// This abstraction allows for platform-specific implementations (iOS/tvOS).
 internal protocol AppKitEventCommandFactory {
-    func command(from control: NSControl, action: Selector?, target: Any?) -> RUMAddUserActionCommand?
+    func command(from app: NSApplication, action: Selector?, target: Any?, from: Any?) -> RUMAddUserActionCommand?
     func command(from event: NSEvent) -> RUMAddUserActionCommand?
 }
 
@@ -35,8 +35,13 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         self.swiftUIDetector = swiftUIDetector
     }
 
-    func command(from control: NSControl, action: Selector?, target: Any?) -> RUMAddUserActionCommand? {
-        if let rumAction = createAppKitActionCommand(from: control) {
+    func command(from app: NSApplication, action: Selector?, target: Any?, from: Any?) -> RUMAddUserActionCommand? {
+
+        if let view = from as? NSView, let rumAction = createAppKitActionCommand(from: view) {
+            return rumAction
+        }
+
+        if let menuItem = from as? NSMenuItem,  let rumAction = createAppKitActionCommand(from: menuItem) {
             return rumAction
         }
 
@@ -52,32 +57,6 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     }
 
     // MARK: UIKit
-    private func createAppKitActionCommand(from control: NSControl) -> RUMAddUserActionCommand? {
-        guard let appKitPredicate else {
-            return nil
-        }
-
-        guard control.isSafeForPrivacy else {
-            return nil // no valid view
-        }
-
-        guard let targetView = bestActionTargetFor(control: control) else {
-            return nil // Tapped view is not eligible for producing RUM Action
-        }
-
-        guard let action = appKitPredicate.rumAction(targetView: targetView) else {
-            return nil
-        }
-
-        return RUMAddUserActionCommand(
-            time: dateProvider.now,
-            attributes: action.attributes,
-            instrumentation: .appKit,
-            actionType: .click,
-            name: action.name
-        )
-    }
-
     private func createAppKitActionCommand(from event: NSEvent) -> RUMAddUserActionCommand? {
         guard let appKitPredicate else {
             return nil
@@ -91,15 +70,46 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return nil // We don't know what was clicked
         }
 
-        guard clickedView.isSafeForPrivacy else {
+        return createAppKitActionCommand(from: clickedView)
+    }
+
+    private func createAppKitActionCommand(from view: NSView) -> RUMAddUserActionCommand? {
+        guard let appKitPredicate else {
+            return nil
+        }
+
+        guard view.isSafeForPrivacy else {
             return nil // no valid view
         }
 
-        guard let targetView = bestActionTargetFor(view: clickedView) else {
+        guard let targetView = bestActionTargetFor(view: view) else {
             return nil // Tapped view is not eligible for producing RUM Action
         }
 
-        guard let action = appKitPredicate.rumAction(targetView: targetView) else {
+        guard let action = appKitPredicate.rumAction(targetView: view) else {
+            return nil
+        }
+
+        return RUMAddUserActionCommand(
+            time: dateProvider.now,
+            attributes: action.attributes,
+            instrumentation: .appKit,
+            actionType: .click,
+            name: action.name
+        )
+    }
+
+    private func createAppKitActionCommand(from menuItem: NSMenuItem) -> RUMAddUserActionCommand? {
+        guard let appKitPredicate else {
+            return nil
+        }
+
+        // TODO: How to check this?
+//        guard menuItem.isSafeForPrivacy else {
+//            return nil // no valid view
+//        }
+
+        guard let action = appKitPredicate.rumAction(targetMenuItem: menuItem) else {
             return nil
         }
 
