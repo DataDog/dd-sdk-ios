@@ -234,6 +234,8 @@ Smoke Tests (iOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   variables:
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 16 Pro"
@@ -247,6 +249,8 @@ Smoke Tests (tvOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   variables:
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
@@ -359,6 +363,8 @@ Build Artifacts:
   stage: release-build
   rules: 
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   artifacts:
     paths:
       - artifacts
