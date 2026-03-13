@@ -381,7 +381,10 @@ Dogfood (Datadog app):
 
 Build Artifacts:
   stage: release-build
-  rules: 
+  tags:
+    - macos:sonoma
+    - specific:true
+  rules:
     - !reference [.release-pipeline-job, rules]
   id_tokens:
     <<: *dd-octo-sts-id-token
