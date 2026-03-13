@@ -1887,29 +1887,88 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.trace, traceContexts.first, "It should register first injected Trace Context")
     }
 
-    func testIsSupportedForInstrumentation_returnsTrueForRegularTasks() throws {
-        // AVAssetDownloadTask detection must not interfere with ordinary tasks.
+    // MARK: - isSupportedForInstrumentation
+
+    func testIsSupportedForInstrumentation_returnsTrueForDataTask() {
         let session = URLSession(configuration: .ephemeral)
         let task = session.dataTask(with: URL.mockAny())
         defer { task.cancel() }
+        XCTAssertTrue(task.isSupportedForInstrumentation)
+    }
 
-        XCTAssertTrue(task.isSupportedForInstrumentation, "Regular URLSessionDataTask should be supported for instrumentation")
+    func testIsSupportedForInstrumentation_returnsTrueForUploadTask() {
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.uploadTask(with: URLRequest(url: URL.mockAny()), from: Data())
+        defer { task.cancel() }
+        XCTAssertTrue(task.isSupportedForInstrumentation)
+    }
+
+    func testIsSupportedForInstrumentation_returnsTrueForDownloadTask() {
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.downloadTask(with: URL.mockAny())
+        defer { task.cancel() }
+        XCTAssertTrue(task.isSupportedForInstrumentation)
+    }
+
+    @available(iOS 13.0, *)
+    func testIsSupportedForInstrumentation_returnsTrueForWebSocketTask() {
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.webSocketTask(with: URL(string: "wss://example.com")!)
+        defer { task.cancel() }
+        XCTAssertTrue(task.isSupportedForInstrumentation)
+    }
+
+    func testIsSupportedForInstrumentation_returnsTrueForStreamTask() {
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.streamTask(withHostName: "example.com", port: 80)
+        defer { task.cancel() }
+        XCTAssertTrue(task.isSupportedForInstrumentation)
     }
 
     func testIsSupportedForInstrumentation_returnsFalseForAVAssetDownloadTask() throws {
-        // Verify that an AVAssetDownloadTask instance is detected as unsupported.
-        // Uses the ObjC runtime to allocate an instance without importing AVFoundation.
+        // Uses the ObjC runtime to create an instance without importing AVFoundation.
+        // Swift's `is` operator for ObjC types delegates to `isKind(of:)`, so this works correctly.
         let task = try XCTUnwrap(NSClassFromString("AVAssetDownloadTask")?.alloc() as? URLSessionTask)
-
-        XCTAssertFalse(task.isSupportedForInstrumentation, "AVAssetDownloadTask should not be supported for instrumentation")
+        XCTAssertFalse(task.isSupportedForInstrumentation)
     }
 
     func testIsSupportedForInstrumentation_returnsFalseForAVAggregateAssetDownloadTask() throws {
-        // Verify that an AVAggregateAssetDownloadTask instance is detected as unsupported.
-        // Uses the ObjC runtime to allocate an instance without importing AVFoundation.
+        // Uses the ObjC runtime to create an instance without importing AVFoundation.
+        // Swift's `is` operator for ObjC types delegates to `isKind(of:)`, so this works correctly.
         let task = try XCTUnwrap(NSClassFromString("AVAggregateAssetDownloadTask")?.alloc() as? URLSessionTask)
+        XCTAssertFalse(task.isSupportedForInstrumentation)
+    }
 
-        XCTAssertFalse(task.isSupportedForInstrumentation, "AVAggregateAssetDownloadTask should not be supported for instrumentation")
+    // MARK: - Crash regression: resume() on various task types
+
+    @available(iOS 13.0, *)
+    func testWebSocketTask_resumeDoesNotCrash() throws {
+        // Regression: verify that resuming a WebSocketTask with the swizzle installed doesn't crash.
+        // The crash in interceptResume is synchronous, so no real connection is needed — we cancel immediately.
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.webSocketTask(with: URL(string: "wss://example.com")!)
+        task.resume()
+        task.cancel()
+
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        feature.flush()
+        // No crash = pass. WebSocketTask is a supported type and should be tracked.
+        XCTAssertEqual(handler.interceptions.count, 1)
+    }
+
+    func testStreamTask_resumeDoesNotCrash() throws {
+        // Regression: verify that resuming a StreamTask with the swizzle installed doesn't crash.
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.streamTask(withHostName: "example.com", port: 80)
+        task.resume()
+        task.cancel()
+
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        feature.flush()
+        // No crash = pass. StreamTask is a supported type and should be tracked.
+        XCTAssertEqual(handler.interceptions.count, 1)
     }
 
     // MARK: - First Party Hosts

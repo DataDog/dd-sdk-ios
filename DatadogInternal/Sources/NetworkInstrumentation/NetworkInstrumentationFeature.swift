@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import ObjectiveC
 
 /// The Network Instrumentation Feature that can be registered into a core if
 /// any handler is provided.
