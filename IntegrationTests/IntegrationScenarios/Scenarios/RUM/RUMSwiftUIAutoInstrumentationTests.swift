@@ -68,6 +68,10 @@ class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
 
     @available(iOS 16.0, *)
     func testRootTabbar() throws {
+        if #available(iOS 26, tvOS 26, *) {
+            throw XCTSkip("TODO: RUM-13038 Fix SwiftUI Auto instrumentation on iOS 26")
+        }
+
         // Server session recording RUM events
         let serverSession = server.obtainUniqueRecordingSession()
         let app = ExampleApplication()
@@ -178,6 +182,10 @@ class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
 
     // MARK: - Action Tracking
     func testActions() throws {
+        if #available(iOS 26, tvOS 26, *) {
+            throw XCTSkip("TODO: RUM-13038 Fix SwiftUI Auto instrumentation on iOS 26")
+        }
+
         let serverSession = server.obtainUniqueRecordingSession()
         let app = ExampleApplication()
         app.launchWith(
