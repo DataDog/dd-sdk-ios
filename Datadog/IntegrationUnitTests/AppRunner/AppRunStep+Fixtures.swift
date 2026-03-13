@@ -150,7 +150,7 @@ extension AppRunStep {
 extension AppRunStep {
     static func flushDatadogContext() -> AppRunStep {
         AppRunStep { app in
-            DatadogContextProvider.defaultQueue.sync {}
+            app.flush()
         }
     }
 }
