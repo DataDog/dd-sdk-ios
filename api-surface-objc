@@ -226,6 +226,7 @@ public class objc_LogEventNetworkConnectionInfo: NSObject
     public var supportsIPv6: NSNumber?
     public var isExpensive: NSNumber?
     public var isConstrained: NSNumber?
+    public var linkQuality: objc_LogEventLinkQuality?
 public enum objc_LogEventReachability: Int
     case yes
     case maybe
@@ -236,6 +237,11 @@ public enum objc_LogEventInterface: Int
     case cellular
     case loopback
     case other
+public enum objc_LogEventLinkQuality: Int
+    case good
+    case minimal
+    case moderate
+    case unknown
 public class objc_LogEventCarrierInfo: NSObject
     public var carrierName: String?
     public var carrierISOCountryCode: String?

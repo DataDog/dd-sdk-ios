@@ -37,7 +37,7 @@ public struct NetworkConnectionInfo: Codable, Equatable {
         case moderate
         /// No link quality measurement is available
         case unknown
-  }
+    }
 
     /// Network reachability status.
     public let reachability: Reachability
@@ -61,7 +61,7 @@ public struct NetworkConnectionInfo: Codable, Equatable {
         supportsIPv6: Bool?,
         isExpensive: Bool?,
         isConstrained: Bool?,
-        linkQuality: LinkQuality?
+        linkQuality: LinkQuality? = nil
     ) {
         self.reachability = reachability
         self.availableInterfaces = availableInterfaces

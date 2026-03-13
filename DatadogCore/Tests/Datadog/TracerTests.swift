@@ -528,20 +528,21 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingNetworkLinkQualityInfo() throws {
+        let linkQuality: NetworkConnectionInfo.LinkQuality = .mockRandom()
         core.context = .mockWith(networkConnectionInfo: nil)
 
         config.networkInfoEnabled = true
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core).dd
 
-        core.context.networkConnectionInfo = .mockWith(linkQuality: "moderate")
+        core.context.networkConnectionInfo = .mockWith(linkQuality: linkQuality)
         tracer.startSpan(operationName: "span with link quality").finish()
 
         core.context.networkConnectionInfo = .mockWith(linkQuality: nil)
         tracer.startSpan(operationName: "span without link quality").finish()
 
         let spanMatchers = try core.waitAndReturnSpanMatchers()
-        XCTAssertEqual(try spanMatchers[0].meta.networkConnectionLinkQuality(), "moderate")
+        XCTAssertEqual(try spanMatchers[0].meta.networkConnectionLinkQuality(), linkQuality.rawValue)
         XCTAssertNil(try? spanMatchers[1].meta.networkConnectionLinkQuality())
     }
 

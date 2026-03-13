@@ -46,11 +46,13 @@ class NetworkConnectionInfoConversionTests: XCTestCase {
         XCTAssertEqual(Interface(.other), .other)
     }
 
-  @available(iOS 26.0, tvOS 26.0, macOS 26.0, *)
+    #if compiler(>=6.2)
+    @available(iOS 26.0, tvOS 26.0, macOS 26.0, watchOS 26.0, *)
     func testNWPathLinkQuality() {
         XCTAssertEqual(LinkQuality(.good), .good)
         XCTAssertEqual(LinkQuality(.minimal), .minimal)
         XCTAssertEqual(LinkQuality(.moderate), .moderate)
         XCTAssertEqual(LinkQuality(.unknown), .unknown)
     }
+    #endif
 }
