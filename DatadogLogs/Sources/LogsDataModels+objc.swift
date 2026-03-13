@@ -483,7 +483,6 @@ public class objc_LogEventNetworkConnectionInfo: NSObject {
         root.swiftModel.networkConnectionInfo?.availableInterfaces?.map { objc_LogEventInterface(swift: $0).rawValue }
     }
 
-
     public var supportsIPv4: NSNumber? {
         root.swiftModel.networkConnectionInfo?.supportsIPv4 as NSNumber?
     }
@@ -500,14 +499,11 @@ public class objc_LogEventNetworkConnectionInfo: NSObject {
         root.swiftModel.networkConnectionInfo?.isConstrained as NSNumber?
     }
 
-    public var linkQuality: objc_LogEventLinkQuality? {
-        // swiftlint:disable force_unwrapping
-        if let quality = root.swiftModel.networkConnectionInfo!.linkQuality {
+    public var linkQuality: objc_LogEventLinkQuality {
+        if let quality = root.swiftModel.networkConnectionInfo?.linkQuality {
             return .init(swift: quality)
         }
-      // swiftlint:enable force_unwrapping
-        return nil
-        
+        return .unknown
     }
 }
 
