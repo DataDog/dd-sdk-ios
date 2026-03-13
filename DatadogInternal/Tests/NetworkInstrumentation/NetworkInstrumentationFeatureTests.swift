@@ -1910,7 +1910,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertTrue(task.isSupportedForInstrumentation)
     }
 
-    @available(iOS 13.0, *)
+    @available(iOS 13.0, tvOS 13.0, *)
     func testIsSupportedForInstrumentation_returnsTrueForWebSocketTask() {
         let session = URLSession(configuration: .ephemeral)
         let task = session.webSocketTask(with: URL(string: "wss://example.com")!)
@@ -1943,7 +1943,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     // MARK: - Crash regression: resume() on various task types
 
-    @available(iOS 13.0, *)
+    @available(iOS 13.0, tvOS 13.0, *)
     func testWebSocketTask_resumeDoesNotCrash() throws {
         // Regression: verify that resuming a WebSocketTask with the swizzle installed doesn't crash.
         // The crash in interceptResume is synchronous, so no real connection is needed — we cancel immediately.
