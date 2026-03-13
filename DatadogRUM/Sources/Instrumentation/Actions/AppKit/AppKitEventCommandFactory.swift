@@ -11,6 +11,7 @@ import DatadogInternal
 /// This abstraction allows for platform-specific implementations (iOS/tvOS).
 internal protocol AppKitEventCommandFactory {
     func command(from control: NSControl, action: Selector?, target: Any?) -> RUMAddUserActionCommand?
+    func command(from event: NSEvent) -> RUMAddUserActionCommand?
 }
 
 // MARK: macOS implementation
@@ -42,6 +43,14 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         return nil
     }
 
+    func command(from event: NSEvent) -> RUMAddUserActionCommand? {
+        if let rumAction = createAppKitActionCommand(from: event) {
+            return rumAction
+        }
+
+        return nil
+    }
+
     // MARK: UIKit
     private func createAppKitActionCommand(from control: NSControl) -> RUMAddUserActionCommand? {
         guard let appKitPredicate else {
@@ -52,7 +61,11 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return nil // no valid view
         }
 
-        guard let action = appKitPredicate.rumAction(targetView: control) else {
+        guard let targetView = bestActionTargetFor(control: control) else {
+            return nil // Tapped view is not eligible for producing RUM Action
+        }
+
+        guard let action = appKitPredicate.rumAction(targetView: targetView) else {
             return nil
         }
 
@@ -65,12 +78,54 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         )
     }
 
+    private func createAppKitActionCommand(from event: NSEvent) -> RUMAddUserActionCommand? {
+        guard let appKitPredicate else {
+            return nil
+        }
+
+        guard event.type == .leftMouseDown else {
+            return nil // Handle mouse down only for now
+        }
+
+        guard let clickedView = event.window?.contentView?.hitTest(event.locationInWindow) else {
+            return nil // We don't know what was clicked
+        }
+
+        guard clickedView.isSafeForPrivacy else {
+            return nil // no valid view
+        }
+
+        guard let targetView = bestActionTargetFor(view: clickedView) else {
+            return nil // Tapped view is not eligible for producing RUM Action
+        }
+
+        guard let action = appKitPredicate.rumAction(targetView: targetView) else {
+            return nil
+        }
+
+        return RUMAddUserActionCommand(
+            time: dateProvider.now,
+            attributes: action.attributes,
+            instrumentation: .appKit,
+            actionType: .click,
+            name: action.name
+        )
+    }
+
+    private func bestActionTargetFor(control: NSControl) -> NSView? {
+        if let toolbarItemViewer = control.findInParentHierarchy(viewMatching: { $0.className == "NSToolbarItemViewer" }) {
+            return toolbarItemViewer
+        }
+
+        return control
+    }
+
     /// Traverses the hierarchy of the `view` bottom-up to find the best view which could be considered for RUM Action's target,
     /// e.g. if the tapped `view` is a `UILabel` embedded in a `UIStackView` inside the `UITableViewCell` it will
     /// return the `UITableViewCell` as the best guess of user interaction.
     ///
     /// May return `nil` if there's no good guess and the RUM Action for given `view` should not be produced.
-    private func bestActionTarget(for view: DDView) -> DDView? {
+    private func bestActionTargetFor(view: DDView) -> DDView? {
         if let ddControl = view as? DDControl {
             // If the `view` is a `DDControl` (interactive element), accept it.
             return ddControl
