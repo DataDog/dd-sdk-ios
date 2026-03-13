@@ -4,7 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if canImport(UIKit)
+#if canImport(AppKit)
+import AppKit
 import DatadogInternal
 
 /// Protocol defining the predicate for UIKit view controller tracking in RUM.
@@ -31,7 +32,7 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
     public init () {}
 
     public func rumView(for viewController: DDViewController) -> RUMView? {
-        guard !Bundle(for: type(of: viewController)).dd.isUIKit || viewController.isUIAlertController else {
+        guard !Bundle(for: type(of: viewController)).dd.isAppkit || viewController.isUIAlertController else {
             // Part of our heuristic for (auto) tracking view controllers is to ignore
             // container view controllers coming from `UIKit` if they are not subclassed.
             // This condition is wider and it ignores all view controllers defined in `UIKit` bundle.
@@ -52,4 +53,5 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
         return view
     }
 }
+
 #endif

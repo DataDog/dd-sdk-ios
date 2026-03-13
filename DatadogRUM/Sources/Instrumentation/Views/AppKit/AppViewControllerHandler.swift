@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if canImport(UIKit)
-import UIKit
+#if canImport(AppKit)
+import AppKit
 
 internal protocol UIViewControllerHandler: RUMCommandPublisher {
     /// Gets called on `super.viewDidAppear()`.

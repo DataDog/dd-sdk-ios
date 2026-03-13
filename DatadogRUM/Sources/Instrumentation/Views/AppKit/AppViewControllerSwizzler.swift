@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if canImport(UIKit)
-import UIKit
+#if canImport(AppKit)
+import AppKit
 import DatadogInternal
 
 internal class DDViewControllerSwizzler {
@@ -34,7 +34,7 @@ internal class DDViewControllerSwizzler {
         @convention(c) (DDViewController, Selector, Bool) -> Void,
         @convention(block) (DDViewController, Bool) -> Void
     > {
-        private static let selector = #selector(DDViewController.viewDidAppear(_:))
+        private static let selector = #selector(DDViewController.viewDidAppear)
         private let method: Method
         private let handler: UIViewControllerHandler
 
@@ -59,7 +59,7 @@ internal class DDViewControllerSwizzler {
         @convention(c) (DDViewController, Selector, Bool) -> Void,
         @convention(block) (DDViewController, Bool) -> Void
     > {
-        private static let selector = #selector(DDViewController.viewDidDisappear(_:))
+        private static let selector = #selector(DDViewController.viewDidDisappear)
         private let method: Method
         private let handler: UIViewControllerHandler
 
