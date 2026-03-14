@@ -57,8 +57,12 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
     ) {
-        featureScope.context { [weak self] context in
+        Task { [weak self] in
             guard let self else {
+                completion(.failure(.clientNotInitialized))
+                return
+            }
+            guard let context = await self.featureScope.context() else {
                 completion(.failure(.clientNotInitialized))
                 return
             }

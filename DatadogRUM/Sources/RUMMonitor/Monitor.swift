@@ -269,7 +269,8 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - session
 
     func currentSessionID(completion: @escaping @Sendable (String?) -> Void) {
-        featureScope.context { [weak self] _ in
+        Task { [weak self] in
+            _ = await self?.featureScope.context()
             guard let sessionId = self?.scopes.activeSession?.sessionUUID else {
                 completion(nil)
                 return

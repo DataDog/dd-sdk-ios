@@ -24,10 +24,8 @@ public final class DataStoreAsyncMock: DataStore {
         }
     }
 
-    public func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
-        queue.async {
-            callback(self.storage[key] ?? .noValue)
-        }
+    public func value(forKey key: String) async -> DataStoreValueResult {
+        storage[key] ?? .noValue
     }
 
     public func removeValue(forKey key: String) {

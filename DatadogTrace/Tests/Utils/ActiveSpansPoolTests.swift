@@ -172,25 +172,21 @@ class ActiveSpansPoolTests: XCTestCase, Sendable {
         XCTAssertTrue(tracer.activeSpansPool.isEmpty)
     }
 
-    func testSetActive_activeSpanProviderWorks() throws {
+    func testSetActive_activeSpanProviderWorks() async throws {
         let core = DatadogCoreProxy()
         Trace.enable(in: core)
         nonisolated(unsafe) let tracer = Tracer.shared(in: core)
 
-        core.scope(for: TraceFeature.self).context { context in
-            guard let provider = context.additionalContext(ofType: TraceCoreContext.ActiveSpanProvider.self) else {
-                XCTFail("Additional context for ActiveSpanProvider is nil unexpectedly.")
-                return
-            }
+        let context = try XCTUnwrap(await core.scope(for: TraceFeature.self).context())
+        let provider = try XCTUnwrap(context.additionalContext(ofType: TraceCoreContext.ActiveSpanProvider.self))
 
-            XCTAssertNil(provider.activeSpanContext())
+        XCTAssertNil(provider.activeSpanContext())
 
-            let oneSpan = tracer.startSpan(operationName: .mockAny()).setActive()
-            XCTAssertEqual(provider.activeSpanContext()?.activeSpanID, oneSpan.dd.ddContext.spanID)
-            XCTAssertEqual(provider.activeSpanContext()?.traceID, oneSpan.dd.ddContext.traceID)
+        let oneSpan = tracer.startSpan(operationName: .mockAny()).setActive()
+        XCTAssertEqual(provider.activeSpanContext()?.activeSpanID, oneSpan.dd.ddContext.spanID)
+        XCTAssertEqual(provider.activeSpanContext()?.traceID, oneSpan.dd.ddContext.traceID)
 
-            oneSpan.finish()
-            XCTAssertNil(provider.activeSpanContext())
-        }
+        oneSpan.finish()
+        XCTAssertNil(provider.activeSpanContext())
     }
 }

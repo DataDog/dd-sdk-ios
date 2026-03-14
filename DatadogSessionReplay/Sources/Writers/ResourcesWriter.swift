@@ -41,34 +41,31 @@ internal class ResourcesWriter: ResourcesWriting {
         self.scope = scope
         self.encoder = encoder
         self.decoder = decoder
-        self.scope.dataStore.value(forKey: Constants.storeCreationKey) { [weak self]  result in
+        Task { [weak self, scope] in
+            let creationResult = await scope.dataStore.value(forKey: Constants.storeCreationKey)
             do {
-                if let storeCreation = try result.data(expectedVersion: Constants.currentStoreVersion)?.asTimeInterval(),
+                if let storeCreation = try creationResult.data(expectedVersion: Constants.currentStoreVersion)?.asTimeInterval(),
                    Date().timeIntervalSince1970 - storeCreation < dataStoreResetTime {
-                    self?.scope.dataStore.value(forKey: Constants.knownResourcesKey) { result in
-                        switch result {
-                        case .value(let data, let version) where version == Constants.currentStoreVersion:
-                            do {
-                                if let knownIdentifiers = try data.asKnownIdentifiers(decoder) {
-                                    self?.knownIdentifiers.formUnion(knownIdentifiers)
-                                }
-                            } catch let error {
-                                self?.scope.telemetry.error("Failed to decode known identifiers", error: error)
+                    let resourcesResult = await scope.dataStore.value(forKey: Constants.knownResourcesKey)
+                    if case .value(let data, let version) = resourcesResult, version == Constants.currentStoreVersion {
+                        do {
+                            if let knownIdentifiers = try data.asKnownIdentifiers(decoder) {
+                                self?.knownIdentifiers.formUnion(knownIdentifiers)
                             }
-                        default:
-                            break
+                        } catch let error {
+                            scope.telemetry.error("Failed to decode known identifiers", error: error)
                         }
                     }
-                } else { // Reset if store was created more than 30 days ago
-                    self?.scope.dataStore.setValue(
+                } else {
+                    scope.dataStore.setValue(
                         Date().timeIntervalSince1970.asData(),
                         forKey: Constants.storeCreationKey,
                         version: Constants.currentStoreVersion
                     )
-                    self?.scope.dataStore.removeValue(forKey: Constants.knownResourcesKey)
+                    scope.dataStore.removeValue(forKey: Constants.knownResourcesKey)
                 }
             } catch let error {
-                self?.scope.telemetry.error("Failed to decode store creation", error: error)
+                scope.telemetry.error("Failed to decode store creation", error: error)
             }
         }
     }

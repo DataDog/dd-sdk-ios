@@ -16,7 +16,7 @@ public typealias DataStoreKeyVersion = UInt16
 public let dataStoreDefaultKeyVersion: DataStoreKeyVersion = 1
 
 /// Possible results of retrieving a value from the data store.
-public enum DataStoreValueResult {
+public enum DataStoreValueResult: @unchecked Sendable {
     /// The value was found and serialized using the format defined by the specified version.
     case value(Data, DataStoreKeyVersion)
     /// There was no value associated with the requested key.
@@ -49,13 +49,12 @@ public protocol DataStore {
 
     /// Retrieves the value associated with the specified key from the data store.
     ///
-    /// - Parameters:
-    ///   - key: The unique identifier for the data. Must be a valid file name, as it will be persisted in files.
-    ///   - callback: A closure providing the result asynchronously on an internal queue.
+    /// - Parameter key: The unique identifier for the data. Must be a valid file name, as it will be persisted in files.
+    /// - Returns: The result of the retrieval.
     ///
     /// Note: The implementation must log errors to console and notify them through telemetry. Callers are not required
     /// to implement logging of errors upon receiving `.error()` result.
-    func value(forKey key: String, callback: @escaping @Sendable (DataStoreValueResult) -> Void)
+    func value(forKey key: String) async -> DataStoreValueResult
 
     /// Deletes the value associated with the specified key from the data store.
     ///
@@ -91,7 +90,7 @@ public struct NOPDataStore: DataStore {
     /// no-op
     public func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {}
     /// no-op
-    public func value(forKey key: String, callback: @escaping @Sendable (DataStoreValueResult) -> Void) {}
+    public func value(forKey key: String) async -> DataStoreValueResult { .noValue }
     /// no-op
     public func removeValue(forKey key: String) {}
     /// no-op

@@ -12,14 +12,6 @@ internal extension FeatureScope {
     var rumDataStore: RUMDataStore {
         RUMDataStore(featureScope: self)
     }
-
-    /// RUM data store endpoint within SDK context.
-    func rumDataStoreContext(_ block: @escaping @Sendable (DatadogContext, RUMDataStore) -> Void) {
-        let store = rumDataStore
-        dataStoreContext { context, _ in
-            block(context, store)
-        }
-    }
 }
 
 /// RUM interface for data store.
@@ -54,24 +46,17 @@ internal struct RUMDataStore {
         }
     }
 
-    func value<V: Codable>(forKey key: Key, version: DataStoreKeyVersion = dataStoreDefaultKeyVersion, callback: @escaping @Sendable (V?) -> Void) {
-        featureScope.dataStore.value(forKey: key.rawValue) { result in
-            guard let data = result.data(expectedVersion: version) else {
-                // One of following:
-                // - no value
-                // - value but in wrong version → skip
-                // - error in reading the value (already logged in telemetry by `store`)
-                callback(nil)
-                return
-            }
-            do {
-                let value = try RUMDataStore.decoder.decode(V.self, from: data)
-                callback(value)
-            } catch let error {
-                DD.logger.error("Failed to decode \(V.self) from RUM Data Store", error: error)
-                featureScope.telemetry.error("Failed to decode \(V.self) from RUM Data Store", error: error)
-                callback(nil)
-            }
+    func value<V: Codable>(forKey key: Key, version: DataStoreKeyVersion = dataStoreDefaultKeyVersion) async -> V? {
+        let result = await featureScope.dataStore.value(forKey: key.rawValue)
+        guard let data = result.data(expectedVersion: version) else {
+            return nil
+        }
+        do {
+            return try RUMDataStore.decoder.decode(V.self, from: data)
+        } catch let error {
+            DD.logger.error("Failed to decode \(V.self) from RUM Data Store", error: error)
+            featureScope.telemetry.error("Failed to decode \(V.self) from RUM Data Store", error: error)
+            return nil
         }
     }
 

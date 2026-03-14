@@ -51,16 +51,14 @@ class DatadogCore_FeatureDataStoreTests: XCTestCase {
         scopeB.dataStore.setValue("feature B data".utf8Data, forKey: commonKey)
 
         // Then
-        nonisolated(unsafe) var dataInA: Data?
-        nonisolated(unsafe) var dataInB: Data?
-        scopeA.dataStore.value(forKey: commonKey) { dataInA = $0.data() }
-        scopeB.dataStore.value(forKey: commonKey) { dataInB = $0.data() }
-
         (scopeA.dataStore as? FeatureDataStore)?.flush()
         (scopeB.dataStore as? FeatureDataStore)?.flush()
 
-        XCTAssertEqual(dataInA?.utf8String, "feature A data")
-        XCTAssertEqual(dataInB?.utf8String, "feature B data")
+        let resultA = await scopeA.dataStore.value(forKey: commonKey)
+        let resultB = await scopeB.dataStore.value(forKey: commonKey)
+
+        XCTAssertEqual(resultA.data()?.utf8String, "feature A data")
+        XCTAssertEqual(resultB.data()?.utf8String, "feature B data")
 
         await core.flushAndTearDown()
         temporaryCoreDirectory.delete()
@@ -107,16 +105,14 @@ class DatadogCore_FeatureDataStoreTests: XCTestCase {
         scope2.dataStore.setValue("feature data in core 2".utf8Data, forKey: commonKey)
 
         // Then
-        nonisolated(unsafe) var dataIn1: Data?
-        nonisolated(unsafe) var dataIn2: Data?
-        scope1.dataStore.value(forKey: commonKey) { dataIn1 = $0.data() }
-        scope2.dataStore.value(forKey: commonKey) { dataIn2 = $0.data() }
-
         (scope1.dataStore as? FeatureDataStore)?.flush()
         (scope2.dataStore as? FeatureDataStore)?.flush()
 
-        XCTAssertEqual(dataIn1?.utf8String, "feature data in core 1")
-        XCTAssertEqual(dataIn2?.utf8String, "feature data in core 2")
+        let result1 = await scope1.dataStore.value(forKey: commonKey)
+        let result2 = await scope2.dataStore.value(forKey: commonKey)
+
+        XCTAssertEqual(result1.data()?.utf8String, "feature data in core 1")
+        XCTAssertEqual(result2.data()?.utf8String, "feature data in core 2")
 
         await core1.flushAndTearDown()
         await core2.flushAndTearDown()

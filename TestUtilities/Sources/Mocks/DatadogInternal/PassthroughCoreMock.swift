@@ -99,8 +99,8 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
         return (context, writer)
     }
 
-    public func context(_ block: @escaping @Sendable (DatadogContext) -> Void) {
-        block(context)
+    public func context() async -> DatadogContext? {
+        context
     }
 
     public var dataStore: DataStore

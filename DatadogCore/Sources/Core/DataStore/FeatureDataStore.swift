@@ -46,8 +46,14 @@ internal actor FeatureDataStore: DataStore {
         Task { await _setValue(value, forKey: key, version: version) }
     }
 
-    nonisolated func value(forKey key: String, callback: @escaping @Sendable (DataStoreValueResult) -> Void) {
-        Task { await _value(forKey: key, callback: callback) }
+    func value(forKey key: String) -> DataStoreValueResult {
+        do {
+            return try readData(forKey: key)
+        } catch let error {
+            DD.logger.error("[Data Store] Error on getting `\(key)` value for `\(feature)`", error: error)
+            telemetry.error("[Data Store] Error on getting `\(key)` value for `\(feature)`", error: DDError(error: error))
+            return .error(error)
+        }
     }
 
     nonisolated func removeValue(forKey key: String) {
@@ -66,17 +72,6 @@ internal actor FeatureDataStore: DataStore {
         } catch let error {
             DD.logger.error("[Data Store] Error on setting `\(key)` value for `\(feature)`", error: error)
             telemetry.error("[Data Store] Error on setting `\(key)` value for `\(feature)`", error: DDError(error: error))
-        }
-    }
-
-    private func _value(forKey key: String, callback: @escaping @Sendable (DataStoreValueResult) -> Void) {
-        do {
-            let result = try readData(forKey: key)
-            callback(result)
-        } catch let error {
-            callback(.error(error))
-            DD.logger.error("[Data Store] Error on getting `\(key)` value for `\(feature)`", error: error)
-            telemetry.error("[Data Store] Error on getting `\(key)` value for `\(feature)`", error: DDError(error: error))
         }
     }
 

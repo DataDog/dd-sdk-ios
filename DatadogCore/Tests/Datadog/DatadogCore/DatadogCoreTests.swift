@@ -230,7 +230,8 @@ class DatadogCoreTests: XCTestCase {
         expectation2.expectedFulfillmentCount = 2
 
         core.set(context: ContextMock(value: "value 1"))
-        scope.context { context in
+        Task {
+            guard let context = await scope.context() else { return }
             XCTAssertEqual(context.additionalContext(ofType: ContextMock.self)?.value, "value 1")
             expectation1.fulfill()
         }
@@ -241,7 +242,8 @@ class DatadogCoreTests: XCTestCase {
         }
 
         core.set(context: ContextMock(value: "value 1"))
-        scope.context { context in
+        Task {
+            guard let context = await scope.context() else { return }
             XCTAssertEqual(context.additionalContext(ofType: ContextMock.self)?.value, "value 1")
             expectation1.fulfill()
         }

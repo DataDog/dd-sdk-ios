@@ -32,10 +32,8 @@ internal final class WatchdogTerminationChecker: Sendable {
     /// - Returns: A tuple indicating whether a watchdog termination was detected and the previous app state.
     func isWatchdogTermination(launch: LaunchReport) async -> (isWatchdogTermination: Bool, appState: AppStateInfo?) {
         let appState = await appStateManager.fetchAppStateInfo()
-        let context: DatadogContext = await withCheckedContinuation { continuation in
-            featureScope.context { context in
-                continuation.resume(returning: context)
-            }
+        guard let context = await featureScope.context() else {
+            return (false, appState.previous)
         }
         let result = isWatchdogTermination(
             launch: launch,

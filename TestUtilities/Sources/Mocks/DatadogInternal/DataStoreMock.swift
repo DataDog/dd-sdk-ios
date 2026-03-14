@@ -19,8 +19,8 @@ public class DataStoreMock: DataStore {
         storage[key] = .value(value, version)
     }
 
-    public func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
-        callback(storage[key] ?? .noValue)
+    public func value(forKey key: String) async -> DataStoreValueResult {
+        storage[key] ?? .noValue
     }
 
     public func removeValue(forKey key: String) {

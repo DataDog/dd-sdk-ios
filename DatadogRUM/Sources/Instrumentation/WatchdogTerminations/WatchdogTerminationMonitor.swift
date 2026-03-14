@@ -101,19 +101,11 @@ internal final class WatchdogTerminationMonitor: @unchecked Sendable {
     /// to report the event.
     /// - Parameter state: The app state when the Watchdog Termination occurred.
     private func sendWatchTermination(state: AppStateInfo) async {
-        let context: DatadogContext = await withCheckedContinuation { continuation in
-            feature.context { context in
-                continuation.resume(returning: context)
-            }
-        }
+        guard let context = await feature.context() else { return }
 
         do {
             let likelyCrashedAt = try storage?.mostRecentModifiedFileAt(before: context.launchInfo.processLaunchDate)
-            let viewEvent: RUMViewEvent? = await withCheckedContinuation { continuation in
-                feature.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (viewEvent: RUMViewEvent?) in
-                    continuation.resume(returning: viewEvent)
-                }
-            }
+            let viewEvent: RUMViewEvent? = await feature.rumDataStore.value(forKey: .watchdogRUMViewEvent)
             guard let viewEvent else {
                 DD.logger.error(ErrorMessages.failedToReadViewEvent)
                 feature.telemetry.error(ErrorMessages.failedToReadViewEvent)

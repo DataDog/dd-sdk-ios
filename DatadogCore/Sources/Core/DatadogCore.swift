@@ -383,12 +383,9 @@ internal final class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScop
         return (context, writer)
     }
 
-    func context(_ block: @escaping @Sendable (DatadogContext) -> Void) {
-        Task {
-            guard let core = core else { return }
-            let context = await core.contextProvider.read()
-            block(context)
-        }
+    func context() async -> DatadogContext? {
+        guard let core = core else { return nil }
+        return await core.contextProvider.read()
     }
 
     var dataStore: DataStore {

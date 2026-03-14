@@ -195,8 +195,8 @@ public protocol FeatureScope: MessageSending, AdditionalContextSharing, Anonymou
     ///
     /// A feature can use this method to request the Datadog context valid at the moment of the call.
     ///
-    /// - Parameter block: The block to execute; it is called on the context queue.
-    func context(_ block: @escaping @Sendable (DatadogContext) -> Void)
+    /// - Returns: The current `DatadogContext`, or `nil` if the core is not available.
+    func context() async -> DatadogContext?
 
     /// Data store endpoint.
     ///
@@ -218,18 +218,6 @@ public extension FeatureScope {
         await eventWriteContext(bypassConsent: false)
     }
 
-    /// Retrieve the core context and data store.
-    ///
-    /// Can be used to store data that depends on the current Datadog context. The provided context is valid at the moment
-    /// of the call, meaning that it includes all changes that happened earlier on the same thread.
-    ///
-    /// - Parameter block: The block to execute; it is called on the context queue.
-    func dataStoreContext(_ block: @escaping @Sendable (DatadogContext, DataStore) -> Void) {
-        nonisolated(unsafe) let store = dataStore
-        context { context in
-            block(context, store)
-        }
-    }
 }
 
 /// No-op implementation of `DatadogFeatureRegistry`.
@@ -254,7 +242,7 @@ public struct NOPFeatureScope: FeatureScope {
     /// no-op
     public func eventWriteContext(bypassConsent: Bool) async -> (DatadogContext, Writer)? { nil }
     /// no-op
-    public func context(_ block: @escaping @Sendable (DatadogContext) -> Void) { }
+    public func context() async -> DatadogContext? { nil }
     /// no-op
     public var dataStore: DataStore { NOPDataStore() }
     /// no-op

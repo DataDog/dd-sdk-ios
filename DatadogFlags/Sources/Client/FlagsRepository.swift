@@ -57,18 +57,15 @@ internal final class FlagsRepository {
     }
 
     private func readState() {
-        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, readSemaphore] state in
+        Task { [weak self, readSemaphore, featureScope, clientName] in
             defer {
-                // Signal on elevated queue to avoid priority inversion
                 DispatchQueue.global(qos: .userInitiated).async {
                     readSemaphore.signal()
                 }
             }
-            guard let self else {
-                return
-            }
-            self.state = state
-            self.hasReadFlagsData = true
+            let state = await featureScope.flagsDataStore.flagsData(forClientNamed: clientName)
+            self?.state = state
+            self?.hasReadFlagsData = true
         }
     }
 

@@ -31,8 +31,8 @@ internal final class LazySpanWriteContext: SpanWriteContext, @unchecked Sendable
         self.featureScope = featureScope
 
         // Capture the core context valid at the moment of initialization:
-        featureScope.context { [weak self] context in
-            self?.context = context
+        Task { [weak self] in
+            self?.context = await featureScope.context()
         }
     }
 

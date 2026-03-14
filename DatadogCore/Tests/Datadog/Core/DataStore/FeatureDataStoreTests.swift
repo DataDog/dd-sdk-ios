@@ -27,89 +27,72 @@ class FeatureDataStoreTests: XCTestCase {
 
     // MARK: - Basic Usage
 
-    func testSetAndGetValue() {
-        nonisolated(unsafe) var result: DataStoreValueResult?
-
+    func testSetAndGetValue() async {
         // When
         store.setValue("value".utf8Data, forKey: "key")
-        store.value(forKey: "key") { result = $0 }
         store.flush()
+        let result = await store.value(forKey: "key")
 
         // Then
         DDAssertReflectionEqual(result, .value("value".utf8Data, dataStoreDefaultKeyVersion))
-        XCTAssertEqual(result?.data(), "value".utf8Data)
+        XCTAssertEqual(result.data(), "value".utf8Data)
     }
 
-    func testGetNoValue() {
-        nonisolated(unsafe) var result: DataStoreValueResult?
-
+    func testGetNoValue() async {
         // When
-        store.value(forKey: "missing-key") { result = $0 }
-        store.flush()
+        let result = await store.value(forKey: "missing-key")
 
         DDAssertReflectionEqual(result, .noValue)
     }
 
-    func testUpdateValue() {
-        nonisolated(unsafe) var result: DataStoreValueResult?
-
+    func testUpdateValue() async {
         // When
         store.setValue("value1".utf8Data, forKey: "key")
         store.setValue("value2".utf8Data, forKey: "key")
-
-        // Then
-        store.value(forKey: "key") { result = $0 }
         store.flush()
 
-        XCTAssertEqual(result?.data(), "value2".utf8Data)
+        // Then
+        let result = await store.value(forKey: "key")
+        XCTAssertEqual(result.data(), "value2".utf8Data)
     }
 
-    func testRemoveValue() {
-        nonisolated(unsafe) var result: DataStoreValueResult?
-
+    func testRemoveValue() async {
         // When
         store.setValue("value".utf8Data, forKey: "key")
         store.removeValue(forKey: "key")
-
-        // Then
-        store.value(forKey: "key") { result = $0 }
         store.flush()
 
+        // Then
+        let result = await store.value(forKey: "key")
         DDAssertReflectionEqual(result, .noValue)
     }
 
     // MARK: - Version Validation
 
-    func testSetValueWithCustomVersion() {
-        nonisolated(unsafe) var result: DataStoreValueResult?
-
+    func testSetValueWithCustomVersion() async {
         // When
         store.setValue("value".utf8Data, forKey: "key", version: 42)
-
-        // Then
-        store.value(forKey: "key") { result = $0 }
         store.flush()
 
+        // Then
+        let result = await store.value(forKey: "key")
         DDAssertReflectionEqual(result, .value("value".utf8Data, 42))
-        XCTAssertEqual(result?.data(expectedVersion: 42), "value".utf8Data, "It must return data in expected version")
-        XCTAssertNil(result?.data(expectedVersion: 41), "It must return no data in wrong version")
-        XCTAssertNil(result?.data(), "It must return no data in default version")
+        XCTAssertEqual(result.data(expectedVersion: 42), "value".utf8Data, "It must return data in expected version")
+        XCTAssertNil(result.data(expectedVersion: 41), "It must return no data in wrong version")
+        XCTAssertNil(result.data(), "It must return no data in default version")
     }
 
-    func testUpdateValueWithDifferentVersion() {
-        nonisolated(unsafe) var result: DataStoreValueResult?
-
+    func testUpdateValueWithDifferentVersion() async {
         // When
         store.setValue("value v1".utf8Data, forKey: "key", version: 1)
         store.setValue("value v2".utf8Data, forKey: "key", version: 2)
-
-        // Then
-        store.value(forKey: "key") { result = $0 }
         store.flush()
 
+        // Then
+        let result = await store.value(forKey: "key")
         DDAssertReflectionEqual(result, .value("value v2".utf8Data, 2))
-        XCTAssertEqual(result?.data(expectedVersion: 2), "value v2".utf8Data, "It must return data in expected version")
-        XCTAssertNil(result?.data(expectedVersion: 1), "It must return no data in wrong version")
+        XCTAssertEqual(result.data(expectedVersion: 2), "value v2".utf8Data, "It must return data in expected version")
+        XCTAssertNil(result.data(expectedVersion: 1), "It must return no data in wrong version")
     }
 
     // MARK: - Persistence
@@ -126,13 +109,12 @@ class FeatureDataStoreTests: XCTestCase {
         XCTAssertNotNil(directory(for: store), "The directory must be created after a value is set")
     }
 
-    func testGivenNoDirectory_whenValueIsRetrieved_thenDirectoryIsNotCreated() {
+    func testGivenNoDirectory_whenValueIsRetrieved_thenDirectoryIsNotCreated() async {
         // Given
         XCTAssertNil(directory(for: store), "The directory must not be created by default")
 
         // When
-        store.value(forKey: "key") { _ in }
-        store.flush()
+        _ = await store.value(forKey: "key")
 
         // Then
         XCTAssertNil(directory(for: store), "The directory must not be created after a value is retrieved")
@@ -150,7 +132,7 @@ class FeatureDataStoreTests: XCTestCase {
         XCTAssertNil(directory(for: store), "The directory must not be created after a value is removed")
     }
 
-    func testEachFeatureHasIndependentStore() {
+    func testEachFeatureHasIndependentStore() async {
         let storeA = FeatureDataStore(
             feature: "featureA",
             directory: temporaryCoreDirectory,
@@ -161,38 +143,36 @@ class FeatureDataStoreTests: XCTestCase {
             directory: temporaryCoreDirectory,
             telemetry: TelemetryMock()
         )
-        nonisolated(unsafe) var results: [DataStoreValueResult] = []
 
         // When
         storeA.setValue("value A".utf8Data, forKey: "key")
         storeB.setValue("value B".utf8Data, forKey: "key")
-        storeA.value(forKey: "key") { results.append($0) }
-        storeB.value(forKey: "key") { results.append($0) }
         storeA.flush()
         storeB.flush()
 
+        let resultA = await storeA.value(forKey: "key")
+        let resultB = await storeB.value(forKey: "key")
+
         // Then
-        DDAssertReflectionEqual(results[0].data(), "value A".utf8Data)
-        DDAssertReflectionEqual(results[1].data(), "value B".utf8Data)
+        DDAssertReflectionEqual(resultA.data(), "value A".utf8Data)
+        DDAssertReflectionEqual(resultB.data(), "value B".utf8Data)
     }
 
-    func testDataIsPersistedBetweenDataStoreInstances() {
+    func testDataIsPersistedBetweenDataStoreInstances() async {
         // Given
         store.setValue("value".utf8Data, forKey: "key")
         store.flush()
 
         // When
-        nonisolated(unsafe) var result: DataStoreValueResult?
         let nextStoreInstance = FeatureDataStore(
             feature: "feature",
             directory: temporaryCoreDirectory,
             telemetry: TelemetryMock()
         )
-        nextStoreInstance.value(forKey: "key") { result = $0 }
-        nextStoreInstance.flush()
+        let result = await nextStoreInstance.value(forKey: "key")
 
         // Then
-        DDAssertReflectionEqual(result?.data(), "value".utf8Data)
+        DDAssertReflectionEqual(result.data(), "value".utf8Data)
     }
 
     // MARK: - Error Handling
@@ -218,8 +198,7 @@ class FeatureDataStoreTests: XCTestCase {
         XCTAssertTrue(error.message.contains("failedToEncodeData(DataBlock with \(limit + 1) bytes exceeds limit of \(limit) bytes)"))
     }
 
-    func testWhenGettingMalformedValue_itSendsTelemetry() throws {
-        nonisolated(unsafe) var result: DataStoreValueResult?
+    func testWhenGettingMalformedValue_itSendsTelemetry() async throws {
         let telemetry = TelemetryMock()
 
         // Given
@@ -234,8 +213,7 @@ class FeatureDataStoreTests: XCTestCase {
         // When (malform the file, then read value)
         let file = try XCTUnwrap(directory(for: store)?.files().first(where: { $0.name == "key" }))
         try file.write(data: .mockRandom(ofSize: 10))
-        store.value(forKey: "key") { result = $0 }
-        store.flush()
+        let result = await store.value(forKey: "key")
 
         // Then
         guard case .error = result else {

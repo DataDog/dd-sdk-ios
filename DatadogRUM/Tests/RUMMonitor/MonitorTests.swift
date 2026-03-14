@@ -38,9 +38,8 @@ class MonitorTests: XCTestCase {
 
         // Then
         let expectedContext = monitor.currentRUMContext
-        var datadogContext: DatadogContext?
-        featureScope.context { datadogContext = $0 }
-        let rumContext = try XCTUnwrap(datadogContext?.additionalContext(ofType: RUMCoreContext.self))
+        let datadogContext = try XCTUnwrap(await featureScope.context())
+        let rumContext = try XCTUnwrap(datadogContext.additionalContext(ofType: RUMCoreContext.self))
         XCTAssertEqual(rumContext.applicationID, expectedContext.rumApplicationID)
         XCTAssertEqual(rumContext.sessionID, expectedContext.sessionID.toRUMDataFormat)
         XCTAssertEqual(rumContext.viewID, expectedContext.activeViewID?.toRUMDataFormat)
@@ -59,10 +58,8 @@ class MonitorTests: XCTestCase {
         await monitor.flush()
 
         // Then
-        var datadogContext: DatadogContext?
-        featureScope.context { datadogContext = $0 }
-        let contextMock = try XCTUnwrap(datadogContext)
-        XCTAssertNil(contextMock.additionalContext(ofType: RUMCoreContext.self))
+        let datadogContext = try XCTUnwrap(await featureScope.context())
+        XCTAssertNil(datadogContext.additionalContext(ofType: RUMCoreContext.self))
     }
 
     func testStartView_withViewController_itUsesClassNameAsViewName() async throws {

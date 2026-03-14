@@ -38,7 +38,8 @@ internal final class FatalAppHangsHandler:  @unchecked Sendable {
             return // TODO: RUM-3840 Track fatal App Hangs if there is no active RUM view
         }
 
-        featureScope.rumDataStoreContext { [processID] context, dataStore in
+        Task { [processID, featureScope] in
+            guard let context = await featureScope.context() else { return }
             let fatalHang = FatalAppHang(
                 processID: processID,
                 hang: hang,
@@ -47,33 +48,31 @@ internal final class FatalAppHangsHandler:  @unchecked Sendable {
                 trackingConsent: context.trackingConsent,
                 appLaunchDate: context.launchInfo.processLaunchDate
             )
-            dataStore.setValue(fatalHang, forKey: .fatalAppHangKey)
+            featureScope.rumDataStore.setValue(fatalHang, forKey: .fatalAppHangKey)
         }
     }
 
     func cancelHang() {
-        featureScope.rumDataStoreContext { _, dataStore in // on context queue to avoid race condition with `startHang(hang:)`
-            dataStore.removeValue(forKey: .fatalAppHangKey)
-        }
+        featureScope.rumDataStore.removeValue(forKey: .fatalAppHangKey)
     }
 
     func endHang() {
-        featureScope.rumDataStoreContext { _, dataStore in // on context queue to avoid race condition with `startHang(hang:)`
-            dataStore.removeValue(forKey: .fatalAppHangKey)
-        }
+        featureScope.rumDataStore.removeValue(forKey: .fatalAppHangKey)
     }
 
     func reportFatalAppHangIfFound() {
         // Report pending app hang
-        featureScope.rumDataStore.value(forKey: .fatalAppHangKey) { [weak self] (fatalHang: FatalAppHang?) in
-            guard let fatalHang = fatalHang else {
+        Task { [weak self] in
+            guard let self else { return }
+            let fatalHang: FatalAppHang? = await self.featureScope.rumDataStore.value(forKey: .fatalAppHangKey)
+            guard let fatalHang else {
                 DD.logger.debug("No pending App Hang found")
                 return // previous process didn't end up with a hang
             }
-            guard fatalHang.processID != self?.processID else {
+            guard fatalHang.processID != self.processID else {
                 return // skip as possible false-positive
             }
-            Task { [weak self] in await self?.send(fatalHang: fatalHang) }
+            await self.send(fatalHang: fatalHang)
         }
 
         // Remove pending app hang

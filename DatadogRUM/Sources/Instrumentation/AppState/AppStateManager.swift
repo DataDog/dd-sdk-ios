@@ -27,9 +27,6 @@ internal actor AppStateManager: AppStateManaging {
     /// Whether the initial state has been loaded from the data store.
     private var initialized = false
 
-    /// Continuations waiting for initialization to complete.
-    private var pendingContinuations: [CheckedContinuation<Void, Never>] = []
-
     /// The process identifier of the app whose state is being monitored.
     let processId: UUID
 
@@ -44,27 +41,15 @@ internal actor AppStateManager: AppStateManaging {
         self.featureScope = featureScope
         self.processId = processId
         self.syntheticsEnvironment = syntheticsEnvironment
-
-        Task { await self.start() }
     }
 
     /// Reads the previous app state from the data store and stores the current one.
-    private func start() async {
+    /// Idempotent — only the first call performs the work.
+    private func ensureInitialized() async {
+        guard !initialized else { return }
+        initialized = true
         self.previousAppState = await Self.readAppState(from: featureScope)
         await self.storeCurrentAppState()
-        self.initialized = true
-        for continuation in pendingContinuations {
-            continuation.resume()
-        }
-        pendingContinuations.removeAll()
-    }
-
-    /// Suspends until the initial state has been loaded.
-    private func waitUntilReady() async {
-        if initialized { return }
-        await withCheckedContinuation { continuation in
-            pendingContinuations.append(continuation)
-        }
     }
 
     /// Updates the app state based on the given application state.
@@ -94,11 +79,7 @@ internal actor AppStateManager: AppStateManaging {
     /// Reads the current app state from the data store, applies the mutation, and writes it back.
     /// - Parameter block: The mutation to apply to the app state.
     private func updateAppStateInStore(block: (inout AppStateInfo?) -> Void) async {
-        var appState: AppStateInfo? = await withCheckedContinuation { continuation in
-            featureScope.rumDataStore.value(forKey: .appStateKey) { (state: AppStateInfo?) in
-                continuation.resume(returning: state)
-            }
-        }
+        var appState: AppStateInfo? = await featureScope.rumDataStore.value(forKey: .appStateKey)
         block(&appState)
         DD.logger.debug("Updating app state in data store")
         featureScope.rumDataStore.setValue(appState, forKey: .appStateKey)
@@ -106,30 +87,40 @@ internal actor AppStateManager: AppStateManaging {
 
     /// Returns the previous app state, waiting for initialization if needed.
     private func previousAppStateInfo() async -> AppStateInfo? {
-        await waitUntilReady()
+        await ensureInitialized()
         return previousAppState
     }
 
     /// Builds the current app state asynchronously.
     private func currentAppStateInfo() async -> AppStateInfo {
-        await withCheckedContinuation { continuation in
-            featureScope.context { [processId, syntheticsEnvironment] context in
-                let state: AppStateInfo = .init(
-                    appVersion: context.version,
-                    osVersion: context.os.version,
-                    systemBootTime: context.device.systemBootTime,
-                    appLaunchTime: context.launchInfo.processLaunchDate.timeIntervalSince1970,
-                    isDebugging: context.device.isDebugging,
-                    wasTerminated: false,
-                    isActive: true,
-                    vendorId: context.device.vendorId,
-                    processId: processId,
-                    trackingConsent: context.trackingConsent,
-                    syntheticsEnvironment: syntheticsEnvironment
-                )
-                continuation.resume(returning: state)
-            }
+        guard let context = await featureScope.context() else {
+            return AppStateInfo(
+                appVersion: "",
+                osVersion: "",
+                systemBootTime: 0,
+                appLaunchTime: 0,
+                isDebugging: false,
+                wasTerminated: false,
+                isActive: true,
+                vendorId: nil,
+                processId: processId,
+                trackingConsent: .pending,
+                syntheticsEnvironment: syntheticsEnvironment
+            )
         }
+        return AppStateInfo(
+            appVersion: context.version,
+            osVersion: context.os.version,
+            systemBootTime: context.device.systemBootTime,
+            appLaunchTime: context.launchInfo.processLaunchDate.timeIntervalSince1970,
+            isDebugging: context.device.isDebugging,
+            wasTerminated: false,
+            isActive: true,
+            vendorId: context.device.vendorId,
+            processId: processId,
+            trackingConsent: context.trackingConsent,
+            syntheticsEnvironment: syntheticsEnvironment
+        )
     }
 
     /// Builds the current app state and stores it in the data store.
@@ -147,12 +138,8 @@ internal actor AppStateManager: AppStateManaging {
 
     /// Reads the app state from the data store.
     private static func readAppState(from featureScope: FeatureScope) async -> AppStateInfo? {
-        await withCheckedContinuation { continuation in
-            featureScope.rumDataStore.value(forKey: .appStateKey) { (state: AppStateInfo?) in
-                DD.logger.debug("Reading app state from data store.")
-                continuation.resume(returning: state)
-            }
-        }
+        DD.logger.debug("Reading app state from data store.")
+        return await featureScope.rumDataStore.value(forKey: .appStateKey)
     }
 }
 

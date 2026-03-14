@@ -169,12 +169,11 @@ private struct FeatureScopeProxy: FeatureScope {
         return (context, interceptor.intercept(writer: writer))
     }
 
-    func context(_ block: @escaping @Sendable (DatadogContext) -> Void) {
+    func context() async -> DatadogContext? {
         interceptor.enter()
-        proxy.context { context in
-            block(context)
-            interceptor.leave()
-        }
+        let context = await proxy.context()
+        interceptor.leave()
+        return context
     }
 
     var telemetry: Telemetry { proxy.telemetry }

@@ -23,20 +23,18 @@ internal struct FlagsDataStore {
         }
     }
 
-    func flagsData(forClientNamed clientName: String, callback: @escaping (FlagsData?) -> Void) {
-        featureScope.dataStore.value(forKey: clientName) { result in
-            guard let data = result.data() else {
-                callback(nil)
-                return
-            }
+    func flagsData(forClientNamed clientName: String) async -> FlagsData? {
+        let result = await featureScope.dataStore.value(forKey: clientName)
+        guard let data = result.data() else {
+            return nil
+        }
 
-            do {
-                let flagsData = try Self.decoder.decode(FlagsData.self, from: data)
-                callback(flagsData)
-            } catch let error {
-                DD.logger.error("Failed to decode \(FlagsData.self) from Flags Data Store", error: error)
-                featureScope.telemetry.error("Failed to decode \(FlagsData.self) from Flags Data Store", error: error)
-            }
+        do {
+            return try Self.decoder.decode(FlagsData.self, from: data)
+        } catch let error {
+            DD.logger.error("Failed to decode \(FlagsData.self) from Flags Data Store", error: error)
+            featureScope.telemetry.error("Failed to decode \(FlagsData.self) from Flags Data Store", error: error)
+            return nil
         }
     }
 
