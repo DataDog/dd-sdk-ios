@@ -27,10 +27,11 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
     // MARK: - Changing Global Attributes After SDK Init
 
-    func testAddingGlobalAttributeAfterSDKInit() throws {
+    func testAddingGlobalAttributeAfterSDKInit() async throws {
         // When
         monitor.notifySDKInit()
         monitor.addAttribute(forKey: "attribute", value: "value")
+        await monitor.flush()
 
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
@@ -38,7 +39,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertNil(lastView.attribute(forKey: "attribute"))
     }
 
-    func testAddingMultipleGlobalAttributes() throws {
+    func testAddingMultipleGlobalAttributes() async throws {
         // Given
         let mockAttributes: [AttributeKey: AttributeValue] = (0...99).reduce(into: [:]) { $0[String(describing: $1)] = $1 }
 
@@ -46,6 +47,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.notifySDKInit()
         monitor.addAttributes(mockAttributes)
         monitor.startView(key: "IgnoredView")
+        await monitor.flush()
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
@@ -53,7 +55,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertTrue(appLaunchViewEvent.numberOfAttributes == 100)
     }
 
-    func testAddingAndRemovingMultipleGlobalAttributes() throws {
+    func testAddingAndRemovingMultipleGlobalAttributes() async throws {
         // Given
         let mockAttributes: [AttributeKey: AttributeValue] = (0...99).reduce(into: [:]) { $0[String(describing: $1)] = $1 }
 
@@ -62,6 +64,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.addAttributes(mockAttributes)
         monitor.removeAttributes(forKeys: Array(mockAttributes.keys))
         monitor.startView(key: "IgnoredView")
+        await monitor.flush()
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
@@ -69,7 +72,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertTrue(appLaunchViewEvent.numberOfAttributes == 0)
     }
 
-    func testAddingIsolatedAttributesAndRemovingMultipleAttributes() throws {
+    func testAddingIsolatedAttributesAndRemovingMultipleAttributes() async throws {
         // Given
         let attributeKeys: [AttributeKey] = (0...99).map { "key\($0)" }
 
@@ -80,6 +83,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         }
         monitor.removeAttributes(forKeys: attributeKeys)
         monitor.startView(key: "IgnoredView")
+        await monitor.flush()
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
@@ -87,7 +91,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertTrue(appLaunchViewEvent.numberOfAttributes == 0)
     }
 
-    func testAddingMultipleAttributesAndRemovingSomeAttributes() throws {
+    func testAddingMultipleAttributesAndRemovingSomeAttributes() async throws {
         // Given
         let mockAttributes: [AttributeKey: AttributeValue] = (0...99).reduce(into: [:]) { $0[String(describing: $1)] = $1 }
         let keyToRemove = try XCTUnwrap(mockAttributes.first?.key)
@@ -99,6 +103,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.addAttributes(mockAttributes)
         monitor.removeAttribute(forKey: keyToRemove)
         monitor.startView(key: "IgnoredView")
+        await monitor.flush()
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
@@ -106,13 +111,14 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertTrue(appLaunchViewEvent.numberOfAttributes == mockAttributes.count - 1)
     }
 
-    func testAddingGlobalAttributeAfterSDKInit_thenStartingView() throws {
+    func testAddingGlobalAttributeAfterSDKInit_thenStartingView() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.addAttribute(forKey: "attribute", value: "value")
 
         // When
         monitor.startView(key: "View")
+        await monitor.flush()
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
@@ -120,13 +126,14 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(appLaunchView.attribute(forKey: "attribute"), "value")
     }
 
-    func testAddingGlobalAttributeAfterSDKInit_thenSendingInteractiveEvent() throws {
+    func testAddingGlobalAttributeAfterSDKInit_thenSendingInteractiveEvent() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.addAttribute(forKey: "attribute", value: "value")
 
         // When
         monitor.addAction(type: .custom, name: "custom action")
+        await monitor.flush()
 
         // Then
         let actionViewEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
@@ -134,7 +141,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(actionViewEvent.attribute(forKey: "attribute"), "value") // "ApplicationLaunch" event triggered by RUM action
     }
 
-    func testAddingGlobalAttributesAfterSDKInit_thenRemovingAttribute() throws {
+    func testAddingGlobalAttributesAfterSDKInit_thenRemovingAttribute() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.addAttribute(forKey: "attribute1", value: "value1")
@@ -142,6 +149,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
         // When
         monitor.removeAttribute(forKey: "attribute1")
+        await monitor.flush()
 
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
@@ -150,7 +158,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertNil(lastView.attribute(forKey: "attribute2"))
     }
 
-    func testAddingGlobalAttributeAfterSDKInit_thenRemovingAttributeAndStartingView() throws {
+    func testAddingGlobalAttributeAfterSDKInit_thenRemovingAttributeAndStartingView() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.addAttribute(forKey: "attribute1", value: "value1")
@@ -159,6 +167,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         // When
         monitor.removeAttribute(forKey: "attribute1")
         monitor.startView(key: "View")
+        await monitor.flush()
 
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
@@ -167,7 +176,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(lastView.attribute(forKey: "attribute2"), "value2")
     }
 
-    func testAddingGlobalAttributeAfterSDKInit_thenRemovingAttributeAndStartingAndStoppingView() throws {
+    func testAddingGlobalAttributeAfterSDKInit_thenRemovingAttributeAndStartingAndStoppingView() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.addAttribute(forKey: "attribute1", value: "value1")
@@ -177,6 +186,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.removeAttribute(forKey: "attribute1")
         monitor.startView(key: "View")
         monitor.stopView(key: "View")
+        await monitor.flush()
 
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
@@ -185,7 +195,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(lastView.attribute(forKey: "attribute2"), "value2")
     }
 
-    func testUpdatingGlobalAttributesAfterSDKInit_thenStartingAndStoppingView() throws {
+    func testUpdatingGlobalAttributesAfterSDKInit_thenStartingAndStoppingView() async throws {
         // Given
         monitor.notifySDKInit()
 
@@ -195,6 +205,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.removeAttribute(forKey: "unknown-attribute")
         monitor.startView(key: "View")
         monitor.stopView(key: "View")
+        await monitor.flush()
 
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
@@ -205,10 +216,11 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
     // MARK: - Changing Global Attributes After Starting View
 
-    func testAddingGlobalAttributeAfterViewIsStarted() throws {
+    func testAddingGlobalAttributeAfterViewIsStarted() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "View")
+        await monitor.flush()
 
         // When
         monitor.addAttribute(forKey: "attribute", value: "value")
@@ -219,7 +231,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertNil(lastView.attribute(forKey: "attribute"))
     }
 
-    func testAddingGlobalAttributeAfterViewIsStarted_thenSendingInteractiveEvent() throws {
+    func testAddingGlobalAttributeAfterViewIsStarted_thenSendingInteractiveEvent() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "View")
@@ -227,6 +239,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
         // When
         monitor.addAction(type: .custom, name: "custom action")
+        await monitor.flush()
 
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
@@ -234,12 +247,13 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(lastView.attribute(forKey: "attribute"), "value")
     }
 
-    func testAddingGlobalAttributesAfterViewIsStarted_thenRemovingAttribute() throws {
+    func testAddingGlobalAttributesAfterViewIsStarted_thenRemovingAttribute() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "View")
         monitor.addAttribute(forKey: "attribute1", value: "value1")
         monitor.addAttribute(forKey: "attribute2", value: "value2")
+        await monitor.flush()
 
         // When
         monitor.removeAttribute(forKey: "attribute1")
@@ -251,7 +265,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertNil(lastView.attribute(forKey: "attribute2"))
     }
 
-    func testAddingGlobalAttributesAfterViewIsStarted_thenRemovingAttributeAndStoppingView() throws {
+    func testAddingGlobalAttributesAfterViewIsStarted_thenRemovingAttributeAndStoppingView() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "View")
@@ -261,6 +275,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         // When
         monitor.removeAttribute(forKey: "attribute1")
         monitor.stopView(key: "View")
+        await monitor.flush()
 
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
@@ -269,7 +284,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(lastView.attribute(forKey: "attribute2"), "value2")
     }
 
-    func testAddingGlobalAttributeAfterViewIsStarted_thenStartingNextViewsWhileAddingAttributes() throws {
+    func testAddingGlobalAttributeAfterViewIsStarted_thenStartingNextViewsWhileAddingAttributes() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "View1")
@@ -280,6 +295,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.addAttribute(forKey: "attribute2", value: "value2")
         monitor.startView(key: "View3")
         monitor.addAttribute(forKey: "attribute3", value: "value3")
+        await monitor.flush()
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
@@ -300,7 +316,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertNil(lastView2.attribute(forKey: "attribute3"))
     }
 
-    func testAddingGlobalAttributesAfterViewIsStarted_thenStartingNextViewsWhileRemovingAttributes() throws {
+    func testAddingGlobalAttributesAfterViewIsStarted_thenStartingNextViewsWhileRemovingAttributes() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "View1")
@@ -317,6 +333,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.removeAttribute(forKey: "attribute1")
         monitor.startView(key: "View3")
         monitor.removeAttribute(forKey: "attribute2")
+        await monitor.flush()
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
@@ -337,7 +354,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(lastView3.attribute(forKey: "attribute3"), "value3")
     }
 
-    func testAddingGlobalAttributesAfterViewIsStarted_thenStartingNextViewsWhileUpdatingAttributes() throws {
+    func testAddingGlobalAttributesAfterViewIsStarted_thenStartingNextViewsWhileUpdatingAttributes() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "View1")
@@ -354,6 +371,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.addAttribute(forKey: "attribute1", value: "new-value1")
         monitor.startView(key: "View3")
         monitor.addAttribute(forKey: "attribute2", value: "new-value1")
+        await monitor.flush()
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
@@ -376,7 +394,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
     // MARK: - Changing Global Attributes While There Is An Inactive View
 
-    func testAddingGlobalAttributeWhileInactiveView_thenImplicitlyStoppingInactiveView() throws {
+    func testAddingGlobalAttributeWhileInactiveView_thenImplicitlyStoppingInactiveView() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "InactiveView")
@@ -386,6 +404,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         // When
         monitor.addAttribute(forKey: "attribute", value: "value")
         monitor.stopResource(resourceKey: "pending resource", response: .mockAny())
+        await monitor.flush()
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
@@ -397,7 +416,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertNil(lastActiveView.attribute(forKey: "attribute"))
     }
 
-    func testAddingGlobalAttributesWhileInactiveView_thenRemovingAttributeAndImplicitlyStoppingInactiveView() throws {
+    func testAddingGlobalAttributesWhileInactiveView_thenRemovingAttributeAndImplicitlyStoppingInactiveView() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "InactiveView")
@@ -409,6 +428,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.addAttribute(forKey: "attribute2", value: "value2")
         monitor.removeAttribute(forKey: "attribute1")
         monitor.stopResource(resourceKey: "pending resource", response: .mockAny())
+        await monitor.flush()
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
@@ -422,7 +442,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertNil(lastActiveView.attribute(forKey: "attribute2"))
     }
 
-    func testAddingGlobalAttributesWhileInactiveView_thenRemovingAttributeAndImplicitlyStoppingInactiveViewAndStoppingActiveView() throws {
+    func testAddingGlobalAttributesWhileInactiveView_thenRemovingAttributeAndImplicitlyStoppingInactiveViewAndStoppingActiveView() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "InactiveView")
@@ -435,6 +455,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.removeAttribute(forKey: "attribute1")
         monitor.stopResource(resourceKey: "pending resource", response: .mockAny())
         monitor.stopView(key: "ActiveView")
+        await monitor.flush()
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
@@ -450,7 +471,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
     // MARK: - Including Up-to-date Global Attributes In Events
 
-    func testAddingGlobalAttributeToActiveView_thenCollectingViewEvents() throws {
+    func testAddingGlobalAttributeToActiveView_thenCollectingViewEvents() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "ActiveView")
@@ -461,6 +482,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.addAction(type: .custom, name: "custom action event")
         monitor.startResource(resourceKey: "resource", url: .mockAny())
         monitor.stopResource(resourceKey: "resource", response: .mockAny())
+        await monitor.flush()
 
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
@@ -477,7 +499,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(resourceEvent.context?.contextInfo["attribute"] as? String, "value")
     }
 
-    func testAddingGlobalAttributesToActiveView_thenRemovingAttributeAndCollectingViewEvents() throws {
+    func testAddingGlobalAttributesToActiveView_thenRemovingAttributeAndCollectingViewEvents() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "ActiveView")
@@ -490,6 +512,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.addAction(type: .custom, name: "custom action event")
         monitor.startResource(resourceKey: "resource", url: .mockAny())
         monitor.stopResource(resourceKey: "resource", response: .mockAny())
+        await monitor.flush()
 
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last) // "ActiveView" event triggered by RUM resource
@@ -510,7 +533,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(resourceEvent.context?.contextInfo["attribute2"] as? String, "value2")
     }
 
-    func testUpdatingGlobalAttributeInActiveView_thenCollectingViewEvents() throws {
+    func testUpdatingGlobalAttributeInActiveView_thenCollectingViewEvents() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "ActiveView")
@@ -522,6 +545,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.addAction(type: .custom, name: "custom action event")
         monitor.startResource(resourceKey: "resource", url: .mockAny())
         monitor.stopResource(resourceKey: "resource", response: .mockAny())
+        await monitor.flush()
 
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last) // "ActiveView" event triggered by RUM resource
@@ -538,7 +562,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(resourceEvent.context?.contextInfo["attribute"] as? String, "new-value")
     }
 
-    func testAddingGlobalAttributesToActiveView_thenCollectingViewTimingsAndRemovingAttribute() throws {
+    func testAddingGlobalAttributesToActiveView_thenCollectingViewTimingsAndRemovingAttribute() async throws {
         // Given
         monitor.notifySDKInit()
         monitor.startView(key: "ActiveView")
@@ -549,6 +573,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.addTiming(name: "timing1")
         monitor.removeAttribute(forKey: "attribute1")
         monitor.addTiming(name: "timing2")
+        await monitor.flush()
 
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "ActiveView" }

@@ -95,27 +95,30 @@ internal enum RUMInternalErrorSource: String, Decodable {
 /// A mobile-specific category of the error. It provides a high-level grouping for different types of errors.
 internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 
-internal class Monitor: RUMCommandSubscriber, @unchecked Sendable {
-    /// RUM feature scope.
+internal final class Monitor: RUMCommandSubscriber, @unchecked Sendable {
     let featureScope: FeatureScope
-    let scopes: RUMApplicationScope
     let dateProvider: DateProvider
 
-    @ReadWriteLock
-    private(set) var debugging: RUMDebugging? = nil
+    /// The scope tree. Mutated exclusively from the `for await` command loop.
+    /// Read from `currentSessionID` outside the loop (acknowledged benign race
+    /// for a callback that is already eventually-consistent).
+    let scopes: RUMApplicationScope
 
-    @ReadWriteLock
+    let fatalErrorContext: FatalErrorContextNotifying
+    let rumUUIDGenerator: RUMUUIDGenerator
+    let telemetry: Telemetry
+
+    /// Global attributes — only mutated inside the processing loop via
+    /// `RUMGlobalAttributeCommand`. No lock needed.
     private var attributes: [AttributeKey: AttributeValue] = [:]
 
-    private let fatalErrorContext: FatalErrorContextNotifying
-    private let rumUUIDGenerator: RUMUUIDGenerator
-    private let telemetry: Telemetry
+    /// Debugging overlay — only mutated inside the processing loop via
+    /// `RUMSetDebugCommand`. No lock needed.
+    private var debugging: RUMDebugging?
 
-    /// Serializes scope tree processing. Each `process(command:)` creates a new
-    /// `Task` that `await`s `eventWriteContext()`, so multiple tasks can resume
-    /// concurrently. The scope tree is not thread-safe, so this lock ensures
-    /// only one command is processed at a time.
-    private let scopeProcessingLock = NSLock()
+    /// Continuation for the command stream. Commands are yielded from any
+    /// thread and processed sequentially by the `for await` loop.
+    private let commandContinuation: AsyncStream<RUMCommand>.Continuation
 
     init(
         dependencies: RUMScopeDependencies,
@@ -127,59 +130,101 @@ internal class Monitor: RUMCommandSubscriber, @unchecked Sendable {
         self.fatalErrorContext = dependencies.fatalErrorContext
         self.rumUUIDGenerator = dependencies.rumUUIDGenerator
         self.telemetry = dependencies.telemetry
+
+        let (stream, continuation) = AsyncStream<RUMCommand>.makeStream()
+        self.commandContinuation = continuation
+
+        Task { [weak self] in
+            for await command in stream {
+                guard let self else { break }
+                await self.processFromStream(command: command)
+            }
+        }
     }
 
-    func process(command: RUMCommand) {
-        var command = command
-        command.globalAttributes = attributes
-        // process command in event context
-        Task { [weak self] in
-            guard let self = self else { return }
-            guard let (context, writer) = await self.featureScope.eventWriteContext() else { return }
+    deinit {
+        commandContinuation.finish()
+    }
 
-            let transformedCommand = self.transform(command: command)
-            self.processScope(command: transformedCommand, context: context, writer: writer)
+    /// Awaits processing of all commands currently in the stream.
+    /// Used by tests to ensure deterministic ordering.
+    func flush() async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            commandContinuation.yield(
+                RUMFlushCommand(time: Date(), continuation: continuation)
+            )
+        }
+    }
+
+    // MARK: - RUMCommandSubscriber
+
+    /// Yields the command to the async stream for FIFO processing.
+    func process(command: RUMCommand) {
+        commandContinuation.yield(command)
+    }
+
+    // MARK: - Stream Processing
+
+    /// Processes a single command from the stream. Called sequentially by the
+    /// `for await` loop — no lock needed because only one command is in-flight
+    /// at a time.
+    private func processFromStream(command: RUMCommand) async {
+        // Flush sentinel — resume the continuation and return.
+        if let flush = command as? RUMFlushCommand {
+            flush.continuation.resume()
+            return
         }
 
-        // update the core context with rum context
-        featureScope.set(
-            context: { [weak self] () -> RUMCoreContext? in
-                guard let self = self else {
-                    return nil
-                }
+        // Global attribute mutation — apply and sync to fatal-error context.
+        if let attrCmd = command as? RUMGlobalAttributeCommand {
+            attrCmd.apply(to: &attributes)
+            fatalErrorContext.globalAttributes = attributes
+            return
+        }
 
-                let context = self.scopes.activeSession?.viewScopes.last?.context ??
-                                self.scopes.activeSession?.context ??
-                                self.scopes.context
-
-                guard context.sessionID != .nullUUID else {
-                    // if Session was sampled or not yet started
-                    return nil
-                }
-
-                return RUMCoreContext(
-                    applicationID: context.rumApplicationID,
-                    sessionID: context.sessionID.rawValue.uuidString.lowercased(),
-                    viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
-                    userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
-                    viewServerTimeOffset: self.scopes.activeSession?.viewScopes.last?.serverTimeOffset
-                )
+        // Debug toggle — create or destroy the debugging overlay.
+        if let debugCmd = command as? RUMSetDebugCommand {
+            debugging = debugCmd.enabled ? RUMDebugging() : nil
+            if let debugging {
+                debugging.debug(applicationScope: scopes)
             }
-        )
-    }
+            return
+        }
 
-    /// Processes a command through the scope tree under the serialization lock.
-    /// Must be called from a synchronous context (not directly in an async function body)
-    /// because `NSLock.lock()` is unavailable from async contexts in Swift 6.
-    private func processScope(command: RUMCommand, context: DatadogContext, writer: Writer) {
-        scopeProcessingLock.lock()
-        defer { scopeProcessingLock.unlock() }
+        // Regular command — snapshot global attributes, then process.
+        var mutableCommand = transform(command: command)
+        mutableCommand.globalAttributes = attributes
 
-        _ = scopes.process(command: command, context: context, writer: writer)
+        guard let (context, writer) = await featureScope.eventWriteContext() else { return }
+        _ = scopes.process(command: mutableCommand, context: context, writer: writer)
 
         if let debugging {
             debugging.debug(applicationScope: scopes)
         }
+
+        updateCoreContext()
+    }
+
+    /// Computes the current RUM context from the scope tree and publishes it
+    /// to the core so other features (Logs, Traces, etc.) can read it.
+    private func updateCoreContext() {
+        let context = scopes.activeSession?.viewScopes.last?.context ??
+                        scopes.activeSession?.context ??
+                        scopes.context
+
+        guard context.sessionID != .nullUUID else {
+            featureScope.set(context: { nil as RUMCoreContext? })
+            return
+        }
+
+        let rumContext = RUMCoreContext(
+            applicationID: context.rumApplicationID,
+            sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+            viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
+            userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
+            viewServerTimeOffset: scopes.activeSession?.viewScopes.last?.serverTimeOffset
+        )
+        featureScope.set(context: { rumContext })
     }
 
     // TODO: RUMM-896
@@ -199,10 +244,6 @@ internal class Monitor: RUMCommandSubscriber, @unchecked Sendable {
 
         return mutableCommand
     }
-
-    private func didUpdateAttributes() {
-        fatalErrorContext.globalAttributes = attributes
-    }
 }
 
 /// Declares `Monitor` conformance to public `RUMMonitorProtocol`.
@@ -210,25 +251,19 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - attributes
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
-        attributes[key] = value
-        self.didUpdateAttributes()
+        process(command: RUMGlobalAttributeCommand(time: dateProvider.now, mutation: .set(key: key, value: value)))
     }
 
     func addAttributes(_ attributes: [AttributeKey: AttributeValue]) {
-        self.attributes.merge(attributes) { $1 }
-        self.didUpdateAttributes()
+        process(command: RUMGlobalAttributeCommand(time: dateProvider.now, mutation: .setMultiple(attributes)))
     }
 
     func removeAttribute(forKey key: AttributeKey) {
-        attributes[key] = nil
-        self.didUpdateAttributes()
+        process(command: RUMGlobalAttributeCommand(time: dateProvider.now, mutation: .remove(key: key)))
     }
 
     func removeAttributes(forKeys keys: [AttributeKey]) {
-        _attributes.mutate { attributes in
-            keys.forEach { key in attributes.removeValue(forKey: key) }
-        }
-        self.didUpdateAttributes()
+        process(command: RUMGlobalAttributeCommand(time: dateProvider.now, mutation: .removeMultiple(keys: keys)))
     }
 
     // MARK: - session
@@ -275,7 +310,6 @@ extension Monitor: RUMMonitorProtocol {
                 type: type,
                 stack: stack,
                 source: RUMInternalErrorSource(source),
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 completionHandler: NOPCompletionHandler
             )
@@ -288,7 +322,6 @@ extension Monitor: RUMMonitorProtocol {
                 time: dateProvider.now,
                 error: error,
                 source: RUMInternalErrorSource(source),
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 completionHandler: NOPCompletionHandler
             )
@@ -302,7 +335,6 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 url: request.url?.absoluteString ?? "unknown_url",
                 httpMethod: RUMMethod(httpMethod: request.httpMethod),
@@ -317,7 +349,6 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 url: url.absoluteString,
                 httpMethod: .get,
@@ -332,7 +363,6 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 url: urlString,
                 httpMethod: httpMethod,
@@ -347,7 +377,6 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMAddResourceMetricsCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 metrics: ResourceMetrics(taskMetrics: metrics)
             )
@@ -369,7 +398,6 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStopResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 kind: resourceKind,
                 httpStatusCode: statusCode,
@@ -383,7 +411,6 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStopResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 kind: kind,
                 httpStatusCode: statusCode,
@@ -400,7 +427,6 @@ extension Monitor: RUMMonitorProtocol {
                 error: error,
                 source: .network,
                 httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
-                globalAttributes: self.attributes,
                 attributes: attributes
             )
         )
@@ -415,7 +441,6 @@ extension Monitor: RUMMonitorProtocol {
                 type: type,
                 source: .network,
                 httpStatusCode: (response as? HTTPURLResponse)?.statusCode,
-                globalAttributes: self.attributes,
                 attributes: attributes
             )
         )
@@ -427,7 +452,6 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMAddUserActionCommand(
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 instrumentation: .manual,
                 actionType: type,
@@ -440,7 +464,6 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMStartUserActionCommand(
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 instrumentation: .manual,
                 actionType: type,
@@ -453,7 +476,6 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMStopUserActionCommand(
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 actionType: type,
                 name: name
@@ -540,16 +562,7 @@ extension Monitor: RUMMonitorProtocol {
 
     var debug: Bool {
         set {
-            debugging = newValue ? RUMDebugging() : nil
-
-            // Synchronise `debug(applicationScope:)` through the context thread to make sure it can safely
-            // read `scopes` after all events have been processed (also on the context thread):
-            featureScope.context { [weak self] _ in
-                guard let self = self else {
-                    return
-                }
-                self.debugging?.debug(applicationScope: self.scopes)
-            }
+            process(command: RUMSetDebugCommand(time: dateProvider.now, enabled: newValue))
         }
         get {
             debugging != nil
@@ -569,7 +582,6 @@ extension Monitor: RUMMonitorProtocol {
                 time: dateProvider.now,
                 error: error,
                 source: RUMInternalErrorSource(source),
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 completionHandler: completionHandler
             )
@@ -624,7 +636,6 @@ extension Monitor: RUMMonitorViewProtocol {
                 identity: ViewIdentifier(viewController),
                 name: name ?? viewController.canonicalClassName,
                 path: viewController.canonicalClassName,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 instrumentationType: .manual
             )
@@ -635,7 +646,6 @@ extension Monitor: RUMMonitorViewProtocol {
         process(
             command: RUMStopViewCommand(
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 identity: ViewIdentifier(viewController)
             )
@@ -649,7 +659,6 @@ extension Monitor: RUMMonitorViewProtocol {
                 identity: ViewIdentifier(key),
                 name: name ?? key,
                 path: key,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 instrumentationType: .manual
             )
@@ -660,7 +669,6 @@ extension Monitor: RUMMonitorViewProtocol {
         process(
             command: RUMStopViewCommand(
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 identity: ViewIdentifier(key)
             )
@@ -671,7 +679,6 @@ extension Monitor: RUMMonitorViewProtocol {
         process(
             command: RUMAddViewTimingCommand(
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: [:],
                 timingName: name
             )
@@ -682,7 +689,6 @@ extension Monitor: RUMMonitorViewProtocol {
         process(
             command: RUMAddViewLoadingTime(
                 time: dateProvider.now,
-                globalAttributes: self.attributes,
                 attributes: [:],
                 overwrite: overwrite
             )
@@ -713,7 +719,6 @@ extension Monitor {
                 type: type,
                 stack: stack,
                 source: source,
-                globalAttributes: self.attributes,
                 attributes: attributes,
                 completionHandler: NOPCompletionHandler
             )

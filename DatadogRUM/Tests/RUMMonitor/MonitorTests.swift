@@ -24,7 +24,7 @@ class MonitorTests: XCTestCase {
         )
     }
 
-    func testWhenSessionIsSampled_itSetsRUMContextInCore() throws {
+    func testWhenSessionIsSampled_itSetsRUMContextInCore() async throws {
         // Given
         let sampler = Sampler(samplingRate: 100)
 
@@ -34,6 +34,7 @@ class MonitorTests: XCTestCase {
             dateProvider: DateProviderMock()
         )
         monitor.startView(key: "foo")
+        await monitor.flush()
 
         // Then
         let expectedContext = monitor.currentRUMContext
@@ -45,7 +46,7 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(rumContext.viewID, expectedContext.activeViewID?.toRUMDataFormat)
     }
 
-    func testWhenSessionIsNotSampled_itSetsNoRUMContextInCore() throws {
+    func testWhenSessionIsNotSampled_itSetsNoRUMContextInCore() async throws {
         // Given
         let sampler = Sampler(samplingRate: 0)
 
@@ -55,6 +56,7 @@ class MonitorTests: XCTestCase {
             dateProvider: DateProviderMock()
         )
         monitor.startView(key: "foo")
+        await monitor.flush()
 
         // Then
         var datadogContext: DatadogContext?
@@ -63,7 +65,7 @@ class MonitorTests: XCTestCase {
         XCTAssertNil(contextMock.additionalContext(ofType: RUMCoreContext.self))
     }
 
-    func testStartView_withViewController_itUsesClassNameAsViewName() throws {
+    func testStartView_withViewController_itUsesClassNameAsViewName() async throws {
         // Given
         let vc = createMockView(viewControllerClassName: "SomeViewController")
 
@@ -73,13 +75,14 @@ class MonitorTests: XCTestCase {
             dateProvider: DateProviderMock()
         )
         monitor.startView(viewController: vc)
+        await monitor.flush()
 
         // Then
         XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewName, "SomeViewController")
         XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewPath, "SomeViewController")
     }
 
-    func testStartView_withViewController_itUsesClassNameAsViewPath() throws {
+    func testStartView_withViewController_itUsesClassNameAsViewPath() async throws {
         // Given
         let vc = createMockView(viewControllerClassName: "SomeViewController")
 
@@ -89,6 +92,7 @@ class MonitorTests: XCTestCase {
             dateProvider: DateProviderMock()
         )
         monitor.startView(viewController: vc, name: "Some View")
+        await monitor.flush()
 
         // Then
         XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewName, "Some View")
@@ -97,17 +101,19 @@ class MonitorTests: XCTestCase {
 
     // MARK: - App launch
 
-    func testReportTTIDAndTTFD_thenTheyAreWrittenAsVitalEvents() throws {
+    func testReportTTIDAndTTFD_thenTheyAreWrittenAsVitalEvents() async throws {
         // Given
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
             dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
+        await monitor.flush()
 
         // When
         monitor.process(command: RUMTimeToInitialDisplayCommand(time: Date()))
         monitor.reportAppFullyDisplayed()
+        await monitor.flush()
 
         // Then
         let vitalEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMVitalAppLaunchEvent.self)
@@ -117,16 +123,18 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(vitalEvents?.last?.vital.appLaunchMetric, .ttfd)
     }
 
-    func testReportTTFDWithoutTTID_thenTheyAreNotWritten() throws {
+    func testReportTTFDWithoutTTID_thenTheyAreNotWritten() async throws {
         // Given
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
             dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
+        await monitor.flush()
 
         // When
         monitor.reportAppFullyDisplayed()
+        await monitor.flush()
 
         // Then
         let vitalEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMVitalAppLaunchEvent.self)
@@ -134,16 +142,18 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(vitalEvents?.count, 0)
     }
 
-    func testReportTTIDWithoutTTFD_thenTTIDIsWrittenAsVitalEvent() throws {
+    func testReportTTIDWithoutTTFD_thenTTIDIsWrittenAsVitalEvent() async throws {
         // Given
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
             dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
+        await monitor.flush()
 
         // When
         monitor.process(command: RUMTimeToInitialDisplayCommand(time: Date()))
+        await monitor.flush()
 
         // Then
         let vitalEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMVitalAppLaunchEvent.self)
@@ -154,7 +164,7 @@ class MonitorTests: XCTestCase {
 
     // MARK: - View Loading Time
 
-    func testAddViewLoadingTimeToActiveView_thenLoadingTimeUpdated() throws {
+    func testAddViewLoadingTimeToActiveView_thenLoadingTimeUpdated() async throws {
         // Given
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
@@ -162,9 +172,11 @@ class MonitorTests: XCTestCase {
         )
         monitor.notifySDKInit()
         monitor.startView(key: "ActiveView")
+        await monitor.flush()
 
         // When
         monitor.addViewLoadingTime(overwrite: false)
+        await monitor.flush()
 
         // Then
         let viewEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "ActiveView" }
@@ -174,7 +186,7 @@ class MonitorTests: XCTestCase {
         XCTAssertTrue(lastView.view.loadingTime! > 0)
     }
 
-    func testAddViewLoadingTimeNoActiveView_thenNoEvent() throws {
+    func testAddViewLoadingTimeNoActiveView_thenNoEvent() async throws {
         // Given
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
@@ -183,16 +195,18 @@ class MonitorTests: XCTestCase {
         monitor.notifySDKInit()
         monitor.startView(key: "InactiveView")
         monitor.stopView(key: "InactiveView")
+        await monitor.flush()
 
         // When
         monitor.addViewLoadingTime(overwrite: false)
+        await monitor.flush()
 
         // Then
         let viewEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "InactiveView" }
         XCTAssertNil(viewEvents?.last?.view.loadingTime)
     }
 
-    func testAddViewLoadingTimeMultipleTimes_thenLoadingTimeOverwritten() throws {
+    func testAddViewLoadingTimeMultipleTimes_thenLoadingTimeOverwritten() async throws {
         // Given
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
@@ -200,9 +214,11 @@ class MonitorTests: XCTestCase {
         )
         monitor.notifySDKInit()
         monitor.startView(key: "ActiveView")
+        await monitor.flush()
 
         // When
         monitor.addViewLoadingTime(overwrite: false)
+        await monitor.flush()
 
         // Then
         let viewEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "ActiveView" }
@@ -215,6 +231,7 @@ class MonitorTests: XCTestCase {
 
         // When
         monitor.addViewLoadingTime(overwrite: false)
+        await monitor.flush()
 
         // Then
         let viewEvents2 = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "ActiveView" }
@@ -227,6 +244,7 @@ class MonitorTests: XCTestCase {
 
         // When
         monitor.addViewLoadingTime(overwrite: true)
+        await monitor.flush()
 
         // Then
         let viewEvents3 = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "ActiveView" }
