@@ -14,7 +14,7 @@ import DatadogInternal
 
 class UIKitRUMViewsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcPredicate() {
-        class MockPredicate: objc_UIKitRUMViewsPredicate {
+        class MockPredicate: objc_UIKitRUMViewsPredicate, @unchecked Sendable {
             var didCallRUMView = false
             func rumView(for viewController: UIViewController) -> objc_RUMView? {
                 didCallRUMView = true
@@ -42,8 +42,9 @@ class DDRUMViewTests: XCTestCase {
 }
 
 class UIKitRUMActionsPredicateBridgeTests: XCTestCase {
+    @MainActor
     func testItForwardsCallToObjcTouchPredicate() {
-        class MockPredicate: objc_UITouchRUMActionsPredicate {
+        class MockPredicate: objc_UITouchRUMActionsPredicate, @unchecked Sendable {
             var didCallRUMAction = false
             func rumAction(targetView: UIView) -> objc_RUMAction? {
                 didCallRUMAction = true
@@ -59,8 +60,9 @@ class UIKitRUMActionsPredicateBridgeTests: XCTestCase {
         XCTAssertTrue(objcPredicate.didCallRUMAction)
     }
 
+    @MainActor
     func testItForwardsCallToObjcPressPredicate() {
-        class MockPredicate: objc_UIPressRUMActionsPredicate {
+        class MockPredicate: objc_UIPressRUMActionsPredicate, @unchecked Sendable {
             var didCallRUMAction = false
             func rumAction(press: UIPress.PressType, targetView: UIView) -> objc_RUMAction? {
                 didCallRUMAction = true
@@ -106,7 +108,7 @@ class DDRUMFeatureOperationFailureReasonTests: XCTestCase {
 
 class SwiftUIRUMViewsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcPredicate() {
-        class MockPredicate: objc_SwiftUIRUMViewsPredicate {
+        class MockPredicate: objc_SwiftUIRUMViewsPredicate, @unchecked Sendable {
             var didCallRUMView = false
             func rumView(for extractedViewName: String) -> objc_RUMView? {
                 didCallRUMView = true
@@ -125,7 +127,7 @@ class SwiftUIRUMViewsPredicateBridgeTests: XCTestCase {
 
 class SwiftUIRUMActionsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcPredicate() {
-        class MockPredicate: objc_SwiftUIRUMActionsPredicate {
+        class MockPredicate: objc_SwiftUIRUMActionsPredicate, @unchecked Sendable {
             var didCallRUMAction = false
             func rumAction(with componentName: String) -> objc_RUMAction? {
                 didCallRUMAction = true
@@ -182,6 +184,7 @@ class DDRUMMethodTests: XCTestCase {
     }
 }
 
+@MainActor
 class DDRUMMonitorTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var config: RUM.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -193,12 +196,11 @@ class DDRUMMonitorTests: XCTestCase {
         config = RUM.Configuration(applicationID: .mockAny())
     }
 
-        override func tearDownWithError() throws {
-        try core.flushAndTearDown()
+    override func tearDown() async throws {
+        try await core.flushAndTearDown()
         config = nil
         CoreRegistry.unregisterDefault()
         core = nil
-        super.tearDown()
     }
 
     func testWhenSwiftRUMIsNotEnabled_thenObjcMonitorIsNotRegistered() {
@@ -212,7 +214,7 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testProvidingCurrentSessionID() throws {
         let callSessionIDCallback = expectation(description: "call session ID callback")
-        var currentSessionID: String? = nil
+        nonisolated(unsafe) var currentSessionID: String? = nil
 
         RUM.enable(with: config)
         let objcRUMMonitor = objc_RUMMonitor.shared()
@@ -229,8 +231,8 @@ class DDRUMMonitorTests: XCTestCase {
     func testStoppingSession() throws {
         let callSessionIDCallback = expectation(description: "call session ID callback twice")
         callSessionIDCallback.expectedFulfillmentCount = 2
-        var sessionID1: String? = nil
-        var sessionID2: String? = nil
+        nonisolated(unsafe) var sessionID1: String? = nil
+        nonisolated(unsafe) var sessionID2: String? = nil
 
         // Given
         RUM.enable(with: config)

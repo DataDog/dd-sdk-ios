@@ -22,11 +22,10 @@ class DDLogsTests: XCTestCase {
         CoreRegistry.register(default: core)
     }
 
-    override func tearDownWithError() throws {
+    override func tearDown() async throws {
         CoreRegistry.unregisterDefault()
-        try core.flushAndTearDown()
+        try await core.flushAndTearDown()
         core = nil
-        super.tearDown()
     }
 
     func testDefaultConfiguration() {
@@ -37,6 +36,7 @@ class DDLogsTests: XCTestCase {
         XCTAssertNil(config.configuration.customEndpoint)
     }
 
+    @MainActor
     func testConfigurationOverrides() throws {
         // Given
         let customEndpoint: URL = .mockRandom()
@@ -54,6 +54,7 @@ class DDLogsTests: XCTestCase {
         XCTAssertEqual(requestBuilder.customIntakeURL, customEndpoint)
     }
 
+    @MainActor
     func testAddGlobalAttributes() throws {
         // Given
         objc_Logs.enable()
@@ -93,6 +94,7 @@ class DDLogsTests: XCTestCase {
         logMatcher.assertValue(forKeyPath: "nsdictionary-of-date.date2", equals: "2019-12-15T11:00:00.000Z")
     }
 
+    @MainActor
     func testRemoveGlobalAttributes() throws {
         // Given
         objc_Logs.enable()
@@ -280,6 +282,7 @@ class DDLogsTests: XCTestCase {
         XCTAssertNotNil(objcConfig.configuration.consoleLogFormat)
     }
 
+    @MainActor
     func testEventMapping() throws {
         let logsConfiguration = objc_LogsConfiguration()
         logsConfiguration.setEventMapper { logEvent in

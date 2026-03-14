@@ -12,6 +12,7 @@ import DatadogInternal
 
 @testable import DatadogCore
 
+@MainActor
 class RUMInternalProxyTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -21,10 +22,10 @@ class RUMInternalProxyTests: XCTestCase {
         RUM.enable(with: .mockAny(), in: core)
     }
 
-        override func tearDownWithError() throws {
-        try core.flushAndTearDown()
+        override func tearDown() async throws {
+        try await core.flushAndTearDown()
         core = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     func testProxyAddLongTaskSendsLongTasks() throws {

@@ -32,7 +32,7 @@ class DDRUMConfigurationTests: XCTestCase {
     }
 
     func testUIKitViewsPredicate() {
-        class ObjcPredicate: objc_UIKitRUMViewsPredicate {
+        class ObjcPredicate: objc_UIKitRUMViewsPredicate, @unchecked Sendable {
             func rumView(for viewController: UIViewController) -> objc_RUMView? { nil }
         }
         let predicate = ObjcPredicate()

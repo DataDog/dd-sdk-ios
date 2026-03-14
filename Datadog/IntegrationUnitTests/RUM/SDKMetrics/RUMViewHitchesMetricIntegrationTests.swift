@@ -27,12 +27,13 @@ final class RUMViewHitchesMetricIntegrationTests: XCTestCase {
         rumConfig.dateProvider = dateProvider
     }
 
-    override func tearDownWithError() throws {
-        try core.flushAndTearDown()
+    override func tearDown() async throws {
+        try await core.flushAndTearDown()
         core = nil
         rumConfig = nil
     }
 
+    @MainActor
     func testViewHitchesDefaultConfigForTelemetry() throws {
         RUM.enable(with: rumConfig, in: core)
 
@@ -56,6 +57,7 @@ final class RUMViewHitchesMetricIntegrationTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testViewDurationCollectedForTelemetry() throws {
         RUM.enable(with: rumConfig, in: core)
 
@@ -82,6 +84,7 @@ final class RUMViewHitchesMetricIntegrationTests: XCTestCase {
         XCTAssertEqual(attributes[2].viewDuration, 2_000_000_000)
     }
 
+    @MainActor
     func testViewHitchesCollectedForTelemetry() throws {
         RUM.enable(with: rumConfig, in: core)
 

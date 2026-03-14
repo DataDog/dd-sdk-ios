@@ -22,6 +22,7 @@ final class BrightnessLevelSourceTests: XCTestCase {
         XCTAssertEqual(source.initialValue, Float(UIScreen.main.brightness))
     }
 
+    @MainActor
     func testBrightnessChange() async throws {
         // Given
         let mockScreen = UIScreenMock(brightness: 0.2)

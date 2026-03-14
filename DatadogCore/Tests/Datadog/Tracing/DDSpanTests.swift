@@ -14,9 +14,9 @@ import DatadogInternal
 class DDSpanTests: XCTestCase {
     // MARK: - Sending Span Logs
 
-    func testWhenLoggingSpanEvent_itWritesLogToLogOutput() throws {
+    @MainActor
+    func testWhenLoggingSpanEvent_itWritesLogToLogOutput() async throws {
         let core = DatadogCoreProxy()
-        defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
 
         Logs.enable(in: core)
         Trace.enable(in: core)
@@ -43,5 +43,7 @@ class DDSpanTests: XCTestCase {
             AnyEncodable(logs[1].attributes.userAttributes),
             AnyEncodable(log2Fields)
         )
+
+        try await core.flushAndTearDown()
     }
 }

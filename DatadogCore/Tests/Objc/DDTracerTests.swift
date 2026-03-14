@@ -13,6 +13,7 @@ import TestUtilities
 @_spi(objc)
 @testable import DatadogTrace
 
+@MainActor
 class DDTracerTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var config: Trace.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -24,12 +25,12 @@ class DDTracerTests: XCTestCase {
         config = Trace.Configuration()
     }
 
-        override func tearDownWithError() throws {
-        try core.flushAndTearDown()
+        override func tearDown() async throws {
+        try await core.flushAndTearDown()
         config = nil
         CoreRegistry.unregisterDefault()
         core = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     func testWhenSwiftTraceIsNotEnabled_thenObjcTracerIsNotRegistered() {

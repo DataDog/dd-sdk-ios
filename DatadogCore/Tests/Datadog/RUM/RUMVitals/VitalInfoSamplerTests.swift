@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 @testable import DatadogRUM
 
+@MainActor
 class VitalInfoSamplerTests: XCTestCase {
     func testItDoesSamplePeriodically() {
         let mockCPUReader = SamplingBasedVitalReaderMock()
@@ -96,7 +97,7 @@ class VitalInfoSamplerTests: XCTestCase {
 
     func testItSamplesDataFromBackgroundThreads() {
         // swiftlint:disable implicitly_unwrapped_optional
-        var sampler: VitalInfoSampler!
+        nonisolated(unsafe) var sampler: VitalInfoSampler!
         let displayLinker = DisplayLinker(notificationCenter: .default)
 
         DispatchQueue.global().sync {

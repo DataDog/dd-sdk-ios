@@ -14,6 +14,7 @@ import DatadogInternal
 @testable import TestUtilities
 
 // swiftlint:disable multiline_arguments_brackets
+@MainActor
 class TracerTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var config: Trace.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -24,11 +25,11 @@ class TracerTests: XCTestCase {
         config = Trace.Configuration()
     }
 
-    override func tearDownWithError() throws {
-        try core.flushAndTearDown()
+    override func tearDown() async throws {
+        try await core.flushAndTearDown()
         core = nil
         config = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     // MARK: - Customizing Tracer
@@ -529,6 +530,7 @@ class TracerTests: XCTestCase {
 
     // MARK: - Sending tags
 
+    @MainActor
     func testSendingSpanTagsOfDifferentEncodableValues() throws {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
@@ -1034,7 +1036,7 @@ class TracerTests: XCTestCase {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
 
-        var spans: [DDSpan] = []
+        nonisolated(unsafe) var spans: [DDSpan] = []
         let queue = DispatchQueue(label: "spans-array-sync")
 
         // Start 20 spans concurrently
@@ -1110,7 +1112,7 @@ class TracerTests: XCTestCase {
         XCTAssertTrue(tracer is DDNoopTracer)
     }
 
-    func testGivenLoggingFeatureNotEnabled_whenSendingLogFromSpan_itPrintsWarning() throws {
+    func testGivenLoggingFeatureNotEnabled_whenSendingLogFromSpan_itPrintsWarning() async throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -1124,7 +1126,7 @@ class TracerTests: XCTestCase {
         span.log(fields: ["bar": "bizz"])
 
         // then
-        core.flush()
+        await core.flush()
         XCTAssertEqual(dd.logger.warnLog?.message, "The log for span \"foo\" will not be send, because the Logs feature is not enabled.")
     }
 }

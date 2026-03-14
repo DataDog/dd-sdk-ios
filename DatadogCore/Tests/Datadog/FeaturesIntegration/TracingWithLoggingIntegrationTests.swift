@@ -25,10 +25,7 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         super.tearDown()
     }
 
-    func testSendingLogWithOTMessageField() throws {
-        let expectation = expectation(description: "Send log")
-        core.onEventWriteContext = { _ in expectation.fulfill() }
-
+    func testSendingLogWithOTMessageField() async throws {
         // Given
         let integration = TracingWithLoggingIntegration(core: core, service: .mockAny(), networkInfoEnabled: .mockAny())
 
@@ -44,9 +41,9 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         )
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        await core.writer.waitForEvents(count: 1)
 
-        let log: LogEvent = try XCTUnwrap(core.events().last, "It should send log")
+        let log: LogEvent = try XCTUnwrap(core.events(ofType: LogEvent.self).last, "It should send log")
         XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(log.status, .info)
         XCTAssertEqual(log.message, "hello")
@@ -63,11 +60,7 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         )
     }
 
-    func testWritingLogWithOTErrorField() throws {
-        let expectation = expectation(description: "Send 3 logs")
-        expectation.expectedFulfillmentCount = 3
-        core.onEventWriteContext = { _ in expectation.fulfill() }
-
+    func testWritingLogWithOTErrorField() async throws {
         // Given
         let integration = TracingWithLoggingIntegration(core: core, service: .mockAny(), networkInfoEnabled: .mockAny())
 
@@ -94,9 +87,9 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         )
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        await core.writer.waitForEvents(count: 3)
 
-        let logs: [LogEvent] = try XCTUnwrap(core.events())
+        let logs: [LogEvent] = core.events(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 3, "It should send 3 logs")
         logs.forEach { log in
             XCTAssertEqual(log.status, .error)
@@ -104,10 +97,7 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         }
     }
 
-    func testWritingCustomLogWithoutAnyOTFields() throws {
-        let expectation = expectation(description: "Send log")
-        core.onEventWriteContext = { _ in expectation.fulfill() }
-
+    func testWritingCustomLogWithoutAnyOTFields() async throws {
         // Given
         let integration = TracingWithLoggingIntegration(core: core, service: .mockAny(), networkInfoEnabled: .mockAny())
 
@@ -120,9 +110,9 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         )
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        await core.writer.waitForEvents(count: 1)
 
-        let log: LogEvent = try XCTUnwrap(core.events().last, "It should send log")
+        let log: LogEvent = try XCTUnwrap(core.events(ofType: LogEvent.self).last, "It should send log")
         XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(log.status, .info)
         XCTAssertEqual(log.message, "Span event", "It should use default message.")

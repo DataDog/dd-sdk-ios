@@ -145,6 +145,7 @@ class AppLaunchHandlerTests: XCTestCase {
         XCTAssertLessThan(uptime, 3_600, "Process uptime should be less than 1 hour — test process likely launched recently.")
     }
 
+    @MainActor
     func testDidFinishLaunchingNotification() {
         // Given
         let handler = AppLaunchHandler()
@@ -159,6 +160,7 @@ class AppLaunchHandlerTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
+    @MainActor
     func testDidBecomeActiveNotification() {
         // Given
         let handler = AppLaunchHandler()
@@ -173,6 +175,7 @@ class AppLaunchHandlerTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
+    @MainActor
     func testApplicationNotificationCallbackIsOnlyCalledOnce() {
         // Given
         let handler = AppLaunchHandler()
@@ -189,6 +192,7 @@ class AppLaunchHandlerTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
+    @MainActor
     func testSetApplicationNotificationCallbackByMultipleEntities() {
         // Given
         let handler = AppLaunchHandler()
@@ -208,6 +212,7 @@ class AppLaunchHandlerTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
+    @MainActor
     func testApplicationNotificationsMultipleTimesInMultipleEntities() {
         // Given
         let handler = AppLaunchHandler()

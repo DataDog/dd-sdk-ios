@@ -104,9 +104,9 @@ class DataUploadWorkerTests: XCTestCase {
         )
 
         // Given
-        writer.write(value: ["k1": "v1"])
-        writer.write(value: ["k2": "v2"])
-        writer.write(value: ["k3": "v3"])
+        await writer.write(value: ["k1": "v1"])
+        await writer.write(value: ["k2": "v2"])
+        await writer.write(value: ["k3": "v3"])
 
         // When
         let featureName: String = .mockAny()
@@ -125,7 +125,8 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(dataUploader.uploadedEvents[2], Event(data: #"{"k3":"v3"}"#.utf8Data))
 
         await worker.cancel()
-        XCTAssertEqual(try orchestrator.directory.files().count, 0)
+        let dir1 = await orchestrator.directory
+        XCTAssertEqual(try dir1.files().count, 0)
 
         XCTAssertEqual(telemetry.messages.count, 3)
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
@@ -153,9 +154,9 @@ class DataUploadWorkerTests: XCTestCase {
         )
 
         // Given
-        writer.write(value: ["k1": "v1"])
-        writer.write(value: ["k2": "v2"])
-        writer.write(value: ["k3": "v3"])
+        await writer.write(value: ["k1": "v1"])
+        await writer.write(value: ["k2": "v2"])
+        await writer.write(value: ["k3": "v3"])
 
         // When
         let featureName: String = .mockAny()
@@ -175,7 +176,8 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(dataUploader.uploadedEvents[1], Event(data: #"{"k2":"v2"}"#.utf8Data))
 
         await worker.cancel()
-        XCTAssertEqual(try orchestrator.directory.files().count, 1)
+        let dir2 = await orchestrator.directory
+        XCTAssertEqual(try dir2.files().count, 1)
 
         XCTAssertEqual(telemetry.messages.count, 2)
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
@@ -184,7 +186,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertNil(metric.attributes["blockers"])
     }
 
-    func testGivenDataToUpload_whenUploadFinishesAndDoesNotNeedToBeRetried_thenDataIsDeleted() async {
+    func testGivenDataToUpload_whenUploadFinishesAndDoesNotNeedToBeRetried_thenDataIsDeleted() async throws {
         let startUploadExpectation = self.expectation(description: "Upload has started")
 
         let mockDataUploader = DataUploaderMock(uploadStatus: .mockWith(needsRetry: false))
@@ -194,8 +196,9 @@ class DataUploadWorkerTests: XCTestCase {
         }
 
         // Given
-        writer.write(value: ["key": "value"])
-        XCTAssertEqual(try orchestrator.directory.files().count, 1)
+        await writer.write(value: ["key": "value"])
+        let dirBefore = await orchestrator.directory
+        XCTAssertEqual(try dirBefore.files().count, 1)
 
         // When
         let worker = createWorker(
@@ -209,10 +212,11 @@ class DataUploadWorkerTests: XCTestCase {
         await worker.cancel()
 
         // Then
-        XCTAssertEqual(try orchestrator.directory.files().count, 0, "When upload finishes with `needsRetry: false`, data should be deleted")
+        let dirAfter = await orchestrator.directory
+        XCTAssertEqual(try dirAfter.files().count, 0, "When upload finishes with `needsRetry: false`, data should be deleted")
     }
 
-    func testGivenDataToUpload_whenUploadFailsToBeInitiated_thenDataIsDeleted() async {
+    func testGivenDataToUpload_whenUploadFailsToBeInitiated_thenDataIsDeleted() async throws {
         let initiatingUploadExpectation = self.expectation(description: "Upload is being initiated")
 
         let mockDataUploader = DataUploaderMock(uploadStatus: .mockRandom())
@@ -223,8 +227,9 @@ class DataUploadWorkerTests: XCTestCase {
         }
 
         // Given
-        writer.write(value: ["key": "value"])
-        XCTAssertEqual(try orchestrator.directory.files().count, 1)
+        await writer.write(value: ["key": "value"])
+        let dirBefore = await orchestrator.directory
+        XCTAssertEqual(try dirBefore.files().count, 1)
 
         // When
         let worker = createWorker(
@@ -238,10 +243,11 @@ class DataUploadWorkerTests: XCTestCase {
         await worker.cancel()
 
         // Then
-        XCTAssertEqual(try orchestrator.directory.files().count, 0, "When upload fails to be initiated, data should be deleted")
+        let dirAfter = await orchestrator.directory
+        XCTAssertEqual(try dirAfter.files().count, 0, "When upload fails to be initiated, data should be deleted")
     }
 
-    func testGivenDataToUpload_whenUploadFinishesAndNeedsToBeRetried_thenDataIsPreserved() async {
+    func testGivenDataToUpload_whenUploadFinishesAndNeedsToBeRetried_thenDataIsPreserved() async throws {
         let startUploadExpectation = self.expectation(description: "Upload has started")
 
         let mockDataUploader = DataUploaderMock(uploadStatus: .mockWith(needsRetry: true))
@@ -251,8 +257,9 @@ class DataUploadWorkerTests: XCTestCase {
         }
 
         // Given
-        writer.write(value: ["key": "value"])
-        XCTAssertEqual(try orchestrator.directory.files().count, 1)
+        await writer.write(value: ["key": "value"])
+        let dirBefore = await orchestrator.directory
+        XCTAssertEqual(try dirBefore.files().count, 1)
 
         // When
         let worker = createWorker(
@@ -266,10 +273,11 @@ class DataUploadWorkerTests: XCTestCase {
         await worker.cancel()
 
         // Then
-        XCTAssertEqual(try orchestrator.directory.files().count, 1, "When upload finishes with `needsRetry: true`, data should be preserved")
+        let dirAfter = await orchestrator.directory
+        XCTAssertEqual(try dirAfter.files().count, 1, "When upload finishes with `needsRetry: true`, data should be preserved")
     }
 
-    func testGivenDataToUpload_whenUploadFinishesAndNeedsToBeRetried_thenPreviousUploadStatusIsNotNil() async {
+    func testGivenDataToUpload_whenUploadFinishesAndNeedsToBeRetried_thenPreviousUploadStatusIsNotNil() async throws {
         let startUploadExpectation = self.expectation(description: "Upload has started")
         startUploadExpectation.expectedFulfillmentCount = 3
 
@@ -295,8 +303,9 @@ class DataUploadWorkerTests: XCTestCase {
         }
 
         // Given
-        writer.write(value: ["key": "value"])
-        XCTAssertEqual(try orchestrator.directory.files().count, 1)
+        await writer.write(value: ["key": "value"])
+        let dirBefore = await orchestrator.directory
+        XCTAssertEqual(try dirBefore.files().count, 1)
 
         // When
         let worker = createWorker(
@@ -310,12 +319,13 @@ class DataUploadWorkerTests: XCTestCase {
         await worker.cancel()
 
         // Then
-        XCTAssertEqual(try orchestrator.directory.files().count, 0)
+        let dirAfter = await orchestrator.directory
+        XCTAssertEqual(try dirAfter.files().count, 0)
     }
 
     // MARK: - Upload Interval Changes
 
-    func testWhenThereIsNoBatch_thenIntervalIncreases() async {
+    func testWhenThereIsNoBatch_thenIntervalIncreases() async throws {
         let delayChangeExpectation = expectation(description: "Upload delay is increased")
         let initialUploadDelay = 0.01
         let delay = DataUploadDelay(
@@ -328,7 +338,8 @@ class DataUploadWorkerTests: XCTestCase {
         )
 
         // When
-        XCTAssertEqual(try orchestrator.directory.files().count, 0)
+        let dir = await orchestrator.directory
+        XCTAssertEqual(try dir.files().count, 0)
 
         let worker = createWorker(
             uploadConditions: .neverUpload(),
@@ -367,9 +378,9 @@ class DataUploadWorkerTests: XCTestCase {
         )
 
         // When
-        writer.write(value: ["k1": "v1"])
-        writer.write(value: ["k2": "v2"])
-        writer.write(value: ["k3": "v3"])
+        await writer.write(value: ["k1": "v1"])
+        await writer.write(value: ["k2": "v2"])
+        await writer.write(value: ["k3": "v3"])
 
         let dataUploader = DataUploaderMock(
             uploadStatus: .mockWith(
@@ -423,7 +434,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         // When
         // Given
-        writer.write(value: ["k1": "v1"])
+        await writer.write(value: ["k1": "v1"])
 
         let worker = createWorker(
             dataUploader: dataUploader,
@@ -447,7 +458,7 @@ class DataUploadWorkerTests: XCTestCase {
         defer { dd.reset() }
 
         // Given
-        writer.write(value: ["key": "value"])
+        await writer.write(value: ["key": "value"])
 
         let randomUploadStatus: DataUploadStatus = .mockRandom()
         let randomFeatureName: String = .mockRandom()
@@ -493,7 +504,7 @@ class DataUploadWorkerTests: XCTestCase {
         defer { dd.reset() }
 
         // Given
-        writer.write(value: ["key": "value"])
+        await writer.write(value: ["key": "value"])
 
         let randomUploadStatus: DataUploadStatus = .mockWith(
             error: .httpError(
@@ -576,7 +587,7 @@ class DataUploadWorkerTests: XCTestCase {
         // Given
         let telemetry = TelemetryMock()
 
-        writer.write(value: ["key": "value"])
+        await writer.write(value: ["key": "value"])
         let randomStatusCode: HTTPResponseStatusCode = [
             .internalServerError,
             .serviceUnavailable,
@@ -620,7 +631,7 @@ class DataUploadWorkerTests: XCTestCase {
         // Given
         let telemetry = TelemetryMock()
 
-        writer.write(value: ["key": "value"])
+        await writer.write(value: ["key": "value"])
         let randomStatusCode: HTTPResponseStatusCode = [
             .badRequest,
             .requestTimeout,
@@ -668,7 +679,7 @@ class DataUploadWorkerTests: XCTestCase {
         // Given
         let telemetry = TelemetryMock()
 
-        writer.write(value: ["key": "value"])
+        await writer.write(value: ["key": "value"])
 
         let nserror: NSError = .mockAny()
 
@@ -710,7 +721,7 @@ class DataUploadWorkerTests: XCTestCase {
         // Given
         let telemetry = TelemetryMock()
 
-        writer.write(value: ["key": "value"])
+        await writer.write(value: ["key": "value"])
 
         // When
         let initiatingUploadExpectation = self.expectation(description: "Upload is being initiated")
@@ -767,12 +778,12 @@ class DataUploadWorkerTests: XCTestCase {
         await worker.cancel()
 
         // Then
-        writer.write(value: ["k1": "v1"])
+        await writer.write(value: ["k1": "v1"])
 
         server.waitFor(requestsCompletion: 0)
     }
 
-    func testItFlushesAllData() async {
+    func testItFlushesAllData() async throws {
         let uploadExpectation = self.expectation(description: "Make 3 uploads")
         uploadExpectation.expectedFulfillmentCount = 3
 
@@ -791,15 +802,16 @@ class DataUploadWorkerTests: XCTestCase {
         await worker.start()
 
         // Given
-        writer.write(value: ["k1": "v1"])
-        writer.write(value: ["k2": "v2"])
-        writer.write(value: ["k3": "v3"])
+        await writer.write(value: ["k1": "v1"])
+        await writer.write(value: ["k2": "v2"])
+        await writer.write(value: ["k3": "v3"])
 
         // When
         await worker.flush()
 
         // Then
-        XCTAssertEqual(try orchestrator.directory.files().count, 0)
+        let dir = await orchestrator.directory
+        XCTAssertEqual(try dir.files().count, 0)
 
         await fulfillment(of: [uploadExpectation], timeout: 1)
         XCTAssertEqual(dataUploader.uploadedEvents[0], Event(data: #"{"k1":"v1"}"#.utf8Data))
@@ -821,7 +833,7 @@ class DataUploadWorkerTests: XCTestCase {
         )
 
         // Given
-        writer.write(value: ["k1": "v1"])
+        await writer.write(value: ["k1": "v1"])
 
         // When
         let worker = createWorker(
@@ -847,7 +859,7 @@ class DataUploadWorkerTests: XCTestCase {
         )
 
         // Given
-        writer.write(value: ["k1": "v1"])
+        await writer.write(value: ["k1": "v1"])
 
         // When
         let worker = createWorker(
@@ -900,7 +912,7 @@ class DataUploadWorkerTests: XCTestCase {
             expectUploadDelayed.fulfill()
         }
 
-        writer.write(value: ["key": "value"])
+        await writer.write(value: ["key": "value"])
 
         // When
         let worker = createWorker(
@@ -928,7 +940,7 @@ class DataUploadWorkerTests: XCTestCase {
             expectImmediateUpload.fulfill()
         }
 
-        writer.write(value: ["key": "value"])
+        await writer.write(value: ["key": "value"])
 
         // When
         let worker = createWorker(

@@ -29,6 +29,7 @@ class DDTraceTests: XCTestCase {
         XCTAssertTrue(objc_Tracer.shared().dd?.swiftTracer is DDNoopTracer)
     }
 
+    @MainActor
     func testWhenEnabled() {
         objc_Trace.enable(with: objc_TraceConfiguration())
         XCTAssertTrue(objc_Tracer.shared().dd?.swiftTracer is DatadogTracer)

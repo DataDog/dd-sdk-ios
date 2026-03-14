@@ -14,9 +14,8 @@ class RUMMonitorConfigurationTests: XCTestCase {
     private let networkConnectionInfo: NetworkConnectionInfo = .mockAny()
     private let carrierInfo: CarrierInfo = .mockAny()
 
-    func testRUMMonitorConfiguration() throws {
-        let expectation = expectation(description: "open feature scope")
-
+    @MainActor
+    func testRUMMonitorConfiguration() async throws {
         let core = DatadogCoreProxy(
             context: .mockWith(
                 service: "service-name",
@@ -28,7 +27,6 @@ class RUMMonitorConfigurationTests: XCTestCase {
                 carrierInfo: carrierInfo
             )
         )
-        defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
 
         RUM.enable(
             with: .init(
@@ -42,21 +40,21 @@ class RUMMonitorConfigurationTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core).dd
 
         let dependencies = monitor.scopes.dependencies
-        Task {
-            guard let (context, _) = await monitor.featureScope.eventWriteContext() else { return }
-            DDAssertReflectionEqual(context.userInfo, self.userInfo)
-            XCTAssertEqual(context.networkConnectionInfo, self.networkConnectionInfo)
-            XCTAssertEqual(context.carrierInfo, self.carrierInfo)
-
-            XCTAssertEqual(context.service, "service-name")
-            XCTAssertEqual(context.version, "1.2.3")
-            XCTAssertEqual(context.sdkVersion, "3.4.5")
-
-            expectation.fulfill()
+        guard let (context, _) = await monitor.featureScope.eventWriteContext() else {
+            XCTFail("Expected event write context")
+            return
         }
+        DDAssertReflectionEqual(context.userInfo, self.userInfo)
+        XCTAssertEqual(context.networkConnectionInfo, self.networkConnectionInfo)
+        XCTAssertEqual(context.carrierInfo, self.carrierInfo)
+
+        XCTAssertEqual(context.service, "service-name")
+        XCTAssertEqual(context.version, "1.2.3")
+        XCTAssertEqual(context.sdkVersion, "3.4.5")
 
         XCTAssertEqual(dependencies.sessionSampler.samplingRate, 42.5)
         XCTAssertEqual(monitor.scopes.context.rumApplicationID, "rum-123")
-        waitForExpectations(timeout: 0.5)
+
+        try await core.flushAndTearDown()
     }
 }

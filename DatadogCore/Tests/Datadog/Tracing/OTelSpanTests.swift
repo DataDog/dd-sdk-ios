@@ -12,10 +12,10 @@ import OpenTelemetryApi
 @testable import DatadogLogs
 @testable import DatadogTrace
 
+@MainActor
 final class OTelSpanTests: XCTestCase {
-    func testAddEvent() {
+    func testAddEvent() async throws {
         let core = DatadogCoreProxy()
-        defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
 
         Logs.enable(in: core)
         Trace.enable(in: core)
@@ -41,11 +41,12 @@ final class OTelSpanTests: XCTestCase {
         // Then
         let logs: [LogEvent] = core.waitAndReturnEvents(ofFeature: LogsFeature.name, ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 0)
+
+        try await core.flushAndTearDown()
     }
 
-    func testContextProviderSetActive_givenParentSpan() throws {
+    func testContextProviderSetActive_givenParentSpan() async throws {
         let core = DatadogCoreProxy()
-        defer { XCTAssertNoThrow(try core.flushAndTearDown())}
 
         Trace.enable(in: core)
 
@@ -82,6 +83,8 @@ final class OTelSpanTests: XCTestCase {
 
         XCTAssertEqual(try parentSpanMatcher.traceID(), try childSpanMatcher.traceID())
         XCTAssertEqual(try parentSpanMatcher.spanID(), try childSpanMatcher.parentSpanID())
+
+        try await core.flushAndTearDown()
     }
 }
 

@@ -32,7 +32,7 @@ class DatadogCoreTests: XCTestCase {
         super.tearDown()
     }
 
-    func testWhenWritingEventsWithDifferentTrackingConsent_itOnlyUploadsAuthorizedEvents() throws {
+    func testWhenWritingEventsWithDifferentTrackingConsent_itOnlyUploadsAuthorizedEvents() async throws {
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -71,7 +71,7 @@ class DatadogCoreTests: XCTestCase {
         }
 
         // Then
-        core.flushAndTearDown()
+        await core.flushAndTearDown()
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
@@ -81,7 +81,7 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 1, "It should send only one request")
     }
 
-    func testWhenWritingEventsWithPendingConsentThenGranted_itUploadsAllEvents() throws {
+    func testWhenWritingEventsWithPendingConsentThenGranted_itUploadsAllEvents() async throws {
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -98,7 +98,6 @@ class DatadogCoreTests: XCTestCase {
             maxBatchesPerUpload: 1,
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         let send2RequestsExpectation = expectation(description: "send 2 requests")
         send2RequestsExpectation.expectedFulfillmentCount = 2
@@ -125,7 +124,7 @@ class DatadogCoreTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 2)
+        await fulfillment(of: [send2RequestsExpectation], timeout: 2)
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
@@ -140,9 +139,11 @@ class DatadogCoreTests: XCTestCase {
             "It should upload all events"
         )
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 2, "It should send 2 requests")
+
+        await core.flushAndTearDown()
     }
 
-    func testWhenWritingEventsWithBypassingConsent_itUploadsAllEvents() throws {
+    func testWhenWritingEventsWithBypassingConsent_itUploadsAllEvents() async throws {
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -181,7 +182,7 @@ class DatadogCoreTests: XCTestCase {
         }
 
         // Then
-        core.flushAndTearDown()
+        await core.flushAndTearDown()
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
@@ -199,7 +200,7 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 1, "It should send only one request")
     }
 
-    func testWhenFeatureAdditionalContextIsUpdated_thenNewValueIsImmediatellyAvailable() throws {
+    func testWhenFeatureAdditionalContextIsUpdated_thenNewValueIsImmediatellyAvailable() async throws {
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -213,7 +214,6 @@ class DatadogCoreTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         let feature = FeatureMock()
         try core.register(feature: feature)
@@ -251,10 +251,12 @@ class DatadogCoreTests: XCTestCase {
             expectation2.fulfill()
         }
 
-        waitForExpectations(timeout: 1)
+        await fulfillment(of: [expectation1, expectation2], timeout: 1)
+
+        await core.flushAndTearDown()
     }
 
-    func testWhenPerformancePresetOverrideIsProvided_itOverridesPresets() throws {
+    func testWhenPerformancePresetOverrideIsProvided_itOverridesPresets() async throws {
         // Given
         let core1 = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -280,10 +282,6 @@ class DatadogCoreTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer {
-            core1.flushAndTearDown()
-            core2.flushAndTearDown()
-        }
 
         // When
         try core1.register(
@@ -301,18 +299,21 @@ class DatadogCoreTests: XCTestCase {
         )
 
         // Then
-        let storage1 = core1.stores.values.first?.storage
+        let storage1 = core1.featureStore.storage(for: FeatureMock.name)
         XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxObjectSize, 512.KB.asUInt32())
         XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxFileSize, 4.MB.asUInt32())
 
-        let storage2 = core2.stores.values.first?.storage
+        let storage2 = core2.featureStore.storage(for: FeatureMock.name)
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxFileSize, 123)
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxFileAgeForWrite, 95)
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.minFileAgeForRead, 105)
+
+        await core1.flushAndTearDown()
+        await core2.flushAndTearDown()
     }
 
-    func testWhenStoppingInstance_itDoesNotUploadEvents() throws {
+    func testWhenStoppingInstance_itDoesNotUploadEvents() async throws {
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -341,7 +342,7 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         XCTAssertNil(core.get(feature: FeatureMock.self))
-        core.flush()
+        await core.flush()
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 0, "It should not send any request")
     }
 

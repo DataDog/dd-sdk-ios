@@ -46,7 +46,8 @@ class FileReaderTests: XCTestCase {
             .append(data: data)
 
         XCTAssertEqual(try directory.files().count, 1)
-        XCTAssertEqual(await reader.readNextBatches(.max).count, 1)
+        let batchCount1 = await reader.readNextBatches(.max).count
+        XCTAssertEqual(batchCount1, 1)
         let batch = await reader.readNextBatches(1).first
 
         let expected = [
@@ -60,8 +61,10 @@ class FileReaderTests: XCTestCase {
             .append(data: data)
 
         XCTAssertEqual(try directory.files().count, 2)
-        XCTAssertEqual(await reader.readNextBatches(2).count, 2)
-        XCTAssertEqual(await reader.readNextBatches(.max).count, 2)
+        let batchCount2 = await reader.readNextBatches(2).count
+        XCTAssertEqual(batchCount2, 2)
+        let batchCount3 = await reader.readNextBatches(.max).count
+        XCTAssertEqual(batchCount3, 2)
     }
 
     func testItReadsEncryptedBatches() async throws {
@@ -95,7 +98,8 @@ class FileReaderTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        XCTAssertEqual(await reader.readNextBatches(.max).count, 1)
+        let encBatchCount1 = await reader.readNextBatches(.max).count
+        XCTAssertEqual(encBatchCount1, 1)
         let batch = await reader.readNextBatches(1).first
 
         let expected = [
@@ -110,8 +114,10 @@ class FileReaderTests: XCTestCase {
             .createFile(named: dataProvider.now.toFileName)
             .append(data: data)
 
-        XCTAssertEqual(await reader.readNextBatches(2).count, 2)
-        XCTAssertEqual(await reader.readNextBatches(.max).count, 2)
+        let encBatchCount2 = await reader.readNextBatches(2).count
+        XCTAssertEqual(encBatchCount2, 2)
+        let encBatchCount3 = await reader.readNextBatches(.max).count
+        XCTAssertEqual(encBatchCount3, 2)
     }
 
     func testItMarksBatchesAsRead() async throws {
@@ -155,7 +161,8 @@ class FileReaderTests: XCTestCase {
             await reader.markBatchAsRead(b)
         }
 
-        XCTAssertTrue(await reader.readNextBatches(1).isEmpty)
+        let remainingBatches = await reader.readNextBatches(1)
+        XCTAssertTrue(remainingBatches.isEmpty)
         XCTAssertEqual(try directory.files().count, 0)
     }
 }

@@ -23,10 +23,9 @@ class LoggerTests: XCTestCase {
         core = DatadogCoreProxy()
     }
 
-    override func tearDownWithError() throws {
-        try core.flushAndTearDown()
+    override func tearDown() async throws {
+        try await core.flushAndTearDown()
         core = nil
-        super.tearDown()
     }
 
     // MARK: - Customizing Logger
@@ -710,6 +709,7 @@ class LoggerTests: XCTestCase {
 
     // MARK: - Integration With RUM Feature
 
+    @MainActor
     func testGivenBundlingWithRUMEnabledAndRUMFeatureEnabled_whenSendingLogBeforeAnyUserActivity_itContainsSessionId() throws {
         core.context = .mockAny()
 
@@ -739,6 +739,7 @@ class LoggerTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testGivenBundlingWithRUMEnabledAndRUMFeatureEnabled_whenSendingLog_itContainsCurrentRUMContext() throws {
         core.context = .mockAny()
 
@@ -789,6 +790,7 @@ class LoggerTests: XCTestCase {
         )
     }
 
+    @MainActor
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
         let logging: LogsFeature = .mockAny()
         try core.register(feature: logging)
@@ -822,6 +824,7 @@ class LoggerTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testWhenSendingErrorOrCriticalLogsWithAttributes_itCreatesRUMErrorForCurrentViewWithAttributes() throws {
         let logging: LogsFeature = .mockAny()
         try core.register(feature: logging)
@@ -861,6 +864,7 @@ class LoggerTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorWithProperSourceType() throws {
         let logging: LogsFeature = .mockAny()
         try core.register(feature: logging)
@@ -896,6 +900,7 @@ class LoggerTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorWithProperIsCrash() throws {
         let logging: LogsFeature = .mockAny()
         try core.register(feature: logging)
@@ -932,6 +937,7 @@ class LoggerTests: XCTestCase {
 
     // MARK: - Integration With Active Span
 
+    @MainActor
     func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
         core.context = .mockAny()
 
@@ -962,6 +968,7 @@ class LoggerTests: XCTestCase {
         logMatchers[1].assertNoValue(forKey: "dd.span_id")
     }
 
+    @MainActor
     func testGivenBundlingWithTraceEnabledAndOpenTelemetryTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
         core.context = .mockAny()
 

@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 @testable import DatadogCore
 
+@MainActor
 class URLSessionClientTests: XCTestCase {
     func testWhenRequestIsDelivered_itReturnsHTTPResponse() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))

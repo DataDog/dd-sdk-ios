@@ -24,7 +24,7 @@ private struct FeatureBMock: DatadogRemoteFeature {
 }
 
 class DatadogCore_FeatureDataStoreTests: XCTestCase {
-    func testGivenTwoFeaturesRegistered_whenWritingToTheirDataStore_eachStoreIsUnique() throws {
+    func testGivenTwoFeaturesRegistered_whenWritingToTheirDataStore_eachStoreIsUnique() async throws {
         let core = DatadogCore(
             directory: temporaryCoreDirectory.create(),
             dateProvider: SystemDateProvider(),
@@ -37,10 +37,6 @@ class DatadogCore_FeatureDataStoreTests: XCTestCase {
             maxBatchesPerUpload: .mockAny(),
             backgroundTasksEnabled: .mockAny()
         )
-        defer {
-            core.flushAndTearDown()
-            temporaryCoreDirectory.delete()
-        }
 
         // Given
         try core.register(feature: FeatureAMock())
@@ -55,8 +51,8 @@ class DatadogCore_FeatureDataStoreTests: XCTestCase {
         scopeB.dataStore.setValue("feature B data".utf8Data, forKey: commonKey)
 
         // Then
-        var dataInA: Data?
-        var dataInB: Data?
+        nonisolated(unsafe) var dataInA: Data?
+        nonisolated(unsafe) var dataInB: Data?
         scopeA.dataStore.value(forKey: commonKey) { dataInA = $0.data() }
         scopeB.dataStore.value(forKey: commonKey) { dataInB = $0.data() }
 
@@ -65,9 +61,12 @@ class DatadogCore_FeatureDataStoreTests: XCTestCase {
 
         XCTAssertEqual(dataInA?.utf8String, "feature A data")
         XCTAssertEqual(dataInB?.utf8String, "feature B data")
+
+        await core.flushAndTearDown()
+        temporaryCoreDirectory.delete()
     }
 
-    func testGivenFeatureRegisteredToTwoCoreInstances_whenWritingToDataStore_eachInstanceIsUnique() throws {
+    func testGivenFeatureRegisteredToTwoCoreInstances_whenWritingToDataStore_eachInstanceIsUnique() async throws {
         let coreDirectory1 = temporaryUniqueCoreDirectory().create()
         let coreDirectory2 = temporaryUniqueCoreDirectory().create()
         let core1 = DatadogCore(
@@ -94,12 +93,6 @@ class DatadogCore_FeatureDataStoreTests: XCTestCase {
             maxBatchesPerUpload: .mockAny(),
             backgroundTasksEnabled: .mockAny()
         )
-        defer {
-            core1.flushAndTearDown()
-            core2.flushAndTearDown()
-            coreDirectory1.delete()
-            coreDirectory2.delete()
-        }
 
         // Given
         try core1.register(feature: FeatureAMock())
@@ -114,8 +107,8 @@ class DatadogCore_FeatureDataStoreTests: XCTestCase {
         scope2.dataStore.setValue("feature data in core 2".utf8Data, forKey: commonKey)
 
         // Then
-        var dataIn1: Data?
-        var dataIn2: Data?
+        nonisolated(unsafe) var dataIn1: Data?
+        nonisolated(unsafe) var dataIn2: Data?
         scope1.dataStore.value(forKey: commonKey) { dataIn1 = $0.data() }
         scope2.dataStore.value(forKey: commonKey) { dataIn2 = $0.data() }
 
@@ -124,5 +117,10 @@ class DatadogCore_FeatureDataStoreTests: XCTestCase {
 
         XCTAssertEqual(dataIn1?.utf8String, "feature data in core 1")
         XCTAssertEqual(dataIn2?.utf8String, "feature data in core 2")
+
+        await core1.flushAndTearDown()
+        await core2.flushAndTearDown()
+        coreDirectory1.delete()
+        coreDirectory2.delete()
     }
 }

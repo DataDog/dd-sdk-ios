@@ -25,7 +25,7 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Receiving SDK Context
 
     func testWhenInitialSDKContextIsReceived_itNotifiesCrashContext() throws {
-        var latestCrashContext: CrashContext? = nil
+        nonisolated(unsafe) var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
@@ -42,7 +42,7 @@ class CrashContextProviderTests: XCTestCase {
     }
 
     func testWhenNextSDKContextIsReceived_itNotifiesNewCrashContext() throws {
-        var latestCrashContext: CrashContext? = nil
+        nonisolated(unsafe) var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
@@ -62,7 +62,7 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Receiving RUM View
 
     func testWhenRUMViewIsReceivedAfterSDKContext_itNotifiesNewCrashContext() throws {
-        var latestCrashContext: CrashContext? = nil
+        nonisolated(unsafe) var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
@@ -82,7 +82,7 @@ class CrashContextProviderTests: XCTestCase {
     }
 
     func testWhenSDKContextIsReceivedAfterRUMView_itNotifiesNewCrashContext() throws {
-        var latestCrashContext: CrashContext? = nil
+        nonisolated(unsafe) var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
@@ -105,7 +105,7 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Receiving RUM View Reset
 
     func testWhenRUMViewResetIsReceivedAfterRUMView_thenItNotifiesNewCrashContext() throws {
-        var latestCrashContext: CrashContext? = nil
+        nonisolated(unsafe) var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
@@ -126,7 +126,7 @@ class CrashContextProviderTests: XCTestCase {
     }
 
     func testWhenSDKContextIsReceivedAfterRUMViewReset_thenItNotifiesNewCrashContext() throws {
-        var latestCrashContext: CrashContext? = nil
+        nonisolated(unsafe) var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
@@ -150,7 +150,7 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Receiving RUM Session State
 
     func testWhenRUMSessionStateIsReceivedAfterSDKContext_itNotifiesNewCrashContext() throws {
-        var latestCrashContext: CrashContext? = nil
+        nonisolated(unsafe) var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
@@ -170,7 +170,7 @@ class CrashContextProviderTests: XCTestCase {
     }
 
     func testWhenSDKContextIsReceivedAfterRUMSessionState_itNotifiesNewCrashContext() throws {
-        var latestCrashContext: CrashContext? = nil
+        nonisolated(unsafe) var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
@@ -193,7 +193,7 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Receiving Global RUM Attributes
 
     func testWhenRUMAttributesAreReceivedAfterSDKContext_itNotifiesNewCrashContext() throws {
-        var latestCrashContext: CrashContext? = nil
+        nonisolated(unsafe) var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
@@ -213,7 +213,7 @@ class CrashContextProviderTests: XCTestCase {
     }
 
     func testWhenSDKContextIsReceivedAfterRUMAttributes_itNotifiesNewCrashContext() throws {
-        var latestCrashContext: CrashContext? = nil
+        nonisolated(unsafe) var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
@@ -236,7 +236,7 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Receiving Global Log Attributes
 
     func testWhenLogAttributesAreReceivedAfterSDKContext_itNotifiesNewCrashContext() throws {
-        var latestCrashContext: CrashContext? = nil
+        nonisolated(unsafe) var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given
@@ -256,7 +256,7 @@ class CrashContextProviderTests: XCTestCase {
     }
 
     func testWhenSDKContextIsReceivedAfterLogAttributes_itNotifiesNewCrashContext() throws {
-        var latestCrashContext: CrashContext? = nil
+        nonisolated(unsafe) var latestCrashContext: CrashContext? = nil
         provider.onCrashContextChange = { latestCrashContext = $0 }
 
         // Given

@@ -24,7 +24,8 @@ class RUMFeatureTests: XCTestCase {
 
     // MARK: - HTTP Message
 
-    func testItUsesExpectedHTTPMessage() throws {
+    @MainActor
+    func testItUsesExpectedHTTPMessage() async throws {
         let randomApplicationName: String = .mockRandom(among: .alphanumerics)
         let randomApplicationVersion: String = .mockRandom(among: .decimalDigits)
         let randomServiceName: String = .mockRandom(among: .alphanumerics)
@@ -74,7 +75,6 @@ class RUMFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: randomBackgroundTasksEnabled
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         RUM.enable(with: .mockWith { $0.customEndpoint = randomUploadURL }, in: core)
@@ -106,11 +106,14 @@ class RUMFeatureTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomOrigin)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], randomSDKVersion)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
+
+        await core.flushAndTearDown()
     }
 
     // MARK: - HTTP Payload
 
-    func testItUsesExpectedPayloadFormatForUploads() throws {
+    @MainActor
+    func testItUsesExpectedPayloadFormatForUploads() async throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
@@ -142,7 +145,6 @@ class RUMFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         RUM.enable(with: .mockAny(), in: core)
@@ -157,9 +159,12 @@ class RUMFeatureTests: XCTestCase {
 
         let eventMatchers = try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(payload)
         XCTAssertFalse(eventMatchers.filterRUMEvents(ofType: RUMViewEvent.self).isEmpty, "It must include view event")
+
+        await core.flushAndTearDown()
     }
 
-    func testItOnlyKeepsOneViewEventPerPayload() throws {
+    @MainActor
+    func testItOnlyKeepsOneViewEventPerPayload() async throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
@@ -191,7 +196,6 @@ class RUMFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         RUM.enable(with: .mockAny(), in: core)
@@ -209,5 +213,7 @@ class RUMFeatureTests: XCTestCase {
         try viewMatchers[0].model(ofType: RUMViewEvent.self) { event in
             XCTAssertEqual(event.view.error.count, 3, "It should track 3 errors")
         }
+
+        await core.flushAndTearDown()
     }
 }

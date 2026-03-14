@@ -43,11 +43,11 @@ class DatadogCore_FeatureDirectoriesTests: XCTestCase {
         )
     }
 
-        override func tearDownWithError() throws {
-        core.flushAndTearDown()
+        override func tearDown() async throws {
+        await core.flushAndTearDown()
         core = nil
         temporaryCoreDirectory.delete()
-        super.tearDown()
+        try await super.tearDown()
     }
 
     func testWhenRegisteringRemoteFeature_itCreatesFeatureDirectories() throws {

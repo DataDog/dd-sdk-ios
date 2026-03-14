@@ -130,6 +130,7 @@ class CrashReporterTests: XCTestCase {
 
     // MARK: - Crash Context Injection
 
+    @MainActor
     func testWhenInitialized_itInjectsInitialCrashContextToThePlugin() throws {
         let expectation = self.expectation(description: "`plugin` received initial crash context")
         let plugin = CrashReportingPluginMock()
@@ -155,6 +156,7 @@ class CrashReporterTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testWhenCrashContextChanges_itInjectsNewCrashContextToThePlugin() throws {
         let expectation = self.expectation(description: "`plugin` received initial and updated crash contexts")
         expectation.expectedFulfillmentCount = 2
@@ -217,6 +219,7 @@ class CrashReporterTests: XCTestCase {
 
     // MARK: - Thread safety
 
+    @MainActor
     func testInjectingContextToPluginAreSynchronized() {
         let expectation = self.expectation(description: "`plugin` received at least 100 calls")
         expectation.expectedFulfillmentCount = 100

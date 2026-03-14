@@ -95,7 +95,7 @@ class DDDatadogTests: XCTestCase {
 
     // MARK: - Changing Tracking Consent
 
-    func testItForwardsTrackingConsentToSwift() async {
+    func testItForwardsTrackingConsentToSwift() async throws {
         let initialConsent = randomConsent()
         let nextConsent = randomConsent()
 
@@ -105,11 +105,14 @@ class DDDatadogTests: XCTestCase {
         )
 
         let core = CoreRegistry.default as? DatadogCore
-        XCTAssertEqual(await core?.contextProvider.read().trackingConsent, initialConsent.swift)
+        let initialContext = await core?.contextProvider.read()
+        XCTAssertEqual(initialContext?.trackingConsent, initialConsent.swift)
 
         objc_Datadog.setTrackingConsent(consent: nextConsent.objc)
 
-        XCTAssertEqual(await core?.contextProvider.read().trackingConsent, nextConsent.swift)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let updatedContext = await core?.contextProvider.read()
+        XCTAssertEqual(updatedContext?.trackingConsent, nextConsent.swift)
 
         Datadog.flushAndDeinitialize()
     }
@@ -135,6 +138,7 @@ class DDDatadogTests: XCTestCase {
             ]
         )
         objc_Datadog.addUserExtraInfo(["foo": "bar"])
+        try await Task.sleep(nanoseconds: 100_000_000)
         var current = await core.contextProvider.read().userInfo
         XCTAssertEqual(current?.id, "id")
         XCTAssertEqual(current?.name, "name")
@@ -146,6 +150,7 @@ class DDDatadogTests: XCTestCase {
         XCTAssertEqual(extraInfo["foo"]?.dd.decode(), "bar")
 
         objc_Datadog.setUserInfo(userId: "id", name: nil, email: nil, extraInfo: [:])
+        try await Task.sleep(nanoseconds: 100_000_000)
         current = await core.contextProvider.read().userInfo
         XCTAssertNotNil(current?.id)
         XCTAssertNil(current?.name)

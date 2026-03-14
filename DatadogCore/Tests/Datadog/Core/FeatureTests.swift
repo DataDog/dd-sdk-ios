@@ -44,7 +44,8 @@ class FeatureStorageTests: XCTestCase {
         // Then
         await storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        let batch = try XCTUnwrap(await storage.reader.readNextBatches(1).first)
+        let batches = await storage.reader.readNextBatches(1)
+        let batch = try XCTUnwrap(batches.first)
         XCTAssertEqual(batch.events.count, 3, "All 3 events should be written to the same batch")
         await storage.reader.markBatchAsRead(batch)
 
@@ -63,7 +64,8 @@ class FeatureStorageTests: XCTestCase {
         // Then
         await storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        let batch = try XCTUnwrap(await storage.reader.readNextBatches(1).first)
+        let batches = await storage.reader.readNextBatches(1)
+        let batch = try XCTUnwrap(batches.first)
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
         await storage.reader.markBatchAsRead(batch)
 
@@ -83,11 +85,13 @@ class FeatureStorageTests: XCTestCase {
         // Then
         await storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        var batch = try XCTUnwrap(await storage.reader.readNextBatches(1).first)
+        var batches = await storage.reader.readNextBatches(1)
+        var batch = try XCTUnwrap(batches.first)
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
         await storage.reader.markBatchAsRead(batch)
 
-        batch = try XCTUnwrap(await storage.reader.readNextBatches(1).first)
+        batches = await storage.reader.readNextBatches(1)
+        batch = try XCTUnwrap(batches.first)
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"pending"}"#])
         await storage.reader.markBatchAsRead(batch)
 
@@ -107,7 +111,8 @@ class FeatureStorageTests: XCTestCase {
         // Then
         await storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        let batch = try XCTUnwrap(await storage.reader.readNextBatches(1).first)
+        let batches3 = await storage.reader.readNextBatches(1)
+        let batch = try XCTUnwrap(batches3.first)
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
         await storage.reader.markBatchAsRead(batch)
 

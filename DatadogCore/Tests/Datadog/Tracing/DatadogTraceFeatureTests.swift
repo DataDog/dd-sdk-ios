@@ -24,7 +24,8 @@ class DatadogTraceFeatureTests: XCTestCase {
 
     // MARK: - HTTP Message
 
-    func testItUsesExpectedHTTPMessage() throws {
+    @MainActor
+    func testItUsesExpectedHTTPMessage() async throws {
         let randomApplicationName: String = .mockRandom(among: .alphanumerics)
         let randomApplicationVersion: String = .mockRandom()
         let randomSource: String = .mockRandom()
@@ -70,7 +71,6 @@ class DatadogTraceFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: randomBackgroundTasksEnabled
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         Trace.enable(with: .init(customEndpoint: randomUploadURL), in: core)
@@ -99,11 +99,14 @@ class DatadogTraceFeatureTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomOrigin)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], randomSDKVersion)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
+
+        await core.flushAndTearDown()
     }
 
     // MARK: - HTTP Payload
 
-    func testItUsesExpectedPayloadFormatForUploads() throws {
+    @MainActor
+    func testItUsesExpectedPayloadFormatForUploads() async throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
@@ -135,7 +138,6 @@ class DatadogTraceFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         Trace.enable(in: core)
@@ -160,5 +162,7 @@ class DatadogTraceFeatureTests: XCTestCase {
         XCTAssertEqual(try spanMatchers[0].operationName(), "operation 1")
         XCTAssertEqual(try spanMatchers[1].operationName(), "operation 2")
         XCTAssertEqual(try spanMatchers[2].operationName(), "operation 3")
+
+        await core.flushAndTearDown()
     }
 }

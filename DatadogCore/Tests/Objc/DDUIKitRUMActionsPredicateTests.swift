@@ -12,6 +12,7 @@ import DatadogRUM
 import SwiftUI
 #endif
 
+@MainActor
 class DDUIKitRUMActionsPredicateTests: XCTestCase {
     func testGivenDefaultPredicate_whenAskingForCustomView_itNamesTheActionByItsClassName() {
         // Given

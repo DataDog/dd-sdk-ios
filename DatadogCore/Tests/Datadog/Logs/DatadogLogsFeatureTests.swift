@@ -24,7 +24,8 @@ class DatadogLogsFeatureTests: XCTestCase {
 
     // MARK: - HTTP Message
 
-    func testItUsesExpectedHTTPMessage() throws {
+    @MainActor
+    func testItUsesExpectedHTTPMessage() async throws {
         let randomApplicationName: String = .mockRandom(among: .alphanumerics)
         let randomApplicationVersion: String = .mockRandom()
         let randomSource: String = .mockRandom(among: .alphanumerics)
@@ -70,7 +71,6 @@ class DatadogLogsFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: randomBackgroundTasksEnabled
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         Logs.enable(with: .init(customEndpoint: randomUploadURL), in: core)
@@ -97,11 +97,14 @@ class DatadogLogsFeatureTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomOrigin)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], randomSDKVersion)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
+
+        await core.flushAndTearDown()
     }
 
     // MARK: - HTTP Payload
 
-    func testItUsesExpectedPayloadFormatForUploads() throws {
+    @MainActor
+    func testItUsesExpectedPayloadFormatForUploads() async throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
@@ -133,7 +136,6 @@ class DatadogLogsFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         Logs.enable(with: .init(), in: core)
@@ -156,5 +158,7 @@ class DatadogLogsFeatureTests: XCTestCase {
         logMatchers[0].assertMessage(equals: "log 1")
         logMatchers[1].assertMessage(equals: "log 2")
         logMatchers[2].assertMessage(equals: "log 3")
+
+        await core.flushAndTearDown()
     }
 }

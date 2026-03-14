@@ -157,7 +157,7 @@ class InternalLoggerTests: XCTestCase {
 
     // MARK: - Thread Safety Tests
 
-    func testConcurrentLoggerReplacementDoesNotCrash() {
+    @MainActor func testConcurrentLoggerReplacementDoesNotCrash() {
         // Ensures DD.logger can be safely replaced while being accessed from multiple threads
         let expectation = self.expectation(description: "Concurrent operations complete")
         expectation.expectedFulfillmentCount = 10

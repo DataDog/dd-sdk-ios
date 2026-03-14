@@ -1793,6 +1793,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         )
     }
 
+    @MainActor
     func testWhenEnablingDurationBreakdownOnTheSameDelegate_thenItPrintsAWarning() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -1811,6 +1812,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         )
     }
 
+    @MainActor
     func testWhenEnablingDurationBreakdownBeforeAutomaticMode_thenItPrintsAnError() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }

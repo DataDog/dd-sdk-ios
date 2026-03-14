@@ -5,7 +5,7 @@
  */
 
 import XCTest
-import TestUtilities
+@preconcurrency import TestUtilities
 @testable import DatadogInternal
 @testable import DatadogCore
 

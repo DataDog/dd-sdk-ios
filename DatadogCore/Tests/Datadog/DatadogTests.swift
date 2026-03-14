@@ -215,10 +215,11 @@ class DatadogTests: XCTestCase {
         let core = CoreRegistry.default as? DatadogCore
 
         var context = await core?.contextProvider.read()
-        XCTAssertNil(context?.userInfo.id)
-        XCTAssertNil(context?.userInfo.email)
-        XCTAssertNil(context?.userInfo.name)
-        XCTAssertEqual(context?.userInfo.extraInfo as? [String: Int], [:])
+        var userInfo = context?.userInfo
+        XCTAssertNil(userInfo?.id)
+        XCTAssertNil(userInfo?.email)
+        XCTAssertNil(userInfo?.name)
+        XCTAssertEqual(userInfo?.extraInfo as? [String: Int], [:])
 
         Datadog.setUserInfo(
             id: "foo",
@@ -229,20 +230,22 @@ class DatadogTests: XCTestCase {
         core?.set(anonymousId: "anonymous-id")
 
         context = await core?.contextProvider.read()
-        XCTAssertEqual(context?.userInfo.anonymousId, "anonymous-id")
-        XCTAssertEqual(context?.userInfo.id, "foo")
-        XCTAssertEqual(context?.userInfo.name, "bar")
-        XCTAssertEqual(context?.userInfo.email, "foo@bar.com")
-        XCTAssertEqual(context?.userInfo.extraInfo as? [String: Int], ["abc": 123])
+        userInfo = context?.userInfo
+        XCTAssertEqual(userInfo?.anonymousId, "anonymous-id")
+        XCTAssertEqual(userInfo?.id, "foo")
+        XCTAssertEqual(userInfo?.name, "bar")
+        XCTAssertEqual(userInfo?.email, "foo@bar.com")
+        XCTAssertEqual(userInfo?.extraInfo as? [String: Int], ["abc": 123])
 
         Datadog.clearUserInfo()
 
         context = await core?.contextProvider.read()
-        XCTAssertEqual(context?.userInfo.anonymousId, "anonymous-id")
-        XCTAssertNil(context?.userInfo.id)
-        XCTAssertNil(context?.userInfo.email)
-        XCTAssertNil(context?.userInfo.name)
-        XCTAssertEqual(context?.userInfo.extraInfo as? [String: Int], [:])
+        userInfo = context?.userInfo
+        XCTAssertEqual(userInfo?.anonymousId, "anonymous-id")
+        XCTAssertNil(userInfo?.id)
+        XCTAssertNil(userInfo?.email)
+        XCTAssertNil(userInfo?.name)
+        XCTAssertEqual(userInfo?.extraInfo as? [String: Int], [:])
 
         Datadog.flushAndDeinitialize()
     }
@@ -265,11 +268,12 @@ class DatadogTests: XCTestCase {
         Datadog.addUserExtraInfo(["second": 667])
 
         let context = await core?.contextProvider.read()
-        XCTAssertEqual(context?.userInfo.id, "foo")
-        XCTAssertEqual(context?.userInfo.name, "bar")
-        XCTAssertEqual(context?.userInfo.email, "foo@bar.com")
+        let userInfo = context?.userInfo
+        XCTAssertEqual(userInfo?.id, "foo")
+        XCTAssertEqual(userInfo?.name, "bar")
+        XCTAssertEqual(userInfo?.email, "foo@bar.com")
         XCTAssertEqual(
-            context?.userInfo.extraInfo as? [String: Int],
+            userInfo?.extraInfo as? [String: Int],
             ["abc": 123, "second": 667]
         )
 
@@ -294,10 +298,11 @@ class DatadogTests: XCTestCase {
         Datadog.addUserExtraInfo(["abc": nil, "second": 667])
 
         let context = await core?.contextProvider.read()
-        XCTAssertEqual(context?.userInfo.id, "foo")
-        XCTAssertEqual(context?.userInfo.name, "bar")
-        XCTAssertEqual(context?.userInfo.email, "foo@bar.com")
-        XCTAssertEqual(context?.userInfo.extraInfo as? [String: Int], ["second": 667])
+        let userInfo = context?.userInfo
+        XCTAssertEqual(userInfo?.id, "foo")
+        XCTAssertEqual(userInfo?.name, "bar")
+        XCTAssertEqual(userInfo?.email, "foo@bar.com")
+        XCTAssertEqual(userInfo?.extraInfo as? [String: Int], ["second": 667])
 
         Datadog.flushAndDeinitialize()
     }
@@ -320,10 +325,11 @@ class DatadogTests: XCTestCase {
         Datadog.addUserExtraInfo(["abc": 444])
 
         let context = await core?.contextProvider.read()
-        XCTAssertEqual(context?.userInfo.id, "foo")
-        XCTAssertEqual(context?.userInfo.name, "bar")
-        XCTAssertEqual(context?.userInfo.email, "foo@bar.com")
-        XCTAssertEqual(context?.userInfo.extraInfo as? [String: Int], ["abc": 444])
+        let userInfo = context?.userInfo
+        XCTAssertEqual(userInfo?.id, "foo")
+        XCTAssertEqual(userInfo?.name, "bar")
+        XCTAssertEqual(userInfo?.email, "foo@bar.com")
+        XCTAssertEqual(userInfo?.extraInfo as? [String: Int], ["abc": 444])
 
         Datadog.flushAndDeinitialize()
     }
@@ -432,6 +438,7 @@ class DatadogTests: XCTestCase {
         XCTAssertNil(Datadog.verbosityLevel)
     }
 
+    @MainActor
     func testGivenDataStoredInAllFeatureDirectories_whenClearAllDataIsUsed_allFilesAreRemoved() async throws {
         Datadog.initialize(
             with: defaultConfig,

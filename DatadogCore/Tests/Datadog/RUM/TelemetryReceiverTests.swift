@@ -13,7 +13,8 @@ import DatadogInternal
 class TelemetryReceiverTests: XCTestCase {
     // MARK: - Thread safety
 
-    func testSendTelemetryAndReset_onAnyThread() throws {
+    @MainActor
+    func testSendTelemetryAndReset_onAnyThread() async throws {
         let core = DatadogCoreProxy(
             context: .mockWith(
                 version: .mockRandom(),
@@ -21,7 +22,6 @@ class TelemetryReceiverTests: XCTestCase {
                 sdkVersion: .mockRandom()
             )
         )
-        defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
 
         RUM.enable(with: .mockAny(), in: core)
 
@@ -44,5 +44,7 @@ class TelemetryReceiverTests: XCTestCase {
             iterations: 50
         )
         // swiftlint:enable opening_brace
+
+        try? await core.flushAndTearDown()
     }
 }

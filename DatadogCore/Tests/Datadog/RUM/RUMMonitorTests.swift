@@ -13,6 +13,7 @@ import DatadogInternal
 @testable import DatadogCrashReporting
 @testable import DatadogCore
 
+@MainActor
 class RUMMonitorTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var config: RUM.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -23,17 +24,17 @@ class RUMMonitorTests: XCTestCase {
         config = RUM.Configuration(applicationID: .mockAny(), trackAnonymousUser: false)
     }
 
-        override func tearDownWithError() throws {
-        try core.flushAndTearDown()
+    override func tearDown() async throws {
+        try await core.flushAndTearDown()
         core = nil
         config = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     // MARK: - Current Session Id
     func testWhenSessionIsSampledIn_itReturnsCurrentSessionId() throws {
         // Given
-        var capturedSession: String?
+        nonisolated(unsafe) var capturedSession: String?
         config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
         config.sessionSampleRate = .maxSampleRate
         config.onSessionStart = { session, sampled in

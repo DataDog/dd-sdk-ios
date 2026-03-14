@@ -48,7 +48,8 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         let expectedBatchAge = storage.minFileAgeForRead + 1
         _ = try await orchestrator.getWritableFile(writeSize: 1)
         dateProvider.advance(bySeconds: expectedBatchAge)
-        let file = try XCTUnwrap(try await orchestrator.getWritableFile(writeSize: 1) as? ReadableFile)
+        let writableFile = try await orchestrator.getWritableFile(writeSize: 1)
+        let file = try XCTUnwrap(writableFile as? ReadableFile)
         dateProvider.advance(bySeconds: expectedBatchAge)
         await orchestrator.delete(readableFile: file, deletionReason: .intakeCode(responseCode: 202))
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))

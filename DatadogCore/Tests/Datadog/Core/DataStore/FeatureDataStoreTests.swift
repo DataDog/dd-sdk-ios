@@ -28,7 +28,7 @@ class FeatureDataStoreTests: XCTestCase {
     // MARK: - Basic Usage
 
     func testSetAndGetValue() {
-        var result: DataStoreValueResult?
+        nonisolated(unsafe) var result: DataStoreValueResult?
 
         // When
         store.setValue("value".utf8Data, forKey: "key")
@@ -41,7 +41,7 @@ class FeatureDataStoreTests: XCTestCase {
     }
 
     func testGetNoValue() {
-        var result: DataStoreValueResult?
+        nonisolated(unsafe) var result: DataStoreValueResult?
 
         // When
         store.value(forKey: "missing-key") { result = $0 }
@@ -51,7 +51,7 @@ class FeatureDataStoreTests: XCTestCase {
     }
 
     func testUpdateValue() {
-        var result: DataStoreValueResult?
+        nonisolated(unsafe) var result: DataStoreValueResult?
 
         // When
         store.setValue("value1".utf8Data, forKey: "key")
@@ -65,7 +65,7 @@ class FeatureDataStoreTests: XCTestCase {
     }
 
     func testRemoveValue() {
-        var result: DataStoreValueResult?
+        nonisolated(unsafe) var result: DataStoreValueResult?
 
         // When
         store.setValue("value".utf8Data, forKey: "key")
@@ -81,7 +81,7 @@ class FeatureDataStoreTests: XCTestCase {
     // MARK: - Version Validation
 
     func testSetValueWithCustomVersion() {
-        var result: DataStoreValueResult?
+        nonisolated(unsafe) var result: DataStoreValueResult?
 
         // When
         store.setValue("value".utf8Data, forKey: "key", version: 42)
@@ -97,7 +97,7 @@ class FeatureDataStoreTests: XCTestCase {
     }
 
     func testUpdateValueWithDifferentVersion() {
-        var result: DataStoreValueResult?
+        nonisolated(unsafe) var result: DataStoreValueResult?
 
         // When
         store.setValue("value v1".utf8Data, forKey: "key", version: 1)
@@ -161,7 +161,7 @@ class FeatureDataStoreTests: XCTestCase {
             directory: temporaryCoreDirectory,
             telemetry: TelemetryMock()
         )
-        var results: [DataStoreValueResult] = []
+        nonisolated(unsafe) var results: [DataStoreValueResult] = []
 
         // When
         storeA.setValue("value A".utf8Data, forKey: "key")
@@ -182,7 +182,7 @@ class FeatureDataStoreTests: XCTestCase {
         store.flush()
 
         // When
-        var result: DataStoreValueResult?
+        nonisolated(unsafe) var result: DataStoreValueResult?
         let nextStoreInstance = FeatureDataStore(
             feature: "feature",
             directory: temporaryCoreDirectory,
@@ -219,7 +219,7 @@ class FeatureDataStoreTests: XCTestCase {
     }
 
     func testWhenGettingMalformedValue_itSendsTelemetry() throws {
-        var result: DataStoreValueResult?
+        nonisolated(unsafe) var result: DataStoreValueResult?
         let telemetry = TelemetryMock()
 
         // Given

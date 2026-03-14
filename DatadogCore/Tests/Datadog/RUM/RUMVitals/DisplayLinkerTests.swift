@@ -18,7 +18,7 @@ final class DisplayLinkerTests: XCTestCase {
         let targetSamplesCount = 30
 
         /// Runs given work on the main thread until `condition` is met, then calls `completion`.
-        func run(mainThreadWork: @escaping () -> Void, until condition: @escaping () -> Bool, completion: @escaping () -> Void) {
+        func run(mainThreadWork: @escaping @Sendable () -> Void, until condition: @escaping @Sendable () -> Bool, completion: @escaping @Sendable () -> Void) {
             if !condition() {
                 mainThreadWork()
                 DispatchQueue.main.async { // schedule to next runloop
@@ -30,7 +30,7 @@ final class DisplayLinkerTests: XCTestCase {
         }
 
         /// Records `targetSamplesCount` samples into `measure` by running given work on the main thread.
-        func record(_ measure: VitalPublisher, mainThreadWork: @escaping () -> Void) {
+        func record(_ measure: VitalPublisher, mainThreadWork: @escaping @Sendable () -> Void) {
             let completion = expectation(description: "Complete measurement")
             reader.register(measure)
 
@@ -56,11 +56,11 @@ final class DisplayLinkerTests: XCTestCase {
         }
 
         // Given
-        let lowOverhead = { /* no-op */ } // no overhead in succeeding runloop runs
+        let lowOverhead: @Sendable () -> Void = { /* no-op */ } // no overhead in succeeding runloop runs
         let lowOverheadMeasure = VitalPublisher(initialValue: VitalInfo())
 
-        var highOverheadRunCount = 0
-        let highOverhead = { highOverheadRunCount += 1; Thread.sleep(forTimeInterval: 0.02) } // 0.02 overhead in succeeding runloop runs
+        nonisolated(unsafe) var highOverheadRunCount = 0
+        let highOverhead: @Sendable () -> Void = { highOverheadRunCount += 1; Thread.sleep(forTimeInterval: 0.02) } // 0.02 overhead in succeeding runloop runs
         let highOverheadMeasure = VitalPublisher(initialValue: VitalInfo())
 
         // When

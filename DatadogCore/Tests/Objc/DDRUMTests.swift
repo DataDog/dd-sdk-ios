@@ -29,6 +29,7 @@ class DDRUMTests: XCTestCase {
         XCTAssertTrue(objc_RUMMonitor.shared().swiftRUMMonitor is NOPMonitor)
     }
 
+    @MainActor
     func testWhenEnabled() {
         objc_RUM.enable(with: objc_RUMConfiguration(applicationID: "app-id"))
         XCTAssertTrue(objc_RUMMonitor.shared().swiftRUMMonitor is Monitor)

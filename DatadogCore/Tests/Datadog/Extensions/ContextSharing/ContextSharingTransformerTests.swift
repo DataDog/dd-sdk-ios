@@ -10,6 +10,7 @@ import TestUtilities
 @_spi(Internal)
 @testable import DatadogCore
 
+@MainActor
 class ContextSharingTransformerTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -51,7 +52,7 @@ class ContextSharingTransformerTests: XCTestCase {
         // Given
         let transformer = ContextSharingTransformer()
         let expectation = expectation(description: "receiver is called")
-        var receivedContext: SharedContext?
+        nonisolated(unsafe) var receivedContext: SharedContext?
 
         // When
         transformer.publish { context in
@@ -70,7 +71,7 @@ class ContextSharingTransformerTests: XCTestCase {
         let expectation = expectation(description: "receiver is called with new context")
         expectation.expectedFulfillmentCount = 2 // Initial nil + update
 
-        var receivedContexts: [SharedContext?] = []
+        nonisolated(unsafe) var receivedContexts: [SharedContext?] = []
 
         transformer.publish { context in
             receivedContexts.append(context)
@@ -98,7 +99,7 @@ class ContextSharingTransformerTests: XCTestCase {
         let expectation = expectation(description: "receiver is not called after cancel")
         expectation.isInverted = true
 
-        var callCount = 0
+        nonisolated(unsafe) var callCount = 0
 
         transformer.publish { _ in
             callCount += 1
