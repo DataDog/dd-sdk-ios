@@ -111,6 +111,12 @@ internal class Monitor: RUMCommandSubscriber, @unchecked Sendable {
     private let rumUUIDGenerator: RUMUUIDGenerator
     private let telemetry: Telemetry
 
+    /// Serializes scope tree processing. Each `process(command:)` creates a new
+    /// `Task` that `await`s `eventWriteContext()`, so multiple tasks can resume
+    /// concurrently. The scope tree is not thread-safe, so this lock ensures
+    /// only one command is processed at a time.
+    private let scopeProcessingLock = NSLock()
+
     init(
         dependencies: RUMScopeDependencies,
         dateProvider: DateProvider
@@ -132,12 +138,7 @@ internal class Monitor: RUMCommandSubscriber, @unchecked Sendable {
             guard let (context, writer) = await self.featureScope.eventWriteContext() else { return }
 
             let transformedCommand = self.transform(command: command)
-
-            _ = self.scopes.process(command: transformedCommand, context: context, writer: writer)
-
-            if let debugging {
-                debugging.debug(applicationScope: self.scopes)
-            }
+            self.processScope(command: transformedCommand, context: context, writer: writer)
         }
 
         // update the core context with rum context
@@ -165,6 +166,20 @@ internal class Monitor: RUMCommandSubscriber, @unchecked Sendable {
                 )
             }
         )
+    }
+
+    /// Processes a command through the scope tree under the serialization lock.
+    /// Must be called from a synchronous context (not directly in an async function body)
+    /// because `NSLock.lock()` is unavailable from async contexts in Swift 6.
+    private func processScope(command: RUMCommand, context: DatadogContext, writer: Writer) {
+        scopeProcessingLock.lock()
+        defer { scopeProcessingLock.unlock() }
+
+        _ = scopes.process(command: command, context: context, writer: writer)
+
+        if let debugging {
+            debugging.debug(applicationScope: scopes)
+        }
     }
 
     // TODO: RUMM-896

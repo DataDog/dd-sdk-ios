@@ -45,8 +45,13 @@ internal protocol ViewHitchesModel {
     var telemetryModel: HitchesTelemetryModel { get }
 }
 
-/// Class that reads View Hitches or Slow frames.
-internal final class ViewHitchesReader: ViewHitchesModel, @unchecked Sendable {
+/// Actor that reads View Hitches or Slow frames.
+///
+/// All state is protected by `NSLock` rather than actor isolation because both
+/// the write path (`didUpdateFrame`, called synchronously from CADisplayLink)
+/// and the read paths (`dataModel`, `telemetryModel`, called synchronously from
+/// `RUMViewScope.process()`) require `nonisolated` access.
+internal actor ViewHitchesReader: ViewHitchesModel {
     internal enum Constants {
         static let frozenFrameThreshold: TimeInterval = 0.7 // seconds
         /// Taking into account each Hitch takes 64B in the payload, we can have 64KB max per view event
@@ -59,39 +64,43 @@ internal final class ViewHitchesReader: ViewHitchesModel, @unchecked Sendable {
         static let timestampTolerance = 0.001
     }
 
-    /// Queue used to synchronize the access to hitch information.
-    private let queue = DispatchQueue(
-        label: "com.datadoghq.view-hitches-reader",
-        qos: .utility
-    )
+    nonisolated(unsafe) private let _lock = NSLock()
 
-    private var startTimestamp: Double = 0
-    private var nextFrameTimestamp: Double?
+    nonisolated(unsafe) private var _startTimestamp: Double = 0
+    nonisolated(unsafe) private var _nextFrameTimestamp: Double?
 
-    let config: HitchesConfiguration
-    private var _isActive: Bool = false
-    var isActive: Bool { queue.sync { self._isActive } }
+    nonisolated let config: HitchesConfiguration
 
-    private var hitches: [Hitch] = []
-    /// Amount of time when the frames are rendered too late.
-    private var hitchesDuration: Double = 0.0
-    var dataModel: HitchesDataModel { queue.sync { (hitches: self.hitches, hitchesDuration: self.hitchesDuration) } }
+    nonisolated(unsafe) private var _isActive: Bool = false
+    nonisolated var isActive: Bool {
+        _lock.lock()
+        defer { _lock.unlock() }
+        return _isActive
+    }
 
-    private var removedHitchesCount = 0
-    private var ignoredHitchesCount = 0
-    private var startFrameRate: CFTimeInterval?
-    private var didApplyDynamicFraming = false
-    var telemetryModel: HitchesTelemetryModel {
-        queue.sync {
-            let ignoredDurationNs = hitchesDuration.dd.toInt64Nanoseconds - hitches.reduce(into: 0) { $0 += $1.duration }
+    nonisolated(unsafe) private var _hitches: [Hitch] = []
+    nonisolated(unsafe) private var _hitchesDuration: Double = 0.0
+    nonisolated var dataModel: HitchesDataModel {
+        _lock.lock()
+        defer { _lock.unlock() }
+        return (hitches: _hitches, hitchesDuration: _hitchesDuration)
+    }
 
-            return .init(
-                hitchesCount: self.hitches.count + self.removedHitchesCount,
-                ignoredHitchesCount: self.ignoredHitchesCount,
-                didApplyDynamicFraming: self.didApplyDynamicFraming,
-                ignoredDurationNs: ignoredDurationNs
-            )
-        }
+    nonisolated(unsafe) private var _removedHitchesCount = 0
+    nonisolated(unsafe) private var _ignoredHitchesCount = 0
+    nonisolated(unsafe) private var _startFrameRate: CFTimeInterval?
+    nonisolated(unsafe) private var _didApplyDynamicFraming = false
+    nonisolated var telemetryModel: HitchesTelemetryModel {
+        _lock.lock()
+        defer { _lock.unlock() }
+        let ignoredDurationNs = _hitchesDuration.dd.toInt64Nanoseconds - _hitches.reduce(into: 0) { $0 += $1.duration }
+
+        return .init(
+            hitchesCount: _hitches.count + _removedHitchesCount,
+            ignoredHitchesCount: _ignoredHitchesCount,
+            didApplyDynamicFraming: _didApplyDynamicFraming,
+            ignoredDurationNs: ignoredDurationNs
+        )
     }
 
     init(hangThreshold: TimeInterval? = nil, acceptableLatency: TimeInterval = 0) {
@@ -104,51 +113,57 @@ internal final class ViewHitchesReader: ViewHitchesModel, @unchecked Sendable {
 }
 
 extension ViewHitchesReader: RenderLoopReader {
-    func stop() { queue.async { self._isActive = false } }
+    nonisolated func stop() {
+        _lock.lock()
+        defer { _lock.unlock() }
+        _isActive = false
+    }
 
-    func didUpdateFrame(link: FrameInfoProvider) {
-        queue.async {
-            self._isActive = true
-            // Baseline to capture View Hitches
-            guard let nextFrameTimestamp = self.nextFrameTimestamp else {
-                self.startTimestamp = link.currentFrameTimestamp
-                self.nextFrameTimestamp = link.nextFrameTimestamp
-                self.startFrameRate = link.nextFrameTimestamp - link.currentFrameTimestamp
-                return
-            }
+    nonisolated func didUpdateFrame(link: FrameInfoProvider) {
+        _lock.lock()
+        defer { _lock.unlock() }
 
-            // Updated Frame rate since it can change due to ProMotion,
-            // low power mode, set of preferredFramesPerSecond and whatnot
-            // (60 FPS = 1/60 s)
-            let idealFrameInterval = link.nextFrameTimestamp - link.currentFrameTimestamp
-            if let startFrameRate = self.startFrameRate,
-               abs(idealFrameInterval - startFrameRate) > Constants.timestampTolerance {
-                self.didApplyDynamicFraming = true
-            }
+        _isActive = true
 
-            let hitchFrameDuration = link.currentFrameTimestamp - nextFrameTimestamp
-            // Every time the frame appear later than expected, the delay is collected
-            // Except when the issue is tracked by App hangs
-            if hitchFrameDuration < self.config.hangThreshold {
-                self.hitchesDuration += max(0, hitchFrameDuration)
-            }
-
-            if (hitchFrameDuration + Constants.timestampTolerance) >= max(self.config.acceptableLatency, idealFrameInterval)
-                && hitchFrameDuration < self.config.hangThreshold {
-                // The buffer has reach the maximum of hitches. The oldest hitches should be removed.
-                if self.hitches.count > Constants.maxCollectedHitches {
-                    let arraySlice = self.hitches.dropFirst(Constants.maxHitchesThreshold)
-                    self.hitches = Array(arraySlice)
-                    self.removedHitchesCount += Constants.maxHitchesThreshold
-                }
-
-                let hitchStart = nextFrameTimestamp - self.startTimestamp
-                self.hitches.append((hitchStart.dd.toInt64Nanoseconds, hitchFrameDuration.dd.toInt64Nanoseconds))
-            } else if hitchFrameDuration > Constants.timestampTolerance {
-                self.ignoredHitchesCount += 1
-            }
-
-            self.nextFrameTimestamp = link.nextFrameTimestamp
+        // Baseline to capture View Hitches
+        guard let nextFrameTimestamp = _nextFrameTimestamp else {
+            _startTimestamp = link.currentFrameTimestamp
+            _nextFrameTimestamp = link.nextFrameTimestamp
+            _startFrameRate = link.nextFrameTimestamp - link.currentFrameTimestamp
+            return
         }
+
+        // Updated Frame rate since it can change due to ProMotion,
+        // low power mode, set of preferredFramesPerSecond and whatnot
+        // (60 FPS = 1/60 s)
+        let idealFrameInterval = link.nextFrameTimestamp - link.currentFrameTimestamp
+        if let startFrameRate = _startFrameRate,
+           abs(idealFrameInterval - startFrameRate) > Constants.timestampTolerance {
+            _didApplyDynamicFraming = true
+        }
+
+        let hitchFrameDuration = link.currentFrameTimestamp - nextFrameTimestamp
+        // Every time the frame appear later than expected, the delay is collected
+        // Except when the issue is tracked by App hangs
+        if hitchFrameDuration < config.hangThreshold {
+            _hitchesDuration += max(0, hitchFrameDuration)
+        }
+
+        if (hitchFrameDuration + Constants.timestampTolerance) >= max(config.acceptableLatency, idealFrameInterval)
+            && hitchFrameDuration < config.hangThreshold {
+            // The buffer has reach the maximum of hitches. The oldest hitches should be removed.
+            if _hitches.count > Constants.maxCollectedHitches {
+                let arraySlice = _hitches.dropFirst(Constants.maxHitchesThreshold)
+                _hitches = Array(arraySlice)
+                _removedHitchesCount += Constants.maxHitchesThreshold
+            }
+
+            let hitchStart = nextFrameTimestamp - _startTimestamp
+            _hitches.append((hitchStart.dd.toInt64Nanoseconds, hitchFrameDuration.dd.toInt64Nanoseconds))
+        } else if hitchFrameDuration > Constants.timestampTolerance {
+            _ignoredHitchesCount += 1
+        }
+
+        _nextFrameTimestamp = link.nextFrameTimestamp
     }
 }
