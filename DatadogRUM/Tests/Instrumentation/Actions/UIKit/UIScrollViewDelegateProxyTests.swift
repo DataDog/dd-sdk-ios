@@ -10,6 +10,7 @@ import XCTest
 import TestUtilities
 @testable import DatadogRUM
 
+@MainActor
 class UIScrollViewDelegateProxyTests: XCTestCase {
     private let handler = MockScrollViewHandler()
 
@@ -83,6 +84,7 @@ class UIScrollViewDelegateProxyTests: XCTestCase {
 
 // MARK: - Test Mocks
 
+@MainActor
 private class MockScrollViewHandler: UIScrollViewHandler {
     func notify_scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
     }

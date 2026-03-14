@@ -12,6 +12,7 @@ import DatadogInternal
 /// Handles scroll and swipe gesture detection on UIScrollView-based components.
 /// Tracks scroll lifecycle events, classifies gestures as scroll or swipe based on velocity,
 /// and generates RUM commands for the action pipeline.
+@MainActor
 internal final class RUMScrollHandler: UIScrollViewHandler {
     /// Velocity threshold (in points/second) to classify a gesture as a swipe vs. scroll.
     /// Gestures with velocity magnitude >= this value are classified as swipe.
@@ -33,12 +34,13 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
     private let dateProvider: DateProvider
     private let predicate: UITouchRUMActionsPredicate
 
-    weak var subscriber: RUMCommandSubscriber?
+    /// `nonisolated(unsafe)`: set once via `publish(to:)` during setup, only read after.
+    nonisolated(unsafe) weak var subscriber: RUMCommandSubscriber?
 
     /// Active scrolls keyed by scroll view identity.
     private var activeScrolls: [ObjectIdentifier: ScrollState] = [:]
 
-    init(
+    nonisolated init(
         dateProvider: DateProvider,
         predicate: UITouchRUMActionsPredicate
     ) {
@@ -48,16 +50,17 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
 
     // MARK: - RUMCommandPublisher
 
-    func publish(to subscriber: RUMCommandSubscriber) {
+    nonisolated func publish(to subscriber: RUMCommandSubscriber) {
         self.subscriber = subscriber
     }
 
     // MARK: - UIScrollViewHandler
 
-    /// Called when the user begins dragging.
+    /// Called when the user begins dragging. Always on the main thread (UIScrollView delegate callback).
     func notify_scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        // Only track user-initiated scrolls
-        guard scrollView.panGestureRecognizer.state == .began || scrollView.panGestureRecognizer.state == .changed else {
+        let gestureState = scrollView.panGestureRecognizer.state
+
+        guard gestureState == .began || gestureState == .changed else {
             return
         }
 
@@ -65,13 +68,15 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
             return // Filtered by predicate
         }
 
+        let contentOffset = scrollView.contentOffset
+
         // If there's an active scroll on this view (e.g. user started dragging during deceleration),
         // finalize the previous one before starting a new one.
         finalizeScrollIfNeeded(scrollView)
 
         let state = ScrollState(
             startTime: dateProvider.now,
-            startOffset: scrollView.contentOffset,
+            startOffset: contentOffset,
             actionName: action.name
         )
 
@@ -90,11 +95,10 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
     }
 
     /// Called when dragging ends. Captures lift velocity while the gesture recognizer still has it.
-    /// If no deceleration follows, finalizes the scroll immediately.
+    /// If no deceleration follows, finalizes the scroll immediately. Always on the main thread.
     func notify_scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         let id = ObjectIdentifier(scrollView)
 
-        // Capture velocity now — after deceleration it will be zero
         let velocity = scrollView.panGestureRecognizer.velocity(in: scrollView)
         activeScrolls[id]?.liftVelocity = velocity
 
@@ -129,7 +133,9 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
 
         let velocity = state.liftVelocity ?? .zero
         let gestureType = classifyGesture(velocity: velocity)
-        let direction = calculateDirection(start: state.startOffset, end: scrollView.contentOffset)
+
+        let endOffset = scrollView.contentOffset
+        let direction = calculateDirection(start: state.startOffset, end: endOffset)
 
         var attributes: [AttributeKey: AttributeValue] = [:]
         attributes[Self.gestureDirectionAttribute] = direction

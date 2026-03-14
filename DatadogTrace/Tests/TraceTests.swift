@@ -9,6 +9,7 @@ import TestUtilities
 @testable import DatadogInternal
 @testable import DatadogTrace
 
+@MainActor
 class TraceTests: XCTestCase {
     private var core: FeatureRegistrationCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
     private var config: Trace.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional

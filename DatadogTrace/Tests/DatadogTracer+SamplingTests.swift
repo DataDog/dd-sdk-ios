@@ -40,13 +40,14 @@ class DatadogTracer_SamplingTests: XCTestCase {
         XCTAssertEqual(events.filter({ !$0.samplingPriority.isKept }).count, 0, "Not kept spans should be dropped")
     }
 
-    func testRecordingCustomSampleRateInRootSpanEvent() throws {
+    func testRecordingCustomSampleRateInRootSpanEvent() async throws {
         // When
         let tracer = createTracer(sampleRate: 0)
         (0..<10).forEach { _ in
             let span = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 100)
             span.finish()
         }
+        await featureScope.waitForWrittenEvents(count: 10)
 
         // Then
         let events = try XCTUnwrap(featureScope.spanEventsWritten())
@@ -54,7 +55,7 @@ class DatadogTracer_SamplingTests: XCTestCase {
         XCTAssertEqual(events.filter({ $0.samplingPriority.isKept }).count, 10)
     }
 
-    func testRootSampleInOverridesTracerAndPropagatesToChildSpans() throws {
+    func testRootSampleInOverridesTracerAndPropagatesToChildSpans() async throws {
         // When
         let tracer = createTracer(sampleRate: 0)
         let root = tracer.startRootSpan(operationName: .mockAny(), customSampleRate: 100)
@@ -63,6 +64,7 @@ class DatadogTracer_SamplingTests: XCTestCase {
         grandChild.finish()
         child.finish()
         root.finish()
+        await featureScope.waitForWrittenEvents(count: 3)
 
         // Then
         let events = try XCTUnwrap(featureScope.spanEventsWritten())
@@ -86,11 +88,12 @@ class DatadogTracer_SamplingTests: XCTestCase {
         XCTAssertEqual(events.count, 0)
     }
 
-    func testRecordingSampledSpan() throws {
+    func testRecordingSampledSpan() async throws {
         // When
         let tracer = createTracer(sampleRate: 100)
         let span = tracer.startSpan(operationName: .mockAny())
         span.finish()
+        await featureScope.waitForWrittenEvents(count: 1)
 
         // Then
         let event = try XCTUnwrap(featureScope.spanEventsWritten().first)

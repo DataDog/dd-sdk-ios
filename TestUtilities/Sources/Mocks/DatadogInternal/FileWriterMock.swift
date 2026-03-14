@@ -10,19 +10,36 @@ import DatadogInternal
 public class FileWriterMock: Writer {
     public init() { }
 
+    @ReadWriteLock
+    private var _events: [Encodable] = []
+    @ReadWriteLock
+    private var _metadata: [Encodable] = []
+
     /// Recorded events.
-    public private(set) var events: [Encodable] = []
+    public var events: [Encodable] { _events }
     /// Recorded metadata.
-    public private(set) var metadata: [Encodable] = []
+    public var metadata: [Encodable] { _metadata }
+
+    /// Callback called after an event is written.
+    public var onWrite: (() -> Void)?
+
+    /// Waits asynchronously until at least `count` events have been written.
+    public func waitForEvents(count: Int, timeout: TimeInterval = 1.0) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while events.count < count && Date() < deadline {
+            try? await Task.sleep(nanoseconds: 10_000_000) // 10ms
+        }
+    }
 
     /// Adds an `Encodable` event to the events stack.
     ///
     /// - Parameter value: The event value to record.
     public func write<T: Encodable, M: Encodable>(value: T, metadata: M?) async {
-        events.append(value)
+        __events.mutate { $0.append(value) }
         if let metadata = metadata {
-            self.metadata.append(metadata)
+            __metadata.mutate { $0.append(metadata) }
         }
+        onWrite?()
     }
 
     /// Returns all events of the given type.

@@ -456,7 +456,7 @@ public struct ErrorMock: Error, CustomStringConvertible {
     }
 }
 
-public struct FailingEncodableMock: Encodable {
+public struct FailingEncodableMock: Encodable, Sendable {
     public let errorMessage: String
 
     public init(errorMessage: String) {

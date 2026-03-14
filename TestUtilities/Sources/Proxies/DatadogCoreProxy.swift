@@ -59,11 +59,11 @@ public final class DatadogCoreProxy: DatadogCoreProtocol, @unchecked Sendable {
         self._context = .mockAny()
         self.core = core
 
-        // override the message-bus's core instance
-        core.bus.connect(core: self)
         DatadogCoreProxy.referenceCount += 1
 
         Task {
+            // override the message-bus's core instance
+            await core.bus.connect(core: self)
             self._context = await core.contextProvider.read()
         }
     }
@@ -241,7 +241,7 @@ extension DatadogCoreProxy {
     ///   - timeout: The timeout to wait for events
     /// - Returns: A list of events.
     public func waitAndReturnEvents<T>(ofFeature name: String, ofType type: T.Type, timeout: DispatchTime = .distantFuture) -> [T] where T: Encodable {
-        flush()
+        flushSync()
         guard let interceptor = self.featureScopeInterceptors[name] else {
             return [] // feature scope was not requested, so there's no interception
         }
@@ -256,7 +256,7 @@ extension DatadogCoreProxy {
     ///   - timeout: The timeout to wait for events
     /// - Returns: A list of serialized events metadata.
     public func waitAndReturnEventsMetadata<T>(ofFeature name: String, ofType type: T.Type, timeout: DispatchTime = .distantFuture) -> [T] where T: Encodable {
-        flush()
+        flushSync()
         guard let interceptor = self.featureScopeInterceptors[name] else {
             return [] // feature scope was not requested, so there's no interception
         }
@@ -270,10 +270,20 @@ extension DatadogCoreProxy {
     ///   - timeout: The timeout to wait for events
     /// - Returns: A list of serialized events.
     public func waitAndReturnEventsData(ofFeature name: String, timeout: DispatchTime = .distantFuture) -> [Data] {
-        flush()
+        flushSync()
         guard let interceptor = self.featureScopeInterceptors[name] else {
             return [] // feature scope was not requested, so there's no interception
         }
         return interceptor.waitAndReturnEvents(timeout: timeout).map { $0.data }
+    }
+
+    /// Synchronously flushes the core by blocking until the async flush completes.
+    private func flushSync() {
+        let semaphore = DispatchSemaphore(value: 0)
+        Task {
+            await flush()
+            semaphore.signal()
+        }
+        semaphore.wait()
     }
 }

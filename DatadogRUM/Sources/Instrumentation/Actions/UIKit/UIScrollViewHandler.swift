@@ -8,6 +8,7 @@
 
 import UIKit
 
+@MainActor
 internal protocol UIScrollViewHandler: RUMCommandPublisher {
     /// Gets called on `scrollViewWillBeginDragging(_:)`.
     func notify_scrollViewWillBeginDragging(_ scrollView: UIScrollView)

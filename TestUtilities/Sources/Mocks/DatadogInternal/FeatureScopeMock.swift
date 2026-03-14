@@ -13,7 +13,7 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
         let bypassConsent: Bool
 
         func write<T, M>(value: T, metadata: M?) async where T: Encodable, M: Encodable {
-            scope?.events.append((value, metadata, bypassConsent))
+            scope?._events.mutate { $0.append((value, metadata, bypassConsent)) }
         }
     }
 
@@ -24,6 +24,14 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     @ReadWriteLock
     private var messages: [FeatureMessage] = []
     public let dataStore: DataStore
+
+    /// Waits asynchronously until at least `count` events have been written.
+    public func waitForWrittenEvents(count: Int, timeout: TimeInterval = 1.0) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while events.count < count && Date() < deadline {
+            try? await Task.sleep(nanoseconds: 10_000_000) // 10ms
+        }
+    }
 
     public init(
         context: DatadogContext = .mockAny(),

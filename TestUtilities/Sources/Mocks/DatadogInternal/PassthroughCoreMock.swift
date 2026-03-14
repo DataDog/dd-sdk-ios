@@ -37,7 +37,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
         didSet { send(message: .context(context)) }
     }
 
-    let writer = FileWriterMock()
+    public let writer = FileWriterMock()
 
     /// The message receiver.
     public var messageReceiver: FeatureMessageReceiver

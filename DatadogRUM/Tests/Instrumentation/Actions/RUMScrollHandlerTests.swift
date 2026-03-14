@@ -11,6 +11,7 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
 
+@MainActor
 class RUMScrollHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
@@ -189,10 +190,11 @@ class RUMScrollHandlerTests: XCTestCase {
 
 // MARK: - Test Mocks
 
+@MainActor
 private class MockScrollPredicate: UITouchRUMActionsPredicate {
     var result: RUMAction?
 
-    init(result: RUMAction? = RUMAction(name: "UIScrollView", attributes: [:])) {
+    nonisolated init(result: RUMAction? = RUMAction(name: "UIScrollView", attributes: [:])) {
         self.result = result
     }
 

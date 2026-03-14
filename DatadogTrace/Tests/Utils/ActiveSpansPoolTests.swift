@@ -175,7 +175,7 @@ class ActiveSpansPoolTests: XCTestCase, Sendable {
     func testSetActive_activeSpanProviderWorks() throws {
         let core = DatadogCoreProxy()
         Trace.enable(in: core)
-        let tracer = Tracer.shared(in: core)
+        nonisolated(unsafe) let tracer = Tracer.shared(in: core)
 
         core.scope(for: TraceFeature.self).context { context in
             guard let provider = context.additionalContext(ofType: TraceCoreContext.ActiveSpanProvider.self) else {

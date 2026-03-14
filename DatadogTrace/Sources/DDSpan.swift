@@ -138,8 +138,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
 
     /// Sends span event for given `DDSpan`.
     private func sendSpan(finishTime: Date, sampler: Sampler) {
-        Task { [weak self] in
-            guard let self else { return }
+        Task.detached { [self] in
             guard let (context, writer) = await eventWriter.spanWriteContext() else { return }
             let event = eventBuilder.createSpanEvent(
                 context: context,

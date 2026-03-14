@@ -10,14 +10,11 @@ import DatadogInternal
 
 @testable import DatadogTrace
 
-@MainActor
 class DDSpanTests: XCTestCase {
     // MARK: - Sending SpanEvent
 
-    func testWhenSpanIsFinished_itWritesSpanEventToCore() throws {
-        let writeSpansExpectation = expectation(description: "write span event")
+    func testWhenSpanIsFinished_itWritesSpanEventToCore() async throws {
         let core = PassthroughCoreMock()
-        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
 
         // Given
         let tracer: DatadogTracer = .mockWith(core: core)
@@ -25,18 +22,17 @@ class DDSpanTests: XCTestCase {
 
         // When
         span.finish()
+        await core.writer.waitForEvents(count: 1)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(events.count, 1)
     }
 
     // MARK: - Customizing SpanEvents
 
-    func testWhenSettingCustomOperationName_itOverwritesOriginalName() throws {
-        let writeSpansExpectation = expectation(description: "write 2 span events")
-        writeSpansExpectation.expectedFulfillmentCount = 2
+    func testWhenSettingCustomOperationName_itOverwritesOriginalName() async throws {
         let core = PassthroughCoreMock()
-        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
 
         // Given
         let defaultOperationName: String = .mockRandom()
@@ -51,19 +47,17 @@ class DDSpanTests: XCTestCase {
         // Then
         defaultSpan.finish()
         customizedSpan.finish()
+        await core.writer.waitForEvents(count: 2)
 
-        waitForExpectations(timeout: 0.5, handler: nil)
         let events: [SpanEventsEnvelope] = core.events()
         XCTAssertEqual(events.count, 2)
-        XCTAssertEqual(events[0].spans.first?.operationName, defaultOperationName)
-        XCTAssertEqual(events[1].spans.first?.operationName, customizedOperationName)
+        let operationNames = events.compactMap { $0.spans.first?.operationName }
+        XCTAssertTrue(operationNames.contains(defaultOperationName))
+        XCTAssertTrue(operationNames.contains(customizedOperationName))
     }
 
-    func testWhenSettingCustomTags_theyAreMergedWithDefaultTags() throws {
-        let writeSpansExpectation = expectation(description: "write 2 span events")
-        writeSpansExpectation.expectedFulfillmentCount = 2
+    func testWhenSettingCustomTags_theyAreMergedWithDefaultTags() async throws {
         let core = PassthroughCoreMock()
-        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
 
         // Given
         let defaultTags: [String: String] = .mockRandom()
@@ -80,12 +74,13 @@ class DDSpanTests: XCTestCase {
         // Then
         defaultSpan.finish()
         customizedSpan.finish()
+        await core.writer.waitForEvents(count: 2)
 
-        waitForExpectations(timeout: 0.5, handler: nil)
         let events: [SpanEventsEnvelope] = core.events()
         XCTAssertEqual(events.count, 2)
-        XCTAssertEqual(events[0].spans.first?.tags, defaultTags)
-        XCTAssertEqual(events[1].spans.first?.tags, defaultTags.merging(customTags) { _, custom in custom })
+        let allSpanTags = events.compactMap { $0.spans.first?.tags }
+        XCTAssertTrue(allSpanTags.contains(defaultTags))
+        XCTAssertTrue(allSpanTags.contains(defaultTags.merging(customTags) { _, custom in custom }))
     }
 
     func testSettingBaggageItems() {
@@ -108,10 +103,8 @@ class DDSpanTests: XCTestCase {
 
     // MARK: - Thread Safety
 
-    func testSpanCanBeSafelyAccessedFromDifferentThreads() throws {
-        let writeSpansExpectation = expectation(description: "write span event")
+    func testSpanCanBeSafelyAccessedFromDifferentThreads() async throws {
         let core = PassthroughCoreMock()
-        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
 
         // Given
         let tracer: DatadogTracer = .mockWith(core: core)
@@ -131,9 +124,9 @@ class DDSpanTests: XCTestCase {
         )
 
         span.finish()
+        await core.writer.waitForEvents(count: 1, timeout: 2.0)
 
         // Then
-        waitForExpectations(timeout: 2, handler: nil)
         let events: [SpanEventsEnvelope] = core.events()
         XCTAssertEqual(events.count, 1)
         XCTAssertEqual(events[0].spans.first?.tags.count, 200, "It should contain 200 tags (100 explicit tags + 100 baggage items as tags)")
@@ -218,7 +211,7 @@ class DDSpanTests: XCTestCase {
     /// - **Swift APIs with manual wrapping**: Swift API requires `Encodable`, but customers can explicitly wrap non-encodable
     ///   types using `AnyEncodable(value)` to bypass compile-time checks.
 
-    func testWhenMultipleSpanTagsFailToEncode_itSkipsAllMalformedTags() throws {
+    func testWhenMultipleSpanTagsFailToEncode_itSkipsAllMalformedTags() async throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -235,6 +228,7 @@ class DDSpanTests: XCTestCase {
         span.setTag(key: "callback", value: AnyEncodable(closure2))
         span.setTag(key: "custom_object", value: AnyEncodable(NSObject()))
         span.finish()
+        await core.writer.waitForEvents(count: 1)
 
         // Then
         let events: [SpanEventsEnvelope] = core.events()
@@ -259,7 +253,7 @@ class DDSpanTests: XCTestCase {
         )
     }
 
-    func testWhenOnlyMalformedSpanTagsAdded_itSendsSpanWithoutCustomTags() throws {
+    func testWhenOnlyMalformedSpanTagsAdded_itSendsSpanWithoutCustomTags() async throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -272,6 +266,7 @@ class DDSpanTests: XCTestCase {
         span.setTag(key: "invalid_tag1", value: AnyEncodable(NSObject()))
         span.setTag(key: "invalid_tag2", value: AnyEncodable(NSObject()))
         span.finish()
+        await core.writer.waitForEvents(count: 1)
 
         // Then
         let events: [SpanEventsEnvelope] = core.events()

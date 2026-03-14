@@ -10,6 +10,7 @@ import XCTest
 import TestUtilities
 @testable import DatadogRUM
 
+@MainActor
 class UIScrollViewSwizzlerTests: XCTestCase {
     private var handler: MockScrollViewHandler?
     private var swizzler: UIScrollViewSwizzler?
@@ -73,6 +74,7 @@ class UIScrollViewSwizzlerTests: XCTestCase {
 
 // MARK: - Test Mocks
 
+@MainActor
 private class MockScrollViewHandler: UIScrollViewHandler {
     func notify_scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
     }

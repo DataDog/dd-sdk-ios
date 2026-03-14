@@ -403,7 +403,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testGivenFirstPartyInterceptionWithSpanContext_whenInterceptionCompletes_itUsesInjectedSpanContext() throws {
         let expectation = expectation(description: "Send span")
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        core.writer.onWrite = { expectation.fulfill() }
         let sampleRate: Float = .mockRandom(min: 1, max: 100)
         let samplingDecision = SamplingDecision.autoKept()
 
@@ -453,7 +453,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testGivenFirstPartyInterceptionWithNoError_whenInterceptionCompletes_itEncodesRequestInfoInSpan() throws {
         let expectation = expectation(description: "Send span")
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        core.writer.onWrite = { expectation.fulfill() }
 
         // Given
         let request: ImmutableRequest = .mockWith(httpMethod: "POST")
@@ -600,7 +600,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testGivenAnyInterception_itAddsAppStateInformationToSpan() throws {
         let expectation = expectation(description: "Send span")
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        core.writer.onWrite = { expectation.fulfill() }
 
         // Given
         let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .registeredDelegate)
@@ -666,7 +666,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testGivenAutomaticModeInterception_withApproximateTiming_itCreatesSpan() throws {
         let expectation = expectation(description: "Send span")
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        core.writer.onWrite = { expectation.fulfill() }
 
         // Given
         let interception = URLSessionTaskInterception(
@@ -685,7 +685,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertFalse(span.isError)
@@ -696,7 +696,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testGivenAutomaticModeInterception_withSpanContext_itUsesInjectedSpanContext() throws {
         let expectation = expectation(description: "Send span")
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        core.writer.onWrite = { expectation.fulfill() }
         let sampleRate: Float = .mockRandom(min: 1, max: 100)
         let samplingDecision = SamplingDecision.autoKept()
 
@@ -725,7 +725,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertEqual(String(span.traceID, representation: .decimal), "300")
         XCTAssertEqual(String(span.spanID, representation: .decimal), "400")
@@ -756,7 +756,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testGivenRegisteredDelegate_whenBothTimingsAvailable_itPrefersMetricsTiming() throws {
         let expectation = expectation(description: "Send span")
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        core.writer.onWrite = { expectation.fulfill() }
 
         // Given
         let metricsStart = Date.mockDecember15th2019At10AMUTC()
@@ -785,7 +785,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         // Should use metrics timing (2.5s), not approximate timing (~2.55s)
         XCTAssertEqual(span.duration, 2.5, accuracy: 0.01, "Should use accurate metrics timing")
@@ -793,7 +793,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testGivenAutomaticModeInterception_withError_itEncodesErrorInSpan() throws {
         let expectation = expectation(description: "Send span")
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        core.writer.onWrite = { expectation.fulfill() }
 
         // Given
         let mockError = NSError(domain: "test", code: -1, userInfo: [NSLocalizedDescriptionKey: "Network error"])
@@ -812,7 +812,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertTrue(span.isError)
         XCTAssertEqual(span.tags[OTTags.httpMethod], "POST")
@@ -820,7 +820,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testGivenAutomaticModeInterception_with4xxError_itEncodesClientErrorInSpan() throws {
         let expectation = expectation(description: "Send span")
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        core.writer.onWrite = { expectation.fulfill() }
 
         // Given
         let interception = URLSessionTaskInterception(
@@ -838,7 +838,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertTrue(span.isError)
         XCTAssertEqual(span.tags[OTTags.httpStatusCode], "404")

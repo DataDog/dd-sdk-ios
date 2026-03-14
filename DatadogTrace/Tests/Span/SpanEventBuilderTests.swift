@@ -452,7 +452,7 @@ class SpanEventBuilderTests: XCTestCase {
         }
     }
 
-    private func createMockAttributes() -> [String: Encodable] {
+    private func createMockAttributes() -> [String: Encodable & Sendable] {
         [
             "string-attribute": "string value",
             "int-attribute": 42,

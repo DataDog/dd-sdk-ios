@@ -248,7 +248,7 @@ class RUMResourceScopeTests: XCTestCase {
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
-            dependencies: dependencies.replacing(syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId)),
+            dependencies: dependencies.replacing(syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId, syntheticsInfo: [:])),
             resourceKey: "/resource/1",
             startTime: currentTime,
             url: "https://foo.com/resource/1",
@@ -809,7 +809,7 @@ class RUMResourceScopeTests: XCTestCase {
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
-            dependencies: dependencies.replacing(syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId)),
+            dependencies: dependencies.replacing(syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId, syntheticsInfo: [:])),
             resourceKey: "/resource/1",
             startTime: currentTime,
             url: "https://foo.com/resource/1",
