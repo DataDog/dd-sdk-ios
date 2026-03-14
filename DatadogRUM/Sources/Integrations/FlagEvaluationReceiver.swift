@@ -13,16 +13,14 @@ internal struct FlagEvaluationReceiver: FeatureMessageReceiver {
     let monitor: Monitor
 
     /// Adds feature flag evaluation to the current RUM view.
-    func receive(message: FeatureMessage, from core: any DatadogCoreProtocol) -> Bool {
+    func receive(message: FeatureMessage) {
         guard case let .payload(flagEvaluation as RUMFlagEvaluationMessage) = message else {
-            return false
+            return
         }
 
         monitor.addFeatureFlagEvaluation(
             name: flagEvaluation.flagKey,
             value: flagEvaluation.value
         )
-
-        return true
     }
 }

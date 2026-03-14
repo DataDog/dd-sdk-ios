@@ -34,8 +34,7 @@ internal struct TracingWithLoggingIntegration {
         withSpanContext spanContext: DDSpanContext,
         message: String? = nil,
         fields: [String: AttributeValue],
-        date: Date,
-        else fallback: @escaping @Sendable () -> Void
+        date: Date
     ) {
         guard let core = core else {
             return
@@ -78,8 +77,7 @@ internal struct TracingWithLoggingIntegration {
                         Constants.spanIDKey: String(spanContext.spanID, representation: .hexadecimal)
                     ]
                 )
-            ),
-            else: fallback
+            )
         )
     }
     // swiftlint:enable function_default_parameter_at_end

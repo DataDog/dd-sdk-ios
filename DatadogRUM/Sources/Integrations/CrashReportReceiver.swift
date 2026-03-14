@@ -57,15 +57,15 @@ internal struct CrashReportReceiver: FeatureMessageReceiver, @unchecked Sendable
         self.eventsMapper = eventsMapper
     }
 
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    func receive(message: FeatureMessage) {
         guard case let .payload(crash as Crash) = message else {
-            return false
+            return
         }
 
-        return send(report: crash.report, with: crash.context)
+        send(report: crash.report, with: crash.context)
     }
 
-    private func send(report: DDCrashReport, with context: CrashContext) -> Bool {
+    private func send(report: DDCrashReport, with context: CrashContext) {
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
         // from the moment of crash), but this is the best approximation we can get.
@@ -100,7 +100,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver, @unchecked Sendable
                 )
             } else {
                 DD.logger.debug("There was a crash in previous session, but it is ignored due to another crash already present in the last view.")
-                return false
+                return
             }
         } else if let lastRUMSessionState = context.lastRUMSessionState {
             sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings)
@@ -108,10 +108,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver, @unchecked Sendable
             sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings)
         } else {
             DD.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")
-            return false
         }
-
-        return true
     }
 
     /// If the crash occurred in an existing RUM session and we know its `lastRUMViewEvent` we send the error using that session UUID and link

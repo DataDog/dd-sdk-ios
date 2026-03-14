@@ -162,9 +162,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
     }
 
     private func sendSpanLogs(message: String?, fields: [String: AttributeValue], date: Date) {
-        loggingIntegration.writeLog(withSpanContext: ddContext, message: message, fields: fields, date: date, else: {
-            DD.logger.warn("The log for span \"\(self.operationName)\" will not be send, because the Logs feature is not enabled.")
-        })
+        loggingIntegration.writeLog(withSpanContext: ddContext, message: message, fields: fields, date: date)
     }
 
     // MARK: - Private

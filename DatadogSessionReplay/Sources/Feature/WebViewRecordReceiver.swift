@@ -22,9 +22,9 @@ internal struct WebViewRecordReceiver: FeatureMessageReceiver {
     /// Session Replay feature scope.
     let scope: FeatureScope
 
-    func receive(message: DatadogInternal.FeatureMessage, from core: DatadogInternal.DatadogCoreProtocol) -> Bool {
+    func receive(message: DatadogInternal.FeatureMessage) {
         guard case let .webview(.record(event, view)) = message else {
-            return false
+            return
         }
 
         Task {
@@ -50,7 +50,5 @@ internal struct WebViewRecordReceiver: FeatureMessageReceiver {
 
             await writer.write(value: record)
         }
-
-        return true
     }
 }

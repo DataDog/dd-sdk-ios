@@ -16,7 +16,6 @@ class CrashContextCoreProviderTests: XCTestCase {
     func testItUpdatesContextFromDatadogContext() {
         // Given
         let provider = CrashContextCoreProvider()
-        let core = PassthroughCoreMock()
         let context: DatadogContext = .mockWith(
             service: "test-service",
             env: "test-env",
@@ -25,7 +24,7 @@ class CrashContextCoreProviderTests: XCTestCase {
 
         // When
         let message: FeatureMessage = .context(context)
-        XCTAssertTrue(provider.receive(message: message, from: core))
+        provider.receive(message: message)
         provider.flush()
 
         // Then
@@ -38,7 +37,6 @@ class CrashContextCoreProviderTests: XCTestCase {
     func testItDoesNotUpdateContextWhenContextIsUnchanged() {
         // Given
         let provider = CrashContextCoreProvider()
-        let core = PassthroughCoreMock()
         let context: DatadogContext = .mockWith(service: "test-service")
         var callbackCount = 0
 
@@ -47,8 +45,8 @@ class CrashContextCoreProviderTests: XCTestCase {
         }
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(context), from: core))
-        XCTAssertTrue(provider.receive(message: .context(context), from: core))
+        provider.receive(message: .context(context))
+        provider.receive(message: .context(context))
         provider.flush()
 
         // Then - callback should only be called once for the actual change
@@ -60,13 +58,12 @@ class CrashContextCoreProviderTests: XCTestCase {
     func testItStoresRUMViewEvent() {
         // Given
         let provider = CrashContextCoreProvider()
-        let core = PassthroughCoreMock()
         let context: DatadogContext = .mockAny()
         let viewEvent: RUMViewEvent = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(context), from: core))
-        XCTAssertTrue(provider.receive(message: .payload(viewEvent), from: core))
+        provider.receive(message: .context(context))
+        provider.receive(message: .payload(viewEvent))
         provider.flush()
 
         // Then
@@ -77,18 +74,17 @@ class CrashContextCoreProviderTests: XCTestCase {
     func testItResetsRUMViewEventOnViewReset() {
         // Given
         let provider = CrashContextCoreProvider()
-        let core = PassthroughCoreMock()
         let context: DatadogContext = .mockAny()
         let viewEvent: RUMViewEvent = .mockRandom()
 
-        XCTAssertTrue(provider.receive(message: .context(context), from: core))
-        XCTAssertTrue(provider.receive(message: .payload(viewEvent), from: core))
+        provider.receive(message: .context(context))
+        provider.receive(message: .payload(viewEvent))
         provider.flush()
 
         XCTAssertNotNil(provider.currentCrashContext?.lastRUMViewEvent)
 
         // When
-        XCTAssertTrue(provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: core))
+        provider.receive(message: .payload(RUMPayloadMessages.viewReset))
         provider.flush()
 
         // Then
@@ -100,13 +96,12 @@ class CrashContextCoreProviderTests: XCTestCase {
     func testItStoresRUMSessionState() {
         // Given
         let provider = CrashContextCoreProvider()
-        let core = PassthroughCoreMock()
         let context: DatadogContext = .mockAny()
         let sessionState: RUMSessionState = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(context), from: core))
-        XCTAssertTrue(provider.receive(message: .payload(sessionState), from: core))
+        provider.receive(message: .context(context))
+        provider.receive(message: .payload(sessionState))
         provider.flush()
 
         // Then
@@ -119,7 +114,6 @@ class CrashContextCoreProviderTests: XCTestCase {
     func testItInvokesCallbackOnContextChange() {
         // Given
         let provider = CrashContextCoreProvider()
-        let core = PassthroughCoreMock()
         let context: DatadogContext = .mockWith(service: "test-service")
         var receivedContext: CrashContext?
 
@@ -129,7 +123,7 @@ class CrashContextCoreProviderTests: XCTestCase {
         provider.flush()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(context), from: core))
+        provider.receive(message: .context(context))
         provider.flush()
 
         // Then
@@ -139,16 +133,12 @@ class CrashContextCoreProviderTests: XCTestCase {
 
     // MARK: - Message Handling Tests
 
-    func testItReturnsFalseForUnhandledMessages() {
+    func testItDoesNothingForUnhandledMessages() {
         // Given
         let provider = CrashContextCoreProvider()
-        let core = PassthroughCoreMock()
         let unrelatedMessage = "some unrelated message"
 
         // When
-        let handled = provider.receive(message: .payload(unrelatedMessage), from: core)
-
-        // Then
-        XCTAssertFalse(handled)
+        provider.receive(message: .payload(unrelatedMessage))
     }
 }

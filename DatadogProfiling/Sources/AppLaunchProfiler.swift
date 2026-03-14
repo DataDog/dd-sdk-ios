@@ -20,16 +20,21 @@ internal import DatadogMachProfiler
 internal final class AppLaunchProfiler: FeatureMessageReceiver {
     private static let pendingInstances = PendingInstancesHandler()
 
+    private let featureScope: FeatureScope
     private let telemetryController: ProfilingTelemetryController
 
-    init(telemetryController: ProfilingTelemetryController = .init()) {
+    init(
+        featureScope: FeatureScope,
+        telemetryController: ProfilingTelemetryController = .init()
+    ) {
         Self.registerInstance()
+        self.featureScope = featureScope
         self.telemetryController = telemetryController
     }
 
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    func receive(message: FeatureMessage) {
         guard case let .payload(cmd as ProfilerStop) = message else {
-            return false
+            return
         }
 
         let profileStatus = ctor_profiler_get_status()
@@ -40,16 +45,16 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                 && profileStatus != CTOR_PROFILER_STATUS_PREWARMED {
                 telemetryController.send(metric: AppLaunchMetric.statusNotHandled)
             }
-            return false
+            return
         }
 
         ctor_profiler_stop()
-        core.set(context: ProfilingContext(status: .current))
+        featureScope.set(context: ProfilingContext(status: .current))
         defer { Self.unregisterInstance() }
 
         guard let profile = ctor_profiler_get_profile() else {
             telemetryController.send(metric: AppLaunchMetric.noProfile)
-            return false
+            return
         }
 
         var data: UnsafeMutablePointer<UInt8>?
@@ -60,14 +65,14 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
 
         guard let data else {
             telemetryController.send(metric: AppLaunchMetric.noData)
-            return false
+            return
         }
 
         let pprof = Data(bytes: data, count: size)
         dd_pprof_free_serialized_data(data)
 
-        Task {
-            guard let (context, writer) = await core.scope(for: ProfilerFeature.self).eventWriteContext() else {
+        Task { [featureScope] in
+            guard let (context, writer) = await featureScope.eventWriteContext() else {
                 return
             }
             let event = ProfileEvent(
@@ -96,8 +101,6 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
             await writer.write(value: pprof, metadata: event)
         }
         self.telemetryController.send(metric: AppLaunchMetric(status: .init(profileStatus), durationNs: duration, fileSize: Int64(size)))
-
-        return true
     }
 }
 

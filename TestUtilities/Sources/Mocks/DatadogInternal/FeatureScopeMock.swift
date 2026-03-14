@@ -51,7 +51,7 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
 
     public var telemetry: Telemetry { telemetryMock }
 
-    public func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) {
+    public func send(message: FeatureMessage) {
         messages.append(message)
     }
     public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {

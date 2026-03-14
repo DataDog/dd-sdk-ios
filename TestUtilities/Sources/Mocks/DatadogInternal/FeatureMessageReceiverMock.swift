@@ -24,9 +24,8 @@ public struct FeatureMessageReceiverMock: FeatureMessageReceiver {
         self.receiver = receiver
     }
 
-    public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    public func receive(message: FeatureMessage) {
         messages.append(message)
         receiver?(message)
-        return true
     }
 }

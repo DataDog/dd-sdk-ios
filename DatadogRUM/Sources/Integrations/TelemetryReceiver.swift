@@ -60,23 +60,19 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
     ///
     /// The receiver will only consume `TelemetryMessage`.
     ///
-    /// - Parameters:
-    ///   - message: The message to consume.
-    ///   - core: The core sending the message.
-    /// - Returns: `true` if the message is a `.telemetry` case.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    /// - Parameter message: The message to consume.
+    func receive(message: FeatureMessage) {
         guard case let .telemetry(telemetry) = message else {
-            return false
+            return
         }
 
-        return receive(telemetry: telemetry)
+        receive(telemetry: telemetry)
     }
 
     /// Receives a Telemetry message from the bus.
     ///
     /// - Parameter telemetry: The telemetry message to consume.
-    /// - Returns: Always `true`.
-    private func receive(telemetry: TelemetryMessage) -> Bool {
+    private func receive(telemetry: TelemetryMessage) {
         switch telemetry {
         case let .debug(id, message, attributes):
             let date = dateProvider.now
@@ -88,6 +84,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
             let date = dateProvider.now
             Task { await self.sendConfigurationAsync(configuration: configuration, date: date) }
         case let .metric(metric):
+            // Skip upload_quality metrics — they are aggregated by TelemetryInterceptor
+            guard metric.name != UploadQualityMetric.name else { return }
             if sampled(event: metric) {
                 let date = dateProvider.now
                 Task { await self.sendMetricAsync(metric: metric, date: date) }
@@ -98,8 +96,6 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
                 Task { await self.sendUsageAsync(usage: usage, date: date) }
             }
         }
-
-        return true
     }
 
     private func sampled(event: SampledTelemetry) -> Bool {

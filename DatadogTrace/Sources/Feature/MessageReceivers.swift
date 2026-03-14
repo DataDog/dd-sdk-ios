@@ -33,26 +33,24 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
     /// - Parameters:
     ///   - message: The Feature message
     ///   - core: The core from which the message is transmitted.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    func receive(message: FeatureMessage) {
         switch message {
         case .context(let context):
-            return update(context: context, from: core)
+            update(context: context)
         default:
-            return false
+            break
         }
     }
 
     /// Updates context of the `DatadogTracer` if available.
     ///
     /// - Parameter context: The updated core context.
-    private func update(context: DatadogContext, from core: DatadogCoreProtocol) -> Bool {
+    private func update(context: DatadogContext) {
         _context.mutate {
             $0.applicationStateHistory = context.applicationStateHistory
             $0.rumContext = context.additionalContext(ofType: RUMCoreContext.self)
             $0.userInfo = context.userInfo
             $0.accountInfo = context.accountInfo
         }
-
-        return true
     }
 }

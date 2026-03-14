@@ -32,7 +32,8 @@ internal struct LogsFeature: DatadogRemoteFeature {
         dateProvider: DateProvider,
         customIntakeURL: URL? = nil,
         telemetry: Telemetry = NOPTelemetry(),
-        backtraceReporter: BacktraceReporting? = nil
+        backtraceReporter: BacktraceReporting? = nil,
+        featureScope: FeatureScope = NOPFeatureScope()
     ) {
         self.init(
             logEventMapper: logEventMapper,
@@ -41,8 +42,8 @@ internal struct LogsFeature: DatadogRemoteFeature {
                 telemetry: telemetry
             ),
             messageReceiver: CombinedFeatureMessageReceiver(
-                LogMessageReceiver(logEventMapper: logEventMapper),
-                WebViewLogReceiver()
+                LogMessageReceiver(logEventMapper: logEventMapper, featureScope: featureScope),
+                WebViewLogReceiver(featureScope: featureScope)
             ),
             dateProvider: dateProvider,
             backtraceReporter: backtraceReporter

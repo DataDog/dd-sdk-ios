@@ -43,7 +43,7 @@ class WebViewRecordReceiverTests: XCTestCase {
         // When
 
         let message = WebViewMessage.record(webRecordMock, WebViewMessage.View(id: browserViewID))
-        let result = receiver.receive(message: .webview(message), from: NOPDatadogCore())
+        receiver.receive(message: .webview(message))
 
         // Then
         let expectedWebSegmentWritten: [String: Any] = [
@@ -57,8 +57,6 @@ class WebViewRecordReceiverTests: XCTestCase {
                 ].merging(random, uniquingKeysWith: { old, _ in old })
             ]
         ]
-
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertEqual(scope.eventsWritten.count, 1, "It must write web segment to core")
         let actualWebEventWritten = try XCTUnwrap(scope.eventsWritten.first)
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebSegmentWritten))
@@ -74,10 +72,9 @@ class WebViewRecordReceiverTests: XCTestCase {
 
         // When
         let record = WebViewMessage.record(mockRandomAttributes(), WebViewMessage.View(id: .mockRandom()))
-        let result = receiver.receive(message: .webview(record), from: NOPDatadogCore())
+        receiver.receive(message: .webview(record))
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertTrue(scope.eventsWritten.isEmpty, "The event must be dropped")
     }
 
@@ -89,10 +86,7 @@ class WebViewRecordReceiverTests: XCTestCase {
 
         // When
         let otherMessage: FeatureMessage = .payload(String.mockRandom())
-        let result = receiver.receive(message: otherMessage, from: NOPDatadogCore())
-
-        // Then
-        XCTAssertFalse(result, "It must reject messages addressed to other receivers")
+        receiver.receive(message: otherMessage)
     }
 }
 

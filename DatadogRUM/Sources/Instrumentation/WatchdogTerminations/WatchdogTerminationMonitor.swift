@@ -137,18 +137,15 @@ extension WatchdogTerminationMonitor: FeatureMessageReceiver {
     /// Receives the feature message and updates the app state based on the context message.
     /// It relies on `ApplicationStatePublisher` context message to update the app state.
     /// Other messages are ignored.
-    /// - Parameters:
-    ///   - message: The feature message.
-    ///   - core: The core instance.
-    /// - Returns: Always `false`, because it doesn't block the message propagation.
-    func receive(message: DatadogInternal.FeatureMessage, from core: any DatadogInternal.DatadogCoreProtocol) -> Bool {
+    /// - Parameter message: The feature message.
+    func receive(message: DatadogInternal.FeatureMessage) {
         guard case .context(let context) = message else {
-            return false
+            return
         }
 
         if currentState == .stopped {
             guard let launchReport = context.additionalContext(ofType: LaunchReport.self) else {
-                return false
+                return
             }
 
             self.start(launchReport: launchReport)
@@ -157,13 +154,11 @@ extension WatchdogTerminationMonitor: FeatureMessageReceiver {
         // Once the monitor has started, ie watchdog termination check has been done
         // we can start updating the app state based on the context message
         guard currentState == .started else {
-            return false
+            return
         }
 
         let state = context.applicationStateHistory.currentState
         let manager = appStateManager
         Task { await manager.updateAppState(state: state) }
-
-        return false
     }
 }

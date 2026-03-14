@@ -26,9 +26,9 @@ internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
 
     // MARK: - FeatureMessageReceiver
 
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    func receive(message: FeatureMessage) {
         guard case let .context(context) = message else {
-            return false
+            return
         }
 
         let new = context.additionalContext(ofType: RUMCoreContext.self)
@@ -38,8 +38,6 @@ internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
             onNew?(new)
             previous = new
         }
-
-        return true
     }
 
     // MARK: - RUMContextObserver

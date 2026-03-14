@@ -50,17 +50,15 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver, @unchecked Se
     /// - Parameters:
     ///   - message: The message containing the Browser RUM event.
     ///   - core: The core to write the event.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    func receive(message: FeatureMessage) {
         switch message {
         case let .webview(.rum(event)):
             receive(rum: event)
         case let .webview(.telemetry(event)):
             receive(telemetry: event)
         default:
-            return false
+            break
         }
-
-        return true
     }
 
     private func receive(rum event: JSON) {

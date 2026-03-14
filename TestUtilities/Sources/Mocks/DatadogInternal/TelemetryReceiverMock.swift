@@ -14,12 +14,11 @@ public class TelemetryReceiverMock: FeatureMessageReceiver {
 
     public init() {}
 
-    public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    public func receive(message: FeatureMessage) {
         guard case let .telemetry(message) = message else {
-            return false
+            return
         }
 
         messages.append(message)
-        return true
     }
 }

@@ -22,8 +22,7 @@ class TelemetryInterceptorTests: XCTestCase {
         // When
         metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny())
         let errorTelemetry: TelemetryMessage = .error(id: .mockAny(), message: .mockAny(), kind: .mockAny(), stack: .mockAny())
-        let result = interceptor.receive(message: .telemetry(errorTelemetry), from: NOPDatadogCore())
-        XCTAssertFalse(result)
+        interceptor.receive(message: .telemetry(errorTelemetry))
 
         // Then
         metricController.endMetric(sessionID: sessionID, with: .mockRandom())
@@ -42,8 +41,7 @@ class TelemetryInterceptorTests: XCTestCase {
         // When
         metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny())
         let metricTelemetry: TelemetryMessage = .metric(MetricTelemetry(name: UploadQualityMetric.name, attributes: [UploadQualityMetric.track: "feature"], sampleRate: .mockRandom()))
-        let result = interceptor.receive(message: .telemetry(metricTelemetry), from: NOPDatadogCore())
-        XCTAssertTrue(result)
+        interceptor.receive(message: .telemetry(metricTelemetry))
 
         // Then
         metricController.endMetric(sessionID: sessionID, with: .mockRandom())

@@ -23,25 +23,24 @@ class FeatureMessageReceiverTests: XCTestCase {
 
     struct TestReceiver: FeatureMessageReceiver {
         let expectation: XCTestExpectation?
-        func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        func receive(message: FeatureMessage) {
             expectation?.fulfill()
-            return true
         }
     }
 
-    func testNOPReceiver_returnsFalse() throws {
+    func testNOPReceiver_doesNothing() throws {
         let receiver = NOPFeatureMessageReceiver()
-        XCTAssertFalse(receiver.receive(message: .payload("test"), from: core))
-        XCTAssertFalse(receiver.receive(message: .context(.mockRandom()), from: core))
+        receiver.receive(message: .payload("test"))
+        receiver.receive(message: .context(.mockRandom()))
     }
 
-    func testEmptyCombinedReceiver_returnsFalse() throws {
+    func testEmptyCombinedReceiver_doesNothing() throws {
         let receiver = CombinedFeatureMessageReceiver([])
-        XCTAssertFalse(receiver.receive(message: .payload("test"), from: core))
-        XCTAssertFalse(receiver.receive(message: .context(.mockRandom()), from: core))
+        receiver.receive(message: .payload("test"))
+        receiver.receive(message: .context(.mockRandom()))
     }
 
-    func testCombinedReceiver_withValidReceiver_returnsTrue() throws {
+    func testCombinedReceiver_withValidReceiver_forwardsMessages() throws {
         let expectation = expectation(description: "receive 2 messages")
         expectation.expectedFulfillmentCount = 2
 
@@ -50,22 +49,21 @@ class FeatureMessageReceiverTests: XCTestCase {
             TestReceiver(expectation: expectation)
         )
 
-        XCTAssertTrue(receiver.receive(message: .payload("test"), from: core))
-        XCTAssertTrue(receiver.receive(message: .context(.mockRandom()), from: core))
+        receiver.receive(message: .payload("test"))
+        receiver.receive(message: .context(.mockRandom()))
         waitForExpectations(timeout: 0)
     }
 
-    func testCombinedReceiver_withMultiValidReceiver_itSendsToFirstOnly() throws {
-        let expectation = self.expectation(description: "receive message")
-        let noExpectation = self.expectation(description: "do not receive message")
-        noExpectation.isInverted = true
+    func testCombinedReceiver_withMultiValidReceiver_itSendsToAll() throws {
+        let expectation1 = self.expectation(description: "first receiver gets message")
+        let expectation2 = self.expectation(description: "second receiver gets message")
 
         let receiver = CombinedFeatureMessageReceiver(
-            TestReceiver(expectation: expectation),
-            TestReceiver(expectation: noExpectation)
+            TestReceiver(expectation: expectation1),
+            TestReceiver(expectation: expectation2)
         )
 
-        XCTAssertTrue(receiver.receive(message: .payload("test"), from: core))
+        receiver.receive(message: .payload("test"))
         waitForExpectations(timeout: 0)
     }
 }

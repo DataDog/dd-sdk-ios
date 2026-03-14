@@ -20,9 +20,9 @@ internal class NetworkContextCoreProvider: NetworkContextProvider, @unchecked Se
 }
 
 extension NetworkContextCoreProvider: FeatureMessageReceiver {
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    func receive(message: FeatureMessage) {
         guard case let .context(context) = message else {
-            return false
+            return
         }
 
         let userConfigurationContext: UserConfigurationContext? = {
@@ -45,6 +45,5 @@ extension NetworkContextCoreProvider: FeatureMessageReceiver {
             userConfigurationContext: userConfigurationContext,
             accountConfigurationContext: accountConfigurationContext
         )
-        return true
     }
 }

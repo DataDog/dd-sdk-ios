@@ -32,7 +32,7 @@ class CrashContextProviderTests: XCTestCase {
         let sdkContext: DatadogContext = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore()))
+        provider.receive(message: .context(sdkContext)))
 
         // Then
         provider.flush()
@@ -49,8 +49,8 @@ class CrashContextProviderTests: XCTestCase {
         let nextSDKContext: DatadogContext = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial
-        XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore())) // receive next
+        provider.receive(message: .context(.mockRandom()))) // receive initial
+        provider.receive(message: .context(nextSDKContext))) // receive next
 
         // Then
         provider.flush()
@@ -70,8 +70,8 @@ class CrashContextProviderTests: XCTestCase {
         let rumView: RUMViewEvent = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
+        provider.receive(message: .context(sdkContext)))
+        provider.receive(message: .payload(rumView)))
 
         // Then
         provider.flush()
@@ -90,9 +90,9 @@ class CrashContextProviderTests: XCTestCase {
         let nextSDKContext: DatadogContext = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
+        provider.receive(message: .context(.mockRandom()))) // receive initial SDK context
+        provider.receive(message: .payload(rumView)))
+        provider.receive(message: .context(nextSDKContext)))
 
         // Then
         provider.flush()
@@ -113,9 +113,9 @@ class CrashContextProviderTests: XCTestCase {
         let rumView: RUMViewEvent = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: NOPDatadogCore()))
+        provider.receive(message: .context(sdkContext))) // receive initial SDK context
+        provider.receive(message: .payload(rumView)))
+        provider.receive(message: .payload(RUMPayloadMessages.viewReset)))
 
         // Then
         provider.flush()
@@ -134,10 +134,10 @@ class CrashContextProviderTests: XCTestCase {
         let nextSDKContext: DatadogContext = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
+        provider.receive(message: .context(.mockRandom()))) // receive initial SDK context
+        provider.receive(message: .payload(rumView)))
+        provider.receive(message: .payload(RUMPayloadMessages.viewReset)))
+        provider.receive(message: .context(nextSDKContext)))
 
         // Then
         provider.flush()
@@ -158,8 +158,8 @@ class CrashContextProviderTests: XCTestCase {
         let rumSessionState: RUMSessionState = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumSessionState), from: NOPDatadogCore()))
+        provider.receive(message: .context(sdkContext))) // receive initial SDK context
+        provider.receive(message: .payload(rumSessionState)))
 
         // Then
         provider.flush()
@@ -178,9 +178,9 @@ class CrashContextProviderTests: XCTestCase {
         let nextSDKContext: DatadogContext = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumSessionState), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
+        provider.receive(message: .context(.mockRandom()))) // receive initial SDK context
+        provider.receive(message: .payload(rumSessionState)))
+        provider.receive(message: .context(nextSDKContext)))
 
         // Then
         provider.flush()
@@ -201,8 +201,8 @@ class CrashContextProviderTests: XCTestCase {
         let rumAttributes: RUMEventAttributes = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumAttributes), from: NOPDatadogCore()))
+        provider.receive(message: .context(sdkContext))) // receive initial SDK context
+        provider.receive(message: .payload(rumAttributes)))
 
         // Then
         provider.flush()
@@ -221,9 +221,9 @@ class CrashContextProviderTests: XCTestCase {
         let nextSDKContext: DatadogContext = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumAttributes), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
+        provider.receive(message: .context(.mockRandom()))) // receive initial SDK context
+        provider.receive(message: .payload(rumAttributes)))
+        provider.receive(message: .context(nextSDKContext)))
 
         // Then
         provider.flush()
@@ -244,8 +244,8 @@ class CrashContextProviderTests: XCTestCase {
         let logAttributes: LogEventAttributes = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(logAttributes), from: NOPDatadogCore()))
+        provider.receive(message: .context(sdkContext))) // receive initial SDK context
+        provider.receive(message: .payload(logAttributes)))
 
         // Then
         provider.flush()
@@ -264,9 +264,9 @@ class CrashContextProviderTests: XCTestCase {
         let nextSDKContext: DatadogContext = .mockRandom()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(logAttributes), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
+        provider.receive(message: .context(.mockRandom()))) // receive initial SDK context
+        provider.receive(message: .payload(logAttributes)))
+        provider.receive(message: .context(nextSDKContext)))
 
         // Then
         provider.flush()
@@ -287,10 +287,10 @@ class CrashContextProviderTests: XCTestCase {
         callConcurrently(
             closures: [
                 { _ = provider.currentCrashContext },
-                { _ = provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .payload(viewEvent), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .payload(sessionState), from: NOPDatadogCore()) },
+                { provider.receive(message: .context(.mockRandom())) },
+                { provider.receive(message: .payload(viewEvent)) },
+                { provider.receive(message: .payload(RUMPayloadMessages.viewReset)) },
+                { provider.receive(message: .payload(sessionState)) },
             ],
             iterations: 50
         )

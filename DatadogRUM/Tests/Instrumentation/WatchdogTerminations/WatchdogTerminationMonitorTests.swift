@@ -38,7 +38,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         sut.update(viewEvent: viewEvent1)
 
         // monitor reveives the launch report
-        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        sut.receive(message: .context(featureScope.contextMock))
 
         // Wait for the monitor to transition from .starting to .started
         let started = self.expectation(description: "Monitor started")
@@ -69,7 +69,7 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         sut.update(viewEvent: viewEvent3)
 
         // monitor reveives the launch report
-        _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+        sut.receive(message: .context(featureScope.contextMock))
 
         waitForExpectations(timeout: 1)
         XCTAssertEqual(reporter.sendParams?.viewEvent.view.id, viewEvent2.view.id)

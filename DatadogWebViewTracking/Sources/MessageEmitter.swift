@@ -66,15 +66,11 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
             return
         }
 
-        core.send(message: .webview(message), else: {
-            DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
-        })
+        core.send(message: .webview(message))
     }
 
     private func send(rum message: WebViewMessage, in core: DatadogCoreProtocol) {
-        core.send(message: .webview(message), else: {
-            DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
-        })
+        core.send(message: .webview(message))
     }
 
     private func send(record event: WebViewMessage.Event, view: WebViewMessage.View, slotId: String?, in core: DatadogCoreProtocol) {
@@ -82,8 +78,6 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
         // inject the slotId
         event["slotId"] = slotId
 
-        core.send(message: .webview(.record(event, view)), else: {
-            DD.logger.warn("A WebView Replay record is lost because Session Replay is disabled in the SDK")
-        })
+        core.send(message: .webview(.record(event, view)))
     }
 }

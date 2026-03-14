@@ -45,15 +45,7 @@ internal struct MessageBusSender: CrashReportSender, @unchecked Sendable {
         core.send(
             message: .payload(
                 Crash(report: report, context: context)
-            ),
-            else: {
-                DD.logger.warn(
-                    """
-                    In order to use Crash Reporting, RUM feature must be enabled.
-                    Make sure `RUM.enable(with:)` is called when initializing Datadog SDK.
-                    """
-                )
-            }
+            )
         )
     }
 

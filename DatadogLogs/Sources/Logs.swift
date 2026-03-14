@@ -82,12 +82,15 @@ public enum Logs {
 
         let logEventMapper = configuration._internalEventMapper ?? configuration.eventMapper.map(SyncLogEventMapper.init)
 
+        let featureScope = core.scope(for: LogsFeature.self)
+
         let feature = LogsFeature(
             logEventMapper: logEventMapper,
             dateProvider: configuration.dateProvider,
             customIntakeURL: configuration.customEndpoint,
             telemetry: core.telemetry,
-            backtraceReporter: core.backtraceReporter
+            backtraceReporter: core.backtraceReporter,
+            featureScope: featureScope
         )
 
         try core.register(feature: feature)

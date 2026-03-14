@@ -62,7 +62,7 @@ internal class CrashContextCoreProvider: CrashContextProvider, @unchecked Sendab
 }
 
 extension CrashContextCoreProvider: FeatureMessageReceiver {
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    func receive(message: FeatureMessage) {
         switch message {
         case .context(let context):
             update(context: context)
@@ -77,10 +77,8 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
         case let .payload(logAttributes as LogEventAttributes):
             queue.async { self.logAttributes = logAttributes }
         default:
-            return false
+            break
         }
-
-        return true
     }
 
     /// Updates crash context.

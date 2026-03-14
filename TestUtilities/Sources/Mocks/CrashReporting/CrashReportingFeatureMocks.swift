@@ -127,12 +127,11 @@ public class CrashReportSenderMock: CrashReportSender, @unchecked Sendable {
 public class CrashReceiverMock: FeatureMessageReceiver, @unchecked Sendable {
     public var receivedCrash: Crash?
 
-    public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    public func receive(message: FeatureMessage) {
         guard case let .payload(crash as Crash) = message else {
-            return false
+            return
         }
         receivedCrash = crash
-        return true
     }
 
     public init() {}

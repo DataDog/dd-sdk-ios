@@ -34,45 +34,39 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     // MARK: - Message Handling Tests
 
-    func testReceive_withProfilerStopMessage_returnsTrue() {
+    func testReceive_withProfilerStopMessage_stopsProfilerAndDecrementsInstances() {
         // Given
-        let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler()
+        let featureScope = FeatureScopeMock()
+        let profiler = AppLaunchProfiler(featureScope: featureScope)
         ctor_profiler_start_testing(100.0, false, 5.seconds.dd.toInt64Nanoseconds)
 
         // When
-        let result = profiler.receive(
-            message: .payload(ProfilerStop(context: mockRandomAttributes())),
-            from: core
-        )
+        profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())))
+
         // Then
-        XCTAssertTrue(result, "Should return true when processing ProfilerStop message")
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
     }
 
-    func testReceive_withNonProfilerStopMessage_returnsFalse() {
+    func testReceive_withNonProfilerStopMessage_doesNothing() {
         // Given
-        let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler()
+        let featureScope = FeatureScopeMock()
+        let profiler = AppLaunchProfiler(featureScope: featureScope)
 
         // When
-        let result = profiler.receive(message: .payload(0), from: core)
-
-        // Then
-        XCTAssertFalse(result, "Should return false for non-ProfilerStop messages")
+        profiler.receive(message: .payload(0))
     }
 
     func testReceive_withProfilerStopMessage_stopsProfiler() {
         // Given
-        let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler()
+        let featureScope = FeatureScopeMock()
+        let profiler = AppLaunchProfiler(featureScope: featureScope)
 
         ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_RUNNING, "Profiler should be running")
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 1)
 
         // When
-        XCTAssertTrue(profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core))
+        profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())))
 
         // Then
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Profiler should be destroyed after processing message")
@@ -80,55 +74,47 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
     }
 
-    func testReceive_withProfilerStopMessage_whenNoProfileData_returnsFalse() {
+    func testReceive_withProfilerStopMessage_whenNoProfileData_doesNothing() {
         // Given - profiler not started, so no profile data
-        let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler()
+        let featureScope = FeatureScopeMock()
+        let profiler = AppLaunchProfiler(featureScope: featureScope)
 
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_NOT_CREATED, "Profiler should not be created")
 
         // When
-        let result = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core)
-
-        // Then
-        XCTAssertFalse(result, "Should return false when no profile data is available")
+        profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())))
     }
 
-    func testReceive_withProfilerStopMessage_whenProfilerSampledOut_returnsFalse() {
+    func testReceive_withProfilerStopMessage_whenProfilerSampledOut_doesNothing() {
         // Given - profiler sampled out
-        let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler()
+        let featureScope = FeatureScopeMock()
+        let profiler = AppLaunchProfiler(featureScope: featureScope)
 
         ctor_profiler_start_testing(0.0, false, 5.seconds.dd.toInt64Nanoseconds) // 0% sample rate
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_SAMPLED_OUT, "Profiler should be sampled out")
 
         // When
-        let result = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core)
-
-        // Then
-        XCTAssertFalse(result, "Should return false when profiler was sampled out")
+        profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())))
     }
 
-    func testReceive_withProfilerStopMessage_whenProfilerPrewarmed_returnsFalse() {
+    func testReceive_withProfilerStopMessage_whenProfilerPrewarmed_doesNothing() {
         // Given - profiler prewarmed
-        let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler()
+        let featureScope = FeatureScopeMock()
+        let profiler = AppLaunchProfiler(featureScope: featureScope)
 
         ctor_profiler_start_testing(100.0, true, 5.seconds.dd.toInt64Nanoseconds) // prewarming = true
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_PREWARMED, "Profiler should be prewarmed")
 
         // When
-        let result = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: core)
-
-        // Then
-        XCTAssertFalse(result, "Should return false when profiler was prewarmed")
+        profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())))
     }
 
     // MARK: - Core Integration Tests
 
     func testReceive_withValidProfileData_createsCorrectProfileEvent() throws {
         // Given
-        let profiler = AppLaunchProfiler()
+        let featureScope = FeatureScopeMock()
+        let profiler = AppLaunchProfiler(featureScope: featureScope)
         let core = SingleFeatureCoreMock(
             context: .mockWith(
                 service: "test-service",
@@ -152,7 +138,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         let stopContext = mockRandomAttributes()
 
         // When
-        XCTAssertTrue(profiler.receive(message: .payload(ProfilerStop(context: stopContext)), from: core))
+        profiler.receive(message: .payload(ProfilerStop(context: stopContext)))
 
         // Then
         let profilingContext = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
@@ -297,8 +283,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         // Given
         let iterations = 10
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
-        let cores = (0..<iterations).map { _ in PassthroughCoreMock() }
-        let profilers = (0..<iterations).map { _ in AppLaunchProfiler() }
+        let profilers = (0..<iterations).map { _ in AppLaunchProfiler(featureScope: FeatureScopeMock()) }
 
         ctor_profiler_start_testing(100.0, false, 5.seconds.dd.toInt64Nanoseconds)
         Thread.sleep(forTimeInterval: 0.05)
@@ -306,7 +291,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         // When
         for (index, profiler) in profilers.enumerated() {
-            _ = profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())), from: cores[index])
+            profiler.receive(message: .payload(ProfilerStop(context: mockRandomAttributes())))
 
             let remainingInstances = iterations - index - 1
             if remainingInstances > 0 {
@@ -329,7 +314,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         // When
         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
-            _ = AppLaunchProfiler()
+            _ = AppLaunchProfiler(featureScope: FeatureScopeMock())
             expectation.fulfill()
         }
 

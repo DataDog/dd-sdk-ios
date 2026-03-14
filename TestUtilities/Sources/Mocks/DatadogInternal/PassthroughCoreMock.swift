@@ -59,7 +59,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
         self.dataStore = dataStore
         self.messageReceiver = messageReceiver
 
-        messageReceiver.receive(message: .context(context), from: self)
+        messageReceiver.receive(message: .context(context))
 
         PassthroughCoreMock.referenceCount += 1
     }
@@ -82,10 +82,8 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
         self.context.set(additionalContext: context())
     }
 
-    public func send(message: FeatureMessage, else fallback: @Sendable () -> Void) {
-        if !messageReceiver.receive(message: message, from: self) {
-            fallback()
-        }
+    public func send(message: FeatureMessage) {
+        messageReceiver.receive(message: message)
     }
 
     /// no-op

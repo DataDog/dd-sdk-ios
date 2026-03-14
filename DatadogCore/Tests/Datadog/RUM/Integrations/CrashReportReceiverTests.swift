@@ -24,10 +24,9 @@ class CrashReportReceiverTests: XCTestCase {
                 context: CrashContext.mockWith(lastRUMViewEvent: nil)
             )
         )
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
+        receiver.receive(message: message)
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1, "It should send error event")
     }
 
@@ -45,10 +44,9 @@ class CrashReportReceiverTests: XCTestCase {
                 )
             )
         )
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
+        receiver.receive(message: message)
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1, "It should send error event")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1, "It should send view event")
     }

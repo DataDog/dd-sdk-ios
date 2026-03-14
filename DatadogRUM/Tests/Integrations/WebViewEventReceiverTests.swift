@@ -200,10 +200,9 @@ class WebViewEventReceiverTests: XCTestCase {
 
         // When
         let message = webViewTrackingMessage(with: randomWebEvent())
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
+        receiver.receive(message: message)
 
         // Then
-        XCTAssertTrue(result, "It must acknowledge the message")
         let command = try XCTUnwrap(commandsSubscriberMock.receivedCommands.firstElement(of: RUMKeepSessionAliveCommand.self), "It must keep RUM session alive")
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
     }
@@ -219,10 +218,7 @@ class WebViewEventReceiverTests: XCTestCase {
 
         // When
         let otherMessage: FeatureMessage = .payload(String.mockRandom())
-        let result = receiver.receive(message: otherMessage, from: NOPDatadogCore())
-
-        // Then
-        XCTAssertFalse(result, "It must reject messages addressed to other receivers")
+        receiver.receive(message: otherMessage)
     }
 
     // MARK: - Modifying Web Events
@@ -258,7 +254,7 @@ class WebViewEventReceiverTests: XCTestCase {
 
         // When
 
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+        receiver.receive(message: webViewTrackingMessage(with: webEventMock))
 
         // Then
         let expectedWebEventWritten: JSON = [
@@ -274,7 +270,6 @@ class WebViewEventReceiverTests: XCTestCase {
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
@@ -292,10 +287,9 @@ class WebViewEventReceiverTests: XCTestCase {
         )
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: randomWebEvent()), from: NOPDatadogCore())
+        receiver.receive(message: webViewTrackingMessage(with: randomWebEvent()))
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertTrue(featureScope.eventsWritten.isEmpty, "The event must be dropped")
     }
 
@@ -349,7 +343,7 @@ class WebViewEventReceiverTests: XCTestCase {
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+        receiver.receive(message: webViewTrackingMessage(with: webEventMock))
 
         // Then
         let expectedWebEventWritten: JSON = [
@@ -375,7 +369,6 @@ class WebViewEventReceiverTests: XCTestCase {
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
@@ -430,7 +423,7 @@ class WebViewEventReceiverTests: XCTestCase {
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+        receiver.receive(message: webViewTrackingMessage(with: webEventMock))
 
         // Then
         let expectedWebEventWritten: JSON = [
@@ -451,7 +444,6 @@ class WebViewEventReceiverTests: XCTestCase {
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))

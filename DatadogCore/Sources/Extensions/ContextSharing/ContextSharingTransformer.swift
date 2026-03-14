@@ -14,15 +14,14 @@ internal final class ContextSharingTransformer: FeatureMessageReceiver {
 
     // MARK: - FeatureMessageReceiver
 
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    func receive(message: FeatureMessage) {
         switch message {
         case .context(let context):
             let newContext = SharedContext(datadogContext: context)
             sharedContext = newContext
             receiver?(newContext)
-            return true
         default:
-            return false
+            break
         }
     }
 

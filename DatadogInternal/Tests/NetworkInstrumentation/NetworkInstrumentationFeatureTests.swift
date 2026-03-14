@@ -2172,10 +2172,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         )
 
         // When
-        let result = provider.receive(message: .context(context), from: core)
+        provider.receive(message: .context(context))
 
         // Then
-        XCTAssertTrue(result)
         let networkContext = try XCTUnwrap(provider.currentNetworkContext)
 
         // Verify RUM context
@@ -2204,10 +2203,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         )
 
         // When
-        let result = provider.receive(message: .context(context), from: core)
+        provider.receive(message: .context(context))
 
         // Then
-        XCTAssertTrue(result)
         let networkContext = try XCTUnwrap(provider.currentNetworkContext)
 
         // Verify RUM context is still available
@@ -2219,15 +2217,14 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(networkContext.accountConfigurationContext)
     }
 
-    func testWhenReceivingNonContextMessage_itReturnsFalse() {
+    func testWhenReceivingNonContextMessage_itDoesNothing() {
         // Given
         let provider = NetworkContextCoreProvider()
 
         // When
-        let result = provider.receive(message: .payload("some data"), from: core)
+        provider.receive(message: .payload("some data"))
 
         // Then
-        XCTAssertFalse(result)
         XCTAssertNil(provider.currentNetworkContext)
     }
 

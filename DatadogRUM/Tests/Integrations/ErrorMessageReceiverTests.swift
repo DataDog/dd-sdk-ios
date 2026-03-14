@@ -42,10 +42,9 @@ class ErrorMessageReceiverTests: XCTestCase {
             )
         )
 
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
+        receiver.receive(message: message)
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         let event: RUMErrorEvent = try XCTUnwrap(featureScope.eventsWritten().last, "It should send error")
         XCTAssertEqual(event.error.message, "message-test")
         XCTAssertEqual(event.error.source, .logger)
@@ -70,10 +69,9 @@ class ErrorMessageReceiverTests: XCTestCase {
         )
 
         // When
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
+        receiver.receive(message: message)
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         let event: RUMErrorEvent = try XCTUnwrap(featureScope.eventsWritten().last, "It should send error")
         XCTAssertEqual(event.error.message, "message-test")
         XCTAssertEqual(event.error.type, "type-test")

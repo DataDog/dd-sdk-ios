@@ -30,22 +30,16 @@ class ContextSharingTransformerTests: XCTestCase {
         let message = FeatureMessage.context(.mockRandom())
 
         // When
-        let handled = transformer.receive(message: message, from: core)
-
-        // Then
-        XCTAssertTrue(handled)
+        transformer.receive(message: message)
     }
 
-    func testReceiveNonContextMessage_returnsNotHandled() throws {
+    func testReceiveNonContextMessage_doesNothing() throws {
         // Given
         let transformer = ContextSharingTransformer()
         let customMessage = FeatureMessage.payload("")
 
         // When
-        let handled = transformer.receive(message: customMessage, from: core)
-
-        // Then
-        XCTAssertFalse(handled)
+        transformer.receive(message: customMessage)
     }
 
     func testPublish_callsReceiverImmediately() throws {
@@ -83,7 +77,7 @@ class ContextSharingTransformerTests: XCTestCase {
         let accountInfo = AccountInfo(id: "account-789")
         let context = DatadogContext.mockWith(userInfo: userInfo, accountInfo: accountInfo)
         let message = FeatureMessage.context(context)
-        _ = transformer.receive(message: message, from: core)
+        transformer.receive(message: message)
 
         // Then
         waitForExpectations(timeout: 1)
@@ -113,7 +107,7 @@ class ContextSharingTransformerTests: XCTestCase {
 
         let context = DatadogContext.mockWith(userInfo: UserInfo(id: "user-789"))
         let message = FeatureMessage.context(context)
-        _ = transformer.receive(message: message, from: core)
+        transformer.receive(message: message)
 
         // Then
         waitForExpectations(timeout: 0.5)

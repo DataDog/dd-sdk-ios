@@ -36,13 +36,14 @@ public enum Profiling {
             sampleRate: configuration.debugSDK ? 100 : ProfilingTelemetryController.defaultSampleRate,
             telemetry: core.telemetry
         )
+        let featureScope = core.scope(for: ProfilerFeature.self)
         try? core.register(
             feature: ProfilerFeature(
                 requestBuilder: RequestBuilder(
                     customUploadURL: configuration.customEndpoint,
                     telemetry: core.telemetry
                 ),
-                messageReceiver: AppLaunchProfiler(telemetryController: telemetryController),
+                messageReceiver: AppLaunchProfiler(featureScope: featureScope, telemetryController: telemetryController),
                 sampleRate: configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate,
                 telemetryController: telemetryController
             )

@@ -90,9 +90,6 @@ internal final class DatadogCore: @unchecked Sendable {
                 context.version = applicationVersion
             }
 
-            // connect the core to the message bus.
-            await bus.connect(core: self)
-
             // forward any context change on the message-bus
             await contextProvider.publish { [weak self] context in
                 self?.send(message: .context(context))
@@ -335,8 +332,8 @@ extension DatadogCore: DatadogCoreProtocol {
         Task { @Sendable in await contextProvider.write { $0.set(additionalContext: value) } }
     }
 
-    func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) {
-        Task { await bus.send(message: message, else: fallback) }
+    func send(message: FeatureMessage) {
+        Task { await bus.send(message: message) }
     }
 
     func set(anonymousId: String?) {
@@ -392,8 +389,8 @@ internal final class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScop
         return (core != nil) ? store : NOPDataStore()
     }
 
-    func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) {
-        core?.send(message: message, else: fallback)
+    func send(message: FeatureMessage) {
+        core?.send(message: message)
     }
 
     func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {

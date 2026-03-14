@@ -13,9 +13,6 @@ import DatadogInternal
 /// synchronisation. Receivers are dispatched synchronously within the actor —
 /// a slow receiver can delay delivery to the others but cannot cause data races.
 internal actor MessageBus {
-    /// A weak core reference.
-    private weak var core: DatadogCoreProtocol?
-
     /// Receivers keyed by feature name.
     private var receivers: [String: FeatureMessageReceiver] = [:]
 
@@ -35,15 +32,6 @@ internal actor MessageBus {
             try? await Task.sleep(nanoseconds: configurationDispatchDelay)
             await self?.dispatchConfiguration()
         }
-    }
-
-    /// Connects the core to the bus.
-    ///
-    /// The message-bus keeps a weak reference to the core.
-    ///
-    /// - Parameter core: The core reference.
-    func connect(core: DatadogCoreProtocol) {
-        self.core = core
     }
 
     // MARK: - Receivers
@@ -68,26 +56,15 @@ internal actor MessageBus {
 
     /// Sends a message to all receivers registered in this bus.
     ///
-    /// If no receiver handled the message the fallback closure is invoked.
-    ///
-    /// - Parameters:
-    ///   - message: The message.
-    ///   - fallback: The fallback closure to call when the message could not be
-    ///               processed by any receiver on the bus.
-    func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void = {}) {
+    /// - Parameter message: The message.
+    func send(message: FeatureMessage) {
         if case .telemetry(let telemetry) = message,
            case .configuration(let config) = telemetry {
             return save(configuration: config)
         }
 
-        guard let core else { return }
-
-        let handled = receivers.values.filter {
-            $0.receive(message: message, from: core)
-        }
-
-        if handled.isEmpty {
-            fallback()
+        receivers.values.forEach {
+            $0.receive(message: message)
         }
     }
 
@@ -97,8 +74,7 @@ internal actor MessageBus {
     ///   - context: The current SDK context.
     ///   - key: The receiver key.
     func sendInitialContext(_ context: DatadogContext, forKey key: String) {
-        guard let core else { return }
-        receivers[key]?.receive(message: .context(context), from: core)
+        receivers[key]?.receive(message: .context(context))
     }
 
     // MARK: - Configuration Telemetry
@@ -112,12 +88,12 @@ internal actor MessageBus {
 
     /// Dispatches accumulated configuration telemetry to all receivers.
     private func dispatchConfiguration() {
-        guard let core, let configuration else { return }
+        guard let configuration else { return }
 
         let configMessage: FeatureMessage = .telemetry(.configuration(configuration))
 
         receivers.values.forEach {
-            $0.receive(message: configMessage, from: core)
+            $0.receive(message: configMessage)
         }
     }
 }

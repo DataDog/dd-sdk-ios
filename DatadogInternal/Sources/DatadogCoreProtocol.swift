@@ -65,26 +65,10 @@ extension DatadogCoreProtocol {
 }
 
 public protocol MessageSending {
-    /// Sends a message on the bus shared by features registered to the sam core.
-    ///
-    /// If the message could not be processed by any registered feature, the fallback closure
-    /// will be invoked. Do not make any assumption on which thread the fallback is called.
-    ///
-    /// - Parameters:
-    ///   - message: The message.
-    ///   - fallback: The fallback closure to call when the message could not be
-    ///               processed by any Features on the bus.
-    func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void)
-}
-
-extension MessageSending {
     /// Sends a message on the bus shared by features registered to the same core.
     ///
-    /// - Parameters:
-    ///   - message: The message.
-    public func send(message: FeatureMessage) {
-        send(message: message, else: {})
-    }
+    /// - Parameter message: The message.
+    func send(message: FeatureMessage)
 }
 
 public protocol AdditionalContextSharing {
@@ -232,7 +216,7 @@ public final class NOPDatadogCore: DatadogCoreProtocol, @unchecked Sendable {
     /// no-op
     public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { }
     /// no-op
-    public func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) { }
+    public func send(message: FeatureMessage) { }
     /// no-op
     public func mostRecentModifiedFileAt(before: Date) throws -> Date? { return nil }
 }
@@ -248,7 +232,7 @@ public struct NOPFeatureScope: FeatureScope {
     /// no-op
     public var telemetry: Telemetry { NOPTelemetry() }
     /// no-op
-    public func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) { }
+    public func send(message: FeatureMessage) { }
     /// no-op
     public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { }
     /// no-op

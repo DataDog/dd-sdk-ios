@@ -18,8 +18,7 @@ private struct TelemetryMock: Telemetry {
     }
 
     func send(telemetry: TelemetryMessage) {
-        let result = receiver.receive(message: .telemetry(telemetry), from: NOPDatadogCore())
-        XCTAssertTrue(result, "It must accept every message")
+        receiver.receive(message: .telemetry(telemetry))
     }
 }
 

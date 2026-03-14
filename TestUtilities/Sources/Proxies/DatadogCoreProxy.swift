@@ -132,8 +132,8 @@ public final class DatadogCoreProxy: DatadogCoreProtocol, @unchecked Sendable {
         core.set(context: context)
     }
 
-    public func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) {
-        core.send(message: message, else: fallback)
+    public func send(message: FeatureMessage) {
+        core.send(message: message)
     }
 
     public func mostRecentModifiedFileAt(before: Date) throws -> Date? {
@@ -179,8 +179,8 @@ private struct FeatureScopeProxy: FeatureScope {
     var telemetry: Telemetry { proxy.telemetry }
     var dataStore: DataStore { proxy.dataStore }
 
-    func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void) {
-        proxy.send(message: message, else: fallback)
+    func send(message: FeatureMessage) {
+        proxy.send(message: message)
     }
 
     func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {

@@ -59,10 +59,12 @@ extension LogMessageReceiver: AnyMockable {
     }
 
     public static func mockWith(
-        logEventMapper: LogEventMapper? = nil
+        logEventMapper: LogEventMapper? = nil,
+        featureScope: FeatureScope = NOPFeatureScope()
     ) -> Self {
         .init(
-            logEventMapper: logEventMapper
+            logEventMapper: logEventMapper,
+            featureScope: featureScope
         )
     }
 }

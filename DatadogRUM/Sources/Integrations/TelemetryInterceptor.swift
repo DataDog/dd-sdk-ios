@@ -12,28 +12,22 @@ internal struct TelemetryInterceptor: FeatureMessageReceiver {
     /// "RUM Session Ended" controller to count SDK errors.
     let sessionEndedMetric: SessionEndedMetricController
 
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    func receive(message: FeatureMessage) {
         guard case .telemetry(let telemetry) = message else {
-            return false
+            return
         }
 
         switch telemetry {
-        case .error(let id, let message, let kind, let stack):
-            interceptError(id: id, message: message, kind: kind, stack: stack)
+        case .error(_, _, let kind, _):
+            interceptError(kind: kind)
         case .metric(let metric) where metric.name == UploadQualityMetric.name:
-            // Intercept the 'upload_quality' metric for aggregation in the rse
-            // metric
             interceptUploadQualityMetric(attributes: metric.attributes)
-            return true // do not forward the message
-
         default:
             break
         }
-
-        return false // do not consume, pass to next receivers
     }
 
-    private func interceptError(id: String, message: String, kind: String, stack: String) {
+    private func interceptError(kind: String) {
         sessionEndedMetric.track(sdkErrorKind: kind, in: nil) // `nil` - track in current session
     }
 

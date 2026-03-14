@@ -12,20 +12,20 @@ internal struct LogMessageReceiver: FeatureMessageReceiver, @unchecked Sendable 
     /// The log event mapper
     let logEventMapper: LogEventMapper?
 
+    /// The feature scope to write log events.
+    let featureScope: FeatureScope
+
     /// Process messages receives from the bus.
     ///
-    /// - Parameters:
-    ///   - message: The Feature message
-    ///   - core: The core from which the message is transmitted.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    /// - Parameter message: The Feature message
+    func receive(message: FeatureMessage) {
         guard case let .payload(log as LogMessage) = message else {
-            return false
+            return
         }
 
-        let scope = core.scope(for: LogsFeature.self)
         let logEventMapper = logEventMapper
         Task {
-            guard let (context, writer) = await scope.eventWriteContext() else { return }
+            guard let (context, writer) = await featureScope.eventWriteContext() else { return }
             let level: LogLevel = {
                 switch log.level {
                 case .debug: return .debug
@@ -62,28 +62,26 @@ internal struct LogMessageReceiver: FeatureMessageReceiver, @unchecked Sendable 
 
             await writer.write(value: event)
         }
-
-        return true
     }
 }
 
 /// Receiver to consume a Log event coming from Browser SDK.
 internal struct WebViewLogReceiver: FeatureMessageReceiver, @unchecked Sendable {
+    /// The feature scope to write log events.
+    let featureScope: FeatureScope
+
     /// Process messages receives from the bus.
     ///
-    /// - Parameters:
-    ///   - message: The Feature message
-    ///   - core: The core from which the message is transmitted.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+    /// - Parameter message: The Feature message
+    func receive(message: FeatureMessage) {
         guard case let .webview(.log(event)) = message else {
-            return false
+            return
         }
 
-        let scope = core.scope(for: LogsFeature.self)
         nonisolated(unsafe) var webEvent = event
 
         Task {
-            guard let (context, writer) = await scope.eventWriteContext() else { return }
+            guard let (context, writer) = await featureScope.eventWriteContext() else { return }
             let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
             let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
 
@@ -108,7 +106,5 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver, @unchecked Sendable 
 
             await writer.write(value: AnyEncodable(webEvent))
         }
-
-        return true
     }
 }

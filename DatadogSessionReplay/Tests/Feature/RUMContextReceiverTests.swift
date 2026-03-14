@@ -34,9 +34,7 @@ class RUMContextReceiverTests: XCTestCase {
         }
 
         // When
-        XCTAssert(
-            receiver.receive(message: .context(coreContext), from: core)
-        )
+        receiver.receive(message: .context(coreContext))
 
         // Then
         XCTAssertEqual(rumContext?.applicationID, "app-id")
@@ -75,13 +73,8 @@ class RUMContextReceiverTests: XCTestCase {
             context.flatMap { rumContexts.append($0) }
         }
         // When
-        XCTAssert(
-            receiver.receive(message: .context(coreContext1), from: core)
-        )
-
-        XCTAssert(
-            receiver.receive(message: .context(coreContext2), from: core)
-        )
+        receiver.receive(message: .context(coreContext1))
+        receiver.receive(message: .context(coreContext2))
 
         // Then
         XCTAssertEqual(rumContexts.count, 2)
@@ -125,13 +118,8 @@ class RUMContextReceiverTests: XCTestCase {
             context.flatMap { rumContexts.append($0) }
         }
         // When
-        XCTAssert(
-            receiver.receive(message: .context(coreContext1), from: core)
-        )
-
-        XCTAssert(
-            receiver.receive(message: .context(coreContext2), from: core)
-        )
+        receiver.receive(message: .context(coreContext1))
+        receiver.receive(message: .context(coreContext2))
 
         // Then
         XCTAssertEqual(rumContexts.count, 1)
@@ -163,9 +151,7 @@ class RUMContextReceiverTests: XCTestCase {
         }
 
         // When
-        XCTAssert(
-            receiver.receive(message: .context(coreContext1), from: core)
-        )
+        receiver.receive(message: .context(coreContext1))
 
         XCTAssertEqual(rumContext?.applicationID, "app-id")
         XCTAssertEqual(rumContext?.sessionID, "session-id")
@@ -173,9 +159,7 @@ class RUMContextReceiverTests: XCTestCase {
         XCTAssertEqual(rumContext?.viewServerTimeOffset, 123)
 
         // When
-        XCTAssert(
-            receiver.receive(message: .context(coreContext2), from: core)
-        )
+        receiver.receive(message: .context(coreContext2))
         // Then
         XCTAssertNil(rumContext)
     }
@@ -191,9 +175,7 @@ class RUMContextReceiverTests: XCTestCase {
         }
 
         // When
-        XCTAssertFalse(
-            receiver.receive(message: .payload("value"), from: core)
-        )
+        receiver.receive(message: .payload("value"))
 
         // Then
         waitForExpectations(timeout: 0.1)

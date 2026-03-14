@@ -215,7 +215,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
             ]
         )
         let message = FeatureMessage.context(fakeContext)
-        _ = handler.contextReceiver.receive(message: message, from: core)
+        handler.contextReceiver.receive(message: message)
         let (modifiedRequest, _, _) = handler.modify(
             request: request,
             headerTypes: [.datadog, .tracecontext, .b3, .b3multi],
