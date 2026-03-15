@@ -41,11 +41,10 @@ public class HTTPClientMock: HTTPClient, @unchecked Sendable {
 
     // MARK: - HTTPClient conformance
 
-    public func send(request: URLRequest, delegate: URLSessionTaskDelegate?, completion: @escaping (Result<HTTPURLResponse, any Error>) -> Void) {
-        queue.async {
-            completion(self.result(request))
-            self.requests.append(request)
-        }
+    public func send(request: URLRequest, delegate: URLSessionTaskDelegate?) async throws -> HTTPURLResponse {
+        let res = result(request)
+        queue.sync { requests.append(request) }
+        return try res.get()
     }
 
     // MARK: - Tracked requests retrieval

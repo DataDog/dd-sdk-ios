@@ -144,6 +144,11 @@ extension FeatureDataStore: Flushable {
         sem.wait()
     }
 
+    /// Non-blocking async variant that awaits actor mailbox drain.
+    nonisolated func flush() async {
+        await _drain()
+    }
+
     private func _drain() {
         // Actor processes this after any pending tasks, effectively draining the mailbox.
     }

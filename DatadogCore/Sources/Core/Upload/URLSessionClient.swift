@@ -35,14 +35,27 @@ internal final class URLSessionClient: HTTPClient, Sendable {
         self.session = session
     }
 
-    func send(request: URLRequest, delegate: URLSessionTaskDelegate?, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
-        let task = session.dataTask(with: request) { data, response, error in
-            completion(httpClientResult(for: (data, response, error)))
+    func send(request: URLRequest, delegate: URLSessionTaskDelegate?) async throws -> HTTPURLResponse {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            let (_, response) = try await session.data(for: request, delegate: delegate)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw URLSessionTransportInconsistencyException()
+            }
+            return httpResponse
+        } else {
+            return try await withCheckedThrowingContinuation { continuation in
+                let task = session.dataTask(with: request) { _, response, error in
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                    } else if let httpResponse = response as? HTTPURLResponse {
+                        continuation.resume(returning: httpResponse)
+                    } else {
+                        continuation.resume(throwing: URLSessionTransportInconsistencyException())
+                    }
+                }
+                task.resume()
+            }
         }
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, *) {
-            task.delegate = delegate
-        }
-        task.resume()
     }
 }
 
@@ -61,18 +74,3 @@ private func basicHTTPAuthentication(username: String, password: String) -> Stri
     return "Basic \(credential)"
 }
 
-/// As `URLSession` returns 3-values-tuple for request execution, this function applies consistency constraints and turns
-/// it into only two possible states of `HTTPTransportResult`.
-private func httpClientResult(for urlSessionTaskCompletion: (Data?, URLResponse?, Error?)) -> Result<HTTPURLResponse, Error> {
-    let (_, response, error) = urlSessionTaskCompletion
-
-    if let error = error {
-        return .failure(error)
-    }
-
-    if let httpResponse = response as? HTTPURLResponse {
-        return .success(httpResponse)
-    }
-
-    return .failure(URLSessionTransportInconsistencyException())
-}

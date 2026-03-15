@@ -297,15 +297,10 @@ public class DataUploaderMock: DataUploaderType, @unchecked Sendable {
     public func upload(
         events: [DatadogInternal.Event],
         context: DatadogInternal.DatadogContext,
-        previous: DataUploadStatus?) throws -> DataUploadStatus {
+        previous: DataUploadStatus?) async throws -> DataUploadStatus {
             uploadedEvents += events
             try onUpload?(previous)
-            let attempt: UInt
-            if let previous = previous {
-                attempt = previous.attempt + 1
-            } else {
-                attempt = 0
-            }
+            let attempt: UInt = previous.map { $0.attempt + 1 } ?? 0
             return uploadStatuses[Int(attempt)]
     }
 }

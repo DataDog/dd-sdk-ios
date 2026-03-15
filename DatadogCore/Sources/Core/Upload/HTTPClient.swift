@@ -12,16 +12,13 @@ internal protocol HTTPClient: Sendable {
     /// - Parameters:
     ///   - request: The request to be sent.
     ///   - delegate: The task-specific delegate.
-    ///   - completion: A closure that receives a Result containing either an HTTPURLResponse or an Error.
-    func send(request: URLRequest, delegate: URLSessionTaskDelegate?, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void)
+    /// - Returns: The HTTP response.
+    func send(request: URLRequest, delegate: URLSessionTaskDelegate?) async throws -> HTTPURLResponse
 }
 
 extension HTTPClient {
-    /// Sends the provided request using HTTP.
-    /// - Parameters:
-    ///   - request: The request to be sent.
-    ///   - completion: A closure that receives a Result containing either an HTTPURLResponse or an Error.
-    func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
-        self.send(request: request, delegate: nil, completion: completion)
+    /// Sends the provided request using HTTP without a task delegate.
+    func send(request: URLRequest) async throws -> HTTPURLResponse {
+        try await send(request: request, delegate: nil)
     }
 }

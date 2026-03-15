@@ -34,6 +34,10 @@ internal final class DatadogCore: @unchecked Sendable {
     /// The message-bus instance.
     let bus = MessageBus()
 
+    /// Single stream + drain task replacing per-message Task creation.
+    private let messageContinuation: AsyncStream<FeatureMessage>.Continuation
+    private let messageDrainTask: Task<Void, Never>
+
     /// The actor managing feature registrations, storage, and upload.
     let featureStore = FeatureStore()
 
@@ -82,6 +86,15 @@ internal final class DatadogCore: @unchecked Sendable {
         self.maxBatchesPerUpload = maxBatchesPerUpload
         self.backgroundTasksEnabled = backgroundTasksEnabled
         self.isRunFromExtension = isRunFromExtension
+
+        let (messageStream, continuation) = AsyncStream<FeatureMessage>.makeStream()
+        self.messageContinuation = continuation
+        let bus = self.bus
+        self.messageDrainTask = Task {
+            for await message in messageStream {
+                await bus.send(message: message)
+            }
+        }
 
         Task {
             await contextProvider.write { context in
@@ -258,7 +271,9 @@ internal final class DatadogCore: @unchecked Sendable {
             await storage.setIgnoreFilesAgeWhenReading(to: true)
         }
 
-        uploads.forEach { $0.flushAndTearDown() }
+        for upload in uploads {
+            await upload.flushAndTearDown()
+        }
 
         for storage in storages {
             await storage.setIgnoreFilesAgeWhenReading(to: false)
@@ -270,6 +285,8 @@ internal final class DatadogCore: @unchecked Sendable {
     /// Stops all processes for this instance of the Datadog core by
     /// deallocating all Features and their storage & upload units.
     func stop() {
+        messageContinuation.finish()
+        messageDrainTask.cancel()
         featureStore.stop()
     }
 }
@@ -333,7 +350,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 
     func send(message: FeatureMessage) {
-        Task { await bus.send(message: message) }
+        messageContinuation.yield(message)
     }
 
     func set(anonymousId: String?) {
@@ -526,8 +543,10 @@ extension DatadogCore {
         let flushables = featureStore.flushableFeatures
 
         for _ in 0..<5 {
-            bus.flush()
-            flushables.forEach { $0.flush() }
+            await bus.flush()
+            for flushable in flushables {
+                await flushable.flush()
+            }
         }
     }
 }

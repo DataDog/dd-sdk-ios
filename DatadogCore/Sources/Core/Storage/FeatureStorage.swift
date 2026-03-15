@@ -9,10 +9,10 @@ import DatadogInternal
 
 /// Actor that manages file storage for a single SDK feature.
 ///
-/// Replaces the shared `readWriteQueue` (`DispatchQueue`) previously passed from `DatadogCore`.
-/// Each feature now has its own actor-isolated storage, eliminating cross-feature contention.
-/// `writer(for:)` and `reader` are `nonisolated` because they construct new value types
-/// from immutable state.
+/// Each feature has its own actor-isolated storage, eliminating cross-feature contention.
+/// Writers are cached (one per consent directory) so that a single `AsyncStream` + drain
+/// `Task` handles all writes for each consent level, instead of allocating a new pair on
+/// every event write.
 internal actor FeatureStorage {
     /// The name of this Feature, used to distinguish storage instances in telemetry and logs.
     nonisolated let featureName: String
@@ -26,6 +26,20 @@ internal actor FeatureStorage {
     nonisolated let encryption: DataEncryption?
     /// Telemetry interface.
     nonisolated let telemetry: Telemetry
+
+    /// Cached writer for `.granted` consent (writes to authorized directory).
+    private lazy var authorizedWriter = FileWriter(
+        orchestrator: authorizedFilesOrchestrator,
+        encryption: encryption,
+        telemetry: telemetry
+    )
+
+    /// Cached writer for `.pending` consent (writes to unauthorized directory).
+    private lazy var unauthorizedWriter = FileWriter(
+        orchestrator: unauthorizedFilesOrchestrator,
+        encryption: encryption,
+        telemetry: telemetry
+    )
 
     init(
         featureName: String,
@@ -43,22 +57,14 @@ internal actor FeatureStorage {
         self.telemetry = telemetry
     }
 
-    nonisolated func writer(for trackingConsent: TrackingConsent) -> Writer {
+    func writer(for trackingConsent: TrackingConsent) -> Writer {
         switch trackingConsent {
         case .granted:
-            return FileWriter(
-                orchestrator: authorizedFilesOrchestrator,
-                encryption: encryption,
-                telemetry: telemetry
-            )
+            return authorizedWriter
         case .notGranted:
             return NOPWriter()
         case .pending:
-            return FileWriter(
-                orchestrator: unauthorizedFilesOrchestrator,
-                encryption: encryption,
-                telemetry: telemetry
-            )
+            return unauthorizedWriter
         }
     }
 

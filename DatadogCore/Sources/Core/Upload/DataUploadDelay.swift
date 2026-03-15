@@ -8,7 +8,9 @@ import Foundation
 import DatadogInternal
 
 /// Mutable interval used for periodic data uploads.
-internal class DataUploadDelay: @unchecked Sendable {
+///
+/// Value type — only mutated within `DataUploadWorker` actor isolation.
+internal struct DataUploadDelay: Sendable {
     private let minDelay: TimeInterval
     private let maxDelay: TimeInterval
     private let changeRate: Double
@@ -24,11 +26,11 @@ internal class DataUploadDelay: @unchecked Sendable {
         self.current = performance.initialUploadDelay
     }
 
-    func reset() {
+    mutating func reset() {
         current = minDelay
     }
 
-    func increase() {
+    mutating func increase() {
         current = min(current * (1.0 + changeRate), maxDelay)
     }
 }

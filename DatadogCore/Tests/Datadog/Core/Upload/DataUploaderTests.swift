@@ -11,7 +11,7 @@ import TestUtilities
 
 class DataUploaderTests: XCTestCase {
     // swiftlint:disable opening_brace
-    func testGivenValidRequest_whenUploadCompletesWithStatusCode_itReturnsUploadStatus() throws {
+    func testGivenValidRequest_whenUploadCompletesWithStatusCode_itReturnsUploadStatus() async throws {
         // Given
         let randomResponse: HTTPURLResponse = .mockResponseWith(statusCode: (100...599).randomElement()!)
         let randomRequest: URLRequest = oneOf([
@@ -26,7 +26,7 @@ class DataUploaderTests: XCTestCase {
         )
 
         // When
-        let uploadStatus = try uploader.upload(
+        let uploadStatus = try await uploader.upload(
             events: .mockAny(),
             context: .mockAny(),
             previous: nil
@@ -43,7 +43,7 @@ class DataUploaderTests: XCTestCase {
     }
     // swiftlint:enable opening_brace
 
-    func testGivenValidRequest_whenUploadCompletesWithError_itReturnsUploadStatus() throws {
+    func testGivenValidRequest_whenUploadCompletesWithError_itReturnsUploadStatus() async throws {
         // Given
         let randomErrorDescription: String = .mockRandom()
         let randomError = NSError(domain: .mockRandom(), code: .mockRandom(), userInfo: [NSLocalizedDescriptionKey: randomErrorDescription])
@@ -56,7 +56,7 @@ class DataUploaderTests: XCTestCase {
         )
 
         // When
-        let uploadStatus = try uploader.upload(
+        let uploadStatus = try await uploader.upload(
             events: .mockAny(),
             context: .mockAny(),
             previous: nil
@@ -68,7 +68,7 @@ class DataUploaderTests: XCTestCase {
         DDAssertReflectionEqual(uploadStatus, expectedUploadStatus)
     }
 
-    func testWhenRequestCannotBeCreated_itThrows() throws {
+    func testWhenRequestCannotBeCreated_itThrows() async throws {
         // Given
         let error = ErrorMock()
 
@@ -79,7 +79,10 @@ class DataUploaderTests: XCTestCase {
         )
 
         // When & Then
-        XCTAssertThrowsError(try uploader.upload(events: .mockAny(), context: .mockAny(), previous: nil)) { error in
+        do {
+            _ = try await uploader.upload(events: .mockAny(), context: .mockAny(), previous: nil)
+            XCTFail("Expected error to be thrown")
+        } catch {
             XCTAssertTrue(error is ErrorMock)
         }
     }

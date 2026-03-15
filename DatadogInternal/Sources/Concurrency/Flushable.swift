@@ -11,4 +11,15 @@ public protocol Flushable {
     ///
     /// **blocks the caller thread**
     func flush()
+
+    /// Awaits completion of all asynchronous operations without blocking a thread.
+    func flush() async
+}
+
+extension Flushable {
+    /// Default implementation delegates to the synchronous version.
+    public func flush() async {
+        let syncFlush: () -> Void = self.flush
+        syncFlush()
+    }
 }

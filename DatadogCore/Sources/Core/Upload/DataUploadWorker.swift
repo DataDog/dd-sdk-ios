@@ -25,7 +25,7 @@ internal actor DataUploadWorker: DataUploadWorkerType {
     /// The core context provider
     private let contextProvider: DatadogContextProvider
     /// Delay used to schedule consecutive uploads.
-    private let delay: DataUploadDelay
+    private var delay: DataUploadDelay
     /// Maximum number of batches to upload per cycle.
     private let maxBatchesPerUpload: Int
 
@@ -97,14 +97,14 @@ internal actor DataUploadWorker: DataUploadWorkerType {
             }
             do {
                 let ctx = await contextProvider.read()
-                previousUploadStatus = try dataUploader.upload(
+                previousUploadStatus = try await dataUploader.upload(
                     events: nextBatch.events,
                     context: ctx,
                     previous: previousUploadStatus
                 )
             } catch {
                 let ctx = await contextProvider.read()
-                previousUploadStatus = try? dataUploader.upload(
+                previousUploadStatus = try? await dataUploader.upload(
                     events: nextBatch.events,
                     context: ctx,
                     previous: previousUploadStatus
@@ -148,7 +148,7 @@ internal actor DataUploadWorker: DataUploadWorkerType {
         while let file = files.popLast() {
             if let batch = fileReader.readBatch(from: file) {
                 do {
-                    let uploadStatus = try dataUploader.upload(
+                    let uploadStatus = try await dataUploader.upload(
                         events: batch.events,
                         context: context,
                         previous: previousUploadStatus

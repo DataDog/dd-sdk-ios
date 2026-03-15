@@ -111,6 +111,11 @@ extension MessageBus: Flushable {
         semaphore.wait()
     }
 
+    /// Non-blocking async variant that awaits actor mailbox drain.
+    nonisolated func flush() async {
+        await barrierFlush()
+    }
+
     /// Actor-isolated no-op whose execution proves all prior work has completed.
     private func barrierFlush() { }
 }

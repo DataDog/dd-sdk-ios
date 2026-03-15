@@ -43,8 +43,6 @@ extension UIApplication: @preconcurrency UIKitAppBackgroundTaskCoordinator {
 
 internal class AppBackgroundTaskCoordinator: BackgroundTaskCoordinator, @unchecked Sendable {
     private let app: UIKitAppBackgroundTaskCoordinator?
-
-    @ReadWriteLock
     private var currentTaskId: UIBackgroundTaskIdentifier?
 
     internal init(
@@ -84,8 +82,6 @@ extension ProcessInfo: ProcessInfoActivityCoordinator {}
 
 internal class ExtensionBackgroundTaskCoordinator: BackgroundTaskCoordinator, @unchecked Sendable {
     private let processInfo: ProcessInfoActivityCoordinator
-
-    @ReadWriteLock
     private var currentActivity: NSObjectProtocol?
 
     internal init(

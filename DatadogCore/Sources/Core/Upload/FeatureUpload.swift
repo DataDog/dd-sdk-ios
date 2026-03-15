@@ -71,15 +71,10 @@ internal struct FeatureUpload {
     /// - It completes all pending asynchronous work in upload worker and cancels its next schedules.
     /// - It flushes all data stored in authorized files by performing their arbitrary upload (without retrying).
     ///
-    /// This method is executed synchronously. After return, the upload feature has no more
-    /// pending asynchronous operations and all its authorized data should be considered uploaded.
-    internal func flushAndTearDown() {
-        let semaphore = DispatchSemaphore(value: 0)
-        Task {
-            await uploader.cancel()
-            await uploader.flush()
-            semaphore.signal()
-        }
-        semaphore.wait()
+    /// After return, the upload feature has no more pending asynchronous operations
+    /// and all its authorized data should be considered uploaded.
+    internal func flushAndTearDown() async {
+        await uploader.cancel()
+        await uploader.flush()
     }
 }
