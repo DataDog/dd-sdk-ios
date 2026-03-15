@@ -130,7 +130,6 @@ class RUMViewScopeTests: XCTestCase {
             writer: writer
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -194,7 +193,6 @@ class RUMViewScopeTests: XCTestCase {
             writer: writer
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
         XCTAssertEqual(event.source, .init(rawValue: source))
     }
@@ -228,7 +226,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -296,7 +293,6 @@ class RUMViewScopeTests: XCTestCase {
             "The scope should end."
         )
 
-        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 2)
         viewEvents.forEach { viewEvent in
@@ -388,7 +384,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 2)
         viewEvents.forEach { viewEvent in
@@ -435,7 +430,6 @@ class RUMViewScopeTests: XCTestCase {
             "The scope should end."
         )
 
-        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 2)
         viewEvents.forEach { viewEvent in
@@ -516,7 +510,6 @@ class RUMViewScopeTests: XCTestCase {
             "The scope should end."
         )
 
-        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 2)
         viewEvents.forEach { viewEvent in
@@ -592,7 +585,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 1)
 
@@ -662,7 +654,6 @@ class RUMViewScopeTests: XCTestCase {
             "The scope should end as another View is started."
         )
 
-        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 2)
         let view1WasActive = try XCTUnwrap(viewEvents[0].view.isActive)
@@ -709,7 +700,6 @@ class RUMViewScopeTests: XCTestCase {
             "The scope should end as the View was started for another time."
         )
 
-        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 2)
         let viewWasActive = try XCTUnwrap(viewEvents[0].view.isActive)
@@ -757,7 +747,6 @@ class RUMViewScopeTests: XCTestCase {
         }
 
         // Then
-        await writer.waitForEvents(count: 4)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         let view1Events = viewEvents.filter { $0.view.url == "View1URL" && $0.view.name == "View1Name" }
         let view2Events = viewEvents.filter { $0.view.url == "View2URL" && $0.view.name == "View2Name" }
@@ -809,7 +798,6 @@ class RUMViewScopeTests: XCTestCase {
         _ = scope.process(command: RUMStopResourceCommand.mockWith(resourceKey: "key", time: currentTime), context: context, writer: writer)
 
         // Then
-        await writer.waitForEvents(count: 10)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertGreaterThan(viewEvents.count, 1)
         viewEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
@@ -849,7 +837,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["viewKey": "viewValue"])
@@ -876,7 +863,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 2)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue", "newViewKey": "newViewValue", "anotherKey": "anotherValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["viewKey": "viewValue", "newViewKey": "newViewValue", "anotherKey": "anotherValue"])
@@ -898,7 +884,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["viewKey": "viewValue"])
@@ -922,7 +907,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 2)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, [:])
         DDAssertDictionariesEqual(event.context!.contextInfo, [:])
@@ -955,7 +939,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
         DDAssertDictionariesEqual(scope.internalAttributes, ["internalKey": "internalValue"])
@@ -973,7 +956,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
-        await writer.waitForEvents(count: 2)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "newViewValue"])
         DDAssertDictionariesEqual(scope.internalAttributes, ["internalKey": "internalValue"])
@@ -997,7 +979,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         var viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
         DDAssertDictionariesEqual(viewEvent.context!.contextInfo, ["viewKey": "viewValue"])
@@ -1016,7 +997,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 3)
         viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let actionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertNil(scope.userActionScope, "It should not count custom action as pending")
@@ -1053,7 +1033,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 5)
         viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let resourceEvent = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue", "newViewKey": "newViewValue"])
@@ -1086,7 +1065,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         var viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
         DDAssertDictionariesEqual(viewEvent.context!.contextInfo, ["key": "viewValue"])
@@ -1105,7 +1083,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 3)
         viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let actionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
@@ -1132,7 +1109,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 5)
         viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let resourceEvent = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
@@ -1162,7 +1138,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         var view1Event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(firstViewScope.attributes, ["viewKey": "viewValue"])
         DDAssertDictionariesEqual(view1Event.context!.contextInfo, ["viewKey": "viewValue", "globalKey": "globalValue"])
@@ -1199,7 +1174,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(secondViewScope.process(command: startView2Command, context: context, writer: writer))
 
         // Then
-        await writer.waitForEvents(count: 3)
         view1Event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last(where: { $0.view.name == "view1" }))
         let view2Event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last(where: { $0.view.name == "view2" }))
         // First view scope is inactive with the final snapshot of attributes
@@ -1231,7 +1205,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 5)
         view1Event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let resourceEvent = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
         // First view scope is inactive with the final snapshot of attributes
@@ -1276,7 +1249,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["globalKey": "globalValue", "viewKey": "viewValue"])
@@ -1295,7 +1267,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 2)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         // View scope is stopped with the final snapshot of attributes
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "newViewValue", "globalKey": "newGlobalValue"])
@@ -1318,7 +1289,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
-        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "viewValue"])
@@ -1336,7 +1306,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
-        await writer.waitForEvents(count: 2)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "newViewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "newViewValue"])
@@ -1357,7 +1326,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
-        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "viewValue"])
@@ -1374,7 +1342,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
-        await writer.waitForEvents(count: 3)
         let longTaskEvent = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
         DDAssertDictionariesEqual(longTaskEvent.context!.contextInfo, ["key": "localValue"])
@@ -1391,7 +1358,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
-        await writer.waitForEvents(count: 4)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "newViewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "newViewValue"])
@@ -1413,7 +1379,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
-        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "viewValue", "globalKey": "globalValue"])
@@ -1430,7 +1395,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
-        await writer.waitForEvents(count: 2)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue", "anotherViewKey": "anotherViewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "viewValue", "anotherViewKey": "anotherViewValue"])
@@ -1447,7 +1411,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
-        await writer.waitForEvents(count: 3)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "newViewValue", "anotherViewKey": "anotherViewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "newViewValue", "anotherViewKey": "anotherViewValue"])
@@ -1518,7 +1481,6 @@ class RUMViewScopeTests: XCTestCase {
                 writer: writer
             )
         )
-        await writer.waitForEvents(count: 8)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(event.view.resource.count, 1, "View should record 1 successful Resource")
         XCTAssertEqual(event.view.error.count, 1, "View should record 1 error due to second Resource failure")
@@ -1588,7 +1550,6 @@ class RUMViewScopeTests: XCTestCase {
             "The View should be kept alive as all its Resources haven't yet finished loading"
         )
 
-        await writer.waitForEvents(count: 4)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertTrue(event.view.isActive ?? false, "View should stay active")
 
@@ -1603,7 +1564,6 @@ class RUMViewScopeTests: XCTestCase {
             "The View should stop as all its Resources finished loading"
         )
 
-        await writer.waitForEvents(count: 6)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(event.view.resource.count, 1, "View should record 1 successful Resource")
         XCTAssertEqual(event.view.error.count, 1, "View should record 1 error due to second Resource failure")
@@ -1662,7 +1622,6 @@ class RUMViewScopeTests: XCTestCase {
             "The View should be kept alive as `/dangling/resource` haven't yet finished loading"
         )
 
-        await writer.waitForEvents(count: 4)
         let lastEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(lastEvent.view.resource.count, 0, "View should record no resources as `/dangling/resource` never finished")
         XCTAssertEqual(lastEvent.view.isActive, true, "View should remain active because it has pending resource")
@@ -1750,7 +1709,6 @@ class RUMViewScopeTests: XCTestCase {
                 writer: writer
             )
         )
-        await writer.waitForEvents(count: 8)
         let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewEvent.view.action.count, 2, "View should record 2 actions: non-custom + instant custom")
     }
@@ -1830,7 +1788,6 @@ class RUMViewScopeTests: XCTestCase {
                 writer: writer
             )
         )
-        await writer.waitForEvents(count: 7)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(event.view.action.count, 2, "View should record 2 actions: non-custom + instant custom")
     }
@@ -1878,7 +1835,6 @@ class RUMViewScopeTests: XCTestCase {
         // Then
         XCTAssertEqual(scope.userActionScope?.name, pendingActionName, "It should not alter pending action")
 
-        await writer.waitForEvents(count: 4)
         let lastViewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let firstActionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(lastViewEvent.view.action.count, 1, "View should record 1 only custom action (pending action is not yet finished)")
@@ -1931,7 +1887,6 @@ class RUMViewScopeTests: XCTestCase {
         // Then
         XCTAssertNil(scope.userActionScope, "It should not count custom action as pending")
 
-        await writer.waitForEvents(count: 3)
         let lastViewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let firstActionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(lastViewEvent.view.action.count, 1, "View should record custom action")
@@ -2002,7 +1957,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 22)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(event.view.frustration?.count, 5)
     }
@@ -2077,7 +2031,6 @@ class RUMViewScopeTests: XCTestCase {
                 writer: writer
             )
 
-            await writer.waitForEvents(count: initialCount + 3)
             let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
             let actionName = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last?.action.target?.name)
             XCTAssertEqual(viewEvent.view.action.count, 1)
@@ -2149,7 +2102,6 @@ class RUMViewScopeTests: XCTestCase {
 
         wait(for: [completionExpectation], timeout: 0)
 
-        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(error.application.id, scope.context.rumApplicationID)
@@ -2225,7 +2177,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.source, .init(rawValue: source))
         // Configured source should not muck with sourceType, which is set separately.
@@ -2277,7 +2228,6 @@ class RUMViewScopeTests: XCTestCase {
 
         wait(for: [completionExpectation], timeout: 0)
 
-        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         DDTAssertValidRUMUUID(error.error.id)
         XCTAssertEqual(error.error.sourceType, expectedSourceType)
@@ -2343,7 +2293,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         DDAssertDictionariesEqual(error.context!.contextInfo, ["test_attribute": "abc", "other_attribute": "overwritten", "foo": "bar"])
 
@@ -2402,7 +2351,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.error.fingerprint, fakeFingerprint)
         XCTAssertNil(error.context!.contextInfo[RUM.Attributes.errorFingerprint])
@@ -2460,7 +2408,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertNil(error.context?.contextInfo[CrossPlatformAttributes.includeBinaryImages])
         XCTAssertNotNil(error.error.binaryImages)
@@ -2517,7 +2464,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 4)
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.resource.count, 0, "Failed Resource should not be counted")
         XCTAssertEqual(viewUpdate.view.error.count, 1, "Failed Resource should be counted as Error")
@@ -2562,7 +2508,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.error.timeSinceAppStart, appLauchToErrorTimeDiff * 1_000)
     }
@@ -2639,7 +2584,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 9)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
 
         XCTAssertEqual(viewEvents.count, 6)
@@ -2681,7 +2625,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
 
         XCTAssertEqual(viewEvents.count, 2)
@@ -2730,7 +2673,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
 
         XCTAssertEqual(viewEvents.count, 2)
@@ -2787,7 +2729,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 3)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
 
         XCTAssertEqual(viewEvents.count, 3)
@@ -2847,7 +2788,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 4)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
 
         XCTAssertEqual(viewEvents.count, 3)
@@ -2906,7 +2846,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         wait(for: [completionExpectation], timeout: 0)
-        await writer.waitForEvents(count: 2)
         XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
         XCTAssertFalse(writer.events(ofType: RUMViewEvent.self).isEmpty)
     }
@@ -2954,7 +2893,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(error.view.url, "UIViewController")
@@ -3015,7 +2953,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 3)
         let event = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
 
         let longTaskStartingDate = addLongTaskDate - duration
@@ -3099,7 +3036,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 3)
         let event = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
         DDAssertDictionariesEqual(event.context!.contextInfo, ["foo": "bar", "test_attribute": "overwritten", "other_attribute": "my attribute"])
         DDAssertDictionariesEqual(scope.attributes, ["test_attribute": "abc", "other_attribute": "my attribute"])
@@ -3144,7 +3080,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 3)
         let event = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
         XCTAssertEqual(event.source, .init(rawValue: source))
     }
@@ -3200,7 +3135,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.customTimings.count, 2)
 
         // Then
-        await writer.waitForEvents(count: 3)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
 
         XCTAssertEqual(events.count, 3, "There should be 3 View updates sent")
@@ -3258,7 +3192,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 2)
         try await Task.sleep(nanoseconds: 50_000_000)
         let lastEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(lastEvent.view.customTimings?.customTimingsInfo, [:])
@@ -3308,7 +3241,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.customTimings.count, 1)
 
         // Then
-        await writer.waitForEvents(count: 2)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
 
         XCTAssertEqual(events.count, 2, "There should be 2 View updates sent")
@@ -3362,7 +3294,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 2)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
 
         XCTAssertEqual(events.count, 2)
@@ -3421,7 +3352,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 3)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
 
         XCTAssertEqual(events.count, 3)
@@ -3472,7 +3402,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 4)
         let events = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self))
 
         XCTAssertEqual(events.count, 1)
@@ -3517,7 +3446,6 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         XCTAssertFalse(scope.isActiveView)
-        await writer.waitForEvents(count: 1)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
 
         XCTAssertEqual(events.count, 1)
@@ -3592,7 +3520,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 12)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         let resourceEvents = writer.events(ofType: RUMResourceEvent.self)
         let errorEvents = writer.events(ofType: RUMErrorEvent.self)
@@ -3732,7 +3659,6 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 5)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
 
         // Then
@@ -3779,7 +3705,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(event.view.action.count, 0, "All actions, including ApplicationStart action should be dropped")
         XCTAssertEqual(event.dd.documentVersion, 1, "It should record only one view update")
@@ -4073,7 +3998,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
         let lastEvent = events.last!
         XCTAssertEqual(lastEvent.view.performance?.fbc?.timestamp, fbcValue)
@@ -4119,7 +4043,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
         let lastEvent = events.last!
         XCTAssertEqual(lastEvent.view.interactionToNextViewTime, invValue)
@@ -4177,7 +4100,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 3)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
         XCTAssertEqual(events.count, 3, "There should be 3 View updates sent")
         XCTAssertEqual(events[0].session.hasReplay, false)
@@ -4246,7 +4168,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let initialEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
 
         let initialAccessibilityData = try XCTUnwrap(
@@ -4288,7 +4209,6 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
         XCTAssertNil(viewEvent.view.accessibility)
     }

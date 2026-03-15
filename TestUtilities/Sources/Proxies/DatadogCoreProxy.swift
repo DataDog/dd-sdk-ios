@@ -203,11 +203,11 @@ private final class FeatureScopeInterceptor: @unchecked Sendable {
         let actualWriter: Writer
         unowned var interception: FeatureScopeInterceptor?
 
-        func write<T: Encodable, M: Encodable>(value: T, metadata: M?) async {
+        func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
             group.enter()
             defer { group.leave() }
 
-            await actualWriter.write(value: value, metadata: metadata)
+            actualWriter.write(value: value, metadata: metadata)
 
             let event = value
             let data = try! InterceptingWriter.jsonEncoder.encode(value)

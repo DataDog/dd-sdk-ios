@@ -66,7 +66,7 @@ internal final class ExposureLogger: ExposureLogging {
                 )
             )
 
-            await writer.write(value: exposureEvent)
+            writer.write(value: exposureEvent)
         }
     }
 }

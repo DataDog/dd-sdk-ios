@@ -78,11 +78,11 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting, 
 
         if realDateNow.timeIntervalSince(errorDate) < FatalErrorBuilder.Constants.viewEventAvailabilityThreshold {
             DD.logger.debug("Sending Watchdog Termination as RUM error with issuing RUM view update")
-            await writer.write(value: error)
-            await writer.write(value: view)
+            writer.write(value: error)
+            writer.write(value: view)
         } else {
             DD.logger.debug("Sending Watchdog Termination as RUM error without updating RUM view")
-            await writer.write(value: error)
+            writer.write(value: error)
         }
     }
 }

@@ -130,10 +130,10 @@ internal struct CrashReportReceiver: FeatureMessageReceiver, @unchecked Sendable
                 let rumError = builder.createRUMError(with: lastRUMViewEvent)
 
                 if let mappedError = eventsMapper.map(event: rumError) {
-                    await writer.write(value: mappedError)
+                    writer.write(value: mappedError)
                 } else {
                     DD.logger.warn("errorEventMapper returned 'nil' for a crash. Discarding crashes is not supported. The unmodified event will be sent.")
-                    await writer.write(value: rumError)
+                    writer.write(value: rumError)
                 }
             }
         }
@@ -260,13 +260,13 @@ internal struct CrashReportReceiver: FeatureMessageReceiver, @unchecked Sendable
             let rumError = builder.createRUMError(with: updatedRUMView)
 
             if let mappedError = eventsMapper.map(event: rumError) {
-                await writer.write(value: mappedError)
+                writer.write(value: mappedError)
             } else {
                 DD.logger.warn("errorEventMapper returned 'nil' for a crash. Discarding crashes is not supported. The unmodified event will be sent.")
-                await writer.write(value: rumError)
+                writer.write(value: rumError)
             }
             if let mappedView = eventsMapper.map(event: updatedRUMView) {
-                await writer.write(value: eventsMapper.map(event: mappedView))
+                writer.write(value: eventsMapper.map(event: mappedView))
             }
         }
     }

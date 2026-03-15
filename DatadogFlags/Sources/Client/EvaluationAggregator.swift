@@ -104,7 +104,7 @@ internal final class EvaluationAggregator {
             guard let (_, writer) = await featureScope.eventWriteContext() else { return }
             for aggregated in evaluationsToSend {
                 let event = aggregated.toFlagEvaluationEvent()
-                await writer.write(value: event)
+                writer.write(value: event)
             }
         }
     }

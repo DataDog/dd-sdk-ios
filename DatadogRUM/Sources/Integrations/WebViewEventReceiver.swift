@@ -128,7 +128,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver, @unchecked Se
             event["_dd"] = dd
         }
 
-        await writer.write(value: AnyEncodable(event))
+        writer.write(value: AnyEncodable(event))
     }
 
     private func receive(telemetry event: JSON) {
@@ -160,6 +160,6 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver, @unchecked Se
             event["session"] = session
         }
 
-        await writer.write(value: AnyEncodable(event))
+        writer.write(value: AnyEncodable(event))
     }
 }

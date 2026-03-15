@@ -123,7 +123,7 @@ internal class RUMFeatureOperationManager {
             vital: vital
         )
 
-        Task { await writer.write(value: vitalEvent) }
+        writer.write(value: vitalEvent)
     }
 
     private func trackOperationStart(name: String, operationKey: String?, lookupKey: String) {

@@ -60,7 +60,7 @@ internal struct LogMessageReceiver: FeatureMessageReceiver, @unchecked Sendable 
                 threadName: log.thread
             )
 
-            await writer.write(value: event)
+            writer.write(value: event)
         }
     }
 }
@@ -104,7 +104,7 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver, @unchecked Sendable 
                 webEvent[LogEvent.Attributes.RUM.actionID] = rum.userActionID
             }
 
-            await writer.write(value: AnyEncodable(webEvent))
+            writer.write(value: AnyEncodable(webEvent))
         }
     }
 }

@@ -157,7 +157,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
             )
 
             let envelope = SpanEventsEnvelope(span: event, environment: context.env)
-            await writer.write(value: envelope)
+            writer.write(value: envelope)
         }
     }
 

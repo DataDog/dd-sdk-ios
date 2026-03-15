@@ -108,11 +108,11 @@ internal final class FatalAppHangsHandler:  @unchecked Sendable {
 
         if realDateNow.timeIntervalSince(realErrorDate) < FatalErrorBuilder.Constants.viewEventAvailabilityThreshold {
             DD.logger.debug("Sending fatal App hang as RUM error with issuing RUM view update")
-            await writer.write(value: error)
-            await writer.write(value: view)
+            writer.write(value: error)
+            writer.write(value: view)
         } else {
             DD.logger.debug("Sending fatal App hang as RUM error without updating RUM view")
-            await writer.write(value: error)
+            writer.write(value: error)
         }
     }
 }

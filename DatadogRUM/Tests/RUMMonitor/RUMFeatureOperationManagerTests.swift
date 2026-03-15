@@ -52,7 +52,6 @@ class RUMFeatureOperationManagerTests: XCTestCase {
             writer: mockWriter,
             activeView: view
         )
-        await mockWriter.waitForEvents(count: 1)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
@@ -264,7 +263,6 @@ class RUMFeatureOperationManagerTests: XCTestCase {
             writer: mockWriter,
             activeView: view
         )
-        await mockWriter.waitForEvents(count: 1)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)

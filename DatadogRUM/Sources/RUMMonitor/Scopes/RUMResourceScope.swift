@@ -309,7 +309,7 @@ internal class RUMResourceScope: RUMScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: resourceEvent) {
-            Task { await writer.write(value: event) }
+            writer.write(value: event)
             onResourceEvent(true)
             networkSettledMetric.trackResourceEnd(
                 at: resourceMetrics?.fetch.end ?? command.time,
@@ -398,7 +398,7 @@ internal class RUMResourceScope: RUMScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: errorEvent) {
-            Task { await writer.write(value: event) }
+            writer.write(value: event)
             onErrorEvent(true)
             networkSettledMetric.trackResourceEnd(
                 at: resourceMetrics?.fetch.end ?? command.time,

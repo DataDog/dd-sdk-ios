@@ -78,7 +78,7 @@ internal class ResourcesWriter: ResourcesWriting {
             guard let (_, recordWriter) = await scope.eventWriteContext() else { return }
             let unknownResources = resources.filter { self?.knownIdentifiers.contains($0.identifier) == false }
             for resource in unknownResources {
-                await recordWriter.write(value: resource)
+                recordWriter.write(value: resource)
             }
             self?.knownIdentifiers.formUnion(Set(unknownResources.map { $0.identifier }))
         }

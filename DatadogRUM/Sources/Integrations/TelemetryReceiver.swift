@@ -137,7 +137,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
                 view: rum?.viewID.map { .init(id: $0) }
             )
 
-            await writer.write(value: event)
+            writer.write(value: event)
         }
     }
 
@@ -182,7 +182,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
                 view: rum?.viewID.map { .init(id: $0) }
             )
 
-            await writer.write(value: event)
+            writer.write(value: event)
         }
     }
 
@@ -210,7 +210,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
                 view: rum?.viewID.map { .init(id: $0) }
             )
 
-            await writer.write(value: event)
+            writer.write(value: event)
         }
     }
 
@@ -248,7 +248,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
                 view: rum?.viewID.map { .init(id: $0) }
             )
 
-            await writer.write(value: event)
+            writer.write(value: event)
         }
     }
 
@@ -288,7 +288,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
                 view: rum?.viewID.map { .init(id: $0) }
             )
 
-            await writer.write(value: event)
+            writer.write(value: event)
         }
     }
 

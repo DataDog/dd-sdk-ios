@@ -108,7 +108,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -196,7 +195,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -283,7 +281,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -350,7 +347,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.dd.traceId, "64")
         XCTAssertEqual(event.dd.spanId, "200")
@@ -378,7 +374,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertNil(event.dd.traceId)
         XCTAssertNil(event.dd.spanId)
@@ -422,7 +417,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.source, .init(rawValue: customSource))
         XCTAssertNil(event.resource.encodedBodySize)
@@ -461,7 +455,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -530,7 +523,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -599,7 +591,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -667,7 +658,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         DDTAssertValidRUMUUID(event.error.id)
         XCTAssertEqual(event.error.type, "NSURLErrorDomain - -1001")
@@ -715,7 +705,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -781,7 +770,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -848,7 +836,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -920,7 +907,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.source, .init(rawValue: source))
         XCTAssertEqual(event.service, "test-service")
@@ -1002,7 +988,6 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let metrics = metricsCommand.metrics
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, metrics.fetch.start.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -1099,7 +1084,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.resource.encodedBodySize, 1_536, "Encoded body size should match response encoded size")
         XCTAssertEqual(event.resource.decodedBodySize, 2_048, "Decoded body size should match response decoded size")
@@ -1132,7 +1116,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 2)
         let resourceEvents = writer.events(ofType: RUMResourceEvent.self)
         let resource1Events = resourceEvents.filter { $0.resource.url == "/r/1" }
         let resource2Events = resourceEvents.filter { $0.resource.url == "/r/2" }
@@ -1169,7 +1152,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.resource.type, kindBasedOnRequest)
     }
@@ -1200,7 +1182,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let providerType = try XCTUnwrap(event.resource.provider?.type)
         let providerDomain = try XCTUnwrap(event.resource.provider?.domain)
@@ -1236,7 +1217,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertNil(event.resource.provider)
         XCTAssertNil(event.resource.encodedBodySize)
@@ -1269,7 +1249,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         let providerType = try XCTUnwrap(event.error.resource?.provider?.type)
         let providerDomain = try XCTUnwrap(event.error.resource?.provider?.domain)
@@ -1304,7 +1283,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertNil(event.error.resource?.provider)
         XCTAssertEqual(event.error.sourceType, .ios)
@@ -1340,7 +1318,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.error.sourceType, .reactNative)
     }
@@ -1376,7 +1353,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.error.timeSinceAppStart, appLauchToErrorTimeDiff * 1_000)
     }
@@ -1433,7 +1409,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 2)
         XCTAssertFalse(writer.events(ofType: RUMResourceEvent.self).isEmpty)
         XCTAssertTrue(onResourceEventCalled)
         XCTAssertTrue(onErrorEventCalled)
@@ -1706,7 +1681,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let graphql = try XCTUnwrap(event.resource.graphql)
 
@@ -1777,7 +1751,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let graphql = try XCTUnwrap(event.resource.graphql)
         XCTAssertNil(graphql.errors)
@@ -1818,7 +1791,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let graphql = try XCTUnwrap(event.resource.graphql)
         XCTAssertNil(graphql.errors)
@@ -1857,7 +1829,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let request = try XCTUnwrap(event.resource.request)
         let headers = try XCTUnwrap(request.headers)
@@ -1895,7 +1866,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let response = try XCTUnwrap(event.resource.response)
         let headers = try XCTUnwrap(response.headers)
@@ -1949,7 +1919,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let request = try XCTUnwrap(event.resource.request)
         XCTAssertEqual(request.encodedBodySize, 512)
@@ -1986,7 +1955,6 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertNil(event.resource.request)
         XCTAssertNil(event.resource.response)

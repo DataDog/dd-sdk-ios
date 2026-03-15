@@ -81,7 +81,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 3)
         let recordedActionEvents = writer.events(ofType: RUMActionEvent.self)
         XCTAssertEqual(recordedActionEvents.count, 1)
         let recordedAction = try XCTUnwrap(recordedActionEvents.last)
@@ -128,7 +127,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 3)
         let recordedActionEvents = writer.events(ofType: RUMActionEvent.self)
         XCTAssertEqual(recordedActionEvents.count, 1)
         let recordedAction = try XCTUnwrap(recordedActionEvents.last)
@@ -176,7 +174,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 3)
         let recordedActionEvents = writer.events(ofType: RUMActionEvent.self)
         let recordedAction = try XCTUnwrap(recordedActionEvents.last)
         XCTAssertEqual(recordedAction.source, .init(rawValue: source))
@@ -209,7 +206,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -260,7 +256,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -313,7 +308,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -370,7 +364,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -428,7 +421,6 @@ class RUMUserActionScopeTests: XCTestCase {
             "Continuous User Action should expire after \(expirationInterval)s"
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.action.loadingTime, 10_000_000_000, "Loading time should not exceed expirationInterval")
     }
@@ -486,7 +478,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.resource?.count, 1, "User Action should track first successful Resource")
         XCTAssertEqual(event.action.error?.count, 1, "User Action should track second Resource failure as Error")
@@ -521,7 +512,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.error?.count, 1)
     }
@@ -555,7 +545,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.target?.name, differentName)
     }
@@ -588,7 +577,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.type, .swipe, "Action type should be updated from .scroll to .swipe")
     }
@@ -626,7 +614,6 @@ class RUMUserActionScopeTests: XCTestCase {
             "Discrete User Action should time out after \(timeOutInterval)s"
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         let nanosecondsInSecond: Double = 1_000_000_000
         let actionLoadingTimeInSeconds = Double(try XCTUnwrap(event.action.loadingTime)) / nanosecondsInSecond
@@ -691,7 +678,6 @@ class RUMUserActionScopeTests: XCTestCase {
             "Discrete User Action should complete as it has no more pending Resources and it reached the timeout duration"
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.resource?.count, 1, "User Action should track first successful Resource")
         XCTAssertEqual(event.action.error?.count, 1, "User Action should track second Resource failure as Error")
@@ -727,7 +713,6 @@ class RUMUserActionScopeTests: XCTestCase {
             "Discrete User Action should complete as it reached the timeout duration"
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.error?.count, 1)
     }
@@ -764,7 +749,6 @@ class RUMUserActionScopeTests: XCTestCase {
             "Discrete User Action should complete as it reached the timeout duration"
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.longTask?.count, 1)
     }
@@ -798,7 +782,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         XCTAssertNotNil(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertTrue(callbackCalled)
     }
@@ -876,7 +859,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.action.frustration?.type.first, .errorTap)
     }
@@ -911,7 +893,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertNil(event.action.frustration)
     }
@@ -943,7 +924,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertNil(event.action.frustration)
     }
@@ -975,7 +955,6 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
-        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertNil(event.action.frustration)
     }
@@ -1003,7 +982,6 @@ class RUMUserActionScopeTests: XCTestCase {
             context: context,
             writer: writer
         )
-        await writer.waitForEvents(count: 1)
         XCTAssertFalse(writer.events(ofType: RUMActionEvent.self).isEmpty)
 
         // Then

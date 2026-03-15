@@ -37,9 +37,9 @@ class FeatureStorageTests: XCTestCase {
 
     func testWhenWritingEventsWithoutForcingNewBatch_itShouldWriteAllEventsToTheSameBatch() async throws {
         // When
-        await storage.writer(for: .granted).write(value: ["event1": "1"])
-        await storage.writer(for: .granted).write(value: ["event2": "2"])
-        await storage.writer(for: .granted).write(value: ["event3": "3"])
+        storage.writer(for: .granted).write(value: ["event1": "1"])
+        storage.writer(for: .granted).write(value: ["event2": "2"])
+        storage.writer(for: .granted).write(value: ["event3": "3"])
 
         // Then
         await storage.setIgnoreFilesAgeWhenReading(to: true)
@@ -57,9 +57,9 @@ class FeatureStorageTests: XCTestCase {
 
     func testWhenWritingEventsInDifferentConsents_itOnlyReadsGrantedEvents() async throws {
         // When
-        await storage.writer(for: .granted).write(value: ["event.consent": "granted"])
-        await storage.writer(for: .pending).write(value: ["event.consent": "pending"])
-        await storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
+        storage.writer(for: .granted).write(value: ["event.consent": "granted"])
+        storage.writer(for: .pending).write(value: ["event.consent": "pending"])
+        storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
 
         // Then
         await storage.setIgnoreFilesAgeWhenReading(to: true)
@@ -75,9 +75,9 @@ class FeatureStorageTests: XCTestCase {
 
     func testGivenEventsWrittenInDifferentConsents_whenChangingConsentToGranted_itMakesPendingEventsReadable() async throws {
         // Given
-        await storage.writer(for: .granted).write(value: ["event.consent": "granted"])
-        await storage.writer(for: .pending).write(value: ["event.consent": "pending"])
-        await storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
+        storage.writer(for: .granted).write(value: ["event.consent": "granted"])
+        storage.writer(for: .pending).write(value: ["event.consent": "pending"])
+        storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
 
         // When
         await storage.migrateUnauthorizedData(toConsent: .granted)
@@ -101,9 +101,9 @@ class FeatureStorageTests: XCTestCase {
 
     func testGivenEventsWrittenInDifferentConsents_whenChangingConsentToNotGranted_itDeletesPendingEvents() async throws {
         // Given
-        await storage.writer(for: .granted).write(value: ["event.consent": "granted"])
-        await storage.writer(for: .pending).write(value: ["event.consent": "pending"])
-        await storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
+        storage.writer(for: .granted).write(value: ["event.consent": "granted"])
+        storage.writer(for: .pending).write(value: ["event.consent": "pending"])
+        storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
 
         // When
         await storage.migrateUnauthorizedData(toConsent: .notGranted)

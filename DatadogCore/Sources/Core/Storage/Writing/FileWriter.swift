@@ -11,13 +11,20 @@ import DatadogInternal
 private let jsonEncoder: JSONEncoder = .dd.default()
 
 /// Writes data to files.
-internal struct FileWriter: Writer {
+///
+/// Events are encoded synchronously and enqueued into an internal buffer.
+/// A background drain loop writes the encoded data to disk in FIFO order,
+/// keeping the caller's thread free from I/O.
+internal final class FileWriter: Writer, @unchecked Sendable {
     /// Orchestrator producing reference to writable file.
     let orchestrator: FilesOrchestratorType
     /// Algorithm to encrypt written data.
     let encryption: DataEncryption?
     /// Telemetry interface.
     let telemetry: Telemetry
+
+    private let continuation: AsyncStream<Data>.Continuation
+    private let drainTask: Task<Void, Never>
 
     init(
         orchestrator: FilesOrchestratorType,
@@ -27,11 +34,27 @@ internal struct FileWriter: Writer {
         self.orchestrator = orchestrator
         self.encryption = encryption
         self.telemetry = telemetry
+
+        let (stream, continuation) = AsyncStream<Data>.makeStream()
+        self.continuation = continuation
+
+        let orch = orchestrator
+        let tel = telemetry
+        self.drainTask = Task {
+            for await encoded in stream {
+                await FileWriter.performWrite(encoded: encoded, orchestrator: orch, telemetry: tel)
+            }
+        }
+    }
+
+    deinit {
+        continuation.finish()
     }
 
     // MARK: - Writing data
 
-    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) async {
+    /// Encodes the value synchronously and enqueues it for background writing.
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
         var encoded: Data = .init()
         if let metadata = metadata {
             do {
@@ -52,10 +75,11 @@ internal struct FileWriter: Writer {
             return
         }
 
-        await performWrite(encoded: encoded)
+        continuation.yield(encoded)
     }
 
-    private func performWrite(encoded: Data) async {
+    /// Writes encoded data to disk. Called by the drain loop.
+    private static func performWrite(encoded: Data, orchestrator: FilesOrchestratorType, telemetry: Telemetry) async {
         let writeSize = UInt64(encoded.count)
         let file: WritableFile
         do {
@@ -117,5 +141,5 @@ internal struct FileWriter: Writer {
 }
 
 internal struct NOPWriter: Writer {
-    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) async {}
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {}
 }

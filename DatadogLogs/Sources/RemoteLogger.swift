@@ -215,7 +215,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
             return
         }
 
-        await writer.write(value: log)
+        writer.write(value: log)
 
         guard log.status == .error || log.status == .critical else {
             return

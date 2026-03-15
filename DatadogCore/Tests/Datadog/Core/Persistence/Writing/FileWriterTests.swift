@@ -23,7 +23,7 @@ class FileWriterTests: XCTestCase {
         super.tearDown()
     }
 
-    func testItWritesDataWithMetadataToSingleFileInTLVFormat() async throws {
+    func testItWritesDataWithMetadataToSingleFileInTLVFormat() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: directory,
@@ -35,9 +35,9 @@ class FileWriterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        await writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
-        await writer.write(value: ["key2": "value2"])
-        await writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
+        writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
+        writer.write(value: ["key2": "value2"])
+        writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
 
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
@@ -60,7 +60,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
     }
 
-    func testItWritesEncryptedDataWithMetadataToSingleFileInTLVFormat() async throws {
+    func testItWritesEncryptedDataWithMetadataToSingleFileInTLVFormat() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: directory,
@@ -76,9 +76,9 @@ class FileWriterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        await writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
-        await writer.write(value: ["key2": "value2"])
-        await writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
+        writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
+        writer.write(value: ["key2": "value2"])
+        writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
 
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
@@ -101,7 +101,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(block?.data, #"encrypted{"key3":"value3"}encrypted"#.utf8Data)
     }
 
-    func testItWritesDataToSingleFileInTLVFormat() async throws {
+    func testItWritesDataToSingleFileInTLVFormat() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: directory,
@@ -113,9 +113,9 @@ class FileWriterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        await writer.write(value: ["key1": "value1"])
-        await writer.write(value: ["key2": "value2"])
-        await writer.write(value: ["key3": "value3"])
+        writer.write(value: ["key1": "value1"])
+        writer.write(value: ["key2": "value2"])
+        writer.write(value: ["key3": "value3"])
 
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
@@ -132,7 +132,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
     }
 
-    func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() async throws {
+    func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -161,8 +161,8 @@ class FileWriterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        await writer.write(value: ["key1": "value1"]) // will be written
-        await writer.write(value: ["key2": "value3 that makes it exceed 23 bytes"]) // will be dropped
+        writer.write(value: ["key1": "value1"]) // will be written
+        writer.write(value: ["key2": "value3 that makes it exceed 23 bytes"]) // will be dropped
 
         XCTAssertEqual(try directory.files().count, 1)
         let reader = try BatchDataBlockReader(input: directory.files()[0].stream())
@@ -173,7 +173,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(dd.logger.errorLog?.error?.message, "DataBlock with \(47) bytes exceeds limit of \(23) bytes")
     }
 
-    func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() async throws {
+    func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -194,13 +194,13 @@ class FileWriterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        await writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
+        writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
 
         XCTAssertEqual(dd.logger.errorLog?.message, "(rum) Failed to encode value")
         XCTAssertEqual(dd.logger.errorLog?.error?.message, "failed to encode `FailingEncodable`.")
     }
 
-    func testGivenErrorVerbosity_whenIOExceptionIsThrown_itPrintsError() async throws {
+    func testGivenErrorVerbosity_whenIOExceptionIsThrown_itPrintsError() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
@@ -221,10 +221,10 @@ class FileWriterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        await writer.write(value: ["ok"]) // will create the file
+        writer.write(value: ["ok"]) // will create the file
 
         try? directory.files()[0].makeReadonly()
-        await writer.write(value: ["won't be written"])
+        writer.write(value: ["won't be written"])
         try? directory.files()[0].makeReadWrite()
 
         XCTAssertEqual(dd.logger.errorLog?.message, "(rum) Failed to write 26 bytes to file")
@@ -232,7 +232,7 @@ class FileWriterTests: XCTestCase {
     }
 
     /// NOTE: Test added after incident-4797
-    func testWhenIOExceptionsHappenRandomly_theFileIsNeverMalformed() async throws {
+    func testWhenIOExceptionsHappenRandomly_theFileIsNeverMalformed() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: directory,
@@ -272,7 +272,7 @@ class FileWriterTests: XCTestCase {
 
         // Write 300 of `Foo`s and interrupt writes randomly
         for _ in 0..<300 {
-            await writer.write(value: foo, metadata: metadata)
+            writer.write(value: foo, metadata: metadata)
             randomlyInterruptIO(for: try? directory.files().first)
         }
 
@@ -299,7 +299,7 @@ class FileWriterTests: XCTestCase {
         }
     }
 
-    func testItWritesEncryptedDataToSingleFile() async throws {
+    func testItWritesEncryptedDataToSingleFile() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: directory,
@@ -313,9 +313,9 @@ class FileWriterTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        await writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
-        await writer.write(value: ["key2": "value3"])
-        await writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
+        writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
+        writer.write(value: ["key2": "value3"])
+        writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
 
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()

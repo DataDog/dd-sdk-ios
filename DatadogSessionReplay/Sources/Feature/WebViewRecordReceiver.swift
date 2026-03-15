@@ -48,7 +48,7 @@ internal struct WebViewRecordReceiver: FeatureMessageReceiver {
                 records: [AnyEncodable(event)]
             )
 
-            await writer.write(value: record)
+            writer.write(value: record)
         }
     }
 }

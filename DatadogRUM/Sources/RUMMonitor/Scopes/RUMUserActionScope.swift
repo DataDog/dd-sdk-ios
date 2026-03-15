@@ -206,7 +206,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         )
 
         if let event = dependencies.eventBuilder.build(from: actionEvent) {
-            Task { await writer.write(value: event) }
+            writer.write(value: event)
 
             // Track action in session ended metric
             dependencies.sessionEndedMetric.track(

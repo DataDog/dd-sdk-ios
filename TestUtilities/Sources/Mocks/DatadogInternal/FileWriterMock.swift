@@ -24,6 +24,7 @@ public class FileWriterMock: Writer, @unchecked Sendable {
     public var onWrite: (() -> Void)?
 
     /// Waits asynchronously until at least `count` events have been written.
+    /// Useful when writes happen inside Tasks that the test cannot `await` directly.
     public func waitForEvents(count: Int, timeout: TimeInterval = 1.0) async {
         let deadline = Date().addingTimeInterval(timeout)
         while events.count < count && Date() < deadline {
@@ -34,7 +35,7 @@ public class FileWriterMock: Writer, @unchecked Sendable {
     /// Adds an `Encodable` event to the events stack.
     ///
     /// - Parameter value: The event value to record.
-    public func write<T: Encodable, M: Encodable>(value: T, metadata: M?) async {
+    public func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
         __events.mutate { $0.append(value) }
         if let metadata = metadata {
             __metadata.mutate { $0.append(metadata) }

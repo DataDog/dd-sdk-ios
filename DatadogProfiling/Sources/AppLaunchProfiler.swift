@@ -98,7 +98,7 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                 additionalAttributes: cmd.context
             )
 
-            await writer.write(value: pprof, metadata: event)
+            writer.write(value: pprof, metadata: event)
         }
         self.telemetryController.send(metric: AppLaunchMetric(status: .init(profileStatus), durationNs: duration, fileSize: Int64(size)))
     }

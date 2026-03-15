@@ -12,7 +12,7 @@ public protocol Writer: Sendable {
     /// - Parameters:
     ///   - value: Encodable value to write.
     ///   - metadata: Encodable metadata to write.
-    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) async
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?)
 }
 
 extension Writer {
@@ -20,8 +20,8 @@ extension Writer {
     /// Uses `write(value:metadata:)` with `nil` metadata.
     ///
     /// - Parameter value: Encodable value to write.
-    public func write<T: Encodable>(value: T) async {
+    public func write<T: Encodable>(value: T) {
         let metadata: Data? = nil
-        await write(value: value, metadata: metadata)
+        write(value: value, metadata: metadata)
     }
 }
