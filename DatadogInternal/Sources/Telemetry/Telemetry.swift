@@ -7,7 +7,7 @@
 import Foundation
 
 /// Defines the type of configuration telemetry events supported by the SDK.
-public struct ConfigurationTelemetry: Equatable {
+public struct ConfigurationTelemetry: Equatable, Sendable {
     public let actionNameAttribute: String?
     public let allowFallbackToLocalStorage: Bool?
     public let allowUntrustedEvents: Bool?
@@ -71,7 +71,7 @@ public protocol SampledTelemetry {
     var sampleRate: SampleRate { get }
 }
 
-public struct MetricTelemetry: SampledTelemetry {
+public struct MetricTelemetry: SampledTelemetry, Sendable {
     /// The default sample rate for metric events (15%), applied in addition to the telemetry sample rate (20% by default).
     public static let defaultSampleRate: SampleRate = 15
 
@@ -93,9 +93,9 @@ public struct MetricTelemetry: SampledTelemetry {
 }
 
 /// Describes the type of the usage telemetry events supported by the SDK.
-public struct UsageTelemetry: SampledTelemetry {
+public struct UsageTelemetry: SampledTelemetry, Sendable {
     /// Supported usage telemetry events.
-    public enum Event {
+    public enum Event: Sendable {
         /// setTrackingConsent API
         case setTrackingConsent(TrackingConsent)
         /// stopSession API
@@ -122,7 +122,7 @@ public struct UsageTelemetry: SampledTelemetry {
         case addGraphQLRequest
 
         /// Describes the properties of `addViewLoadingTime` usage telemetry.
-        public struct ViewLoadingTime {
+        public struct ViewLoadingTime: Sendable {
             /// Whether the available view is not active
             public let noActiveView: Bool
             /// Whether the view is not available

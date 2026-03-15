@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Sendable {
+internal actor TelemetryReceiver: FeatureMessageReceiver {
     /// Maximum number of telemetry events allowed per RUM  sessions.
     static let maxEventsPerSessions: Int = 100
 
@@ -17,13 +17,13 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
     static let uptimeAttributeName: String = "process_uptime"
 
     /// RUM feature scope.
-    let featureScope: FeatureScope
-    let dateProvider: DateProvider
+    nonisolated let featureScope: FeatureScope
+    nonisolated let dateProvider: DateProvider
 
     /// Sampler for all telemetry events.
-    let sampler: Sampler
+    nonisolated let sampler: Sampler
     /// Additional sampler for configuration telemetry events, applied in addition to the `sampler`.
-    let configurationExtraSampler: Sampler
+    nonisolated let configurationExtraSampler: Sampler
 
     private struct RecordState {
         var currentSessionID: String?
@@ -31,7 +31,6 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
         var eventsCount: Int = 0
     }
 
-    @ReadWriteLock
     private var recordState = RecordState()
 
     /// Creates a RUM Telemetry instance.
@@ -58,7 +57,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
     /// The receiver will only consume `TelemetryMessage`.
     ///
     /// - Parameter message: The message to consume.
-    func receive(message: FeatureMessage) {
+    nonisolated func receive(message: FeatureMessage) {
         guard case let .telemetry(telemetry) = message else {
             return
         }
@@ -69,7 +68,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
     /// Receives a Telemetry message from the bus.
     ///
     /// - Parameter telemetry: The telemetry message to consume.
-    private func receive(telemetry: TelemetryMessage) {
+    nonisolated private func receive(telemetry: TelemetryMessage) {
         switch telemetry {
         case let .debug(id, message, attributes):
             let date = dateProvider.now
@@ -95,7 +94,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
         }
     }
 
-    private func sampled(event: SampledTelemetry) -> Bool {
+    nonisolated private func sampled(event: SampledTelemetry) -> Bool {
         return Sampler(samplingRate: event.sampleRate).sample()
     }
 
@@ -292,7 +291,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
         }
     }
 
-    private func record(event id: String?, operation: (DatadogContext, Writer) async -> Void) async {
+    private func record(event id: String?, operation: (DatadogContext, Writer) -> Void) async {
         guard sampler.sample() else {
             return
         }
@@ -301,28 +300,26 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
 
         let rum = context.additionalContext(ofType: RUMCoreContext.self)
 
-        var shouldWrite = false
-        _recordState.mutate { state in
-            if rum?.sessionID != state.currentSessionID {
-                state.currentSessionID = rum?.sessionID
-                state.eventIDs = []
-                state.eventsCount = 0
-            }
+        if rum?.sessionID != recordState.currentSessionID {
+            recordState.currentSessionID = rum?.sessionID
+            recordState.eventIDs = []
+            recordState.eventsCount = 0
+        }
 
-            if state.eventsCount < TelemetryReceiver.maxEventsPerSessions {
-                if id == nil {
-                    state.eventsCount += 1
-                    shouldWrite = true
-                } else if let eventID = id, !state.eventIDs.contains(eventID) {
-                    state.eventIDs.insert(eventID)
-                    state.eventsCount += 1
-                    shouldWrite = true
-                }
+        var shouldWrite = false
+        if recordState.eventsCount < TelemetryReceiver.maxEventsPerSessions {
+            if id == nil {
+                recordState.eventsCount += 1
+                shouldWrite = true
+            } else if let eventID = id, !recordState.eventIDs.contains(eventID) {
+                recordState.eventIDs.insert(eventID)
+                recordState.eventsCount += 1
+                shouldWrite = true
             }
         }
 
         if shouldWrite {
-            await operation(context, writer)
+            operation(context, writer)
         }
     }
 }
