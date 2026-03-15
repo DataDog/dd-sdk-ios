@@ -10,6 +10,7 @@ import TestUtilities
 
 @testable import DatadogLogs
 
+@MainActor
 class LogsTests: XCTestCase {
     func testDefaultConfiguration() {
         // Given

@@ -29,7 +29,7 @@ class RemoteLoggerTests: XCTestCase {
         let binaryImages: [BinaryImage]?
     }
 
-    func testWhenNonErrorLogged_itDoesNotPostsToMessageBus() throws {
+    func testWhenNonErrorLogged_itDoesNotPostsToMessageBus() async throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -45,10 +45,11 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("Info message")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         XCTAssertEqual(featureScope.messagesSent().count, 0)
     }
 
-    func testWhenErrorLogged_itPostsToMessageBus() throws {
+    func testWhenErrorLogged_itPostsToMessageBus() async throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -64,11 +65,12 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
         XCTAssertEqual(errorMessage.message, "Error message")
     }
 
-    func testWhenAttributesContainIncludeBinaryImages_itPostsBinaryImagesToMessageBus() throws {
+    func testWhenAttributesContainIncludeBinaryImages_itPostsBinaryImagesToMessageBus() async throws {
         let stubBacktrace: BacktraceReport = .mockRandom()
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -84,6 +86,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Information message", error: ErrorMock(), attributes: [CrossPlatformAttributes.includeBinaryImages: true])
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
         // This is removed because binary images are sent in the message, so the additional attribute isn't needed
         XCTAssertNil(errorMessage.attributes[CrossPlatformAttributes.includeBinaryImages])
@@ -100,7 +103,7 @@ class RemoteLoggerTests: XCTestCase {
         }
     }
 
-    func testWhenErrorLogged_itPostsToMessageBus_withOtherCrossPlatformAttributesIntact() throws {
+    func testWhenErrorLogged_itPostsToMessageBus_withOtherCrossPlatformAttributesIntact() async throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -124,12 +127,13 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
         XCTAssertEqual(errorMessage.attributes[CrossPlatformAttributes.errorSourceType] as? String, "flutter")
         XCTAssertEqual(errorMessage.attributes[Logs.Attributes.errorFingerprint] as? String, mockFingerprint)
     }
 
-    func testWhenErrorLoggedFromInternal_itPostsToMessageBus_withSourceTypeInjected() throws {
+    func testWhenErrorLoggedFromInternal_itPostsToMessageBus_withSourceTypeInjected() async throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -156,6 +160,7 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
         XCTAssertEqual(errorMessage.attributes[CrossPlatformAttributes.errorSourceType] as? String, "flutter")
         XCTAssertEqual(errorMessage.attributes[Logs.Attributes.errorFingerprint] as? String, mockFingerprint)
@@ -206,7 +211,7 @@ class RemoteLoggerTests: XCTestCase {
 
     // MARK: - Attributes
 
-    func testWhenAddingAndRemovingLoggerAttributes_itSendsLogsWithCurrentAttributes() throws {
+    func testWhenAddingAndRemovingLoggerAttributes_itSendsLogsWithCurrentAttributes() async throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -231,6 +236,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("INFO message")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 4)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 4)
         XCTAssertEqual(logs[0].attributes.userAttributes.count, 0)
@@ -241,7 +247,7 @@ class RemoteLoggerTests: XCTestCase {
         //XCTAssertEqual(logs[3].attributes.userAttributes as? [String: String], ["attribute-2": "value B"])
     }
 
-    func testGivenGlobalAttributeAvailable_whenSendingLog_itSendsLogWithGlobalAttribute() throws {
+    func testGivenGlobalAttributeAvailable_whenSendingLog_itSendsLogWithGlobalAttribute() async throws {
         let attributeKey = String.mockRandom()
         let attributeValue = String.mockRandom()
 
@@ -260,6 +266,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("Information message")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
@@ -267,7 +274,7 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(log.attributes.userAttributes[attributeKey] as? String, attributeValue)
     }
 
-    func testGivenGlobalAndLoggerAttributeAvailable_whenSendingLog_itSendsLogWithLoggerAttribute() throws {
+    func testGivenGlobalAndLoggerAttributeAvailable_whenSendingLog_itSendsLogWithLoggerAttribute() async throws {
         let attributeKey = String.mockRandom()
         let globalAttributeValue = String.mockRandom()
         let loggerAttributeValue = String.mockRandom()
@@ -288,6 +295,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("Information message")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
@@ -295,7 +303,7 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(log.attributes.userAttributes[attributeKey] as? String, loggerAttributeValue)
     }
 
-    func testGivenGlobalAndLoggerAndLogAttributeAvailable_whenSendingLog_itSendsLogWithLogAttribute() throws {
+    func testGivenGlobalAndLoggerAndLogAttributeAvailable_whenSendingLog_itSendsLogWithLogAttribute() async throws {
         let attributeKey = String.mockRandom()
         let globalAttributeValue = String.mockRandom()
         let loggerAttributeValue = String.mockRandom()
@@ -317,6 +325,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("Information message", attributes: [attributeKey: logAttributeValue])
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
@@ -324,7 +333,7 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(log.attributes.userAttributes[attributeKey] as? String, logAttributeValue)
     }
 
-    func testItSendsGlobalAttributesErrorAlongWithErrorLog() throws {
+    func testItSendsGlobalAttributesErrorAlongWithErrorLog() async throws {
         let attributeKey = String.mockRandom()
         let attributeValue = String.mockRandom()
 
@@ -343,11 +352,12 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
         XCTAssertEqual(errorMessage.attributes[attributeKey] as? String, attributeValue)
     }
 
-    func testWhenAttributesContainErrorFingerprint_itAddsItToTheLogEvent() throws {
+    func testWhenAttributesContainErrorFingerprint_itAddsItToTheLogEvent() async throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -364,6 +374,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Information message", error: ErrorMock(), attributes: [Logs.Attributes.errorFingerprint: randomErrorFingerprint])
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
@@ -372,7 +383,7 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(log.error?.fingerprint, randomErrorFingerprint)
     }
 
-    func testWhenAttributesContainIncludeBinaryImages_itAddsBinaryImagesToLogEvent() throws {
+    func testWhenAttributesContainIncludeBinaryImages_itAddsBinaryImagesToLogEvent() async throws {
         let stubBacktrace: BacktraceReport = .mockRandom()
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -388,6 +399,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Information message", error: ErrorMock(), attributes: [CrossPlatformAttributes.includeBinaryImages: true])
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
@@ -409,7 +421,7 @@ class RemoteLoggerTests: XCTestCase {
 
     // MARK: - Tags
 
-    func testWhenAddingAndRemovingLoggerTags_itSendsLogsWithCurrentTags() throws {
+    func testWhenAddingAndRemovingLoggerTags_itSendsLogsWithCurrentTags() async throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -437,6 +449,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("INFO message")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 5)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 5)
         XCTAssertNil(logs[0].tags)
@@ -448,7 +461,7 @@ class RemoteLoggerTests: XCTestCase {
 
     // MARK: - RUM Integration
 
-    func testWhenRUMIntegrationIsEnabled_itSendsLogWithRUMContext() throws {
+    func testWhenRUMIntegrationIsEnabled_itSendsLogWithRUMContext() async throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -480,6 +493,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("message")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
@@ -490,7 +504,7 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(log.attributes.internalAttributes?["user_action.id"] as? String, actionID)
     }
 
-    func testWhenRUMIntegrationIsEnabled_withNoRUMContext_itDoesNotSendTelemetryError() throws {
+    func testWhenRUMIntegrationIsEnabled_withNoRUMContext_itDoesNotSendTelemetryError() async throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -506,6 +520,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("message")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
@@ -519,7 +534,7 @@ class RemoteLoggerTests: XCTestCase {
 
     // MARK: - Span Integration
 
-    func testWhenActiveSpanIntegrationIsEnabled_itSendsLogWithSpanContext() throws {
+    func testWhenActiveSpanIntegrationIsEnabled_itSendsLogWithSpanContext() async throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -546,6 +561,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("message")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
@@ -554,7 +570,7 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(log.attributes.internalAttributes?["dd.span_id"] as? String, spanID.toString(representation: .decimal))
     }
 
-    func testWhenActiveSpanIntegrationIsEnabled_withNoActiveSpan_itDoesNotSendTelemetryError() throws {
+    func testWhenActiveSpanIntegrationIsEnabled_withNoActiveSpan_itDoesNotSendTelemetryError() async throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -570,6 +586,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("message")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
@@ -588,7 +605,7 @@ class RemoteLoggerTests: XCTestCase {
     /// - **Swift APIs with manual wrapping**: Swift API requires `Encodable`, but customers can explicitly wrap non-encodable
     ///   types using `AnyEncodable(value)` to bypass compile-time checks.
 
-    func testWhenMultipleAttributesFailToEncode_itSkipsAllMalformedAttributes() throws {
+    func testWhenMultipleAttributesFailToEncode_itSkipsAllMalformedAttributes() async throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -613,6 +630,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("Test message")
 
         // Then - encode to trigger error handling
+        await featureScope.waitForWrittenEvents(count: 1)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
@@ -635,7 +653,7 @@ class RemoteLoggerTests: XCTestCase {
         )
     }
 
-    func testWhenOnlyMalformedAttributesAdded_itSendsEventWithoutCustomAttributes() throws {
+    func testWhenOnlyMalformedAttributesAdded_itSendsEventWithoutCustomAttributes() async throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -656,6 +674,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("Test message")
 
         // Then - encode to trigger error handling
+        await featureScope.waitForWrittenEvents(count: 1)
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 

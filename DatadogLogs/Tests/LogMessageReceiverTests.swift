@@ -10,14 +10,10 @@ import DatadogInternal
 @testable import DatadogLogs
 
 class LogMessageReceiverTests: XCTestCase {
-    func testReceivePartialLogMessage() throws {
+    func testReceivePartialLogMessage() async throws {
         // Given
-        let expectation = expectation(description: "Send log")
-        let core = PassthroughCoreMock(
-            context: .mockWith(service: "service-test"),
-            messageReceiver: LogMessageReceiver.mockAny()
-        )
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        let core = PassthroughCoreMock(context: .mockWith(service: "service-test"))
+        core.messageReceiver = LogMessageReceiver.mockWith(featureScope: core)
 
         // When
         core.send(
@@ -38,7 +34,7 @@ class LogMessageReceiverTests: XCTestCase {
         )
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        await core.writer.waitForEvents(count: 1)
 
         let log: LogEvent = try XCTUnwrap(core.events().last, "It should send log")
         XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
@@ -53,14 +49,10 @@ class LogMessageReceiverTests: XCTestCase {
         XCTAssertNil(log.networkConnectionInfo)
     }
 
-    func testReceiveCompleteLogMessage() throws {
+    func testReceiveCompleteLogMessage() async throws {
         // Given
-        let expectation = expectation(description: "Send log")
-        let core = PassthroughCoreMock(
-            context: .mockAny(),
-            messageReceiver: LogMessageReceiver.mockAny()
-        )
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        let core = PassthroughCoreMock(context: .mockAny())
+        core.messageReceiver = LogMessageReceiver.mockWith(featureScope: core)
 
         // When
         core.send(
@@ -81,7 +73,7 @@ class LogMessageReceiverTests: XCTestCase {
         )
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        await core.writer.waitForEvents(count: 1)
 
         let log: LogEvent = try XCTUnwrap(core.events().last, "It should send log")
         XCTAssertEqual(log.date, .mockDecember15th2019At10AMUTC())
@@ -102,16 +94,13 @@ class LogMessageReceiverTests: XCTestCase {
         XCTAssertNotNil(log.networkConnectionInfo)
     }
 
-    func testReceiveRejectedLogMessage() throws {
+    func testReceiveRejectedLogMessage() async throws {
         // Given
-        let expectation = expectation(description: "Open scope but don't send log")
-        let core = PassthroughCoreMock(
-            context: .mockWith(service: "service-test"),
-            messageReceiver: LogMessageReceiver(
-                logEventMapper: SyncLogEventMapper { _ in nil }
-            )
+        let core = PassthroughCoreMock(context: .mockWith(service: "service-test"))
+        core.messageReceiver = LogMessageReceiver(
+            logEventMapper: SyncLogEventMapper { _ in nil },
+            featureScope: core
         )
-        core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
         core.send(
@@ -131,8 +120,8 @@ class LogMessageReceiverTests: XCTestCase {
             )
         )
 
-        // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        // Then — the mapper drops the event, so nothing should be written
+        try await Task.sleep(nanoseconds: 100_000_000)
         XCTAssertTrue(core.events.isEmpty)
     }
 }

@@ -10,6 +10,7 @@ import TestUtilities
 
 @testable import DatadogLogs
 
+@MainActor
 class LoggerTests: XCTestCase {
     private var core: SingleFeatureCoreMock<LogsFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
 

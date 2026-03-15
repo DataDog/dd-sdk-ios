@@ -54,26 +54,20 @@ class WebViewLogReceiverTests: XCTestCase {
         XCTAssertEqual(try json.value("view.url"), "https://datadoghq.dev/browser-sdk-test-playground")
     }
 
-    func testReceiveEvent() throws {
+    func testReceiveEvent() async throws {
         // Given
-        let messageReceiver = WebViewLogReceiver()
-
-        let expectation = expectation(description: "Send Event")
         let core = PassthroughCoreMock()
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        let messageReceiver = WebViewLogReceiver(featureScope: core)
 
         let value: String = .mockRandom()
 
         // When
-        XCTAssert(
-            messageReceiver.receive(
-                message: .webview(.log(["test": value])),
-                from: core
-            )
+        messageReceiver.receive(
+            message: .webview(.log(["test": value]))
         )
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        await core.writer.waitForEvents(count: 1)
         let received: AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
         let expected: [String: Any] = [
             "ddtags": "service:abc,version:abc,sdk_version:abc,env:abc",
@@ -85,9 +79,8 @@ class WebViewLogReceiverTests: XCTestCase {
 
     // MARK: - Web-view log
 
-    func testWhenValidWebLogEventPassed_itDecoratesAndPassesToWriter() throws {
+    func testWhenValidWebLogEventPassed_itDecoratesAndPassesToWriter() async throws {
         // Given
-        let messageReceiver = WebViewLogReceiver()
         let applicationVersion: String = .mockRandom()
         let environment: String = .mockRandom()
         let mockSessionID: UUID = .mockRandom()
@@ -105,6 +98,7 @@ class WebViewLogReceiverTests: XCTestCase {
                 ]
             )
         )
+        let messageReceiver = WebViewLogReceiver(featureScope: core)
 
         let webLogEvent: [String: Any] = [
             "date": 1_635_932_927_012,
@@ -116,14 +110,13 @@ class WebViewLogReceiverTests: XCTestCase {
         ]
 
         // When
-        XCTAssert(
-            messageReceiver.receive(
-                message: .webview(.log(webLogEvent)),
-                from: core
-            )
+        messageReceiver.receive(
+            message: .webview(.log(webLogEvent))
         )
 
         // Then
+        await core.writer.waitForEvents(count: 1)
+
         let expectedWebLogEvent: [String: Any] = [
             "date": 1_635_932_927_012 + 123.dd.toInt64Milliseconds,
             "error": ["origin": "console"],
@@ -141,15 +134,13 @@ class WebViewLogReceiverTests: XCTestCase {
 
     // MARK: - RUM Integration
 
-    func testWhenRUMContextIsAvailable_itSendsLogWithRUMContext() throws {
+    func testWhenRUMContextIsAvailable_itSendsLogWithRUMContext() async throws {
         // Given
-        let messageReceiver = WebViewLogReceiver()
         let applicationID: String = .mockRandom()
         let sessionID: String = .mockRandom()
         let viewID: String = .mockRandom()
         let actionID: String = .mockRandom()
 
-        let expectation = expectation(description: "Send log")
         let core = PassthroughCoreMock(
             context: .mockWith(
                 additionalContext: [
@@ -162,18 +153,15 @@ class WebViewLogReceiverTests: XCTestCase {
                 ]
             )
         )
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        let messageReceiver = WebViewLogReceiver(featureScope: core)
 
         // When
-        XCTAssert(
-            messageReceiver.receive(
-                message: .webview(.log(["test": "value"])),
-                from: core
-            )
+        messageReceiver.receive(
+            message: .webview(.log(["test": "value"]))
         )
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        await core.writer.waitForEvents(count: 1)
 
         let logs = core.events(ofType: AnyEncodable.self)
         XCTAssertEqual(core.events.count, 1)
@@ -185,24 +173,19 @@ class WebViewLogReceiverTests: XCTestCase {
         XCTAssertEqual(log["user_action.id"] as? String, actionID)
     }
 
-    func testWhenNoRUMContextIsAvailable_itDoesNotSendTelemetryError() throws {
+    func testWhenNoRUMContextIsAvailable_itDoesNotSendTelemetryError() async throws {
         // Given
-        let messageReceiver = WebViewLogReceiver()
         let telemetryReceiver = TelemetryReceiverMock()
-        let expectation = expectation(description: "Send log")
         let core = PassthroughCoreMock(messageReceiver: telemetryReceiver)
-        core.onEventWriteContext = { _ in expectation.fulfill() }
+        let messageReceiver = WebViewLogReceiver(featureScope: core)
 
         // When
-        XCTAssert(
-            messageReceiver.receive(
-                message: .webview(.log(["test": "value"])),
-                from: core
-            )
+        messageReceiver.receive(
+            message: .webview(.log(["test": "value"]))
         )
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        await core.writer.waitForEvents(count: 1)
 
         let logs = core.events(ofType: AnyEncodable.self)
         XCTAssertEqual(logs.count, 1)
