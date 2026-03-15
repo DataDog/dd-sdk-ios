@@ -39,7 +39,7 @@ import SwiftUI
 ///
 ///
 
-struct AnimationsView: View, Comparable {
+struct AnimationsView: View, @MainActor Comparable {
     
     // MARK: - Properties
     

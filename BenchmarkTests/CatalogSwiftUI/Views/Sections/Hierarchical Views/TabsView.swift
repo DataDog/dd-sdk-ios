@@ -34,7 +34,7 @@ import SwiftUI
 /// https://developer.apple.com/documentation/swiftui/tabview
 ///
 
-struct TabsView: View, Comparable {
+struct TabsView: View, @MainActor Comparable {
     
     let id: String = "TabsView"
     /// allowed for selecting a tab

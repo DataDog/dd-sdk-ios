@@ -33,7 +33,7 @@ import SwiftUI
 /// Examples on how to use LABELS in SwiftUI
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/label
 ///
-struct LabelsView: View, Comparable {
+struct LabelsView: View, @MainActor Comparable {
     
     let id: String = "LabelsView"
     
@@ -301,7 +301,7 @@ struct RedBorderedLabelStyle: LabelStyle {
 
 // MARK: - HASHABLE
 
-extension LabelsView: Hashable {
+extension LabelsView: @MainActor Hashable {
     
     static func == (lhs: LabelsView, rhs: LabelsView) -> Bool {
         return lhs.id == rhs.id

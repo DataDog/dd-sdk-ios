@@ -31,7 +31,7 @@ import SwiftUI
 /// Examples on how to use SLIDERS in SwiftUI
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/slider
 ///
-struct SlidersView: View, Comparable {
+struct SlidersView: View, @MainActor Comparable {
     
     // MARK: - Properties
     

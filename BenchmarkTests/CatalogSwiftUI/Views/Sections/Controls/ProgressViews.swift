@@ -33,7 +33,7 @@ import SwiftUI
 /// OFFICIAL DOCUMENTATION:     https://developer.apple.com/documentation/swiftui/progressview
 ///
 
-struct ProgressViews: View, Comparable {
+struct ProgressViews: View, @MainActor Comparable {
     
     let id: String = "ProgressViews"
     

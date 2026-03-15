@@ -31,7 +31,7 @@ import SwiftUI
 /// Examples on how to use TOGGLES in SwiftUI
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/toggle
 ///
-struct TogglesView: View, Comparable {
+struct TogglesView: View, @MainActor Comparable {
     
     let id: String = "TogglesView"
     

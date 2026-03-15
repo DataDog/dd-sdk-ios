@@ -11,6 +11,7 @@ import UIKit
 ///
 /// The compliant objects are responsible for initializing the SDK, enabling
 /// Features, and create the initial view-controller.
+@MainActor
 protocol Scenario {
     /// The initial view-controller of the scenario
     var initialViewController: UIViewController { get }

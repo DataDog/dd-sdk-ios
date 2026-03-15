@@ -152,7 +152,7 @@ extension SingleButtonBasicSheet {
     
 }
 
-struct SingleButtonBasicSheet: View, Comparable {
+struct SingleButtonBasicSheet: View, @MainActor Comparable {
     
     // MARK: - Properties
     let id: String = "SheetView"

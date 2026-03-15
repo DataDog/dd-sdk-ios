@@ -48,7 +48,7 @@ import SwiftUI
 ///
 ///
 
-struct ShapesView: View, Comparable {
+struct ShapesView: View, @MainActor Comparable {
     
     let id: String = "ShapesView"
     

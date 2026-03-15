@@ -35,7 +35,7 @@ import SwiftUI
 /// https://developer.apple.com/documentation/swiftui/scrollviewproxy
 ///
 
-struct ScrollViewsView: View, Comparable {
+struct ScrollViewsView: View, @MainActor Comparable {
     
     
     let id: String = "ScrollViewsView"

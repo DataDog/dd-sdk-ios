@@ -36,7 +36,7 @@ import SwiftUI
 /// https://developer.apple.com/documentation/swiftui/griditem
 ///
 
-struct GridsView: View, Comparable {
+struct GridsView: View, @MainActor Comparable {
     @Environment(\.openURL) var openURL
     
     let id: String = "GridsView"

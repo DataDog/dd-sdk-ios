@@ -34,7 +34,7 @@ import SwiftUI
 /// https://developer.apple.com/documentation/swiftui/graphicscontext
 ///
 
-struct GraphicContextsView: View, Comparable {
+struct GraphicContextsView: View, @MainActor Comparable {
     
     let id: String = "GraphicContextsView"
     

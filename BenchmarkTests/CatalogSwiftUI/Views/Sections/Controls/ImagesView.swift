@@ -34,7 +34,7 @@ import SwiftUI
 /// of the SwiftUI IMAGE control
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/image
 ///
-struct ImagesComponentView: View, Comparable {
+struct ImagesComponentView: View, @MainActor Comparable {
     
     let id: String = "ImagesComponentView"
     

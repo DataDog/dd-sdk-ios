@@ -32,7 +32,7 @@ import SwiftUI
 /// Example on how to set and configure Tool Bars on SwiftUI
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/view/toolbar(id:content:)
 ///
-struct ToolbarsComponentView: View, Comparable {
+struct ToolbarsComponentView: View, @MainActor Comparable {
     
     let id: String = "ToolbarsComponentView"
     

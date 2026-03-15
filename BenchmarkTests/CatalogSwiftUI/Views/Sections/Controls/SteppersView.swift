@@ -32,7 +32,7 @@ import SwiftUI
 /// Examples on how to use STEPPERs in SwiftUI
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/stepper
 ///
-struct SteppersView: View, Comparable {
+struct SteppersView: View, @MainActor Comparable {
     
     //MARK: - Variables
     

@@ -33,7 +33,7 @@ import SwiftUI
 /// components
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/view-styles
 ///
-struct StylesView: View, Comparable {
+struct StylesView: View, @MainActor Comparable {
     
     let id: String = "StylesView"
     

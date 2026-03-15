@@ -8,7 +8,7 @@
 import SwiftUI
 
 
-struct Link<Destination> : View, Hashable, Identifiable where Destination : View {
+struct Link<Destination> : View, @MainActor Hashable, @MainActor Identifiable where Destination : View {
     
     var id: String {
         return label

@@ -7,13 +7,18 @@ A simple outline view for the sample app's main UI
 
 import UIKit
 
+private struct ObserverToken: @unchecked Sendable {
+    var value: NSObjectProtocol?
+}
+
+@MainActor
 class OutlineViewController: UIViewController {
 
     enum Section {
         case main
     }
 
-    class OutlineItem: Identifiable, Hashable {
+    class OutlineItem: Identifiable, Hashable, @unchecked Sendable {
         let title: String
         let subitems: [OutlineItem]
         let storyboardName: String?
@@ -39,7 +44,7 @@ class OutlineViewController: UIViewController {
     var dataSource: UICollectionViewDiffableDataSource<Section, OutlineItem>! = nil
     var outlineCollectionView: UICollectionView! = nil
 
-    private var detailTargetChangeObserver: Any? = nil
+    private var detailTargetChangeObserver = ObserverToken(value: nil)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,7 +58,7 @@ class OutlineViewController: UIViewController {
           
         // Listen for when the split view controller is expanded or collapsed for iPad multi-tasking,
         // and on device rotate (iPhones that support regular size class).
-        detailTargetChangeObserver =
+        detailTargetChangeObserver.value =
             NotificationCenter.default.addObserver(forName: UIViewController.showDetailTargetDidChangeNotification,
                                                    object: nil,
                                                    queue: OperationQueue.main,
@@ -72,7 +77,7 @@ class OutlineViewController: UIViewController {
     }
     
     deinit {
-        if let observer = detailTargetChangeObserver {
+        if let observer = detailTargetChangeObserver.value {
             NotificationCenter.default.removeObserver(observer)
         }
     }
@@ -334,3 +339,4 @@ extension OutlineViewController: UICollectionViewDelegate {
     }
     
 }
+

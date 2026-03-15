@@ -13,7 +13,10 @@ enum RickMortyError: Error {
     case unknown
 }
 
-class RickMortyService {
+/// `@unchecked Sendable`: all stored properties are immutable. `JSONDecoder` is not
+/// formally `Sendable`, but its configuration is never mutated after init, making
+/// concurrent `decode` calls safe in practice.
+final class RickMortyService: @unchecked Sendable {
     static let shared = RickMortyService()
     private let baseURL = "https://rickandmortyapi.com/api"
     private let decoder = JSONDecoder()

@@ -18,7 +18,7 @@ import SwiftUI
 /// And FOREACH, to compute views on iterations
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/foreach
 ///
-struct ListsComponentView: View, Comparable {
+struct ListsComponentView: View, @MainActor Comparable {
     
     // MARK: - Properties
     

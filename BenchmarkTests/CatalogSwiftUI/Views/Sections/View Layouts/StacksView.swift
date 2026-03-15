@@ -38,7 +38,7 @@ import SwiftUI
 /// https://developer.apple.com/documentation/swiftui/lazyvstack
 ///
 
-struct StacksView: View, Comparable {
+struct StacksView: View, @MainActor Comparable {
     
     
     let id: String = "StacksView"

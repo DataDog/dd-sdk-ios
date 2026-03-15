@@ -86,7 +86,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private func stop() {
         vitals = nil // stop collecting vitals
         Datadog.stopInstance() // stop runner instrumentation
+#if DD_BENCHMARK
         DatadogInternal.bench = (NOPBench(), NOPBench()) // stop profiling the sdk
+#endif
         window?.rootViewController = UIViewController()
     }
 
@@ -145,12 +147,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 )
             )
         )
-
+#if DD_BENCHMARK
         DatadogInternal.bench = (profiler, meter) // Inject profiler and meter to collect telemetry
+#endif
     }
 }
 
 extension Benchmarks.Configuration {
+    @MainActor
     init(
         info: AppInfo,
         scenario: SyntheticScenario,
@@ -166,7 +170,7 @@ extension Benchmarks.Configuration {
                 applicationIdentifier: bundle.bundleIdentifier!,
                 applicationName: bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as! String,
                 applicationVersion: bundle.object(forInfoDictionaryKey: "CFBundleVersion") as! String,
-                env: info.env,
+                env: "development-ss",
                 sdkVersion: "",
                 deviceModel: try! sysctl.model(),
                 osName: device.systemName,

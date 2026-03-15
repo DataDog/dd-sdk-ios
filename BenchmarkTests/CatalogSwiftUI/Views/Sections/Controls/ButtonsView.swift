@@ -34,7 +34,7 @@ import SwiftUI
 /// of the SwiftUI BUTTON control
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/button
 ///
-struct ButtonsComponentsView: View, Comparable {
+struct ButtonsComponentsView: View, @MainActor Comparable {
     
     // MARK: - Properties
     

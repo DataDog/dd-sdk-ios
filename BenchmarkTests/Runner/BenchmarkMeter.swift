@@ -11,7 +11,9 @@ import OpenTelemetryApi
 import OpenTelemetrySdk
 
 internal final class Meter: DatadogInternal.BenchmarkMeter {
-    let meter: MeterSdk
+    /// Safety: `MeterSdk` is initialized once and its internal state is thread-safe via the OpenTelemetry SDK.
+    /// TODO: Remove `nonisolated(unsafe)` when OpenTelemetry types adopt Sendable.
+    nonisolated(unsafe) let meter: MeterSdk
 
     init(provider: MeterProviderSdk) {
         self.meter = provider.get(name: "benchmarks")

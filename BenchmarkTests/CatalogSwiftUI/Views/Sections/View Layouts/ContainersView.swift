@@ -36,7 +36,7 @@ import SwiftUI
 /// https://developer.apple.com/documentation/swiftui/form
 ///
 
-struct ContainersView: View, Comparable {
+struct ContainersView: View, @MainActor Comparable {
     
     let id: String = "ContainersView"
     

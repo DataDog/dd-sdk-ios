@@ -28,7 +28,7 @@
 
 import SwiftUI
 
-struct AlertsComponentView: View, Comparable {
+struct AlertsComponentView: View, @MainActor Comparable {
     
     let id: String = "AlertsComponentView"
     

@@ -41,7 +41,7 @@ import SwiftUI
 /// https://developer.apple.com/documentation/swiftui/vectorarithmetic
 ///
 
-struct GeometriesView: View, Comparable {
+struct GeometriesView: View, @MainActor Comparable {
     
     let id: String = "GeometriesView"
     

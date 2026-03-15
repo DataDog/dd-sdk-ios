@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct TransitionsAnimationsView: View, Comparable {
+struct TransitionsAnimationsView: View, @MainActor Comparable {
     
     // MARK: - Properties
     

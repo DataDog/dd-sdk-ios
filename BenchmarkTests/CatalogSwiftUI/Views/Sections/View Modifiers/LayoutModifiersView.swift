@@ -34,7 +34,7 @@ import SwiftUI
 /// Open the "Add modifier" panels in XCode and inspect all possible "Layout Modifiers" to provide examples here
 ///
 
-struct LayoutModifiersView: View, Comparable {
+struct LayoutModifiersView: View, @MainActor Comparable {
     
     let id: String = "LayoutModifiersView"
     
@@ -171,7 +171,7 @@ extension LayoutModifiersView {
     
 }
 
-extension VerticalAlignment: Hashable {
+extension VerticalAlignment: @MainActor Hashable {
     
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.description)

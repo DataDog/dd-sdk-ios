@@ -34,7 +34,7 @@ import SwiftUI
 /// https://developer.apple.com/documentation/swiftui/text
 ///
 
-struct TextModifiersView: View, Comparable {
+struct TextModifiersView: View, @MainActor Comparable {
     
     let id: String = "TextModifiersView"
     

@@ -30,7 +30,7 @@
 import SwiftUI
 import WebKit
 
-struct WebView: UIViewRepresentable, Identifiable {
+struct WebView: UIViewRepresentable, @MainActor Identifiable {
     
     var id: String {
         return url.absoluteString

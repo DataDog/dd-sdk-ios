@@ -34,7 +34,7 @@ import SwiftUI
 /// of the SwiftUI TEXT control
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/text
 ///
-struct TextsComponentsView: View, Comparable {
+struct TextsComponentsView: View, @MainActor Comparable {
     
     let id: String = "TextsComponentsView"
     

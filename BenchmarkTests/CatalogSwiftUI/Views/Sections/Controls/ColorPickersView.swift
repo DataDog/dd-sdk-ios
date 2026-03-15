@@ -32,7 +32,7 @@ import SwiftUI
 /// Examples on how to use COLOR PICKERS in SwiftUI
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/colorpicker
 ///
-struct ColorPickersView: View, Comparable {
+struct ColorPickersView: View, @MainActor Comparable {
     
     let id: String = "ColorPickersView"
     

@@ -33,7 +33,7 @@ import SwiftUI
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/navigationstack
 /// https://developer.apple.com/documentation/swiftui/navigationlink
 ///
-struct NavigationBarsComponentView: View, Comparable {
+struct NavigationBarsComponentView: View, @MainActor Comparable {
     
     struct Reminder {
         let title: String

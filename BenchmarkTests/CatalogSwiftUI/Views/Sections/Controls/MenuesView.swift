@@ -31,7 +31,7 @@ import SwiftUI
 /// Samples on how to create menus in SwiftUI
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/menu
 ///
-struct MenusComponentView: View, Comparable {
+struct MenusComponentView: View, @MainActor Comparable {
     
     let id: String = "MenusComponentView"
     

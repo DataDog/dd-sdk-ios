@@ -36,7 +36,7 @@ import SwiftUI
 ///
 ///
 
-struct GesturesView: View, Comparable {
+struct GesturesView: View, @MainActor Comparable {
     
     let id: String = "GesturesView"
     

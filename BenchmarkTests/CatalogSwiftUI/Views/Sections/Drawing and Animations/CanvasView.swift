@@ -34,7 +34,7 @@ import SwiftUI
 /// https://developer.apple.com/documentation/swiftui/canvas
 ///
 
-struct CanvasView: View, Comparable {
+struct CanvasView: View, @MainActor Comparable {
     
     let id: String = "CanvasView"
     

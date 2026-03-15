@@ -34,7 +34,7 @@ import SwiftUI
 /// https://developer.apple.com/documentation/swiftui/disclosuregroup
 ///
 
-struct DisclosureGroupsView: View, Comparable {
+struct DisclosureGroupsView: View, @MainActor Comparable {
     
     let id: String = "DisclosureGroupsView"
     

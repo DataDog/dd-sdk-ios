@@ -34,7 +34,7 @@ import SwiftUI
 /// https://developer.apple.com/documentation/swiftui/timelineview
 ///
 
-struct TimelineViews: View, Comparable {
+struct TimelineViews: View, @MainActor Comparable {
     
     let id: String = "TimelineViews"
     

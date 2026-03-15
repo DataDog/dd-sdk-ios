@@ -33,7 +33,7 @@ import SwiftUI
 /// OFFICIAL DOCUMENTATION:     https://developer.apple.com/documentation/swiftui/outlinegroup
 ///
 
-struct OutlinesGroupsView: View, Comparable {
+struct OutlinesGroupsView: View, @MainActor Comparable {
     
     let id: String = "OutlinesGroupsView"
     

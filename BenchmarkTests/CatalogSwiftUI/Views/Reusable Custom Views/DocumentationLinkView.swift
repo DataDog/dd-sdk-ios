@@ -31,7 +31,7 @@ import Foundation
 import SwiftUI
 
 /// A view with a link to Apple Docs
-struct DocumentationLinkView: View, Identifiable {
+struct DocumentationLinkView: View, @MainActor Identifiable {
     
     var id: String {
         return link

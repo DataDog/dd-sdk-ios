@@ -32,7 +32,7 @@ import SwiftUI
 /// Examples on how to use DATE PICKERS in SwiftUI
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/datepicker
 ///
-struct DatePickersView: View, Comparable {
+struct DatePickersView: View, @MainActor Comparable {
     
     // MARK: - properties
     

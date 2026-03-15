@@ -33,7 +33,7 @@ import SwiftUI
 /// To see all available modifiers select a view in anypreview and inspect the "Effects Modifiers" section
 ///
 
-struct EffectsModifiersView: View, Comparable {
+struct EffectsModifiersView: View, @MainActor Comparable {
     
     let id: String = "EffectsModifiersView"
     

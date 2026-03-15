@@ -32,7 +32,7 @@ import SwiftUI
 /// Examples on how to use PICKERS in SwiftUI
 /// OFFICIAL DOCUMENTATION https://developer.apple.com/documentation/swiftui/picker
 ///
-struct PickersView: View, Comparable {
+struct PickersView: View, @MainActor Comparable {
     
     let id: String = "PickersView"
     

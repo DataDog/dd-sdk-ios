@@ -28,7 +28,7 @@
 
 import SwiftUI
 
-struct PopoversComponentView: View, Comparable {
+struct PopoversComponentView: View, @MainActor Comparable {
     
     let id: String = "PopoversComponentView"
     

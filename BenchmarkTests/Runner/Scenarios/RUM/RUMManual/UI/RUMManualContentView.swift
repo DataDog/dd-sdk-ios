@@ -7,6 +7,7 @@
 import DatadogRUM
 import SwiftUI
 
+@MainActor
 struct RUMManualContentView: View {
     @State private var eventType: RUMEvent
     @State private var viewName: String
@@ -21,7 +22,7 @@ struct RUMManualContentView: View {
 
     @State private var isSending: Bool
     @State private var eventsCount: Int
-    @State private var timer: Timer?
+    @State private var sendingTask: Task<Void, Never>?
 
     private var rumMonitor: RUMMonitorProtocol { RUMMonitor.shared() }
 
@@ -75,7 +76,9 @@ struct RUMManualContentView: View {
                         .tint(Color.purple)
                 }
 
-                Button(action: isSending ? stopSending : startSending) {
+                Button {
+                    isSending ? stopSending() : startSending()
+                } label: {
                     Text(isSending ? "Stop" : "Send")
                         .foregroundColor(.white)
                         .padding()
@@ -131,18 +134,18 @@ struct RUMManualContentView: View {
     }
 
     /// Starts the RUM events sending process based on the current configuration.
-    /// - If repeating is enabled, sets up a timer that calls `sendEvents` at the configured interval
+    /// - If repeating is enabled, starts a task that calls `sendEvents` at the configured interval
     /// - If repeating is disabled, sends a single batch of events and stops
     private func startSending() {
         isSending = true
 
         if isRepeating {
-            timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
-                if !isSending {
-                    stopSending()
-                    return
+            let sleepInterval = interval
+            sendingTask = Task {
+                while !Task.isCancelled && isSending {
+                    sendEvents()
+                    try? await Task.sleep(for: .seconds(sleepInterval))
                 }
-                sendEvents()
             }
         } else {
             sendEvents()
@@ -153,64 +156,48 @@ struct RUMManualContentView: View {
     /// Stops the RUM events sending process.
     private func stopSending() {
         isSending = false
-        timer?.invalidate()
-        timer = nil
+        sendingTask?.cancel()
+        sendingTask = nil
     }
 
-    /// Sends a batch of RUM events asynchronously based on the selected event type.
+    /// Sends a batch of RUM events based on the selected event type.
     private func sendEvents() {
-        DispatchQueue.global(qos: .userInitiated).async {
-            for _ in 1 ... eventsPerBatch {
-                switch eventType {
-                case .view:
-                    sendViewEvent()
-                case .action:
-                    sendActionEvent()
-                case .resource:
-                    sendResourceEvent()
-                case .error:
-                    sendErrorEvent()
-                }
-
-                DispatchQueue.main.async {
-                    eventsCount += 1
-                }
+        for _ in 1 ... eventsPerBatch {
+            switch eventType {
+            case .view:
+                sendViewEvent()
+            case .action:
+                sendActionEvent()
+            case .resource:
+                sendResourceEvent()
+            case .error:
+                sendErrorEvent()
             }
+            eventsCount += 1
         }
     }
 
     /// Creates and sends a view event.
-    /// - Creates a view controller with the specified URL
-    /// - Starts a view event
-    /// - Stops the view event after 0.5 seconds
     private func sendViewEvent() {
         rumMonitor.startView(key: viewName)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        Task {
+            try? await Task.sleep(nanoseconds: 500_000_000)
             rumMonitor.stopView(key: viewName)
         }
     }
 
     /// Creates and sends an action event.
-    /// - Creates a view controller with the specified URL
-    /// - Starts a view event
-    /// - Adds an action event after 0.2 seconds with the specified type and URL
-    /// - Stops the view event after 0.5 seconds
     private func sendActionEvent() {
         rumMonitor.startView(key: viewName)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+        Task {
+            try? await Task.sleep(nanoseconds: 200_000_000)
             rumMonitor.addAction(type: actionType, name: actionURL)
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            try? await Task.sleep(nanoseconds: 300_000_000)
             rumMonitor.stopView(key: viewName)
         }
     }
 
     /// Creates and sends a resource event.
-    /// - Creates a view controller with the specified URL
-    /// - Starts a view event
-    /// - Creates and starts a resource request with the specified URL
-    /// - Stops the resource event after 0.2 seconds with a successful response
-    /// - Stops the view event after 0.5 seconds
     private func sendResourceEvent() {
         guard let url = URL(string: resourceURL) else {
             return
@@ -221,7 +208,8 @@ struct RUMManualContentView: View {
             request: request
         )
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+        Task {
+            try? await Task.sleep(nanoseconds: 200_000_000)
             rumMonitor.stopResource(
                 resourceKey: "/resource/1",
                 response: HTTPURLResponse(
@@ -235,10 +223,6 @@ struct RUMManualContentView: View {
     }
 
     /// Creates and sends an error event.
-    /// - Creates a view controller with the specified URL
-    /// - Starts a view event
-    /// - Adds an error event after 0.2 seconds with the specified message
-    /// - Stops the view event after 0.5 seconds
     private func sendErrorEvent() {
         rumMonitor.addError(message: errorMessage, source: .source)
     }
@@ -246,22 +230,14 @@ struct RUMManualContentView: View {
 
 // MARK: - Private helpers
 
-enum RUMEvent: String, CaseIterable {
+enum RUMEvent: String, CaseIterable, Sendable {
     case view = "View"
     case action = "Action"
     case resource = "Resource"
     case error = "Error"
 }
 
-extension RUMActionType: CaseIterable {
-    public static var allCases: [RUMActionType] = [
-        .click,
-        .tap,
-        .scroll,
-        .swipe,
-        .custom,
-    ]
-
+extension RUMActionType {
     init(string: String) {
         switch string {
         case "tap": self = .tap

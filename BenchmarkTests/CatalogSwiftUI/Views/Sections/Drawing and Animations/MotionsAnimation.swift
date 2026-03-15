@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MotionAnimationView: View, Comparable {
+struct MotionAnimationView: View, @MainActor Comparable {
     
     // MARK: - Properties
     

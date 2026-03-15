@@ -10,7 +10,9 @@ import DatadogBenchmarks
 import OpenTelemetryApi
 
 internal final class Profiler: DatadogInternal.BenchmarkProfiler {
-    let provider: TracerProvider
+    /// Safety: `TracerProvider` is initialized once and its internal state is thread-safe via the OpenTelemetry SDK.
+    /// TODO: Remove `nonisolated(unsafe)` when OpenTelemetry types adopt Sendable.
+    nonisolated(unsafe) let provider: TracerProvider
 
     init(provider: TracerProvider) {
         self.provider = provider

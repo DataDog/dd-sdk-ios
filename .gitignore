@@ -1,6 +1,8 @@
 .DS_Store
 /build
 .build
+BenchmarkTests/Benchmarks/build
+BenchmarkTests/build
 .swiftpm
 .spm.pods
 Package.resolved

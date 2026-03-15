@@ -29,7 +29,7 @@
 
 import SwiftUI
 
-struct ContributedByView: View, Identifiable {
+struct ContributedByView: View, @MainActor Identifiable {
     
     var id: String {
         return name + link

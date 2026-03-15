@@ -23,6 +23,7 @@ import SwiftUI
     case hide
 }
 
+@MainActor
 public protocol DatadogMonitor {
     func viewModifier(name: String) -> AnyViewModifier
     func actionModifier(name: String) -> AnyViewModifier

@@ -35,7 +35,7 @@ import SwiftUI
 /// https://developer.apple.com/documentation/swiftui/divider
 ///
 
-struct SpacersDividersView: View, Comparable {
+struct SpacersDividersView: View, @MainActor Comparable {
     
     let id: String = "SpacersDividersView"
     

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct RobbieWithPulseView: View, Comparable {
+struct RobbieWithPulseView: View, @MainActor Comparable {
     
     let id: String = "RobbieWithPulseView"
     

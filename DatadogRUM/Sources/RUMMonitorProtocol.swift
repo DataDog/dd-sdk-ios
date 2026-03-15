@@ -19,7 +19,7 @@ public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
 public typealias RUMFeatureOperationFailureReason = RUMVitalOperationStepEvent.Vital.FailureReason
 
 /// The type of a RUM action.
-public enum RUMActionType: Sendable {
+public enum RUMActionType: CaseIterable, Sendable {
     case tap
     case click
     case scroll
