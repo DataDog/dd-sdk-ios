@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-public struct UploadPerformanceMock: UploadPerformancePreset {
+public struct UploadPerformanceMock: UploadPerformancePreset, Sendable {
     public var initialUploadDelay: TimeInterval
     public var minUploadDelay: TimeInterval
     public var maxUploadDelay: TimeInterval

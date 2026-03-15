@@ -223,7 +223,7 @@ class WebViewEventReceiverTests: XCTestCase {
 
     // MARK: - Modifying Web Events
 
-    func testGivenRUMContextAvailable_whenReceivingWebEvent_itInjectRUMInfo() throws {
+    func testGivenRUMContextAvailable_whenReceivingWebEvent_itInjectRUMInfo() async throws {
         // Given
         let dateProvider = RelativeDateProvider()
         let rumContext: RUMCoreContext = .mockRandom()
@@ -255,6 +255,7 @@ class WebViewEventReceiverTests: XCTestCase {
         // When
 
         receiver.receive(message: webViewTrackingMessage(with: webEventMock))
+        try? await Task.sleep(nanoseconds: 100_000_000)
 
         // Then
         let expectedWebEventWritten: JSON = [
@@ -293,7 +294,7 @@ class WebViewEventReceiverTests: XCTestCase {
         XCTAssertTrue(featureScope.eventsWritten.isEmpty, "The event must be dropped")
     }
 
-    func testGivenReplayContextAvailable_whenReceivingWebEvent_itInjectReplayInfo() throws {
+    func testGivenReplayContextAvailable_whenReceivingWebEvent_itInjectReplayInfo() async throws {
         // Given
         let dateProvider = RelativeDateProvider()
         let rumContext: RUMCoreContext = .mockRandom()
@@ -344,6 +345,7 @@ class WebViewEventReceiverTests: XCTestCase {
 
         // When
         receiver.receive(message: webViewTrackingMessage(with: webEventMock))
+        try? await Task.sleep(nanoseconds: 100_000_000)
 
         // Then
         let expectedWebEventWritten: JSON = [
@@ -374,7 +376,7 @@ class WebViewEventReceiverTests: XCTestCase {
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
     }
 
-    func testGivenReplayContextNotAvailable_whenReceivingWebEvent_itRemovesReplayInfo() throws {
+    func testGivenReplayContextNotAvailable_whenReceivingWebEvent_itRemovesReplayInfo() async throws {
         // Given
         let dateProvider = RelativeDateProvider()
         let rumContext: RUMCoreContext = .mockRandom()
@@ -424,6 +426,7 @@ class WebViewEventReceiverTests: XCTestCase {
 
         // When
         receiver.receive(message: webViewTrackingMessage(with: webEventMock))
+        try? await Task.sleep(nanoseconds: 100_000_000)
 
         // Then
         let expectedWebEventWritten: JSON = [

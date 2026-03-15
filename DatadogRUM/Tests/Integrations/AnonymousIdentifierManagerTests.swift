@@ -29,8 +29,9 @@ class AnonymousIdentifierManagerTests: XCTestCase {
         anonymousIdentifierManager = nil
     }
 
-    func testWhenShouldTrack_itGeneratesAnonymousIdentifier() {
+    func testWhenShouldTrack_itGeneratesAnonymousIdentifier() async {
         anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: true)
+        try? await Task.sleep(nanoseconds: 100_000_000)
 
         XCTAssertNotNil(featureScopeMock.anonymousId)
     }
@@ -45,15 +46,17 @@ class AnonymousIdentifierManagerTests: XCTestCase {
         XCTAssertNil(featureScopeMock.anonymousId)
     }
 
-    func testWhenCalledMultipleTimes_itGeneratesTheSameAnonymousIdentifier() {
+    func testWhenCalledMultipleTimes_itGeneratesTheSameAnonymousIdentifier() async {
         let uuid1 = RUMUUID.mockRandom()
         uuidGeneratorMock.uuid = uuid1
         anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: true)
+        try? await Task.sleep(nanoseconds: 100_000_000)
         XCTAssertEqual(featureScopeMock.anonymousId, uuid1.toRUMDataFormat)
 
         let uuid2 = RUMUUID.mockRandom()
         uuidGeneratorMock.uuid = uuid2
         anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: true)
+        try? await Task.sleep(nanoseconds: 100_000_000)
         XCTAssertEqual(featureScopeMock.anonymousId, uuid1.toRUMDataFormat)
     }
 }

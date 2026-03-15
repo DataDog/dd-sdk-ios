@@ -65,7 +65,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(scope.parent.context.activeUserActionID, try XCTUnwrap(provider.context.activeUserActionID))
     }
 
-    func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEvent() throws {
+    func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEvent() async throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
@@ -108,6 +108,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -151,7 +152,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.decodedBodySize)
     }
 
-    func testGivenStartedResourceInCITest_whenResourceLoadingEnds_itSendsResourceEvent() throws {
+    func testGivenStartedResourceInCITest_whenResourceLoadingEnds_itSendsResourceEvent() async throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
         let fakeCiTestId: String = .mockRandom()
@@ -195,6 +196,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -236,7 +238,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.decodedBodySize)
     }
 
-    func testGivenStartedResourceInSyntheticsTest_whenResourceLoadingEnds_itSendsResourceEvent() throws {
+    func testGivenStartedResourceInSyntheticsTest_whenResourceLoadingEnds_itSendsResourceEvent() async throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
         let fakeSyntheticsTestId: String = .mockRandom()
@@ -281,6 +283,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -323,7 +326,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.decodedBodySize)
     }
 
-    func testGivenStartedResourceWithSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() throws {
+    func testGivenStartedResourceWithSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() async throws {
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
@@ -347,6 +350,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.dd.traceId, "64")
         XCTAssertEqual(event.dd.spanId, "200")
@@ -355,7 +359,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.decodedBodySize)
     }
 
-    func testGivenStartedResourceWithoutSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() throws {
+    func testGivenStartedResourceWithoutSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() async throws {
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
@@ -374,6 +378,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertNil(event.dd.traceId)
         XCTAssertNil(event.dd.spanId)
@@ -382,7 +387,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.decodedBodySize)
     }
 
-    func testGivenConfiguredSoruce_whenResourceLoadingEnds_itSendsResourceEventWithCorrecSource() throws {
+    func testGivenConfiguredSoruce_whenResourceLoadingEnds_itSendsResourceEventWithCorrecSource() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -417,13 +422,14 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.source, .init(rawValue: customSource))
         XCTAssertNil(event.resource.encodedBodySize)
         XCTAssertNil(event.resource.decodedBodySize)
     }
 
-    func testGivenStartedResource_whenResourceLoadingEndsWithNegativeDuration_itSendsResourceEventWithPositiveDuration() throws {
+    func testGivenStartedResource_whenResourceLoadingEndsWithNegativeDuration_itSendsResourceEventWithPositiveDuration() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -455,6 +461,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -491,7 +498,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.decodedBodySize)
     }
 
-    func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEventWithCustomSpanAndTraceId() throws {
+    func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEventWithCustomSpanAndTraceId() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -523,6 +530,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -558,7 +566,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.decodedBodySize)
     }
 
-    func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
+    func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -591,6 +599,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -621,7 +630,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.name, "device-os")
     }
 
-    func testGivenStartedResource_whenResourceFailsWithNetworkError_itSendsErrorEvent() throws {
+    func testGivenStartedResource_whenResourceFailsWithNetworkError_itSendsErrorEvent() async throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -658,6 +667,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         DDTAssertValidRUMUUID(event.error.id)
         XCTAssertEqual(event.error.type, "NSURLErrorDomain - -1001")
@@ -669,7 +679,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
     }
 
-    func testGivenStartedResource_whenResourceLoadingEndsWithErrorAndFingerprintAttribute_itSendsErrorEvent() throws {
+    func testGivenStartedResource_whenResourceLoadingEndsWithErrorAndFingerprintAttribute_itSendsErrorEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -705,6 +715,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -736,7 +747,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.name, "device-os")
     }
 
-    func testGivenStartedResourceInCITest_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
+    func testGivenStartedResourceInCITest_whenResourceLoadingEndsWithError_itSendsErrorEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let fakeCITestId: String = .mockRandom()
 
@@ -770,6 +781,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -801,7 +813,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.ciTest?.testExecutionId, fakeCITestId)
     }
 
-    func testGivenStartedResourceInSyntheticsTest_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
+    func testGivenStartedResourceInSyntheticsTest_whenResourceLoadingEndsWithError_itSendsErrorEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let fakeSyntheticsTestId: String = .mockRandom()
         let fakeSyntheticsResultId: String = .mockRandom()
@@ -836,6 +848,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -868,7 +881,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
     }
 
-    func testGivenConfiguredSource_whenResourceLoadingEndsWithError_itSendsErrorEventWithConfiguredSource() throws {
+    func testGivenConfiguredSource_whenResourceLoadingEndsWithError_itSendsErrorEventWithConfiguredSource() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         let source = String.mockAnySource()
@@ -907,12 +920,13 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.source, .init(rawValue: source))
         XCTAssertEqual(event.service, "test-service")
     }
 
-    func testGivenStartedResource_whenResourceReceivesMetricsBeforeItEnds_itUsesMetricValuesInSentResourceEvent() throws {
+    func testGivenStartedResource_whenResourceReceivesMetricsBeforeItEnds_itUsesMetricValuesInSentResourceEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -988,6 +1002,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let metrics = metricsCommand.metrics
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.date, metrics.fetch.start.timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
@@ -1030,7 +1045,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.name, "device-os")
     }
 
-    func testGivenStartedResource_whenResourceReceivesMetricsWithRequestAndResponseBodySizes_itAggregatesThemInSentResourceEvent() throws {
+    func testGivenStartedResource_whenResourceReceivesMetricsWithRequestAndResponseBodySizes_itAggregatesThemInSentResourceEvent() async throws {
         guard #available(iOS 13, tvOS 13, *) else {
             return
         }
@@ -1084,12 +1099,13 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.resource.encodedBodySize, 1_536, "Encoded body size should match response encoded size")
         XCTAssertEqual(event.resource.decodedBodySize, 2_048, "Decoded body size should match response decoded size")
     }
 
-    func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() throws {
+    func testGivenMultipleResourceScopes_whenSendingResourceEvents_eachEventHasUniqueResourceID() async throws {
         let resourceKey: String = .mockAny()
         func createScope(url: String) -> RUMResourceScope {
             RUMResourceScope.mockWith(
@@ -1116,6 +1132,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 2)
         let resourceEvents = writer.events(ofType: RUMResourceEvent.self)
         let resource1Events = resourceEvents.filter { $0.resource.url == "/r/1" }
         let resource2Events = resourceEvents.filter { $0.resource.url == "/r/2" }
@@ -1124,7 +1141,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNotEqual(resource1Events[0].resource.id, resource2Events[0].resource.id)
     }
 
-    func testGivenResourceStartedWithKindBasedOnRequest_whenLoadingEndsWithDifferentKind_itSendsTheKindBasedOnRequest() throws {
+    func testGivenResourceStartedWithKindBasedOnRequest_whenLoadingEndsWithDifferentKind_itSendsTheKindBasedOnRequest() async throws {
         let kinds: [RUMResourceType] = [.image, .xhr, .beacon, .css, .document, .fetch, .font, .js, .media, .other, .native]
         let kindBasedOnRequest = kinds.randomElement()!
         let kindBasedOnResponse = kinds.randomElement()!
@@ -1152,11 +1169,12 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertEqual(event.resource.type, kindBasedOnRequest)
     }
 
-    func testGivenStartedFirstPartyResource_whenResourceLoadingEnds_itSendsResourceEventWithFirstPartyProvider() throws {
+    func testGivenStartedFirstPartyResource_whenResourceLoadingEnds_itSendsResourceEventWithFirstPartyProvider() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -1182,6 +1200,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let providerType = try XCTUnwrap(event.resource.provider?.type)
         let providerDomain = try XCTUnwrap(event.resource.provider?.domain)
@@ -1191,7 +1210,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.decodedBodySize)
     }
 
-    func testGivenStartedThirdartyResource_whenResourceLoadingEnds_itSendsResourceEventWithoutResourceProvider() throws {
+    func testGivenStartedThirdartyResource_whenResourceLoadingEnds_itSendsResourceEventWithoutResourceProvider() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -1217,13 +1236,14 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertNil(event.resource.provider)
         XCTAssertNil(event.resource.encodedBodySize)
         XCTAssertNil(event.resource.decodedBodySize)
     }
 
-    func testGivenStartedFirstPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithFirstPartyProvider() throws {
+    func testGivenStartedFirstPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithFirstPartyProvider() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -1249,6 +1269,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         let providerType = try XCTUnwrap(event.error.resource?.provider?.type)
         let providerDomain = try XCTUnwrap(event.error.resource?.provider?.domain)
@@ -1257,7 +1278,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.error.sourceType, .ios)
     }
 
-    func testGivenStartedThirdPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithoutResourceProvider() throws {
+    func testGivenStartedThirdPartyResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithoutResourceProvider() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -1283,12 +1304,13 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertNil(event.error.resource?.provider)
         XCTAssertEqual(event.error.sourceType, .ios)
     }
 
-    func testGivenStartedResource_whenResourceLoadingEndsWithErrorWithCustomSourceType_itSendsErrorEventWithCustomSourceType() throws {
+    func testGivenStartedResource_whenResourceLoadingEndsWithErrorWithCustomSourceType_itSendsErrorEventWithCustomSourceType() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let resourceKey = "/resource/1"
         // Given
@@ -1318,11 +1340,12 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.error.sourceType, .reactNative)
     }
 
-    func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithTimeSinceAppStart() throws {
+    func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithTimeSinceAppStart() async throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
@@ -1353,13 +1376,14 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.error.timeSinceAppStart, appLauchToErrorTimeDiff * 1_000)
     }
 
     // MARK: - Events sending callbacks
 
-    func testGivenResourceScopeWithDefaultEventsMapper_whenSendingEvents_thenEventSentCallbacksAreCalled() throws {
+    func testGivenResourceScopeWithDefaultEventsMapper_whenSendingEvents_thenEventSentCallbacksAreCalled() async throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         var onResourceEventCalled = false
         var onErrorEventCalled = false
@@ -1409,6 +1433,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 2)
         XCTAssertFalse(writer.events(ofType: RUMResourceEvent.self).isEmpty)
         XCTAssertTrue(onResourceEventCalled)
         XCTAssertTrue(onErrorEventCalled)
@@ -1624,7 +1649,7 @@ class RUMResourceScopeTests: XCTestCase {
 
     // MARK: - GraphQL Error Parsing Tests
 
-    func testGivenResourceWithComplexGraphQLResponse_whenResourceEnds_itParsesAllErrorsCorrectly() throws {
+    func testGivenResourceWithComplexGraphQLResponse_whenResourceEnds_itParsesAllErrorsCorrectly() async throws {
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
@@ -1681,6 +1706,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let graphql = try XCTUnwrap(event.resource.graphql)
 
@@ -1721,7 +1747,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(locations2[0].column, 3)
     }
 
-    func testGivenResourceWithInvalidGraphQLJSON_whenResourceEnds_itHandlesGracefully() throws {
+    func testGivenResourceWithInvalidGraphQLJSON_whenResourceEnds_itHandlesGracefully() async throws {
         let scope = RUMResourceScope.mockWith(
             parent: provider,
             dependencies: dependencies,
@@ -1751,13 +1777,14 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let graphql = try XCTUnwrap(event.resource.graphql)
         XCTAssertNil(graphql.errors)
         XCTAssertNil(graphql.errorCount)
     }
 
-    func testGivenResourceWithEmptyGraphQLErrorsArray_whenResourceEnds_itDoesNotSetErrors() throws {
+    func testGivenResourceWithEmptyGraphQLErrorsArray_whenResourceEnds_itDoesNotSetErrors() async throws {
         let scope = RUMResourceScope.mockWith(
             parent: provider,
             dependencies: dependencies,
@@ -1791,6 +1818,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let graphql = try XCTUnwrap(event.resource.graphql)
         XCTAssertNil(graphql.errors)
@@ -1799,7 +1827,7 @@ class RUMResourceScopeTests: XCTestCase {
 
     // MARK: - Header Capture Tests
 
-    func testWhenStopCommandContainsRequestHeaders_itPopulatesResourceRequestHeaders() throws {
+    func testWhenStopCommandContainsRequestHeaders_itPopulatesResourceRequestHeaders() async throws {
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
@@ -1829,6 +1857,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let request = try XCTUnwrap(event.resource.request)
         let headers = try XCTUnwrap(request.headers)
@@ -1836,7 +1865,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(headers.headersInfo["cache-control"], "no-cache")
     }
 
-    func testWhenStopCommandContainsResponseHeaders_itPopulatesResourceResponseHeaders() throws {
+    func testWhenStopCommandContainsResponseHeaders_itPopulatesResourceResponseHeaders() async throws {
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
@@ -1866,6 +1895,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let response = try XCTUnwrap(event.resource.response)
         let headers = try XCTUnwrap(response.headers)
@@ -1873,7 +1903,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(headers.headersInfo["etag"], "\"abc\"")
     }
 
-    func testWhenStopCommandContainsRequestHeadersAndBodySizeMetrics_itPopulatesBoth() throws {
+    func testWhenStopCommandContainsRequestHeadersAndBodySizeMetrics_itPopulatesBoth() async throws {
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
@@ -1919,6 +1949,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         let request = try XCTUnwrap(event.resource.request)
         XCTAssertEqual(request.encodedBodySize, 512)
@@ -1927,7 +1958,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(headers.headersInfo["content-type"], "application/json")
     }
 
-    func testWhenStopCommandHasNoHeaders_requestAndResponseAreUnaffected() throws {
+    func testWhenStopCommandHasNoHeaders_requestAndResponseAreUnaffected() async throws {
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
@@ -1955,6 +1986,7 @@ class RUMResourceScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertNil(event.resource.request)
         XCTAssertNil(event.resource.response)

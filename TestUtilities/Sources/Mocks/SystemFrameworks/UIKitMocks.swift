@@ -149,10 +149,12 @@ extension UITouch {
 }
 
 extension UIPress {
+    @MainActor
     public static func mockAny() -> UIPress {
         return mockWith(type: .select, view: UIView())
     }
 
+    @MainActor
     public static func mockWith(
         phase: UIPress.Phase = .ended,
         type: UIPress.PressType = .select,
@@ -232,7 +234,7 @@ extension UIColor: AnyMockable, RandomMockable {
     }
 }
 
-extension UIView: AnyMockable, RandomMockable {
+extension UIView: @preconcurrency AnyMockable, @preconcurrency RandomMockable {
     public static func mockAny() -> Self {
         return .init(frame: .init(x: 0, y: 0, width: 200, height: 400))
     }

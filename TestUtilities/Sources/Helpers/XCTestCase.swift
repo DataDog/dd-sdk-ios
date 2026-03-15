@@ -65,6 +65,7 @@ extension XCTestCase {
     /// - Parameters:
     ///   - timeout: amount of time in seconds to wait before executing the closure.
     ///   - closure: a closure to execute when `timeout` seconds has passed
+    @MainActor
     public func wait(during timeout: TimeInterval, closure: @escaping () -> Void) {
         let expectation = self.expectation(description: "")
         DispatchQueue.main.asyncAfter(deadline: .now() + timeout) {

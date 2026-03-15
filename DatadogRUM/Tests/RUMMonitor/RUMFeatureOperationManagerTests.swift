@@ -40,7 +40,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
     // MARK: - Process Command Tests
 
-    func testFeatureOperationCommand_CreatesVitalEvent() throws {
+    func testFeatureOperationCommand_CreatesVitalEvent() async throws {
         // Given
         let command = RUMOperationStepVitalCommand.mockRandom()
         let view: RUMViewScope = .mockAny()
@@ -52,6 +52,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
             writer: mockWriter,
             activeView: view
         )
+        await mockWriter.waitForEvents(count: 1)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
@@ -236,7 +237,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
     // MARK: - Synthetics Test ID Tests
 
-    func testProcess_WithSyntheticsTestId_IncludesSyntheticsInVitalEvent() throws {
+    func testProcess_WithSyntheticsTestId_IncludesSyntheticsInVitalEvent() async throws {
         // Given
         let fakeSyntheticsTestId: String = .mockRandom()
         let fakeSyntheticsResultId: String = .mockRandom()
@@ -263,6 +264,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
             writer: mockWriter,
             activeView: view
         )
+        await mockWriter.waitForEvents(count: 1)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)

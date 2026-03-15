@@ -13,7 +13,7 @@ import DatadogInternal
 class FlagEvaluationReceiverTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
-    func testReceiveFlagEvaluationMessage() throws {
+    func testReceiveFlagEvaluationMessage() async throws {
         // Given
         let receiver = FlagEvaluationReceiver(
             monitor: Monitor(
@@ -30,6 +30,7 @@ class FlagEvaluationReceiverTests: XCTestCase {
 
         // When
         receiver.receive(message: message)
+        try? await Task.sleep(nanoseconds: 100_000_000)
 
         // Then
 

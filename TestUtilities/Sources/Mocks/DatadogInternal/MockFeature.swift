@@ -8,14 +8,14 @@ import Foundation
 import DatadogInternal
 
 internal class MockFeature: DatadogRemoteFeature {
-    static var name = "mock-feature"
+    nonisolated(unsafe) static var name = "mock-feature"
 
     var messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     var requestBuilder: FeatureRequestBuilder = MockRequestBuilder()
     var performanceOverride: PerformancePresetOverride?
 }
 
-internal class MockRequestBuilder: FeatureRequestBuilder {
+internal class MockRequestBuilder: FeatureRequestBuilder, @unchecked Sendable {
     func request(for events: [DatadogInternal.Event], with context: DatadogInternal.DatadogContext, execution: DatadogInternal.ExecutionContext) throws -> URLRequest {
         URLRequest.mockAny()
     }

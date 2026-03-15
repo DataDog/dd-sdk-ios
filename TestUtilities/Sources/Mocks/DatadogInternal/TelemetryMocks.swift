@@ -51,7 +51,7 @@ public class CoreLoggerMock: CoreLogger {
 }
 
 /// `Telemetry` recording sent telemetry.
-public class TelemetryMock: Telemetry, CustomStringConvertible {
+public class TelemetryMock: Telemetry, CustomStringConvertible, @unchecked Sendable {
     @ReadWriteLock
     public private(set) var messages: [TelemetryMessage] = []
 

@@ -67,7 +67,7 @@ extension Datadog.Configuration.BatchProcessingLevel: RandomMockable {
     }
 }
 
-public struct DataEncryptionMock: DataEncryption {
+public struct DataEncryptionMock: DataEncryption, @unchecked Sendable {
     let enc: (Data) throws -> Data
     let dec: (Data) throws -> Data
 
@@ -228,7 +228,7 @@ extension FilesOrchestratorType {
     }
 }
 
-public class NOPReader: Reader {
+public class NOPReader: Reader, @unchecked Sendable {
     public func readFiles(limit: Int) async -> [ReadableFile] { [] }
     public func readBatch(from file: ReadableFile) -> Batch? { nil }
     public func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) async {}

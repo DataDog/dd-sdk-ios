@@ -28,7 +28,12 @@ import DatadogInternal
 public final class DatadogCoreProxy: DatadogCoreProtocol, @unchecked Sendable {
     /// Counts references to `DatadogCoreProxy` instances, so we can prevent memory
     /// leaks of SDK core in `DatadogTestsObserver`.
-    public private(set) static var referenceCount = 0
+    private static let _referenceCountLock = NSLock()
+    private nonisolated(unsafe) static var _referenceCountStorage = 0
+    public static var referenceCount: Int {
+        get { _referenceCountLock.withLock { _referenceCountStorage } }
+        set { _referenceCountLock.withLock { _referenceCountStorage = newValue } }
+    }
 
     /// The SDK core managed by this proxy.
     private let core: DatadogCore
@@ -62,8 +67,6 @@ public final class DatadogCoreProxy: DatadogCoreProtocol, @unchecked Sendable {
         DatadogCoreProxy.referenceCount += 1
 
         Task {
-            // override the message-bus's core instance
-            await core.bus.connect(core: self)
             self._context = await core.contextProvider.read()
         }
     }

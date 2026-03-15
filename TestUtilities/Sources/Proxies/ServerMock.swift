@@ -86,7 +86,7 @@ public class ServerMockProtocol: URLProtocol {
 }
 
 public class ServerMock {
-    public static weak var activeInstance: ServerMock?
+    public nonisolated(unsafe) static weak var activeInstance: ServerMock?
 
     /// An unique identifier of the `URLSession` produced by this instance of `ServerMock`.
     public let urlSessionUUID = UUID()

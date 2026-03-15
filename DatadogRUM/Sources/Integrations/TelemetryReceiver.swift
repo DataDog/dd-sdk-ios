@@ -25,17 +25,14 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
     /// Additional sampler for configuration telemetry events, applied in addition to the `sampler`.
     let configurationExtraSampler: Sampler
 
-    /// Keeps track of current session
-    @ReadWriteLock
-    private var currentSessionID: String?
+    private struct RecordState {
+        var currentSessionID: String?
+        var eventIDs: Set<String> = []
+        var eventsCount: Int = 0
+    }
 
-    /// Keeps track of event's ids recorded in current RUM session.
     @ReadWriteLock
-    private var eventIDs: Set<String> = []
-
-    /// Number of events recorded in current  RUM session.
-    @ReadWriteLock
-    private var eventsCount: Int = 0
+    private var recordState = RecordState()
 
     /// Creates a RUM Telemetry instance.
     ///
@@ -304,21 +301,28 @@ internal final class TelemetryReceiver: FeatureMessageReceiver, @unchecked Senda
 
         let rum = context.additionalContext(ofType: RUMCoreContext.self)
 
-        if rum?.sessionID != self.currentSessionID {
-            self.currentSessionID = rum?.sessionID
-            self.eventIDs = []
-            self.eventsCount = 0
+        var shouldWrite = false
+        _recordState.mutate { state in
+            if rum?.sessionID != state.currentSessionID {
+                state.currentSessionID = rum?.sessionID
+                state.eventIDs = []
+                state.eventsCount = 0
+            }
+
+            if state.eventsCount < TelemetryReceiver.maxEventsPerSessions {
+                if id == nil {
+                    state.eventsCount += 1
+                    shouldWrite = true
+                } else if let eventID = id, !state.eventIDs.contains(eventID) {
+                    state.eventIDs.insert(eventID)
+                    state.eventsCount += 1
+                    shouldWrite = true
+                }
+            }
         }
 
-        if self.eventsCount < TelemetryReceiver.maxEventsPerSessions {
-            if id == nil {
-                self.eventsCount += 1
-                await operation(context, writer)
-            } else if let eventID = id, !self.eventIDs.contains(eventID) {
-                self.eventIDs.insert(eventID)
-                self.eventsCount += 1
-                await operation(context, writer)
-            }
+        if shouldWrite {
+            await operation(context, writer)
         }
     }
 }

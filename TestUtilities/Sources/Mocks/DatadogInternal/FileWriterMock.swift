@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-public class FileWriterMock: Writer {
+public class FileWriterMock: Writer, @unchecked Sendable {
     public init() { }
 
     @ReadWriteLock

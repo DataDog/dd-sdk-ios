@@ -367,12 +367,13 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(crashReceiver?.sessionSampler.samplingRate, random)
     }
 
-    func testWhenEnabledWithDebugViewsArgument() async {
+    func testWhenEnabledWithDebugViewsArgument() async throws {
         // Given
         config.debugViews = true
 
         // When
         RUM.enable(with: config, in: core)
+        try? await Task.sleep(nanoseconds: 100_000_000)
 
         // Then
         XCTAssertTrue(RUMMonitor.shared(in: core).debug)
@@ -424,10 +425,11 @@ class RUMTests: XCTestCase {
         config.uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionID)
         config.sessionSampleRate = .maxSampleRate
         RUM.enable(with: config, in: core)
+        let monitor = RUMMonitor.shared(in: core) as! Monitor
+        await monitor.flush()
 
         // Then
         let context = core.context.additionalContext(ofType: RUMCoreContext.self)
-
         XCTAssertNotNil(context)
         XCTAssertEqual(context?.applicationID, applicationID)
         XCTAssertEqual(context?.sessionID, sessionID.toRUMDataFormat)
@@ -448,6 +450,8 @@ class RUMTests: XCTestCase {
 
         // When
         RUM.enable(with: config, in: core)
+        let monitor = RUMMonitor.shared(in: core) as! Monitor
+        await monitor.flush()
 
         await fulfillment(of: [expectation], timeout: 2.5)
     }

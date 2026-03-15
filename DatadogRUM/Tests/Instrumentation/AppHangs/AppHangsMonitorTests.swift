@@ -89,7 +89,7 @@ class AppHangsMonitorTests: XCTestCase {
 
     // MARK: - Fatal App Hangs Monitoring
 
-    func testGivenFatalErrorViewContextAvailable_whenAppHangStarts_itSavesPendingAppHangToDataStore() throws {
+    func testGivenFatalErrorViewContextAvailable_whenAppHangStarts_itSavesPendingAppHangToDataStore() async throws {
         // Given
         monitor.start()
         defer { monitor.stop() }
@@ -98,9 +98,10 @@ class AppHangsMonitorTests: XCTestCase {
         // When
         let hang: AppHang = .mockRandom()
         watchdogThread.delegate?.hangStarted(hang)
+        try? await Task.sleep(nanoseconds: 100_000_000)
 
         // Then
-        XCTAssertNotNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
+        XCTAssertNotNil(featureScope.dataStoreMock.storage[RUMDataStore.Key.fatalAppHangKey.rawValue])
         XCTAssertEqual(dd.logger.debugMessages, ["No pending App Hang found"])
     }
 
@@ -160,7 +161,7 @@ class AppHangsMonitorTests: XCTestCase {
 
     // MARK: - Fatal App Hangs - Testing Conditional Uploads
 
-    func testGivenPendingHangStartedLessThan4HoursAgo_whenStartedInAnotherProcess_itSendsBothRUMErrorAndRUMViewEvent() throws {
+    func testGivenPendingHangStartedLessThan4HoursAgo_whenStartedInAnotherProcess_itSendsBothRUMErrorAndRUMViewEvent() async throws {
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let hangDate: Date = currentDate.secondsAgo(.random(in: 0...4.hours))
         let view: RUMViewEvent = .mockRandom()
@@ -171,6 +172,7 @@ class AppHangsMonitorTests: XCTestCase {
         monitor.start()
         fatalErrorContext.view = view
         watchdogThread.delegate?.hangStarted(hang)
+        try await Task.sleep(nanoseconds: 100_000_000)
         monitor.stop()
 
         // When
@@ -186,6 +188,7 @@ class AppHangsMonitorTests: XCTestCase {
         )
         monitor.start()
         defer { monitor.stop() }
+        await featureScope.waitForWrittenEvents(count: 2)
 
         // Then
         XCTAssertEqual(
@@ -199,10 +202,10 @@ class AppHangsMonitorTests: XCTestCase {
         XCTAssertEqual(featureScope.eventsWritten.count, 2, "It must send both RUM error and RUM view")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1)
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1)
-        XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
+        XCTAssertNil(featureScope.dataStoreMock.storage[RUMDataStore.Key.fatalAppHangKey.rawValue])
     }
 
-    func testGivenPendingHangStartedMoreThan4HoursAgo_whenStartedInAnotherProcess_itSendsOnlyRUMError() throws {
+    func testGivenPendingHangStartedMoreThan4HoursAgo_whenStartedInAnotherProcess_itSendsOnlyRUMError() async throws {
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let hangDate: Date = currentDate.secondsAgo(.random(in: 4.hours..<24.hours))
         let view: RUMViewEvent = .mockRandom()
@@ -213,6 +216,7 @@ class AppHangsMonitorTests: XCTestCase {
         monitor.start()
         fatalErrorContext.view = view
         watchdogThread.delegate?.hangStarted(hang)
+        try await Task.sleep(nanoseconds: 100_000_000)
         monitor.stop()
 
         // When
@@ -228,6 +232,7 @@ class AppHangsMonitorTests: XCTestCase {
         )
         monitor.start()
         defer { monitor.stop() }
+        await featureScope.waitForWrittenEvents(count: 1)
 
         // Then
         XCTAssertEqual(
@@ -240,10 +245,10 @@ class AppHangsMonitorTests: XCTestCase {
 
         XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must send only RUM error")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1)
-        XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
+        XCTAssertNil(featureScope.dataStoreMock.storage[RUMDataStore.Key.fatalAppHangKey.rawValue])
     }
 
-    func testGivenPendingHangStartedWithPendingOrNotGrantedConsent_whenStartedInAnotherProcess_itSendsNoEvent() throws {
+    func testGivenPendingHangStartedWithPendingOrNotGrantedConsent_whenStartedInAnotherProcess_itSendsNoEvent() async throws {
         let consent: TrackingConsent = .mockRandom(otherThan: TrackingConsent.granted)
         let view: RUMViewEvent = .mockRandom()
         let hang: AppHang = .mockRandom()
@@ -253,6 +258,7 @@ class AppHangsMonitorTests: XCTestCase {
         monitor.start()
         fatalErrorContext.view = view
         watchdogThread.delegate?.hangStarted(hang)
+        try await Task.sleep(nanoseconds: 100_000_000)
         monitor.stop()
 
         // When
@@ -268,6 +274,7 @@ class AppHangsMonitorTests: XCTestCase {
         )
         monitor.start()
         defer { monitor.stop() }
+        try? await Task.sleep(nanoseconds: 300_000_000)
 
         // Then
         XCTAssertEqual(
@@ -279,12 +286,12 @@ class AppHangsMonitorTests: XCTestCase {
         )
 
         XCTAssertEqual(featureScope.eventsWritten.count, 0, "It must send no event")
-        XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
+        XCTAssertNil(featureScope.dataStoreMock.storage[RUMDataStore.Key.fatalAppHangKey.rawValue])
     }
 
     // MARK: - Fatal App Hangs - Testing Uploaded Data
 
-    func testWhenSendingRUMViewEvent_itIsLinkedToPreviousRUMSessionAndIncludesErrorInformation() throws {
+    func testWhenSendingRUMViewEvent_itIsLinkedToPreviousRUMSessionAndIncludesErrorInformation() async throws {
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let hangDate: Date = currentDate.secondsAgo(.random(in: 0...4.hours))
         let serverTimeOffset: TimeInterval = .mockRandom()
@@ -297,6 +304,7 @@ class AppHangsMonitorTests: XCTestCase {
         monitor.start()
         fatalErrorContext.view = lastView
         watchdogThread.delegate?.hangStarted(hang)
+        try await Task.sleep(nanoseconds: 100_000_000)
         monitor.stop()
 
         // When
@@ -312,6 +320,7 @@ class AppHangsMonitorTests: XCTestCase {
         )
         monitor.start()
         defer { monitor.stop() }
+        await featureScope.waitForWrittenEvents(count: 2)
 
         // Then
         let viewEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
@@ -342,7 +351,7 @@ class AppHangsMonitorTests: XCTestCase {
         DDAssertJSONEqual(viewEvent.usr, lastView.usr)
     }
 
-    func testWhenSendingRUMErrorEvent_itIsLinkedToPreviousRUMSessionAndIncludesErrorInformation() throws {
+    func testWhenSendingRUMErrorEvent_itIsLinkedToPreviousRUMSessionAndIncludesErrorInformation() async throws {
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let hangDate: Date = currentDate.secondsAgo(.random(in: 0...4.hours))
         let serverTimeOffset: TimeInterval = .mockRandom()
@@ -373,6 +382,7 @@ class AppHangsMonitorTests: XCTestCase {
         monitor.start()
         fatalErrorContext.view = lastView
         watchdogThread.delegate?.hangStarted(hang)
+        try await Task.sleep(nanoseconds: 100_000_000)
         monitor.stop()
 
         // When
@@ -388,6 +398,7 @@ class AppHangsMonitorTests: XCTestCase {
         )
         monitor.start()
         defer { monitor.stop() }
+        await featureScope.waitForWrittenEvents(count: 1)
 
         // Then
         let errorEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
@@ -426,7 +437,7 @@ class AppHangsMonitorTests: XCTestCase {
         XCTAssertEqual(errorEvent.error.wasTruncated, hangBacktrace.wasTruncated)
     }
 
-    func testWhenSendingRUMErrorEvent_itIncludesTimeSinceAppLaunch() throws {
+    func testWhenSendingRUMErrorEvent_itIncludesTimeSinceAppLaunch() async throws {
         let appLaunchDate: Date = .mockDecember15th2019At10AMUTC()
         let hangTimeSinceAppStart: TimeInterval = .mockRandom(min: 1, max: 10)
         let hang: AppHang = .mockWith(startDate: appLaunchDate.addingTimeInterval(hangTimeSinceAppStart))
@@ -438,6 +449,7 @@ class AppHangsMonitorTests: XCTestCase {
         monitor.start()
         fatalErrorContext.view = .mockRandom()
         watchdogThread.delegate?.hangStarted(hang)
+        try await Task.sleep(nanoseconds: 100_000_000)
         monitor.stop()
 
         // When (app is restarted)
@@ -454,6 +466,7 @@ class AppHangsMonitorTests: XCTestCase {
         )
         monitor.start()
         defer { monitor.stop() }
+        await featureScope.waitForWrittenEvents(count: 1)
 
         // Then
         let errorEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)

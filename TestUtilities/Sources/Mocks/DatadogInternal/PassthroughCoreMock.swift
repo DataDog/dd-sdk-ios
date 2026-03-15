@@ -29,7 +29,12 @@ import DatadogInternal
 open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Sendable {
     /// Counts references to `PassthroughCoreMock` instances, so we can prevent memory
     /// leaks of SDK core in `DatadogTestsObserver`.
-    public private(set) static var referenceCount = 0
+    private static let _referenceCountLock = NSLock()
+    private nonisolated(unsafe) static var _referenceCountStorage = 0
+    public private(set) static var referenceCount: Int {
+        get { _referenceCountLock.withLock { _referenceCountStorage } }
+        set { _referenceCountLock.withLock { _referenceCountStorage = newValue } }
+    }
 
     /// Current context that will be passed to feature-scopes.
     @ReadWriteLock
@@ -61,11 +66,11 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
 
         messageReceiver.receive(message: .context(context))
 
-        PassthroughCoreMock.referenceCount += 1
+        PassthroughCoreMock._referenceCountLock.withLock { PassthroughCoreMock._referenceCountStorage += 1 }
     }
 
     deinit {
-        PassthroughCoreMock.referenceCount -= 1
+        PassthroughCoreMock._referenceCountLock.withLock { PassthroughCoreMock._referenceCountStorage -= 1 }
     }
 
     /// no-op

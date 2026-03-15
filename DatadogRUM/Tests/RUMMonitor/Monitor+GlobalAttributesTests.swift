@@ -587,7 +587,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
     // MARK: - Updating Fatal Error Context With Global Attributes
 
-    func testGivenSDKInitialized_whenGlobalAttributeIsAdded_thenFatalErrorContextIsUpdatedWithNewAttributes() throws {
+    func testGivenSDKInitialized_whenGlobalAttributeIsAdded_thenFatalErrorContextIsUpdatedWithNewAttributes() async throws {
         let fatalErrorContext = FatalErrorContextNotifierMock()
 
         // Given
@@ -599,13 +599,14 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
         // When
         monitor.addAttribute(forKey: "attribute", value: "value")
+        await monitor.flush()
 
         // Then
         XCTAssertEqual(fatalErrorContext.globalAttributes["attribute"] as? String, "value")
         XCTAssertEqual(fatalErrorContext.globalAttributes.count, 1)
     }
 
-    func testGivenSDKInitialized_whenMultipleGlobalAttributesAreAdded_thenFatalErrorContextIsUpdatedWithNewAttributes() throws {
+    func testGivenSDKInitialized_whenMultipleGlobalAttributesAreAdded_thenFatalErrorContextIsUpdatedWithNewAttributes() async throws {
         // Given
         let fatalErrorContext = FatalErrorContextNotifierMock()
         let mockAttributes: [AttributeKey: AttributeValue] = (0...99).reduce(into: [:]) { $0[String(describing: $1)] = $1 }
@@ -617,6 +618,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
         // When
         monitor.addAttributes(mockAttributes)
+        await monitor.flush()
 
         // Then
         XCTAssertEqual(fatalErrorContext.globalAttributes.count, mockAttributes.count)
@@ -625,7 +627,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         }
     }
 
-    func testGivenSDKInitialized_whenGlobalAttributesAreAddedAndRemoved_thenFatalErrorContextIsUpdatedWithNewAttributes() throws {
+    func testGivenSDKInitialized_whenGlobalAttributesAreAddedAndRemoved_thenFatalErrorContextIsUpdatedWithNewAttributes() async throws {
         let fatalErrorContext = FatalErrorContextNotifierMock()
 
         // Given
@@ -639,13 +641,14 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor.addAttribute(forKey: "attribute1", value: "value1")
         monitor.addAttribute(forKey: "attribute2", value: "value2")
         monitor.removeAttribute(forKey: "attribute1")
+        await monitor.flush()
 
         // Then
         XCTAssertEqual(fatalErrorContext.globalAttributes["attribute2"] as? String, "value2")
         XCTAssertEqual(fatalErrorContext.globalAttributes.count, 1)
     }
 
-    func testGivenSDKInitialized_whenMultipleGlobalAttributesAreAddedAndRemoved_thenFatalErrorContextIsUpdatedWithNewAttributes() throws {
+    func testGivenSDKInitialized_whenMultipleGlobalAttributesAreAddedAndRemoved_thenFatalErrorContextIsUpdatedWithNewAttributes() async throws {
         // Given
         let fatalErrorContext = FatalErrorContextNotifierMock()
         let mockAttributes: [AttributeKey: AttributeValue] = (0...99).reduce(into: [:]) { $0[String(describing: $1)] = $1 }
@@ -659,6 +662,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         // When
         monitor.addAttributes(mockAttributes)
         monitor.removeAttributes(forKeys: keysToRemove)
+        await monitor.flush()
 
         // Then
         XCTAssertEqual(fatalErrorContext.globalAttributes.count, (mockAttributes.count - keysToRemove.count))

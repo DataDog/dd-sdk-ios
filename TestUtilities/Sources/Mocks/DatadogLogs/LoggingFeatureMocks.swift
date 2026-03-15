@@ -226,8 +226,8 @@ extension LogEvent.Attributes: Equatable, AnyMockable, RandomMockable {
     }
 
     public static func mockWith(
-        userAttributes: [String: Encodable] = [:],
-        internalAttributes: [String: Encodable]? = [:]
+        userAttributes: [String: AttributeValue] = [:],
+        internalAttributes: [String: AttributeValue]? = [:]
     ) -> LogEvent.Attributes {
         return LogEvent.Attributes(
             userAttributes: userAttributes,

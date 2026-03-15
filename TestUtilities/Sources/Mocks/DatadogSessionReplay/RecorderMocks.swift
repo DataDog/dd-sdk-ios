@@ -106,7 +106,7 @@ extension ViewAttributes: AnyMockable, RandomMockable {
 
     /// A fixture for mocking consistent state in `ViewAttributes`.
     public enum Fixture: CaseIterable {
-        public static var allCases: [DatadogSessionReplay.ViewAttributes.Fixture] = [
+        public nonisolated(unsafe) static var allCases: [DatadogSessionReplay.ViewAttributes.Fixture] = [
             .invisible,
             .visible(.noAppearance),
             .visible(.someAppearance),
@@ -379,17 +379,20 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
 
     static func mockWith(
         recorder: Recorder.Context = .mockAny(),
-        coordinateSpace: UICoordinateSpace = UIView.mockAny(),
+        coordinateSpace: UICoordinateSpace? = nil,
         ids: NodeIDGenerator = NodeIDGenerator(),
         webViewCache: NSHashTable<WKWebView> = .weakObjects(),
         clip: CGRect? = nil
     ) -> ViewTreeRecordingContext {
+        let space: UICoordinateSpace = coordinateSpace ?? {
+            MainActor.assumeIsolated { UIView(frame: .zero) }
+        }()
         return .init(
             recorder: recorder,
-            coordinateSpace: coordinateSpace,
+            coordinateSpace: space,
             ids: ids,
             webViewCache: webViewCache,
-            clip: clip ?? coordinateSpace.bounds
+            clip: clip ?? space.bounds
         )
     }
 }

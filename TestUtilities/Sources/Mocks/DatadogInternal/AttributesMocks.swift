@@ -19,7 +19,7 @@ public func mockRandomAttributes() -> [AttributeKey: AttributeValue & Sendable] 
     }
 
     // Produces a `.none` value for optional of a random type.
-    let randomAbsentOptional: () -> Codable = [
+    let randomAbsentOptional: () -> AttributeValue = [
         // swiftlint:disable opening_brace syntactic_sugar
         { Optional<String>.none },
         { Optional<Int>.none },

@@ -28,7 +28,7 @@ class ErrorMessageReceiverTests: XCTestCase {
         receiver = nil
     }
 
-    func testReceivePartialLogError() throws {
+    func testReceivePartialLogError() async throws {
         // When
         let message: FeatureMessage = .payload(
             RUMErrorMessage(
@@ -43,6 +43,7 @@ class ErrorMessageReceiverTests: XCTestCase {
         )
 
         receiver.receive(message: message)
+        try? await Task.sleep(nanoseconds: 100_000_000)
 
         // Then
         let event: RUMErrorEvent = try XCTUnwrap(featureScope.eventsWritten().last, "It should send error")
@@ -50,7 +51,7 @@ class ErrorMessageReceiverTests: XCTestCase {
         XCTAssertEqual(event.error.source, .logger)
     }
 
-    func testReceiveCompleteLogError() throws {
+    func testReceiveCompleteLogError() async throws {
         // Given
         let mockAttribute: String = .mockRandom()
         let mockBinaryImage: BinaryImage = .mockRandom()
@@ -70,6 +71,7 @@ class ErrorMessageReceiverTests: XCTestCase {
 
         // When
         receiver.receive(message: message)
+        try? await Task.sleep(nanoseconds: 100_000_000)
 
         // Then
         let event: RUMErrorEvent = try XCTUnwrap(featureScope.eventsWritten().last, "It should send error")

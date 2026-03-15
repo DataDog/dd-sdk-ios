@@ -93,7 +93,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(scope.userActionScope?.actionUUID))
     }
 
-    func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() throws {
+    func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() async throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let traceSampleRate: SampleRate = .mockRandom(min: 0, max: 100)
         let scope = RUMViewScope(
@@ -130,6 +130,7 @@ class RUMViewScopeTests: XCTestCase {
             writer: writer
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -166,7 +167,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.replayStats?.recordsCount, 1)
     }
 
-    func testWhenInitialViewHasConfiguredSource_itSendsViewUpdateEventWithConfiguredSource() throws {
+    func testWhenInitialViewHasConfiguredSource_itSendsViewUpdateEventWithConfiguredSource() async throws {
         // GIVEN
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
@@ -193,11 +194,12 @@ class RUMViewScopeTests: XCTestCase {
             writer: writer
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
         XCTAssertEqual(event.source, .init(rawValue: source))
     }
 
-    func testWhenViewIsStarted_itSendsViewUpdateEvent() throws {
+    func testWhenViewIsStarted_itSendsViewUpdateEvent() async throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let isInitialView: Bool = .mockRandom()
         let scope = RUMViewScope(
@@ -226,6 +228,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -255,7 +258,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.build, "os-build")
     }
 
-    func testWhenViewIsStopped_itSendsViewUpdateEvent_andEndsTheScope() throws {
+    func testWhenViewIsStopped_itSendsViewUpdateEvent_andEndsTheScope() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let isInitialView: Bool = .mockRandom()
         let scope = RUMViewScope(
@@ -293,6 +296,7 @@ class RUMViewScopeTests: XCTestCase {
             "The scope should end."
         )
 
+        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 2)
         viewEvents.forEach { viewEvent in
@@ -332,7 +336,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.build, "os-build")
     }
 
-    func testWhenViewIsStopped_itMakesAttributesImmutable() throws {
+    func testWhenViewIsStopped_itMakesAttributesImmutable() async throws {
         // Given
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let isInitialView: Bool = .mockRandom()
@@ -384,6 +388,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 2)
         viewEvents.forEach { viewEvent in
@@ -391,7 +396,7 @@ class RUMViewScopeTests: XCTestCase {
         }
     }
 
-    func testWhenViewIsStoppedInCITest_itSendsViewUpdateEvent_andEndsTheScope() throws {
+    func testWhenViewIsStoppedInCITest_itSendsViewUpdateEvent_andEndsTheScope() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let isInitialView: Bool = .mockRandom()
         let fakeCiTestId: String = .mockRandom()
@@ -430,6 +435,7 @@ class RUMViewScopeTests: XCTestCase {
             "The scope should end."
         )
 
+        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 2)
         viewEvents.forEach { viewEvent in
@@ -470,7 +476,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.ciTest?.testExecutionId, fakeCiTestId)
     }
 
-    func testWhenViewIsStoppedInSyntheticsTest_itSendsViewUpdateEvent_andEndsTheScope() throws {
+    func testWhenViewIsStoppedInSyntheticsTest_itSendsViewUpdateEvent_andEndsTheScope() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let isInitialView: Bool = .mockRandom()
         let fakeSyntheticsTestId: String = .mockRandom()
@@ -510,6 +516,7 @@ class RUMViewScopeTests: XCTestCase {
             "The scope should end."
         )
 
+        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 2)
         viewEvents.forEach { viewEvent in
@@ -551,7 +558,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
     }
 
-    func testWhenViewStartWithSessionTypeOverride() throws {
+    func testWhenViewStartWithSessionTypeOverride() async throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let isInitialView: Bool = .mockRandom()
         let fakeSyntheticsTestId: String = .mockRandom()
@@ -585,6 +592,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 1)
 
@@ -616,7 +624,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
     }
 
-    func testWhenAnotherViewIsStarted_itEndsTheScope() throws {
+    @MainActor
+    func testWhenAnotherViewIsStarted_itEndsTheScope() async throws {
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
         var currentTime = Date()
@@ -653,6 +662,7 @@ class RUMViewScopeTests: XCTestCase {
             "The scope should end as another View is started."
         )
 
+        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 2)
         let view1WasActive = try XCTUnwrap(viewEvents[0].view.isActive)
@@ -664,7 +674,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewEvents[1].view.timeSpent, TimeInterval(1).dd.toInt64Nanoseconds, "The View should last for 1 second")
     }
 
-    func testWhenTheViewIsStartedAnotherTime_itEndsTheScope() throws {
+    func testWhenTheViewIsStartedAnotherTime_itEndsTheScope() async throws {
         var currentTime = Date()
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -699,6 +709,7 @@ class RUMViewScopeTests: XCTestCase {
             "The scope should end as the View was started for another time."
         )
 
+        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewEvents.count, 2)
         let viewWasActive = try XCTUnwrap(viewEvents[0].view.isActive)
@@ -710,7 +721,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewEvents[0].view.timeSpent, TimeInterval(1).dd.toInt64Nanoseconds, "The View should last for 1 second")
     }
 
-    func testGivenMultipleViewScopes_whenSendingViewEvent_eachScopeUsesUniqueViewID() throws {
+    func testGivenMultipleViewScopes_whenSendingViewEvent_eachScopeUsesUniqueViewID() async throws {
         func createScope(uri: String, name: String) -> RUMViewScope {
             RUMViewScope(
                 isInitialView: false,
@@ -746,6 +757,7 @@ class RUMViewScopeTests: XCTestCase {
         }
 
         // Then
+        await writer.waitForEvents(count: 4)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         let view1Events = viewEvents.filter { $0.view.url == "View1URL" && $0.view.name == "View1Name" }
         let view2Events = viewEvents.filter { $0.view.url == "View2URL" && $0.view.name == "View2Name" }
@@ -756,7 +768,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNotEqual(view1Events[0].view.id, view2Events[0].view.id)
     }
 
-    func testWhenEventsAreSent_theyIncludeSessionPrecondition() throws {
+    func testWhenEventsAreSent_theyIncludeSessionPrecondition() async throws {
         let processLaunchDate: Date = .mockDecember15th2019At10AMUTC()
         var currentTime = processLaunchDate
         context.applicationStateHistory = .mockWith(initialState: .inactive, date: .distantPast)
@@ -797,6 +809,7 @@ class RUMViewScopeTests: XCTestCase {
         _ = scope.process(command: RUMStopResourceCommand.mockWith(resourceKey: "key", time: currentTime), context: context, writer: writer)
 
         // Then
+        await writer.waitForEvents(count: 10)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         XCTAssertGreaterThan(viewEvents.count, 1)
         viewEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
@@ -820,7 +833,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - View Attributes
 
-    func testWhenViewAttributesAreSet_nextEventsHaveThem() throws {
+    func testWhenViewAttributesAreSet_nextEventsHaveThem() async throws {
         let scope: RUMViewScope = .mockWith(parent: parent)
 
         // When
@@ -836,6 +849,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["viewKey": "viewValue"])
@@ -862,12 +876,13 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 2)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue", "newViewKey": "newViewValue", "anotherKey": "anotherValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["viewKey": "viewValue", "newViewKey": "newViewValue", "anotherKey": "anotherValue"])
     }
 
-    func testWhenViewAttributesAreRemoved_eventsDoNotIncludeThem() throws {
+    func testWhenViewAttributesAreRemoved_eventsDoNotIncludeThem() async throws {
         let scope: RUMViewScope = .mockWith(parent: parent)
 
         // When
@@ -883,6 +898,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["viewKey": "viewValue"])
@@ -906,12 +922,13 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 2)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, [:])
         DDAssertDictionariesEqual(event.context!.contextInfo, [:])
     }
 
-    func testWhenInternalViewAttributesAreSet_eventsAreNotAffected() throws {
+    func testWhenInternalViewAttributesAreSet_eventsAreNotAffected() async throws {
         let scope: RUMViewScope = .mockWith(parent: parent)
 
         // When
@@ -938,6 +955,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
         DDAssertDictionariesEqual(scope.internalAttributes, ["internalKey": "internalValue"])
@@ -955,6 +973,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
+        await writer.waitForEvents(count: 2)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "newViewValue"])
         DDAssertDictionariesEqual(scope.internalAttributes, ["internalKey": "internalValue"])
@@ -962,7 +981,7 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     // Attributes on views are immediately propagated to their child events after they are added.
-    func testWhenViewAttributesAreSet_childEventsHaveThem() throws {
+    func testWhenViewAttributesAreSet_childEventsHaveThem() async throws {
         let scope: RUMViewScope = .mockWith(parent: parent)
 
         // When
@@ -978,6 +997,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         var viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
         DDAssertDictionariesEqual(viewEvent.context!.contextInfo, ["viewKey": "viewValue"])
@@ -996,6 +1016,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 3)
         viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let actionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertNil(scope.userActionScope, "It should not count custom action as pending")
@@ -1032,6 +1053,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 5)
         viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let resourceEvent = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue", "newViewKey": "newViewValue"])
@@ -1048,7 +1070,7 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     // Attributes are overwritten in events as they become more specific, so the precedence order is “Local, View, Global”.
-    func testWhenViewAttributesCollide_thePrecedenceIsRespected() throws {
+    func testWhenViewAttributesCollide_thePrecedenceIsRespected() async throws {
         let scope: RUMViewScope = .mockWith(parent: parent)
 
         // When
@@ -1064,6 +1086,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         var viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
         DDAssertDictionariesEqual(viewEvent.context!.contextInfo, ["key": "viewValue"])
@@ -1082,6 +1105,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 3)
         viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let actionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
@@ -1108,6 +1132,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 5)
         viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let resourceEvent = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
@@ -1117,7 +1142,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // View attributes are not added or overwritten after a view has “stopped”, even if that view is still active because of Resource or Action events.
     // Changes to global attributes also do not affect “stopped” views, but should be transferred to other active events when they are stopped.
-    func testWhenViewAttributesChangeOnStoppedViewWithActiveResources() throws {
+    func testWhenViewAttributesChangeOnStoppedViewWithActiveResources() async throws {
         let view1 = "view1"
         let view2 = "view2"
         let firstViewScope: RUMViewScope = .mockWith(parent: parent, identity: ViewIdentifier(view1), name: view1)
@@ -1137,6 +1162,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         var view1Event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(firstViewScope.attributes, ["viewKey": "viewValue"])
         DDAssertDictionariesEqual(view1Event.context!.contextInfo, ["viewKey": "viewValue", "globalKey": "globalValue"])
@@ -1173,6 +1199,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(secondViewScope.process(command: startView2Command, context: context, writer: writer))
 
         // Then
+        await writer.waitForEvents(count: 3)
         view1Event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last(where: { $0.view.name == "view1" }))
         let view2Event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last(where: { $0.view.name == "view2" }))
         // First view scope is inactive with the final snapshot of attributes
@@ -1204,6 +1231,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 5)
         view1Event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let resourceEvent = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
         // First view scope is inactive with the final snapshot of attributes
@@ -1231,7 +1259,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Global Attributes
 
-    func testWhenGlobalAttributesAreUpdated_eventsHaveTheUpdate() throws {
+    func testWhenGlobalAttributesAreUpdated_eventsHaveTheUpdate() async throws {
         let scope: RUMViewScope = .mockWith(parent: parent)
 
         // When
@@ -1248,6 +1276,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "viewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["globalKey": "globalValue", "viewKey": "viewValue"])
@@ -1266,13 +1295,14 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 2)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         // View scope is stopped with the final snapshot of attributes
         DDAssertDictionariesEqual(scope.attributes, ["viewKey": "newViewValue", "globalKey": "newGlobalValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["globalKey": "newGlobalValue", "viewKey": "newViewValue"])
     }
 
-    func testViewAttributesTakePrecedenceOverGlobalAttributes() throws {
+    func testViewAttributesTakePrecedenceOverGlobalAttributes() async throws {
         let scope: RUMViewScope = .mockWith(parent: parent)
 
         // When
@@ -1288,6 +1318,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
+        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "viewValue"])
@@ -1305,12 +1336,13 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
+        await writer.waitForEvents(count: 2)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "newViewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "newViewValue"])
     }
 
-    func testCommandAttributesTakePrecendenceOverViewAttributesAndGlobalAttributes() throws {
+    func testCommandAttributesTakePrecendenceOverViewAttributesAndGlobalAttributes() async throws {
         let scope: RUMViewScope = .mockWith(parent: parent)
 
         // When
@@ -1325,6 +1357,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
+        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "viewValue"])
@@ -1341,6 +1374,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
+        await writer.waitForEvents(count: 3)
         let longTaskEvent = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
         DDAssertDictionariesEqual(longTaskEvent.context!.contextInfo, ["key": "localValue"])
@@ -1357,13 +1391,14 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
+        await writer.waitForEvents(count: 4)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "newViewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "newViewValue"])
     }
 
     // Removing global attributes is immediately reflected in attributes sent on View Update events and on child events.
-    func testWhenRemovingGlobalAttributes_eventsDoNotIncludeThem() throws {
+    func testWhenRemovingGlobalAttributes_eventsDoNotIncludeThem() async throws {
         let scope: RUMViewScope = .mockWith(parent: parent)
 
         // When
@@ -1378,6 +1413,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
+        await writer.waitForEvents(count: 1)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "viewValue", "globalKey": "globalValue"])
@@ -1394,6 +1430,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
+        await writer.waitForEvents(count: 2)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "viewValue", "anotherViewKey": "anotherViewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "viewValue", "anotherViewKey": "anotherViewValue"])
@@ -1410,6 +1447,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
         // Then
+        await writer.waitForEvents(count: 3)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         DDAssertDictionariesEqual(scope.attributes, ["key": "newViewValue", "anotherViewKey": "anotherViewValue"])
         DDAssertDictionariesEqual(event.context!.contextInfo, ["key": "newViewValue", "anotherViewKey": "anotherViewValue"])
@@ -1417,7 +1455,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Resources Tracking
 
-    func testItManagesResourceScopesLifecycle() throws {
+    func testItManagesResourceScopesLifecycle() async throws {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
@@ -1480,12 +1518,13 @@ class RUMViewScopeTests: XCTestCase {
                 writer: writer
             )
         )
+        await writer.waitForEvents(count: 8)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(event.view.resource.count, 1, "View should record 1 successful Resource")
         XCTAssertEqual(event.view.error.count, 1, "View should record 1 error due to second Resource failure")
     }
 
-    func testGivenViewWithPendingResources_whenItGetsStopped_itDoesNotFinishUntilResourcesComplete() throws {
+    func testGivenViewWithPendingResources_whenItGetsStopped_itDoesNotFinishUntilResourcesComplete() async throws {
         let viewStartTime = Date()
         var currentTime = viewStartTime
         let scope = RUMViewScope(
@@ -1549,6 +1588,7 @@ class RUMViewScopeTests: XCTestCase {
             "The View should be kept alive as all its Resources haven't yet finished loading"
         )
 
+        await writer.waitForEvents(count: 4)
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertTrue(event.view.isActive ?? false, "View should stay active")
 
@@ -1563,6 +1603,7 @@ class RUMViewScopeTests: XCTestCase {
             "The View should stop as all its Resources finished loading"
         )
 
+        await writer.waitForEvents(count: 6)
         event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(event.view.resource.count, 1, "View should record 1 successful Resource")
         XCTAssertEqual(event.view.error.count, 1, "View should record 1 error due to second Resource failure")
@@ -1570,7 +1611,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.timeSpent, lastResourceCompletionTime.timeIntervalSince(viewStartTime).dd.toInt64Nanoseconds, "View should last until the last resource completes")
     }
 
-    func testGivenViewWithUnfinishedResources_whenNextViewsAreStarted_itNoLongerUpdatesTimeSpent() throws {
+    func testGivenViewWithUnfinishedResources_whenNextViewsAreStarted_itNoLongerUpdatesTimeSpent() async throws {
         let view1StartTime = Date()
         var currentTime = view1StartTime
         let view1 = ViewIdentifier("view1")
@@ -1621,6 +1662,7 @@ class RUMViewScopeTests: XCTestCase {
             "The View should be kept alive as `/dangling/resource` haven't yet finished loading"
         )
 
+        await writer.waitForEvents(count: 4)
         let lastEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(lastEvent.view.resource.count, 0, "View should record no resources as `/dangling/resource` never finished")
         XCTAssertEqual(lastEvent.view.isActive, true, "View should remain active because it has pending resource")
@@ -1629,7 +1671,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - User Action Tracking
 
-    func testItManagesContinuousUserActionScopeLifecycle() throws {
+    func testItManagesContinuousUserActionScopeLifecycle() async throws {
         let scope = RUMViewScope(
             isInitialView: false,
             parent: parent,
@@ -1708,11 +1750,12 @@ class RUMViewScopeTests: XCTestCase {
                 writer: writer
             )
         )
+        await writer.waitForEvents(count: 8)
         let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewEvent.view.action.count, 2, "View should record 2 actions: non-custom + instant custom")
     }
 
-    func testItManagesDiscreteUserActionScopeLifecycle() throws {
+    func testItManagesDiscreteUserActionScopeLifecycle() async throws {
         var currentTime = Date()
         let scope = RUMViewScope(
             isInitialView: false,
@@ -1787,11 +1830,12 @@ class RUMViewScopeTests: XCTestCase {
                 writer: writer
             )
         )
+        await writer.waitForEvents(count: 7)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(event.view.action.count, 2, "View should record 2 actions: non-custom + instant custom")
     }
 
-    func testGivenViewWithPendingAction_whenCustomActionIsAdded_itSendsItInstantly() throws {
+    func testGivenViewWithPendingAction_whenCustomActionIsAdded_itSendsItInstantly() async throws {
         var currentTime = Date()
         let scope = RUMViewScope(
             isInitialView: false,
@@ -1834,6 +1878,7 @@ class RUMViewScopeTests: XCTestCase {
         // Then
         XCTAssertEqual(scope.userActionScope?.name, pendingActionName, "It should not alter pending action")
 
+        await writer.waitForEvents(count: 4)
         let lastViewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let firstActionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(lastViewEvent.view.action.count, 1, "View should record 1 only custom action (pending action is not yet finished)")
@@ -1849,7 +1894,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.os?.build, "os-build")
     }
 
-    func testGivenViewWithNoPendingAction_whenCustomActionIsAdded_itSendsItInstantly() throws {
+    func testGivenViewWithNoPendingAction_whenCustomActionIsAdded_itSendsItInstantly() async throws {
         var currentTime = Date()
         let scope = RUMViewScope(
             isInitialView: false,
@@ -1886,6 +1931,7 @@ class RUMViewScopeTests: XCTestCase {
         // Then
         XCTAssertNil(scope.userActionScope, "It should not count custom action as pending")
 
+        await writer.waitForEvents(count: 3)
         let lastViewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         let firstActionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(lastViewEvent.view.action.count, 1, "View should record custom action")
@@ -1901,7 +1947,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.os?.build, "os-build")
     }
 
-    func testWhenDiscreteUserActionHasFrustration_itSendsFrustrationCount() throws {
+    func testWhenDiscreteUserActionHasFrustration_itSendsFrustrationCount() async throws {
         // Given
         var currentTime = Date()
         let scope = RUMViewScope(
@@ -1956,11 +2002,12 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 22)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(event.view.frustration?.count, 5)
     }
 
-    func testWhenTwoTapActionsTrackedSequentially_thenHigherPriorityInstrumentationWins() throws {
+    func testWhenTwoTapActionsTrackedSequentially_thenHigherPriorityInstrumentationWins() async throws {
         func actionName(for instrumentationType: InstrumentationType) -> String {
             switch instrumentationType {
             case .manual: return "Manual action"
@@ -1978,7 +2025,8 @@ class RUMViewScopeTests: XCTestCase {
         ///   - expectedActionName: The expected action name after the second tap is processed.
         func testTapActions(
             firstTap: InstrumentationType, secondTap: InstrumentationType, expectedActionName: String
-        ) throws {
+        ) async throws {
+            let initialCount = writer.events.count
             let firstActionName = actionName(for: firstTap)
             let secondActionName = actionName(for: secondTap)
 
@@ -2029,6 +2077,7 @@ class RUMViewScopeTests: XCTestCase {
                 writer: writer
             )
 
+            await writer.waitForEvents(count: initialCount + 3)
             let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
             let actionName = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last?.action.target?.name)
             XCTAssertEqual(viewEvent.view.action.count, 1)
@@ -2039,20 +2088,20 @@ class RUMViewScopeTests: XCTestCase {
             )
         }
 
-        try testTapActions(firstTap: .uikit, secondTap: .swiftui, expectedActionName: actionName(for: .swiftui))
-        try testTapActions(firstTap: .uikit, secondTap: .manual, expectedActionName: actionName(for: .manual))
-        try testTapActions(firstTap: .uikit, secondTap: .swiftuiAutomatic, expectedActionName: actionName(for: .swiftuiAutomatic))
-        try testTapActions(firstTap: .swiftui, secondTap: .manual, expectedActionName: actionName(for: .manual))
-        try testTapActions(firstTap: .swiftui, secondTap: .uikit, expectedActionName: actionName(for: .swiftui))
-        try testTapActions(firstTap: .swiftui, secondTap: .swiftuiAutomatic, expectedActionName: actionName(for: .swiftui))
-        try testTapActions(firstTap: .manual, secondTap: .uikit, expectedActionName: actionName(for: .manual))
-        try testTapActions(firstTap: .manual, secondTap: .swiftui, expectedActionName: actionName(for: .manual))
-        try testTapActions(firstTap: .manual, secondTap: .swiftuiAutomatic, expectedActionName: actionName(for: .manual))
+        try await testTapActions(firstTap: .uikit, secondTap: .swiftui, expectedActionName: actionName(for: .swiftui))
+        try await testTapActions(firstTap: .uikit, secondTap: .manual, expectedActionName: actionName(for: .manual))
+        try await testTapActions(firstTap: .uikit, secondTap: .swiftuiAutomatic, expectedActionName: actionName(for: .swiftuiAutomatic))
+        try await testTapActions(firstTap: .swiftui, secondTap: .manual, expectedActionName: actionName(for: .manual))
+        try await testTapActions(firstTap: .swiftui, secondTap: .uikit, expectedActionName: actionName(for: .swiftui))
+        try await testTapActions(firstTap: .swiftui, secondTap: .swiftuiAutomatic, expectedActionName: actionName(for: .swiftui))
+        try await testTapActions(firstTap: .manual, secondTap: .uikit, expectedActionName: actionName(for: .manual))
+        try await testTapActions(firstTap: .manual, secondTap: .swiftui, expectedActionName: actionName(for: .manual))
+        try await testTapActions(firstTap: .manual, secondTap: .swiftuiAutomatic, expectedActionName: actionName(for: .manual))
     }
 
     // MARK: - Error Tracking
 
-    func testWhenViewErrorIsAdded_itSendsErrorEventAndViewUpdateEvent() throws {
+    func testWhenViewErrorIsAdded_itSendsErrorEventAndViewUpdateEvent() async throws {
         let completionExpectation = expectation(description: "Error processing completion")
 
         let hasReplay: Bool = .mockRandom()
@@ -2100,6 +2149,7 @@ class RUMViewScopeTests: XCTestCase {
 
         wait(for: [completionExpectation], timeout: 0)
 
+        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(error.application.id, scope.context.rumApplicationID)
@@ -2137,7 +2187,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewUpdate.view.error.count, 1)
     }
 
-    func testWhenViewErrorIsAddedWithConfiguredSource_itSendsErrorEventWithCorrectSource() throws {
+    func testWhenViewErrorIsAddedWithConfiguredSource_itSendsErrorEventWithCorrectSource() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
 
@@ -2175,13 +2225,14 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.source, .init(rawValue: source))
         // Configured source should not muck with sourceType, which is set separately.
         XCTAssertEqual(error.error.sourceType, .ios)
     }
 
-    func testGivenStartedView_whenCrossPlatformErrorIsAdded_itSendsCorrectErrorEvent() throws {
+    func testGivenStartedView_whenCrossPlatformErrorIsAdded_itSendsCorrectErrorEvent() async throws {
         let completionExpectation = expectation(description: "Error processing completion")
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
@@ -2226,6 +2277,7 @@ class RUMViewScopeTests: XCTestCase {
 
         wait(for: [completionExpectation], timeout: 0)
 
+        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         DDTAssertValidRUMUUID(error.error.id)
         XCTAssertEqual(error.error.sourceType, expectedSourceType)
@@ -2240,7 +2292,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewUpdate.service, "test-service")
     }
 
-    func testGivenStartedView_whenErrorWithAttributesIsAdded_itDoesNotUpdateViewAttributes() throws {
+    func testGivenStartedView_whenErrorWithAttributesIsAdded_itDoesNotUpdateViewAttributes() async throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
@@ -2291,6 +2343,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         DDAssertDictionariesEqual(error.context!.contextInfo, ["test_attribute": "abc", "other_attribute": "overwritten", "foo": "bar"])
 
@@ -2299,7 +2352,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(scope.attributes["foo"])
     }
 
-    func testGivenStartedView_whenErrorWithFingerprintAttributesIsAdded_itAddsFingerprintToError() throws {
+    func testGivenStartedView_whenErrorWithFingerprintAttributesIsAdded_itAddsFingerprintToError() async throws {
         // Given
         let hasReplay: Bool = .mockRandom()
         let fakeFingerprint: String = .mockRandom()
@@ -2349,12 +2402,13 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.error.fingerprint, fakeFingerprint)
         XCTAssertNil(error.context!.contextInfo[RUM.Attributes.errorFingerprint])
     }
 
-    func testGivenStartedView_whenErrorWithIncludeBinaryImagesAttributesIsAdded_itAddsBinaryImagesToError() throws {
+    func testGivenStartedView_whenErrorWithIncludeBinaryImagesAttributesIsAdded_itAddsBinaryImagesToError() async throws {
         // Given
         let mockBacktrace: BacktraceReport = .mockRandom()
         let hasReplay: Bool = .mockRandom()
@@ -2406,6 +2460,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertNil(error.context?.contextInfo[CrossPlatformAttributes.includeBinaryImages])
         XCTAssertNotNil(error.error.binaryImages)
@@ -2423,7 +2478,7 @@ class RUMViewScopeTests: XCTestCase {
         }
     }
 
-    func testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent() throws {
+    func testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent() async throws {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
@@ -2462,12 +2517,13 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 4)
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.resource.count, 0, "Failed Resource should not be counted")
         XCTAssertEqual(viewUpdate.view.error.count, 1, "Failed Resource should be counted as Error")
     }
 
-    func testWhenViewErrorIsAdded_itSendsErrorWithCorrectTimeSinceAppStart() throws {
+    func testWhenViewErrorIsAdded_itSendsErrorWithCorrectTimeSinceAppStart() async throws {
         var context = self.context
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let appLauchToErrorTimeDiff = Int64.random(in: 10..<1_000_000)
@@ -2506,13 +2562,14 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.error.timeSinceAppStart, appLauchToErrorTimeDiff * 1_000)
     }
 
     // MARK: - View Hitches
 
-    func testWhenThereAreHitches_theViewUpdatesContainsSlowFrames() {
+    func testWhenThereAreHitches_theViewUpdatesContainsSlowFrames() async throws {
         // Given
         var hitches: [Hitch] = []
         (0...Int.mockRandom(min: 0, max: 1_000)).forEach {
@@ -2582,6 +2639,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 9)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
 
         XCTAssertEqual(viewEvents.count, 6)
@@ -2590,7 +2648,7 @@ class RUMViewScopeTests: XCTestCase {
         }
     }
 
-    func testWhenAppHangsAndViewHitchesAreDisabled_theRatesAreNotCalculated() {
+    func testWhenAppHangsAndViewHitchesAreDisabled_theRatesAreNotCalculated() async throws {
         // Given
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -2623,6 +2681,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
 
         XCTAssertEqual(viewEvents.count, 2)
@@ -2632,7 +2691,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(stopViewEvent?.view.freezeRate)
     }
 
-    func testWhenViewDurationIsTooSmall_theRatesAreNotCalculated() {
+    func testWhenViewDurationIsTooSmall_theRatesAreNotCalculated() async throws {
         // Given
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         var hitches: [Hitch] = []
@@ -2671,6 +2730,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 2)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
 
         XCTAssertEqual(viewEvents.count, 2)
@@ -2680,7 +2740,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(stopViewEvent?.view.freezeRate)
     }
 
-    func testWhenThereAreViewHitches_theStopViewEventHasSlowFramesRate() {
+    func testWhenThereAreViewHitches_theStopViewEventHasSlowFramesRate() async throws {
         // Given
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         var hitches: [Hitch] = []
@@ -2727,6 +2787,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 3)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
 
         XCTAssertEqual(viewEvents.count, 3)
@@ -2739,7 +2800,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(stopViewEvent?.view.slowFramesRate, 16)
     }
 
-    func testWhenThereAreAppHangs_theStopViewEventHasFreezeRate() {
+    func testWhenThereAreAppHangs_theStopViewEventHasFreezeRate() async throws {
         // Given
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -2786,6 +2847,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 4)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
 
         XCTAssertEqual(viewEvents.count, 3)
@@ -2797,7 +2859,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(stopViewEvent?.view.freezeRate, 0.5.hours)
     }
 
-    func testWhenViewErrorIsAdded_ButErrorEventDiscarded_itCallsCompletionHandler() throws {
+    func testWhenViewErrorIsAdded_ButErrorEventDiscarded_itCallsCompletionHandler() async throws {
         let completionExpectation = expectation(description: "Error processing completion")
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
@@ -2844,13 +2906,14 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         wait(for: [completionExpectation], timeout: 0)
+        await writer.waitForEvents(count: 2)
         XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
         XCTAssertFalse(writer.events(ofType: RUMViewEvent.self).isEmpty)
     }
 
     // MARK: - App Hangs
 
-    func testWhenViewAppHangIsTracked_itSendsErrorEventAndViewUpdateEvent() throws {
+    func testWhenViewAppHangIsTracked_itSendsErrorEventAndViewUpdateEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let hangDuration: TimeInterval = .mockRandom(min: 1, max: 10)
         let scope = RUMViewScope(
@@ -2891,6 +2954,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 3)
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(error.view.url, "UIViewController")
@@ -2911,7 +2975,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Long tasks
 
-    func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
+    func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() async throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
@@ -2951,6 +3015,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 3)
         let event = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
 
         let longTaskStartingDate = addLongTaskDate - duration
@@ -2984,7 +3049,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewUpdate.view.longTask?.count, 1)
     }
 
-    func testGivenStartedView_whenLongTaskWithAttributesIsAdded_itDoesNotUpdateViewAttributes() throws {
+    func testGivenStartedView_whenLongTaskWithAttributesIsAdded_itDoesNotUpdateViewAttributes() async throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
@@ -3034,12 +3099,13 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 3)
         let event = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
         DDAssertDictionariesEqual(event.context!.contextInfo, ["foo": "bar", "test_attribute": "overwritten", "other_attribute": "my attribute"])
         DDAssertDictionariesEqual(scope.attributes, ["test_attribute": "abc", "other_attribute": "my attribute"])
     }
 
-    func testWhenLongTaskIsAddedWithConfiguredSource_itSendsLongTaskEventWithConfiguredSource() throws {
+    func testWhenLongTaskIsAddedWithConfiguredSource_itSendsLongTaskEventWithConfiguredSource() async throws {
         let startViewDate: Date = .mockDecember15th2019At10AMUTC()
 
         let source = String.mockAnySource()
@@ -3078,13 +3144,14 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 3)
         let event = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
         XCTAssertEqual(event.source, .init(rawValue: source))
     }
 
     // MARK: - Custom Timings Tracking
 
-    func testGivenActiveView_whenCustomTimingIsRegistered_itSendsViewUpdateEvent() throws {
+    func testGivenActiveView_whenCustomTimingIsRegistered_itSendsViewUpdateEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -3133,6 +3200,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.customTimings.count, 2)
 
         // Then
+        await writer.waitForEvents(count: 3)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
 
         XCTAssertEqual(events.count, 3, "There should be 3 View updates sent")
@@ -3147,7 +3215,7 @@ class RUMViewScopeTests: XCTestCase {
         )
     }
 
-    func testGivenInactiveView_whenCustomTimingIsRegistered_itDoesNotSendViewUpdateEvent() throws {
+    func testGivenInactiveView_whenCustomTimingIsRegistered_itDoesNotSendViewUpdateEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -3190,11 +3258,13 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 2)
+        try await Task.sleep(nanoseconds: 50_000_000)
         let lastEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(lastEvent.view.customTimings?.customTimingsInfo, [:])
     }
 
-    func testGivenActiveView_whenCustomTimingIsRegistered_itSanitizesCustomTiming() throws {
+    func testGivenActiveView_whenCustomTimingIsRegistered_itSanitizesCustomTiming() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -3238,6 +3308,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(scope.customTimings.count, 1)
 
         // Then
+        await writer.waitForEvents(count: 2)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
 
         XCTAssertEqual(events.count, 2, "There should be 2 View updates sent")
@@ -3256,7 +3327,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Feature Flags
 
-    func testGivenActiveView_whenFeatureFlagEvaluated_itAddsTheFeatureFlag() throws {
+    func testGivenActiveView_whenFeatureFlagEvaluated_itAddsTheFeatureFlag() async throws {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -3291,6 +3362,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 2)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
 
         XCTAssertEqual(events.count, 2)
@@ -3301,7 +3373,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(featureFlags.featureFlagsInfo[featureFlagCommand.name] as! String, featureFlagCommand.value as! String)
     }
 
-    func testGivenActiveView_whenFeatureFlagReEvaluated_itModifiesTheFeatureFlag() throws {
+    func testGivenActiveView_whenFeatureFlagReEvaluated_itModifiesTheFeatureFlag() async throws {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -3349,6 +3421,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 3)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
 
         XCTAssertEqual(events.count, 3)
@@ -3357,7 +3430,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(featureFlags.featureFlagsInfo[flagName] as! String, flagFinalValue)
     }
 
-    func testGivenActiveViewWithFeatureFlag_itSendsThoseFlagsWithErrors() throws {
+    func testGivenActiveViewWithFeatureFlag_itSendsThoseFlagsWithErrors() async throws {
         // Given
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -3399,6 +3472,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 4)
         let events = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self))
 
         XCTAssertEqual(events.count, 1)
@@ -3412,7 +3486,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Stopped Session
 
-    func testGivenSession_whenSessionStopped_itSendsViewUpdateWithStopped() throws {
+    func testGivenSession_whenSessionStopped_itSendsViewUpdateWithStopped() async throws {
         let initialDeviceTime: Date = .mockDecember15th2019At10AMUTC()
         let initialServerTimeOffset: TimeInterval = 120 // 2 minutes
 
@@ -3443,6 +3517,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         XCTAssertFalse(scope.isActiveView)
+        await writer.waitForEvents(count: 1)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
 
         XCTAssertEqual(events.count, 1)
@@ -3451,7 +3526,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Dates Correction
 
-    func testGivenViewStartedWithServerTimeDifference_whenDifferentEventsAreSend_itAppliesTheSameCorrectionToAll() throws {
+    func testGivenViewStartedWithServerTimeDifference_whenDifferentEventsAreSend_itAppliesTheSameCorrectionToAll() async throws {
         let initialDeviceTime: Date = .mockDecember15th2019At10AMUTC()
         let initialServerTimeOffset: TimeInterval = 120 // 2 minutes
         var currentDeviceTime = initialDeviceTime
@@ -3517,6 +3592,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 12)
         let viewEvents = writer.events(ofType: RUMViewEvent.self)
         let resourceEvents = writer.events(ofType: RUMResourceEvent.self)
         let errorEvents = writer.events(ofType: RUMErrorEvent.self)
@@ -3547,7 +3623,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: ViewScope Counts Correction
 
-    func testGivenViewScopeWithDependentActionsResourcesErrors_whenDroppingEvents_thenCountsAreAdjusted() throws {
+    func testGivenViewScopeWithDependentActionsResourcesErrors_whenDroppingEvents_thenCountsAreAdjusted() async throws {
         struct ResourceMapperHolder {
             var resourceEventMapper: RUM.ResourceEventMapper?
         }
@@ -3656,6 +3732,7 @@ class RUMViewScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 5)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
 
         // Then
@@ -3665,7 +3742,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.documentVersion, 4, "It should create 4 view update.")
     }
 
-    func testGivenViewScopeWithDroppingEventsMapper_whenProcessingApplicationStartAction_thenCountIsAdjusted() throws {
+    func testGivenViewScopeWithDroppingEventsMapper_whenProcessingApplicationStartAction_thenCountIsAdjusted() async throws {
         let eventBuilder = RUMEventBuilder(
             eventsMapper: .mockWith(
                 actionEventMapper: { event in
@@ -3702,6 +3779,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(event.view.action.count, 0, "All actions, including ApplicationStart action should be dropped")
         XCTAssertEqual(event.dd.documentVersion, 1, "It should record only one view update")
@@ -3709,7 +3787,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Updating Fatal Error Context
 
-    func testWhenViewIsStarted_itUpdatesFatalErrorContextWithView() throws {
+    func testWhenViewIsStarted_itUpdatesFatalErrorContextWithView() async throws {
         let featureScope = FeatureScopeMock()
         let fatalErrorContext = FatalErrorContextNotifierMock()
 
@@ -3729,16 +3807,15 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // When
-        Task {
-            guard let (context, writer) = await featureScope.eventWriteContext() else { return }
-            _ = scope.process(
-                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
-                context: context,
-                writer: writer
-            )
-        }
+        guard let (context, writer) = await featureScope.eventWriteContext() else { return }
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
+            context: context,
+            writer: writer
+        )
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let rumViewWritten = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last, "It should send view event")
         let rumViewInFatalErrorContext = try XCTUnwrap(fatalErrorContext.view)
         DDAssertReflectionEqual(rumViewWritten, rumViewInFatalErrorContext, "It must update fatal error context with the view event written")
@@ -3746,7 +3823,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Tracking Time To Network Settled Metric
 
-    func testWhenViewIsStopped_itStopsTrackingTNSMetric() throws {
+    func testWhenViewIsStopped_itStopsTrackingTNSMetric() async throws {
         let viewStartDate = Date()
         let viewName: String = .mockRandom()
 
@@ -3785,7 +3862,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Interaction To Next View Metric
 
-    func testWhenViewIsStartedThenStopped_itUpdatesINVMetric() throws {
+    func testWhenViewIsStartedThenStopped_itUpdatesINVMetric() async throws {
         let viewStartDate = Date()
         let viewID: RUMUUID = .mockRandom()
 
@@ -3956,7 +4033,7 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Flutter First Build Complete
 
-    func testGivenFCBInternalAttribute_itSetsTheValueOnTheViewEvent() throws {
+    func testGivenFCBInternalAttribute_itSetsTheValueOnTheViewEvent() async throws {
         // Given
         let viewStartDate = Date()
         let viewID: RUMUUID = .mockRandom()
@@ -3996,13 +4073,14 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
         let lastEvent = events.last!
         XCTAssertEqual(lastEvent.view.performance?.fbc?.timestamp, fbcValue)
     }
 
     // Custom INV Values
-    func testGivenCustomINVValues_itSetsTheValueOnTheViewEvent() throws {
+    func testGivenCustomINVValues_itSetsTheValueOnTheViewEvent() async throws {
         // Given
         let viewStartDate = Date()
         let viewID: RUMUUID = .mockRandom()
@@ -4041,13 +4119,14 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
         let lastEvent = events.last!
         XCTAssertEqual(lastEvent.view.interactionToNextViewTime, invValue)
     }
     // MARK: - Has replay
 
-    func testViewUpdate_onceHasReplayIsTrueItRemainsTrue() throws {
+    func testViewUpdate_onceHasReplayIsTrueItRemainsTrue() async throws {
         // Given
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: false))
 
@@ -4098,6 +4177,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 3)
         let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
         XCTAssertEqual(events.count, 3, "There should be 3 View updates sent")
         XCTAssertEqual(events[0].session.hasReplay, false)
@@ -4108,7 +4188,7 @@ class RUMViewScopeTests: XCTestCase {
     // MARK: - View Attributes
     @available(iOS 13.0, tvOS 13.0, *)
     @MainActor
-    func testAccessibilityAttributesInViewEvents() throws {
+    func testAccessibilityAttributesInViewEvents() async throws {
         // Given
         let mockAccessibilityState = AccessibilityInfo(
             textSize: "medium",
@@ -4164,29 +4244,20 @@ class RUMViewScopeTests: XCTestCase {
             context: testContext,
             writer: writer
         )
-        let initialExpectation = XCTestExpectation(description: "Initial accessibility state set")
-        DispatchQueue.main.async {
-            initialExpectation.fulfill()
-        }
-        wait(for: [initialExpectation], timeout: 1.0)
 
         // Then
+        await writer.waitForEvents(count: 1)
         let initialEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
 
         let initialAccessibilityData = try XCTUnwrap(
             initialEvent.view.accessibility
         )
-        let finalExpectation = XCTestExpectation(description: "Initial accessibility state set")
-        DispatchQueue.main.async {
-            XCTAssertEqual(initialAccessibilityData.screenReaderEnabled, false)
-            XCTAssertEqual(initialAccessibilityData.textSize, "medium")
-            XCTAssertEqual(initialAccessibilityData.boldTextEnabled, true)
-            finalExpectation.fulfill()
-        }
-        wait(for: [finalExpectation], timeout: 1.0)
+        XCTAssertEqual(initialAccessibilityData.screenReaderEnabled, false)
+        XCTAssertEqual(initialAccessibilityData.textSize, "medium")
+        XCTAssertEqual(initialAccessibilityData.boldTextEnabled, true)
     }
 
-    func testNoAccessibilityAttributesWhenNil() throws {
+    func testNoAccessibilityAttributesWhenNil() async throws {
         // Given
         let mockParent = RUMContextProviderMock()
         let testContext = context
@@ -4217,6 +4288,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // Then
+        await writer.waitForEvents(count: 1)
         let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
         XCTAssertNil(viewEvent.view.accessibility)
     }

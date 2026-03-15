@@ -80,7 +80,7 @@ extension TraceContext: AnyMockable, RandomMockable {
     }
 }
 
-public class RelativeTracingUUIDGenerator: TraceIDGenerator {
+public class RelativeTracingUUIDGenerator: TraceIDGenerator, @unchecked Sendable {
     private(set) var uuid: TraceID
     internal let count: UInt64
     private let queue = DispatchQueue(label: "queue-RelativeTracingUUIDGenerator-\(UUID().uuidString)")
@@ -98,7 +98,7 @@ public class RelativeTracingUUIDGenerator: TraceIDGenerator {
     }
 }
 
-public class RelativeSpanIDGenerator: SpanIDGenerator {
+public class RelativeSpanIDGenerator: SpanIDGenerator, @unchecked Sendable {
     @ReadWriteLock
     private(set) var uuid: SpanID
     internal let count: UInt64

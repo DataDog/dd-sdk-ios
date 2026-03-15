@@ -210,11 +210,12 @@ extension RUMEventsMapper {
 // MARK: - RUMCommand Mocks
 
 /// Holds the `mockView` object so it can be weakly referenced by `RUMViewScope` mocks.
+@MainActor
 public let mockView: UIViewController = createMockViewInWindow()
 
 extension ViewIdentifier {
     public static func mockViewIdentifier() -> ViewIdentifier {
-        ViewIdentifier(mockView)
+        ViewIdentifier(String.mockAny())
     }
 
     public static func mockRandomString() -> ViewIdentifier {
@@ -830,7 +831,7 @@ extension RUMAddFeatureFlagEvaluationCommand: AnyMockable, RandomMockable {
     public static func mockWith(
         time: Date = .mockAny(),
         name: String = .mockAny(),
-        value: Encodable = String.mockAny()
+        value: AttributeValue = String.mockAny()
     ) -> RUMAddFeatureFlagEvaluationCommand {
         return RUMAddFeatureFlagEvaluationCommand(
             time: time,
@@ -1208,8 +1209,10 @@ extension RUMSessionScope {
     // swiftlint:enable function_default_parameter_at_end
 }
 
+@MainActor
 private let mockWindow = UIWindow(frame: .zero)
 
+@MainActor
 public func createMockViewInWindow() -> UIViewController {
     let viewController = UIViewController()
     mockWindow.rootViewController = viewController
@@ -1218,6 +1221,7 @@ public func createMockViewInWindow() -> UIViewController {
 }
 
 /// Creates an instance of `UIViewController` subclass with a given name.
+@MainActor
 public func createMockView(viewControllerClassName: String) -> UIViewController {
     var theClass: AnyClass! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -1255,7 +1259,7 @@ extension RUMViewScope {
         path: String = .mockAny(),
         name: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        customTimings: [String: Int64] = randomTimings(),
+        customTimings: [String: Int64] = [:],
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
         interactionToNextViewMetric: INVMetricTracking = INVMetric(predicate: TimeBasedINVActionPredicate()),
@@ -1368,7 +1372,7 @@ public class RUMCommandSubscriberMock: RUMCommandSubscriber {
     }
 }
 
-public class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate {
+public class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate, @unchecked Sendable {
     public var resultByViewController: [UIViewController: RUMView] = [:]
     public var result: RUMView?
 
@@ -1381,7 +1385,7 @@ public class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate {
     }
 }
 
-public class UIKitRUMViewsHandlerMock: UIViewControllerHandler {
+public class UIKitRUMViewsHandlerMock: UIViewControllerHandler, @unchecked Sendable {
     public var onSubscribe: ((RUMCommandSubscriber) -> Void)?
     public var notifyViewDidAppear: ((UIViewController, Bool) -> Void)?
     public var notifyViewDidDisappear: ((UIViewController, Bool) -> Void)?
@@ -1433,7 +1437,7 @@ public class UIPressRUMActionsPredicateMock: UIPressRUMActionsPredicate {
     }
 }
 
-public class MockSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {
+public class MockSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate, @unchecked Sendable {
     var returnAction: RUMAction?
 
     public init(returnAction: RUMAction? = RUMAction(name: "custom_action", attributes: [:])) {
@@ -1819,7 +1823,7 @@ extension RUMResourceScope {
 
 // MARK: - Auto Instrumentation Mocks
 
-public class UIKitPredicateWithTrackingMock: UIKitRUMViewsPredicate {
+public class UIKitPredicateWithTrackingMock: UIKitRUMViewsPredicate, @unchecked Sendable {
     public var numberOfCalls: Int
 
     public init(numberOfCalls: Int = 0) {
@@ -1832,7 +1836,7 @@ public class UIKitPredicateWithTrackingMock: UIKitRUMViewsPredicate {
     }
 }
 
-public class UIKitPredicateWithModalMock: UIKitRUMViewsPredicate {
+public class UIKitPredicateWithModalMock: UIKitRUMViewsPredicate, @unchecked Sendable {
     let untrackedModal: UIViewController
 
     public init(untrackedModal: UIViewController) {
@@ -1845,7 +1849,7 @@ public class UIKitPredicateWithModalMock: UIKitRUMViewsPredicate {
     }
 }
 
-public class SwiftUIRUMViewsPredicateMock: SwiftUIRUMViewsPredicate {
+public class SwiftUIRUMViewsPredicateMock: SwiftUIRUMViewsPredicate, @unchecked Sendable {
     public var resultByViewName: [String: RUMView] = [:]
     public var result: RUMView?
 
@@ -1858,7 +1862,7 @@ public class SwiftUIRUMViewsPredicateMock: SwiftUIRUMViewsPredicate {
     }
 }
 
-public class SwiftUIViewNameExtractorMock: SwiftUIViewNameExtractor {
+public class SwiftUIViewNameExtractorMock: SwiftUIViewNameExtractor, @unchecked Sendable {
     public var resultByViewController: [UIViewController: String] = [:]
     public var defaultResult: String?
 
@@ -1871,7 +1875,7 @@ public class SwiftUIViewNameExtractorMock: SwiftUIViewNameExtractor {
     }
 }
 
-public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate {
+public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate, @unchecked Sendable {
     public var resultByName: [String: RUMAction] = [:]
     public var result: RUMAction?
 

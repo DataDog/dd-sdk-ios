@@ -9,6 +9,7 @@ import DatadogInternal
 @testable import DatadogRUM
 @testable import TestUtilities
 
+@MainActor
 class RUMApplicationScopeTests: XCTestCase {
     let writer = FileWriterMock()
 

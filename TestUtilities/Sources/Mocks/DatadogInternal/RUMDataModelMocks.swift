@@ -877,7 +877,7 @@ extension RUMVitalOperationStepEvent.Vital: RandomMockable {
 }
 
 extension RUMVitalOperationStepEvent.Vital.StepType: AnyMockable, RandomMockable {
-    public static var allCases: [RUMVitalOperationStepEvent.Vital.StepType]
+    public nonisolated(unsafe) static var allCases: [RUMVitalOperationStepEvent.Vital.StepType]
     = [.start, .end, .retry, .update]
 
     public static func mockAny() -> Self {

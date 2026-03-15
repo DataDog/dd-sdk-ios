@@ -9,6 +9,7 @@ import XCTest
 import UIKit
 @testable import DatadogRUM
 
+@MainActor
 class ViewIdentifierTests: XCTestCase {
     // MARK: - Comparing identifiables
 

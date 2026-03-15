@@ -8,7 +8,7 @@ import Foundation
 
 @testable import DatadogInternal
 
-public class MultipartBuilderSpy: MultipartFormDataBuilder {
+public class MultipartBuilderSpy: MultipartFormDataBuilder, @unchecked Sendable {
     public var formFields: [String: String] = [:]
     public var formFiles: [(filename: String, data: Data, mimeType: String)] = []
     public var returnedData: Data = .mockRandom()

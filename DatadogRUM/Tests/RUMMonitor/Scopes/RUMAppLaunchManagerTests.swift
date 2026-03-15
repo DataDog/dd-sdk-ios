@@ -48,7 +48,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
 
     // MARK: - TTID
 
-    func testTTIDCommand_createsAppLaunchVitalEvent() throws {
+    func testTTIDCommand_createsAppLaunchVitalEvent() async throws {
         // Given
         let ttid = 2.0
         let command: RUMTimeToInitialDisplayCommand = .mockWith(
@@ -59,6 +59,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         manager.process(command, context: mockContext, writer: mockWriter)
 
         // Then
+        await mockWriter.waitForEvents(count: 1)
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 1)
 
@@ -92,7 +93,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertNotNil(event.version)
     }
 
-    func testTTIDCommand_createsAppLaunchVitalEventForPreWarmingLaunches() throws {
+    func testTTIDCommand_createsAppLaunchVitalEventForPreWarmingLaunches() async throws {
         // Given
         let processLaunchDate = Date()
         let runtimeLoadDate = processLaunchDate.addingTimeInterval(1)
@@ -110,6 +111,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         manager.process(command, context: mockContext, writer: mockWriter)
 
         // Then
+        await mockWriter.waitForEvents(count: 1)
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 1)
 
@@ -124,7 +126,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(event.vital.startupType, .coldStart)
     }
 
-    func testTTIDCommand_createsAppLaunchVitalEventForWarmStart() throws {
+    func testTTIDCommand_createsAppLaunchVitalEventForWarmStart() async throws {
         // Given
         let appStateInfo: AppStateInfo = .mockAny()
         (appStateManager as? AppStateManagerMock)?._previousAppStateInfo = appStateInfo
@@ -136,6 +138,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         manager.process(command, context: mockContext, writer: mockWriter)
 
         // Then
+        await mockWriter.waitForEvents(count: 1)
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 1)
 
@@ -150,7 +153,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(event.vital.startupType, .warmStart)
     }
 
-    func testTTIDCommand_isCapturedOnlyOnce() throws {
+    func testTTIDCommand_isCapturedOnlyOnce() async throws {
         // Given
         let firstCommand: RUMTimeToInitialDisplayCommand = .mockWith(
             time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1)
@@ -168,6 +171,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         manager.process(thirdCommand, context: mockContext, writer: mockWriter)
 
         // Then
+        await mockWriter.waitForEvents(count: 1)
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 1)
     }
@@ -242,7 +246,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
 
     // MARK: - TTFD
 
-    func testTTFDCommand_createsAppLaunchVitalEvents() throws {
+    func testTTFDCommand_createsAppLaunchVitalEvents() async throws {
         // Given
         let ttfd = 2.0
         // The TTFD is only reported if the TTID is available
@@ -258,6 +262,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         manager.process(ttfdCommand, context: mockContext, writer: mockWriter)
 
         // Then
+        await mockWriter.waitForEvents(count: 2)
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 2)
 
@@ -291,7 +296,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertNotNil(event.version)
     }
 
-    func testTTFDCommand_createsAppLaunchVitalEventsForPreWarmingLaunches() throws {
+    func testTTFDCommand_createsAppLaunchVitalEventsForPreWarmingLaunches() async throws {
         // Given
         let processLaunchDate = Date()
         let runtimeLoadDate = processLaunchDate.addingTimeInterval(1)
@@ -316,6 +321,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         manager.process(ttfdCommand, context: mockContext, writer: mockWriter)
 
         // Then
+        await mockWriter.waitForEvents(count: 2)
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 2)
 
@@ -330,7 +336,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(event.vital.startupType, .coldStart)
     }
 
-    func testTTFDCommand_createsAppLaunchVitalEventsForWarmStart() throws {
+    func testTTFDCommand_createsAppLaunchVitalEventsForWarmStart() async throws {
         // Given
         let appStateInfo: AppStateInfo = .mockAny()
         (appStateManager as? AppStateManagerMock)?._previousAppStateInfo = appStateInfo
@@ -349,6 +355,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         manager.process(ttfdCommand, context: mockContext, writer: mockWriter)
 
         // Then
+        await mockWriter.waitForEvents(count: 2)
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 2)
 
@@ -363,7 +370,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(event.vital.startupType, .warmStart)
     }
 
-    func testTTFDCommand_isCapturedOnlyOnce() throws {
+    func testTTFDCommand_isCapturedOnlyOnce() async throws {
         // Given
         // The TTFD is only reported if the TTID is available
         let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
@@ -386,13 +393,14 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         manager.process(thirdTTFDCommand, context: mockContext, writer: mockWriter)
 
         // Then
+        await mockWriter.waitForEvents(count: 2)
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 2)
         XCTAssertEqual(vitalEvents.first?.vital.appLaunchMetric, .ttid)
         XCTAssertEqual(vitalEvents.last?.vital.appLaunchMetric, .ttfd)
     }
 
-    func testTTFDCommand_isIgnoredWhenTheDurationIsTooBig() throws {
+    func testTTFDCommand_isIgnoredWhenTheDurationIsTooBig() async throws {
         // Given
         // The TTFD is only reported if the TTID is available
         let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
@@ -407,6 +415,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         manager.process(ttfdCommand, context: mockContext, writer: mockWriter)
 
         // Then
+        await mockWriter.waitForEvents(count: 1)
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
         XCTAssertEqual(vitalEvents.count, 1)
         XCTAssertEqual(vitalEvents.first?.vital.appLaunchMetric, .ttid)

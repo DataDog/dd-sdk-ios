@@ -9,6 +9,7 @@ import DatadogInternal
 @testable import DatadogRUM
 @testable import TestUtilities
 
+@MainActor
 class MonitorTests: XCTestCase {
     private var featureScope: FeatureScope! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -38,7 +39,8 @@ class MonitorTests: XCTestCase {
 
         // Then
         let expectedContext = monitor.currentRUMContext
-        let datadogContext = try XCTUnwrap(await featureScope.context())
+        let ctx = await featureScope.context()
+        let datadogContext = try XCTUnwrap(ctx)
         let rumContext = try XCTUnwrap(datadogContext.additionalContext(ofType: RUMCoreContext.self))
         XCTAssertEqual(rumContext.applicationID, expectedContext.rumApplicationID)
         XCTAssertEqual(rumContext.sessionID, expectedContext.sessionID.toRUMDataFormat)
@@ -58,7 +60,8 @@ class MonitorTests: XCTestCase {
         await monitor.flush()
 
         // Then
-        let datadogContext = try XCTUnwrap(await featureScope.context())
+        let ctx = await featureScope.context()
+        let datadogContext = try XCTUnwrap(ctx)
         XCTAssertNil(datadogContext.additionalContext(ofType: RUMCoreContext.self))
     }
 
@@ -111,6 +114,7 @@ class MonitorTests: XCTestCase {
         monitor.process(command: RUMTimeToInitialDisplayCommand(time: Date()))
         monitor.reportAppFullyDisplayed()
         await monitor.flush()
+        try? await Task.sleep(nanoseconds: 100_000_000)
 
         // Then
         let vitalEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMVitalAppLaunchEvent.self)
@@ -151,6 +155,7 @@ class MonitorTests: XCTestCase {
         // When
         monitor.process(command: RUMTimeToInitialDisplayCommand(time: Date()))
         await monitor.flush()
+        try? await Task.sleep(nanoseconds: 100_000_000)
 
         // Then
         let vitalEvents = (featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMVitalAppLaunchEvent.self)

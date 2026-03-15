@@ -46,7 +46,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(scope.context.activeUserActionID, try XCTUnwrap(parent.context.activeUserActionID))
     }
 
-    func testGivenActiveUserAction_whenViewIsStopped_itSendsUserActionEvent() throws {
+    func testGivenActiveUserAction_whenViewIsStopped_itSendsUserActionEvent() async throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
@@ -81,6 +81,7 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 3)
         let recordedActionEvents = writer.events(ofType: RUMActionEvent.self)
         XCTAssertEqual(recordedActionEvents.count, 1)
         let recordedAction = try XCTUnwrap(recordedActionEvents.last)
@@ -96,7 +97,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(recordedAction.os?.name, "device-os")
     }
 
-    func testGivenActiveUserAction_whenNewViewStart_itSendsUserActionEvent() throws {
+    func testGivenActiveUserAction_whenNewViewStart_itSendsUserActionEvent() async throws {
         let scope = RUMViewScope.mockWith(
             parent: parent,
             dependencies: .mockAny(),
@@ -127,6 +128,7 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 3)
         let recordedActionEvents = writer.events(ofType: RUMActionEvent.self)
         XCTAssertEqual(recordedActionEvents.count, 1)
         let recordedAction = try XCTUnwrap(recordedActionEvents.last)
@@ -141,7 +143,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(recordedAction.os?.name, "device-os")
     }
 
-    func testGivenCustomSource_whenActionIsSent_itSendsCustomSource() throws {
+    func testGivenCustomSource_whenActionIsSent_itSendsCustomSource() async throws {
         let source = String.mockAnySource()
         let customContext: DatadogContext = .mockWith(source: source)
 
@@ -174,6 +176,7 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 3)
         let recordedActionEvents = writer.events(ofType: RUMActionEvent.self)
         let recordedAction = try XCTUnwrap(recordedActionEvents.last)
         XCTAssertEqual(recordedAction.source, .init(rawValue: source))
@@ -181,7 +184,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     // MARK: - Continuous User Action
 
-    func testWhenContinuousUserActionEnds_itSendsActionEvent() throws {
+    func testWhenContinuousUserActionEnds_itSendsActionEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -206,6 +209,7 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -229,7 +233,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.name, "device-os")
     }
 
-    func testWhenContinuousUserActionEndsInCiTest_itSendsActionEvent() throws {
+    func testWhenContinuousUserActionEndsInCiTest_itSendsActionEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let fakeCiTestId: String = .mockRandom()
         let scope = RUMUserActionScope.mockWith(
@@ -256,6 +260,7 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -280,7 +285,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.ciTest?.testExecutionId, fakeCiTestId)
     }
 
-    func testWhenContinuousUserActionEndsInSyntheticsTest_itSendsActionEvent() throws {
+    func testWhenContinuousUserActionEndsInSyntheticsTest_itSendsActionEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let fakeSyntheticsTestId: String = .mockRandom()
         let fakeSyntheticsResultId: String = .mockRandom()
@@ -308,6 +313,7 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -333,7 +339,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
     }
 
-    func testWhenContinuousUserActionEndsWithSessionTypeOverride() throws {
+    func testWhenContinuousUserActionEndsWithSessionTypeOverride() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let fakeSyntheticsTestId: String = .mockRandom()
         let fakeSyntheticsResultId: String = .mockRandom()
@@ -364,6 +370,7 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.dd.toInt64Milliseconds)
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
@@ -389,7 +396,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
     }
 
-    func testWhenContinuousUserActionExpires_itSendsActionEvent() throws {
+    func testWhenContinuousUserActionExpires_itSendsActionEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -421,11 +428,12 @@ class RUMUserActionScopeTests: XCTestCase {
             "Continuous User Action should expire after \(expirationInterval)s"
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.action.loadingTime, 10_000_000_000, "Loading time should not exceed expirationInterval")
     }
 
-    func testWhileContinuousUserActionIsActive_itTracksCompletedResources() throws {
+    func testWhileContinuousUserActionIsActive_itTracksCompletedResources() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -478,12 +486,13 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.resource?.count, 1, "User Action should track first successful Resource")
         XCTAssertEqual(event.action.error?.count, 1, "User Action should track second Resource failure as Error")
     }
 
-    func testWhileContinuousUserActionIsActive_itCountsViewErrors() throws {
+    func testWhileContinuousUserActionIsActive_itCountsViewErrors() async throws {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -512,11 +521,12 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.error?.count, 1)
     }
 
-    func testWhenContinuousUserActionStopsWithName_itChangesItsName() throws {
+    func testWhenContinuousUserActionStopsWithName_itChangesItsName() async throws {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -545,11 +555,12 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.target?.name, differentName)
     }
 
-    func testWhenContinuousUserActionStopsWithDifferentActionType_itChangesActionType() throws {
+    func testWhenContinuousUserActionStopsWithDifferentActionType_itChangesActionType() async throws {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -577,13 +588,14 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.type, .swipe, "Action type should be updated from .scroll to .swipe")
     }
 
     // MARK: - Discrete User Action
 
-    func testWhenDiscreteUserActionTimesOut_itSendsActionEvent() throws {
+    func testWhenDiscreteUserActionTimesOut_itSendsActionEvent() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -614,13 +626,14 @@ class RUMUserActionScopeTests: XCTestCase {
             "Discrete User Action should time out after \(timeOutInterval)s"
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         let nanosecondsInSecond: Double = 1_000_000_000
         let actionLoadingTimeInSeconds = Double(try XCTUnwrap(event.action.loadingTime)) / nanosecondsInSecond
         XCTAssertEqual(actionLoadingTimeInSeconds, RUMUserActionScope.Constants.discreteActionTimeoutDuration, accuracy: 0.1)
     }
 
-    func testWhileDiscreteUserActionIsActive_itDoesNotComplete_untilAllTrackedResourcesAreCompleted() throws {
+    func testWhileDiscreteUserActionIsActive_itDoesNotComplete_untilAllTrackedResourcesAreCompleted() async throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -678,12 +691,13 @@ class RUMUserActionScopeTests: XCTestCase {
             "Discrete User Action should complete as it has no more pending Resources and it reached the timeout duration"
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.resource?.count, 1, "User Action should track first successful Resource")
         XCTAssertEqual(event.action.error?.count, 1, "User Action should track second Resource failure as Error")
     }
 
-    func testWhileDiscreteUserActionIsActive_itCountsViewErrors() throws {
+    func testWhileDiscreteUserActionIsActive_itCountsViewErrors() async throws {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -713,13 +727,14 @@ class RUMUserActionScopeTests: XCTestCase {
             "Discrete User Action should complete as it reached the timeout duration"
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.error?.count, 1)
     }
 
     // MARK: - Long task actions
 
-    func testWhileDiscreteUserActionIsActive_itCountsLongTasks() throws {
+    func testWhileDiscreteUserActionIsActive_itCountsLongTasks() async throws {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -749,13 +764,14 @@ class RUMUserActionScopeTests: XCTestCase {
             "Discrete User Action should complete as it reached the timeout duration"
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
         XCTAssertEqual(event.action.longTask?.count, 1)
     }
 
     // MARK: - Events sending callbacks
 
-    func testGivenUserActionScopeWithEventSentCallback_whenSuccessfullySendingEvent_thenCallbackIsCalled() throws {
+    func testGivenUserActionScopeWithEventSentCallback_whenSuccessfullySendingEvent_thenCallbackIsCalled() async throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         var callbackCalled = false
         let scope = RUMUserActionScope.mockWith(
@@ -782,6 +798,7 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         XCTAssertNotNil(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertTrue(callbackCalled)
     }
@@ -832,7 +849,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
     // MARK: - Actions with Frustrations
 
-    func testGivenTapUserActionWithError_itWritesErrorTapFrustration() throws {
+    func testGivenTapUserActionWithError_itWritesErrorTapFrustration() async throws {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -859,11 +876,12 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertEqual(event.action.frustration?.type.first, .errorTap)
     }
 
-    func testGivenDisabledFrustration_whenTapUserActionWithError_itDoesNotWriteFrustration() throws {
+    func testGivenDisabledFrustration_whenTapUserActionWithError_itDoesNotWriteFrustration() async throws {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -893,11 +911,12 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertNil(event.action.frustration)
     }
 
-    func testGivenNotDiscreteUserActionWithError_itDoesNotWriteFrustration() throws {
+    func testGivenNotDiscreteUserActionWithError_itDoesNotWriteFrustration() async throws {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -924,11 +943,12 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertNil(event.action.frustration)
     }
 
-    func testGivenTimedoutTapUserActionWithError_itDoesNotWriteFrustration() throws {
+    func testGivenTimedoutTapUserActionWithError_itDoesNotWriteFrustration() async throws {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
@@ -955,13 +975,14 @@ class RUMUserActionScopeTests: XCTestCase {
             )
         )
 
+        await writer.waitForEvents(count: 1)
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertNil(event.action.frustration)
     }
 
     // MARK: - Updating Interaction To Next View Metric
 
-    func testWhenActionEventIsSent_itTrackActionInINVMetric() throws {
+    func testWhenActionEventIsSent_itTrackActionInINVMetric() async throws {
         let actionStartTime: Date = .mockDecember15th2019At10AMUTC()
         let actionName: String = .mockRandom()
         let actionType: RUMActionType = .tap
@@ -982,6 +1003,7 @@ class RUMUserActionScopeTests: XCTestCase {
             context: context,
             writer: writer
         )
+        await writer.waitForEvents(count: 1)
         XCTAssertFalse(writer.events(ofType: RUMActionEvent.self).isEmpty)
 
         // Then

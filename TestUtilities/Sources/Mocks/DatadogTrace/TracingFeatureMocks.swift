@@ -26,7 +26,7 @@ extension DDSpan {
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
         startTime: Date = .mockAny(),
-        tags: [String: Encodable] = [:],
+        tags: [String: AttributeValue] = [:],
         eventBuilder: SpanEventBuilder = .mockAny(),
         eventWriter: SpanWriteContext = NOPSpanWriteContext()
     ) -> DDSpan {
@@ -46,7 +46,7 @@ extension DDSpan {
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
         startTime: Date = .mockAny(),
-        tags: [String: Encodable] = [:],
+        tags: [String: AttributeValue] = [:],
         eventBuilder: SpanEventBuilder = .mockAny(),
         eventWriter: SpanWriteContext = NOPSpanWriteContext()
     ) -> DDSpan {
@@ -102,7 +102,7 @@ extension DatadogTracer {
     public static func mockWith(
         core: DatadogCoreProtocol,
         localTraceSampler: Sampler = .mockKeepAll(),
-        tags: [String: Encodable] = [:],
+        tags: [String: AttributeValue] = [:],
         traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
         spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),
@@ -124,7 +124,7 @@ extension DatadogTracer {
     public static func mockWith(
         featureScope: FeatureScope,
         localTraceSampler: Sampler = .mockKeepAll(),
-        tags: [String: Encodable] = [:],
+        tags: [String: AttributeValue] = [:],
         traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
         spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),

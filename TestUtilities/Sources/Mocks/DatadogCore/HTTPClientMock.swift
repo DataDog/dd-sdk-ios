@@ -7,7 +7,7 @@
 import Foundation
 @testable import DatadogCore
 
-public class HTTPClientMock: HTTPClient {
+public class HTTPClientMock: HTTPClient, @unchecked Sendable {
     /// The queue to synchronise access to tracked requests.
     private let queue = DispatchQueue(label: "com.datadoghq.HTTPClientMock-\(UUID().uuidString)")
     /// Keeps track of sent requests.

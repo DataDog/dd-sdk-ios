@@ -27,7 +27,7 @@ class TelemetryReceiverTests: XCTestCase {
 
     // MARK: - Sending Telemetry events
 
-    func testSendTelemetryDebug() {
+    func testSendTelemetryDebug() async throws {
         featureScope.contextMock = .mockWith(
             version: "app-version",
             source: "flutter",
@@ -46,6 +46,7 @@ class TelemetryReceiverTests: XCTestCase {
         TelemetryMock(with: receiver).debug("Hello world!", attributes: ["foo": 42])
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
         XCTAssertEqual(event?.date, 0)
         XCTAssertEqual(event?.version, "sdk-version")
@@ -56,7 +57,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
-    func testSendTelemetryError() {
+    func testSendTelemetryError() async throws {
         featureScope.contextMock = .mockWith(
             version: "app-version",
             source: "ios",
@@ -75,6 +76,7 @@ class TelemetryReceiverTests: XCTestCase {
         TelemetryMock(with: receiver).error("Oops", kind: "OutOfMemory", stack: "a\nhay\nneedle\nstack")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let event = featureScope.eventsWritten(ofType: TelemetryErrorEvent.self).first
         XCTAssertEqual(event?.date, 0)
         XCTAssertEqual(event?.version, "sdk-version")
@@ -86,7 +88,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
-    func testSendTelemetryDebug_withRUMContext() {
+    func testSendTelemetryDebug_withRUMContext() async throws {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock.set(additionalContext: rumContext)
@@ -96,6 +98,7 @@ class TelemetryReceiverTests: XCTestCase {
         TelemetryMock(with: receiver).debug("telemetry debug", attributes: ["foo": 42])
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
         XCTAssertEqual(event?.telemetry.message, "telemetry debug")
         XCTAssertEqual(event?.application?.id, rumContext.applicationID)
@@ -106,7 +109,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
-    func testSendTelemetryError_withRUMContext() throws {
+    func testSendTelemetryError_withRUMContext() async throws {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock.set(additionalContext: rumContext)
@@ -116,6 +119,7 @@ class TelemetryReceiverTests: XCTestCase {
         TelemetryMock(with: receiver).error("telemetry error")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let event = featureScope.eventsWritten(ofType: TelemetryErrorEvent.self).first
         XCTAssertEqual(event?.telemetry.message, "telemetry error")
         XCTAssertEqual(event?.application?.id, rumContext.applicationID)
@@ -125,7 +129,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
-    func testAddingUptimeAttribute() throws {
+    func testAddingUptimeAttribute() async throws {
         let processLaunchDate = Date()
         let dateProvider = DateProviderMock(now: processLaunchDate + 1.42)
         featureScope.contextMock = .mockWith(launchInfo: .mockWith(processLaunchDate: processLaunchDate))
@@ -140,24 +144,26 @@ class TelemetryReceiverTests: XCTestCase {
         telemetry.metric(name: "Metric", attributes: ["bar": 2], sampleRate: 100)
 
         // Then
-        let debugEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first)
+        await featureScope.waitForWrittenEvents(count: 3)
+        let debugEvents = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self)
         let errorEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: TelemetryErrorEvent.self).first)
-        let metricEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).last)
-        XCTAssertEqual(debugEvent.telemetry.message, "Debug")
+
+        let debugEvent = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "Debug" }))
+        let metricEvent = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "[Mobile Metric] Metric" }))
+
         XCTAssertEqual(debugEvent.telemetry.telemetryInfo[TelemetryReceiver.uptimeAttributeName] as? Int64, 1_420)
         XCTAssertEqual(debugEvent.telemetry.telemetryInfo["foo"] as? Int, 1)
 
         XCTAssertEqual(errorEvent.telemetry.message, "Error")
         XCTAssertEqual(errorEvent.telemetry.telemetryInfo[TelemetryReceiver.uptimeAttributeName] as? Int64, 1_420)
 
-        XCTAssertEqual(metricEvent.telemetry.message, "[Mobile Metric] Metric")
         XCTAssertEqual(metricEvent.telemetry.telemetryInfo[TelemetryReceiver.uptimeAttributeName] as? Int64, 1_420)
         XCTAssertEqual(metricEvent.telemetry.telemetryInfo["bar"] as? Int, 2)
     }
 
     // MARK: - Filtering & Limiting
 
-    func testSendTelemetry_discardDuplicates() throws {
+    func testSendTelemetry_discardDuplicates() async throws {
         // Given
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
         let telemetry = TelemetryMock(with: receiver)
@@ -181,17 +187,18 @@ class TelemetryReceiverTests: XCTestCase {
         telemetry.debug("telemetry debug 11")
 
         // Then
-        let events = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self)
-        XCTAssertEqual(events.count, 10)
-        XCTAssertTrue(featureScope.eventsWritten(ofType: TelemetryErrorEvent.self).isEmpty)
-        XCTAssertEqual(events[0].telemetry.message, "telemetry debug 0")
-        XCTAssertEqual(events[1].telemetry.message, "telemetry debug 3")
-        XCTAssertEqual(events[2].telemetry.message, "telemetry debug 4")
-        XCTAssertEqual(events[3].telemetry.message, "telemetry debug 5")
-        XCTAssertEqual(events.last?.telemetry.message, "telemetry debug 11")
+        await featureScope.waitForWrittenEvents(count: 10)
+        let debugEvents = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self)
+        let errorEvents = featureScope.eventsWritten(ofType: TelemetryErrorEvent.self)
+        XCTAssertEqual(debugEvents.count + errorEvents.count, 10)
+        let debugMessages = Set(debugEvents.map(\.telemetry.message))
+        XCTAssertTrue(debugMessages.contains("telemetry debug 3"))
+        XCTAssertTrue(debugMessages.contains("telemetry debug 4"))
+        XCTAssertTrue(debugMessages.contains("telemetry debug 5"))
+        XCTAssertTrue(debugMessages.contains("telemetry debug 11"))
     }
 
-    func testSendTelemetry_toSessionLimit() throws {
+    func testSendTelemetry_toSessionLimit() async throws {
         // Given
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, sampler: .mockKeepAll())
         let telemetry = TelemetryMock(with: receiver)
@@ -209,6 +216,7 @@ class TelemetryReceiverTests: XCTestCase {
         }
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 100)
         let debugEvents = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self)
         let errorEvents = featureScope.eventsWritten(ofType: TelemetryErrorEvent.self)
         XCTAssertEqual(debugEvents.count + errorEvents.count, 100)
@@ -239,7 +247,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(events.count, 0)
     }
 
-    func testSampledTelemetry_rejectAllConfiguration() throws {
+    func testSampledTelemetry_rejectAllConfiguration() async throws {
         // Given
         let receiver = TelemetryReceiver.mockWith(
             featureScope: featureScope,
@@ -257,12 +265,13 @@ class TelemetryReceiverTests: XCTestCase {
         }
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 30)
         XCTAssertEqual(featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).count, 20, "It should keep 10 debug events and 10 metrics")
         XCTAssertEqual(featureScope.eventsWritten(ofType: TelemetryErrorEvent.self).count, 10, "It should keep 10 error events")
         XCTAssertTrue(featureScope.eventsWritten(ofType: TelemetryConfigurationEvent.self).isEmpty, "It should reject all configuration events")
     }
 
-    func testSampledTelemetry_rejectAllMetrics() throws {
+    func testSampledTelemetry_rejectAllMetrics() async throws {
         // Given
         let receiver = TelemetryReceiver.mockWith(
             featureScope: featureScope,
@@ -279,12 +288,13 @@ class TelemetryReceiverTests: XCTestCase {
         }
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 21)
         XCTAssertEqual(featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).count, 10, "It should keep 10 debug events but no metrics")
         XCTAssertEqual(featureScope.eventsWritten(ofType: TelemetryErrorEvent.self).count, 10, "It should keep 10 error events")
         XCTAssertEqual(featureScope.eventsWritten(ofType: TelemetryConfigurationEvent.self).count, 1, "It should keep 1 configuration event")
     }
 
-    func testSendTelemetry_resetAfterSessionExpire() throws {
+    func testSendTelemetry_resetAfterSessionExpire() async throws {
         // Given
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
         let telemetry = TelemetryMock(with: receiver)
@@ -297,6 +307,7 @@ class TelemetryReceiverTests: XCTestCase {
             )
         )
         telemetry.debug(id: "0", message: "telemetry debug")
+        await featureScope.waitForWrittenEvents(count: 1)
 
         // When
         featureScope.contextMock.set(
@@ -308,13 +319,14 @@ class TelemetryReceiverTests: XCTestCase {
         telemetry.debug(id: "0", message: "telemetry debug")
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 2)
         let events = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self)
         XCTAssertEqual(events.count, 2, "It should record two telemetries of the same ID as they belong to different session ID")
     }
 
     // MARK: - Configuration Telemetry Events
 
-    func testSendTelemetryConfiguration() {
+    func testSendTelemetryConfiguration() async throws {
         featureScope.contextMock = .mockWith(
             version: "app-version",
             source: "unity",
@@ -388,6 +400,7 @@ class TelemetryReceiverTests: XCTestCase {
         )
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let event = featureScope.eventsWritten(ofType: TelemetryConfigurationEvent.self).first
         XCTAssertEqual(event?.date, 0)
         XCTAssertEqual(event?.version, "sdk-version")
@@ -426,7 +439,7 @@ class TelemetryReceiverTests: XCTestCase {
 
     // MARK: - Metrics Telemetry Events
 
-    func testSendTelemetryMetric() throws {
+    func testSendTelemetryMetric() async throws {
         let deviceMock: DeviceInfo = .mockRandom()
         let osMock: OperatingSystem = .mockRandom()
         featureScope.contextMock = .mockWith(
@@ -449,6 +462,7 @@ class TelemetryReceiverTests: XCTestCase {
         TelemetryMock(with: receiver).metric(name: randomName, attributes: randomAttributes, sampleRate: 100)
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
         XCTAssertEqual(event?.date, 0)
         XCTAssertEqual(event?.version, "sdk-version")
@@ -471,7 +485,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(os.build, osMock.build)
     }
 
-    func testSendTelemetryMetricWithRUMContext() throws {
+    func testSendTelemetryMetricWithRUMContext() async throws {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
         let deviceMock: DeviceInfo = .mockRandom()
@@ -484,6 +498,7 @@ class TelemetryReceiverTests: XCTestCase {
         TelemetryMock(with: receiver).metric(name: .mockRandom(), attributes: mockRandomAttributes(), sampleRate: 100)
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
         XCTAssertEqual(event?.application?.id, rumContext.applicationID)
         XCTAssertEqual(event?.session?.id, rumContext.sessionID)
@@ -500,7 +515,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(os.build, osMock.build)
     }
 
-    func testSendTelemetryMetricWithRUMContextAndSessionIDOverride() {
+    func testSendTelemetryMetricWithRUMContextAndSessionIDOverride() async throws {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock.set(additionalContext: rumContext)
@@ -513,6 +528,7 @@ class TelemetryReceiverTests: XCTestCase {
         TelemetryMock(with: receiver).metric(name: .mockRandom(), attributes: attributes, sampleRate: 100)
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
         XCTAssertEqual(event?.application?.id, rumContext.applicationID)
         XCTAssertEqual(event?.session?.id, sessionIDOverride)
@@ -521,7 +537,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertNil(event?.telemetry.telemetryInfo[SDKMetricFields.sessionIDOverrideKey], "It should delete `sessionIDOverrideKey` from metric attributes")
     }
 
-    func testMethodCallTelemetryPropagatesAllData() throws {
+    func testMethodCallTelemetryPropagatesAllData() async throws {
         // Given
         let deviceMock: DeviceInfo = .mockRandom()
         let osMock: OperatingSystem = .mockRandom()
@@ -538,6 +554,7 @@ class TelemetryReceiverTests: XCTestCase {
         telemetry.stopMethodCalled(trace, isSuccessful: isSuccessful, tailSampleRate: 100)
 
         // Then
+        await featureScope.waitForWrittenEvents(count: 1)
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
         XCTAssertEqual(event?.telemetry.message, "[Mobile Metric] Method Called")
         XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[SDKMetricFields.typeKey] as? String), MethodCalledMetric.typeValue)

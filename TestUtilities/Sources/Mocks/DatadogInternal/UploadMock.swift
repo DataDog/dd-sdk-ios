@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-public class FeatureRequestBuilderMock: FeatureRequestBuilder {
+public class FeatureRequestBuilderMock: FeatureRequestBuilder, @unchecked Sendable {
     private let factory: (([Event], DatadogContext) throws -> URLRequest)
 
     public init(factory: @escaping (([Event], DatadogContext) throws -> URLRequest) = { _, _ in .mockAny() }) {
@@ -27,7 +27,7 @@ public class FeatureRequestBuilderMock: FeatureRequestBuilder {
     }
 }
 
-public  class FeatureRequestBuilderSpy: FeatureRequestBuilder {
+public class FeatureRequestBuilderSpy: FeatureRequestBuilder, @unchecked Sendable {
     /// Stores the parameters passed to the `request(for:with:)` method.
     @ReadWriteLock
     public private(set) var requestParameters: [(events: [Event], context: DatadogContext)] = []
