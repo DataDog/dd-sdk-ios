@@ -60,7 +60,7 @@ Use this to pick up remaining work or as a reference when migrating other module
 
 | Item | Reason |
 |------|--------|
-| `CrashContextCoreProvider` using `DispatchQueue` | `FeatureMessageReceiver.receive(message:from:)` is a synchronous protocol requirement — actors can't satisfy it |
+| `CrashContextCoreProvider` using `DispatchQueue` | `FeatureMessageReceiver.receive(message:)` is a synchronous protocol requirement — actors can't satisfy it. The `core:` param and `Bool` return have been removed, but the method itself is still synchronous |
 | KSCrash filter classes (`DatadogCrashReportFilter`, `DatadogTypeSafeFilter`, `DatadogMinifyFilter`, `DatadogDiagnosticFilter`, `AnyCrashReport`) without `Sendable` | Created and consumed locally within `KSCrashPlugin`, never cross isolation boundaries |
 | `KSCrashPlugin` as class (not actor) | Inherits from `NSObject` for KSCrash compatibility |
 
@@ -74,11 +74,16 @@ These improvements become possible once `DatadogInternal` migrates:
 
 | Item | Depends on | Effect |
 |------|------------|--------|
-| Convert `CrashContextCoreProvider` to actor | `FeatureMessageReceiver` → `AsyncStream`-based message bus | Removes `DispatchQueue` + `@unchecked Sendable` from the provider |
+| Convert `CrashContextCoreProvider` to actor | `FeatureMessageReceiver.receive(message:)` becoming `async` | Removes `DispatchQueue` + `@unchecked Sendable` from the provider |
 | Remove `@unchecked Sendable` from `KSCrashBacktrace` | `Telemetry` protocol becoming `Sendable` | Struct would be implicitly Sendable |
 | Remove `sending` on `CrashReportCoordinator.init` for `telemetry` | `Telemetry` becoming `Sendable` | Cleaner actor init |
 
-See `DatadogInternal/Resources/TODO.md` for the AsyncStream message bus migration plan.
+> **Note:** The `FeatureMessageReceiver` protocol has been simplified (no `core:` param,
+> no `Bool` return, no `else fallback:`). `CrashContextCoreProvider.receive(message:)`
+> updated accordingly. The protocol method is still synchronous, which is why actor
+> conversion of `CrashContextCoreProvider` remains blocked.
+
+See `DatadogInternal/Resources/TODO.md` for the full MessageBus migration history.
 
 ### Module-internal
 
@@ -96,7 +101,7 @@ See `DatadogInternal/Resources/TODO.md` for the AsyncStream message bus migratio
 | `CrashReporting.swift` | Done | Entry point, synchronous — creates feature + coordinator |
 | `CrashReportingFeature.swift` | Done | Plain class + `CrashReportCoordinator` actor |
 | `CrashReportingPlugin.swift` | Done | `async` protocol, `Sendable` |
-| `CrashReportSender.swift` | Done | `Sendable` protocol, `MessageBusSender: @unchecked Sendable` |
+| `CrashReportSender.swift` | Done | `Sendable` protocol, `MessageBusSender: @unchecked Sendable`, `else fallback:` removed from `core.send()` |
 | `CrashContextProvider.swift` | Done (DispatchQueue kept) | `@unchecked Sendable`, blocked on sync `receive` protocol |
 | `CrashReportException.swift` | Done | `Sendable` struct |
 | `KSCrashPlugin.swift` | Done | `@unchecked Sendable` NSObject, `withCheckedContinuation` bridge |
@@ -124,4 +129,4 @@ See `DatadogInternal/Resources/TODO.md` for the AsyncStream message bus migratio
 - `DatadogLogs/Resources/StateOfTheMigration.md` — sibling migration status for DatadogLogs
 - `DatadogLogs/Resources/ModernConcurrency.md` — original migration guide from DatadogLogs
 - `DatadogInternal/Resources/TODO.md` — AsyncStream message bus migration plan
-- `Package.swift` — `DatadogCrashReporting` uses `.swiftLanguageMode(.v6)`, `DatadogInternal` is Swift 5
+- `Package.swift` — `DatadogCrashReporting` uses `.swiftLanguageMode(.v6)`, `DatadogInternal` also uses `.swiftLanguageMode(.v6)`

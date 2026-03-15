@@ -214,18 +214,18 @@ continuations, just direct dispatch to receivers within the actor.
 
 ```swift
 internal actor MessageBus {
-    private weak var core: DatadogCoreProtocol?
     private var receivers: [String: FeatureMessageReceiver] = [:]
 
-    func send(message: FeatureMessage, else fallback: @escaping @Sendable () -> Void = {}) {
-        guard let core else { return }
-        let handled = receivers.values.filter {
-            $0.receive(message: message, from: core)
-        }
-        if handled.isEmpty { fallback() }
+    func send(message: FeatureMessage) {
+        receivers.values.forEach { $0.receive(message: message) }
     }
 }
 ```
+
+> **Note:** The `weak core` reference, `else fallback:` parameter, and `Bool`
+> short-circuit have all been removed. The `FeatureMessageReceiver` protocol is now
+> `func receive(message: FeatureMessage)` (no `core:` param, no return value).
+> See `docs/ModernConcurrency.md` §14 for full details.
 
 Callers in `DatadogCore` wrap actor calls in `Task { await ... }`, which has
 the same fire-and-forget semantics as the old `queue.async { ... }`.

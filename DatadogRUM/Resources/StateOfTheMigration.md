@@ -78,6 +78,26 @@ and `DispatchQueue` to a Swift `actor`. This eliminated all manual synchronizati
   for compile-time guarantees, `runOnMainThreadSync` as a runtime safety net for
   unstructured GCD callers
 
+### Monitor: lock-free AsyncStream command pipeline
+
+`Monitor` was converted from a `class` with `NSLock` (`scopeProcessingLock`) and
+`@ReadWriteLock` (attributes, debugging) to a lock-free `final class: @unchecked Sendable`.
+
+- `Monitor` — `final class: @unchecked Sendable` with `AsyncStream<RUMCommand>`
+- `process(command:)` — fire-and-forget; yields to the stream and returns immediately
+- `processFromStream(command:)` — `async`; the single processing method called from
+  the `for await` loop on the cooperative thread pool
+- `attributes` — `private var`, only mutated inside the loop via `RUMGlobalAttributeCommand`
+- `debugging` — `private var`, only mutated inside the loop via `RUMSetDebugCommand`
+- `scopeProcessingLock` — **removed** (stream serializes processing)
+- `@ReadWriteLock` on attributes/debugging — **removed** (stream serializes mutations)
+- `globalAttributes` on commands — set inside `processFromStream` before passing to
+  the scope tree; methods no longer snapshot attributes at call time
+- `updateCoreContext()` — eagerly computes RUM context inside the loop after each command
+- `flush()` — `RUMFlushCommand` sentinel + `withCheckedContinuation` for test sync
+- New command types: `RUMGlobalAttributeCommand` (attribute mutations),
+  `RUMSetDebugCommand` (debug toggle), `RUMFlushCommand` (test sync)
+
 ### Tests migrated
 
 - `AppStateManagerTests` — all tests converted to `async throws`; use
@@ -86,6 +106,9 @@ and `DispatchQueue` to a Swift `actor`. This eliminated all manual synchronizati
 - `WatchdogTerminationMonitorTests` — uses `AppStateManagerMock`; `given()` helper
   is synchronous
 - `RUMTests` — class marked `@MainActor`; calls to `RUM.enable()` are synchronous
+- `MonitorTests` — all tests converted to `async throws`; use `await monitor.flush()`
+- `Monitor+GlobalAttributesTests` — all tests converted to `async throws`; use
+  `await monitor.flush()`
 
 ---
 
@@ -95,9 +118,11 @@ These areas still use callback patterns that could benefit from `async/await`:
 
 | Area | File | Notes |
 |------|------|-------|
-| `featureScope.context { }` | Various | Callback-based; bridged with `withCheckedContinuation` where needed, but a native `async` method on `FeatureScope` would eliminate boilerplate |
-| `rumDataStore.value(forKey:) { }` | Various | Same — callback-based data store reads |
 | `RUMEventsMapper` | `RUMEventsMapper.swift` | Event mapping callbacks could become `async` |
+
+> **Note:** `featureScope.context { }` has been converted to `async` (`FeatureScope.context`
+> now returns `DatadogContext` directly). `rumDataStore.value(forKey:)` and
+> `DataStore.value(forKey:)` have been converted to `async` as well.
 
 ---
 
@@ -128,8 +153,11 @@ the protocols to be `Sendable` first:
 |------|------|------------|
 | `WatchdogTerminationReporting` | `WatchdogTerminationReporter.swift` | Protocol not `Sendable` |
 | `Storage` | `DatadogInternal` | Protocol not `Sendable` |
-| `FeatureMessageReceiver` conformers | Various | `FeatureMessageReceiver: Sendable` |
 | `RUMFeature` | `RUMFeature.swift` | `DatadogFeature: Sendable` |
+
+> **Note:** `FeatureMessageReceiver` conformers are no longer blocked — the protocol
+> has been simplified to `func receive(message: FeatureMessage)` (no `core:` param,
+> no `Bool` return). Receivers needing core access now inject `FeatureScope` at init.
 
 ---
 
@@ -147,11 +175,11 @@ the protocols to be `Sendable` first:
 
 | Item | Reason |
 |------|--------|
-| `@ReadWriteLock` on `WatchdogTerminationMonitor.currentState` | Synchronous reads required from `receive(message:from:)` |
+| `@ReadWriteLock` on `WatchdogTerminationMonitor.currentState` | Synchronous reads required from `receive(message:)` |
 | `runOnMainThreadSync` in `RUM.enable()` | Runtime safety net for GCD callers; complements `@MainActor` |
 | `VitalInfoSampler.maximumFramesPerSecond` using `MainActor.assumeIsolated` | Default parameter evaluated from any thread; falls back to 60.0 |
 | `DispatchQueue.main.async` in `RUMDebugging.debug()` | Used in `deinit`-adjacent context; `Task` has different lifetime semantics |
-| RUM scope hierarchy (`RUMSessionScope`, `RUMViewScope`, etc.) remaining synchronous | Entire scope processing is synchronous on a serial queue; making it async would require fundamental architecture changes |
+| RUM scope hierarchy (`RUMSessionScope`, `RUMViewScope`, etc.) remaining synchronous | The scope tree is a synchronous state machine (no I/O). The async boundary is at the Monitor level (stream + context fetching). Making scopes async would be a massive refactor with no benefit — the `for await` loop already serializes processing. |
 
 ---
 
@@ -159,4 +187,4 @@ the protocols to be `Sendable` first:
 
 - `ModernConcurrency.md` (same folder) — patterns and decisions specific to DatadogRUM
 - `docs/ModernConcurrency.md` (repo root) — cross-cutting lessons, reusable for all modules
-- `Package.swift` — `DatadogRUM` uses `.swiftLanguageMode(.v6)`, `DatadogInternal` is Swift 5
+- `Package.swift` — `DatadogRUM` uses `.swiftLanguageMode(.v6)`, `DatadogInternal` also uses `.swiftLanguageMode(.v6)`

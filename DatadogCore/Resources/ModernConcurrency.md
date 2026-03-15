@@ -127,8 +127,8 @@ case invalidDataType(description: String)
 
 - `FilesOrchestratorType: Sendable` — implementations (`FilesOrchestrator`) use
   `ReadWriteLock` for thread safety and are already `@unchecked Sendable`
-- `DataEncryption: Sendable` — this is defined in `DatadogInternal` (Swift 5 mode);
-  adding `: Sendable` there doesn't break existing conformers
+- `DataEncryption: Sendable` — this is defined in `DatadogInternal` (now Swift 6 mode);
+  the `: Sendable` constraint is enforced on all conformers
 
 ---
 
@@ -202,16 +202,10 @@ No changes needed here.
 
 ## 12. `@preconcurrency import` for DatadogInternal
 
-`DatadogInternal` compiles in Swift 5 mode and has types with mutable global state
-(`ObjcException.rethrow`) that cannot be fixed from DatadogCore. Using
-`@preconcurrency import DatadogInternal` in `DatadogCore.swift` downgrades
-cross-module Sendable errors to warnings:
-
-```swift
-@preconcurrency import DatadogInternal
-```
-
-This is a temporary measure until `DatadogInternal` itself migrates to Swift 6.
+`DatadogInternal` now compiles in Swift 6 mode. The `@preconcurrency import
+DatadogInternal` in `DatadogCore.swift` may no longer be necessary for most
+cases, but can be kept as a safety net if any remaining cross-module Sendable
+issues surface during further migration.
 
 ---
 
@@ -345,19 +339,14 @@ Future:
 
 ### Why this is blocked
 
-- **`Writer` protocol** lives in `DatadogInternal` and is synchronous. Making
-  `Writer.write` async would touch every feature module (RUM, Logs, Trace,
-  SessionReplay, CrashReporting, Flags, Profiling — 25+ call sites).
-- **`eventWriteContext` closure** would need to become `async`, propagating
-  through `FeatureScope` and all feature modules.
-- **`MessageBus`** — receivers that call `writer.write` in `receive(message:from:)`
-  would also need to become async.
+- ✅ **`Writer` protocol** — now `async`. All 25+ call sites updated to `await writer.write(value:)`.
+- ✅ **`eventWriteContext`** — now `async`, returns `(DatadogContext, Writer)?` directly.
+- ✅ **`FeatureMessageReceiver`** — simplified to `receive(message:)` (no `core:` param,
+  no `Bool` return). Receivers use `Task { ... }` to call `await featureScope.eventWriteContext()`.
 
-### When to do this
+### Status
 
-This should be done as part of the **DatadogInternal Swift 6 migration**, when
-`Writer`, `FeatureScope`, and `FeatureMessageReceiver` can all be updated to
-async interfaces in a single coordinated pass across all modules.
+These blockers have all been resolved. The storage subsystem is fully actor-based.
 
 ### What it unlocks
 
@@ -398,9 +387,13 @@ This should also be addressed during the DatadogInternal migration.
 11. ✅ Fix Obj-C bridge Sendable conformance (section 13)
 12. ✅ Replace ContextValuePublisher with ContextValueSource (section 14)
 13. ✅ Remove AsyncWriter, fold queue dispatch into FileWriter (section 8)
-14. ✅ Fix AppBackgroundTaskCoordinator @MainActor runtime crash (section 9)
-15. ✅ Verify build compiles cleanly
-16. ☐ Run tests and fix any test compilation issues
-17. ☐ Fix deployment targets in `.xcodeproj` test targets to match `Package.swift`
-18. ☐ Storage subsystem → actor (section 16, blocked on DatadogInternal)
-19. ☐ MessageBus → actor (section 17, blocked on DatadogInternal)
+14. ✅ Fix BackgroundTaskCoordinator @MainActor protocol methods (section 9)
+15. ✅ Convert DataUploader from DispatchSemaphore to async URLSession
+16. ✅ Replace Task-per-message dispatch with AsyncStream channel in DatadogCore
+17. ✅ Add async flush() to Flushable protocol, remove semaphore in MessageBus/FeatureDataStore/FeatureUpload
+18. ✅ Remove redundant @ReadWriteLock from BackgroundTaskCoordinator
+19. ✅ Verify build compiles cleanly
+20. ☐ Run tests and fix any test compilation issues
+21. ☐ Fix deployment targets in `.xcodeproj` test targets to match `Package.swift`
+22. ☐ Storage subsystem → actor (section 16, blocked on DatadogInternal)
+23. ☐ MessageBus → actor (section 17, blocked on DatadogInternal)

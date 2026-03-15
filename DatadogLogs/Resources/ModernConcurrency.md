@@ -80,18 +80,22 @@ func log(level: LogLevel, message: String, error: Error?, attributes: ...) {
 }
 ```
 
-### For `MessageReceivers` (still uses the nested approach)
+### For `MessageReceivers`
 
-When the **protocol** requires a synchronous `receive(message:from:)` method,
-you can't make the whole function async. In this case, the nested `Task`-inside-
-`eventWriteContext` approach is still appropriate:
+`LogMessageReceiver` and `WebViewLogReceiver` now inject `FeatureScope` at
+construction time (no longer receive `core` in the `receive` call). The
+`FeatureMessageReceiver` protocol has been simplified to
+`func receive(message: FeatureMessage)` (no `core:` param, no `Bool` return).
+Inside `receive`, a `Task` calls `await featureScope.eventWriteContext()`:
 
 ```swift
-featureScope.eventWriteContext { context, writer in
-    let builder = LogEventBuilder(...)
+func receive(message: FeatureMessage) {
+    guard case let .payload(log as LogMessage) = message else { return }
     Task {
+        guard let (context, writer) = await featureScope.eventWriteContext() else { return }
+        let builder = LogEventBuilder(...)
         guard let event = await builder.createLogEvent(...) else { return }
-        writer.write(value: event)
+        await writer.write(value: event)
     }
 }
 ```
@@ -338,16 +342,14 @@ stale/wrong data.
 
 ## 9. Module boundary considerations
 
-`DatadogInternal` compiles in **Swift 5 mode**. Feature modules like `DatadogLogs`
-compile in **Swift 6 mode** (`.swiftLanguageMode(.v6)` in `Package.swift`).
+`DatadogInternal` now compiles in **Swift 6 mode** (`.swiftLanguageMode(.v6)` in
+`Package.swift`), same as feature modules like `DatadogLogs`.
 
 This means:
-- Sendable conformances added to `DatadogInternal` types won't be enforced by the
-  compiler within `DatadogInternal` itself — but Swift 6 consumers WILL see and
-  rely on them.
-- Making `Writer: Sendable` at the protocol level doesn't break existing conformers
-  in Swift 5 mode. They'll only need to satisfy the requirement when they migrate
-  to Swift 6.
+- Sendable conformances on `DatadogInternal` types are fully enforced by the
+  compiler within `DatadogInternal` itself.
+- All protocols (`Writer: Sendable`, `FeatureMessageReceiver`, etc.) have their
+  Sendable constraints enforced at the protocol level.
 - Use `@unchecked Sendable` in `DatadogInternal` for types whose stored properties
   include non-Sendable existentials, with a `TODO` to remove it later.
 

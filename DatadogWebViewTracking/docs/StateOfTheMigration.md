@@ -79,9 +79,21 @@ requires the protocols to be `Sendable` first:
 
 ---
 
+## Recent changes
+
+### `MessageSending` protocol update
+
+The `else fallback:` parameter has been removed from `MessageSending.send(message:)`.
+`MessageEmitter.send(log:in:)`, `send(rum:in:)`, and `send(record:view:slotId:in:)`
+previously used `core.send(message:, else: { DD.logger.warn(...) })`. These now call
+`core.send(message:)` without a fallback — warnings for disabled features are silently
+dropped if no receiver handles the message.
+
+---
+
 ## Reference
 
 - `ModernConcurrency.md` (same folder) — patterns and lessons learned specific to WebViewTracking
 - `docs/ModernConcurrency.md` (repo root) — general migration guide with cross-module conclusions
 - `DatadogLogs/Resources/StateOfTheMigration.md` — reference for a more complex migration
-- `Package.swift` — `DatadogWebViewTracking` uses `.swiftLanguageMode(.v6)`, `DatadogInternal` is Swift 5
+- `Package.swift` — `DatadogWebViewTracking` uses `.swiftLanguageMode(.v6)`, `DatadogInternal` also uses `.swiftLanguageMode(.v6)`

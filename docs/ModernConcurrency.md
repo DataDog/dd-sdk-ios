@@ -357,7 +357,7 @@ generated model from a Swift 5 module to cross a `withCheckedContinuation`
 boundary), keep it **local to the call site** and document why:
 
 ```swift
-// Generated RUMViewEvent from DatadogInternal (Swift 5, not Sendable).
+// Generated RUMViewEvent from DatadogInternal.
 // Safe because the value is produced inside the callback and consumed
 // immediately after the continuation resumes.
 let viewEvent: RUMViewEvent? = await withCheckedContinuation { continuation in
@@ -544,6 +544,80 @@ conformance bridges to blocking via `nonisolated` + `DispatchSemaphore`.
 
 See `DatadogInternal/Resources/ModernConcurrency.md` section 10 for details.
 
-See `DatadogInternal/Resources/TODO.md` for the full migration plan (Phases 3–6)
+See `DatadogInternal/Resources/TODO.md` for the full migration plan (Phases 1–8)
 and `DatadogInternal/Resources/ModernConcurrency.md` §10 for implementation
 details.
+
+---
+
+## 14. `FeatureMessageReceiver` protocol simplification
+
+The `FeatureMessageReceiver` protocol has been simplified from:
+
+```swift
+// BEFORE
+public protocol FeatureMessageReceiver {
+    @discardableResult
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool
+}
+```
+
+to:
+
+```swift
+// AFTER
+public protocol FeatureMessageReceiver {
+    func receive(message: FeatureMessage)
+}
+```
+
+### What changed
+
+| Aspect | Before | After |
+|--------|--------|-------|
+| `from core:` parameter | Passed on every receive | Removed — receivers that need core access inject `FeatureScope` at init |
+| `-> Bool` return | `true` = handled, `false` = pass to next | Removed — all receivers receive all messages |
+| `@discardableResult` | Present | Removed (no return) |
+| `CombinedFeatureMessageReceiver` | Short-circuited on first `true` | Forwards to all receivers via `forEach` |
+| `MessageSending.send(message:else:)` | Fallback closure if no receiver handled | Removed — `send(message:)` only |
+| `MessageBus.core` | Weak reference held for `receive` calls | Removed — `connect(core:)` method removed |
+
+### Dependency injection pattern
+
+Receivers that previously used the `core:` parameter to get a `FeatureScope`
+(e.g. `LogMessageReceiver`, `WebViewLogReceiver`, `AppLaunchProfiler`) now
+receive a `FeatureScope` at construction time:
+
+```swift
+internal struct LogMessageReceiver: FeatureMessageReceiver, @unchecked Sendable {
+    let logEventMapper: LogEventMapper?
+    let featureScope: FeatureScope  // injected at init
+
+    func receive(message: FeatureMessage) {
+        guard case let .payload(log as LogMessage) = message else { return }
+        Task {
+            guard let (context, writer) = await featureScope.eventWriteContext() else { return }
+            // ... write log event ...
+        }
+    }
+}
+```
+
+The `featureScope` is obtained from `core.scope(for:)` in the feature's
+`enable()` method, before the feature is registered.
+
+### `TelemetryInterceptor` / `TelemetryReceiver` interaction
+
+With `CombinedFeatureMessageReceiver` no longer short-circuiting, the
+`TelemetryInterceptor` can no longer prevent `TelemetryReceiver` from seeing
+`UploadQualityMetric` messages by returning `true`. Instead,
+`TelemetryReceiver` explicitly guards against these metrics:
+
+```swift
+case let .metric(metric):
+    guard metric.name != UploadQualityMetric.name else { return }
+    // ... process other metrics ...
+```
+
+This maintains the same behavior — `UploadQualityMetric` is aggregated only
+by the interceptor.

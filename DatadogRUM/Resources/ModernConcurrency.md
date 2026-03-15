@@ -4,7 +4,7 @@ This document tracks the decisions, patterns, and learnings from migrating Datad
 
 ## Overview
 
-The DatadogRUM module was compiled with `swiftLanguageMode(.v6)` while `DatadogInternal` remains in Swift 5 mode. This means the full `Sendable` and actor isolation enforcement applies within RUM, but types crossing from `DatadogInternal` may need explicit `Sendable` annotations.
+Both the DatadogRUM module and `DatadogInternal` compile with `swiftLanguageMode(.v6)`. Full `Sendable` and actor isolation enforcement applies across all modules. Many `DatadogInternal` types now have explicit `Sendable` conformance.
 
 ## Key Patterns Applied
 

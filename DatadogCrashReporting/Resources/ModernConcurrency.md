@@ -116,9 +116,10 @@ internal actor CrashReportCoordinator {
 
 ## 4. Keeping DispatchQueue for sync protocol requirements
 
-`CrashContextCoreProvider` implements `FeatureMessageReceiver.receive(message:from:)`
+`CrashContextCoreProvider` implements `FeatureMessageReceiver.receive(message:)`
 which is a **synchronous protocol requirement**. This prevents converting the class to
-an actor.
+an actor. (The `from core:` parameter and `Bool` return have been removed from the
+protocol, but the method itself remains synchronous.)
 
 **Decision: Keep DispatchQueue, add `@unchecked Sendable`:**
 ```swift
@@ -136,9 +137,9 @@ internal class CrashContextCoreProvider: CrashContextProvider, @unchecked Sendab
 | Callers need synchronous snapshots | No sync protocol constraints |
 | Type is already `@unchecked Sendable` via queue | State transitions benefit from compiler isolation |
 
-**Future:** When `FeatureMessageReceiver` migrates to an `AsyncStream`-based message
-bus (see `DatadogInternal/Resources/TODO.md`), `CrashContextCoreProvider` can become
-an actor.
+**Future:** `FeatureMessageReceiver` has been simplified (no `core:` param, no `Bool`
+return), but `receive(message:)` is still synchronous. When it becomes `async`,
+`CrashContextCoreProvider` can become an actor. See `DatadogInternal/Resources/TODO.md`.
 
 ---
 

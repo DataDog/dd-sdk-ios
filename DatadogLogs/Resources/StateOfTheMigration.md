@@ -12,7 +12,9 @@ Use this to pick up remaining work or as a reference when migrating other module
 - `LogEventBuilder.createLogEvent(...)` — returns `async -> LogEvent?`
 - `InternalLoggerProtocol.critical(...)` — `completionHandler` removed, now `async`
 - `RemoteLogger` — uses `prepareLogContext()` + `writeLog()` async pattern
-- `MessageReceivers` — uses `Task` inside `eventWriteContext` callback (protocol requires sync `receive`)
+- `MessageReceivers` — `LogMessageReceiver` and `WebViewLogReceiver` now inject
+  `FeatureScope` at init. `receive(message:)` simplified (no `core:` param, no `Bool`
+  return). Uses `Task` inside `receive` with `await featureScope.eventWriteContext()`
 
 ### Sendable conformances
 - `LogEventMapper: Sendable` (protocol)
@@ -82,10 +84,14 @@ requires the protocols to be `Sendable` first (which is a `DatadogInternal` chan
 
 | Type | File | Depends on |
 |------|------|------------|
-| `LogMessageReceiver` | `MessageReceivers.swift` | `FeatureMessageReceiver: Sendable` |
-| `WebViewLogReceiver` | `MessageReceivers.swift` | `FeatureMessageReceiver: Sendable` |
 | `RequestBuilder` | `RequestBuilder.swift` | `FeatureRequestBuilder: Sendable` |
 | `LogsFeature` | `LogsFeature.swift` | `DatadogFeature: Sendable` (verify) |
+
+> **Note:** `LogMessageReceiver` and `WebViewLogReceiver` are no longer blocked —
+> the `FeatureMessageReceiver` protocol has been simplified to
+> `func receive(message: FeatureMessage)` (no `core:` param, no `Bool` return).
+> Both receivers now inject `FeatureScope` at construction time instead of
+> receiving `core` in the `receive` call.
 
 ---
 
@@ -102,4 +108,4 @@ requires the protocols to be `Sendable` first (which is a `DatadogInternal` chan
 ## Reference
 
 - `ModernConcurrency.md` (same folder) — patterns and lessons learned, reusable for other modules
-- `Package.swift` — `DatadogLogs` uses `.swiftLanguageMode(.v6)`, `DatadogInternal` is Swift 5
+- `Package.swift` — `DatadogLogs` uses `.swiftLanguageMode(.v6)`, `DatadogInternal` also uses `.swiftLanguageMode(.v6)`
