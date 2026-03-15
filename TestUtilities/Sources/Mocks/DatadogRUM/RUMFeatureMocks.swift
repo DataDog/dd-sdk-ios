@@ -983,7 +983,7 @@ extension RUMUUID: AnyMockable, RandomMockable {
     }
 }
 
-public class RUMUUIDGeneratorMock: RUMUUIDGenerator {
+public class RUMUUIDGeneratorMock: RUMUUIDGenerator, @unchecked Sendable {
     public var uuid: RUMUUID
     public func generateUnique() -> RUMUUID { uuid }
 
@@ -1360,7 +1360,7 @@ public class RUMContextProviderMock: RUMContextProvider {
 
 // MARK: - Auto Instrumentation Mocks
 
-public class RUMCommandSubscriberMock: RUMCommandSubscriber {
+public class RUMCommandSubscriberMock: RUMCommandSubscriber, @unchecked Sendable {
     public var onCommandReceived: ((RUMCommand) -> Void)?
     public var receivedCommands: [RUMCommand] = []
     public var lastReceivedCommand: RUMCommand? { receivedCommands.last }

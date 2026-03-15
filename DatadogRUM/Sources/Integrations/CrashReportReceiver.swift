@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Receiver to consume crash reports as RUM events.
-internal struct CrashReportReceiver: FeatureMessageReceiver, @unchecked Sendable {
+internal struct CrashReportReceiver: FeatureMessageReceiver, Sendable {
     private struct AdjustedCrashTimings {
         /// Crash date read from `CrashReport`. It uses device time.
         let crashDate: Date

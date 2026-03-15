@@ -22,23 +22,23 @@ import QuartzCore
 extension RUM {
     /// RUM view event mapper.
     /// - See: `RUM.Configuration.viewEventMapper`.
-    public typealias ViewEventMapper = (RUMViewEvent) -> RUMViewEvent
+    public typealias ViewEventMapper = @Sendable (RUMViewEvent) -> RUMViewEvent
 
     /// RUM resource event mapper.
     /// - See: `RUM.Configuration.resourceEventMapper`.
-    public typealias ResourceEventMapper = (RUMResourceEvent) -> RUMResourceEvent?
+    public typealias ResourceEventMapper = @Sendable (RUMResourceEvent) -> RUMResourceEvent?
 
     /// RUM error event mapper.
     /// - See: `RUM.Configuration.errorEventMapper`.
-    public typealias ErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?
+    public typealias ErrorEventMapper = @Sendable (RUMErrorEvent) -> RUMErrorEvent?
 
     /// RUM action event mapper.
     /// - See: `RUM.Configuration.actionEventMapper`.
-    public typealias ActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
+    public typealias ActionEventMapper = @Sendable (RUMActionEvent) -> RUMActionEvent?
 
     /// RUM long task event mapper.
     /// - See: `RUM.Configuration.longTaskEventMapper`.
-    public typealias LongTaskEventMapper = (RUMLongTaskEvent) -> RUMLongTaskEvent?
+    public typealias LongTaskEventMapper = @Sendable (RUMLongTaskEvent) -> RUMLongTaskEvent?
 
     /// RUM session listener.
     /// - See: `RUM.Configuration.onSessionStart`.
@@ -434,7 +434,7 @@ extension RUM.Configuration.URLSessionTracking {
     }
 
     /// Configuration for capturing HTTP headers from network requests and responses.
-    public enum TrackResourceHeaders {
+    public enum TrackResourceHeaders: Sendable {
         /// No header capture. This is the default.
         case disabled
 
@@ -456,7 +456,7 @@ extension RUM.Configuration.URLSessionTracking {
     }
 
     /// A rule that defines which HTTP headers to capture.
-    public enum HeaderCaptureRule {
+    public enum HeaderCaptureRule: Sendable {
         /// Include the predefined set of default headers.
         case defaults
 

@@ -362,7 +362,7 @@ public class objc_URLSessionTracking: NSObject {
 @objc(DDRUMHeaderCaptureRule)
 @objcMembers
 @_spi(objc)
-public final class objc_HeaderCaptureRule: NSObject, @unchecked Sendable {
+public final class objc_HeaderCaptureRule: NSObject, Sendable {
     internal let swiftType: RUM.Configuration.URLSessionTracking.HeaderCaptureRule
 
     private init(_ swiftType: RUM.Configuration.URLSessionTracking.HeaderCaptureRule) {
@@ -381,7 +381,7 @@ public final class objc_HeaderCaptureRule: NSObject, @unchecked Sendable {
 @objc(DDRUMTrackResourceHeaders)
 @objcMembers
 @_spi(objc)
-public final class objc_TrackResourceHeaders: NSObject, @unchecked Sendable {
+public final class objc_TrackResourceHeaders: NSObject, Sendable {
     internal let swiftType: RUM.Configuration.URLSessionTracking.TrackResourceHeaders
 
     private init(_ swiftType: RUM.Configuration.URLSessionTracking.TrackResourceHeaders) {
@@ -478,35 +478,35 @@ public class objc_RUMConfiguration: NSObject {
         get { objc_VitalsFrequency(swiftType: swiftConfig.vitalsUpdateFrequency) }
     }
 
-    public func setViewEventMapper(_ mapper: @escaping (objc_RUMViewEvent) -> objc_RUMViewEvent) {
+    public func setViewEventMapper(_ mapper: @escaping @Sendable (objc_RUMViewEvent) -> objc_RUMViewEvent) {
         swiftConfig.viewEventMapper = { swiftEvent in
             let objcEvent = objc_RUMViewEvent(swiftModel: swiftEvent)
             return mapper(objcEvent).swiftModel
         }
     }
 
-    public func setResourceEventMapper(_ mapper: @escaping (objc_RUMResourceEvent) -> objc_RUMResourceEvent?) {
+    public func setResourceEventMapper(_ mapper: @escaping @Sendable (objc_RUMResourceEvent) -> objc_RUMResourceEvent?) {
         swiftConfig.resourceEventMapper = { swiftEvent in
             let objcEvent = objc_RUMResourceEvent(swiftModel: swiftEvent)
             return mapper(objcEvent)?.swiftModel
         }
     }
 
-    public func setActionEventMapper(_ mapper: @escaping (objc_RUMActionEvent) -> objc_RUMActionEvent?) {
+    public func setActionEventMapper(_ mapper: @escaping @Sendable (objc_RUMActionEvent) -> objc_RUMActionEvent?) {
         swiftConfig.actionEventMapper = { swiftEvent in
             let objcEvent = objc_RUMActionEvent(swiftModel: swiftEvent)
             return mapper(objcEvent)?.swiftModel
         }
     }
 
-    public func setErrorEventMapper(_ mapper: @escaping (objc_RUMErrorEvent) -> objc_RUMErrorEvent?) {
+    public func setErrorEventMapper(_ mapper: @escaping @Sendable (objc_RUMErrorEvent) -> objc_RUMErrorEvent?) {
         swiftConfig.errorEventMapper = { swiftEvent in
             let objcEvent = objc_RUMErrorEvent(swiftModel: swiftEvent)
             return mapper(objcEvent)?.swiftModel
         }
     }
 
-    public func setLongTaskEventMapper(_ mapper: @escaping (objc_RUMLongTaskEvent) -> objc_RUMLongTaskEvent?) {
+    public func setLongTaskEventMapper(_ mapper: @escaping @Sendable (objc_RUMLongTaskEvent) -> objc_RUMLongTaskEvent?) {
         swiftConfig.longTaskEventMapper = { swiftEvent in
             let objcEvent = objc_RUMLongTaskEvent(swiftModel: swiftEvent)
             return mapper(objcEvent)?.swiftModel

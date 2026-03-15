@@ -14,17 +14,17 @@ private struct SendableJSON: @unchecked Sendable {
 }
 
 /// Receiver to consume a RUM event coming from Browser SDK.
-internal final class WebViewEventReceiver: FeatureMessageReceiver, @unchecked Sendable {
+internal actor WebViewEventReceiver: FeatureMessageReceiver {
     /// RUM feature scope.
-    let featureScope: FeatureScope
+    nonisolated let featureScope: FeatureScope
     /// Subscriber that can process a `RUMKeepSessionAliveCommand`.
-    let commandSubscriber: RUMCommandSubscriber
+    nonisolated let commandSubscriber: RUMCommandSubscriber
 
     /// The date provider.
-    let dateProvider: DateProvider
+    nonisolated let dateProvider: DateProvider
 
     /// The view cache containing ids of current and previous views.
-    let viewCache: ViewCache
+    nonisolated let viewCache: ViewCache
 
     /// Creates a new receiver.
     ///
@@ -50,7 +50,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver, @unchecked Se
     /// - Parameters:
     ///   - message: The message containing the Browser RUM event.
     ///   - core: The core to write the event.
-    func receive(message: FeatureMessage) {
+    nonisolated func receive(message: FeatureMessage) {
         switch message {
         case let .webview(.rum(event)):
             receive(rum: event)
@@ -61,7 +61,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver, @unchecked Se
         }
     }
 
-    private func receive(rum event: JSON) {
+    private nonisolated func receive(rum event: JSON) {
         commandSubscriber.process(
             command: RUMKeepSessionAliveCommand(
                 time: dateProvider.now,
@@ -70,9 +70,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver, @unchecked Se
         )
 
         let sendable = SendableJSON(value: event)
-        Task { [self] in
-            await writeRUMEvent(sendable.value)
-        }
+        Task { await self.writeRUMEvent(sendable.value) }
     }
 
     private func writeRUMEvent(_ event: JSON) async {
@@ -131,11 +129,9 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver, @unchecked Se
         writer.write(value: AnyEncodable(event))
     }
 
-    private func receive(telemetry event: JSON) {
+    private nonisolated func receive(telemetry event: JSON) {
         let sendable = SendableJSON(value: event)
-        Task { [self] in
-            await writeTelemetryEvent(sendable.value)
-        }
+        Task { await self.writeTelemetryEvent(sendable.value) }
     }
 
     private func writeTelemetryEvent(_ event: JSON) async {

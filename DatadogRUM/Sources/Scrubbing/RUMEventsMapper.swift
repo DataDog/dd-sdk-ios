@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// The `EventMapper` for RUM events.
-internal struct RUMEventsMapper {
+internal struct RUMEventsMapper: Sendable {
     let viewEventMapper: RUM.ViewEventMapper?
     let errorEventMapper: RUM.ErrorEventMapper?
     let resourceEventMapper: RUM.ResourceEventMapper?

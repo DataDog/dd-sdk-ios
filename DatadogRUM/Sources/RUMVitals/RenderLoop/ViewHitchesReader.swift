@@ -45,13 +45,13 @@ internal protocol ViewHitchesModel {
     var telemetryModel: HitchesTelemetryModel { get }
 }
 
-/// Actor that reads View Hitches or Slow frames.
+/// Reads View Hitches or Slow frames.
 ///
-/// All state is protected by `NSLock` rather than actor isolation because both
-/// the write path (`didUpdateFrame`, called synchronously from CADisplayLink)
-/// and the read paths (`dataModel`, `telemetryModel`, called synchronously from
-/// `RUMViewScope.process()`) require `nonisolated` access.
-internal actor ViewHitchesReader: ViewHitchesModel {
+/// All state is protected by `NSLock` because both the write path
+/// (`didUpdateFrame`, called synchronously from CADisplayLink) and the
+/// read paths (`dataModel`, `telemetryModel`, called synchronously from
+/// `RUMViewScope.process()`) require synchronous access.
+internal final class ViewHitchesReader: ViewHitchesModel, @unchecked Sendable {
     internal enum Constants {
         static let frozenFrameThreshold: TimeInterval = 0.7 // seconds
         /// Taking into account each Hitch takes 64B in the payload, we can have 64KB max per view event
@@ -64,33 +64,33 @@ internal actor ViewHitchesReader: ViewHitchesModel {
         static let timestampTolerance = 0.001
     }
 
-    nonisolated(unsafe) private let _lock = NSLock()
+    private let _lock = NSLock()
 
-    nonisolated(unsafe) private var _startTimestamp: Double = 0
-    nonisolated(unsafe) private var _nextFrameTimestamp: Double?
+    private var _startTimestamp: Double = 0
+    private var _nextFrameTimestamp: Double?
 
-    nonisolated let config: HitchesConfiguration
+    let config: HitchesConfiguration
 
-    nonisolated(unsafe) private var _isActive: Bool = false
-    nonisolated var isActive: Bool {
+    private var _isActive: Bool = false
+    var isActive: Bool {
         _lock.lock()
         defer { _lock.unlock() }
         return _isActive
     }
 
-    nonisolated(unsafe) private var _hitches: [Hitch] = []
-    nonisolated(unsafe) private var _hitchesDuration: Double = 0.0
-    nonisolated var dataModel: HitchesDataModel {
+    private var _hitches: [Hitch] = []
+    private var _hitchesDuration: Double = 0.0
+    var dataModel: HitchesDataModel {
         _lock.lock()
         defer { _lock.unlock() }
         return (hitches: _hitches, hitchesDuration: _hitchesDuration)
     }
 
-    nonisolated(unsafe) private var _removedHitchesCount = 0
-    nonisolated(unsafe) private var _ignoredHitchesCount = 0
-    nonisolated(unsafe) private var _startFrameRate: CFTimeInterval?
-    nonisolated(unsafe) private var _didApplyDynamicFraming = false
-    nonisolated var telemetryModel: HitchesTelemetryModel {
+    private var _removedHitchesCount = 0
+    private var _ignoredHitchesCount = 0
+    private var _startFrameRate: CFTimeInterval?
+    private var _didApplyDynamicFraming = false
+    var telemetryModel: HitchesTelemetryModel {
         _lock.lock()
         defer { _lock.unlock() }
         let ignoredDurationNs = _hitchesDuration.dd.toInt64Nanoseconds - _hitches.reduce(into: 0) { $0 += $1.duration }
@@ -113,13 +113,13 @@ internal actor ViewHitchesReader: ViewHitchesModel {
 }
 
 extension ViewHitchesReader: RenderLoopReader {
-    nonisolated func stop() {
+    func stop() {
         _lock.lock()
         defer { _lock.unlock() }
         _isActive = false
     }
 
-    nonisolated func didUpdateFrame(link: FrameInfoProvider) {
+    func didUpdateFrame(link: FrameInfoProvider) {
         _lock.lock()
         defer { _lock.unlock() }
 

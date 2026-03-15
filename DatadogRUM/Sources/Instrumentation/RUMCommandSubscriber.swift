@@ -9,7 +9,7 @@ import Foundation
 /// The Command Subscriber is able to process RUM Commands.
 ///
 /// This protocol expect a single function to receive `RUMCommand`.
-internal protocol RUMCommandSubscriber: AnyObject {
+internal protocol RUMCommandSubscriber: AnyObject, Sendable {
     /// Processes the given RUM Command.
     ///
     /// - Parameter command: The RUM command to process.

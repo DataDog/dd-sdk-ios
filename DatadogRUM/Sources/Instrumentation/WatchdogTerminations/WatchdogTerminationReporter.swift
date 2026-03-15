@@ -14,7 +14,7 @@ internal protocol WatchdogTerminationReporting {
 }
 
 /// Default implementation of `WatchdogTerminationReporting`.
-internal final class WatchdogTerminationReporter: WatchdogTerminationReporting, @unchecked Sendable {
+internal final class WatchdogTerminationReporter: WatchdogTerminationReporting, Sendable {
     enum Constants {
         /// The standardized `error.message` for RUM errors describing a Watchdog Termination.
         static let errorMessage = "The operating system watchdog terminated the application."

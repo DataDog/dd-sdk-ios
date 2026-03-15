@@ -11,7 +11,7 @@ import DatadogInternal
 ///
 /// This class can be used to store and retrieve previous RUM views based
 /// on timestamp.
-internal final class ViewCache {
+internal final class ViewCache: @unchecked Sendable {
     let dateProvider: DateProvider
     let ttl: Int64
     let capacity: Int

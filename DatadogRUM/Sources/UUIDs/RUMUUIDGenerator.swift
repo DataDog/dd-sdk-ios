@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal protocol RUMUUIDGenerator {
+internal protocol RUMUUIDGenerator: Sendable {
     func generateUnique() -> RUMUUID
 }
 
