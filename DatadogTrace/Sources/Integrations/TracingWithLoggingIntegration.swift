@@ -5,10 +5,10 @@
  */
 
 import Foundation
-import DatadogInternal
+@preconcurrency import DatadogInternal
 
 /// Integration between Tracing and Logging Features to allow sending logs for spans (`span.log(fields:timestamp:)`)
-internal struct TracingWithLoggingIntegration {
+internal struct TracingWithLoggingIntegration: Sendable {
     private struct Constants {
         static let defaultLogMessage = "Span event"
         static let defaultErrorProperty = "Unknown"
