@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Fix freeze in Session Replay when screen changes are triggered by the recording pipeline. See [#2759][]
+
 # 3.8.1 / 13-03-2026
 
 - [FIX] Fix crash when network instrumentation intercepts `AVAssetDownloadTask` or `AVAggregateAssetDownloadTask`. See [#2750][]
