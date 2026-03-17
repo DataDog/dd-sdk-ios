@@ -19,6 +19,7 @@ internal final class CALayerChangeAggregator {
     private let handler: (CALayerChangeSnapshot) -> Void
 
     private var isRunning = false
+    private var isDeliveringChanges = false
     private var pendingChanges: [ObjectIdentifier: CALayerChange] = [:]
     private var lastDeliveryTime: TimeInterval?
     private var scheduledDelivery: (any ScheduledTimer)?
@@ -58,8 +59,8 @@ internal final class CALayerChangeAggregator {
     }
 
     private func record(_ layer: CALayer, aspect: CALayerChange.Aspect.Set) {
-        // Only record on the main thread
-        guard Thread.isMainThread, isRunning else {
+        // Only record on the main thread and ignore changes triggered in the delivery handler
+        guard Thread.isMainThread, isRunning, !isDeliveringChanges else {
             return
         }
 
@@ -116,6 +117,10 @@ internal final class CALayerChangeAggregator {
         lastDeliveryTime = now
 
         if !snapshot.isEmpty {
+            isDeliveringChanges = true
+            defer {
+                isDeliveringChanges = false
+            }
             handler(snapshot)
         }
     }
