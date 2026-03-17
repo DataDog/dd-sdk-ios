@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Fix crash and incorrect delegate getter return value when using RUM scroll tracking. See [#2761][]
+
 # 3.8.1 / 13-03-2026
 
 - [FIX] Fix crash when network instrumentation intercepts `AVAssetDownloadTask` or `AVAggregateAssetDownloadTask`. See [#2750][]
@@ -1080,6 +1082,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2726]: https://github.com/DataDog/dd-sdk-ios/pull/2726
 [#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
 [#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
+[#2761]: https://github.com/DataDog/dd-sdk-ios/pull/2761
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

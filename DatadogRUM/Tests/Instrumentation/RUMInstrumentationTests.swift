@@ -71,7 +71,7 @@ class RUMInstrumentationTests: XCTestCase {
             #if os(tvOS)
             DDAssertActiveSwizzlings(["sendEvent:"])
             #else
-            DDAssertActiveSwizzlings(["sendEvent:", "setDelegate:"])
+            DDAssertActiveSwizzlings(["sendEvent:", "setDelegate:", "delegate"])
             #endif
             XCTAssertNil(instrumentation.longTasks)
         }
