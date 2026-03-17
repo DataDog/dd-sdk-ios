@@ -1,8 +1,3 @@
-## Workaround KSCrash static linking issue
-# https://github.com/kstenerud/KSCrash/issues/713
-use_modular_headers!
-#
-
 abstract_target 'Common' do
   pod 'OpenTelemetry-Swift-Api', '2.3.0'
   pod 'DatadogInternal', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
@@ -20,6 +15,10 @@ abstract_target 'Common' do
     platform :ios, '13.0'
     use_frameworks!
     pod 'DatadogWebViewTracking', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
+
+    target 'App Dynamic iOS Tests' do
+      inherit! :search_paths
+    end
   end
 
   target 'App Static iOS' do
@@ -34,6 +33,10 @@ abstract_target 'Common' do
   target 'App Dynamic tvOS' do
     platform :tvos, '13.0'
     use_frameworks!
+
+    target 'App Dynamic tvOS Tests' do
+      inherit! :search_paths
+    end
   end
 
   target 'App Static tvOS' do
