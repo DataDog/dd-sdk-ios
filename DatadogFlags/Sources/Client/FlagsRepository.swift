@@ -12,6 +12,8 @@ internal protocol FlagsRepositoryProtocol {
 
     var context: FlagsEvaluationContext? { get }
 
+    var stateManager: FlagsStateManager { get }
+
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
@@ -30,13 +32,14 @@ internal final class FlagsRepository {
     }
 
     let clientName: String
+    let stateManager: FlagsStateManager
 
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
 
     @ReadWriteLock
-    private var state: FlagsData?
+    private var flagsData: FlagsData?
 
     @ReadWriteLock
     private var hasReadFlagsData = false
@@ -47,17 +50,19 @@ internal final class FlagsRepository {
         clientName: String,
         flagAssignmentsFetcher: any FlagAssignmentsFetching,
         dateProvider: any DateProvider,
-        featureScope: any FeatureScope
+        featureScope: any FeatureScope,
+        stateManager: FlagsStateManager = FlagsStateManager()
     ) {
         self.clientName = clientName
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
         self.dateProvider = dateProvider
         self.featureScope = featureScope
+        self.stateManager = stateManager
         readState()
     }
 
     private func readState() {
-        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, readSemaphore] state in
+        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, readSemaphore] data in
             defer {
                 // Signal on elevated queue to avoid priority inversion
                 DispatchQueue.global(qos: .userInitiated).async {
@@ -67,7 +72,7 @@ internal final class FlagsRepository {
             guard let self else {
                 return
             }
-            self.state = state
+            self.flagsData = data
             self.hasReadFlagsData = true
         }
     }
@@ -80,33 +85,37 @@ internal final class FlagsRepository {
     }
 
     private func writeState() {
-        guard let state else {
+        guard let flagsData else {
             return
         }
-        featureScope.flagsDataStore.setFlagsData(state, forClientNamed: clientName)
+        featureScope.flagsDataStore.setFlagsData(flagsData, forClientNamed: clientName)
     }
 }
 
 extension FlagsRepository: FlagsRepositoryProtocol {
     var context: FlagsEvaluationContext? {
         waitForFlagsDataRead()
-        return state?.context
+        return flagsData?.context
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
         waitForFlagsDataRead()
-        return state?.flags[key]
+        return flagsData?.flags[key]
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
         waitForFlagsDataRead()
-        return state?.flags
+        return flagsData?.flags
     }
 
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
+        waitForFlagsDataRead()
+        let hadFlags = flagsData != nil
+        stateManager.updateState(.reconciling)
+
         flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
             switch result {
             case .success(let flags):
@@ -114,21 +123,33 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     completion(.failure(.clientNotInitialized))
                     return
                 }
-                self.state = .init(
+                self.flagsData = .init(
                     flags: flags,
                     context: context,
                     date: self.dateProvider.now
                 )
                 self.writeState()
+                self.stateManager.updateState(.ready)
                 completion(.success(()))
             case .failure(let error):
+                // State must be updated before calling completion —
+                // dd-openfeature-provider-swift checks currentState in the callback.
+                // Only use cached flags if they match the requested context to avoid
+                // serving flags from a different user/context.
+                let cachedContextMatches = self?.flagsData?.context == context
+                if hadFlags && cachedContextMatches {
+                    self?.stateManager.updateState(.stale)
+                } else {
+                    self?.stateManager.updateState(.error)
+                }
                 completion(.failure(error))
             }
         }
     }
 
     func reset() {
-        state = nil
+        flagsData = nil
+        stateManager.updateState(.notReady)
         featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
     }
 }

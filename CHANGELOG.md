@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
+
 # 3.8.1 / 13-03-2026
 
 - [FIX] Fix crash when network instrumentation intercepts `AVAssetDownloadTask` or `AVAggregateAssetDownloadTask`. See [#2750][]
@@ -1082,6 +1084,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
 [#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
 [#2751]: https://github.com/DataDog/dd-sdk-ios/pull/2751
+[#2719]: https://github.com/DataDog/dd-sdk-ios/pull/2719
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

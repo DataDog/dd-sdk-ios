@@ -142,20 +142,21 @@ extension AnyValue: AnyMockable, RandomMockable {
 
 final class FlagsRepositoryMock: FlagsRepositoryProtocol {
     var clientName: String
-    var state: FlagsData?
+    var flagsData: FlagsData?
+    let stateManager = FlagsStateManager()
     var setEvaluationContextStub: ((FlagsEvaluationContext, @escaping (Result<Void, FlagsError>) -> Void) -> Void)?
 
     var context: FlagsEvaluationContext? {
-        state?.context
+        flagsData?.context
     }
 
     init(
         clientName: String = .mockAny(),
-        state: FlagsData? = nil,
+        flagsData: FlagsData? = nil,
         setEvaluationContextStub: ((FlagsEvaluationContext, @escaping (Result<Void, FlagsError>) -> Void) -> Void)? = nil
     ) {
         self.clientName = clientName
-        self.state = state
+        self.flagsData = flagsData
         self.setEvaluationContextStub = setEvaluationContextStub
     }
 
@@ -167,15 +168,15 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
     }
 
     func flagAssignment(for key: String) -> DatadogFlags.FlagAssignment? {
-        state?.flags[key]
+        flagsData?.flags[key]
     }
 
     func flagAssignments() -> [String: DatadogFlags.FlagAssignment]? {
-        state?.flags
+        flagsData?.flags
     }
 
     func reset() {
-        state = nil
+        flagsData = nil
     }
 }
 

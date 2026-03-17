@@ -198,6 +198,10 @@ public final class FlagsClient {
 }
 
 extension FlagsClient: FlagsClientProtocol {
+    public var state: FlagsStateObservable {
+        repository.stateManager
+    }
+
     public func setEvaluationContext(
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
