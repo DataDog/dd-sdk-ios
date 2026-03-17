@@ -29,10 +29,6 @@ class NOPMonitorTests: XCTestCase {
         noop.addViewAttributes(mockRandomAttributes())
         noop.removeViewAttribute(forKey: .mockAny())
         noop.removeViewAttributes(forKeys: .mockAny())
-        #if !os(watchOS)
-        noop.startView(viewController: mockView)
-        noop.stopView(viewController: mockView)
-        #endif
         noop.startView(key: "view-key")
         noop.stopView(key: "view-key")
         noop.addTiming(name: .mockAny())
@@ -59,7 +55,7 @@ class NOPMonitorTests: XCTestCase {
         _ = noop.debug
 
         // Then
-        XCTAssertEqual(dd.logger.criticalLogs.count, 35)
+        XCTAssertEqual(dd.logger.criticalLogs.count, 33)
         let actualMessages = dd.logger.criticalLogs.map { $0.message }
         let expectedMessages = [
             "addAttribute(forKey:value:)",
@@ -72,8 +68,6 @@ class NOPMonitorTests: XCTestCase {
             "addViewAttributes(_:)",
             "removeViewAttribute(forKey:)",
             "removeViewAttributes(forKeys:)",
-            "startView(viewController:name:attributes:)",
-            "stopView(viewController:attributes:)",
             "startView(key:name:attributes:)",
             "stopView(key:attributes:)",
             "addTiming(name:)",
