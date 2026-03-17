@@ -9,22 +9,28 @@
 import UIKit
 import DatadogInternal
 
-/// Swizzles `UIScrollView.delegate` setter to wrap delegates with a tracking proxy.
+/// Swizzles `UIScrollView.delegate` setter and getter to wrap delegates with a tracking proxy
+/// while keeping the proxy invisible to app code.
 /// This enables automatic detection of scroll and swipe gestures on UIScrollView-based
 /// components (UITableView, UICollectionView, UIScrollView).
 internal final class UIScrollViewSwizzler {
     let setDelegate: SetDelegate
+    let getDelegate: GetDelegate
 
     init(handler: UIScrollViewHandler) throws {
         setDelegate = try SetDelegate(handler: handler)
+        let getMethod = try dd_class_getInstanceMethod(UIScrollView.self, #selector(getter: UIScrollView.delegate))
+        getDelegate = GetDelegate(method: getMethod)
     }
 
     func swizzle() {
         setDelegate.swizzle()
+        getDelegate.swizzle()
     }
 
     func unswizzle() {
         setDelegate.unswizzle()
+        getDelegate.unswizzle()
     }
 
     // MARK: - Swizzlings
@@ -88,6 +94,33 @@ internal final class UIScrollViewSwizzler {
                         )
                         previousImplementation(scrollView, Self.selector, proxy)
                     }
+                }
+            }
+        }
+    }
+
+    /// Swizzles `UIScrollView.delegate` getter to return the original delegate
+    /// instead of the internal tracking proxy.
+    class GetDelegate: MethodSwizzler<
+        @convention(c) (UIScrollView, Selector) -> UIScrollViewDelegate?,
+        @convention(block) (UIScrollView) -> UIScrollViewDelegate?
+    > {
+        private static let selector = #selector(getter: UIScrollView.delegate)
+        private let method: Method
+
+        init(method: Method) {
+            self.method = method
+        }
+
+        func swizzle() {
+            typealias Signature = @convention(block) (UIScrollView) -> UIScrollViewDelegate?
+            swizzle(method) { previousImplementation -> Signature in
+                return { scrollView in
+                    let delegate = previousImplementation(scrollView, Self.selector)
+                    if let proxy = delegate as? UIScrollViewDelegateProxy {
+                        return proxy.originalDelegate
+                    }
+                    return delegate
                 }
             }
         }
