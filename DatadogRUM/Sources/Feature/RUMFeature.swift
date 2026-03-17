@@ -17,9 +17,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let monitor: Monitor
 
-    #if !os(watchOS)
     let instrumentation: RUMInstrumentation
-    #endif
 
     let configuration: RUM.Configuration
 
@@ -230,6 +228,21 @@ internal final class RUMFeature: DatadogRemoteFeature {
             memoryWarningMonitor: memoryWarningMonitor,
             uuidGenerator: configuration.uuidGenerator
         )
+        #else
+        self.instrumentation = RUMInstrumentation(
+            featureScope: featureScope,
+            longTaskThreshold: configuration.longTaskThreshold,
+            appHangThreshold: configuration.appHangThreshold,
+            mainQueue: configuration.mainQueue,
+            dateProvider: configuration.dateProvider,
+            backtraceReporter: core.backtraceReporter,
+            fatalErrorContext: dependencies.fatalErrorContext,
+            processID: configuration.processID,
+            bundleType: bundleType,
+            watchdogTermination: watchdogTermination,
+            memoryWarningMonitor: nil,
+            uuidGenerator: configuration.uuidGenerator
+        )
         #endif
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
@@ -282,9 +295,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
 
         // Forward instrumentation calls to monitor:
-        #if !os(watchOS)
         instrumentation.publish(to: monitor)
-        #endif
 
         // Initialize anonymous identifier manager
         self.anonymousIdentifierManager = AnonymousIdentifierManager(
@@ -335,9 +346,7 @@ extension RUMFeature: Flushable {
     ///
     /// **blocks the caller thread**
     func flush() {
-        #if !os(watchOS)
         instrumentation.appHangs?.flush()
-        #endif
     }
 }
 

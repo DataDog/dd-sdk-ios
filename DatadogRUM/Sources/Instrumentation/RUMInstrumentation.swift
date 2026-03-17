@@ -4,10 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
 import Foundation
 import DatadogInternal
-import UIKit
 
 /// Bundles RUM instrumentation components.
 internal final class RUMInstrumentation: RUMCommandPublisher {
@@ -18,12 +16,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         static let minAppHangThreshold: TimeInterval = 0.1
     }
 
-    /// Swizzles `UIViewController` for intercepting its lifecycle callbacks.
-    /// It is `nil` (no swizzling) if RUM View automatic instrumentation is not enabled.
-    let viewControllerSwizzler: UIViewControllerSwizzler?
     /// Receives interceptions of both automatic and manual instrumentations.
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
     let viewsHandler: RUMViewsHandler
+
+    #if !os(watchOS)
+    /// Swizzles `UIViewController` for intercepting its lifecycle callbacks.
+    /// It is `nil` (no swizzling) if RUM View automatic instrumentation is not enabled.
+    let viewControllerSwizzler: UIViewControllerSwizzler?
 
     /// Swizzles `UIApplication` for intercepting `UIEvents` passed to the app.
     /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
@@ -39,6 +39,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// Receives scroll lifecycle events and generates RUM commands.
     let scrollHandler: RUMScrollHandler?
     #endif
+    #endif
 
     /// Instruments RUM Long Tasks. It is `nil` if long tasks tracking is not enabled.
     let longTasks: LongTaskObserver?
@@ -53,6 +54,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     // MARK: - Initialization
 
+    #if !os(watchOS)
     init(
         featureScope: FeatureScope,
         uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?,
@@ -211,12 +213,77 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.memoryWarningMonitor?.start()
     }
 
+    #else
+
+    init(
+        featureScope: FeatureScope,
+        longTaskThreshold: TimeInterval?,
+        appHangThreshold: TimeInterval?,
+        mainQueue: DispatchQueue,
+        dateProvider: DateProvider,
+        backtraceReporter: BacktraceReporting,
+        fatalErrorContext: FatalErrorContextNotifying,
+        processID: UUID,
+        bundleType: BundleType,
+        watchdogTermination: WatchdogTerminationMonitor?,
+        memoryWarningMonitor: MemoryWarningMonitor?,
+        uuidGenerator: RUMUUIDGenerator
+    ) {
+        // Always create views handler (we can't know if it will be used by manual instrumentation)
+        self.viewsHandler = RUMViewsHandler(dateProvider: dateProvider)
+
+        // Create long tasks and app hang observers only if configured:
+        var longTasks: LongTaskObserver? = nil
+        var appHangs: AppHangsMonitor? = nil
+
+        if let longTaskThreshold = longTaskThreshold {
+            if longTaskThreshold > Constants.minLongTaskThreshold {
+                longTasks = LongTaskObserver(threshold: longTaskThreshold, dateProvider: dateProvider)
+            } else {
+                DD.logger.error("`RUM.Configuration.longTaskThreshold` cannot be less than 0s. Long Tasks monitoring will be disabled.")
+            }
+        }
+
+        if bundleType == .iOSApp,
+           var appHangThreshold = appHangThreshold {
+            if appHangThreshold < Constants.minAppHangThreshold {
+                appHangThreshold = Constants.minAppHangThreshold
+                DD.logger.warn("`RUM.Configuration.appHangThreshold` cannot be less than \(Constants.minAppHangThreshold)s. A value of \(Constants.minAppHangThreshold)s will be used.")
+            }
+
+            appHangs = AppHangsMonitor(
+                featureScope: featureScope,
+                appHangThreshold: appHangThreshold,
+                observedQueue: mainQueue,
+                backtraceReporter: backtraceReporter,
+                fatalErrorContext: fatalErrorContext,
+                dateProvider: dateProvider,
+                uuidGenerator: uuidGenerator,
+                processID: processID
+            )
+        }
+
+        self.longTasks = longTasks
+        self.appHangs = appHangs
+        self.watchdogTermination = watchdogTermination
+        self.memoryWarningMonitor = memoryWarningMonitor
+
+        // Enable configured instrumentations:
+        self.longTasks?.start()
+        self.appHangs?.start()
+        self.memoryWarningMonitor?.start()
+    }
+
+    #endif
+
     deinit {
         // Disable configured instrumentations:
+        #if !os(watchOS)
         viewControllerSwizzler?.unswizzle()
         uiApplicationSwizzler?.unswizzle()
         #if !os(tvOS)
         scrollViewSwizzler?.unswizzle()
+        #endif
         #endif
         longTasks?.stop()
         appHangs?.stop()
@@ -226,13 +293,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     func publish(to subscriber: RUMCommandSubscriber) {
         viewsHandler.publish(to: subscriber)
+        #if !os(watchOS)
         actionsHandler.publish(to: subscriber)
         #if !os(tvOS)
         scrollHandler?.publish(to: subscriber)
+        #endif
         #endif
         longTasks?.publish(to: subscriber)
         appHangs?.nonFatalHangsHandler.publish(to: subscriber)
         memoryWarningMonitor?.reporter.publish(to: subscriber)
     }
 }
-#endif
