@@ -857,7 +857,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let expectation = expectation(description: "Send span")
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
-        var receivedRequest: URLRequest?
+        var receivedRequest: ImmutableRequest?
         var receivedSpan: OTSpan?
         var receivedResponse: URLResponse?
         var receivedError: Error?

@@ -320,7 +320,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         spanCustomization?(
-            interception.request.unsafeOriginal,
+            interception.request,
             span,
             resourceCompletion.httpResponse,
             resourceCompletion.error
