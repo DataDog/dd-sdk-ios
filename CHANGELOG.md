@@ -10,6 +10,7 @@
 
 - [FIX] Fix crash and incorrect delegate getter return value when using RUM scroll tracking. See [#2761][]
 - [FIX] Fix freeze in Session Replay when screen changes are triggered by the recording pipeline. See [#2759][]
+- [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
 
 # 3.8.1 / 13-03-2026
 
@@ -18,8 +19,6 @@
 # 3.8.0 / 12-03-2026
 
 - [FEATURE] Add OOB scroll and swipe action tracking. See [#2717][]
-- [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
-- [IMPROVEMENT] Rename `DDRUMErrorEventErrorMeta` to `DDRUMErrorEventErrorMetaInfo`, add support of custom Objective-C runtime names for generated RUM models. See [#2705][]
 - [FEATURE] Add `trackResourceHeaders` configuration to capture HTTP request and response headers in RUM Resource events. See [#2721][]
 - [FEATURE] RUM Resources will now be augmented with the currently active span information, specifically the parent span and trace IDs, and sampling priority and decision maker. See [#2726][]
 - [IMPROVEMENT] Rename `DDRUMErrorEventErrorMeta` to `DDRUMErrorEventErrorMetaInfo`, add support of custom Objective-C runtime names for generated RUM models. See [#2705][]
