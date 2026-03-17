@@ -361,7 +361,8 @@ extension NetworkConnectionInfo: RandomMockable {
         supportsIPv4: Bool = true,
         supportsIPv6: Bool = true,
         isExpensive: Bool = true,
-        isConstrained: Bool = true
+        isConstrained: Bool = true,
+        linkQuality: LinkQuality? = nil
     ) -> NetworkConnectionInfo {
         return NetworkConnectionInfo(
             reachability: reachability,
@@ -369,7 +370,8 @@ extension NetworkConnectionInfo: RandomMockable {
             supportsIPv4: supportsIPv4,
             supportsIPv6: supportsIPv6,
             isExpensive: isExpensive,
-            isConstrained: isConstrained
+            isConstrained: isConstrained,
+            linkQuality: linkQuality
         )
     }
 
@@ -380,7 +382,8 @@ extension NetworkConnectionInfo: RandomMockable {
             supportsIPv4: .random(),
             supportsIPv6: .random(),
             isExpensive: .random(),
-            isConstrained: .random()
+            isConstrained: .random(),
+            linkQuality: .mockRandom()
         )
     }
 }
@@ -493,14 +496,26 @@ extension String {
     }
 }
 
-extension NetworkConnectionInfo.Reachability {
+extension NetworkConnectionInfo.Reachability: AnyMockable, RandomMockable {
     public static func mockAny() -> NetworkConnectionInfo.Reachability {
         return .maybe
     }
 
-    public static func mockRandom(
-        within cases: [NetworkConnectionInfo.Reachability] = [.yes, .no, .maybe]
-    ) -> NetworkConnectionInfo.Reachability {
+    public static func mockRandom() -> NetworkConnectionInfo.Reachability {
+        return NetworkConnectionInfo.Reachability.allCases.randomElement()!
+    }
+
+    public static func mockRandom(within cases: [NetworkConnectionInfo.Reachability]) -> NetworkConnectionInfo.Reachability {
         return cases.randomElement()!
+    }
+}
+
+extension NetworkConnectionInfo.LinkQuality: AnyMockable, RandomMockable {
+    public static func mockAny() -> NetworkConnectionInfo.LinkQuality {
+        return .good
+    }
+
+    public static func mockRandom() -> NetworkConnectionInfo.LinkQuality {
+        return NetworkConnectionInfo.LinkQuality.allCases.randomElement()!
     }
 }

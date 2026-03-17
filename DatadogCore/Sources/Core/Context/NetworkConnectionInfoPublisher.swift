@@ -64,6 +64,16 @@ extension NetworkConnectionInfo {
                     return nil
                 }
                 return path.isConstrained
+            }(),
+            linkQuality: {
+                #if compiler(>=6.2)
+                guard #available(iOS 26.0, tvOS 26.0, macOS 26.0, watchOS 26.0, *) else {
+                    return nil
+                }
+                return NetworkConnectionInfo.LinkQuality(path.linkQuality)
+                #else
+                return nil
+                #endif
             }()
         )
     }
@@ -92,3 +102,18 @@ extension NetworkConnectionInfo.Interface {
         }
     }
 }
+
+#if compiler(>=6.2)
+extension NetworkConnectionInfo.LinkQuality {
+    @available(iOS 26.0, tvOS 26.0, macOS 26.0, watchOS 26.0, *)
+    init(_ linkQuality: NWPath.LinkQuality) {
+        switch linkQuality {
+        case .good: self = .good
+        case .minimal: self = .minimal
+        case .moderate: self = .moderate
+        case .unknown: self = .unknown
+        @unknown default: self = .unknown
+        }
+    }
+}
+#endif
