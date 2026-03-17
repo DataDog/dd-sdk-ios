@@ -1,5 +1,7 @@
 # Unreleased
 
+# 3.8.2 / 17-03-2026
+
 - [FIX] Fix crash and incorrect delegate getter return value when using RUM scroll tracking. See [#2761][]
 - [FIX] Fix freeze in Session Replay when screen changes are triggered by the recording pipeline. See [#2759][]
 
