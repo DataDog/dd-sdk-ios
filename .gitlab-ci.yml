@@ -193,7 +193,6 @@ SR Snapshot Tests:
   id_tokens:
     <<: *dd-octo-sts-id-token
   variables:
-    XCODE: "16.4.0"
     PLATFORM: "iOS Simulator"
     IOS_OS: "17.5"
     DEVICE: "iPhone 15"
@@ -285,7 +284,7 @@ SPM Build (Swift 6.0):
   variables:
     XCODE: "16.2.0"
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS --tvOS --visionOS --watchOS
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --visionOS --watchOS
     - make clean repo-setup ENV=ci
     - make spm-build-ios
     - make spm-build-tvos
