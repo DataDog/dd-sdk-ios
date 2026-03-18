@@ -6,7 +6,7 @@
 
 import XCTest
 
-#if !os(tvOS)
+#if !os(tvOS) && !os(watchOS)
 
 import DatadogInternal
 import TestUtilities
