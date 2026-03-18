@@ -110,6 +110,43 @@ final class CALayerChangeAggregatorTests: XCTestCase {
         )
     }
 
+    func testIgnoresChangesTriggeredWhileDelivering() {
+        // given
+        let layer = CALayer()
+        let reentrantLayer = CALayer()
+
+        layerChangeAggregator = CALayerChangeAggregator(
+            minimumDeliveryInterval: 0.1,
+            timerScheduler: testTimerScheduler
+        ) { [weak self] snapshot in
+            self?.snapshots.append(snapshot)
+            self?.layerChangeAggregator.layerDidLayoutSublayers(reentrantLayer)
+        }
+
+        // when
+        layerChangeAggregator.start()
+
+        testTimerScheduler.advance(to: 0.02)
+        layerChangeAggregator.layerDidDisplay(layer)
+
+        testTimerScheduler.advance(to: 0.1)
+
+        // then
+        XCTAssertEqual(snapshots.count, 1)
+        XCTAssertEqual(
+            snapshots[0],
+            CALayerChangeSnapshot(
+                [ObjectIdentifier(layer): CALayerChange(layer: layer, aspects: .display)]
+            )
+        )
+
+        // when
+        testTimerScheduler.advance(to: 0.5)
+
+        // then
+        XCTAssertEqual(snapshots.count, 1, "Should ignore changes triggered while delivering")
+    }
+
     func testMergesChangesForMultipleLayersIndependently() {
         // given
         let layerA = CALayer()

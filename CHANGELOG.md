@@ -1,5 +1,10 @@
 # Unreleased
 
+# 3.8.2 / 17-03-2026
+
+- [FIX] Fix crash and incorrect delegate getter return value when using RUM scroll tracking. See [#2761][]
+- [FIX] Fix freeze in Session Replay when screen changes are triggered by the recording pipeline. See [#2759][]
+
 # 3.8.1 / 13-03-2026
 
 - [FIX] Fix crash when network instrumentation intercepts `AVAssetDownloadTask` or `AVAggregateAssetDownloadTask`. See [#2750][]
@@ -1078,6 +1083,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2717]: https://github.com/DataDog/dd-sdk-ios/pull/2717
 [#2721]: https://github.com/DataDog/dd-sdk-ios/pull/2721
 [#2726]: https://github.com/DataDog/dd-sdk-ios/pull/2726
+[#2759]: https://github.com/DataDog/dd-sdk-ios/pull/2759
+[#2761]: https://github.com/DataDog/dd-sdk-ios/pull/2761
 [#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
 [#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
 
