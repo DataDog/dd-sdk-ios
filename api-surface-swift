@@ -641,6 +641,7 @@ public struct SRImageWireframe: Codable, Hashable
     public let id: Int64
     public var isEmpty: Bool?
     public var mimeType: String?
+    public let permanentId: String?
     public var resourceId: String?
     public let shapeStyle: SRShapeStyle?
     public let type: String = "image"
@@ -655,13 +656,14 @@ public struct SRImageWireframe: Codable, Hashable
         case id = "id"
         case isEmpty = "isEmpty"
         case mimeType = "mimeType"
+        case permanentId = "permanentId"
         case resourceId = "resourceId"
         case shapeStyle = "shapeStyle"
         case type = "type"
         case width = "width"
         case x = "x"
         case y = "y"
-    public init(base64: String? = nil,border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isEmpty: Bool? = nil,mimeType: String? = nil,resourceId: String? = nil,shapeStyle: SRShapeStyle? = nil,width: Int64,x: Int64,y: Int64)
+    public init(base64: String? = nil,border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isEmpty: Bool? = nil,mimeType: String? = nil,permanentId: String? = nil,resourceId: String? = nil,shapeStyle: SRShapeStyle? = nil,width: Int64,x: Int64,y: Int64)
 public struct SRIncrementalSnapshotRecord: Codable
     public let data: Data
     public let timestamp: Int64
@@ -905,6 +907,7 @@ public struct SRPlaceholderWireframe: Codable, Hashable
     public let height: Int64
     public let id: Int64
     public var label: String?
+    public let permanentId: String?
     public let type: String = "placeholder"
     public let width: Int64
     public let x: Int64
@@ -914,11 +917,12 @@ public struct SRPlaceholderWireframe: Codable, Hashable
         case height = "height"
         case id = "id"
         case label = "label"
+        case permanentId = "permanentId"
         case type = "type"
         case width = "width"
         case x = "x"
         case y = "y"
-    public init(clip: SRContentClip? = nil,height: Int64,id: Int64,label: String? = nil,width: Int64,x: Int64,y: Int64)
+    public init(clip: SRContentClip? = nil,height: Int64,id: Int64,label: String? = nil,permanentId: String? = nil,width: Int64,x: Int64,y: Int64)
 public enum SRRecord: Codable
     case fullSnapshotRecord(value: SRFullSnapshotRecord)
     case incrementalSnapshotRecord(value: SRIncrementalSnapshotRecord)
@@ -993,6 +997,7 @@ public struct SRShapeWireframe: Codable, Hashable
     public let clip: SRContentClip?
     public let height: Int64
     public let id: Int64
+    public let permanentId: String?
     public let shapeStyle: SRShapeStyle?
     public let type: String = "shape"
     public let width: Int64
@@ -1003,12 +1008,13 @@ public struct SRShapeWireframe: Codable, Hashable
         case clip = "clip"
         case height = "height"
         case id = "id"
+        case permanentId = "permanentId"
         case shapeStyle = "shapeStyle"
         case type = "type"
         case width = "width"
         case x = "x"
         case y = "y"
-    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,shapeStyle: SRShapeStyle? = nil,width: Int64,x: Int64,y: Int64)
+    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,permanentId: String? = nil,shapeStyle: SRShapeStyle? = nil,width: Int64,x: Int64,y: Int64)
 public struct SRTextPosition: Codable, Hashable
     public let alignment: Alignment?
     public let padding: Padding?
@@ -1063,6 +1069,7 @@ public struct SRTextWireframe: Codable, Hashable
     public let clip: SRContentClip?
     public let height: Int64
     public let id: Int64
+    public let permanentId: String?
     public let shapeStyle: SRShapeStyle?
     public var text: String
     public let textPosition: SRTextPosition?
@@ -1076,6 +1083,7 @@ public struct SRTextWireframe: Codable, Hashable
         case clip = "clip"
         case height = "height"
         case id = "id"
+        case permanentId = "permanentId"
         case shapeStyle = "shapeStyle"
         case text = "text"
         case textPosition = "textPosition"
@@ -1084,7 +1092,7 @@ public struct SRTextWireframe: Codable, Hashable
         case width = "width"
         case x = "x"
         case y = "y"
-    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,shapeStyle: SRShapeStyle? = nil,text: String,textPosition: SRTextPosition? = nil,textStyle: SRTextStyle,width: Int64,x: Int64,y: Int64)
+    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,permanentId: String? = nil,shapeStyle: SRShapeStyle? = nil,text: String,textPosition: SRTextPosition? = nil,textStyle: SRTextStyle,width: Int64,x: Int64,y: Int64)
 public struct SRViewEndRecord: Codable
     public let slotId: String?
     public let timestamp: Int64
@@ -1128,6 +1136,7 @@ public struct SRWebviewWireframe: Codable, Hashable
     public let height: Int64
     public let id: Int64
     public let isVisible: Bool?
+    public let permanentId: String?
     public let shapeStyle: SRShapeStyle?
     public let slotId: String
     public let type: String = "webview"
@@ -1140,13 +1149,14 @@ public struct SRWebviewWireframe: Codable, Hashable
         case height = "height"
         case id = "id"
         case isVisible = "isVisible"
+        case permanentId = "permanentId"
         case shapeStyle = "shapeStyle"
         case slotId = "slotId"
         case type = "type"
         case width = "width"
         case x = "x"
         case y = "y"
-    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isVisible: Bool? = nil,shapeStyle: SRShapeStyle? = nil,slotId: String,width: Int64,x: Int64,y: Int64)
+    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isVisible: Bool? = nil,permanentId: String? = nil,shapeStyle: SRShapeStyle? = nil,slotId: String,width: Int64,x: Int64,y: Int64)
 public enum SRWireframe: Codable
     case shapeWireframe(value: SRShapeWireframe)
     case textWireframe(value: SRTextWireframe)
