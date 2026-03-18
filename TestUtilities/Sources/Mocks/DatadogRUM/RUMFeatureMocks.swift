@@ -1738,7 +1738,7 @@ extension RUMAddCurrentViewAppHangCommand: AnyMockable, RandomMockable {
     }
 }
 
-extension RUMCoreContext: RandomMockable {
+extension RUMCoreContext: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
         .mockWith()
     }
@@ -1747,13 +1747,15 @@ extension RUMCoreContext: RandomMockable {
         applicationID: String = .mockAny(),
         sessionID: String = .mockAny(),
         viewID: String? = .mockAny(),
-        serverTimeOffset: TimeInterval = .mockAny()
+        serverTimeOffset: TimeInterval = .mockAny(),
+        viewPath: String? = .mockAny()
     ) -> Self {
         .init(
             applicationID: applicationID,
             sessionID: sessionID,
             viewID: viewID,
-            viewServerTimeOffset: serverTimeOffset
+            viewServerTimeOffset: serverTimeOffset,
+            viewPath: viewPath
         )
     }
 
@@ -1763,7 +1765,8 @@ extension RUMCoreContext: RandomMockable {
             sessionID: .mockRandom(),
             viewID: .mockRandom(),
             userActionID: .mockRandom(),
-            viewServerTimeOffset: .mockRandom()
+            viewServerTimeOffset: .mockRandom(),
+            viewPath: .mockRandom()
         )
     }
 }
