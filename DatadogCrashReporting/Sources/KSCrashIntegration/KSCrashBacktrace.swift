@@ -33,6 +33,16 @@ internal struct KSCrashBacktrace: BacktraceReporting {
     }
 
     func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport? {
+        // watchOS does not support `thread_get_state`, which KSCrash uses internally to capture
+        // machine context for non-crashing threads. On watchOS, only NSException and CPPException
+        // monitors are active — both capture the crashing thread's backtrace via `backtrace()`
+        // (bypassing `KSStackCursor_MachineContext` entirely) before the stack unwinds.
+        // For all other threads, `kscpu_i_fillState` is a no-op, producing zeroed machine context
+        // and therefore corrupt/empty backtraces. Returning nil here prevents misleading data.
+        #if os(watchOS)
+        return nil
+        #endif
+
         // Convert Mach thread_t to pthread_t
         guard let pthread = pthread_from_mach_thread_np(threadID) else {
             telemetry.error("Failed to get pthread for thread with ID: \(threadID)")
