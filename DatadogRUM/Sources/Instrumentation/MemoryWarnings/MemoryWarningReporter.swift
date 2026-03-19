@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import UIKit
 
 /// Defines operations used for reporting memory warnings.
 internal protocol MemoryWarningReporting: RUMCommandPublisher {

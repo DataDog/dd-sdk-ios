@@ -5,8 +5,7 @@
  */
 
 import XCTest
-import UIKit.UIApplication
-
+import DatadogInternal
 @testable import DatadogRUM
 
 class VitalCPUReaderTest: XCTestCase {
@@ -41,10 +40,10 @@ class VitalCPUReaderTest: XCTestCase {
     #if !os(watchOS)
     func testWhenInactiveAppStateItIgnoresCPUTicks() throws {
         let baseline = try XCTUnwrap(cpuReader.readVitalData())
-        testNotificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
+        testNotificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
         heavyLoad()
         let measurementWhenInactive = try XCTUnwrap(cpuReader.readVitalData())
-        testNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        testNotificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         heavyLoad()
         let measurementWhenActive = try XCTUnwrap(cpuReader.readVitalData())
 

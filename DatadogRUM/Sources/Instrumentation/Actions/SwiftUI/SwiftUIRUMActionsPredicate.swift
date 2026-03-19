@@ -4,7 +4,6 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import UIKit
 import DatadogInternal
 
 /// Predicate determining which SwiftUI component interactions should be recorded as RUM actions.

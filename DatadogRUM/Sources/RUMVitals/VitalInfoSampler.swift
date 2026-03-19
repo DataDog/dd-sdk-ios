@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import class UIKit.UIScreen
+import UIKit
 
 internal protocol SamplingBasedVitalReader {
     func readVitalData() -> Double?
