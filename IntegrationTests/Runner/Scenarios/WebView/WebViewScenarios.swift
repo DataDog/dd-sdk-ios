@@ -16,9 +16,12 @@ private struct WebViewTrackingScenarioPredicate: UIKitRUMViewsPredicate {
     func rumView(for viewController: UIViewController) -> RUMView? {
         if viewController is ShopistWebviewViewController {
             return nil // do not consider the webview itself as RUM view
-        } else {
-            return defaultPredicate.rumView(for: viewController)
         }
+        // Exclude Screen Time view controllers (ST-prefixed) injected by iOS on top of WKWebView.
+        if String(describing: type(of: viewController)).hasPrefix("ST") {
+            return nil
+        }
+        return defaultPredicate.rumView(for: viewController)
     }
 }
 
