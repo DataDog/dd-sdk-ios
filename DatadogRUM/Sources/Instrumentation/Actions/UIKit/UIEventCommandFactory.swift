@@ -89,10 +89,10 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
         if let heatmapIdentifier = heatmapIdentifierRegistry.heatmapIdentifier(for: ObjectIdentifier(targetView)) {
             let location = tap.location(in: targetView)
             attributes[HeatmapAttributes.targetPermanentID] = heatmapIdentifier.rawValue
-            attributes[HeatmapAttributes.targetWidth] = Int64(targetView.frame.width)
-            attributes[HeatmapAttributes.targetHeight] = Int64(targetView.frame.height)
-            attributes[HeatmapAttributes.positionX] = Int64(location.x)
-            attributes[HeatmapAttributes.positionY] = Int64(location.y)
+            attributes[HeatmapAttributes.targetWidth] = Int64.ddWithNoOverflow(targetView.frame.width)
+            attributes[HeatmapAttributes.targetHeight] = Int64.ddWithNoOverflow(targetView.frame.height)
+            attributes[HeatmapAttributes.positionX] = Int64.ddWithNoOverflow(location.x)
+            attributes[HeatmapAttributes.positionY] = Int64.ddWithNoOverflow(location.y)
         }
 
         return RUMAddUserActionCommand(
