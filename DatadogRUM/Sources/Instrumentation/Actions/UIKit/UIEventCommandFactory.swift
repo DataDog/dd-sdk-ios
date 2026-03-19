@@ -21,17 +21,20 @@ internal protocol UIEventCommandFactory {
 /// Handles both UIKit and SwiftUI components using different detection strategies.
 internal final class UITouchCommandFactory: UIEventCommandFactory {
     let dateProvider: DateProvider
+    let heatmapIdentifierRegistry: any HeatmapIdentifierRegistry
     let uiKitPredicate: UITouchRUMActionsPredicate?
     let swiftUIPredicate: SwiftUIRUMActionsPredicate?
     let swiftUIDetector: SwiftUIComponentDetector?
 
     init(
         dateProvider: DateProvider,
+        heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
         uiKitPredicate: UITouchRUMActionsPredicate?,
         swiftUIPredicate: SwiftUIRUMActionsPredicate?,
         swiftUIDetector: SwiftUIComponentDetector?
     ) {
         self.dateProvider = dateProvider
+        self.heatmapIdentifierRegistry = heatmapIdentifierRegistry
         self.uiKitPredicate = uiKitPredicate
         self.swiftUIPredicate = swiftUIPredicate
         self.swiftUIDetector = swiftUIDetector

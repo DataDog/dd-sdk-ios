@@ -31,7 +31,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -63,7 +64,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -96,7 +98,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -128,7 +131,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -157,7 +161,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -189,7 +194,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -217,7 +223,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -245,7 +252,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -273,7 +281,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSAppExtension,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -301,7 +310,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
         let subscriber = RUMCommandSubscriberMock()
 

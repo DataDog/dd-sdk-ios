@@ -21,6 +21,7 @@ class RUMActionsHandlerTests: XCTestCase {
         let handler =
         RUMActionsHandler(
             dateProvider: dateProvider,
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
             uiKitPredicate: uiKitPredicate,
             swiftUIPredicate: swiftUIPredicate,
             swiftUIDetector: SwiftUIComponentFactory.createDetector()

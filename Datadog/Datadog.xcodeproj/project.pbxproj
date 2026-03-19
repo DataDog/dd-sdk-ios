@@ -534,6 +534,8 @@
 		5B0E75DB2E9690D200F66739 /* ExposureTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E75D92E9690C400F66739 /* ExposureTracker.swift */; };
 		5B0E75DD2E96C57800F66739 /* IssueReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E75DC2E96C57400F66739 /* IssueReporter.swift */; };
 		5B0E75DE2E96C57800F66739 /* IssueReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E75DC2E96C57400F66739 /* IssueReporter.swift */; };
+		5B12DFB32F6BEFDF001C1D59 /* HeatmapAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B12DFB22F6BEFDA001C1D59 /* HeatmapAttributes.swift */; };
+		5B12DFB42F6BEFDF001C1D59 /* HeatmapAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B12DFB22F6BEFDA001C1D59 /* HeatmapAttributes.swift */; };
 		5B16A3662E83E3BF0046A863 /* AnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3652E83E3BF0046A863 /* AnyValue.swift */; };
 		5B16A3672E83E3BF0046A863 /* AnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3652E83E3BF0046A863 /* AnyValue.swift */; };
 		5B16A36A2E83E46F0046A863 /* AnyValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3692E83E46F0046A863 /* AnyValueTests.swift */; };
@@ -581,6 +583,12 @@
 		5B5387A12F6AC05F00ADA245 /* DatadogCoreProtocol+Heatmaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B53879F2F6AC05500ADA245 /* DatadogCoreProtocol+Heatmaps.swift */; };
 		5B5387A42F6AC83500ADA245 /* HeatmapIdentifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5387A32F6AC82E00ADA245 /* HeatmapIdentifierTests.swift */; };
 		5B5387A52F6AC83500ADA245 /* HeatmapIdentifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5387A32F6AC82E00ADA245 /* HeatmapIdentifierTests.swift */; };
+		5B5387A82F6AF34D00ADA245 /* HeatmapIdentifierStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5387A72F6AF34000ADA245 /* HeatmapIdentifierStore.swift */; };
+		5B5387A92F6AF34D00ADA245 /* HeatmapIdentifierStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5387A72F6AF34000ADA245 /* HeatmapIdentifierStore.swift */; };
+		5B5387AB2F6AF91D00ADA245 /* HeatmapMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5387AA2F6AF90F00ADA245 /* HeatmapMocks.swift */; };
+		5B5387AC2F6AF91D00ADA245 /* HeatmapMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5387AA2F6AF90F00ADA245 /* HeatmapMocks.swift */; };
+		5B5387AF2F6B0ACD00ADA245 /* HeatmapIdentifierStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5387AE2F6B0ACB00ADA245 /* HeatmapIdentifierStoreTests.swift */; };
+		5B5387B02F6B0ACD00ADA245 /* HeatmapIdentifierStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5387AE2F6B0ACB00ADA245 /* HeatmapIdentifierStoreTests.swift */; };
 		5B5B8CB62E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */; };
 		5B5B8CB72E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */; };
 		5B5B8CB92E8BD44700A6740E /* FlagsDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CB82E8BD44000A6740E /* FlagsDataStore.swift */; };
@@ -3009,6 +3017,7 @@
 		5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphicsFilter+Reflection.swift"; sourceTree = "<group>"; };
 		5B0E75D92E9690C400F66739 /* ExposureTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureTracker.swift; sourceTree = "<group>"; };
 		5B0E75DC2E96C57400F66739 /* IssueReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueReporter.swift; sourceTree = "<group>"; };
+		5B12DFB22F6BEFDA001C1D59 /* HeatmapAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapAttributes.swift; sourceTree = "<group>"; };
 		5B16A3652E83E3BF0046A863 /* AnyValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyValue.swift; sourceTree = "<group>"; };
 		5B16A3692E83E46F0046A863 /* AnyValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyValueTests.swift; sourceTree = "<group>"; };
 		5B16A36C2E83E51D0046A863 /* FlagAssignment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignment.swift; sourceTree = "<group>"; };
@@ -3033,6 +3042,9 @@
 		5B53879C2F6ABEB400ADA245 /* HeatmapIdentifierRegistryFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierRegistryFeature.swift; sourceTree = "<group>"; };
 		5B53879F2F6AC05500ADA245 /* DatadogCoreProtocol+Heatmaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DatadogCoreProtocol+Heatmaps.swift"; sourceTree = "<group>"; };
 		5B5387A32F6AC82E00ADA245 /* HeatmapIdentifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierTests.swift; sourceTree = "<group>"; };
+		5B5387A72F6AF34000ADA245 /* HeatmapIdentifierStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierStore.swift; sourceTree = "<group>"; };
+		5B5387AA2F6AF90F00ADA245 /* HeatmapMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapMocks.swift; sourceTree = "<group>"; };
+		5B5387AE2F6B0ACB00ADA245 /* HeatmapIdentifierStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierStoreTests.swift; sourceTree = "<group>"; };
 		5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRepositoryTests.swift; sourceTree = "<group>"; };
 		5B5B8CB82E8BD44000A6740E /* FlagsDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsDataStore.swift; sourceTree = "<group>"; };
 		5B5B8CBE2E8BDB0D00A6740E /* FlagsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsData.swift; sourceTree = "<group>"; };
@@ -4566,6 +4578,7 @@
 		1182F9FB2DA2F827007FE71A /* DatadogRUM */ = {
 			isa = PBXGroup;
 			children = (
+				5B5387AA2F6AF90F00ADA245 /* HeatmapMocks.swift */,
 				116506162E9535A500FD815C /* WatchdogTerminationMocks.swift */,
 				86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */,
 				116506132E95339B00FD815C /* AppStateManagerMock.swift */,
@@ -4906,6 +4919,23 @@
 			isa = PBXGroup;
 			children = (
 				5B5387A32F6AC82E00ADA245 /* HeatmapIdentifierTests.swift */,
+			);
+			path = Heatmaps;
+			sourceTree = "<group>";
+		};
+		5B5387A62F6AF33100ADA245 /* Heatmaps */ = {
+			isa = PBXGroup;
+			children = (
+				5B12DFB22F6BEFDA001C1D59 /* HeatmapAttributes.swift */,
+				5B5387A72F6AF34000ADA245 /* HeatmapIdentifierStore.swift */,
+			);
+			path = Heatmaps;
+			sourceTree = "<group>";
+		};
+		5B5387AD2F6B0AB400ADA245 /* Heatmaps */ = {
+			isa = PBXGroup;
+			children = (
+				5B5387AE2F6B0ACB00ADA245 /* HeatmapIdentifierStoreTests.swift */,
 			);
 			path = Heatmaps;
 			sourceTree = "<group>";
@@ -7531,6 +7561,7 @@
 				61E5333224B7A504003D6C4E /* DataModels */,
 				61B22E5824F3E6A700DC26D2 /* Debugging */,
 				D25FF2E629CC6B320063802D /* Feature */,
+				5B5387A62F6AF33100ADA245 /* Heatmaps */,
 				616CCE11250A181C009FED46 /* Instrumentation */,
 				615950EC291C057D00470E0C /* Integrations */,
 				6156CB8A24DDA186008CB2B2 /* RUMContext */,
@@ -7559,6 +7590,7 @@
 				3C0D5DE62A543E9700446CF9 /* RUMViewEventsFilterTests.swift */,
 				618715FA24DC5EE700FC0F69 /* DataModels */,
 				61C713BE2A3C9D9D00FA735A /* Feature */,
+				5B5387AD2F6B0AB400ADA245 /* Heatmaps */,
 				61F3CDA825121F8F00C816E5 /* Instrumentation */,
 				D236BE2A29521A7700676E67 /* Integrations */,
 				864A707F2DE092AD00AC0619 /* RUMContext */,
@@ -10657,6 +10689,7 @@
 				615E2B962D425F5600D85243 /* ViewEndedMetric.swift in Sources */,
 				864A707C2DDF743900AC0619 /* AccessibilityReader.swift in Sources */,
 				D23F8E7A29DDCD28001CFAE8 /* SessionReplayDependency.swift in Sources */,
+				5B12DFB32F6BEFDF001C1D59 /* HeatmapAttributes.swift in Sources */,
 				1124D52F2EA6D23C0002E053 /* StartupTypeHandler.swift in Sources */,
 				9632900E2DF1F04200E9199E /* LegacySwiftUIComponentDetector.swift in Sources */,
 				616F8C282BB1CD990061EA53 /* ProcessIdentifier.swift in Sources */,
@@ -10667,6 +10700,7 @@
 				D23F8E8029DDCD28001CFAE8 /* VitalInfoSampler.swift in Sources */,
 				D23F8E8129DDCD28001CFAE8 /* RUMViewScope.swift in Sources */,
 				96F70D492DD79B3D00D3736B /* SwiftUIRUMActionsPredicate.swift in Sources */,
+				5B5387A92F6AF34D00ADA245 /* HeatmapIdentifierStore.swift in Sources */,
 				11030D762D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */,
 				D2D748242DC0FF7E00C61353 /* FatalErrorContextNotifier.swift in Sources */,
 				D23F8E8229DDCD28001CFAE8 /* RUMSessionScope.swift in Sources */,
@@ -10728,6 +10762,7 @@
 				D23F8EB029DDCD38001CFAE8 /* SessionReplayDependencyTests.swift in Sources */,
 				61C713B72A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */,
 				D23F8EB129DDCD38001CFAE8 /* RUMViewScopeTests.swift in Sources */,
+				5B5387B02F6B0ACD00ADA245 /* HeatmapIdentifierStoreTests.swift in Sources */,
 				D224431029E977A100274EC7 /* TelemetryReceiverTests.swift in Sources */,
 				96155A2A2D79A4E50029034E /* SwiftUIViewNameExtractorIntegrationTests.swift in Sources */,
 				5B1D02952E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */,
@@ -10804,6 +10839,7 @@
 				1182FA2A2DA2F827007FE71A /* SpanMatcher.swift in Sources */,
 				1182FA2B2DA2F827007FE71A /* DirectoriesMock.swift in Sources */,
 				1182FA2C2DA2F827007FE71A /* AppStateProvider.swift in Sources */,
+				5B5387AB2F6AF91D00ADA245 /* HeatmapMocks.swift in Sources */,
 				1182FA2D2DA2F827007FE71A /* FeatureFlagsMock.swift in Sources */,
 				1182FA2E2DA2F827007FE71A /* CoreTelephonyMocks.swift in Sources */,
 				1182FA302DA2F827007FE71A /* HostsSanitizerMock.swift in Sources */,
@@ -10904,6 +10940,7 @@
 				1182FA7E2DA2F827007FE71A /* SpanMatcher.swift in Sources */,
 				1182FA7F2DA2F827007FE71A /* DirectoriesMock.swift in Sources */,
 				1182FA802DA2F827007FE71A /* AppStateProvider.swift in Sources */,
+				5B5387AC2F6AF91D00ADA245 /* HeatmapMocks.swift in Sources */,
 				1182FA812DA2F827007FE71A /* FeatureFlagsMock.swift in Sources */,
 				1182FA822DA2F827007FE71A /* CoreTelephonyMocks.swift in Sources */,
 				1182FA842DA2F827007FE71A /* HostsSanitizerMock.swift in Sources */,
@@ -11161,6 +11198,7 @@
 				615E2B952D425F5600D85243 /* ViewEndedMetric.swift in Sources */,
 				864A707D2DDF743900AC0619 /* AccessibilityReader.swift in Sources */,
 				D29A9F8629DD85BB005C54A4 /* SessionReplayDependency.swift in Sources */,
+				5B12DFB42F6BEFDF001C1D59 /* HeatmapAttributes.swift in Sources */,
 				1124D5302EA6D23C0002E053 /* StartupTypeHandler.swift in Sources */,
 				9632900F2DF1F04200E9199E /* LegacySwiftUIComponentDetector.swift in Sources */,
 				616F8C272BB1CD990061EA53 /* ProcessIdentifier.swift in Sources */,
@@ -11171,6 +11209,7 @@
 				D29A9F6B29DD85BB005C54A4 /* VitalInfoSampler.swift in Sources */,
 				D29A9F7529DD85BB005C54A4 /* RUMViewScope.swift in Sources */,
 				96F70D482DD79B3D00D3736B /* SwiftUIRUMActionsPredicate.swift in Sources */,
+				5B5387A82F6AF34D00ADA245 /* HeatmapIdentifierStore.swift in Sources */,
 				11030D772D96EC5C00732D5F /* ViewHitchesMetric.swift in Sources */,
 				D2D748232DC0FF7E00C61353 /* FatalErrorContextNotifier.swift in Sources */,
 				D29A9F5C29DD85BB005C54A4 /* RUMSessionScope.swift in Sources */,
@@ -11232,6 +11271,7 @@
 				61C713B62A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */,
 				D29A9FB829DDB483005C54A4 /* RUMViewScopeTests.swift in Sources */,
 				D224430F29E9779F00274EC7 /* TelemetryReceiverTests.swift in Sources */,
+				5B5387AF2F6B0ACD00ADA245 /* HeatmapIdentifierStoreTests.swift in Sources */,
 				96155A292D79A4E50029034E /* SwiftUIViewNameExtractorIntegrationTests.swift in Sources */,
 				3C4CF99B2C47DAA5006DE1C0 /* MemoryWarningMocks.swift in Sources */,
 				5B1D02942E8ED6C000AB2391 /* FlagEvaluationReceiverTests.swift in Sources */,

@@ -25,6 +25,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
     /// Convenience initializer for iOS
     convenience init(
         dateProvider: DateProvider,
+        heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
         uiKitPredicate: UITouchRUMActionsPredicate?,
         swiftUIPredicate: SwiftUIRUMActionsPredicate?,
         swiftUIDetector: SwiftUIComponentDetector?
@@ -38,6 +39,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
             dateProvider: dateProvider,
             eventCommandsFactory: UITouchCommandFactory(
                 dateProvider: dateProvider,
+                heatmapIdentifierRegistry: heatmapIdentifierRegistry,
                 uiKitPredicate: uiKitPredicate,
                 swiftUIPredicate: swiftUIPredicate,
                 swiftUIDetector: swiftUIDetector

@@ -69,7 +69,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         bundleType: BundleType,
         watchdogTermination: WatchdogTerminationMonitor?,
         memoryWarningMonitor: MemoryWarningMonitor?,
-        uuidGenerator: RUMUUIDGenerator
+        uuidGenerator: RUMUUIDGenerator,
+        heatmapIdentifierRegistry: any HeatmapIdentifierRegistry
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI manual instrumentation)
         // and only activate `UIViewControllerSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured:
@@ -106,6 +107,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             #else
             return RUMActionsHandler(
                 dateProvider: dateProvider,
+                heatmapIdentifierRegistry: heatmapIdentifierRegistry,
                 uiKitPredicate: uiKitRUMActionsPredicate,
                 swiftUIPredicate: swiftUIRUMActionsPredicate,
                 swiftUIDetector: SwiftUIComponentFactory.createDetector()
