@@ -224,13 +224,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         backtraceReporter: BacktraceReporting,
         fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
+        notificationCenter: NotificationCenter,
         bundleType: BundleType,
         watchdogTermination: WatchdogTerminationMonitor?,
         memoryWarningMonitor: MemoryWarningMonitor?,
         uuidGenerator: RUMUUIDGenerator
     ) {
         // Always create views handler (we can't know if it will be used by manual instrumentation)
-        self.viewsHandler = RUMViewsHandler(dateProvider: dateProvider)
+        self.viewsHandler = RUMViewsHandler(dateProvider: dateProvider, notificationCenter: notificationCenter)
 
         // Create long tasks and app hang observers only if configured:
         var longTasks: LongTaskObserver? = nil

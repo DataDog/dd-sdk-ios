@@ -25,6 +25,9 @@ class GeneratingBacktraceTests: XCTestCase {
     }
 
     func testGeneratingBacktraceOfTheCurrentThread() throws {
+        #if os(watchOS)
+        throw XCTSkip("Backtrace generation is not supported on watchOS")
+        #endif
         // Given
         CrashReporting.enable(in: core)
         XCTAssertNotNil(core.get(feature: BacktraceReportingFeature.self), "`BacktraceReportingFeature` must be registered")
@@ -57,6 +60,9 @@ class GeneratingBacktraceTests: XCTestCase {
     }
 
     func testGeneratingBacktraceOfTheMainThread() throws {
+        #if os(watchOS)
+        throw XCTSkip("Backtrace generation is not supported on watchOS")
+        #endif
         // Given
         CrashReporting.enable(in: core)
 
@@ -71,6 +77,9 @@ class GeneratingBacktraceTests: XCTestCase {
     }
 
     func testGeneratingBacktraceOfSecondaryThread() throws {
+        #if os(watchOS)
+        throw XCTSkip("Backtrace generation is not supported on watchOS")
+        #endif
         // Given
         CrashReporting.enable(in: core)
 
@@ -93,6 +102,6 @@ class GeneratingBacktraceTests: XCTestCase {
 
         // Then
         XCTAssertFalse(backtrace.stack.isEmpty)
-        XCTAssertFalse(backtrace.stack.contains(uiKitLibraryName), "Secondary thread stack should NOT include UIKit symbols")
+        XCTAssertFalse(backtrace.stack.contains("UIKit"), "Secondary thread stack should NOT include UIKit symbols")
     }
 }

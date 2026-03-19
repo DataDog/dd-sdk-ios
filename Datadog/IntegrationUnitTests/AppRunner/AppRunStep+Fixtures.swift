@@ -89,6 +89,7 @@ extension AppRunStep {
         })
     }
 
+    #if !os(watchOS)
     static func startAutomaticView(after dt: TimeInterval, viewController: UIViewController) -> AppRunStep {
         return AppRunStep({ app in
             app.advanceTime(by: dt)
@@ -102,6 +103,7 @@ extension AppRunStep {
             app.viewDidDisappear(vc: viewController)
         })
     }
+    #endif
 
     static func trackTwoActions(after1 dt1: TimeInterval, after2 dt2: TimeInterval) -> AppRunStep {
         return AppRunStep({ app in
