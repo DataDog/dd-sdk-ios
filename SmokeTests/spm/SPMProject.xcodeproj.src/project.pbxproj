@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		09FA792C2F6C4C33001BCA9C /* StrictConcurrencyChecks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09FA792B2F6C4C33001BCA9C /* StrictConcurrencyChecks.swift */; };
+		09FA792D2F6C4C33001BCA9C /* StrictConcurrencyChecks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09FA792B2F6C4C33001BCA9C /* StrictConcurrencyChecks.swift */; };
 		3CB7A04C29F6ABDA007A27ED /* DatadogWebViewTracking in Frameworks */ = {isa = PBXBuildFile; productRef = 3CB7A04B29F6ABDA007A27ED /* DatadogWebViewTracking */; };
 		6125A4042E79876700185E4F /* DatadogFlags in Frameworks */ = {isa = PBXBuildFile; productRef = 6125A4032E79876700185E4F /* DatadogFlags */; };
 		6125A4062E79877000185E4F /* DatadogFlags in Frameworks */ = {isa = PBXBuildFile; productRef = 6125A4052E79877000185E4F /* DatadogFlags */; };
@@ -95,6 +97,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		09FA792B2F6C4C33001BCA9C /* StrictConcurrencyChecks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrictConcurrencyChecks.swift; sourceTree = "<group>"; };
 		61C363D624374D5F00C4D4E6 /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		61C363D924374D5F00C4D4E6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		61C363DB24374D5F00C4D4E6 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -207,6 +210,7 @@
 		61C363D824374D5F00C4D4E6 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				09FA792B2F6C4C33001BCA9C /* StrictConcurrencyChecks.swift */,
 				61C363D924374D5F00C4D4E6 /* AppDelegate.swift */,
 				61C363DB24374D5F00C4D4E6 /* SceneDelegate.swift */,
 				61C363DD24374D5F00C4D4E6 /* ViewController.swift */,
@@ -544,6 +548,7 @@
 				61C363DE24374D5F00C4D4E6 /* ViewController.swift in Sources */,
 				61C363DA24374D5F00C4D4E6 /* AppDelegate.swift in Sources */,
 				A71398B22BD12B6D0050A54E /* DatadogSetup.swift in Sources */,
+				09FA792D2F6C4C33001BCA9C /* StrictConcurrencyChecks.swift in Sources */,
 				61C363DC24374D5F00C4D4E6 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -571,6 +576,7 @@
 				D23BF5F327CCCC3300BB4CCD /* ViewController.swift in Sources */,
 				D23BF5F427CCCC3300BB4CCD /* AppDelegate.swift in Sources */,
 				A71398B32BD12B6D0050A54E /* DatadogSetup.swift in Sources */,
+				09FA792C2F6C4C33001BCA9C /* StrictConcurrencyChecks.swift in Sources */,
 				D23BF5F527CCCC3300BB4CCD /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1088,7 +1094,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/DataDog/dd-sdk-ios";
 			requirement = {
-				branch = "GIT_REFERENCE";
+				branch = develop;
 				kind = branch;
 			};
 		};
@@ -1096,7 +1102,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/DataDog/dd-sdk-ios";
 			requirement = {
-				branch = "GIT_REFERENCE";
+				branch = develop;
 				kind = branch;
 			};
 		};
