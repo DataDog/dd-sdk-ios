@@ -9,6 +9,8 @@ import Foundation
 import UIKit
 import WebKit
 
+import DatadogInternal
+
 /// Builds `ViewTreeSnapshot` for given root view.
 ///
 /// Note: This builder is used by `Recorder` on the main thread.
@@ -17,6 +19,8 @@ internal struct ViewTreeSnapshotBuilder {
     let viewTreeRecorder: ViewTreeRecorder
     /// Generates stable IDs for traversed views.
     let idsGenerator: NodeIDGenerator
+    /// Stores heatmap identifiers shared with RUM
+    let heatmapIdentifierRegistry: HeatmapIdentifierRegistry?
     /// The webviews cache.
     let webViewCache: NSHashTable<WKWebView> = .weakObjects()
 
@@ -28,11 +32,13 @@ internal struct ViewTreeSnapshotBuilder {
     /// are computed relatively to the `rootView` (e.g. the `x` and `y` position of all descendant nodes  is given
     /// as its position in the root, no matter of nesting level).
     func createSnapshot(of rootView: UIView, with recorderContext: Recorder.Context) -> ViewTreeSnapshot {
+        let heatmapCache = HeatmapCache()
         let context = ViewTreeRecordingContext(
             recorder: recorderContext,
             coordinateSpace: rootView,
             ids: idsGenerator,
             webViewCache: webViewCache,
+            heatmapCache: heatmapCache,
             clip: rootView.bounds
         )
         let nodes = viewTreeRecorder.record(rootView, in: context)
@@ -43,6 +49,7 @@ internal struct ViewTreeSnapshotBuilder {
             nodes: nodes,
             webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash))
         )
+        heatmapIdentifierRegistry?.setHeatmapIdentifiers(heatmapCache.identifiers)
         return snapshot
     }
 }
@@ -50,13 +57,15 @@ internal struct ViewTreeSnapshotBuilder {
 extension ViewTreeSnapshotBuilder {
     init(
         additionalNodeRecorders: [NodeRecorder],
+        heatmapIdentifierRegistry: HeatmapIdentifierRegistry?,
         featureFlags: SessionReplay.Configuration.FeatureFlags
     ) {
         self.init(
             viewTreeRecorder: ViewTreeRecorder(
                 nodeRecorders: createDefaultNodeRecorders(featureFlags: featureFlags) + additionalNodeRecorders
             ),
-            idsGenerator: NodeIDGenerator()
+            idsGenerator: NodeIDGenerator(),
+            heatmapIdentifierRegistry: heatmapIdentifierRegistry
         )
     }
 }

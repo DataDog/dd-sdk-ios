@@ -476,7 +476,11 @@ class SnapshotProcessorTests: XCTestCase {
 
     // MARK: - `ViewTreeSnapshot` generation
 
-    private let snapshotBuilder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [], featureFlags: .allEnabled)
+    private let snapshotBuilder = ViewTreeSnapshotBuilder(
+        additionalNodeRecorders: [],
+        heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+        featureFlags: .allEnabled
+    )
 
     private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMCoreContext) -> ViewTreeSnapshot {
         snapshotBuilder.createSnapshot(

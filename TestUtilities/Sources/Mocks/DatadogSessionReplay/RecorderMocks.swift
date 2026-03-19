@@ -373,7 +373,8 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             coordinateSpace: view,
             ids: NodeIDGenerator(),
             webViewCache: .weakObjects(),
-            clip: view.bounds
+            heatmapCache: .init(),
+            clip: view.bounds,
         )
     }
 
@@ -382,6 +383,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator(),
         webViewCache: NSHashTable<WKWebView> = .weakObjects(),
+        heatmapCache: HeatmapCache = .init(),
         clip: CGRect? = nil
     ) -> ViewTreeRecordingContext {
         return .init(
@@ -389,6 +391,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             coordinateSpace: coordinateSpace,
             ids: ids,
             webViewCache: webViewCache,
+            heatmapCache: heatmapCache,
             clip: clip ?? coordinateSpace.bounds
         )
     }

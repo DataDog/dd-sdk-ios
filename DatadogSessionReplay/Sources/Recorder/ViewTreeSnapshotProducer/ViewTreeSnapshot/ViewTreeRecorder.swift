@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import UIKit
+import DatadogInternal
 
 internal struct ViewTreeRecorder {
     /// An array of enabled node recorders.
@@ -13,6 +14,17 @@ internal struct ViewTreeRecorder {
     /// The order in this this array  should be managed consciously. For each node, the implementation loops
     /// through `nodeRecorders` and stops on the one that recorded node semantics with highes importance.
     let nodeRecorders: [NodeRecorder]
+
+    /// The bundle identifier used for heatmap identifier computation
+    private let bundleIdentifier: () -> String?
+
+    init(
+        nodeRecorders: [NodeRecorder],
+        bundleIdentifier: @autoclosure @escaping () -> String? = Bundle.main.bundleIdentifier
+    ) {
+        self.nodeRecorders = nodeRecorders
+        self.bundleIdentifier = bundleIdentifier
+    }
 
     /// Creates `Nodes` for given view and its subtree hierarchy.
     func record(_ anyView: UIView, in context: ViewTreeRecordingContext) -> [Node] {
@@ -44,6 +56,35 @@ internal struct ViewTreeRecorder {
             // Propagate view's clipping intersection when clipsToBounds is
             // enabled.
             context.clip = frame.intersection(context.clip)
+        }
+
+        // Compute the node component
+        let component: String
+        if let accessibilityIdentifier = view.accessibilityIdentifier, !accessibilityIdentifier.isEmpty {
+            component = accessibilityIdentifier
+        } else {
+            let className = String(describing: type(of: view))
+            let siblingIndex = view.superview?.subviews
+                .prefix(while: { $0 !== view })
+                .filter { type(of: $0) == type(of: view) }
+                .count ?? 0
+            component = "cls:\(className)#\(siblingIndex)"
+        }
+
+        // Append the node component
+        context.nodePath.append(component)
+
+        // Compute the heatmap identifier
+        if let viewPath = context.recorder.viewPath {
+            let heatmapIdentifier = HeatmapIdentifier(
+                elementPath: context.nodePath,
+                screenName: viewPath,
+                bundleIdentifier: bundleIdentifier() ?? "unknown"
+            )
+            context.heatmapIdentifier = heatmapIdentifier
+            context.heatmapCache.identifiers[ObjectIdentifier(view)] = heatmapIdentifier
+        } else {
+            context.heatmapIdentifier = nil
         }
 
         let attributes = ViewAttributes(view: view, frame: frame, clip: context.clip, overrides: overrides)

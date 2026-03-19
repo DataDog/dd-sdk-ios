@@ -80,6 +80,7 @@ public class Recorder: Recording {
     convenience init(
         snapshotProcessor: SnapshotProcessing,
         additionalNodeRecorders: [NodeRecorder],
+        heatmapIdentifierRegistry: HeatmapIdentifierRegistry?,
         featureFlags: SessionReplay.Configuration.FeatureFlags
     ) throws {
         let windowObserver = KeyWindowObserver()
@@ -87,6 +88,7 @@ public class Recorder: Recording {
             windowObserver: windowObserver,
             snapshotBuilder: ViewTreeSnapshotBuilder(
                 additionalNodeRecorders: additionalNodeRecorders,
+                heatmapIdentifierRegistry: heatmapIdentifierRegistry,
                 featureFlags: featureFlags
             )
         )

@@ -64,7 +64,11 @@ class RecorderTests: XCTestCase {
         let windowObserver = AppWindowObserverMock()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
             windowObserver: windowObserver,
-            snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: [additionalNodeRecorder], featureFlags: .allEnabled)
+            snapshotBuilder: ViewTreeSnapshotBuilder(
+                additionalNodeRecorders: [additionalNodeRecorder],
+                heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+                featureFlags: .allEnabled
+            )
         )
         let touchSnapshotProducer = TouchSnapshotProducerMock()
 

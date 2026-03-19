@@ -19,7 +19,8 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
-            idsGenerator: NodeIDGenerator()
+            idsGenerator: NodeIDGenerator(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // When
@@ -48,7 +49,8 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
-            idsGenerator: NodeIDGenerator()
+            idsGenerator: NodeIDGenerator(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // When
@@ -63,7 +65,11 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let view = UIView(frame: .mockRandom())
         let randomRecorderContext: Recorder.Context = .mockRandom()
         let additionalNodeRecorder = SessionReplayNodeRecorderMock(resultForView: { _ in nil })
-        let builder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [additionalNodeRecorder], featureFlags: .allEnabled)
+        let builder = ViewTreeSnapshotBuilder(
+            additionalNodeRecorders: [additionalNodeRecorder],
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+            featureFlags: .allEnabled
+        )
 
         // When
         let snapshot = builder.createSnapshot(of: view, with: randomRecorderContext)
