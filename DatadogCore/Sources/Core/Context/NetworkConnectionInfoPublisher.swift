@@ -67,7 +67,7 @@ extension NetworkConnectionInfo {
             }(),
             linkQuality: {
                 #if compiler(>=6.2)
-                guard #available(iOS 26.0, tvOS 26.0, macOS 26.0, watchOS 26.0, *) else {
+                guard #available(iOS 26.0, tvOS 26.0, macOS 26.0, watchOS 26.0, visionOS 26.0, *) else {
                     return nil
                 }
                 return NetworkConnectionInfo.LinkQuality(path.linkQuality)
