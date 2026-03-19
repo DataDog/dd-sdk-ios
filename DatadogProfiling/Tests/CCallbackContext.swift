@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import Foundation
 import XCTest
 
@@ -48,3 +49,4 @@ final class CCallbackContext<T> {
         return body(&pointer.pointee)
     }
 }
+#endif // !os(watchOS)

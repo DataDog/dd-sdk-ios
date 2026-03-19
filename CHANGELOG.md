@@ -1,12 +1,34 @@
 # Unreleased
 
+# 3.8.2 / 17-03-2026
+
+- [FIX] Fix crash and incorrect delegate getter return value when using RUM scroll tracking. See [#2761][]
+- [FIX] Fix freeze in Session Replay when screen changes are triggered by the recording pipeline. See [#2759][]
+
+# 3.8.1 / 13-03-2026
+
+- [FIX] Fix crash when network instrumentation intercepts `AVAssetDownloadTask` or `AVAggregateAssetDownloadTask`. See [#2750][]
+
+# 3.8.0 / 12-03-2026
+
+- [FEATURE] Add OOB scroll and swipe action tracking. See [#2717][]
+- [FEATURE] Add `trackResourceHeaders` configuration to capture HTTP request and response headers in RUM Resource events. See [#2721][]
+- [FEATURE] RUM Resources will now be augmented with the currently active span information, specifically the parent span and trace IDs, and sampling priority and decision maker. See [#2726][]
+- [IMPROVEMENT] Rename `DDRUMErrorEventErrorMeta` to `DDRUMErrorEventErrorMetaInfo`, add support of custom Objective-C runtime names for generated RUM models. See [#2705][]
+- [IMPROVEMENT] Add encoded and decoded body sizes to RUM resource events. See [#2697][] and [#2699][]
+- [IMPROVEMENT] Align the tags of WebView log events with the native Logs. See [#2710][]
+- [FIX] Fix crash context C-string conversion in KSCrash injection. See [#2740][]
+
+# 3.7.0 / 18-02-2026
+
 - [FEATURE] Add evaluation logging to `DatadogFlags` module. See [#2646][]
 - [FEATURE] Automatic network instrumentation now tracks `URLSession` requests without requiring delegate registration. See [#2620][]
 - [FEATURE] Deprecate `URLSessionInstrumentation.enable(with:in:)` API in favor of `URLSessionInstrumentation.enableDurationBreakdown(with:in:)`. See [#2634][]
-- [FEATURE] Session Replay now captures only when the screen changes, reducing work while the app is idle.
+- [FEATURE] Session Replay now captures only when the screen changes, reducing work while the app is idle. See [#2674][]
 - [IMPROVEMENT] Skip malformed Logs attributes individually instead of dropping the entire event, and log clear error messages. See [#2665][]
 - [IMPROVEMENT] Improve span attribute encoding error messages to include attribute name and context. See [#2676][]
 - [IMPROVEMENT] Expose public entities from `DatadogInternal` to prevent `DatadogInternal` imports in customer code. See [#2666][]
+- [FIX] Propagate feature flags to RUM error and view events for crashes, fatal app hangs, and watchdog terminations. See [#2688][]
 
 # 3.6.1 / 02-02-2026
 
@@ -1051,7 +1073,20 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2661]: https://github.com/DataDog/dd-sdk-ios/pull/2661
 [#2665]: https://github.com/DataDog/dd-sdk-ios/pull/2665
 [#2665]: https://github.com/DataDog/dd-sdk-ios/pull/2666
+[#2674]: https://github.com/DataDog/dd-sdk-ios/pull/2674
 [#2676]: https://github.com/DataDog/dd-sdk-ios/pull/2676
+[#2688]: https://github.com/DataDog/dd-sdk-ios/pull/2688
+[#2697]: https://github.com/DataDog/dd-sdk-ios/pull/2697
+[#2699]: https://github.com/DataDog/dd-sdk-ios/pull/2699
+[#2705]: https://github.com/DataDog/dd-sdk-ios/pull/2705
+[#2710]: https://github.com/DataDog/dd-sdk-ios/pull/2710
+[#2717]: https://github.com/DataDog/dd-sdk-ios/pull/2717
+[#2721]: https://github.com/DataDog/dd-sdk-ios/pull/2721
+[#2726]: https://github.com/DataDog/dd-sdk-ios/pull/2726
+[#2759]: https://github.com/DataDog/dd-sdk-ios/pull/2759
+[#2761]: https://github.com/DataDog/dd-sdk-ios/pull/2761
+[#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
+[#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

@@ -13,16 +13,16 @@ import XCTest
 
 final class ScreenChangeSchedulerTests: XCTestCase {
     private let telemetryMock = TelemetryMock()
-    private let testTimeProvider = TestTimeProvider(now: 0)
+    private let testTimerScheduler = TestTimerScheduler(now: 0)
     // swiftlint:disable:next implicitly_unwrapped_optional
-    private var screenChangeScheduler: ScreenChangeScheduler<TestTimeProvider>!
+    private var screenChangeScheduler: ScreenChangeScheduler!
 
     override func setUp() {
         super.setUp()
         screenChangeScheduler = ScreenChangeScheduler(
             minimumInterval: 0.1,
             telemetry: telemetryMock,
-            timeProvider: testTimeProvider
+            timerScheduler: testTimerScheduler
         )
     }
 
@@ -41,7 +41,7 @@ final class ScreenChangeSchedulerTests: XCTestCase {
 
         // when
         layer.display()
-        testTimeProvider.advance(by: 0.1)
+        testTimerScheduler.advance(by: 0.1)
 
         // then
         wait(for: [operationExecuted], timeout: 0.5)
@@ -60,7 +60,7 @@ final class ScreenChangeSchedulerTests: XCTestCase {
 
         // when
         layer.display()
-        testTimeProvider.advance(by: 0.1)
+        testTimerScheduler.advance(by: 0.1)
 
         // then
         wait(for: [operationExecuted], timeout: 0.5)

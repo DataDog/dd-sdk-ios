@@ -49,6 +49,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
     let rumAttributesProvider: RUM.ResourceAttributesProvider?
     /// Telemetry interface for tracking SDK usage
     let telemetry: Telemetry
+    /// Header processor for capturing HTTP headers.
+    let headerProcessor: HeaderProcessor?
 
     /// First party hosts defined by the user.
     var firstPartyHosts: FirstPartyHosts {
@@ -61,11 +63,13 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         dateProvider: DateProvider,
         rumAttributesProvider: RUM.ResourceAttributesProvider?,
         distributedTracing: DistributedTracing?,
+        headerProcessor: HeaderProcessor?,
         telemetry: Telemetry
     ) {
         self.dateProvider = dateProvider
         self.rumAttributesProvider = rumAttributesProvider
         self.distributedTracing = distributedTracing
+        self.headerProcessor = headerProcessor
         self.telemetry = telemetry
     }
 
@@ -85,7 +89,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             headerTypes: headerTypes,
             rumSessionId: networkContext?.rumContext?.sessionID,
             userId: networkContext?.userConfigurationContext?.id,
-            accountId: networkContext?.accountConfigurationContext?.id
+            accountId: networkContext?.accountConfigurationContext?.id,
+            activeSpanContext: networkContext?.activeSpanProvider?.activeSpanContext()
         ) ?? (request, nil, nil)
 
         // Note: DistributedTracing.modify() currently returns nil for captured state.
@@ -157,8 +162,26 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         }
 
         // Extract GraphQL errors from response if present
-        if let errorsData = extractGraphQLErrorsIfPresent(from: interception) {
-            combinedAttributes[CrossPlatformAttributes.graphqlErrors] = errorsData
+        if let errorsString = extractGraphQLErrorsIfPresent(from: interception) {
+            combinedAttributes[CrossPlatformAttributes.graphqlErrors] = errorsString
+        }
+
+        // Capture HTTP headers if configured
+        if let headerProcessor {
+            // RUM-14563: Accessing allHTTPHeaderFields is safe here because the interception
+            // is complete and the request is no longer being mutated.
+            // swiftlint:disable:next unsafe_all_http_header_fields
+            let requestHeaders = interception.request.unsafeOriginal.allHTTPHeaderFields
+            let headers = headerProcessor.process(
+                requestHeaders: requestHeaders,
+                responseHeaders: interception.completion?.httpResponse?.allHeaderFields
+            )
+            if !headers.request.isEmpty {
+                combinedAttributes[CrossPlatformAttributes.requestHeaders] = headers.request
+            }
+            if !headers.response.isEmpty {
+                combinedAttributes[CrossPlatformAttributes.responseHeaders] = headers.response
+            }
         }
 
         if let resourceMetrics = interception.metrics {
@@ -200,9 +223,9 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         }
     }
 
-    /// Extracts GraphQL errors from JSON response if present.
+    /// Extracts GraphQL errors from JSON response if present and returns them as a JSON string.
     /// Only the errors array is extracted to avoid storing potentially large response data fields.
-    private func extractGraphQLErrorsIfPresent(from interception: URLSessionTaskInterception) -> Data? {
+    private func extractGraphQLErrorsIfPresent(from interception: URLSessionTaskInterception) -> String? {
         guard let data = interception.data,
               let httpResponse = interception.completion?.httpResponse,
               let mimeType = httpResponse.mimeType,
@@ -210,20 +233,30 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             return nil
         }
 
-        // Fast check: does the response contain an "errors" key?
-        guard let result = try? JSONDecoder().decode(GraphQLResponseHasErrors.self, from: data),
-              result.hasErrors else {
+        guard let response = try? JSONDecoder().decode(GraphQLResponse.self, from: data),
+              let errors = response.errors,
+              !errors.isEmpty else {
             return nil
         }
 
-        return data
+        do {
+            let errorsData = try JSONEncoder().encode(errors)
+            return String(data: errorsData, encoding: .utf8)
+        } catch {
+            DD.logger.debug("Failed to encode GraphQL errors array: \(error)")
+            return nil
+        }
     }
 }
 
 extension DistributedTracing {
-    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
-        let traceID = traceIDGenerator.generate()
+    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, rumSessionId: String?, userId: String?, accountId: String?, activeSpanContext: ActiveSpanContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+        // In case there is, we use the same traceID so the backend can link the span generated from the RUM resource
+        // with the trace.
+        let traceID = activeSpanContext?.traceID ?? traceIDGenerator.generate()
         let spanID = spanIDGenerator.generate()
+        let samplingPriority = activeSpanContext?.samplingPriority ?? (sampler(sessionID: rumSessionId).sample() ? .autoKeep : .autoDrop)
+        let samplingDecisionMaker = activeSpanContext?.samplingMechanismType ?? .agentRate
 
         // Extract GraphQL attributes from request before they are removed
         let graphql = GraphQLRequestAttributes(
@@ -233,14 +266,15 @@ extension DistributedTracing {
             payload: request.value(forHTTPHeaderField: GraphQLHeaders.payload)
         )
 
-        let sampler = sampler(sessionID: rumSessionId)
         let injectedSpanContext = TraceContext(
             traceID: traceID,
             spanID: spanID,
-            parentSpanID: nil,
-            sampleRate: samplingRate,
-            samplingPriority: sampler.sample() ? .autoKeep : .autoDrop,
-            samplingDecisionMaker: .agentRate,
+            // If there is an active span, use it as parent span for the span
+            // the backend creates out of the RUM resource:
+            parentSpanID: activeSpanContext?.activeSpanID,
+            sampleRate: activeSpanContext?.samplingRate ?? samplingRate,
+            samplingPriority: samplingPriority,
+            samplingDecisionMaker: samplingDecisionMaker,
             rumSessionId: rumSessionId,
             userId: userId,
             accountId: accountId,
@@ -300,12 +334,13 @@ extension DistributedTracing {
         return (request, (hasSetAnyHeader && injectedSpanContext.samplingPriority.isKept) ? injectedSpanContext : nil, nil)
     }
 
-    func trace(from interception: DatadogInternal.URLSessionTaskInterception) -> RUMSpanContext? {
+    fileprivate func trace(from interception: DatadogInternal.URLSessionTaskInterception) -> RUMSpanContext? {
         return interception.trace.map {
             .init(
                 traceID: $0.traceID,
                 spanID: $0.spanID,
-                samplingRate: Double(samplingRate.percentageProportion)
+                parentSpanID: $0.parentSpanID,
+                samplingRate: Double($0.sampleRate.percentageProportion)
             )
         }
     }

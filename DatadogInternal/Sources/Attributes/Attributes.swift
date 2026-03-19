@@ -118,6 +118,12 @@ public struct CrossPlatformAttributes {
     /// Expects `String` value.
     public static let spanID = "_dd.span_id"
 
+    /// Parent span ID passed from CP SDK. Used in RUM resources created by cross platform SDK.
+    /// When cross-platform SDK injects tracing headers to intercepted resource, we pass tracing information through this attribute
+    /// and send it within the RUM resource, so the RUM backend can issue corresponding APM span on behalf of the mobile app.
+    /// Expects `String` value.
+    public static let parentSpanID = "_dd.parent_span_id"
+
     /// Trace sample rate applied to RUM resources created by cross platform SDK.
     /// We send cross-platform SDK's sample rate within RUM resource in order to provide accurate visibility into what settings are
     /// configured at the SDK level. This gets displayed on APM's traffic ingestion control page.
@@ -145,8 +151,8 @@ public struct CrossPlatformAttributes {
     public static let graphqlVariables = "_dd.graphql.variables"
 
     /// Custom attribute passed when completing GraphQL RUM resources that contain errors in the response.
-    /// It sets the GraphQL errors from the response body as JSON data.
-    /// Expects `Data` value.
+    /// It sets the GraphQL errors array as a JSON string.
+    /// Expects `String` value containing a JSON array of errors.
     public static let graphqlErrors = "_dd.graphql.errors"
 
     /// Override the `source_type` of errors reported by the native crash handler. This is used on
@@ -163,6 +169,16 @@ public struct CrossPlatformAttributes {
     /// Custom value for Interaction To Next view.
     /// For Flutter this is the amount of time between an action occurring and the First Build Complete occurring on the next view.
     public static let customINVValue: String = "_dd.view.custom_inv_value"
+
+    /// Request headers passed from Cross-Platform SDK or captured from native URLSession interception.
+    /// Used in RUM resources to transport request headers through the RUM command pipeline.
+    /// Expects `[String: String]` value containing header keys and values.
+    public static let requestHeaders = "_dd.request_headers"
+
+    /// Response headers passed from Cross-Platform SDK or captured from native URLSession interception.
+    /// Used in RUM resources to transport response headers through the RUM command pipeline.
+    /// Expects `[String: String]` value containing header keys and values.
+    public static let responseHeaders = "_dd.response_headers"
 }
 
 /// HTTP header names used to pass GraphQL metadata from the application to the SDK.

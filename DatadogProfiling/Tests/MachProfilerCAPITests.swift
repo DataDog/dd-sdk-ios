@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import XCTest
 import DatadogMachProfiler
 
@@ -149,3 +150,4 @@ final class MachProfilerCAPITests: XCTestCase {
         // Note: Can't test is_running after destroy as profiler is deallocated
     }
 }
+#endif // !os(watchOS)

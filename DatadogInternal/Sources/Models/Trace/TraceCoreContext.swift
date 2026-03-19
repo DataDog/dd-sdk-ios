@@ -41,4 +41,27 @@ public enum TraceCoreContext {
             self.spanID = spanID
         }
     }
+
+    /// This entity acts as a bridge between Trace and RUM. If Trace is enabled, it will provide an ``TraceCoreContext/TraceActiveSpanProvider/ProviderFunction``
+    /// that itself provides the active span and trace ID. RUM (or any other module) can obtain this information from it.
+    public struct ActiveSpanProvider: TraceActiveSpanProvider, AdditionalContext {
+        public static var key: String { "active_span_provider" }
+
+        /// Function that returns a ``ActiveSpanContext`` struct with the currently active span and trace IDs, or `nil` if
+        /// there is no currently active span.
+        public typealias ProviderFunction = @Sendable () -> (ActiveSpanContext?)
+
+        /// The provider function that obtains the active span and trace IDs.
+        private let providerFunction: ProviderFunction
+
+        /// Creates a new provider with the given provider function.
+        /// - parameter providerFunction: The provider function. See ``TraceCoreContext/TraceActiveSpanProvider/ProviderFunction`` for details.
+        public init(providerFunction: @escaping ProviderFunction) {
+            self.providerFunction = providerFunction
+        }
+
+        public func activeSpanContext() -> ActiveSpanContext? {
+            providerFunction()
+        }
+    }
 }

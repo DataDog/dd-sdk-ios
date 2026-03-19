@@ -187,9 +187,11 @@ UI Tests:
 
 SR Snapshot Tests:
   stage: ui-test
-  rules: 
+  rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   variables:
     PLATFORM: "iOS Simulator"
     IOS_OS: "17.5"
@@ -232,6 +234,8 @@ Smoke Tests (iOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   variables:
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 16 Pro"
@@ -245,6 +249,8 @@ Smoke Tests (tvOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   variables:
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
@@ -357,6 +363,8 @@ Build Artifacts:
   stage: release-build
   rules: 
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   artifacts:
     paths:
       - artifacts

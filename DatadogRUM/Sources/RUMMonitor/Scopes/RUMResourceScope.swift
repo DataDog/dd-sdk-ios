@@ -131,6 +131,11 @@ internal class RUMResourceScope: RUMScope {
             .map { .init($0, representation: .decimal) }
             ?? spanContext?.spanID
 
+        let parentSpanID: SpanID? = attributes.removeValue(forKey: CrossPlatformAttributes.parentSpanID)?
+            .dd.decode()
+            .map { .init($0, representation: .decimal) }
+            ?? spanContext?.parentSpanID
+
         let traceSamplingRate = attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR)?.dd.decode() ?? spanContext?.samplingRate
 
         // Check GraphQL attributes
@@ -138,10 +143,10 @@ internal class RUMResourceScope: RUMScope {
         let graphqlOperationName: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationName)?.dd.decode()
         let graphqlPayload: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlPayload)?.dd.decode()
         let graphqlVariables: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlVariables)?.dd.decode()
-        let graphqlErrorsData: Data? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlErrors)?.dd.decode()
+        let graphqlErrorsString: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlErrors)?.dd.decode()
 
         // Parse GraphQL errors if present
-        let graphqlErrors = parseGraphQLErrors(from: graphqlErrorsData)
+        let graphqlErrors = parseGraphQLErrors(from: graphqlErrorsString)
 
         if
             let rawGraphqlOperationType: String = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationType)?.dd.decode(),
@@ -156,15 +161,43 @@ internal class RUMResourceScope: RUMScope {
             )
         }
 
+        // Extract captured HTTP headers
+        let requestHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.requestHeaders)?.dd.decode()
+        let responseHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.responseHeaders)?.dd.decode()
+
         // Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
             resourceStartTime = metrics.fetch.start
             resourceDuration = metrics.fetch.end.timeIntervalSince(metrics.fetch.start)
-            size = metrics.responseSize ?? command.size
+            let metricsSize = metrics.responseBodySize?.decoded ?? 0
+            size = metricsSize > 0 ? metricsSize : command.size
         } else {
             resourceStartTime = resourceLoadingStartTime
             resourceDuration = command.time.timeIntervalSince(resourceLoadingStartTime)
             size = command.size
+        }
+
+        let encodedBodySize = resourceMetrics?.responseBodySize?.encoded
+        let decodedBodySize = resourceMetrics?.responseBodySize?.decoded
+
+        let requestHeadersObj = requestHeaders.flatMap { $0.isEmpty ? nil : RUMResourceEvent.Resource.Request.Headers(headersInfo: $0) }
+        let request: RUMResourceEvent.Resource.Request? = {
+            let hasBodySize = resourceMetrics?.requestBodySize != nil
+            let hasHeaders = requestHeadersObj != nil
+
+            guard hasBodySize || hasHeaders else {
+                return nil
+            }
+
+            return .init(
+                decodedBodySize: resourceMetrics?.requestBodySize?.decoded,
+                encodedBodySize: resourceMetrics?.requestBodySize?.encoded,
+                headers: requestHeadersObj
+            )
+        }()
+
+        let response: RUMResourceEvent.Resource.Response? = responseHeaders.flatMap { headers in
+            headers.isEmpty ? nil : .init(headers: .init(headersInfo: headers))
         }
 
         // Write resource event
@@ -176,6 +209,7 @@ internal class RUMResourceScope: RUMScope {
                     sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)
                 ),
                 discarded: nil,
+                parentSpanId: parentSpanID?.toString(representation: .decimal),
                 rulePsr: traceSamplingRate,
                 session: .init(
                     plan: .plan1,
@@ -207,7 +241,7 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).dd.toInt64Nanoseconds
                     )
                 },
-                decodedBodySize: nil,
+                decodedBodySize: decodedBodySize,
                 deliveryType: nil,
                 dns: resourceMetrics?.dns.map { metric in
                     .init(
@@ -222,7 +256,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 duration: resolveResourceDuration(resourceDuration),
-                encodedBodySize: nil,
+                encodedBodySize: encodedBodySize,
                 firstByte: resourceMetrics?.firstByte.map { metric in
                     .init(
                         duration: metric.duration.dd.toInt64Nanoseconds,
@@ -241,6 +275,8 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 renderBlockingStatus: nil,
+                request: request,
+                response: response,
                 size: size ?? 0,
                 ssl: resourceMetrics?.ssl.map { metric in
                     .init(
@@ -418,18 +454,24 @@ internal class RUMResourceScope: RUMScope {
         return duration.dd.toInt64Nanoseconds
     }
 
-    /// Decodes GraphQL errors from JSON data and returns them as RUM event errors
-    private func parseGraphQLErrors(from data: Data?) -> [RUMResourceEvent.Resource.Graphql.Errors]? {
-        guard let data else {
+    /// Decodes GraphQL errors from JSON string and returns them as RUM event errors
+    private func parseGraphQLErrors(from jsonString: String?) -> [RUMResourceEvent.Resource.Graphql.Errors]? {
+        guard let jsonString, !jsonString.isEmpty else {
+            return nil
+        }
+
+        guard let data = jsonString.data(using: .utf8) else {
+            DD.logger.debug("Failed to convert GraphQL errors string to UTF-8 data")
             return nil
         }
 
         do {
-            let response = try JSONDecoder().decode(GraphQLResponse.self, from: data)
+            let responseErrors = try JSONDecoder().decode([GraphQLResponseError].self, from: data)
 
-            guard let responseErrors = response.errors, !responseErrors.isEmpty else {
+            guard !responseErrors.isEmpty else {
                 return nil
             }
+
             let parsedErrors = responseErrors.map { error in
                 RUMResourceEvent.Resource.Graphql.Errors(
                     code: error.code,

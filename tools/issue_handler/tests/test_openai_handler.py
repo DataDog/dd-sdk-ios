@@ -138,7 +138,7 @@ class TestOpenAIHandler:
             # Verify OpenAI call
             mock_client.chat.completions.create.assert_called_once()
             call_args = mock_client.chat.completions.create.call_args
-            assert call_args[1]["max_tokens"] == 500
+            assert call_args[1]["max_completion_tokens"] == 500
             assert call_args[1]["response_format"] == {"type": "json_object"}
     
     @patch('src.openai_handler.openai.OpenAI')

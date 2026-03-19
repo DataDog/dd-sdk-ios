@@ -16,18 +16,18 @@
 #if os(iOS)
 import Foundation
 
-internal final class ScreenChangeMonitor<T: TimeProvider> {
-    private let layerChangeAggregator: CALayerChangeAggregator<T>
+internal final class ScreenChangeMonitor {
+    private let layerChangeAggregator: CALayerChangeAggregator
     private let layerSwizzler: CALayerSwizzler
 
     init(
         minimumDeliveryInterval: TimeInterval,
-        timeProvider: T,
+        timerScheduler: any TimerScheduler = .dispatchSource,
         handler: @escaping (CALayerChangeSnapshot) -> Void
     ) throws {
         self.layerChangeAggregator = CALayerChangeAggregator(
             minimumDeliveryInterval: minimumDeliveryInterval,
-            timeProvider: timeProvider,
+            timerScheduler: timerScheduler,
             handler: handler
         )
         self.layerSwizzler = try CALayerSwizzler(observer: layerChangeAggregator)
@@ -45,19 +45,6 @@ internal final class ScreenChangeMonitor<T: TimeProvider> {
     func stop() {
         layerSwizzler.unswizzle()
         layerChangeAggregator.stop()
-    }
-}
-
-extension ScreenChangeMonitor where T == LiveTimeProvider {
-    convenience init(
-        minimumDeliveryInterval: TimeInterval,
-        handler: @escaping (CALayerChangeSnapshot) -> Void
-    ) throws {
-        try self.init(
-            minimumDeliveryInterval: minimumDeliveryInterval,
-            timeProvider: .live(),
-            handler: handler
-        )
     }
 }
 #endif

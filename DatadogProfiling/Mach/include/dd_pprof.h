@@ -7,6 +7,10 @@
 #ifndef DD_PROFILER_DD_PPROF_H_
 #define DD_PROFILER_DD_PPROF_H_
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#if !TARGET_OS_WATCH
+
 #include <stdint.h>
 #include <stddef.h>
 #include "mach_profiler.h"
@@ -100,5 +104,8 @@ double dd_pprof_get_end_timestamp_s(dd_pprof_t* profile);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // !TARGET_OS_WATCH
+#endif // __APPLE__
 
 #endif // DD_PROFILER_DD_PPROF_H_

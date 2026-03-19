@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(tvOS)
+#if canImport(WebKit)
 
 import Foundation
 import WebKit

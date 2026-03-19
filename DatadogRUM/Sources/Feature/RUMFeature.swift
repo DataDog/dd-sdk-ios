@@ -223,6 +223,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             eventsFilter: RUMViewEventsFilter(telemetry: core.telemetry),
             telemetry: core.telemetry
         )
+
         var messageReceivers: [FeatureMessageReceiver] = [
             TelemetryInterceptor(sessionEndedMetric: sessionEndedMetric),
             TelemetryReceiver(

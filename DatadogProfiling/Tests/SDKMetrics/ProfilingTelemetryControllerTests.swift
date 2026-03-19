@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -136,3 +137,4 @@ private extension Array where Element == TelemetryMessage {
             .attributes[AppLaunchMetric.Constants.appLaunchKey] as? AppLaunchMetric.Attributes
     }
 }
+#endif // !os(watchOS)

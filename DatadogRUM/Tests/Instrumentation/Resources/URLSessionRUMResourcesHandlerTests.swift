@@ -16,12 +16,14 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
     private func createHandler(
         rumAttributesProvider: RUM.ResourceAttributesProvider? = nil,
         distributedTracing: DistributedTracing? = nil,
+        headerProcessor: HeaderProcessor? = nil,
         telemetry: Telemetry = NOPTelemetry()
     ) -> URLSessionRUMResourcesHandler {
         let handler = URLSessionRUMResourcesHandler(
             dateProvider: dateProvider,
             rumAttributesProvider: rumAttributesProvider,
             distributedTracing: distributedTracing,
+            headerProcessor: headerProcessor,
             telemetry: telemetry
         )
         handler.publish(to: commandSubscriber)
@@ -30,284 +32,389 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
     private lazy var handler = createHandler(rumAttributesProvider: nil)
 
-    func testGivenFirstPartyInterception_withSampledTrace_itInjectDDTraceHeaders() throws {
-        // Given
+    private func performRequest(
+        with traceContextInjection: TraceContextInjection,
+        headerType: TracingHeaderType,
+        rumSamplingRate: SampleRate,
+        parentSpanSampling: (SamplingPriority, SamplingMechanismType),
+        assertions: (URLRequest, TraceContext?, TraceID, SpanID) throws -> Void
+    ) rethrows {
+        let activeTraceID = TraceID(rawValue: (1,2))
+        let activeSpanID = SpanID(rawValue: 3)
+
+        let activeSpanProvider = MockActiveSpanProvider(
+            storedActiveSpanContext: ActiveSpanContext(
+                traceID: activeTraceID,
+                activeSpanID: activeSpanID,
+                samplingPriority: parentSpanSampling.0,
+                samplingMechanismType: parentSpanSampling.1,
+                samplingRate: 50
+            )
+        )
+
+        try performRequest(with: traceContextInjection, headerType: headerType, samplingRate: rumSamplingRate, activeSpanProvider: activeSpanProvider) { request, traceContext in
+            try assertions(request, traceContext, activeTraceID, activeSpanID)
+        }
+    }
+
+    private func performRequest(
+        with traceContextInjection: TraceContextInjection,
+        headerType: TracingHeaderType,
+        samplingRate: SampleRate,
+        activeSpanProvider: TraceActiveSpanProvider? = nil,
+        assertions: (URLRequest, TraceContext?) throws -> Void
+    ) rethrows {
+        /// Given
         let handler = createHandler(
             distributedTracing: .init(
-                samplingRate: .maxSampleRate,
+                samplingRate: samplingRate,
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
+                traceContextInjection: traceContextInjection
             )
         )
 
         // When
         let (request, traceContext, _) = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
-            headerTypes: [.datadog],
+            headerTypes: [headerType],
             networkContext: NetworkContext(
                 rumContext: .init(
                     applicationID: .mockRandom(),
                     sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
-                )
+                ),
+                activeSpanProvider: activeSpanProvider
             )
         )
 
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "100")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a,_dd.p.dm=-1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "100")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "session.id=abcdef01-2345-6789-abcd-ef0123456789")
+        try assertions(request, traceContext)
+    }
 
-        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
-        XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
-        XCTAssertEqual(injectedTraceContext.spanID, 100)
-        XCTAssertNil(injectedTraceContext.parentSpanID)
-        XCTAssertEqual(injectedTraceContext.sampleRate, 100)
-        XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
-        XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
-        XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+    func testGivenFirstPartyInterception_withSampledTrace_itInjectDDTraceHeaders() throws {
+        try TraceContextInjection.allCases.forEach { traceContextInjection in
+            try performRequest(with: traceContextInjection, headerType: .datadog, samplingRate: .maxSampleRate) { request, traceContext in
+                XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
+                XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "100")
+                XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a,_dd.p.dm=-1")
+                XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "100")
+                XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
+                XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "session.id=abcdef01-2345-6789-abcd-ef0123456789")
+
+                let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+                XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
+                XCTAssertEqual(injectedTraceContext.spanID, 100)
+                XCTAssertNil(injectedTraceContext.parentSpanID)
+                XCTAssertEqual(injectedTraceContext.sampleRate, 100)
+                XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+                XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
+                XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+            }
+        }
     }
 
     func testGivenFirstPartyInterception_withSampledTrace_itInjectB3TraceHeaders() throws {
-        // Given
-        let handler = createHandler(
-            distributedTracing: .init(
-                samplingRate: .maxSampleRate,
-                firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
-            )
-        )
+        try TraceContextInjection.allCases.forEach { traceContextInjection in
+            try performRequest(with: traceContextInjection, headerType: .b3, samplingRate: .maxSampleRate) { request, traceContext in
+                XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+                XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-1")
 
-        // When
-        let (request, traceContext, _) = handler.modify(
-            request: .mockWith(url: "https://www.example.com"),
-            headerTypes: [.b3],
-            networkContext: NetworkContext(
-                rumContext: .init(
-                    applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
-                )
-            )
-        )
-
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-1")
-
-        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
-        XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
-        XCTAssertEqual(injectedTraceContext.spanID, 100)
-        XCTAssertNil(injectedTraceContext.parentSpanID)
-        XCTAssertEqual(injectedTraceContext.sampleRate, 100)
-        XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
-        XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
-        XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+                let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+                XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
+                XCTAssertEqual(injectedTraceContext.spanID, 100)
+                XCTAssertNil(injectedTraceContext.parentSpanID)
+                XCTAssertEqual(injectedTraceContext.sampleRate, 100)
+                XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+                XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
+                XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+            }
+        }
     }
 
     func testGivenFirstPartyInterception_withSampledTrace_itInjectB3MultiTraceHeaders() throws {
-        // Given
-        let handler = createHandler(
-            distributedTracing: .init(
-                samplingRate: .maxSampleRate,
-                firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
-            )
-        )
+        try TraceContextInjection.allCases.forEach { traceContextInjection in
+            try performRequest(with: traceContextInjection, headerType: .b3multi, samplingRate: .maxSampleRate) { request, traceContext in
+                XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+                XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
+                XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
+                XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
+                XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "1")
 
-        // When
-        let (request, traceContext, _) = handler.modify(
-            request: .mockWith(url: "https://www.example.com"),
-            headerTypes: [.b3multi],
-            networkContext: NetworkContext(
-                rumContext: .init(
-                    applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
-                )
-            )
-        )
-
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
-        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "1")
-
-        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
-        XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
-        XCTAssertEqual(injectedTraceContext.spanID, 100)
-        XCTAssertNil(injectedTraceContext.parentSpanID)
-        XCTAssertEqual(injectedTraceContext.sampleRate, 100)
-        XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
-        XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
-        XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+                let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+                XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
+                XCTAssertEqual(injectedTraceContext.spanID, 100)
+                XCTAssertNil(injectedTraceContext.parentSpanID)
+                XCTAssertEqual(injectedTraceContext.sampleRate, 100)
+                XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+                XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
+                XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+            }
+        }
     }
 
     func testGivenFirstPartyInterception_withSampledTrace_itInjectW3CTraceHeaders() throws {
-        // Given
-        let handler = createHandler(
-            distributedTracing: .init(
-                samplingRate: .maxSampleRate,
-                firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
-            )
-        )
+        try TraceContextInjection.allCases.forEach { traceContextInjection in
+            try performRequest(with: traceContextInjection, headerType: .tracecontext, samplingRate: .maxSampleRate) { request, traceContext in
+                XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+                XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-01")
 
-        // When
-        let (request, traceContext, _) = handler.modify(
-            request: .mockWith(url: "https://www.example.com"),
-            headerTypes: [.tracecontext],
-            networkContext: NetworkContext(
-                rumContext: .init(
-                    applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
-                )
-            )
-        )
-
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-01")
-
-        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
-        XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
-        XCTAssertEqual(injectedTraceContext.spanID, 100)
-        XCTAssertNil(injectedTraceContext.parentSpanID)
-        XCTAssertEqual(injectedTraceContext.sampleRate, 100)
-        XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
-        XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
-        XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+                let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+                XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
+                XCTAssertEqual(injectedTraceContext.spanID, 100)
+                XCTAssertNil(injectedTraceContext.parentSpanID)
+                XCTAssertEqual(injectedTraceContext.sampleRate, 100)
+                XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+                XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
+                XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+            }
+        }
     }
 
-    func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectDDTraceHeaders() throws {
-        /// Given
-        let handler = createHandler(
-            distributedTracing: .init(
-                samplingRate: 0,
-                firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .sampled
-            )
-        )
+    func testGivenFirstPartyInterception_withRejectedTrace_injectingSampled_itDoesNotInjectDDTraceHeaders() throws {
+        performRequest(with: .sampled, headerType: .datadog, samplingRate: 0) { request, traceContext in
+            XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField))
 
-        // When
-        let (request, traceContext, _) = handler.modify(
-            request: .mockWith(url: "https://www.example.com"),
-            headerTypes: [.datadog],
-            networkContext: NetworkContext(
-                rumContext: .init(
-                    applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
-                )
-            )
-        )
-
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField))
-
-        XCTAssertNil(traceContext, "It must return no trace context")
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
     }
 
-    func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3TraceHeaders() throws {
-        /// Given
-        let handler = createHandler(
-            distributedTracing: .init(
-                samplingRate: 0,
-                firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
-            )
-        )
+    func testGivenFirstPartyInterception_withRejectedTrace_injectingAll_itDoesNotInjectDDTraceHeaders() throws {
+        performRequest(with: .all, headerType: .datadog, samplingRate: 0) { request, traceContext in
+            XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
+            XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "100")
+            XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a")
+            XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "100")
+            XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
+            XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "session.id=abcdef01-2345-6789-abcd-ef0123456789")
 
-        // When
-        let (request, traceContext, _) = handler.modify(
-            request: .mockWith(url: "https://www.example.com"),
-            headerTypes: [.b3],
-            networkContext: NetworkContext(
-                rumContext: .init(
-                    applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
-                )
-            )
-        )
-
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-0")
-
-        XCTAssertNil(traceContext, "It must return no trace context")
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
     }
 
-    func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3MultiTraceHeaders() throws {
-        /// Given
-        let handler = createHandler(
-            distributedTracing: .init(
-                samplingRate: 0,
-                firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
-            )
-        )
+    func testGivenFirstPartyInterception_withRejectedTrace_injectingSampled_itDoesNotInjectB3TraceHeaders() throws {
+        performRequest(with: .sampled, headerType: .b3, samplingRate: 0) { request, traceContext in
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+            XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field))
 
-        // When
-        let (request, traceContext, _) = handler.modify(
-            request: .mockWith(url: "https://www.example.com"),
-            headerTypes: [.b3multi],
-            networkContext: NetworkContext(
-                rumContext: .init(
-                    applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
-                )
-            )
-        )
-
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
-        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "0")
-
-        XCTAssertNil(traceContext, "It must return no trace context")
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
     }
 
-    func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectW3CTraceHeaders() throws {
-        /// Given
-        let handler = createHandler(
-            distributedTracing: .init(
-                samplingRate: 0,
-                firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
-                traceContextInjection: .all
-            )
-        )
+    func testGivenFirstPartyInterception_withRejectedTrace_injectingAll_itDoesNotInjectB3TraceHeaders() throws {
+        performRequest(with: .all, headerType: .b3, samplingRate: 0) { request, traceContext in
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+            XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-0")
 
-        // When
-        let (request, traceContext, _) = handler.modify(
-            request: .mockWith(url: "https://www.example.com"),
-            headerTypes: [.tracecontext],
-            networkContext: NetworkContext(
-                rumContext: .init(
-                    applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
-                )
-            )
-        )
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
+    }
 
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-00")
+    func testGivenFirstPartyInterception_withRejectedTrace_injectingSampled_itDoesNotInjectB3MultiTraceHeaders() throws {
+        performRequest(with: .sampled, headerType: .b3multi, samplingRate: 0) { request, traceContext in
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+            XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField))
+            XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField))
+            XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
+            XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField))
 
-        XCTAssertNil(traceContext, "It must return no trace context")
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
+    }
+
+    func testGivenFirstPartyInterception_withRejectedTrace_injectingAll_itDoesNotInjectB3MultiTraceHeaders() throws {
+        performRequest(with: .all, headerType: .b3multi, samplingRate: 0) { request, traceContext in
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+            XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
+            XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
+            XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
+            XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "0")
+
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
+    }
+
+    func testGivenFirstPartyInterception_withRejectedTrace_injectingSampled_itDoesNotInjectW3CTraceHeaders() throws {
+        performRequest(with: .sampled, headerType: .tracecontext, samplingRate: 0) { request, traceContext in
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+            XCTAssertNil(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent))
+
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
+    }
+
+    func testGivenFirstPartyInterception_withRejectedTrace_injectingAll_itDoesNotInjectW3CTraceHeaders() throws {
+        performRequest(with: .all, headerType: .tracecontext, samplingRate: 0) { request, traceContext in
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+            XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-00")
+
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
+    }
+
+    func testGivenFirstPartyInterception_withParentSpan_itInjectDDTraceHeaders() throws {
+        try TraceContextInjection.allCases.forEach { traceContextInjection in
+            try performRequest(with: traceContextInjection, headerType: .datadog, rumSamplingRate: .maxSampleRate, parentSpanSampling: (.autoKeep, .agentRate)) { request, traceContext, activeTraceID, activeSpanID in
+                XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
+                XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), activeTraceID.toString(representation: .decimal))
+                XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=1,_dd.p.dm=-1")
+                XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "100")
+                XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
+                XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "session.id=abcdef01-2345-6789-abcd-ef0123456789")
+
+                let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+                XCTAssertEqual(injectedTraceContext.traceID, activeTraceID)
+                XCTAssertEqual(injectedTraceContext.spanID, 100)
+                XCTAssertEqual(injectedTraceContext.parentSpanID, activeSpanID)
+                XCTAssertEqual(injectedTraceContext.sampleRate, 50)
+                XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+                XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
+                XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+            }
+        }
+    }
+
+    func testGivenFirstPartyInterception_withParentSpan_itInjectB3TraceHeaders() throws {
+        try TraceContextInjection.allCases.forEach { traceContextInjection in
+            try performRequest(with: traceContextInjection, headerType: .b3, rumSamplingRate: .maxSampleRate, parentSpanSampling: (.autoKeep, .agentRate)) { request, traceContext, activeTraceID, activeSpanID in
+                XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+                XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "00000000000000010000000000000002-0000000000000064-1-0000000000000003")
+
+                let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+                XCTAssertEqual(injectedTraceContext.traceID, activeTraceID)
+                XCTAssertEqual(injectedTraceContext.spanID, 100)
+                XCTAssertEqual(injectedTraceContext.parentSpanID, activeSpanID)
+                XCTAssertEqual(injectedTraceContext.sampleRate, 50)
+                XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+                XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
+                XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+            }
+        }
+    }
+
+    func testGivenFirstPartyInterception_withParentSpan_itInjectB3MultiTraceHeaders() throws {
+        try TraceContextInjection.allCases.forEach { traceContextInjection in
+            try performRequest(with: traceContextInjection, headerType: .b3multi, rumSamplingRate: .maxSampleRate, parentSpanSampling: (.autoKeep, .agentRate)) { request, traceContext, activeTraceID, activeSpanID in
+                XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+                XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "00000000000000010000000000000002")
+                XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
+                XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField), "0000000000000003")
+                XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "1")
+
+                let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+                XCTAssertEqual(injectedTraceContext.traceID, activeTraceID)
+                XCTAssertEqual(injectedTraceContext.spanID, 100)
+                XCTAssertEqual(injectedTraceContext.parentSpanID, activeSpanID)
+                XCTAssertEqual(injectedTraceContext.sampleRate, 50)
+                XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+                XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
+                XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+            }
+        }
+    }
+
+    func testGivenFirstPartyInterception_withParentSpan_itInjectW3CTraceHeaders() throws {
+        try TraceContextInjection.allCases.forEach { traceContextInjection in
+            try performRequest(with: traceContextInjection, headerType: .tracecontext, rumSamplingRate: .maxSampleRate, parentSpanSampling: (.autoKeep, .agentRate)) { request, traceContext, activeTraceID, activeSpanID in
+                XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+                XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000010000000000000002-0000000000000064-01")
+
+                let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+                XCTAssertEqual(injectedTraceContext.traceID, activeTraceID)
+                XCTAssertEqual(injectedTraceContext.spanID, 100)
+                XCTAssertEqual(injectedTraceContext.parentSpanID, activeSpanID)
+                XCTAssertEqual(injectedTraceContext.sampleRate, 50)
+                XCTAssertEqual(injectedTraceContext.samplingPriority, SamplingPriority.autoKeep)
+                XCTAssertEqual(injectedTraceContext.samplingDecisionMaker, SamplingMechanismType.agentRate)
+                XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+            }
+        }
+    }
+
+    func testGivenFirstPartyInterception_withRejectedParentSpan_injectingSampled_itDoesNotInjectDDTraceHeaders() throws {
+        performRequest(with: .sampled, headerType: .datadog, rumSamplingRate: .maxSampleRate, parentSpanSampling: (.autoDrop, .agentRate)) { request, traceContext, activeTraceID, activeSpanID in
+            XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField))
+
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
+    }
+
+    func testGivenFirstPartyInterception_withRejectedParentSpan_injectingAll_itDoesNotInjectDDTraceHeaders() throws {
+        performRequest(with: .all, headerType: .datadog, rumSamplingRate: .maxSampleRate, parentSpanSampling: (.autoDrop, .agentRate)) { request, traceContext, activeTraceID, activeSpanID in
+            XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
+            XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), activeTraceID.toString(representation: .decimal))
+            XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=1")
+            XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "100")
+            XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
+            XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "session.id=abcdef01-2345-6789-abcd-ef0123456789")
+
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
+    }
+
+    func testGivenFirstPartyInterception_withRejectedParentSpan_injectingSampled_itDoesNotInjectB3TraceHeaders() throws {
+        performRequest(with: .sampled, headerType: .b3, rumSamplingRate: .maxSampleRate, parentSpanSampling: (.autoDrop, .agentRate)) { request, traceContext, activeTraceID, activeSpanID in
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+            XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field))
+
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
+    }
+
+    func testGivenFirstPartyInterception_withRejectedParentSpan_injectingAll_itDoesNotInjectB3TraceHeaders() throws {
+        performRequest(with: .all, headerType: .b3, rumSamplingRate: .maxSampleRate, parentSpanSampling: (.autoDrop, .agentRate)) { request, traceContext, activeTraceID, activeSpanID in
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+            XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "00000000000000010000000000000002-0000000000000064-0-0000000000000003")
+
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
+    }
+
+    func testGivenFirstPartyInterception_withRejectedParentSpan_injectingSampled_itDoesNotInjectB3MultiTraceHeaders() throws {
+        performRequest(with: .sampled, headerType: .b3multi, rumSamplingRate: .maxSampleRate, parentSpanSampling: (.autoDrop, .agentRate)) { request, traceContext, activeTraceID, activeSpanID in
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+            XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField))
+            XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField))
+            XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
+            XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField))
+
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
+    }
+
+    func testGivenFirstPartyInterception_withRejectedParentSpan_injectingAll_itDoesNotInjectB3MultiTraceHeaders() throws {
+        performRequest(with: .all, headerType: .b3multi, rumSamplingRate: .maxSampleRate, parentSpanSampling: (.autoDrop, .agentRate)) { request, traceContext, activeTraceID, activeSpanID in
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+            XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "00000000000000010000000000000002")
+            XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
+            XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField), "0000000000000003")
+            XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "0")
+
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
+    }
+
+    func testGivenFirstPartyInterception_withRejectedParentSpan_injectingSampled_itDoesNotInjectW3CTraceHeaders() throws {
+        performRequest(with: .sampled, headerType: .tracecontext, rumSamplingRate: .maxSampleRate, parentSpanSampling: (.autoDrop, .agentRate)) { request, traceContext, activeTraceID, activeSpanID in
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+            XCTAssertNil(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent))
+
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
+    }
+
+    func testGivenFirstPartyInterception_withRejectedParentSpan_injectingAll_itDoesNotInjectW3CTraceHeaders() throws {
+        performRequest(with: .all, headerType: .tracecontext, rumSamplingRate: .maxSampleRate, parentSpanSampling: (.autoDrop, .agentRate)) { request, traceContext, activeTraceID, activeSpanID in
+            XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+            XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000010000000000000002-0000000000000064-00")
+
+            XCTAssertNil(traceContext, "It must return no trace context")
+        }
     }
 
     func testGivenFirstPartyInterceptionAndShouldSetBaggageHeaderAndBaggageHeaderValuesToSet_withSampledTrace_itDoesNotOverwriteTraceHeadersExceptBaggage() throws {
@@ -534,7 +641,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             traceID: 100,
             spanID: 200,
             parentSpanID: nil,
-            sampleRate: .mockAny(),
+            sampleRate: traceSamplingRate,
             samplingPriority: .mockAny(),
             samplingDecisionMaker: .mockAny(),
             rumSessionId: .mockAny()
@@ -588,7 +695,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.attributes.count, 0)
         XCTAssertEqual(resourceStopCommand.kind, RUMResourceType(response: response))
         XCTAssertEqual(resourceStopCommand.httpStatusCode, 200)
-        XCTAssertEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize)
+        XCTAssertEqual(resourceStopCommand.size, taskInterception.metrics?.responseBodySize?.decoded)
     }
 
     func testGivenTaskInterceptionWithZeroMetricsSize_whenInterceptionCompletes_itFallsBackToResponseSize() throws {
@@ -603,8 +710,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // Given
         let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .registeredDelegate)
 
-        // Create metrics with responseSize = 0
-        let resourceMetrics = ResourceMetrics.mockWith(responseSize: 0)
+        // Create metrics with responseBodySize.decoded = 0
+        let resourceMetrics = ResourceMetrics.mockWith(responseBodySize: (encoded: 0, decoded: 0))
         taskInterception.register(metrics: resourceMetrics)
 
         // Set responseSize from countOfBytesReceived
@@ -628,9 +735,9 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.kind, RUMResourceType(response: response))
         XCTAssertEqual(resourceStopCommand.httpStatusCode, 200)
 
-        // Verify fallback to responseSize when metrics.responseSize is 0
-        XCTAssertEqual(resourceStopCommand.size, 10, "Should fallback to interception.responseSize when metrics.responseSize is 0")
-        XCTAssertNotEqual(resourceStopCommand.size, taskInterception.metrics?.responseSize, "Should not use metrics.responseSize when it is 0")
+        // Verify fallback to responseSize when metrics.responseBodySize?.decoded is 0
+        XCTAssertEqual(resourceStopCommand.size, 10, "Should fallback to interception.responseSize when metrics.responseBodySize?.decoded is 0")
+        XCTAssertNotEqual(resourceStopCommand.size, taskInterception.metrics?.responseBodySize?.decoded, "Should not use metrics.responseBodySize?.decoded when it is 0")
     }
 
     func testGivenTaskInterceptionWithMetricsAndError_whenInterceptionCompletes_itStopsRUMResourceWithErrorAndMetrics() throws {
@@ -1194,9 +1301,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
         XCTAssertNotNil(attributes[CrossPlatformAttributes.graphqlErrors])
-        let errorsData = try XCTUnwrap(attributes[CrossPlatformAttributes.graphqlErrors] as? Data)
-        let errorsJSON = try XCTUnwrap(String(data: errorsData, encoding: .utf8))
-        XCTAssertTrue(errorsJSON.contains("Not found"))
+        let errorsString = try XCTUnwrap(attributes[CrossPlatformAttributes.graphqlErrors] as? String)
+        XCTAssertTrue(errorsString.contains("Not found"))
     }
 
     func testGivenGraphQLResponseWithNonJSONContentType_whenInterceptionCompletes_itDoesNotParseErrors() throws {
@@ -1233,6 +1339,137 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         XCTAssertNil(stopResourceCommand?.attributes[CrossPlatformAttributes.graphqlErrors])
+    }
+
+    // MARK: - Header Capture Tests
+
+    func testWhenHeaderCaptureEnabled_itAddsHeaderAttributesToStopCommand() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        let handler = createHandler(
+            headerProcessor: HeaderProcessor(config: .defaults)
+        )
+
+        var mockRequest: URLRequest = .mockWith(url: "https://example.com/api")
+        mockRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        mockRequest.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+
+        let immutableRequest = ImmutableRequest(request: mockRequest)
+        let taskInterception = URLSessionTaskInterception(
+            request: immutableRequest,
+            isFirstParty: false,
+            trackingMode: .mockRandom()
+        )
+
+        let response = HTTPURLResponse(
+            url: .mockAny(),
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: [
+                "Content-Type": "text/html",
+                "Cache-Control": "max-age=3600",
+                "ETag": "\"abc123\""
+            ]
+        )!
+        taskInterception.register(response: response, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
+        let requestHeaders = try XCTUnwrap(attributes[CrossPlatformAttributes.requestHeaders] as? [String: String])
+        let responseHeaders = try XCTUnwrap(attributes[CrossPlatformAttributes.responseHeaders] as? [String: String])
+
+        XCTAssertEqual(requestHeaders.first(where: { $0.key.lowercased() == "content-type" })?.value, "application/json")
+        XCTAssertEqual(requestHeaders.first(where: { $0.key.lowercased() == "cache-control" })?.value, "no-cache")
+        XCTAssertEqual(responseHeaders.first(where: { $0.key.lowercased() == "content-type" })?.value, "text/html")
+        XCTAssertEqual(responseHeaders.first(where: { $0.key.lowercased() == "cache-control" })?.value, "max-age=3600")
+        XCTAssertEqual(responseHeaders.first(where: { $0.key.lowercased() == "etag" })?.value, "\"abc123\"")
+    }
+
+    func testWhenHeaderCaptureDisabled_itDoesNotAddHeaderAttributes() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        var mockRequest: URLRequest = .mockWith(url: "https://example.com/api")
+        mockRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let immutableRequest = ImmutableRequest(request: mockRequest)
+        let taskInterception = URLSessionTaskInterception(
+            request: immutableRequest,
+            isFirstParty: false,
+            trackingMode: .mockRandom()
+        )
+
+        let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
+        taskInterception.register(response: response, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
+        XCTAssertNil(attributes[CrossPlatformAttributes.requestHeaders])
+        XCTAssertNil(attributes[CrossPlatformAttributes.responseHeaders])
+    }
+
+    func testWhenHeaderCaptureEnabled_andNoMatchingHeaders_itDoesNotAddEmptyAttributes() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        let handler = createHandler(
+            headerProcessor: HeaderProcessor(config: .custom([.matchHeaders(["x-custom-header"])]))
+        )
+
+        var mockRequest: URLRequest = .mockWith(url: "https://example.com/api")
+        mockRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let immutableRequest = ImmutableRequest(request: mockRequest)
+        let taskInterception = URLSessionTaskInterception(
+            request: immutableRequest,
+            isFirstParty: false,
+            trackingMode: .mockRandom()
+        )
+
+        let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
+        taskInterception.register(response: response, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
+        XCTAssertNil(attributes[CrossPlatformAttributes.requestHeaders])
+        XCTAssertNil(attributes[CrossPlatformAttributes.responseHeaders])
     }
 
     // MARK: - Helper Methods

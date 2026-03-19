@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import XCTest
 import DatadogMachProfiler.Testing
 
@@ -95,3 +96,4 @@ final class SafeReadTests: XCTestCase {
         UnsafeMutableRawPointer(bitPattern: 0xDEADBEEF)!
     }
 }
+#endif // !os(watchOS)

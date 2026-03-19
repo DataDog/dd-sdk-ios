@@ -37,6 +37,99 @@ public struct NOPGitClient: GitClient {
     public func push() throws {}
 }
 
+/// GitHub client using gh CLI with token authentication (read-only: clone and pull only)
+public class GitHubClient: GitClient {
+    /// GitHub repository (e.g., "owner/repo" or full URL)
+    private let repository: String
+    /// The name of git branch that this client will operate on.
+    private let branch: String
+    /// GitHub Personal Access Token for authentication.
+    private let token: String
+    /// Repo directory URL if cloned successfully.
+    private var repoDirectory: URL? = nil
+    /// An interface for calling shell commands.
+    private let cli = ProcessCommandLine()
+
+    public init(repository: String, branch: String, token: String) {
+        self.repository = repository
+        self.branch = branch
+        self.token = token
+    }
+
+    public func cloneIfNeeded(to directory: URL) throws {
+        let directory = try Directory(url: directory) // it also creates directory if not exists
+        let repoDirectory = directory.url.resolvingSymlinksInPath()
+
+        if directory.fileExists(at: ".git") {
+            let repoBranch = try cli.shell("cd \(repoDirectory.path()) && git rev-parse --abbrev-ref HEAD")
+            let isRepoClean = try cli.shell("cd \(repoDirectory.path()) && git status --porcelain") == ""
+
+            if repoBranch == branch && isRepoClean {
+                print("ℹ️   Repo exists and uses '\(branch)' branch - skipping `git clone`.")
+                self.repoDirectory = repoDirectory
+                return
+            } else if !isRepoClean {
+                print("⚠️   Repo exists but contains unstaged changes. It will be re-cloned.")
+                try directory.deleteAllFiles()
+            } else {
+                print("⚠️   Repo exists but uses different branch \(repoBranch). It will be re-cloned.")
+                try directory.deleteAllFiles()
+            }
+        } else {
+            print("ℹ️   Repo does not exist and will be cloned to \(repoDirectory.path())")
+        }
+
+        print("ℹ️   Cloning repo (branch: '\(branch)') using gh CLI:")
+        try cli.shell("GH_TOKEN=\(token) gh repo clone \(repository) '\(repoDirectory.path())' -- --branch \(branch) --single-branch")
+        self.repoDirectory = repoDirectory
+    }
+
+    public func pull() throws {
+        guard let repoDirectory = repoDirectory else {
+            fatalError("no repo directory")
+        }
+
+        struct RepoView: Decodable {
+            let url: String
+            let sshUrl: String
+        }
+
+        // IMPORTANT: gh repo sync uses the local git remote URL for fetching, before syncing with --source parameter.
+        // If the repo was previously cloned with SSH (e.g., by BasicGitClient), the remote will still
+        // be configured as SSH. On CI, where we use token authentication and don't have SSH keys,
+        // this causes "Repository not found" errors.
+        //
+        // Solution: Query GitHub for both HTTPS (url) and SSH (sshUrl) URLs, check the current
+        // remote configuration, and update it from SSH to HTTPS if needed before calling gh repo sync.
+
+        // Get repository URLs from GitHub
+        let viewOutput = try cli.shell("GH_TOKEN=\(token) gh repo view \(repository) --json url,sshUrl")
+        guard let jsonData = viewOutput.data(using: .utf8) else {
+            throw GitClientError(description: "Failed to parse repository info from: \(viewOutput)")
+        }
+
+        let repoInfo = try JSONDecoder().decode(RepoView.self, from: jsonData)
+
+        // Check current remote URL and update if it's SSH
+        let origin = try cli.shell("cd \(repoDirectory.path()) && git remote get-url origin")
+        if origin == repoInfo.sshUrl {
+            print("ℹ️   Updating remote URL from SSH to HTTPS for token authentication")
+            try cli.shell("cd \(repoDirectory.path()) && git remote set-url origin \(repoInfo.url)")
+        }
+
+        print("ℹ️   Pulling the repo using gh CLI:")
+        try cli.shell("cd \(repoDirectory.path()) && GH_TOKEN=\(token) gh repo sync --source \(repository) --branch \(branch)")
+    }
+
+    public func commit(message: String) throws {
+        print("⚠️   GitHubClient does not support commit operations (read-only, clone only)")
+    }
+
+    public func push() throws {
+        print("⚠️   GitHubClient does not support push operations (read-only, clone only)")
+    }
+}
+
 /// Basic git client
 public class BasicGitClient: GitClient {
     /// Repo's SSH for git clone.

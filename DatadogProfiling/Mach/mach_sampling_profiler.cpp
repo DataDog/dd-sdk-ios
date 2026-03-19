@@ -1,7 +1,12 @@
-#include "mach_sampling_profiler.h"
-#include "ctor_profiler.h"
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
 
-#ifdef __APPLE__
+#include "mach_sampling_profiler.h"
+
+#if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include <dlfcn.h>
 #include <thread>
@@ -649,4 +654,4 @@ void init_safe_read_handlers_for_testing(void) {
 
 } // extern "C"
 
-#endif // __APPLE__ 
+#endif // __APPLE__ && !TARGET_OS_WATCH

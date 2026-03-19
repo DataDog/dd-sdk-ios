@@ -10,6 +10,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#if !TARGET_OS_WATCH
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,5 +31,8 @@ bool safe_read_memory_for_testing(void* addr, void* buffer, size_t size);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // !TARGET_OS_WATCH
+#endif // __APPLE__
 
 #endif // DD_PROFILER_SAFE_READ_TESTING_H_

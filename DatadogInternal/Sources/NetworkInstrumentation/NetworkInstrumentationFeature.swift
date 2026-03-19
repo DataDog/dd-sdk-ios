@@ -91,8 +91,19 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 }
 
+                // Skip task types that declare standard URLSessionTask properties as
+                // NS_UNAVAILABLE and throw NSGenericException at runtime when accessed
+                // (e.g. AVAssetDownloadTask, AVAggregateAssetDownloadTask).
+                guard task.isSupportedForInstrumentation else {
+                    return
+                }
+
+                guard let currentRequest = task.currentRequest else {
+                    return
+                }
+
                 // Skip Datadog's own intake requests to prevent infinite recursion
-                if self.isDatadogIntakeRequest(task.currentRequest) {
+                if self.isDatadogIntakeRequest(currentRequest) {
                     return
                 }
 
@@ -106,11 +117,9 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                 var injectedTraceContexts = [RequestInstrumentationContext]()
 
                 let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration?.firstPartyHostsTracing) ?? .init()
-                if let currentRequest = task.currentRequest {
-                    let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
-                    task.dd.override(currentRequest: request)
-                    injectedTraceContexts = traceContexts
-                }
+                let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
+                task.dd.override(currentRequest: request)
+                injectedTraceContexts = traceContexts
 
                 self.intercept(task: task, with: injectedTraceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode)
             }
@@ -606,7 +615,7 @@ extension NetworkInstrumentationFeature {
             return
         }
 
-        let metricsSize = metrics.responseSize ?? 0
+        let metricsSize = metrics.responseBodySize?.decoded ?? 0
         let responseSize = metricsSize > 0 ? metricsSize : task.countOfBytesReceived
 
         if responseSize > 0 {

@@ -7,6 +7,8 @@
 import Foundation
 import DatadogInternal
 
+#if !os(watchOS)
+
 // swiftlint:disable duplicate_imports
 #if swift(>=6.0)
 internal import DatadogMachProfiler
@@ -75,12 +77,12 @@ internal final class AppLaunchProfiler: FeatureMessageReceiver {
                 end: Date(timeIntervalSince1970: end),
                 attachments: [ProfileEvent.Constants.wallFilename],
                 tags: [
-                    "service:\(context.service)",
-                    "version:\(context.version)",
-                    "sdk_version:\(context.sdkVersion)",
+                    "\(DDTag.service):\(context.service)",
+                    "\(DDTag.version):\(context.version)",
+                    "\(DDTag.sdkVersion):\(context.sdkVersion)",
                     "profiler_version:\(context.sdkVersion)",
                     "runtime_version:\(context.os.version)",
-                    "env:\(context.env)",
+                    "\(DDTag.env):\(context.env)",
                     "source:\(context.source)",
                     "language:swift",
                     "format:pprof",
@@ -165,3 +167,5 @@ extension ProfilingContext.Status {
         }
     }
 }
+
+#endif

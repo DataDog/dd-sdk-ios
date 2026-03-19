@@ -544,34 +544,31 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(exposureLogger.logExposureCalls[0].assignment, booleanAssignment)
         XCTAssertEqual(exposureLogger.logExposureCalls[0].context.targetingKey, "user-123")
         XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[0].0, "bool-flag")
-        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[0].1 as? Bool, true)
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[0].1 as? String, "var-1")
 
         // Test string tracking
         XCTAssertEqual(exposureLogger.logExposureCalls[1].flagKey, "string-flag")
         XCTAssertEqual(exposureLogger.logExposureCalls[1].assignment, stringAssignment)
         XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[1].0, "string-flag")
-        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[1].1 as? String, "test")
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[1].1 as? String, "var-2")
 
         // Test integer tracking
         XCTAssertEqual(exposureLogger.logExposureCalls[2].flagKey, "int-flag")
         XCTAssertEqual(exposureLogger.logExposureCalls[2].assignment, integerAssignment)
         XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[2].0, "int-flag")
-        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[2].1 as? Int, 42)
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[2].1 as? String, "var-3")
 
         // Test double tracking
         XCTAssertEqual(exposureLogger.logExposureCalls[3].flagKey, "double-flag")
         XCTAssertEqual(exposureLogger.logExposureCalls[3].assignment, doubleAssignment)
         XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[3].0, "double-flag")
-        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[3].1 as? Double, 3.14)
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[3].1 as? String, "var-4")
 
         // Test object tracking
         XCTAssertEqual(exposureLogger.logExposureCalls[4].flagKey, "object-flag")
         XCTAssertEqual(exposureLogger.logExposureCalls[4].assignment, objectAssignment)
         XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[4].0, "object-flag")
-        XCTAssertEqual(
-            rumFlagEvaluationReporter.sendFlagEvaluationCalls[4].1 as? AnyValue,
-            .dictionary(["key": .string("value")])
-        )
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls[4].1 as? String, "var-5")
 
         // Test evaluation logging
         XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 5)
