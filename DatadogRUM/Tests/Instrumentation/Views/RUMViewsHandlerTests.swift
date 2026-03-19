@@ -4,10 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
-
 import XCTest
 import TestUtilities
+@testable import DatadogInternal
 @testable import DatadogRUM
 
 class RUMViewsHandlerTests: XCTestCase {
@@ -16,6 +15,7 @@ class RUMViewsHandlerTests: XCTestCase {
     private let notificationCenter = NotificationCenter()
 
     // MARK: - Helper
+    #if !os(watchOS)
     private func createHandler(
         uiKitPredicate: UIKitRUMViewsPredicate? = nil,
         swiftUIPredicate: SwiftUIRUMViewsPredicate? = nil,
@@ -31,9 +31,17 @@ class RUMViewsHandlerTests: XCTestCase {
         handler.publish(to: commandSubscriber)
         return handler
     }
+    #else
+    private func createHandler() -> RUMViewsHandler {
+        let handler = RUMViewsHandler(dateProvider: dateProvider, notificationCenter: notificationCenter)
+        handler.publish(to: commandSubscriber)
+        return handler
+    }
+    #endif
 
     // MARK: - Handling `viewDidAppear`
 
+    #if !os(watchOS)
     func testGivenUIKitPredicate_whenViewDidAppear_itStartsRUMView() throws {
         let viewName: String = .mockRandom()
         let viewControllerClassName: String = .mockRandom()
@@ -450,6 +458,8 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertTrue(startCommand2.identity == ViewIdentifier(someView))
     }
 
+    #endif // !os(watchOS)
+
     // MARK: - Handling Manual SwiftUI Instrumentation `.onAppear`
 
     func testWhenOnAppear_itStartsRUMView() throws {
@@ -707,9 +717,9 @@ class RUMViewsHandlerTests: XCTestCase {
             attributes: viewAttributes
         )
 
-        notificationCenter.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
+        notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
         dateProvider.advance(bySeconds: 1)
-        notificationCenter.post(name: UIApplication.willEnterForegroundNotification, object: nil)
+        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
@@ -736,13 +746,11 @@ class RUMViewsHandlerTests: XCTestCase {
         // When
         handler.notify_onDisappear(identity: viewIdentity)
 
-        notificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
         dateProvider.advance(bySeconds: 1)
-        notificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
     }
 }
-
-#endif

@@ -13,6 +13,7 @@ import TestUtilities
 class RUMSessionStopTests: RUMSessionTestsBase {
     // MARK: - Foreground session "stop" → track in foreground
 
+    #if !os(watchOS)
     func testGivenUserSession_whenItIsStopped_andActionIsTrackedInForeground() throws {
         // Given
         let given1 = userSession()
@@ -22,7 +23,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
         let given5 = userSessionWithManualView()
         let given6 = userSessionWithManualView { $0.trackBackgroundEvents = true }
 
-        let expectedViewInRestartedSession = [
+        let expectedViewInRestartedSession: [AppRun: String] = [
             given1: applicationLaunchViewName,
             given2: applicationLaunchViewName,
             given3: automaticViewName,
@@ -70,7 +71,61 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             XCTAssertEqual(session2.views[0].actionEvents.count, 2)
         }
     }
+    #else
+    func testGivenUserSession_whenItIsStopped_andActionIsTrackedInForeground() throws {
+        // Given
+        let given1 = userSession()
+        let given2 = userSession { $0.trackBackgroundEvents = true }
+        let given5 = userSessionWithManualView()
+        let given6 = userSessionWithManualView { $0.trackBackgroundEvents = true }
 
+        let expectedViewInRestartedSession: [AppRun: String] = [
+            given1: applicationLaunchViewName,
+            given2: applicationLaunchViewName,
+            given5: manualViewName,
+            given6: manualViewName,
+        ]
+
+        for given in [given1, given2, given5, given6] {
+            // When
+            let when = given
+                .and(.flushDatadogContext())
+                .when(.stopSession(after: dt1))
+                .and(.trackTwoActions(after1: dt2, after2: dt3))
+
+            // Then
+            // - It tracks "stopped" session:
+            let (session1, session2) = try when.then().takeTwo()
+            DDAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            DDAssertEqual(session1.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+            if given == given1 || given == given2 { // session with `ApplicationLaunch` view
+                XCTAssertEqual(session1.views.count, 1)
+                XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+                DDAssertEqual(session1.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+            } else { // session with manual view
+                XCTAssertEqual(session1.views.count, 2)
+                XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+                DDAssertEqual(session1.views[0].duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
+                XCTAssertEqual(session1.views[1].name, manualViewName)
+                DDAssertEqual(session1.views[1].duration, dt1, accuracy: accuracy)
+            }
+
+            // - It creates new session with restarting the last view for tracking new events:
+            XCTAssertNil(session2.ttidEvent)
+            XCTAssertNil(session2.timeToInitialDisplay)
+            DDAssertEqual(session2.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
+            DDAssertEqual(session2.duration, dt3, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionPrecondition, .explicitStop)
+            XCTAssertEqual(session2.views.count, 1)
+            XCTAssertEqual(session2.views[0].name, expectedViewInRestartedSession[given])
+            DDAssertEqual(session2.views[0].duration, dt3, accuracy: accuracy)
+            XCTAssertEqual(session2.views[0].actionEvents.count, 2)
+        }
+    }
+    #endif
+
+    #if !os(watchOS)
     func testGivenUserSession_whenItIsStopped_andOtherEventsAreTrackedInForeground() throws {
         // Given
         let given1 = userSession()
@@ -95,6 +150,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 // Then
                 // - It only tracks "stopped" session:
                 let session = try when.then().takeSingle()
+
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
@@ -114,7 +170,50 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             }
         }
     }
+    #else
+    func testGivenUserSession_whenItIsStopped_andOtherEventsAreTrackedInForeground() throws {
+        // Given
+        let given1 = userSession()
+        let given2 = userSession { $0.trackBackgroundEvents = true }
+        let given5 = userSessionWithManualView()
+        let given6 = userSessionWithManualView { $0.trackBackgroundEvents = true }
 
+        for given in [given1, given2, given5, given6] {
+            // When
+            let when2 = given
+                .and(.flushDatadogContext())
+                .when(.stopSession(after: dt1))
+                .and(.trackResource(after: dt2, duration: dt3))
+            let when3 = given
+                .and(.flushDatadogContext())
+                .when(.stopSession(after: dt1))
+                .and(.trackTwoLongTasks(after1: dt2, after2: dt3))
+
+            for when in [when2, when3] {
+                // Then
+                // - It only tracks "stopped" session:
+                let session = try when.then().takeSingle()
+
+                DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+                if given == given1 || given == given2 { // session with `ApplicationLaunch` view
+                    XCTAssertEqual(session.views.count, 1)
+                    XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+                    DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                } else { // session with manual view
+                    XCTAssertEqual(session.views.count, 2)
+                    XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+                    DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
+                    XCTAssertEqual(session.views[1].name, manualViewName)
+                    DDAssertEqual(session.views[1].duration, dt1, accuracy: accuracy)
+                }
+            }
+        }
+    }
+    #endif
+
+    #if !os(watchOS)
     func testGivenUserSession_whenItIsStoppedBeforeOrAfterEnteringBackground_andActionIsTrackedInForeground() throws {
         // Given
         let given1 = userSession()
@@ -161,6 +260,50 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             }
         }
     }
+    #else
+    func testGivenUserSession_whenItIsStoppedBeforeOrAfterEnteringBackground_andActionIsTrackedInForeground() throws {
+        // Given
+        let given1 = userSession()
+        let given2 = userSession { $0.trackBackgroundEvents = true }
+        let given5 = userSessionWithManualView()
+        let given6 = userSessionWithManualView { $0.trackBackgroundEvents = true }
+
+        let expectedViewInRestartedSession = [
+            given1: applicationLaunchViewName,
+            given2: applicationLaunchViewName,
+            given5: manualViewName,
+            given6: manualViewName,
+        ]
+
+        for given in [given1, given2, given5, given6] {
+            // When
+            // - "stop" → BG → FG → action event
+            let when1 = given
+                .when(.stopSession(after: dt1))
+                .and(.appEntersBackground(after: dt2))
+                .and(.appBecomesActive(after: dt3))
+                .and(.trackTwoActions(after1: dt4, after2: dt5))
+            // When
+            // - BG → "stop" → FG → action event
+            let when2 = given
+                .when(.appEntersBackground(after: dt1))
+                .and(.stopSession(after: dt2))
+                .and(.appBecomesActive(after: dt3))
+                .and(.trackTwoActions(after1: dt4, after2: dt5))
+
+            for when in [when1, when2] {
+                // Then
+                // - It tracks "stopped" session
+                // - It tracks action in new session with restarting the last view
+                let (session1, session2) = try when.then().takeTwo()
+                XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+                XCTAssertEqual(session2.sessionPrecondition, .explicitStop)
+                XCTAssertEqual(session2.views.count, 1)
+                XCTAssertEqual(session2.views[0].name, expectedViewInRestartedSession[given])
+            }
+        }
+    }
+    #endif
 
     func testGivenUserSession_whenItIsStoppedBeforeOrAfterEnteringBackground_andOtherEventsAreTrackedInForeground() throws {
         // Given
@@ -205,6 +348,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             }
         }
 
+        #if !os(watchOS)
         // Given
         // - session with automatic view
         let given5 = userSessionWithAutomaticView()
@@ -248,10 +392,12 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 XCTAssertEqual(session2.views[0].name, automaticViewName)
             }
         }
+        #endif
     }
 
     // MARK: - Foreground session "stop" → track in background
 
+    #if !os(watchOS)
     func testGivenUserSession_whenItIsStopped_andNextEventIsTrackedInBackground() throws {
         // Given
         let given1 = userSession()
@@ -321,20 +467,93 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                     XCTAssertEqual(session.views.count, 2)
                     XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
                     DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
-                    XCTAssertEqual(session.views[1].name, (given == given2) ? automaticViewName : manualViewName)
+                    XCTAssertEqual(session.views[1].name, automaticViewName)
                     DDAssertEqual(session.views[1].duration, dt1, accuracy: accuracy)
                 } else { // session with manual view
                     DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                     XCTAssertEqual(session.views.count, 2)
                     XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
                     DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
-                    XCTAssertEqual(session.views[1].name, (given == given2) ? automaticViewName : manualViewName)
+                    XCTAssertEqual(session.views[1].name, manualViewName)
                     DDAssertEqual(session.views[1].duration, dt1 + dt2, accuracy: accuracy)
                 }
             }
         }
     }
+    #else
+    func testGivenUserSession_whenItIsStopped_andNextEventIsTrackedInBackground() throws {
+        // Given
+        let given1 = userSession()
+        let given3 = userSessionWithManualView()
 
+        for given in [given1, given3] {
+            // When
+            // - "stop" → BG
+            let when1 = given
+                .and(.flushDatadogContext())
+                .when(.stopSession(after: dt1))
+                .and(.appEntersBackground(after: dt2))
+
+            for when in [
+                when1.and(.trackTwoActions(after1: dt3, after2: dt4)),
+                when1.and(.trackResource(after: dt3, duration: dt4)),
+                when1.and(.trackTwoLongTasks(after1: dt3, after2: dt4)),
+            ] {
+                // Then
+                // - It only tracks "stopped" session (background events are skipped due to BET disabled):
+                let session = try when.then().takeSingle()
+                DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+                if given == given1 { // session with `ApplicationLaunch` view
+                    XCTAssertEqual(session.views.count, 1)
+                    XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+                    DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                } else { // session with manual view
+                    XCTAssertEqual(session.views.count, 2)
+                    XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+                    DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
+                    XCTAssertEqual(session.views[1].name, manualViewName)
+                    DDAssertEqual(session.views[1].duration, dt1, accuracy: accuracy)
+                }
+            }
+
+            // When
+            // - BG → "stop"
+            let when2 = given
+                .when(.appEntersBackground(after: dt1))
+                .and(.flushDatadogContext())
+                .and(.stopSession(after: dt2))
+
+            for when in [
+                when2.and(.trackTwoActions(after1: dt3, after2: dt4)),
+                when2.and(.trackResource(after: dt3, duration: dt4)),
+                when2.and(.trackTwoLongTasks(after1: dt3, after2: dt4)),
+            ] {
+                // Then
+                // - It only tracks "stopped" session (background events are skipped due to BET disabled):
+                let session = try when.then().takeSingle()
+                DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+                if given == given1 { // session with `ApplicationLaunch` view
+                    DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                    XCTAssertEqual(session.views.count, 1)
+                    XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+                    DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                } else { // session with manual view
+                    DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
+                    XCTAssertEqual(session.views.count, 2)
+                    XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+                    DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
+                    XCTAssertEqual(session.views[1].name, manualViewName)
+                    DDAssertEqual(session.views[1].duration, dt1 + dt2, accuracy: accuracy)
+                }
+            }
+        }
+    }
+    #endif
+
+    #if !os(watchOS)
     func testGivenUserSession_andBETEnabled_whenItIsStopped_andActionIsTrackedInBackground() throws {
         // Given
         // - BET enabled
@@ -372,7 +591,46 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             }
         }
     }
+    #else
+    func testGivenUserSession_andBETEnabled_whenItIsStopped_andActionIsTrackedInBackground() throws {
+        // Given
+        // - BET enabled
+        let given1 = userSession { $0.trackBackgroundEvents = true }
+        let given3 = userSessionWithManualView { $0.trackBackgroundEvents = true }
 
+        for given in [given1, given3] {
+            // When
+            let when1 = given
+                .when(.stopSession(after: dt1))
+                .and(.appEntersBackground(after: dt2))
+                .and(.trackTwoActions(after1: dt3, after2: dt4))
+            let when2 = given
+                .when(.appEntersBackground(after: dt1))
+                .and(.stopSession(after: dt2))
+                .and(.trackTwoActions(after1: dt3, after2: dt4))
+
+            for when in [when1, when2] {
+                // Then
+                // - It tracks "stopped" session (same as with BET disabled):
+                let (session1, session2) = try when.then().takeTwo()
+                XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+
+                // - It creates new session for tracking background events:
+                XCTAssertNil(session2.ttidEvent)
+                XCTAssertNil(session2.timeToInitialDisplay)
+                DDAssertEqual(session2.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1 + dt2 + dt3, accuracy: accuracy)
+                DDAssertEqual(session2.duration, dt4, accuracy: accuracy)
+                XCTAssertEqual(session2.sessionPrecondition, .explicitStop)
+                XCTAssertEqual(session2.views.count, 1)
+                XCTAssertEqual(session2.views[0].name, backgroundViewName)
+                DDAssertEqual(session2.views[0].duration, dt4, accuracy: accuracy)
+                XCTAssertEqual(session2.views[0].actionEvents.count, 2)
+            }
+        }
+    }
+    #endif
+
+    #if !os(watchOS)
     func testGivenUserSession_andBETEnabled_whenItIsStopped_andOtherEventsAreTrackedInBackground() throws {
         // Given
         // - BET enabled
@@ -403,12 +661,43 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             }
         }
     }
+    #else
+    func testGivenUserSession_andBETEnabled_whenItIsStopped_andOtherEventsAreTrackedInBackground() throws {
+        // Given
+        // - BET enabled
+        let given1 = userSession { $0.trackBackgroundEvents = true }
+        let given3 = userSessionWithManualView { $0.trackBackgroundEvents = true }
+
+        for given in [given1, given3] {
+            // When
+            let when1 = given
+                .when(.stopSession(after: dt1))
+                .and(.appEntersBackground(after: dt2))
+            let when2 = given
+                .when(.appEntersBackground(after: dt1))
+                .and(.stopSession(after: dt2))
+
+            for when in [when1, when2] {
+                // When
+                let when1 = when.and(.trackResource(after: dt3, duration: dt4))
+                let when2 = when.and(.trackTwoLongTasks(after1: dt3, after2: dt4))
+
+                for when in [when1, when2] {
+                    // Then
+                    // - It tracks "stopped" session (events other than action are dropped after `sessionStop()` unless a view is started explicitly)
+                    let session = try when.then().takeSingle()
+                    XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+                }
+            }
+        }
+    }
+    #endif
 
     // MARK: - Background session "stop" → track in background
 
     func testGivenBackgroundSession_whenItIsStopped_andNextEventIsTrackedInBackground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = backgroundSession()
@@ -439,8 +728,8 @@ class RUMSessionStopTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andActionIsTrackedInBackground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         // - BET enabled
@@ -483,8 +772,8 @@ class RUMSessionStopTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andOtherEventsAreTrackedInBackground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         // - BET enabled
@@ -523,8 +812,8 @@ class RUMSessionStopTests: RUMSessionTestsBase {
     // MARK: - Background session "stop" → track in foreground
 
     func testGivenBackgroundSession_whenItIsStopped_andNextEventIsTrackedInForeground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = backgroundSession()
@@ -559,8 +848,8 @@ class RUMSessionStopTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andNextEventIsTrackedInForeground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         // - BET enabled
@@ -622,8 +911,8 @@ class RUMSessionStopTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundSession_whenItIsStopped_andViewIsTrackedInForeground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS or watchOS")
         #else
         // Given
         let given1 = backgroundSession { $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate() }
@@ -667,9 +956,86 @@ class RUMSessionStopTests: RUMSessionTestsBase {
         #endif
     }
 
+    #if os(watchOS)
+    func testGivenBackgroundSession_whenItIsStopped_andManualViewIsTrackedInForeground() throws {
+        // Note: on watchOS, background launches are classified as `userAppLaunch` when `willEnterForeground`
+        // fires before the 10s resolver threshold. The resource is tracked in the `ApplicationLaunch` view.
+        // Session duration reflects only the actual events (no TTID, no appActive). Prewarm is not available on watchOS.
+        let given = backgroundSession()
+            .and(.trackResource(after: dt1, duration: dt2))
+
+        // When
+        // - "stop" → FG → manual view
+        // `willEnterForeground` fires at dt4, classifying the session as `userAppLaunch`
+        // before the stop is processed, so a stopped session exists + a new session for the manual view
+        let when1 = given
+            .when(.stopSession(after: dt3))
+            .and(.appBecomesActive(after: dt4))
+            .and(.startManualView(after: dt5, viewName: manualViewName, viewKey: "manual-view"))
+            .and(.stopManualView(after: dt6, viewKey: "manual-view"))
+
+        // Then
+        // - Session 1: userAppLaunch with ApplicationLaunch view (resource tracked, stopped):
+        let (session1when1, session2when1) = try when1.then().takeTwo()
+        XCTAssertNil(session1when1.ttidEvent)
+        XCTAssertNil(session1when1.timeToInitialDisplay)
+        DDAssertEqual(session1when1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        DDAssertEqual(session1when1.duration, timeToSDKInit + dt1 + dt2 + dt3, accuracy: accuracy)
+        XCTAssertEqual(session1when1.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session1when1.views.count, 1)
+        XCTAssertEqual(session1when1.views[0].name, applicationLaunchViewName)
+        DDAssertEqual(session1when1.views[0].duration, timeToSDKInit + dt1 + dt2 + dt3, accuracy: accuracy)
+        XCTAssertEqual(session1when1.views[0].resourceEvents.count, 1)
+
+        // - Session 2: new session for tracking view in foreground:
+        XCTAssertNil(session2when1.ttidEvent)
+        XCTAssertNil(session2when1.timeToInitialDisplay)
+        DDAssertEqual(session2when1.sessionStartDate, processLaunchDate + timeToSDKInit + dt1 + dt2 + dt3 + dt4 + dt5, accuracy: accuracy)
+        DDAssertEqual(session2when1.duration, dt6, accuracy: accuracy)
+        XCTAssertEqual(session2when1.sessionPrecondition, .explicitStop)
+        XCTAssertEqual(session2when1.views.count, 1)
+        XCTAssertEqual(session2when1.views[0].name, manualViewName)
+        DDAssertEqual(session2when1.views[0].duration, dt6, accuracy: accuracy)
+
+        // When
+        // - FG → "stop" → manual view
+        // `willEnterForeground` fires at dt3, classifying the session as `userAppLaunch`.
+        // Stop fires at dt3+dt4 AFTER classification → session 1 is complete.
+        // Then manual view creates session 2.
+        let when2 = given
+            .when(.appBecomesActive(after: dt3))
+            .and(.stopSession(after: dt4))
+            .and(.startManualView(after: dt5, viewName: manualViewName, viewKey: "manual-view"))
+            .and(.stopManualView(after: dt6, viewKey: "manual-view"))
+
+        // Then
+        // - Session 1: userAppLaunch with ApplicationLaunch view (longer since active arrives before stop):
+        let (session1when2, session2when2) = try when2.then().takeTwo()
+        XCTAssertNil(session1when2.ttidEvent)
+        XCTAssertNil(session1when2.timeToInitialDisplay)
+        DDAssertEqual(session1when2.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        DDAssertEqual(session1when2.duration, timeToSDKInit + dt1 + dt2 + dt3 + dt4, accuracy: accuracy)
+        XCTAssertEqual(session1when2.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session1when2.views.count, 1)
+        XCTAssertEqual(session1when2.views[0].name, applicationLaunchViewName)
+        DDAssertEqual(session1when2.views[0].duration, timeToSDKInit + dt1 + dt2 + dt3 + dt4, accuracy: accuracy)
+        XCTAssertEqual(session1when2.views[0].resourceEvents.count, 1)
+
+        // - Session 2: new session for tracking view in foreground:
+        XCTAssertNil(session2when2.ttidEvent)
+        XCTAssertNil(session2when2.timeToInitialDisplay)
+        DDAssertEqual(session2when2.sessionStartDate, processLaunchDate + timeToSDKInit + dt1 + dt2 + dt3 + dt4 + dt5, accuracy: accuracy)
+        DDAssertEqual(session2when2.duration, dt6, accuracy: accuracy)
+        XCTAssertEqual(session2when2.sessionPrecondition, .explicitStop)
+        XCTAssertEqual(session2when2.views.count, 1)
+        XCTAssertEqual(session2when2.views[0].name, manualViewName)
+        DDAssertEqual(session2when2.views[0].duration, dt6, accuracy: accuracy)
+    }
+    #endif
+
     func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andViewIsTrackedInForeground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS or watchOS")
         #else
         // Given
         // - BET enabled
@@ -763,4 +1129,76 @@ class RUMSessionStopTests: RUMSessionTestsBase {
         }
         #endif
     }
+
+    #if os(watchOS)
+    func testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andManualViewIsTrackedInForeground() throws {
+        // Note: on watchOS, background launches (including with BET enabled) are classified as `userAppLaunch`
+        // when `willEnterForeground` fires before the 10s resolver threshold. The resource is tracked in the
+        // `ApplicationLaunch` view (not a `Background` view). Prewarm is not available on watchOS.
+        let given = backgroundSession { $0.trackBackgroundEvents = true }
+            .and(.trackResource(after: dt1, duration: dt2))
+
+        // When
+        // - "stop" → FG → manual view
+        let when1 = given
+            .when(.stopSession(after: dt3))
+            .and(.appBecomesActive(after: dt4))
+            .and(.startManualView(after: dt5, viewName: manualViewName, viewKey: "manual-view"))
+            .and(.stopManualView(after: dt6, viewKey: "manual-view"))
+
+        // Then
+        // - Session 1: userAppLaunch with ApplicationLaunch view (resource tracked, stopped):
+        let (session1a, session2a) = try when1.then().takeTwo()
+        XCTAssertNil(session1a.ttidEvent)
+        XCTAssertNil(session1a.timeToInitialDisplay)
+        DDAssertEqual(session1a.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        DDAssertEqual(session1a.duration, timeToSDKInit + dt1 + dt2 + dt3, accuracy: accuracy)
+        XCTAssertEqual(session1a.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session1a.views.count, 1)
+        XCTAssertEqual(session1a.views[0].name, applicationLaunchViewName)
+        DDAssertEqual(session1a.views[0].duration, timeToSDKInit + dt1 + dt2 + dt3, accuracy: accuracy)
+        XCTAssertEqual(session1a.views[0].resourceEvents.count, 1)
+
+        // - Session 2: new session for tracking view in foreground:
+        XCTAssertNil(session2a.ttidEvent)
+        XCTAssertNil(session2a.timeToInitialDisplay)
+        DDAssertEqual(session2a.sessionStartDate, processLaunchDate + timeToSDKInit + dt1 + dt2 + dt3 + dt4 + dt5, accuracy: accuracy)
+        DDAssertEqual(session2a.duration, dt6, accuracy: accuracy)
+        XCTAssertEqual(session2a.sessionPrecondition, .explicitStop)
+        XCTAssertEqual(session2a.views.count, 1)
+        XCTAssertEqual(session2a.views[0].name, manualViewName)
+        DDAssertEqual(session2a.views[0].duration, dt6, accuracy: accuracy)
+
+        // When
+        // - FG → "stop" → manual view
+        let when2 = given
+            .when(.appBecomesActive(after: dt3))
+            .and(.stopSession(after: dt4))
+            .and(.startManualView(after: dt5, viewName: manualViewName, viewKey: "manual-view"))
+            .and(.stopManualView(after: dt6, viewKey: "manual-view"))
+
+        // Then
+        // - Session 1: userAppLaunch, duration includes time until stop:
+        let (session1b, session2b) = try when2.then().takeTwo()
+        XCTAssertNil(session1b.ttidEvent)
+        XCTAssertNil(session1b.timeToInitialDisplay)
+        DDAssertEqual(session1b.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        DDAssertEqual(session1b.duration, timeToSDKInit + dt1 + dt2 + dt3 + dt4, accuracy: accuracy)
+        XCTAssertEqual(session1b.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session1b.views.count, 1)
+        XCTAssertEqual(session1b.views[0].name, applicationLaunchViewName)
+        DDAssertEqual(session1b.views[0].duration, timeToSDKInit + dt1 + dt2 + dt3 + dt4, accuracy: accuracy)
+        XCTAssertEqual(session1b.views[0].resourceEvents.count, 1)
+
+        // - Session 2: new session for tracking view in foreground:
+        XCTAssertNil(session2b.ttidEvent)
+        XCTAssertNil(session2b.timeToInitialDisplay)
+        DDAssertEqual(session2b.sessionStartDate, processLaunchDate + timeToSDKInit + dt1 + dt2 + dt3 + dt4 + dt5, accuracy: accuracy)
+        DDAssertEqual(session2b.duration, dt6, accuracy: accuracy)
+        XCTAssertEqual(session2b.sessionPrecondition, .explicitStop)
+        XCTAssertEqual(session2b.views.count, 1)
+        XCTAssertEqual(session2b.views[0].name, manualViewName)
+        DDAssertEqual(session2b.views[0].duration, dt6, accuracy: accuracy)
+    }
+    #endif
 }

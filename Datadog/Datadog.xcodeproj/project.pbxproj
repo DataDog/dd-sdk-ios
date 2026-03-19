@@ -9327,7 +9327,9 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,7";
-
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Example";
+				"TEST_HOST[sdk=watchos*]" = "";
+				"TEST_HOST[sdk=watchsimulator*]" = "";
 			};
 			name = Debug;
 		};
@@ -9351,7 +9353,9 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,7";
-
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Example";
+				"TEST_HOST[sdk=watchos*]" = "";
+				"TEST_HOST[sdk=watchsimulator*]" = "";
 			};
 			name = Release;
 		};
@@ -9375,7 +9379,9 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,7";
-
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Example.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Example";
+				"TEST_HOST[sdk=watchos*]" = "";
+				"TEST_HOST[sdk=watchsimulator*]" = "";
 			};
 			name = Integration;
 		};

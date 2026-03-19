@@ -24,8 +24,8 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
     private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate) }
 
     func testGivenOSPrewarmLaunch_whenNoEventIsTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = enableRUM(osPrewarmLaunch)
@@ -45,8 +45,8 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
     }
 
     func testGivenOSPrewarmLaunch_whenEventAreTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         // - BET disabled
@@ -88,8 +88,8 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
     }
 
     func testGivenOSPrewarmLaunch_whenLongTasksAreTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = enableRUM(osPrewarmLaunch)
@@ -130,8 +130,8 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundLaunch_whenEventAreTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         // - BET disabled

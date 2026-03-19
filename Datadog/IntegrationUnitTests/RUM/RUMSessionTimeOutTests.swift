@@ -13,6 +13,7 @@ import TestUtilities
 class RUMSessionTimeOutTests: RUMSessionTestsBase {
     // MARK: - Foreground session "time out" → track in foreground
 
+    #if !os(watchOS)
     func testGivenUserSession_whenItTimesOut_andNextEventIsTrackedInForeground() throws {
         // Given
         let given1 = userSession()
@@ -84,7 +85,78 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
             }
         }
     }
+    #else
+    func testGivenUserSession_whenItTimesOut_andNextEventIsTrackedInForeground() throws {
+        // Given
+        let given1 = userSession()
+        let given2 = userSession { $0.trackBackgroundEvents = true }
+        let given3 = userSessionWithManualView()
+        let given4 = userSessionWithManualView { $0.trackBackgroundEvents = true }
 
+        let expectedViewInRestartedSession = [
+            given1: applicationLaunchViewName,
+            given2: applicationLaunchViewName,
+            given3: manualViewName,
+            given4: manualViewName,
+        ]
+
+        for given in [given1, given2, given3, given4] {
+            // When
+            let when1 = given
+                .and(.flushDatadogContext())
+                .when(.timeoutSession())
+                .and(.trackTwoActions(after1: dt1, after2: dt2))
+            let when2 = given
+                .and(.flushDatadogContext())
+                .when(.timeoutSession())
+                .and(.trackResource(after: dt1, duration: dt2))
+            let when3 = given
+                .and(.flushDatadogContext())
+                .when(.timeoutSession())
+                .and(.trackTwoLongTasks(after1: dt1, after2: dt2))
+
+            for when in [when1, when2, when3] {
+                // Then
+                // - It tracks "timed out" session:
+                let (session1, session2) = try when.then().takeTwo()
+
+                // Note: on watchOS, `displayFirstFrame` is a no-op, so no TTID is recorded.
+                XCTAssertNil(session1.ttidEvent)
+                XCTAssertNil(session1.timeToInitialDisplay)
+                DDAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+                if given == given1 || given == given2 { // session with `ApplicationLaunch` view
+                    DDAssertEqual(session1.duration, timeToSDKInit, accuracy: accuracy)
+                    XCTAssertEqual(session1.views.count, 1)
+                    XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+                    DDAssertEqual(session1.views[0].duration, timeToSDKInit, accuracy: accuracy)
+                } else { // session with manual view
+                    DDAssertEqual(session1.duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
+                    XCTAssertEqual(session1.views.count, 2)
+                    XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+                    DDAssertEqual(session1.views[0].duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
+                    XCTAssertEqual(session1.views[1].name, manualViewName)
+                    DDAssertEqual(session1.views[1].duration, 0, accuracy: accuracy)
+                }
+
+                // - It creates new session with restarting the last view for tracking new events:
+                XCTAssertNil(session2.ttidEvent)
+                XCTAssertNil(session2.timeToInitialDisplay)
+                DDAssertEqual(session2.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + sessionTimeoutDuration + dt1, accuracy: accuracy)
+                DDAssertEqual(session2.duration, dt2, accuracy: accuracy)
+                XCTAssertEqual(session2.sessionPrecondition, .inactivityTimeout)
+                XCTAssertEqual(session2.views.count, 1)
+                XCTAssertEqual(session2.views[0].name, expectedViewInRestartedSession[given])
+                DDAssertEqual(session2.views[0].duration, dt2, accuracy: accuracy)
+                XCTAssertEqual(session2.views[0].actionEvents.count, when == when1 ? 2 : 0)
+                XCTAssertEqual(session2.views[0].resourceEvents.count, when == when2 ? 1 : 0)
+                XCTAssertEqual(session2.views[0].longTaskEvents.count, when == when3 ? 2 : 0)
+            }
+        }
+    }
+    #endif
+
+    #if !os(watchOS)
     func testGivenUserSession_whenItTimesOut_andEntersBackground_andNextEventIsTrackedInForeground() throws {
         // Given
         let given1 = userSession()
@@ -148,7 +220,64 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
             }
         }
     }
+    #else
+    func testGivenUserSession_whenItTimesOut_andEntersBackground_andNextEventIsTrackedInForeground() throws {
+        // Given
+        let given1 = userSession()
+        let given2 = userSession { $0.trackBackgroundEvents = true }
+        let given3 = userSessionWithManualView()
+        let given4 = userSessionWithManualView { $0.trackBackgroundEvents = true }
 
+        let expectedViewInRestartedSession = [
+            given1: applicationLaunchViewName,
+            given2: applicationLaunchViewName,
+            given3: manualViewName,
+            given4: manualViewName,
+        ]
+
+        for given in [given1, given2, given3, given4] {
+            // When
+            // - "time out" → BG → FG → event
+            let when1 = given
+                .when(.timeoutSession())
+                .and(.appEntersBackground(after: dt1))
+                .and(.appBecomesActive(after: dt2))
+                .and(.trackTwoActions(after1: dt3, after2: dt4))
+            let when2 = given
+                .when(.timeoutSession())
+                .and(.appEntersBackground(after: dt1))
+                .and(.appBecomesActive(after: dt2))
+                .and(.trackResource(after: dt3, duration: dt4))
+            let when3 = given
+                .when(.timeoutSession())
+                .and(.appEntersBackground(after: dt1))
+                .and(.appBecomesActive(after: dt2))
+                .and(.trackTwoLongTasks(after1: dt3, after2: dt4))
+
+            for when in [when1, when2, when3] {
+                // Then
+                // - It tracks "timed out" session:
+                let (session1, session2) = try when.then().takeTwo()
+                DDAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+
+                // - It creates new session with restarting the last view for tracking new events:
+                XCTAssertEqual(session2.sessionPrecondition, .inactivityTimeout)
+                XCTAssertEqual(session2.views.count, 1)
+                // session with `ApplicationLaunch` or manual view: manual view is not in UIKit stack, so it needs an event to restart
+                DDAssertEqual(session2.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + sessionTimeoutDuration + dt1 + dt2 + dt3, accuracy: accuracy)
+                DDAssertEqual(session2.duration, dt4, accuracy: accuracy)
+                DDAssertEqual(session2.views[0].duration, dt4, accuracy: accuracy)
+                XCTAssertEqual(session2.views[0].name, expectedViewInRestartedSession[given])
+                XCTAssertEqual(session2.views[0].actionEvents.count, when == when1 ? 2 : 0)
+                XCTAssertEqual(session2.views[0].resourceEvents.count, when == when2 ? 1 : 0)
+                XCTAssertEqual(session2.views[0].longTaskEvents.count, when == when3 ? 2 : 0)
+            }
+        }
+    }
+    #endif
+
+    #if !os(watchOS)
     func testGivenUserSession_whenItEntersBackground_andTimesOut_andNextEventIsTrackedInForeground() throws {
         // Given
         let given1 = userSession()
@@ -212,9 +341,66 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
             }
         }
     }
+    #else
+    func testGivenUserSession_whenItEntersBackground_andTimesOut_andNextEventIsTrackedInForeground() throws {
+        // Given
+        let given1 = userSession()
+        let given2 = userSession { $0.trackBackgroundEvents = true }
+        let given3 = userSessionWithManualView()
+        let given4 = userSessionWithManualView { $0.trackBackgroundEvents = true }
+
+        let expectedViewInRestartedSession = [
+            given1: applicationLaunchViewName,
+            given2: applicationLaunchViewName,
+            given3: manualViewName,
+            given4: manualViewName,
+        ]
+
+        for given in [given1, given2, given3, given4] {
+            // When
+            // - BG → "time out" → FG → event
+            let when1 = given
+                .when(.appEntersBackground(after: dt1))
+                .and(.timeoutSession())
+                .and(.appBecomesActive(after: dt2))
+                .and(.trackTwoActions(after1: dt3, after2: dt4))
+            let when2 = given
+                .when(.appEntersBackground(after: dt1))
+                .and(.timeoutSession())
+                .and(.appBecomesActive(after: dt2))
+                .and(.trackResource(after: dt3, duration: dt4))
+            let when3 = given
+                .when(.appEntersBackground(after: dt1))
+                .and(.timeoutSession())
+                .and(.appBecomesActive(after: dt2))
+                .and(.trackTwoLongTasks(after1: dt3, after2: dt4))
+
+            for when in [when1, when2, when3] {
+                // Then
+                // - It tracks "timed out" session:
+                let (session1, session2) = try when.then().takeTwo()
+                DDAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+
+                // - It creates new session with restarting the last view for tracking new events:
+                XCTAssertEqual(session2.sessionPrecondition, .inactivityTimeout)
+                XCTAssertEqual(session2.views.count, 1)
+                // session with `ApplicationLaunch` or manual view: manual view is not in UIKit stack, so it needs an event to restart
+                DDAssertEqual(session2.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1 + sessionTimeoutDuration + dt2 + dt3, accuracy: accuracy)
+                DDAssertEqual(session2.duration, dt4, accuracy: accuracy)
+                DDAssertEqual(session2.views[0].duration, dt4, accuracy: accuracy)
+                XCTAssertEqual(session2.views[0].name, expectedViewInRestartedSession[given])
+                XCTAssertEqual(session2.views[0].actionEvents.count, when == when1 ? 2 : 0)
+                XCTAssertEqual(session2.views[0].resourceEvents.count, when == when2 ? 1 : 0)
+                XCTAssertEqual(session2.views[0].longTaskEvents.count, when == when3 ? 2 : 0)
+            }
+        }
+    }
+    #endif
 
     // MARK: - Foreground session "time out" → track in background
 
+    #if !os(watchOS)
     func testGivenUserSession_whenItTimesOut_andNextEventIsTrackedInBackground() throws {
         // Given
         let given1 = userSession()
@@ -298,7 +484,87 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
             }
         }
     }
+    #else
+    func testGivenUserSession_whenItTimesOut_andNextEventIsTrackedInBackground() throws {
+        // Given
+        let given1 = userSession()
+        let given2 = userSessionWithManualView()
 
+        for given in [given1, given2] {
+            // When
+            // - "time out" → BG
+            let when1 = given
+                .and(.flushDatadogContext())
+                .when(.timeoutSession())
+                .and(.appEntersBackground(after: dt1))
+
+            for when in [
+                when1.and(.trackTwoActions(after1: dt2, after2: dt3)),
+                when1.and(.trackResource(after: dt2, duration: dt3)),
+                when1.and(.trackTwoLongTasks(after1: dt2, after2: dt3)),
+            ] {
+                // Then
+                // - It only tracks "timed out" session (background events are skipped due to BET disabled):
+                let session = try when.then().takeSingle()
+                // Note: on watchOS, `displayFirstFrame` is a no-op, so no TTID is recorded.
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+                if given == given1 { // session with `ApplicationLaunch` view
+                    DDAssertEqual(session.duration, timeToSDKInit, accuracy: accuracy)
+                    XCTAssertEqual(session.views.count, 1)
+                    XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+                    DDAssertEqual(session.views[0].duration, timeToSDKInit, accuracy: accuracy)
+                } else { // session with manual view
+                    DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
+                    XCTAssertEqual(session.views.count, 2)
+                    XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+                    DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
+                    XCTAssertEqual(session.views[1].name, manualViewName)
+                    DDAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
+                }
+            }
+
+            // When
+            // - BG → "time out"
+            let when2 = given
+                .and(.flushDatadogContext())
+                .and(.appEntersBackground(after: dt1))
+                .when(.timeoutSession())
+
+            for when in [
+                when2.and(.trackTwoActions(after1: dt2, after2: dt3)),
+                when2.and(.trackResource(after: dt2, duration: dt3)),
+                when2.and(.trackTwoLongTasks(after1: dt2, after2: dt3)),
+            ] {
+                // Then
+                // - It only tracks "timed out" session (background events are skipped due to BET disabled):
+                let session = try when.then().takeSingle()
+                // Note: on watchOS, `displayFirstFrame` is a no-op, so no TTID is recorded.
+                XCTAssertNil(session.ttidEvent)
+                XCTAssertNil(session.timeToInitialDisplay)
+                DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
+                XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+                if given == given1 { // session with `ApplicationLaunch` view
+                    DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                    XCTAssertEqual(session.views.count, 1)
+                    XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+                    DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
+                } else { // session with manual view
+                    DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
+                    XCTAssertEqual(session.views.count, 2)
+                    XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
+                    DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
+                    XCTAssertEqual(session.views[1].name, manualViewName)
+                    DDAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
+                }
+            }
+        }
+    }
+    #endif
+
+    #if !os(watchOS)
     func testGivenUserSession_andBETEnabled_whenItTimesOut_andNextEventIsTrackedInBackground() throws {
         // Given
         // - BET enabled
@@ -353,12 +619,67 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
             }
         }
     }
+    #else
+    func testGivenUserSession_andBETEnabled_whenItTimesOut_andNextEventIsTrackedInBackground() throws {
+        // Given
+        // - BET enabled
+        let given1 = userSession { $0.trackBackgroundEvents = true }
+        let given2 = userSessionWithManualView { $0.trackBackgroundEvents = true }
+
+        for given in [given1, given2] {
+            // When
+            let when1 = given
+                .and(.flushDatadogContext())
+                .when(.timeoutSession())
+                .and(.appEntersBackground(after: dt1))
+            let when2 = given
+                .and(.flushDatadogContext())
+                .and(.appEntersBackground(after: dt1))
+                .when(.timeoutSession())
+
+            for when in [when1, when2] {
+                // When
+                // - actions or resource
+                let when1 = when.and(.trackTwoActions(after1: dt2, after2: dt3))
+                let when2 = when.and(.trackResource(after: dt2, duration: dt3))
+
+                for when in [when1, when2] {
+                    // Then
+                    // - It tracks "timed out" session (same as with BET disabled):
+                    let (session1, session2) = try when.then().takeTwo()
+                    XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+
+                    // - It creates new session for tracking background events:
+                    XCTAssertNil(session2.ttidEvent)
+                    XCTAssertNil(session2.timeToInitialDisplay)
+                    DDAssertEqual(session2.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + sessionTimeoutDuration + dt1 + dt2, accuracy: accuracy)
+                    DDAssertEqual(session2.duration, dt3, accuracy: accuracy)
+                    XCTAssertEqual(session2.sessionPrecondition, .inactivityTimeout)
+                    XCTAssertEqual(session2.views.count, 1)
+                    XCTAssertEqual(session2.views[0].name, backgroundViewName)
+                    DDAssertEqual(session2.views[0].duration, dt3, accuracy: accuracy)
+                    XCTAssertEqual(session2.views[0].actionEvents.count, when == when1 ? 2 : 0)
+                    XCTAssertEqual(session2.views[0].resourceEvents.count, when == when2 ? 1 : 0)
+                }
+
+                // When
+                // - long tasks
+                let when3 = when.and(.trackTwoLongTasks(after1: dt2, after2: dt3))
+
+                // Then
+                // - It only tracks "timed out" session (long tasks are skipped in background regardless BET enabled):
+                let session = try when3.then().takeSingle()
+                XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
+            }
+        }
+    }
+    #endif
 
     // MARK: - Background session "time out" → track in background
 
     func testGivenBackgroundSession_whenItTimesOut_andNextEventIsTrackedInBackground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = backgroundSession()
@@ -389,8 +710,8 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andNextEventIsTrackedInBackground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         // - BET enabled
@@ -462,8 +783,8 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
     // MARK: - Background session "time out" → track in foreground
 
     func testGivenBackgroundSession_whenItTimesOut_andNextEventIsTrackedInForeground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = backgroundSession()
@@ -508,8 +829,8 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andNextEventIsTrackedInForeground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         // - BET enabled
@@ -552,8 +873,8 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundSession_whenItTimesOut_andViewIsTrackedInForeground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS or watchOS")
         #else
         // Given
         let given1 = backgroundSession { $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate() }
@@ -598,8 +919,8 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andViewIsTrackedInForeground() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS or watchOS")
         #else
         // Given
         // - BET enabled
@@ -660,4 +981,151 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         }
         #endif
     }
+
+    #if os(watchOS)
+    func testGivenBackgroundSession_whenItTimesOut_andManualViewIsTrackedInForeground() throws {
+        // Note: on watchOS, background launches are classified as `userAppLaunch` when `willEnterForeground`
+        // fires before the 10s resolver threshold. The resource is tracked in the `ApplicationLaunch` view.
+        // Session duration reflects only actual events (no TTID, no appActive). Prewarm is not available on watchOS.
+        let given = backgroundSession()
+            .and(.trackResource(after: dt1, duration: dt2))
+
+        // When
+        // - "time out" → FG → manual view
+        // `willEnterForeground` fires at dt3 (after +900s gap), classifying the session as `userAppLaunch`.
+        // The session's last real event was the resource end, so duration = timeToSDKInit + dt1 + dt2.
+        let when1 = given
+            .when(.timeoutSession())
+            .and(.appBecomesActive(after: dt3))
+            .and(.startManualView(after: dt4, viewName: manualViewName, viewKey: "manual-view"))
+            .and(.stopManualView(after: dt5, viewKey: "manual-view"))
+
+        // Then
+        // - Session 1: userAppLaunch with ApplicationLaunch view (duration = last event, not including timeout gap):
+        let (session1when1, session2when1) = try when1.then().takeTwo()
+        XCTAssertNil(session1when1.ttidEvent)
+        XCTAssertNil(session1when1.timeToInitialDisplay)
+        DDAssertEqual(session1when1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        DDAssertEqual(session1when1.duration, timeToSDKInit + dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session1when1.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session1when1.views.count, 1)
+        XCTAssertEqual(session1when1.views[0].name, applicationLaunchViewName)
+        DDAssertEqual(session1when1.views[0].duration, timeToSDKInit + dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session1when1.views[0].resourceEvents.count, 1)
+
+        // - Session 2: new inactivityTimeout session for tracking view in foreground:
+        XCTAssertNil(session2when1.ttidEvent)
+        XCTAssertNil(session2when1.timeToInitialDisplay)
+        DDAssertEqual(session2when1.sessionStartDate, processLaunchDate + timeToSDKInit + dt1 + dt2 + sessionTimeoutDuration + dt3 + dt4, accuracy: accuracy)
+        DDAssertEqual(session2when1.duration, dt5, accuracy: accuracy)
+        XCTAssertEqual(session2when1.sessionPrecondition, .inactivityTimeout)
+        XCTAssertEqual(session2when1.views.count, 1)
+        XCTAssertEqual(session2when1.views[0].name, manualViewName)
+        DDAssertEqual(session2when1.views[0].duration, dt5, accuracy: accuracy)
+
+        // When
+        // - FG → "time out" → manual view
+        // `willEnterForeground` fires at dt3 (< 10s threshold), classifying as `userAppLaunch`.
+        // Timeout fires at dt3 + 900s. Manual view creates a new session.
+        let when2 = given
+            .and(.appBecomesActive(after: dt3))
+            .when(.timeoutSession())
+            .and(.startManualView(after: dt4, viewName: manualViewName, viewKey: "manual-view"))
+            .and(.stopManualView(after: dt5, viewKey: "manual-view"))
+
+        // Then
+        // - Session 1: userAppLaunch, duration up to last RUM event (resource end — appBecomesActive doesn't emit events):
+        let (session1when2, session2when2) = try when2.then().takeTwo()
+        XCTAssertNil(session1when2.ttidEvent)
+        XCTAssertNil(session1when2.timeToInitialDisplay)
+        DDAssertEqual(session1when2.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        DDAssertEqual(session1when2.duration, timeToSDKInit + dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session1when2.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session1when2.views.count, 1)
+        XCTAssertEqual(session1when2.views[0].name, applicationLaunchViewName)
+        DDAssertEqual(session1when2.views[0].duration, timeToSDKInit + dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session1when2.views[0].resourceEvents.count, 1)
+
+        // - Session 2: new inactivityTimeout session for tracking view in foreground:
+        XCTAssertNil(session2when2.ttidEvent)
+        XCTAssertNil(session2when2.timeToInitialDisplay)
+        DDAssertEqual(session2when2.sessionStartDate, processLaunchDate + timeToSDKInit + dt1 + dt2 + dt3 + sessionTimeoutDuration + dt4, accuracy: accuracy)
+        DDAssertEqual(session2when2.duration, dt5, accuracy: accuracy)
+        XCTAssertEqual(session2when2.sessionPrecondition, .inactivityTimeout)
+        XCTAssertEqual(session2when2.views.count, 1)
+        XCTAssertEqual(session2when2.views[0].name, manualViewName)
+        DDAssertEqual(session2when2.views[0].duration, dt5, accuracy: accuracy)
+    }
+
+    func testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andManualViewIsTrackedInForeground() throws {
+        // Note: on watchOS, background launches (including with BET enabled) are classified as `userAppLaunch`
+        // when `willEnterForeground` fires. The resource is tracked in the `ApplicationLaunch` view
+        // (not a `Background` view). Session duration is based on the last real event (no TTID).
+        // Prewarm is not available on watchOS.
+        let given = backgroundSession { $0.trackBackgroundEvents = true }
+            .and(.trackResource(after: dt1, duration: dt2))
+
+        // When
+        // - "time out" → FG → manual view
+        let when1 = given
+            .when(.timeoutSession())
+            .and(.appBecomesActive(after: dt3))
+            .and(.startManualView(after: dt4, viewName: manualViewName, viewKey: "manual-view"))
+            .and(.stopManualView(after: dt5, viewKey: "manual-view"))
+
+        // Then
+        // - Session 1: userAppLaunch, duration = last real event (resource end, not including timeout gap):
+        let (session1a, session2a) = try when1.then().takeTwo()
+        XCTAssertNil(session1a.ttidEvent)
+        XCTAssertNil(session1a.timeToInitialDisplay)
+        DDAssertEqual(session1a.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        DDAssertEqual(session1a.duration, timeToSDKInit + dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session1a.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session1a.views.count, 1)
+        XCTAssertEqual(session1a.views[0].name, applicationLaunchViewName)
+        DDAssertEqual(session1a.views[0].duration, timeToSDKInit + dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session1a.views[0].resourceEvents.count, 1)
+
+        // - Session 2: new inactivityTimeout session for tracking view in foreground:
+        XCTAssertNil(session2a.ttidEvent)
+        XCTAssertNil(session2a.timeToInitialDisplay)
+        DDAssertEqual(session2a.sessionStartDate, processLaunchDate + timeToSDKInit + dt1 + dt2 + sessionTimeoutDuration + dt3 + dt4, accuracy: accuracy)
+        DDAssertEqual(session2a.duration, dt5, accuracy: accuracy)
+        XCTAssertEqual(session2a.sessionPrecondition, .inactivityTimeout)
+        XCTAssertEqual(session2a.views.count, 1)
+        XCTAssertEqual(session2a.views[0].name, manualViewName)
+        DDAssertEqual(session2a.views[0].duration, dt5, accuracy: accuracy)
+
+        // When
+        // - FG → "time out" → manual view
+        let when2 = given
+            .and(.appBecomesActive(after: dt3))
+            .when(.timeoutSession())
+            .and(.startManualView(after: dt4, viewName: manualViewName, viewKey: "manual-view"))
+            .and(.stopManualView(after: dt5, viewKey: "manual-view"))
+
+        // Then
+        // - Session 1: userAppLaunch, duration up to last RUM event (resource end — appBecomesActive doesn't emit events):
+        let (session1b, session2b) = try when2.then().takeTwo()
+        XCTAssertNil(session1b.ttidEvent)
+        XCTAssertNil(session1b.timeToInitialDisplay)
+        DDAssertEqual(session1b.sessionStartDate, processLaunchDate, accuracy: accuracy)
+        DDAssertEqual(session1b.duration, timeToSDKInit + dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session1b.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session1b.views.count, 1)
+        XCTAssertEqual(session1b.views[0].name, applicationLaunchViewName)
+        DDAssertEqual(session1b.views[0].duration, timeToSDKInit + dt1 + dt2, accuracy: accuracy)
+        XCTAssertEqual(session1b.views[0].resourceEvents.count, 1)
+
+        // - Session 2: new inactivityTimeout session for tracking view in foreground:
+        XCTAssertNil(session2b.ttidEvent)
+        XCTAssertNil(session2b.timeToInitialDisplay)
+        DDAssertEqual(session2b.sessionStartDate, processLaunchDate + timeToSDKInit + dt1 + dt2 + dt3 + sessionTimeoutDuration + dt4, accuracy: accuracy)
+        DDAssertEqual(session2b.duration, dt5, accuracy: accuracy)
+        XCTAssertEqual(session2b.sessionPrecondition, .inactivityTimeout)
+        XCTAssertEqual(session2b.views.count, 1)
+        XCTAssertEqual(session2b.views[0].name, manualViewName)
+        DDAssertEqual(session2b.views[0].duration, dt5, accuracy: accuracy)
+    }
+    #endif
 }

@@ -46,6 +46,9 @@ final class RUMViewHitchesIntegrationTests: XCTestCase {
     }
 
     func testViewHitchesCollected_whenFeatureFlagIsEnabled() throws {
+        #if os(watchOS)
+        throw XCTSkip("Slow frame tracking is not supported on watchOS (no CADisplayLink)")
+        #endif
         // Given
         let viewName = "MyView"
         let rumConfig = RUM.Configuration(applicationID: .mockAny())
