@@ -544,6 +544,7 @@ extension Recorder.Context: AnyMockable, RandomMockable {
             sessionID: rumContext.sessionID,
             viewID: rumContext.viewID ?? "",
             viewServerTimeOffset: rumContext.viewServerTimeOffset,
+            viewPath: rumContext.viewPath,
             date: date,
             telemetry: telemetry
         )
