@@ -68,10 +68,6 @@ class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
 
     @available(iOS 16.0, *)
     func testRootTabbar() throws {
-        if #available(iOS 26, tvOS 26, *) {
-            throw XCTSkip("TODO: RUM-13038 Fix SwiftUI Auto instrumentation on iOS 26")
-        }
-
         // Server session recording RUM events
         let serverSession = server.obtainUniqueRecordingSession()
         let app = ExampleApplication()
@@ -160,11 +156,17 @@ class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
         RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[12])
         XCTAssertEqual(session.views[13].name, "NavigationStackHostingController<AnyView>")
         RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[13])
-        XCTAssertEqual(session.views[14].name, "NumberDetailView")
+        // TODO: RUM-13038 NavigationSplitView detail views not tracked on iOS 26
+        if #unavailable(iOS 26, tvOS 26) {
+            XCTAssertEqual(session.views[14].name, "NumberDetailView")
+        }
         RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[14])
         XCTAssertEqual(session.views[15].name, "NavigationStackHostingController<AnyView>")
         RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[15])
-        XCTAssertEqual(session.views[16].name, "PlaceholderView")
+        // TODO: RUM-13038 NavigationSplitView detail views not tracked on iOS 26
+        if #unavailable(iOS 26, tvOS 26) {
+            XCTAssertEqual(session.views[16].name, "PlaceholderView")
+        }
         RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[16])
         XCTAssertEqual(session.views[17].name, "NavigationStackHostingController<AnyView>")
 
@@ -182,10 +184,6 @@ class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
 
     // MARK: - Action Tracking
     func testActions() throws {
-        if #available(iOS 26, tvOS 26, *) {
-            throw XCTSkip("TODO: RUM-13038 Fix SwiftUI Auto instrumentation on iOS 26")
-        }
-
         let serverSession = server.obtainUniqueRecordingSession()
         let app = ExampleApplication()
         app.launchWith(
@@ -229,7 +227,10 @@ class RUMSwiftUIAutoInstrumentationTests: IntegrationTests, RUMCommonAsserts {
             XCTAssertEqual(mainView.actionEvents[3].action.target?.name, "UISlider(slider)")
             XCTAssertEqual(mainView.actionEvents[4].action.target?.name, "UIStepper(stepper)")
             XCTAssertEqual(mainView.actionEvents[5].action.target?.name, "UISegmentedControl")
-            XCTAssertEqual(mainView.actionEvents[6].action.target?.name, "SwiftUI_Menu")
+            // TODO: RUM-13038 Menu target name changed to "HostingUIButton" on iOS 26
+            if #unavailable(iOS 26, tvOS 26) {
+                XCTAssertEqual(mainView.actionEvents[6].action.target?.name, "SwiftUI_Menu")
+            }
             XCTAssertEqual(mainView.actionEvents[7].action.target?.name, "_UIContextMenuCell")
             XCTAssertEqual(mainView.actionEvents[8].action.target?.name, "UITextField")
         } else {
