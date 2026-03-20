@@ -20,7 +20,8 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
     func testApplicationWasInForeground_WatchdogTermination() throws {
         let didSend = self.expectation(description: "Watchdog termination was reported")
 
-        // app starts
+        // app starts - use a controlled queue so we can flush its state transitions
+        let firstSessionQueue = DispatchQueue(label: "com.datadoghq.tests.first-session")
         given(
             isSimulator: false,
             isDebugging: false,
@@ -30,7 +31,8 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
             vendorId: "foo",
             processId: UUID(),
             didCrash: false,
-            didSend: didSend
+            didSend: didSend,
+            queue: firstSessionQueue
         )
 
         // RUM view update before start, this must be ignored
@@ -39,6 +41,11 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
 
         // monitor reveives the launch report
         _ = sut.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
+
+        // Flush the queue to ensure the monitor has transitioned to `.started`
+        // before updating the view event. Without this, the update would be
+        // dropped because the monitor is still in `.starting` state.
+        firstSessionQueue.sync {}
 
         // RUM view update after start
         let viewEvent2: RUMViewEvent = .mockRandom()
@@ -79,7 +86,8 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         vendorId: String?,
         processId: UUID,
         didCrash: Bool,
-        didSend: XCTestExpectation
+        didSend: XCTestExpectation,
+        queue: DispatchQueue = AppStateManager.defaultQueue
     ) {
         let deviceInfo: DeviceInfo = .mockWith(
             isSimulator: isSimulator,
@@ -95,7 +103,8 @@ final class WatchdogTerminationMonitorTests: XCTestCase {
         let appStateManager = AppStateManager(
             featureScope: featureScope,
             processId: processId,
-            syntheticsEnvironment: false
+            syntheticsEnvironment: false,
+            queue: queue
         )
 
         let checker = WatchdogTerminationChecker(appStateManager: appStateManager, featureScope: featureScope)
