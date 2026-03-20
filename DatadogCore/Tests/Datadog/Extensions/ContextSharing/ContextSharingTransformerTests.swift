@@ -50,17 +50,17 @@ class ContextSharingTransformerTests: XCTestCase {
     func testPublish_callsReceiverImmediately() throws {
         // Given
         let transformer = ContextSharingTransformer()
-        let expectation = expectation(description: "receiver is called")
+        var receiverCalled = false
         var receivedContext: SharedContext?
 
         // When
         transformer.publish { context in
+            receiverCalled = true
             receivedContext = context
-            expectation.fulfill()
         }
 
-        // Then
-        waitForExpectations(timeout: 0)
+        // Then - receiver must be called synchronously within `publish`
+        XCTAssertTrue(receiverCalled)
         XCTAssertNil(receivedContext) // Initially nil
     }
 
