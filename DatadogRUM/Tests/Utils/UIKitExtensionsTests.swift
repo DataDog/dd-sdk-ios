@@ -73,7 +73,8 @@ struct UIKitExtensionsTests {
 
             #expect(alertController.isUIAlertController)
 
-            #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertActionView }).count == numberOfActionButtons)
+            let expectedCount = style == .alert ? numberOfActionButtons : numberOfActionButtons + buttonCountOffset
+            #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertActionView }).count == expectedCount)
 
             // On visionOS, UIAlertController renders text fields as cells in a UICollectionView.
             // In a unit test environment (no live window scene), the collection view only renders
