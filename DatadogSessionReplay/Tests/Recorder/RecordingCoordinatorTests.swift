@@ -296,7 +296,7 @@ class RecordingCoordinatorTests: XCTestCase {
         // Given
         prepareRecordingCoordinator(replaySampleRate: 60.0)
         let fixedSessionID = "abcdef01-2345-6789-abcd-ef0123456789"
-        let sessionSampler = DeterministicSampler(uuid: fixedSessionID, samplingRate: 70.0)
+        let sessionSampler = DeterministicSampler(uuid: .mockWith(fixedSessionID), samplingRate: 70.0)
         let rumContext = RUMCoreContext(
             applicationID: "app-id",
             sessionID: fixedSessionID,
@@ -323,7 +323,7 @@ class RecordingCoordinatorTests: XCTestCase {
         let sessionSampleRate: SampleRate = 50.0
 
         // Precompute using combined(with:) — canonical cross-SDK formula
-        let sessionSampler = DeterministicSampler(uuid: knownSessionID, samplingRate: sessionSampleRate)
+        let sessionSampler = DeterministicSampler(uuid: .mockWith(knownSessionID), samplingRate: sessionSampleRate)
         let expectedResult = sessionSampler.combined(with: replaySampleRate).isSampled
 
         prepareRecordingCoordinator(replaySampleRate: replaySampleRate)
@@ -351,9 +351,9 @@ class RecordingCoordinatorTests: XCTestCase {
         let sessionSampleRate: SampleRate = 50.0
         let replaySampleRate: SampleRate = 80.0
 
-        let sessionSampler = DeterministicSampler(uuid: knownSessionID, samplingRate: sessionSampleRate)
+        let sessionSampler = DeterministicSampler(uuid: .mockWith(knownSessionID), samplingRate: sessionSampleRate)
         let composedResult = sessionSampler.combined(with: replaySampleRate).isSampled
-        let replayOnlyResult = DeterministicSampler(uuid: knownSessionID, samplingRate: replaySampleRate).isSampled
+        let replayOnlyResult = DeterministicSampler(uuid: .mockWith(knownSessionID), samplingRate: replaySampleRate).isSampled
         guard composedResult != replayOnlyResult else {
             XCTFail("Precondition: chosen vector must differ between composed and replay-only rate")
             return

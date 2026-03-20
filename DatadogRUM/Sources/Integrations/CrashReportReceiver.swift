@@ -203,7 +203,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     ) -> Bool {
         let sessionID = uuidGenerator.generateUnique()
         let sampled = DeterministicSampler(
-            uuid: sessionID.rawValue.uuidString,
+            uuid: sessionID.rawValue,
             samplingRate: sessionSampler.samplingRate
         ).sample()
 

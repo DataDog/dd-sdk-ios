@@ -266,6 +266,10 @@ extension UUID: AnyMockable, RandomMockable {
     public static func mockRandom() -> UUID {
         return UUID()
     }
+
+    public static func mockWith(_ string: String) -> UUID {
+        return UUID(uuidString: string)! // swiftlint:disable:this force_unwrapping
+    }
 }
 
 extension String: AnyMockable, RandomMockable {

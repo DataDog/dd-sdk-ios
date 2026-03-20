@@ -876,7 +876,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let receiver = ContextMessageReceiver()
         let sessionUUID = "abcdef01-2345-6789-abcd-ef0123456789"
-        let sessionSampler = DeterministicSampler(uuid: sessionUUID, samplingRate: 80.0)
+        let sessionSampler = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: 80.0)
         let networkContext = NetworkContext(rumContext: RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampler: sessionSampler))
 
         let handler = TracingURLSessionHandler(
@@ -913,12 +913,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let sessionSampleRate: SampleRate = 50.0
         let traceRate: SampleRate = 80.0
 
-        let sessionSampler = DeterministicSampler(uuid: sessionUUID, samplingRate: sessionSampleRate)
+        let sessionSampler = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: sessionSampleRate)
         let effectiveRate = sessionSampler.combined(with: traceRate).samplingRate
         XCTAssertEqual(effectiveRate, 40.0, accuracy: 0.001)
 
         let expectedSampled = sessionSampler.combined(with: traceRate).isSampled
-        let oldBehaviour = DeterministicSampler(uuid: sessionUUID, samplingRate: traceRate).isSampled
+        let oldBehaviour = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: traceRate).isSampled
         XCTAssertNotEqual(expectedSampled, oldBehaviour, "Chosen vector must differ between composed and trace-only rate")
 
         let handler = TracingURLSessionHandler(
@@ -972,12 +972,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let sessionSampleRate: SampleRate = 60.0
         let traceRate: SampleRate = 80.0
 
-        let sessionSampler = DeterministicSampler(uuid: sessionUUID, samplingRate: sessionSampleRate)
+        let sessionSampler = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: sessionSampleRate)
         let effectiveRate = sessionSampler.combined(with: traceRate).samplingRate
         XCTAssertEqual(effectiveRate, 48.0, accuracy: 0.001)
 
         let expectedSampled = sessionSampler.combined(with: traceRate).isSampled
-        let oldBehaviour = DeterministicSampler(uuid: sessionUUID, samplingRate: traceRate).isSampled
+        let oldBehaviour = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: traceRate).isSampled
         XCTAssertNotEqual(expectedSampled, oldBehaviour, "Chosen vector must differ between composed and trace-only rate")
 
         let handler = TracingURLSessionHandler(

@@ -117,7 +117,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.dependencies = dependencies
         self.applicationState = applicationState
         self.sampler = DeterministicSampler(
-            uuid: sessionUUID.rawValue.uuidString,
+            uuid: sessionUUID.rawValue,
             samplingRate: dependencies.samplingRate
         )
         self.startPrecondition = startPrecondition
