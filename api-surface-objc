@@ -226,6 +226,7 @@ public class objc_LogEventNetworkConnectionInfo: NSObject
     public var supportsIPv6: NSNumber?
     public var isExpensive: NSNumber?
     public var isConstrained: NSNumber?
+    public var linkQuality: objc_LogEventLinkQuality
 public enum objc_LogEventReachability: Int
     case yes
     case maybe
@@ -236,6 +237,12 @@ public enum objc_LogEventInterface: Int
     case cellular
     case loopback
     case other
+public enum objc_LogEventLinkQuality: Int
+    case none
+    case good
+    case minimal
+    case moderate
+    case unknown
 public class objc_LogEventCarrierInfo: NSObject
     public var carrierName: String?
     public var carrierISOCountryCode: String?
@@ -1303,6 +1310,7 @@ public class objc_RUMResourceEventResource: NSObject
     public var redirect: objc_RUMResourceEventResourceRedirect?
     public var renderBlockingStatus: objc_RUMResourceEventResourceRenderBlockingStatus
     public var request: objc_RUMResourceEventResourceRequest?
+    public var response: objc_RUMResourceEventResourceResponse?
     public var size: NSNumber?
     public var ssl: objc_RUMResourceEventResourceSSL?
     public var statusCode: NSNumber?
@@ -1391,6 +1399,13 @@ public enum objc_RUMResourceEventResourceRenderBlockingStatus: Int
 public class objc_RUMResourceEventResourceRequest: NSObject
     public var decodedBodySize: NSNumber?
     public var encodedBodySize: NSNumber?
+    public var headers: objc_RUMResourceEventResourceRequestHeaders?
+public class objc_RUMResourceEventResourceRequestHeaders: NSObject
+    public var headersInfo: [String: String]
+public class objc_RUMResourceEventResourceResponse: NSObject
+    public var headers: objc_RUMResourceEventResourceResponseHeaders?
+public class objc_RUMResourceEventResourceResponseHeaders: NSObject
+    public var headersInfo: [String: String]
 public class objc_RUMResourceEventResourceSSL: NSObject
     public var duration: NSNumber
     public var start: NSNumber
@@ -2972,5 +2987,4 @@ public final class objc_SessionReplayPrivacyOverrides: NSObject
 # ----------------------------------
 # API surface for DatadogProfiling:
 # ----------------------------------
-
 

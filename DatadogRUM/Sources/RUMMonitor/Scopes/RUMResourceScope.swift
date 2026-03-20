@@ -131,6 +131,11 @@ internal class RUMResourceScope: RUMScope {
             .map { .init($0, representation: .decimal) }
             ?? spanContext?.spanID
 
+        let parentSpanID: SpanID? = attributes.removeValue(forKey: CrossPlatformAttributes.parentSpanID)?
+            .dd.decode()
+            .map { .init($0, representation: .decimal) }
+            ?? spanContext?.parentSpanID
+
         let traceSamplingRate = attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR)?.dd.decode() ?? spanContext?.samplingRate
 
         // Check GraphQL attributes
@@ -204,6 +209,7 @@ internal class RUMResourceScope: RUMScope {
                     sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)
                 ),
                 discarded: nil,
+                parentSpanId: parentSpanID?.toString(representation: .decimal),
                 rulePsr: traceSamplingRate,
                 session: .init(
                     plan: .plan1,

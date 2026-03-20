@@ -12,6 +12,11 @@
 		0992EB942EE9984B00419E90 /* RUMAlertScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0992EB912EE9984B00419E90 /* RUMAlertScenario.storyboard */; };
 		0992EB952EE9984B00419E90 /* RUMAlertSwiftUIViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0992EB932EE9984B00419E90 /* RUMAlertSwiftUIViews.swift */; };
 		0992EB962EE9984B00419E90 /* RUMAlertSwiftUIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0992EB922EE9984B00419E90 /* RUMAlertSwiftUIViewController.swift */; };
+		09CA26A52F5F245D0065626D /* RUMResourceActiveSpanAugmentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09CA26A42F5F245D0065626D /* RUMResourceActiveSpanAugmentationTests.swift */; };
+		09CD7F082F5EDDB100501E79 /* RUM+TracingScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09CD7F062F5EDD7800501E79 /* RUM+TracingScenarios.swift */; };
+		09CD7F0C2F5EE54E00501E79 /* RUMAndTracingScenarios.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 09CD7F0B2F5EE54E00501E79 /* RUMAndTracingScenarios.storyboard */; };
+		09CD7F102F5EE8D300501E79 /* RUMResourceActiveSpanAugmentationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09CD7F0E2F5EE8D300501E79 /* RUMResourceActiveSpanAugmentationViewController.swift */; };
+		09CDF4C02F5F4B9000DC3C91 /* URLSessionTestsHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09CDF4BF2F5F4B8B00DC3C91 /* URLSessionTestsHelpers.swift */; };
 		1BF467D307888D99A296D958 /* libPods-Runner iOS-IntegrationScenarios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E93021D28790F380B3C63C4B /* libPods-Runner iOS-IntegrationScenarios.a */; };
 		61098D2B27FEE3F00021237A /* MessagePortChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61098D2A27FEE3F00021237A /* MessagePortChannel.swift */; };
 		61098D2D27FEE4130021237A /* MessagePortChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61098D2A27FEE3F00021237A /* MessagePortChannel.swift */; };
@@ -157,6 +162,11 @@
 		0992EB912EE9984B00419E90 /* RUMAlertScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMAlertScenario.storyboard; sourceTree = "<group>"; };
 		0992EB922EE9984B00419E90 /* RUMAlertSwiftUIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAlertSwiftUIViewController.swift; sourceTree = "<group>"; };
 		0992EB932EE9984B00419E90 /* RUMAlertSwiftUIViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAlertSwiftUIViews.swift; sourceTree = "<group>"; };
+		09CA26A42F5F245D0065626D /* RUMResourceActiveSpanAugmentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceActiveSpanAugmentationTests.swift; sourceTree = "<group>"; };
+		09CD7F062F5EDD7800501E79 /* RUM+TracingScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUM+TracingScenarios.swift"; sourceTree = "<group>"; };
+		09CD7F0B2F5EE54E00501E79 /* RUMAndTracingScenarios.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMAndTracingScenarios.storyboard; sourceTree = "<group>"; };
+		09CD7F0E2F5EE8D300501E79 /* RUMResourceActiveSpanAugmentationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceActiveSpanAugmentationViewController.swift; sourceTree = "<group>"; };
+		09CDF4BF2F5F4B8B00DC3C91 /* URLSessionTestsHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTestsHelpers.swift; sourceTree = "<group>"; };
 		1BEBA949C1D3B47541B73E76 /* Pods-Runner iOS.integration.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS.integration.xcconfig"; path = "Target Support Files/Pods-Runner iOS/Pods-Runner iOS.integration.xcconfig"; sourceTree = "<group>"; };
 		4EA131351F31A6F6914EA836 /* Pods-Runner iOS-IntegrationScenarios.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS-IntegrationScenarios.debug.xcconfig"; path = "Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios.debug.xcconfig"; sourceTree = "<group>"; };
 		5CBCD72B9911706B47601F5D /* Pods-Runner iOS-IntegrationScenarios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS-IntegrationScenarios.release.xcconfig"; path = "Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios.release.xcconfig"; sourceTree = "<group>"; };
@@ -341,6 +351,32 @@
 			path = AlertInstrumentation;
 			sourceTree = "<group>";
 		};
+		09CD7F052F5EDC8F00501E79 /* RUM+Tracing */ = {
+			isa = PBXGroup;
+			children = (
+				09CA26A42F5F245D0065626D /* RUMResourceActiveSpanAugmentationTests.swift */,
+			);
+			path = "RUM+Tracing";
+			sourceTree = "<group>";
+		};
+		09CD7F092F5EE2FF00501E79 /* RUM+TraceScenarios */ = {
+			isa = PBXGroup;
+			children = (
+				09CD7F0A2F5EE35D00501E79 /* RUMResourceActiveSpanAugmentation */,
+				09CD7F062F5EDD7800501E79 /* RUM+TracingScenarios.swift */,
+				09CD7F0B2F5EE54E00501E79 /* RUMAndTracingScenarios.storyboard */,
+			);
+			path = "RUM+TraceScenarios";
+			sourceTree = "<group>";
+		};
+		09CD7F0A2F5EE35D00501E79 /* RUMResourceActiveSpanAugmentation */ = {
+			isa = PBXGroup;
+			children = (
+				09CD7F0E2F5EE8D300501E79 /* RUMResourceActiveSpanAugmentationViewController.swift */,
+			);
+			path = RUMResourceActiveSpanAugmentation;
+			sourceTree = "<group>";
+		};
 		6111542325C992D9007C84C9 /* CrashReporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -465,6 +501,7 @@
 				61337030250F829E00236D58 /* Logging */,
 				61337033250F847500236D58 /* Tracing */,
 				61337036250F84F100236D58 /* RUM */,
+				09CD7F092F5EE2FF00501E79 /* RUM+TraceScenarios */,
 				612C136E2A9CF8AB0086B5D1 /* SessionReplay */,
 				6111542325C992D9007C84C9 /* CrashReporting */,
 				611EA12B2580F40E00BC0E56 /* TrackingConsent */,
@@ -552,6 +589,7 @@
 		61441C3524617013003D8BB8 /* IntegrationScenarios */ = {
 			isa = PBXGroup;
 			children = (
+				09CDF4BF2F5F4B8B00DC3C91 /* URLSessionTestsHelpers.swift */,
 				61441C3B24617013003D8BB8 /* IntegrationTests.swift */,
 				61B9ED1E2461E57700C0DCFF /* UITestsHelpers.swift */,
 				963F6B102DB79B5300F9425A /* ExampleApplication+Extensions.swift */,
@@ -659,6 +697,7 @@
 				61F3CD9D251106FA00C816E5 /* Logging */,
 				61F3CD9E251106FF00C816E5 /* Tracing */,
 				61F3CD9F2511070300C816E5 /* RUM */,
+				09CD7F052F5EDC8F00501E79 /* RUM+Tracing */,
 				612C13CA2A9F94890086B5D1 /* SessionReplay */,
 				61B6811D25F0E8480015B4AF /* CrashReporting */,
 				611EA15325815EDC00BC0E56 /* TrackingConsent */,
@@ -966,6 +1005,7 @@
 				61F9CA792512593A000A5E61 /* RUMNavigationControllerScenario.storyboard in Resources */,
 				D2FCA74E2B4D829F0014DC87 /* StopCoreScenario.storyboard in Resources */,
 				61337035250F84BF00236D58 /* TracingManualInstrumentationScenario.storyboard in Resources */,
+				09CD7F0C2F5EE54E00501E79 /* RUMAndTracingScenarios.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1091,6 +1131,7 @@
 				D22F06D129DAE5360026CC3C /* KioskViewController.swift in Sources */,
 				6111543F25C996A5007C84C9 /* CrashReportingViewController.swift in Sources */,
 				61B9ED1D2461E12000C0DCFF /* SendTracesFixtureViewController.swift in Sources */,
+				09CD7F082F5EDDB100501E79 /* RUM+TracingScenarios.swift in Sources */,
 				61D50C542580EF41006038A3 /* RUMScenarios.swift in Sources */,
 				61C2C20B24C1045300C0321C /* SendRUMFixture1ViewController.swift in Sources */,
 				615C3155251C9D7A0018781C /* RUMTASVariousUIControllsViewController.swift in Sources */,
@@ -1114,6 +1155,7 @@
 				D2FCA74F2B4D829F0014DC87 /* CSHomeViewController.swift in Sources */,
 				61163C3E252E0015007DD5BF /* RUMMVSModalViewController.swift in Sources */,
 				617247AF25DA9BEA007085B3 /* CrashReportingObjcHelpers.m in Sources */,
+				09CD7F102F5EE8D300501E79 /* RUMResourceActiveSpanAugmentationViewController.swift in Sources */,
 				6193DCE1251B692C009B8011 /* RUMTASTableViewController.swift in Sources */,
 				9678504E2E7C600F00F2FC52 /* NextScreenViewController.swift in Sources */,
 				6111544825C9A88B007C84C9 /* PersistenceHelper.swift in Sources */,
@@ -1147,9 +1189,11 @@
 				613B77382521E80800155458 /* RUMTabBarControllerScenarioTests.swift in Sources */,
 				96E1E1B32DAFE4C700EF013F /* RUMSwiftUIAutoInstrumentationTests.swift in Sources */,
 				9EA95C212791C9E200F6C1F3 /* WebViewScenarioTest.swift in Sources */,
+				09CA26A52F5F245D0065626D /* RUMResourceActiveSpanAugmentationTests.swift in Sources */,
 				6167ACFD251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift in Sources */,
 				611EA16625825FB300BC0E56 /* TrackingConsentScenarioTests.swift in Sources */,
 				61F3CD9A2510D8C500C816E5 /* Environment.swift in Sources */,
+				09CDF4C02F5F4B9000DC3C91 /* URLSessionTestsHelpers.swift in Sources */,
 				61B6815E25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift in Sources */,
 				61F9CA92251266F7000A5E61 /* RUMNavigationControllerScenarioTests.swift in Sources */,
 				612C13CC2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift in Sources */,

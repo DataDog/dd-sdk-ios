@@ -55,7 +55,7 @@ license-check:
 # Test env for running iOS tests in local:
 DEFAULT_IOS_OS := latest
 DEFAULT_IOS_PLATFORM := iOS Simulator
-DEFAULT_IOS_DEVICE := iPhone 15 Pro
+DEFAULT_IOS_DEVICE := iPhone 17 Pro
 
 # Test env for running tvOS tests in local:
 DEFAULT_TVOS_OS := latest

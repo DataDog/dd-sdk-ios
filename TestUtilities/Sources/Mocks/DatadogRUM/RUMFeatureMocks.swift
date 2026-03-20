@@ -558,6 +558,7 @@ extension RUMSpanContext: AnyMockable, RandomMockable {
         return RUMSpanContext(
             traceID: .mock(.mockRandom(), .mockRandom()),
             spanID: .mock(.mockRandom()),
+            parentSpanID: .mock(.mockRandom()),
             samplingRate: .mockRandom()
         )
     }
@@ -565,11 +566,13 @@ extension RUMSpanContext: AnyMockable, RandomMockable {
     public static func mockWith(
         traceID: TraceID = .mockAny(),
         spanID: SpanID = .mockAny(),
+        parentSpanID: SpanID? = .mockAny(),
         samplingRate: Double = .mockAny()
     ) -> RUMSpanContext {
         return RUMSpanContext(
             traceID: traceID,
             spanID: spanID,
+            parentSpanID: parentSpanID,
             samplingRate: samplingRate
         )
     }
@@ -590,6 +593,7 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
             spanContext: .init(
                 traceID: .mock(.mockRandom(), .mockRandom()),
                 spanID: .mock(.mockRandom()),
+                parentSpanID: .mock(.mockRandom()),
                 samplingRate: .mockAny()
             )
         )
@@ -1106,6 +1110,7 @@ extension RUMScopeDependencies {
         trackFrustrations: Bool = true,
         hasAppHangsEnabled: Bool = true,
         firstPartyHosts: FirstPartyHosts = .init([:]),
+        distributedTracingSampleRate: SampleRate? = nil,
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         backtraceReporter: BacktraceReporting = BacktraceReporterMock(backtrace: nil),
@@ -1141,6 +1146,7 @@ extension RUMScopeDependencies {
             trackFrustrations: trackFrustrations,
             hasAppHangsEnabled: hasAppHangsEnabled,
             firstPartyHosts: firstPartyHosts,
+            distributedTracingSampleRate: distributedTracingSampleRate,
             eventBuilder: eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator,
             backtraceReporter: backtraceReporter,
@@ -1172,6 +1178,7 @@ extension RUMScopeDependencies {
         trackFrustrations: Bool? = nil,
         hasAppHangsEnabled: Bool? = nil,
         firstPartyHosts: FirstPartyHosts? = nil,
+        distributedTracingSampleRate: SampleRate? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
         backtraceReporter: BacktraceReporting? = nil,
@@ -1201,6 +1208,7 @@ extension RUMScopeDependencies {
             trackFrustrations: trackFrustrations ?? self.trackFrustrations,
             hasAppHangsEnabled: hasAppHangsEnabled ?? self.hasAppHangsEnabled,
             firstPartyHosts: firstPartyHosts ?? self.firstPartyHosts,
+            distributedTracingSampleRate: distributedTracingSampleRate ?? self.distributedTracingSampleRate,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             backtraceReporter: backtraceReporter ?? self.backtraceReporter,

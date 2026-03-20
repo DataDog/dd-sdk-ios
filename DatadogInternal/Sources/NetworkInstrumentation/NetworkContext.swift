@@ -11,6 +11,7 @@ import Foundation
 public struct NetworkContext {
     /// Provides the current active RUM context, if any
     public var rumContext: RUMCoreContext?
+    public var activeSpanProvider: TraceActiveSpanProvider?
     public var userConfigurationContext: UserConfigurationContext?
     public var accountConfigurationContext: AccountConfigurationContext?
 }

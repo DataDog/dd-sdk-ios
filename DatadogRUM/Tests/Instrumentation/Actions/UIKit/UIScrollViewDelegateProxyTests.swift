@@ -79,6 +79,26 @@ class UIScrollViewDelegateProxyTests: XCTestCase {
         // Then
         XCTAssertNil(target)
     }
+
+    // MARK: - Circular Proxy Chain (regression for RxSwift-style delegate proxy conflict)
+
+    func testRespondsTo_withCircularProxyChain_doesNotCauseInfiniteRecursion() {
+        // Regression test: when Datadog's proxy and a third-party proxy (e.g. RxSwift's
+        // DelegateProxy) mutually reference each other, `responds(to:)` must not infinitely recurse.
+        //
+        // Circular chain:
+        //   ddProxy.originalDelegate  = thirdPartyProxy
+        //   thirdPartyProxy.forwardTo = ddProxy
+
+        // Given
+        let thirdPartyProxy = ThirdPartyDelegateProxy()
+        let ddProxy = UIScrollViewDelegateProxy(originalDelegate: thirdPartyProxy, handler: handler)
+        thirdPartyProxy.forwardToDelegate = ddProxy
+
+        // When / Then - must return without stack-overflowing
+        let selector = #selector(UIScrollViewDelegate.scrollViewDidScroll(_:))
+        XCTAssertFalse(ddProxy.responds(to: selector))
+    }
 }
 
 // MARK: - Test Mocks

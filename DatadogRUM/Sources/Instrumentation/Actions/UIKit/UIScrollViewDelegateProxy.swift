@@ -45,11 +45,21 @@ internal final class UIScrollViewDelegateProxy: NSObject, UIScrollViewDelegate {
 
     // MARK: - Forwarding
 
+    /// Guards against re-entrant calls to `responds(to:)` that arise when a third-party
+    /// delegate proxy (e.g. RxSwift's `DelegateProxy`) and this proxy hold mutual references,
+    /// causing infinite recursion.
+    private var isRespondingToSelector = false
+
     // swiftlint:disable:next implicitly_unwrapped_optional
     override func responds(to aSelector: Selector!) -> Bool {
         if super.responds(to: aSelector) {
             return true
         }
+        guard !isRespondingToSelector else {
+            return false
+        }
+        isRespondingToSelector = true
+        defer { isRespondingToSelector = false }
         return originalDelegate?.responds(to: aSelector) ?? false
     }
 

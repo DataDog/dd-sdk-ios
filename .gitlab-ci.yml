@@ -15,10 +15,10 @@ variables:
   MAIN_BRANCH: "master"
   DEVELOP_BRANCH: "develop"
   # Default Xcode and runtime versions for all jobs:
-  DEFAULT_XCODE: "16.2.0"
-  DEFAULT_IOS_OS: "18.3.1"
-  DEFAULT_TVOS_OS: "18.2"
-  DEFAULT_VISIONOS_OS: "2.3"
+  DEFAULT_XCODE: "26.0.0"
+  DEFAULT_IOS_OS: "26.0.1"
+  DEFAULT_TVOS_OS: "26.0"
+  DEFAULT_VISIONOS_OS: "26.0"
   # Prefilled variables for running a pipeline manually:
   # Ref.: https://docs.gitlab.com/ee/ci/pipelines/index.html#prefill-variables-in-manual-pipelines
   RELEASE_GIT_TAG:
@@ -29,7 +29,7 @@ variables:
 
 default:
   tags:
-    - macos:sonoma
+    - macos:sequoia-arm64
     - specific:true
 
 # ┌───────────────┐
@@ -143,7 +143,7 @@ Unit Tests (iOS):
     - "Build Dependencies"
   variables:
     PLATFORM: "iOS Simulator"
-    DEVICE: "iPhone 16 Pro"
+    DEVICE: "iPhone 17 Pro"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
@@ -188,7 +188,7 @@ UI Tests:
     - "Build Dependencies"
   variables:
     PLATFORM: "iOS Simulator"
-    DEVICE: "iPhone 16 Pro"
+    DEVICE: "iPhone 17 Pro"
   parallel:
     matrix:
       - TEST_PLAN:
@@ -250,9 +250,11 @@ Smoke Tests (iOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   variables:
     PLATFORM: "iOS Simulator"
-    DEVICE: "iPhone 16 Pro"
+    DEVICE: "iPhone 17 Pro"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
     - make clean repo-setup ENV=ci
@@ -263,6 +265,8 @@ Smoke Tests (tvOS):
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   variables:
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
@@ -271,13 +275,32 @@ Smoke Tests (tvOS):
     - make clean repo-setup ENV=ci
     - make smoke-test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
-SPM Build (Swift 5.10):
+SPM Build (Swift 6.2):
   stage: smoke-test
   rules: 
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS --tvOS --visionOS --watchOS
+    - make clean repo-setup ENV=ci
+    - make spm-build-ios
+    - make spm-build-tvos
+    - make spm-build-visionos
+    - make spm-build-macos
+    - make spm-build-watchos
+
+SPM Build (Swift 6.0):
+  stage: smoke-test
+  rules: 
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  tags:
+    - macos:sonoma
+    - specific:true
+  variables:
+    XCODE: "16.2.0"
+  script:
+    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --visionOS --watchOS
     - make clean repo-setup ENV=ci
     - make spm-build-ios
     - make spm-build-tvos
@@ -373,8 +396,15 @@ Dogfood (Datadog app):
 
 Build Artifacts:
   stage: release-build
-  rules: 
+  tags:
+    - macos:sonoma
+    - specific:true
+  rules:
     - !reference [.release-pipeline-job, rules]
+  variables:
+    XCODE: "16.2.0"
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   artifacts:
     paths:
       - artifacts
@@ -382,7 +412,7 @@ Build Artifacts:
   before_script:
     - *export_MAKE_release_params
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
+    - ./tools/runner-setup.sh --xcode "$XCODE" --ssh
     - make env-check
     - make clean
     - make release-build release-validate

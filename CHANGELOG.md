@@ -1,8 +1,24 @@
 # Unreleased
 
+# 3.8.2 / 17-03-2026
+
+- [FIX] Fix crash and incorrect delegate getter return value when using RUM scroll tracking. See [#2761][]
+- [FIX] Fix freeze in Session Replay when screen changes are triggered by the recording pipeline. See [#2759][]
+
+# 3.8.1 / 13-03-2026
+
+- [FIX] Fix crash when network instrumentation intercepts `AVAssetDownloadTask` or `AVAggregateAssetDownloadTask`. See [#2750][]
+
+# 3.8.0 / 12-03-2026
+
 - [FEATURE] Add OOB scroll and swipe action tracking. See [#2717][]
-- [IMPROVEMENT] Rename `DDRUMErrorEventErrorMeta` to `DDRUMErrorEventErrorMetaInfo`, add support of custom Objective-C runtime names for generated RUM models. See [#2705][]
 - [FEATURE] Add `trackResourceHeaders` configuration to capture HTTP request and response headers in RUM Resource events. See [#2721][]
+- [FEATURE] RUM Resources will now be augmented with the currently active span information, specifically the parent span and trace IDs, and sampling priority and decision maker. See [#2726][]
+- [IMPROVEMENT] Rename `DDRUMErrorEventErrorMeta` to `DDRUMErrorEventErrorMetaInfo`, add support of custom Objective-C runtime names for generated RUM models. See [#2705][]
+- [IMPROVEMENT] Add encoded and decoded body sizes to RUM resource events. See [#2697][] and [#2699][]
+- [IMPROVEMENT] Align the tags of WebView log events with the native Logs. See [#2710][]
+- [FIX] Fix crash context C-string conversion in KSCrash injection. See [#2740][]
+- [IMPROVEMENT] Add `NWPath.linkQuality` to network info attached to Logs and Traces on supported platforms. See [#2751][]
 
 # 3.7.0 / 18-02-2026
 
@@ -1061,9 +1077,18 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2674]: https://github.com/DataDog/dd-sdk-ios/pull/2674
 [#2676]: https://github.com/DataDog/dd-sdk-ios/pull/2676
 [#2688]: https://github.com/DataDog/dd-sdk-ios/pull/2688
+[#2697]: https://github.com/DataDog/dd-sdk-ios/pull/2697
+[#2699]: https://github.com/DataDog/dd-sdk-ios/pull/2699
 [#2705]: https://github.com/DataDog/dd-sdk-ios/pull/2705
-[#2721]: https://github.com/DataDog/dd-sdk-ios/pull/2721
+[#2710]: https://github.com/DataDog/dd-sdk-ios/pull/2710
 [#2717]: https://github.com/DataDog/dd-sdk-ios/pull/2717
+[#2721]: https://github.com/DataDog/dd-sdk-ios/pull/2721
+[#2726]: https://github.com/DataDog/dd-sdk-ios/pull/2726
+[#2759]: https://github.com/DataDog/dd-sdk-ios/pull/2759
+[#2761]: https://github.com/DataDog/dd-sdk-ios/pull/2761
+[#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
+[#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
+[#2751]: https://github.com/DataDog/dd-sdk-ios/pull/2751
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
@@ -1101,3 +1126,4 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@jbluntz]: https://github.com/jbluntz
 [@tdr-alays]: https://github.com/tdr-alays
 [@blimmer]: https://github.com/blimmer
+[@thedavidharris]: https://github.com/thedavidharris

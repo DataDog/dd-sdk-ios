@@ -1855,6 +1855,92 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception.trace, traceContexts.first, "It should register first injected Trace Context")
     }
 
+    // MARK: - isSupportedForInstrumentation
+
+    func testIsSupportedForInstrumentation_returnsTrueForDataTask() {
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.dataTask(with: URL.mockAny())
+        defer { task.cancel() }
+        XCTAssertTrue(task.isSupportedForInstrumentation)
+    }
+
+    func testIsSupportedForInstrumentation_returnsTrueForUploadTask() {
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.uploadTask(with: URLRequest(url: URL.mockAny()), from: Data())
+        defer { task.cancel() }
+        XCTAssertTrue(task.isSupportedForInstrumentation)
+    }
+
+    func testIsSupportedForInstrumentation_returnsTrueForDownloadTask() {
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.downloadTask(with: URL.mockAny())
+        defer { task.cancel() }
+        XCTAssertTrue(task.isSupportedForInstrumentation)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testIsSupportedForInstrumentation_returnsTrueForWebSocketTask() {
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.webSocketTask(with: URL(string: "wss://example.com")!)
+        defer { task.cancel() }
+        XCTAssertTrue(task.isSupportedForInstrumentation)
+    }
+
+    func testIsSupportedForInstrumentation_returnsTrueForStreamTask() {
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.streamTask(withHostName: "example.com", port: 80)
+        defer { task.cancel() }
+        XCTAssertTrue(task.isSupportedForInstrumentation)
+    }
+
+    func testIsSupportedForInstrumentation_returnsFalseForUnsupportedAVTaskTypes() {
+        let unsupportedClassNames = [
+            "AVAssetDownloadTask",
+            "NSURLSessionAVAssetDownloadTask",
+            "AVAggregateAssetDownloadTask",
+            "NSURLSessionAVAggregateAssetDownloadTask",
+            "__NSCFBackgroundAVAssetDownloadTask"
+        ]
+        for className in unsupportedClassNames {
+            guard let task = NSClassFromString(className)?.alloc() as? URLSessionTask else {
+                continue // class unavailable on this platform/OS version
+            }
+            XCTAssertFalse(task.isSupportedForInstrumentation, "\(className) should not be instrumented")
+        }
+    }
+
+    // MARK: - Crash regression: resume() on various task types
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testWebSocketTask_resumeDoesNotCrash() throws {
+        // Regression: verify that resuming a WebSocketTask with the swizzle installed doesn't crash.
+        // The crash in interceptResume is synchronous, so no real connection is needed — we cancel immediately.
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.webSocketTask(with: URL(string: "wss://example.com")!)
+        task.resume()
+        task.cancel()
+
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        feature.flush()
+        // No crash = pass. WebSocketTask is a supported type and should be tracked.
+        XCTAssertEqual(handler.interceptions.count, 1)
+    }
+
+    func testStreamTask_resumeDoesNotCrash() throws {
+        // Regression: verify that resuming a StreamTask with the swizzle installed doesn't crash.
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.streamTask(withHostName: "example.com", port: 80)
+        task.resume()
+        task.cancel()
+
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        feature.flush()
+        // No crash = pass. StreamTask is a supported type and should be tracked.
+        XCTAssertEqual(handler.interceptions.count, 1)
+    }
+
     // MARK: - First Party Hosts
 
     func testAutomaticMode_detectsFirstPartyHosts() throws {

@@ -383,6 +383,7 @@ class HeaderProcessorTests: XCTestCase {
         let processor = HeaderProcessor(config: .defaults)
         let responseHeaders: [AnyHashable: Any] = [
             "content-type": "application/json",
+            "content-length": 1_024,
             "cache-control": "no-cache",
             42: "should-be-ignored" // non-String key
         ]
@@ -394,7 +395,9 @@ class HeaderProcessorTests: XCTestCase {
         )
 
         // Then
+        XCTAssertEqual(result.response.count, 3)
         XCTAssertEqual(result.response["content-type"], "application/json")
+        XCTAssertEqual(result.response["content-length"], "1024")
         XCTAssertEqual(result.response["cache-control"], "no-cache")
     }
 }
