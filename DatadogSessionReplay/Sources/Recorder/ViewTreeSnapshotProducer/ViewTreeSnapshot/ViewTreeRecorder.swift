@@ -84,9 +84,11 @@ internal struct ViewTreeRecorder {
 
         if !semantics.nodes.isEmpty {
             nodes.append(
-                contentsOf: semantics.nodes.map {
-                    $0.withHeatmapIdentifier(heatmapIdentifier)
-                }
+                contentsOf: heatmapIdentifier.map { heatmapIdentifier in
+                    semantics.nodes.map {
+                        $0.withHeatmapIdentifier(heatmapIdentifier)
+                    }
+                } ?? semantics.nodes
             )
         }
 
@@ -142,7 +144,7 @@ internal struct ViewTreeRecorder {
 }
 
 extension Node {
-    fileprivate func withHeatmapIdentifier(_ heatmapIdentifier: HeatmapIdentifier?) -> Self {
+    fileprivate func withHeatmapIdentifier(_ heatmapIdentifier: HeatmapIdentifier) -> Self {
         var node = self
         node.heatmapIdentifier = heatmapIdentifier
         return node
