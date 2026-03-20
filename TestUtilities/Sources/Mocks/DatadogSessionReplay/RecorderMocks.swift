@@ -374,7 +374,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             ids: NodeIDGenerator(),
             webViewCache: .weakObjects(),
             heatmapCache: .init(),
-            clip: view.bounds,
+            clip: view.bounds
         )
     }
 
