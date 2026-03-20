@@ -60,7 +60,7 @@ internal struct ViewTreeRecorder {
         }
 
         // Compute the heatmap identifier
-        if let viewPath = context.recorder.viewPath {
+        let heatmapIdentifier = context.recorder.viewPath.map { viewPath in
             let component: String
             if let accessibilityIdentifier = view.accessibilityIdentifier, !accessibilityIdentifier.isEmpty {
                 component = accessibilityIdentifier
@@ -74,17 +74,20 @@ internal struct ViewTreeRecorder {
                 screenName: viewPath,
                 bundleIdentifier: bundleIdentifier() ?? "unknown"
             )
-            context.heatmapIdentifier = heatmapIdentifier
+
             context.heatmapCache.identifiers[ObjectIdentifier(view)] = heatmapIdentifier
-        } else {
-            context.heatmapIdentifier = nil
+            return heatmapIdentifier
         }
 
         let attributes = ViewAttributes(view: view, frame: frame, clip: context.clip, overrides: overrides)
         let semantics = nodeSemantics(for: view, with: attributes, in: context)
 
         if !semantics.nodes.isEmpty {
-            nodes.append(contentsOf: semantics.nodes)
+            nodes.append(
+                contentsOf: semantics.nodes.map {
+                    $0.withHeatmapIdentifier(heatmapIdentifier)
+                }
+            )
         }
 
         switch semantics.subtreeStrategy {
@@ -135,6 +138,14 @@ internal struct ViewTreeRecorder {
         }
 
         return semantics
+    }
+}
+
+extension Node {
+    fileprivate func withHeatmapIdentifier(_ heatmapIdentifier: HeatmapIdentifier?) -> Self {
+        var node = self
+        node.heatmapIdentifier = heatmapIdentifier
+        return node
     }
 }
 #endif

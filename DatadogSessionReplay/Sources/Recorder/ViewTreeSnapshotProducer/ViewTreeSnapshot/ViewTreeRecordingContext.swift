@@ -32,8 +32,6 @@ public struct SessionReplayViewTreeRecordingContext {
     var clip: CGRect
     /// The path components from the root to the current node, used for heatmap identifier computation.
     var nodePath: [String] = []
-    /// The heatmap identifier computed for the current node.
-    var heatmapIdentifier: HeatmapIdentifier?
 }
 
 internal final class HeatmapCache {
