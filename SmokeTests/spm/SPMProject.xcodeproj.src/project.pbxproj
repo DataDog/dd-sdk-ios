@@ -1094,7 +1094,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/DataDog/dd-sdk-ios";
 			requirement = {
-				branch = develop;
+				branch = "GIT_REFERENCE";
 				kind = branch;
 			};
 		};
@@ -1102,7 +1102,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/DataDog/dd-sdk-ios";
 			requirement = {
-				branch = develop;
+				branch = "GIT_REFERENCE";
 				kind = branch;
 			};
 		};
