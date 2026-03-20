@@ -4,9 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !TARGET_OS_WATCH
-
 #import "CustomObjcViewController.h"
+
+#if !TARGET_OS_WATCH
 
 @interface CustomObjcViewController ()
 
