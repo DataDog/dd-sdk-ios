@@ -4,13 +4,15 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+ import Foundation
+
 /// Deterministic sampler that makes consistent sampling decisions for a given `seed`.
 ///
 /// This sampler uses Knuth hashing to compute a uniform hash of the `seed`, allowing
 /// deterministic sampling based on a sampling rate `samplingRate`.
 ///
 /// Conforms to the `Sampling` protocol.
-public struct DeterministicSampler: Sampling, Equatable {
+public struct DeterministicSampler: Sampling, Equatable, Sendable {
     enum Constants {
         /// Good number for Knuth hashing (large, prime, fit in 64 bit long)
         internal static let samplerHasher: UInt64 = 1_111_111_111_111_111_111
@@ -67,21 +69,25 @@ public struct DeterministicSampler: Sampling, Equatable {
 }
 
 extension DeterministicSampler {
-    /// Convenience initializer that derives the seed from a session UUID string.
+    /// Convenience initializer that derives the seed from a UUID value.
     ///
-    /// The last segment of the UUID (the 12-hex-character node component) is parsed as a
-    /// hexadecimal `UInt64` and used as the seed. Falls back to `0` for malformed inputs.
+    /// The last 48 bits of the UUID (the node component) are extracted directly from
+    /// memory and used as the seed, bypassing string conversion entirely.
     ///
-    /// **seed=0 fallback:** When UUID parsing fails, seed defaults to 0. The Knuth hash
-    /// of 0 is 0, which is always `<= threshold` for any `samplingRate > 0`, so malformed
-    /// UUIDs are always sampled (fail-open). This is intentional — a broken UUID should
-    /// not silently drop data.
+    /// **seed=0 fallback:** When UUID memory layout is unexpected (asserted in debug),
+    /// the seed defaults to 0. The Knuth hash of 0 is 0, which is always `<= threshold`
+    /// for any `samplingRate > 0`, so invalid inputs are always sampled (fail-open).
     ///
     /// - Parameters:
-    ///   - uuid: A UUID string in the standard `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` format.
+    ///   - uuid: A `UUID` value.
     ///   - samplingRate: A percentage value between `0.0` and `100.0`.
-    public init(uuid: String, samplingRate: SampleRate) {
-        let seed = uuid.split(separator: "-").last.flatMap { UInt64($0, radix: 16) } ?? 0
+    public init(uuid: UUID, samplingRate: SampleRate) {
+        assert(MemoryLayout<UUID>.size == 16)
+        let seed = withUnsafePointer(to: uuid) { uuidPointer in
+            uuidPointer.withMemoryRebound(to: UInt64.self, capacity: 2) { pointer in
+                UInt64(bigEndian: pointer.successor().pointee) & 0x0000FFFFFFFFFFFF
+            }
+        }
         self.init(seed: seed, samplingRate: samplingRate)
     }
 }

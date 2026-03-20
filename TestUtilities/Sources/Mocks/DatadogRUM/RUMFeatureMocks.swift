@@ -1754,7 +1754,7 @@ extension RUMCoreContext: RandomMockable {
         .init(
             applicationID: applicationID,
             sessionID: sessionID,
-            sessionSampler: DeterministicSampler(uuid: sessionID, samplingRate: sessionSampleRate),
+            sessionSampler: DeterministicSampler(uuid: .mockWith(sessionID), samplingRate: sessionSampleRate),
             viewID: viewID,
             viewServerTimeOffset: serverTimeOffset
         )
