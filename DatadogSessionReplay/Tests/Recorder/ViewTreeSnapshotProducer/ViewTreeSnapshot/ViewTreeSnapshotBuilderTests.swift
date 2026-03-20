@@ -89,5 +89,45 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         XCTAssertEqual(queryContext.recorder.viewServerTimeOffset, randomRecorderContext.viewServerTimeOffset)
         XCTAssertEqual(queryContext.recorder.date, randomRecorderContext.date)
     }
+
+    func testWhenCreatingSnapshot_itWritesHeatmapIdentifiersToRegistry() {
+        // Given
+        let view = UIView.mock(withFixture: .visible(.someAppearance))
+        let registry = HeatmapIdentifierRegistryMock()
+        let builder = ViewTreeSnapshotBuilder(
+            additionalNodeRecorders: [],
+            heatmapIdentifierRegistry: registry,
+            featureFlags: .allEnabled
+        )
+        let context = Recorder.Context.mockWith(
+            rumContext: .mockWith(viewPath: "Home")
+        )
+
+        // When
+        _ = builder.createSnapshot(of: view, with: context)
+
+        // Then
+        XCTAssertFalse(registry.identifiers.isEmpty)
+    }
+
+    func testWhenCreatingSnapshot_withNoViewPath_itDoesNotWriteToRegistry() {
+        // Given
+        let view = UIView.mock(withFixture: .visible(.someAppearance))
+        let registry = HeatmapIdentifierRegistryMock()
+        let builder = ViewTreeSnapshotBuilder(
+            additionalNodeRecorders: [],
+            heatmapIdentifierRegistry: registry,
+            featureFlags: .allEnabled
+        )
+        let context = Recorder.Context.mockWith(
+            rumContext: .mockWith(viewPath: nil)
+        )
+
+        // When
+        _ = builder.createSnapshot(of: view, with: context)
+
+        // Then
+        XCTAssertTrue(registry.identifiers.isEmpty)
+    }
 }
 #endif
