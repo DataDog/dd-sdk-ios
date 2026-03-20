@@ -343,6 +343,20 @@ public enum Datadog {
     }
 }
 
+@_spi(Internal)
+public extension Datadog {
+    /// Forces all pending data to upload to intake immediately. Blocks the calling thread until complete.
+    /// The SDK remains fully operational after this call.
+    ///
+    /// - Parameter instanceName: The name of the SDK instance to flush.
+    static func flush(instanceName: String = CoreRegistry.defaultInstanceName) {
+        guard let core = CoreRegistry.instance(named: instanceName) as? DatadogCore else {
+            return
+        }
+        core.flushAndUpload()
+    }
+}
+
 private func isValid(env: String) throws {
     /// 1. cannot be more than 200 chars (including `env:` prefix)
     /// 2. cannot end with `:`
