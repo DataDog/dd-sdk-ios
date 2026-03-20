@@ -65,7 +65,7 @@ DEFAULT_TVOS_DEVICE := Apple TV
 # Test env for running watchOS tests in local:
 DEFAULT_WATCHOS_OS := latest
 DEFAULT_WATCHOS_PLATFORM := watchOS Simulator
-DEFAULT_WATCHOS_DEVICE := Apple Watch
+DEFAULT_WATCHOS_DEVICE := Apple Watch Series 11 (46mm)
 
 # Test env for running visionOS tests in local:
 DEFAULT_VISIONOS_OS := latest
