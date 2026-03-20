@@ -9,6 +9,7 @@ import DatadogLogs
 import DatadogTrace
 import DatadogCrashReporting
 
+@MainActor
 enum DatadogSetup {
     static var logger: LoggerProtocol?
     static func initialize() {

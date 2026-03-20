@@ -183,6 +183,7 @@ smoke-test-ios:
 # Run all smoke tests using iOS Simulator
 smoke-test-ios-all:
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/spm"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/spm-6"
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/carthage"
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/cocoapods"
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/xcframeworks"
@@ -198,6 +199,7 @@ smoke-test-tvos:
 # Run all smoke tests using tvOS Simulator
 smoke-test-tvos-all:
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/spm"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/spm-6"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/carthage"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/cocoapods"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/xcframeworks"
