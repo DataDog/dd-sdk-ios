@@ -46,6 +46,14 @@ extension ProfilingHandler {
             attributes[RUMCoreContext.IDs.vitalLabel] = rumVitals.map { $0.name }
         }
 
+        if let hangs {
+            attributes[RUMCoreContext.IDs.errorID] = hangs.map { $0.id }
+        }
+
+        if let longTasks {
+            attributes[RUMCoreContext.IDs.longTaskID] = longTasks.map { $0.id }
+        }
+
         self.writeProfilingEvent(
             with: profile,
             rumEvents: RUMEvents(vitals: rumVitals, hangs: hangs, longTasks: longTasks),
