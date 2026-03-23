@@ -9,7 +9,7 @@ import Foundation
 /// Message payload sent on the message bus when RUM reports an app hang
 public struct AppHangMessage {
     /// Correlation context containing IDs for data correlation.
-    public let attributes: [String: AttributeValue]
+    public let attributes: [AttributeKey: AttributeValue]
     /// Hang info for data correlation.
     public let hang: DurationEvent
 

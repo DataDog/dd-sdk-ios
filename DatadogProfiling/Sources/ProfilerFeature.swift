@@ -29,6 +29,8 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
     let messageReceiver: FeatureMessageReceiver
 
+    let isContinuousProfiling: Bool
+
     let telemetryController: ProfilingTelemetryController
 
     /// Setting max-file-age to minimum will force creating a batch per profile.
@@ -49,9 +51,19 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         self.requestBuilder = requestBuilder
         self.telemetryController = telemetryController
 
-        let messageReceivers: [FeatureMessageReceiver] = [
+        self.isContinuousProfiling = Sampler(
+            samplingRate: configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
+        ).sample()
+
+        var messageReceivers: [FeatureMessageReceiver] = [
             AppLaunchProfiler(
                 core: core,
+                isContinuousProfiling: isContinuousProfiling,
+                telemetryController: telemetryController
+            ),
+            ContinuousProfiler(
+                core: core,
+                isContinuousProfiling: isContinuousProfiling,
                 telemetryController: telemetryController
             )
         ]
