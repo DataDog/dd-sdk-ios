@@ -478,7 +478,14 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: isInitialView,
             parent: parent,
-            dependencies: .mockWith(syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId)),
+            dependencies: .mockWith(
+                syntheticsTest: .init(
+                    injected: nil,
+                    resultId: fakeSyntheticsResultId,
+                    testId: fakeSyntheticsTestId,
+                    syntheticsInfo: [:]
+                )
+            ),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
@@ -560,7 +567,12 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: isInitialView,
             parent: parent,
             dependencies: .mockWith(
-                syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId),
+                syntheticsTest: .init(
+                    injected: nil,
+                    resultId: fakeSyntheticsResultId,
+                    testId: fakeSyntheticsTestId,
+                    syntheticsInfo: [:]
+                ),
                 sessionType: .user
             ),
             identity: .mockViewIdentifier(),

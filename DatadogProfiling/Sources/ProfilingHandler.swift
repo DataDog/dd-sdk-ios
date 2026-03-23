@@ -33,7 +33,12 @@ extension ProfilingHandler {
         return profilingContext
     }
 
-    func write(profile: OpaquePointer, rumVitals: [Vital]) {
+    func write(
+        profile: OpaquePointer,
+        rumVitals: [Vital],
+        hangs: [DurationEvent<RUMErrorEvent>]? = nil,
+        longTasks: [DurationEvent<RUMLongTaskEvent>]? = nil
+    ) {
         var context = self.context
         if rumVitals.isEmpty == false {
             context[RUMContextAttributes.IDs.vitalID] = rumVitals.map { $0.id }
@@ -42,7 +47,7 @@ extension ProfilingHandler {
 
         self.writeProfilingEvent(
             with: profile,
-            rumEvents: RUMEvents(vitals: rumVitals),
+            rumEvents: RUMEvents(vitals: rumVitals, hangs: hangs, longTasks: longTasks),
             attributes: context
         )
     }
