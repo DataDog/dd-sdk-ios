@@ -1745,7 +1745,7 @@ extension RUMCoreContext: RandomMockable {
 
     public static func mockWith(
         applicationID: String = .mockAny(),
-        sessionID: String = .mockAny(),
+        sessionID: UUID = .mockAny(),
         sessionSampleRate: SampleRate = .maxSampleRate,
         viewID: String? = .mockAny(),
         userActionID: String? = nil,
@@ -1753,8 +1753,8 @@ extension RUMCoreContext: RandomMockable {
     ) -> Self {
         .init(
             applicationID: applicationID,
-            sessionID: sessionID,
-            sessionSampler: DeterministicSampler(uuid: .mockWith(sessionID), samplingRate: sessionSampleRate),
+            sessionID: sessionID.uuidString.lowercased(),
+            sessionSampler: DeterministicSampler(uuid: sessionID, samplingRate: sessionSampleRate),
             viewID: viewID,
             viewServerTimeOffset: serverTimeOffset
         )
@@ -1764,7 +1764,6 @@ extension RUMCoreContext: RandomMockable {
         .mockWith(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
-            sessionSampleRate: .mockRandom(min: 0, max: 100),
             viewID: .mockRandom(),
             userActionID: .mockRandom(),
             serverTimeOffset: .mockRandom()

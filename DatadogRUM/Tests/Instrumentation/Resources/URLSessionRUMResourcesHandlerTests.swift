@@ -51,7 +51,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -92,7 +92,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -129,7 +129,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -169,7 +169,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -206,7 +206,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -238,7 +238,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -268,7 +268,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -301,7 +301,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -351,7 +351,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 ),
                 userConfigurationContext: .mockWith(id: "some_user_id"),
                 accountConfigurationContext: .mockRandom()
@@ -408,7 +408,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 ),
                 userConfigurationContext: .mockWith(id: "some_user_id"),
                 accountConfigurationContext: .mockRandom()
@@ -765,7 +765,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -813,7 +813,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -850,7 +850,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -889,7 +889,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 ),
                 userConfigurationContext: .init(id: "user123"),
                 accountConfigurationContext: .init(id: "account456")
@@ -940,7 +940,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -973,7 +973,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -1018,7 +1018,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -1129,7 +1129,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
     func testGivenSameSessionID_withDeterministicSampling_itProducesConsistentSamplingDecision() throws {
         // Given
-        let sessionID = "12345678-1234-4abc-9def-123456789abc"
+        let sessionID: UUID = .mockWith("12345678-1234-4abc-9def-123456789abc")
         let handler = createHandler(
             distributedTracing: .init(
                 samplingRate: 50,

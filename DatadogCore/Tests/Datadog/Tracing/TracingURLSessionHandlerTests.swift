@@ -216,7 +216,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testGivenAllTracingHeaderTypes_itUsesTheSameIds() throws {
         let request: URLRequest = .mockWith(httpMethod: "GET")
-        let fakeSessionId = "8b723a25-e941-47ea-9173-910c866ccf19"
+        let fakeSessionId: UUID = .mockWith("8b723a25-e941-47ea-9173-910c866ccf19")
         let fakeContext: DatadogContext = .mockWith(
             additionalContext: [
                 RUMCoreContext.mockWith(
@@ -233,7 +233,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
                 )
             )
         )
@@ -248,7 +248,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "b3": "000000000000000a0000000000000064-0000000000000064-1",
                 "x-datadog-trace-id": "100",
                 "x-datadog-tags": "_dd.p.tid=a,_dd.p.dm=-1",
-                "baggage": "session.id=\(fakeSessionId)",
+                "baggage": "session.id=\(fakeSessionId.uuidString.lowercased())",
                 "tracestate": "dd=p:0000000000000064;s:1;t.dm:-1",
                 "x-datadog-parent-id": "100",
                 "x-datadog-sampling-priority": "1"

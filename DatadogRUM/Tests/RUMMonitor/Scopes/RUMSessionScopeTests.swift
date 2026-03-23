@@ -365,7 +365,7 @@ class RUMSessionScopeTests: XCTestCase {
         let expectedSessionState = RUMSessionState(
             sessionUUID: scope.sessionUUID.rawValue,
             isSampled: DeterministicSampler(
-                uuid: scope.sessionUUID.rawValue.uuidString,
+                uuid: scope.sessionUUID.rawValue,
                 samplingRate: randomSampleRate
             ).sample(),
             isInitialSession: randomIsInitialSession,
