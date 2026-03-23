@@ -1339,6 +1339,7 @@ extension RUMUserActionScope {
                 serverTimeOffset: serverTimeOffset,
                 isContinuous: isContinuous,
                 instrumentation: instrumentation,
+                heatmapAttributes: nil,
                 interactionToNextViewMetric: interactionToNextViewMetric,
                 onActionEventSent: onActionEventSent
         )

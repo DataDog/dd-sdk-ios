@@ -79,7 +79,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         serverTimeOffset: TimeInterval,
         isContinuous: Bool,
         instrumentation: InstrumentationType,
-        heatmapAttributes: HeatmapAttributes? = nil,
+        heatmapAttributes: HeatmapAttributes?,
         interactionToNextViewMetric: INVMetricTracking?,
         onActionEventSent: @escaping (RUMActionEvent) -> Void
     ) {
