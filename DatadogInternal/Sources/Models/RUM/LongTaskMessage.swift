@@ -9,7 +9,7 @@ import Foundation
 /// Message payload sent on the message bus when RUM reports a long task
 public struct LongTaskMessage {
     /// Correlation context containing IDs for data correlation.
-    public let attributes: [String: AttributeValue]
+    public let attributes: [AttributeKey: AttributeValue]
     /// Long task info for data correlation.
     public let longTask: DurationEvent
 

@@ -26,6 +26,8 @@ internal final class AppLaunchProfiler: ProfilingHandler {
     private static var appLaunchProfile: OpaquePointer?
     private static let lock = NSLock()
 
+    private let isContinuousProfiling: Bool
+
     let featureScope: FeatureScope
     let telemetryController: ProfilingTelemetryController
     let operation: ProfilingOperation = .appLaunch
@@ -40,12 +42,14 @@ internal final class AppLaunchProfiler: ProfilingHandler {
 
     init(
         core: DatadogCoreProtocol,
+        isContinuousProfiling: Bool,
         telemetryController: ProfilingTelemetryController = .init(),
         encoder: JSONEncoder = JSONEncoder()
     ) {
         Self.registerInstance()
 
         self.featureScope = core.scope(for: ProfilerFeature.self)
+        self.isContinuousProfiling = isContinuousProfiling
         self.telemetryController = telemetryController
         self.encoder = encoder
     }
@@ -65,11 +69,14 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
 
         if case let .payload(message as TTIDMessage) = message {
             hasProcessedAppLaunch = true
-            _currentRUMVitals.mutate { $0[message.ttid.key] = (start: message.ttid, nil) }
             attributes = message.attributes
 
-            dd_profiler_stop()
-            self.updateProfilingContext()
+            if isContinuousProfiling == false && self.currentRUMVitals.didCompleteOperations() {
+                dd_profiler_stop()
+                self.updateProfilingContext()
+            }
+
+            _currentRUMVitals.mutate { $0[message.ttid.key] = (start: message.ttid, nil) }
 
             defer { Self.unregisterInstance() }
             guard let profile = appLaunchProfile() else {
