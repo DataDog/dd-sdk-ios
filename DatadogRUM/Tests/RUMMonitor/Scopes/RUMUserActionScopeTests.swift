@@ -993,4 +993,94 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(trackedAction.viewID, parent.context.activeViewID)
         XCTAssertEqual(metric.trackedActions.count, 1)
     }
+
+    // MARK: - Heatmap Attributes
+
+    func testGivenHeatmapAttributes_whenActionCompletes_itPopulatesDDAction() throws {
+        let scope = RUMViewScope.mockWith(
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            attributes: [:],
+            startTime: Date()
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddUserActionCommand.mockWith(
+                    attributes: [
+                        HeatmapAttributes.targetPermanentID: "abc123",
+                        HeatmapAttributes.targetWidth: Int64(100),
+                        HeatmapAttributes.targetHeight: Int64(50),
+                        HeatmapAttributes.positionX: Int64(10),
+                        HeatmapAttributes.positionY: Int64(20),
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let actionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertEqual(actionEvent.dd.action?.target?.permanentId, "abc123")
+        XCTAssertEqual(actionEvent.dd.action?.target?.width, 100)
+        XCTAssertEqual(actionEvent.dd.action?.target?.height, 50)
+        XCTAssertEqual(actionEvent.dd.action?.position?.x, 10)
+        XCTAssertEqual(actionEvent.dd.action?.position?.y, 20)
+
+        // Verify heatmap attributes are stripped from custom context
+        let contextAttributes = actionEvent.context?.contextInfo as? [String: Any] ?? [:]
+        XCTAssertNil(contextAttributes[HeatmapAttributes.targetPermanentID])
+        XCTAssertNil(contextAttributes[HeatmapAttributes.targetWidth])
+        XCTAssertNil(contextAttributes[HeatmapAttributes.targetHeight])
+        XCTAssertNil(contextAttributes[HeatmapAttributes.positionX])
+        XCTAssertNil(contextAttributes[HeatmapAttributes.positionY])
+    }
+
+    func testGivenNoHeatmapAttributes_whenActionCompletes_itLeavesDDActionNil() throws {
+        let scope = RUMViewScope.mockWith(
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            attributes: [:],
+            startTime: Date()
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddUserActionCommand.mockWith(),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let actionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertNil(actionEvent.dd.action)
+    }
 }

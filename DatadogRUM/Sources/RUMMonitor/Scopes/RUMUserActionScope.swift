@@ -154,7 +154,13 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
         let actionEvent = RUMActionEvent(
             dd: .init(
-                action: nil,
+                action: .init(
+                    permanentID: attributes.removeValue(forKey: HeatmapAttributes.targetPermanentID)?.dd.decode(),
+                    targetWidth: attributes.removeValue(forKey: HeatmapAttributes.targetWidth)?.dd.decode(),
+                    targetHeight: attributes.removeValue(forKey: HeatmapAttributes.targetHeight)?.dd.decode(),
+                    positionX: attributes.removeValue(forKey: HeatmapAttributes.positionX)?.dd.decode(),
+                    positionY: attributes.removeValue(forKey: HeatmapAttributes.positionY)?.dd.decode()
+                ),
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 session: .init(
@@ -243,5 +249,36 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     private func allResourcesCompletedLoading() -> Bool {
         return activeResourcesCount <= 0
+    }
+}
+
+extension RUMActionEvent.DD.Action {
+    fileprivate init?(
+        permanentID: String?,
+        targetWidth: Int64?,
+        targetHeight: Int64?,
+        positionX: Int64?,
+        positionY: Int64?
+    ) {
+        guard let permanentID else {
+            return nil
+        }
+        self.init(
+            position: .init(positionX, positionY),
+            target: .init(
+                height: targetHeight,
+                permanentId: permanentID,
+                width: targetWidth
+            )
+        )
+    }
+}
+
+extension RUMActionEvent.DD.Action.Position {
+    fileprivate init?(_ positionX: Int64?, _ positionY: Int64?) {
+        guard let positionX, let positionY else {
+            return nil
+        }
+        self.init(x: positionX, y: positionY)
     }
 }

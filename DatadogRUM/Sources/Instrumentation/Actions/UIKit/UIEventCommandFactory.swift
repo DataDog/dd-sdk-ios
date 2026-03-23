@@ -21,17 +21,20 @@ internal protocol UIEventCommandFactory {
 /// Handles both UIKit and SwiftUI components using different detection strategies.
 internal final class UITouchCommandFactory: UIEventCommandFactory {
     let dateProvider: DateProvider
+    let heatmapIdentifierRegistry: any HeatmapIdentifierRegistry
     let uiKitPredicate: UITouchRUMActionsPredicate?
     let swiftUIPredicate: SwiftUIRUMActionsPredicate?
     let swiftUIDetector: SwiftUIComponentDetector?
 
     init(
         dateProvider: DateProvider,
+        heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
         uiKitPredicate: UITouchRUMActionsPredicate?,
         swiftUIPredicate: SwiftUIRUMActionsPredicate?,
         swiftUIDetector: SwiftUIComponentDetector?
     ) {
         self.dateProvider = dateProvider
+        self.heatmapIdentifierRegistry = heatmapIdentifierRegistry
         self.uiKitPredicate = uiKitPredicate
         self.swiftUIPredicate = swiftUIPredicate
         self.swiftUIDetector = swiftUIDetector
@@ -80,9 +83,21 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
         guard let action = uiKitPredicate.rumAction(targetView: targetView) else {
             return nil
         }
+
+        var attributes = action.attributes
+
+        if let heatmapIdentifier = heatmapIdentifierRegistry.heatmapIdentifier(for: ObjectIdentifier(targetView)) {
+            let location = tap.location(in: targetView)
+            attributes[HeatmapAttributes.targetPermanentID] = heatmapIdentifier.rawValue
+            attributes[HeatmapAttributes.targetWidth] = Int64.ddWithNoOverflow(targetView.bounds.width)
+            attributes[HeatmapAttributes.targetHeight] = Int64.ddWithNoOverflow(targetView.bounds.height)
+            attributes[HeatmapAttributes.positionX] = Int64.ddWithNoOverflow(location.x)
+            attributes[HeatmapAttributes.positionY] = Int64.ddWithNoOverflow(location.y)
+        }
+
         return RUMAddUserActionCommand(
             time: dateProvider.now,
-            attributes: action.attributes,
+            attributes: attributes,
             instrumentation: .uikit,
             actionType: .tap,
             name: action.name
