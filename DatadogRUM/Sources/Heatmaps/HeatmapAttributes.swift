@@ -6,10 +6,16 @@
 
 import Foundation
 
-internal enum HeatmapAttributes {
-    static let targetPermanentID = "_dd.action.target.permanent_id"
-    static let targetWidth = "_dd.action.target.width"
-    static let targetHeight = "_dd.action.target.height"
-    static let positionX = "_dd.action.position.x"
-    static let positionY = "_dd.action.position.y"
+/// Heatmap attributes attached to a user action.
+internal struct HeatmapAttributes {
+    /// The permanent identifier of the action target.
+    let targetPermanentID: String
+    /// The width of the action target, in points.
+    let targetWidth: Int64
+    /// The height of the action target, in points.
+    let targetHeight: Int64
+    /// The x-coordinate of the tap relative to the target, in points.
+    let positionX: Int64
+    /// The y-coordinate of the tap relative to the target, in points.
+    let positionY: Int64
 }

@@ -777,7 +777,8 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:],
         instrumentation: InstrumentationType = .manual,
         actionType: RUMActionType = .tap,
-        name: String = .mockAny()
+        name: String = .mockAny(),
+        heatmapAttributes: HeatmapAttributes? = nil
     ) -> RUMAddUserActionCommand {
         return RUMAddUserActionCommand(
             time: time,
@@ -785,7 +786,8 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
             attributes: attributes,
             instrumentation: instrumentation,
             actionType: actionType,
-            name: name
+            name: name,
+            heatmapAttributes: heatmapAttributes
         )
     }
 }

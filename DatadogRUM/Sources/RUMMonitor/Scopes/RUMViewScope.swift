@@ -438,6 +438,7 @@ extension RUMViewScope {
             serverTimeOffset: serverTimeOffset,
             isContinuous: false,
             instrumentation: command.instrumentation,
+            heatmapAttributes: command.heatmapAttributes,
             interactionToNextViewMetric: interactionToNextViewMetric,
             onActionEventSent: { [weak self] event in
                 self?.onActionEventSent(event)

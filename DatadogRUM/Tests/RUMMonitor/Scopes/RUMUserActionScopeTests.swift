@@ -1014,13 +1014,13 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertTrue(
             scope.process(
                 command: RUMAddUserActionCommand.mockWith(
-                    attributes: [
-                        HeatmapAttributes.targetPermanentID: "abc123",
-                        HeatmapAttributes.targetWidth: Int64(100),
-                        HeatmapAttributes.targetHeight: Int64(50),
-                        HeatmapAttributes.positionX: Int64(10),
-                        HeatmapAttributes.positionY: Int64(20),
-                    ]
+                    heatmapAttributes: HeatmapAttributes(
+                        targetPermanentID: "abc123",
+                        targetWidth: 100,
+                        targetHeight: 50,
+                        positionX: 10,
+                        positionY: 20
+                    )
                 ),
                 context: context,
                 writer: writer
@@ -1040,14 +1040,6 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(actionEvent.dd.action?.target?.height, 50)
         XCTAssertEqual(actionEvent.dd.action?.position?.x, 10)
         XCTAssertEqual(actionEvent.dd.action?.position?.y, 20)
-
-        // Verify heatmap attributes are stripped from custom context
-        let contextAttributes = actionEvent.context?.contextInfo as? [String: Any] ?? [:]
-        XCTAssertNil(contextAttributes[HeatmapAttributes.targetPermanentID])
-        XCTAssertNil(contextAttributes[HeatmapAttributes.targetWidth])
-        XCTAssertNil(contextAttributes[HeatmapAttributes.targetHeight])
-        XCTAssertNil(contextAttributes[HeatmapAttributes.positionX])
-        XCTAssertNil(contextAttributes[HeatmapAttributes.positionY])
     }
 
     func testGivenNoHeatmapAttributes_whenActionCompletes_itLeavesDDActionNil() throws {
