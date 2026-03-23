@@ -10,7 +10,7 @@ import DatadogSessionReplay // it should compile for iOS and tvOS, but APIs are 
 import DatadogTrace
 import DatadogFlags
 import DatadogProfiling
-import OpenTelemetryApi
+@preconcurrency import OpenTelemetryApi
 
 internal class ViewController: UIViewController {
     override func viewDidLoad() {

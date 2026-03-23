@@ -55,7 +55,7 @@ license-check:
 # Test env for running iOS tests in local:
 DEFAULT_IOS_OS := latest
 DEFAULT_IOS_PLATFORM := iOS Simulator
-DEFAULT_IOS_DEVICE := iPhone 15 Pro
+DEFAULT_IOS_DEVICE := iPhone 17 Pro
 
 # Test env for running tvOS tests in local:
 DEFAULT_TVOS_OS := latest
@@ -183,6 +183,7 @@ smoke-test-ios:
 # Run all smoke tests using iOS Simulator
 smoke-test-ios-all:
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/spm"
+	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/spm-6"
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/carthage"
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/cocoapods"
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/xcframeworks"
@@ -198,6 +199,7 @@ smoke-test-tvos:
 # Run all smoke tests using tvOS Simulator
 smoke-test-tvos-all:
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/spm"
+	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/spm-6"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/carthage"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/cocoapods"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/xcframeworks"

@@ -1,5 +1,5 @@
 ---
-name: git-pr
+name: dd-sdk-ios:open-pr
 description: Use when creating a pull request in dd-sdk-ios. Use when writing PR titles, PR body, or choosing the target branch.
 ---
 
@@ -25,7 +25,9 @@ description: Use when creating a pull request in dd-sdk-ios. Use when writing PR
 
 ## Creating via gh
 
-The repo has a PR template at `.github/PULL_REQUEST_TEMPLATE.md`. Read it and fill in all sections:
+The repo has a PR template at `.github/PULL_REQUEST_TEMPLATE.md`. Read it and fill in all sections.
+
+**Before running the command**, show the user the proposed PR title and full body and ask for confirmation. Only run `gh pr create` after the user approves.
 
 ```bash
 gh pr create \

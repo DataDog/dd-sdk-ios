@@ -303,6 +303,17 @@ internal final class DatadogCore {
         stop()
     }
 
+    /// Uploads all pending data immediately without tearing down the SDK.
+    ///
+    /// Unlike `flushAndTearDown()`, this method leaves the SDK fully operational after return.
+    /// Upon return, it is safe to assume that all events were stored and got uploaded.
+    func flushAndUpload() {
+        flush()
+        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: true) }
+        allUploads.forEach { $0.flush() }
+        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
+    }
+
     /// Stops all processes for this instance of the Datadog core by
     /// deallocating all Features and their storage & upload units.
     func stop() {

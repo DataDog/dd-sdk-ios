@@ -42,8 +42,75 @@ class UIScrollViewSwizzlerTests: XCTestCase {
         swizzler?.swizzle()
         scrollView.delegate = delegate
 
-        // Then - delegate is wrapped in a proxy
-        XCTAssertTrue(scrollView.delegate is UIScrollViewDelegateProxy)
+        // Then - getter returns the original delegate (proxy is internal implementation detail)
+        XCTAssertTrue(scrollView.delegate === delegate)
+    }
+
+    // MARK: - Delegate getter transparency
+
+    func testSwizzle_whenReadingDelegate_returnsOriginalDelegateNotProxy() throws {
+        // Regression test for: https://github.com/DataDog/dd-sdk-ios/issues/2760
+        // When customers set their own delegate and our is swizzler active, the
+        // getter should not return Datadog's internal UIScrollViewDelegateProxy.
+
+        // Given
+        guard let handler else {
+            XCTFail("Handler should be initialized")
+            return
+        }
+        swizzler = try UIScrollViewSwizzler(handler: handler)
+        swizzler?.swizzle()
+
+        let scrollView = UIScrollView()
+        let originalDelegate = MockScrollViewDelegate()
+
+        // When
+        scrollView.delegate = originalDelegate
+
+        // Then - getter must return the original delegate, not Datadog's proxy
+        XCTAssertTrue(scrollView.delegate === originalDelegate)
+        XCTAssertFalse(scrollView.delegate is UIScrollViewDelegateProxy)
+    }
+
+    // MARK: - Third-party proxy conflict (regression for RxSwift-style delegate proxy crash)
+
+    func testSwizzle_whenThirdPartyProxyCapturesDatadogProxy_doesNotCreateCircularRespondsToRecursion() throws {
+        // Regression test for stack overflow crash when Datadog's UIScrollViewSwizzler is active
+        // alongside a third-party delegate proxy (e.g. RxSwift's DelegateProxy).
+        //
+        // Without the getter swizzle, a third-party proxy reading `scrollView.delegate` would get
+        // `ddProxy` back and store it as its forward target, creating a circular chain:
+        //   ddProxy.originalDelegate = thirdPartyProxy, thirdPartyProxy.forwardToDelegate = ddProxy
+        // Any call to `responds(to:)` on `ddProxy` would then infinitely recurse → stack overflow.
+        //
+        // With the getter swizzle, the getter transparently returns the app's delegate (not `ddProxy`),
+        // so the third-party proxy stores the real delegate and the chain stays linear:
+        //   ddProxy → thirdPartyProxy → originalDelegate (no cycle)
+
+        // Given
+        guard let handler else {
+            XCTFail("Handler should be initialized")
+            return
+        }
+        swizzler = try UIScrollViewSwizzler(handler: handler)
+        swizzler?.swizzle()
+
+        let scrollView = UIScrollView()
+        let originalDelegate = MockScrollViewDelegate()
+
+        // App sets delegate — swizzler wraps it in ddProxy; getter transparently returns the app's delegate
+        scrollView.delegate = originalDelegate
+        XCTAssertTrue(scrollView.delegate === originalDelegate)
+
+        // Third-party proxy reads the delegate (gets app's delegate, not ddProxy) and sets itself
+        // as the new delegate — this is how RxSwift sets up rx.contentOffset
+        let thirdPartyProxy = ThirdPartyDelegateProxy()
+        thirdPartyProxy.forwardToDelegate = scrollView.delegate as? (NSObject & UIScrollViewDelegate)
+        scrollView.delegate = thirdPartyProxy  // triggers swizzler → ddProxy.originalDelegate = thirdPartyProxy
+
+        // When / Then — must not stack-overflow
+        let selector = #selector(UIScrollViewDelegate.scrollViewDidScroll(_:))
+        XCTAssertFalse(scrollView.delegate?.responds(to: selector) ?? false)
     }
 
     // MARK: - Double-Wrap Prevention
@@ -62,12 +129,10 @@ class UIScrollViewSwizzlerTests: XCTestCase {
 
         // When - set delegate twice
         scrollView.delegate = delegate
-        let firstProxy = scrollView.delegate
-        scrollView.delegate = firstProxy // Set proxy as delegate
+        scrollView.delegate = delegate
 
-        // Then - should not create nested proxies
-        XCTAssertTrue(scrollView.delegate is UIScrollViewDelegateProxy)
-        XCTAssertTrue(scrollView.delegate === firstProxy) // Same proxy instance
+        // Then - getter consistently returns the original delegate
+        XCTAssertTrue(scrollView.delegate === delegate)
     }
 }
 
