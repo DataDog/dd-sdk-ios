@@ -61,7 +61,6 @@ extension ProfilingHandler {
         var data: UnsafeMutablePointer<UInt8>?
         let start = dd_pprof_get_start_timestamp_s(profile)
         let end = dd_pprof_get_end_timestamp_s(profile)
-        let duration = (end - start).dd.toInt64Nanoseconds
         let size = dd_pprof_serialize(profile, &data)
 
         guard let data else {

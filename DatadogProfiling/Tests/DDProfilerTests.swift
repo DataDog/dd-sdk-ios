@@ -209,6 +209,29 @@ final class DDProfilerTests: XCTestCase {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
     }
 
+    func testStop_unblocksPendingFlushRequest() {
+        // Given
+        XCTAssertEqual(dd_profiler_start(), 1)
+        Thread.sleep(forTimeInterval: 0.05) // Allow sampling to begin
+
+        let flushReturned = expectation(description: "Flush returns after stop")
+
+        // When
+        DispatchQueue.global().async {
+            let profile = dd_profiler_flush_and_get_profile()
+            if let profile {
+                dd_pprof_destroy(profile)
+            }
+            flushReturned.fulfill()
+        }
+
+        dd_profiler_stop()
+
+        // Then
+        wait(for: [flushReturned], timeout: 1.0)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+    }
+
     func testConcurrentGetStatus_doesNotCrash() {
         // Given
         XCTAssertEqual(dd_profiler_start(), 1)

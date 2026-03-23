@@ -25,7 +25,7 @@ class RequestBuilderTests: XCTestCase {
         additionalAttributes: mockRandomAttributes()
     )
 
-    let rumEvents: RUMEvents = .init(vitals: [.mockWith(operationKey: nil, type: .duration)], hangs: nil, longTasks: nil)
+    let rumEvents: RUMEvents = .init(vitals: [.mockWith(operationKey: nil, stepType: nil)], hangs: nil, longTasks: nil)
     let pprof: Data = .mockRandom()
 
     private func mockEvent() throws -> Event {

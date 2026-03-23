@@ -26,6 +26,8 @@ internal final class AppLaunchProfiler: ProfilingHandler {
     private static var appLaunchProfile: OpaquePointer?
     private static let lock = NSLock()
 
+    private let isContinuousProfiling: Bool
+
     let featureScope: FeatureScope
     let telemetryController: ProfilingTelemetryController
     let operation: ProfilingOperation = .appLaunch
@@ -40,12 +42,14 @@ internal final class AppLaunchProfiler: ProfilingHandler {
 
     init(
         core: DatadogCoreProtocol,
+        isContinuousProfiling: Bool,
         telemetryController: ProfilingTelemetryController = .init(),
         encoder: JSONEncoder = JSONEncoder()
     ) {
         Self.registerInstance()
 
         self.featureScope = core.scope(for: ProfilerFeature.self)
+        self.isContinuousProfiling = isContinuousProfiling
         self.telemetryController = telemetryController
         self.encoder = encoder
     }
@@ -65,11 +69,14 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
 
         if case let .payload(message as TTIDMessage) = message {
             hasProcessedAppLaunch = true
-            currentRUMVitals[message.ttid.key] = (start: message.ttid, nil)
-            attributes = message.attributes
 
-            dd_profiler_stop()
-            self.updateProfilingContext()
+            if isContinuousProfiling == false && self.currentRUMVitals.didCompleteOperations() {
+                dd_profiler_stop()
+                self.updateProfilingContext()
+            }
+
+            attributes = message.attributes
+            currentRUMVitals[message.ttid.key] = (start: message.ttid, nil)
 
             defer { Self.unregisterInstance() }
             guard let profile = appLaunchProfile() else {
@@ -80,14 +87,13 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
             self.write(profile: profile, rumVitals: self.currentRUMVitals.allVitals())
             return false
         } else if case let .payload(message as OperationMessage) = message {
-            switch message.operation.type {
-            case let .rumOperation(stepType):
-                if stepType == .start {
-                    currentRUMVitals[message.operation.key] = (start: message.operation, nil)
-                } else if let startVital = currentRUMVitals[message.operation.key]?.start {
+            switch message.operation.stepType {
+            case .start:
+                currentRUMVitals[message.operation.key] = (start: message.operation, nil)
+            case .end:
+                if let startVital = currentRUMVitals[message.operation.key]?.start {
                     currentRUMVitals[message.operation.key] = (start: startVital, end: message.operation)
                 }
-                return false
             default:
                 return false
             }
