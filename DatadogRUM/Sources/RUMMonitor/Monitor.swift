@@ -476,7 +476,7 @@ extension Monitor: RUMMonitorProtocol {
 
         if applicationScope.activeSession?.sampler.combined(with: profiling.sampleRate).sample() ?? false {
             let attributes = applicationScope.activeSession?.rumContextAttributes ?? applicationScope.rumContextAttributes
-            featureScope.send(message: .payload(VitalMessage(attributes: attributes, vital: vital)))
+            featureScope.send(message: .payload(RUMMessage(attributes: attributes, event: vital)))
         }
 
         process(
@@ -507,7 +507,7 @@ extension Monitor: RUMMonitorProtocol {
         )
 
         let attributes = applicationScope.activeSession?.rumContextAttributes ?? applicationScope.rumContextAttributes
-        featureScope.send(message: .payload(VitalMessage(attributes: attributes, vital: vital)))
+        featureScope.send(message: .payload(RUMMessage(attributes: attributes, event: vital)))
 
         process(
             command: RUMOperationStepVitalCommand(
@@ -537,7 +537,7 @@ extension Monitor: RUMMonitorProtocol {
         )
 
         let attributes = applicationScope.activeSession?.rumContextAttributes ?? applicationScope.rumContextAttributes
-        featureScope.send(message: .payload(VitalMessage(attributes: attributes, vital: vital)))
+        featureScope.send(message: .payload(RUMMessage(attributes: attributes, event: vital)))
 
         process(
             command: RUMOperationStepVitalCommand(

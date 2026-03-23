@@ -229,7 +229,7 @@ private extension RUMAppLaunchManager {
         var contextAttributes: [String: Encodable] = parent.rumContextAttributes
         contextAttributes[RUMCoreContext.IDs.vitalID] = vital.id
 
-        dependencies.featureScope.send(message: .payload(VitalMessage(attributes: contextAttributes, vital: vital)))
+        dependencies.featureScope.send(message: .payload(RUMMessage(attributes: contextAttributes, event: vital)))
     }
 }
 
@@ -301,16 +301,16 @@ private extension ProfilingContext {
     var profilingStatus: RUMVitalAppLaunchEvent.DD.Profiling.Status {
         switch self.status {
         case .running: return .running
-        case let .stopped(reason):
-            if reason == .manual || reason == .timeout {
-                return .running
-            }
-            return .stopped
+        case .stopped: return .stopped
         case .error: return .error
         case .unknown: return .error
         }
     }
 
+    /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+    ///
+    /// Possible values:
+    /// - `unexpected-exception`: An exception occurred when starting the Profiler.
     var error: RUMVitalAppLaunchEvent.DD.Profiling.ErrorReason? {
         if case .error(reason: let reason) = self.status {
             switch reason {

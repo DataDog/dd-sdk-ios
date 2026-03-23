@@ -6,20 +6,20 @@
 
 import Foundation
 
-/// Message payload used to signal the occurrence of a vital.
-public struct VitalMessage {
+/// Message payload used to signal the occurrence of an event.
+public struct RUMMessage {
     /// Correlation context containing IDs for data correlation.
     public let attributes: [String: AttributeValue]
     /// Vital info for data correlation.
-    public let vital: Vital
+    public let event: Codable
 
     /// Creates a new message payload.
     ///
     /// - Parameters
     ///   - attributes: Correlation context containing IDs for data correlation.
     ///   - vital: Vital info for data correlation.
-    public init(attributes: [String: AttributeValue], vital: Vital) {
+    public init(attributes: [String: AttributeValue], event: Codable) {
         self.attributes = attributes
-        self.vital = vital
+        self.event = event
     }
 }
