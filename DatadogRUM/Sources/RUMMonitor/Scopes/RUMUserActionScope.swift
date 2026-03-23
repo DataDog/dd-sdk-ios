@@ -60,6 +60,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     /// Number of Resources that started but not yet ended during this User Action's lifespan.
     private var activeResourcesCount: Int = 0
 
+    /// Heatmap information for this action, if available.
+    private let heatmapAttributes: HeatmapAttributes?
+
     /// Interaction-to-Next-View metric for this view.
     private let interactionToNextViewMetric: INVMetricTracking?
 
@@ -76,6 +79,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         serverTimeOffset: TimeInterval,
         isContinuous: Bool,
         instrumentation: InstrumentationType,
+        heatmapAttributes: HeatmapAttributes?,
         interactionToNextViewMetric: INVMetricTracking?,
         onActionEventSent: @escaping (RUMActionEvent) -> Void
     ) {
@@ -90,6 +94,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         self.isContinuous = isContinuous
         self.lastActivityTime = startTime
         self.instrumentation = instrumentation
+        self.heatmapAttributes = heatmapAttributes
         self.interactionToNextViewMetric = interactionToNextViewMetric
         self.onActionEventSent = onActionEventSent
     }
@@ -154,13 +159,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
         let actionEvent = RUMActionEvent(
             dd: .init(
-                action: .init(
-                    permanentID: attributes.removeValue(forKey: HeatmapAttributes.targetPermanentID)?.dd.decode(),
-                    targetWidth: attributes.removeValue(forKey: HeatmapAttributes.targetWidth)?.dd.decode(),
-                    targetHeight: attributes.removeValue(forKey: HeatmapAttributes.targetHeight)?.dd.decode(),
-                    positionX: attributes.removeValue(forKey: HeatmapAttributes.positionX)?.dd.decode(),
-                    positionY: attributes.removeValue(forKey: HeatmapAttributes.positionY)?.dd.decode()
-                ),
+                action: .init(heatmapAttributes: heatmapAttributes),
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 session: .init(
@@ -253,32 +252,17 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 }
 
 extension RUMActionEvent.DD.Action {
-    fileprivate init?(
-        permanentID: String?,
-        targetWidth: Int64?,
-        targetHeight: Int64?,
-        positionX: Int64?,
-        positionY: Int64?
-    ) {
-        guard let permanentID else {
+    fileprivate init?(heatmapAttributes: HeatmapAttributes?) {
+        guard let heatmapAttributes else {
             return nil
         }
         self.init(
-            position: .init(positionX, positionY),
+            position: .init(x: heatmapAttributes.positionX, y: heatmapAttributes.positionY),
             target: .init(
-                height: targetHeight,
-                permanentId: permanentID,
-                width: targetWidth
+                height: heatmapAttributes.targetHeight,
+                permanentId: heatmapAttributes.targetPermanentID,
+                width: heatmapAttributes.targetWidth
             )
         )
-    }
-}
-
-extension RUMActionEvent.DD.Action.Position {
-    fileprivate init?(_ positionX: Int64?, _ positionY: Int64?) {
-        guard let positionX, let positionY else {
-            return nil
-        }
-        self.init(x: positionX, y: positionY)
     }
 }
