@@ -15,7 +15,7 @@ internal final class UIScrollViewDelegateProxy: NSObject, UIScrollViewDelegate {
     weak var originalDelegate: UIScrollViewDelegate?
 
     /// The handler notified of scroll lifecycle events.
-    let handler: UIScrollViewHandler
+    var handler: UIScrollViewHandler
 
     init(
         originalDelegate: UIScrollViewDelegate?,

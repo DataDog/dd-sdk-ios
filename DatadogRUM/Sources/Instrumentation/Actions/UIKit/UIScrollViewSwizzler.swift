@@ -80,7 +80,9 @@ internal final class UIScrollViewSwizzler {
 
                     // Check if this delegate already has a proxy attached to it
                     if let existingProxy = objc_getAssociatedObject(delegate, &Self.proxyKey) as? UIScrollViewDelegateProxy {
-                        // Reuse the existing proxy for this delegate
+                        // Reuse the existing proxy but update the handler in case RUM was
+                        // stopped and re-enabled (a new handler instance would be active).
+                        existingProxy.handler = handler
                         previousImplementation(scrollView, Self.selector, existingProxy)
                     } else {
                         // Create a new proxy and attach it to the delegate.
