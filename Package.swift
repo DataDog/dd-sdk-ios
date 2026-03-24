@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 5.10
 
 import PackageDescription
 import Foundation
@@ -8,7 +8,13 @@ let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment[
 
 let package = Package(
     name: "Datadog",
-    platforms: [.iOS(.v12), .tvOS(.v12), .macOS(.v12), .watchOS(.v7), .visionOS(.v1_3)],
+    platforms: [
+        .iOS(.v12),
+        .tvOS(.v12),
+        .macOS(.v12),
+        .watchOS(.v7),
+        .visionOS(.v1)
+    ],
     products: [
         .library(
             name: "DatadogCore",
