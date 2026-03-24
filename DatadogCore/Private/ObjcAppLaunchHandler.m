@@ -79,7 +79,7 @@ static void recordPreMainDate(void) {
 - (void)observeNotificationCenter:(NSNotificationCenter *)notificationCenter {
     __weak NSNotificationCenter *weakCenter = notificationCenter;
 
-    NSString *didFinishLaunchingNotificationName;
+    NSString *didFinishLaunchingNotificationName = nil;
 #if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
     didFinishLaunchingNotificationName = UIApplicationDidFinishLaunchingNotification;
 #elif TARGET_OS_WATCH
@@ -107,7 +107,7 @@ static void recordPreMainDate(void) {
         }];
     }
 
-    NSString *didBecomeActiveNotificationName;
+    NSString *didBecomeActiveNotificationName = nil;
 #if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST || TARGET_OS_VISION
     didBecomeActiveNotificationName = UIApplicationDidBecomeActiveNotification;
 #elif TARGET_OS_WATCH
