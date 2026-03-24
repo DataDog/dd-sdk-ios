@@ -44,7 +44,11 @@ internal final class UIScrollViewSwizzler {
         private let method: Method
         private let handler: UIScrollViewHandler
 
-        /// Associated object key for storing the proxy on the scroll view.
+        /// Associated object key for storing the proxy on the original delegate.
+        /// The proxy's lifetime is tied to the delegate's lifetime: when the delegate is
+        /// deallocated, the proxy is released too, and `scrollView.delegate` (a weak property)
+        /// naturally becomes nil — preventing UIKit from calling the proxy after the
+        /// original delegate is gone.
         private static var proxyKey: Void?
 
         init(handler: UIScrollViewHandler) throws {
@@ -61,9 +65,9 @@ internal final class UIScrollViewSwizzler {
                         return
                     }
 
-                    // If setting delegate to nil, remove the proxy and set to nil
-                    if delegate == nil {
-                        objc_setAssociatedObject(scrollView, &Self.proxyKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+                    // If setting delegate to nil, just forward — the proxy will be
+                    // released naturally when the previous delegate is deallocated.
+                    guard let delegate = delegate else {
                         previousImplementation(scrollView, Self.selector, nil)
                         return
                     }
@@ -74,20 +78,21 @@ internal final class UIScrollViewSwizzler {
                         return
                     }
 
-                    // Check if we already have a proxy attached to this scroll view
-                    if let existingProxy = objc_getAssociatedObject(scrollView, &Self.proxyKey) as? UIScrollViewDelegateProxy {
-                        // Reuse existing proxy, just update its original delegate
-                        existingProxy.originalDelegate = delegate
+                    // Check if this delegate already has a proxy attached to it
+                    if let existingProxy = objc_getAssociatedObject(delegate, &Self.proxyKey) as? UIScrollViewDelegateProxy {
+                        // Reuse the existing proxy for this delegate
                         previousImplementation(scrollView, Self.selector, existingProxy)
                     } else {
-                        // Create new proxy and attach it to the scroll view
-                        // The proxy's lifetime is now tied to the scroll view's lifetime
+                        // Create a new proxy and attach it to the delegate.
+                        // The proxy's lifetime is tied to the delegate's lifetime, so when
+                        // the delegate is deallocated the proxy goes with it and
+                        // scrollView.delegate naturally becomes nil.
                         let proxy = UIScrollViewDelegateProxy(
                             originalDelegate: delegate,
                             handler: handler
                         )
                         objc_setAssociatedObject(
-                            scrollView,
+                            delegate,
                             &Self.proxyKey,
                             proxy,
                             .OBJC_ASSOCIATION_RETAIN_NONATOMIC

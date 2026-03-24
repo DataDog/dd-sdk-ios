@@ -80,6 +80,38 @@ class UIScrollViewDelegateProxyTests: XCTestCase {
         XCTAssertNil(target)
     }
 
+    // MARK: - Proxy lifetime (regression for SwiftUI UICollectionView crash)
+
+    func testProxyLifetime_whenOriginalDelegateIsDeallocated_doesNotCrashOnSubsequentDelegateCall() {
+        // Regression test for: https://github.com/DataDog/dd-sdk-ios/issues/2760
+        //
+        // Expected behavior: the proxy's lifetime must be tied to the original delegate's lifetime.
+        // When the delegate is deallocated, the proxy must be released too, so that
+        // scrollView.delegate (a weak reference) becomes nil and UIKit stops dispatching to it.
+        //
+        // Failure mode without the fix: the proxy is owned by the scroll view (associated object),
+        // so it outlives the delegate. UIKit caches responds(to:) == true for selectors the proxy
+        // advertised via the delegate, then dispatches them directly to the proxy. With originalDelegate
+        // gone, forwardingTarget returns nil and the call crashes with "unrecognized selector".
+
+        let swizzler = try? UIScrollViewSwizzler(handler: handler)
+        swizzler?.swizzle()
+        defer { swizzler?.unswizzle() }
+
+        // Given - a scroll view with a delegate; scrolling works normally
+        let scrollView = UIScrollView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        scrollView.contentSize = CGSize(width: 100, height: 1_000)
+        var originalDelegate: MockScrollViewDelegate? = MockScrollViewDelegate()
+        scrollView.delegate = originalDelegate
+        scrollView.setContentOffset(CGPoint(x: 0, y: 50), animated: false)
+
+        // When - the delegate is deallocated
+        originalDelegate = nil
+
+        // Then - scrolling must not crash; the proxy must have been released with the delegate
+        scrollView.setContentOffset(CGPoint(x: 0, y: 100), animated: false)
+    }
+
     // MARK: - Circular Proxy Chain (regression for RxSwift-style delegate proxy conflict)
 
     func testRespondsTo_withCircularProxyChain_doesNotCauseInfiniteRecursion() {
