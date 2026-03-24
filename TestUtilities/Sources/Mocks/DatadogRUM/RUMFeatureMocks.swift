@@ -26,7 +26,72 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
         return config
     }
 
-    #if !os(watchOS)
+    #if os(watchOS)
+    public static func mockWith(
+        applicationID: String = .mockAny(),
+        sessionSampleRate: SampleRate = .maxSampleRate,
+        urlSessionTracking: URLSessionTracking? = nil,
+        trackFrustrations: Bool = .mockAny(),
+        trackBackgroundEvents: Bool = .mockAny(),
+        longTaskThreshold: TimeInterval? = 0.1,
+        appHangThreshold: TimeInterval? = nil,
+        trackWatchdogTerminations: Bool = .mockAny(),
+        vitalsUpdateFrequency: VitalsFrequency? = .average,
+        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
+        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
+        viewEventMapper: RUM.ViewEventMapper? = nil,
+        resourceEventMapper: RUM.ResourceEventMapper? = nil,
+        actionEventMapper: RUM.ActionEventMapper? = nil,
+        errorEventMapper: RUM.ErrorEventMapper? = nil,
+        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
+        onSessionStart: RUM.SessionListener? = nil,
+        customEndpoint: URL? = .mockAny(),
+        trackAnonymousUser: Bool = .mockAny(),
+        trackSlowFrames: Bool = .mockAny(),
+        telemetrySampleRate: SampleRate = 0
+    ) -> RUM.Configuration {
+        .init(
+            applicationID: applicationID,
+            sessionSampleRate: sessionSampleRate,
+            urlSessionTracking: urlSessionTracking,
+            trackFrustrations: trackFrustrations,
+            trackBackgroundEvents: trackBackgroundEvents,
+            longTaskThreshold: longTaskThreshold,
+            appHangThreshold: appHangThreshold,
+            trackWatchdogTerminations: trackWatchdogTerminations,
+            vitalsUpdateFrequency: vitalsUpdateFrequency,
+            networkSettledResourcePredicate: networkSettledResourcePredicate,
+            nextViewActionPredicate: nextViewActionPredicate,
+            viewEventMapper: viewEventMapper,
+            resourceEventMapper: resourceEventMapper,
+            actionEventMapper: actionEventMapper,
+            errorEventMapper: errorEventMapper,
+            longTaskEventMapper: longTaskEventMapper,
+            onSessionStart: onSessionStart,
+            customEndpoint: customEndpoint,
+            trackAnonymousUser: trackAnonymousUser,
+            trackSlowFrames: trackSlowFrames,
+            telemetrySampleRate: telemetrySampleRate
+        )
+    }
+
+    public static func mockRandom() -> RUM.Configuration {
+        .mockWith(
+            applicationID: .mockRandom(),
+            sessionSampleRate: .mockRandom(min: 0, max: 100),
+            trackFrustrations: .mockRandom(),
+            trackBackgroundEvents: .mockRandom(),
+            longTaskThreshold: .mockRandom(),
+            appHangThreshold: .mockRandom(),
+            trackWatchdogTerminations: .mockRandom(),
+            vitalsUpdateFrequency: [VitalsFrequency.frequent, .average, .rare].randomElement(),
+            customEndpoint: .mockRandom(),
+            trackAnonymousUser: .mockRandom(),
+            trackSlowFrames: .mockRandom(),
+            telemetrySampleRate: .mockRandom(min: 0, max: 100)
+        )
+    }
+    #else
     public static func mockWith(
         applicationID: String = .mockAny(),
         sessionSampleRate: SampleRate = .maxSampleRate,
@@ -82,57 +147,6 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             telemetrySampleRate: telemetrySampleRate
         )
     }
-    #else
-    public static func mockWith(
-        applicationID: String = .mockAny(),
-        sessionSampleRate: SampleRate = .maxSampleRate,
-        urlSessionTracking: URLSessionTracking? = nil,
-        trackFrustrations: Bool = .mockAny(),
-        trackBackgroundEvents: Bool = .mockAny(),
-        longTaskThreshold: TimeInterval? = 0.1,
-        appHangThreshold: TimeInterval? = nil,
-        trackWatchdogTerminations: Bool = .mockAny(),
-        vitalsUpdateFrequency: VitalsFrequency? = .average,
-        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
-        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
-        viewEventMapper: RUM.ViewEventMapper? = nil,
-        resourceEventMapper: RUM.ResourceEventMapper? = nil,
-        actionEventMapper: RUM.ActionEventMapper? = nil,
-        errorEventMapper: RUM.ErrorEventMapper? = nil,
-        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
-        onSessionStart: RUM.SessionListener? = nil,
-        customEndpoint: URL? = .mockAny(),
-        trackAnonymousUser: Bool = .mockAny(),
-        trackMemoryWarnings: Bool = .mockAny(),
-        trackSlowFrames: Bool = .mockAny(),
-        telemetrySampleRate: SampleRate = 0
-    ) -> RUM.Configuration {
-        .init(
-            applicationID: applicationID,
-            sessionSampleRate: sessionSampleRate,
-            urlSessionTracking: urlSessionTracking,
-            trackFrustrations: trackFrustrations,
-            trackBackgroundEvents: trackBackgroundEvents,
-            longTaskThreshold: longTaskThreshold,
-            appHangThreshold: appHangThreshold,
-            trackWatchdogTerminations: trackWatchdogTerminations,
-            vitalsUpdateFrequency: vitalsUpdateFrequency,
-            networkSettledResourcePredicate: networkSettledResourcePredicate,
-            nextViewActionPredicate: nextViewActionPredicate,
-            viewEventMapper: viewEventMapper,
-            resourceEventMapper: resourceEventMapper,
-            actionEventMapper: actionEventMapper,
-            errorEventMapper: errorEventMapper,
-            longTaskEventMapper: longTaskEventMapper,
-            onSessionStart: onSessionStart,
-            customEndpoint: customEndpoint,
-            trackAnonymousUser: trackAnonymousUser,
-            trackMemoryWarnings: trackMemoryWarnings,
-            trackSlowFrames: trackSlowFrames,
-            telemetrySampleRate: telemetrySampleRate
-        )
-    }
-    #endif
 
     public static func mockRandom() -> RUM.Configuration {
         .mockWith(
@@ -151,6 +165,7 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             telemetrySampleRate: .mockRandom(min: 0, max: 100)
         )
     }
+    #endif
 }
 
 extension WebViewEventReceiver: AnyMockable {

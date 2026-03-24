@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import DatadogInternal
 @testable import DatadogCore
@@ -67,3 +69,5 @@ class AppSpy: UIKitAppBackgroundTaskCoordinator {
         endBackgroundTaskCalled = true
     }
 }
+
+#endif

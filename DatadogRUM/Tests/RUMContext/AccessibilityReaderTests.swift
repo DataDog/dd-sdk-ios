@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+ #if !os(watchOS)
+
 @testable import DatadogRUM
 @testable import TestUtilities
 import XCTest
@@ -208,3 +210,5 @@ final class AccessibilityReaderTests: XCTestCase {
         XCTAssertNil(rumDifferences)
     }
 }
+
+#endif

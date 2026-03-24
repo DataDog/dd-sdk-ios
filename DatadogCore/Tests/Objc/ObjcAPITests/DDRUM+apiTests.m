@@ -8,6 +8,8 @@
 @import DatadogRUM;
 @import DatadogInternal;
 
+#if !TARGET_OS_WATCH
+
 // MARK: - DDUIKitRUMViewsPredicate
 
 @interface CustomDDUIKitRUMViewsPredicate: NSObject
@@ -33,6 +35,8 @@
 - (DDRUMAction * _Nullable)rumActionWithPress:(enum UIPressType)type targetView:(UIView * _Nonnull)targetView { return nil; }
 
 @end
+
+#endif
 
 // MARK: - DDRUM tests
 
@@ -64,6 +68,7 @@
     config.telemetrySampleRate = 30;
     XCTAssertEqual(config.telemetrySampleRate, 30);
 
+#if !TARGET_OS_WATCH
     XCTAssertNil(config.uiKitViewsPredicate);
     CustomDDUIKitRUMViewsPredicate *viewsPredicate = [CustomDDUIKitRUMViewsPredicate new];
     config.uiKitViewsPredicate = viewsPredicate;
@@ -83,6 +88,7 @@
     DDDefaultSwiftUIRUMActionsPredicate *swiftUIActionsPredicate = [[DDDefaultSwiftUIRUMActionsPredicate alloc] initWithIsLegacyDetectionEnabled:YES];
     config.swiftUIActionsPredicate = swiftUIActionsPredicate;
     XCTAssertIdentical(config.swiftUIActionsPredicate, swiftUIActionsPredicate);
+#endif
 
     DDRUMURLSessionTracking *urlSessionTracking = [DDRUMURLSessionTracking new];
     DDRUMFirstPartyHostsTracing *tracing;
@@ -150,9 +156,11 @@
     config.trackAnonymousUser = NO;
     XCTAssertFalse(config.trackAnonymousUser);
 
+#if !TARGET_OS_WATCH
     XCTAssertTrue(config.trackMemoryWarnings);
     config.trackMemoryWarnings = NO;
     XCTAssertFalse(config.trackMemoryWarnings);
+#endif
 }
 
 #pragma clang diagnostic pop

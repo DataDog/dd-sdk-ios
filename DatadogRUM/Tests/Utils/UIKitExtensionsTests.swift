@@ -96,7 +96,7 @@ struct UIKitExtensionsTests {
         // to make sure we can build on Xcode <=16 (compile time check)
         // and run on <26 systems when building on Xcode >=26.
 #if compiler(>=6.2)
-        if #available(iOS 26, tvOS 26, *) {
+        if #available(iOS 26, tvOS 26, visionOS 26, *) {
             return [ButtonRole.cancel, nil, .confirm, .destructive, .close]
         } else {
             return [ButtonRole.cancel, nil, .destructive]
