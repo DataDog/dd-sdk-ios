@@ -120,6 +120,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         self.isRecording = true
         self.tracer = tracer
         self.spanLinks = spanLinks
+        let sampler = tracer.contextReceiver.context.sampler
         self.ddSpan = .init(
             tracer: tracer,
             context: .init(
@@ -127,8 +128,8 @@ internal class OTelSpan: OpenTelemetryApi.Span {
                 spanID: context.spanId.toDatadog(),
                 parentSpanID: parentSpanID?.toDatadog(),
                 baggageItems: .init(),
-                sampleRate: tracer.localTraceSampler.samplingRate,
-                samplingDecision: SamplingDecision(sampling: tracer.localTraceSampler)
+                sampleRate: sampler.samplingRate,
+                samplingDecision: SamplingDecision(sampling: sampler)
             ),
             operationName: name,
             startTime: startTime,

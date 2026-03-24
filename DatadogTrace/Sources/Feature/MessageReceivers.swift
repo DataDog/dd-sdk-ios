@@ -19,14 +19,21 @@ internal struct CoreContext {
 
     /// Provides the current account information, if any
     var accountInfo: AccountInfo?
+
+    var sampler: Sampling
 }
 
 internal final class ContextMessageReceiver: FeatureMessageReceiver {
+
+    init(sampleRate: SampleRate) {
+        self.context = .init(sampler: TraceFeature.makeCurrentSamplerFor(deterministicSampler: nil, using: sampleRate))
+    }
+
     /// The up-to-date core context.
     ///
     /// The context is synchronized using a read-write lock.
     @ReadWriteLock
-    var context: CoreContext = .init()
+    var context: CoreContext
 
     /// Process messages receives from the bus.
     ///
@@ -45,12 +52,16 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
     /// Updates context of the `DatadogTracer` if available.
     ///
     /// - Parameter context: The updated core context.
-    private func update(context: DatadogContext, from core: DatadogCoreProtocol) -> Bool {
+    private func update(context datadogContext: DatadogContext, from core: DatadogCoreProtocol) -> Bool {
+        let rumContext = datadogContext.additionalContext(ofType: RUMCoreContext.self)
+        let sampler = TraceFeature.makeCurrentSamplerFor(deterministicSampler: rumContext?.sessionSampler, using: context.sampler.samplingRate)
+
         _context.mutate {
-            $0.applicationStateHistory = context.applicationStateHistory
-            $0.rumContext = context.additionalContext(ofType: RUMCoreContext.self)
-            $0.userInfo = context.userInfo
-            $0.accountInfo = context.accountInfo
+            $0.applicationStateHistory = datadogContext.applicationStateHistory
+            $0.rumContext = rumContext
+            $0.userInfo = datadogContext.userInfo
+            $0.accountInfo = datadogContext.accountInfo
+            $0.sampler = sampler
         }
 
         return true
