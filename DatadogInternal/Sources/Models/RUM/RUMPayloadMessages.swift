@@ -46,6 +46,18 @@ public struct RUMSessionState: Codable, Equatable {
         self.hasTrackedAnyView = hasTrackedAnyView
         self.didStartWithReplay = didStartWithReplay
     }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sessionUUID = try container.decode(UUID.self, forKey: .sessionUUID)
+        isInitialSession = try container.decode(Bool.self, forKey: .isInitialSession)
+        hasTrackedAnyView = try container.decode(Bool.self, forKey: .hasTrackedAnyView)
+        didStartWithReplay = try container.decodeIfPresent(Bool.self, forKey: .didStartWithReplay)
+        // `isSampled` was introduced in a later SDK version. For crash reports persisted by older
+        // SDK versions, fall back to deriving the sampling state from `sessionUUID`: a null UUID
+        // indicated a rejected (non-sampled) session in the previous encoding.
+        isSampled = try container.decodeIfPresent(Bool.self, forKey: .isSampled) ?? (sessionUUID != UUID.dd.nullUUID)
+    }
 }
 
 /// Error message consumed by RUM on the message-bus.

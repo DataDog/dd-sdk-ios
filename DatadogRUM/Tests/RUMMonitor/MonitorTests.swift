@@ -58,7 +58,7 @@ class MonitorTests: XCTestCase {
         var context: DatadogContext?
         featureScope.context { context = $0 }
         let rumContext = try XCTUnwrap(context?.additionalContext(ofType: RUMCoreContext.self))
-        XCTAssertFalse(rumContext.sessionSampler.sample())
+        XCTAssertFalse(rumContext.sessionSampler.isSampled)
     }
 
     func testStartView_withViewController_itUsesClassNameAsViewName() throws {
