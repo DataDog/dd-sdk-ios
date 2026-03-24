@@ -231,7 +231,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 named: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
                 url: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
                 startDate: crashTimings.realCrashDate,
-                sessionUUID: uuidGenerator.generateUnique(), // create new RUM session
+                sessionUUID: sessionID,
                 context: crashContext,
                 // As the crash occurred after initializing SDK but before starting the first view,
                 // we can't know if Session Replay was configured. However, lack of view implies
@@ -243,7 +243,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 named: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
                 url: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
                 startDate: crashTimings.realCrashDate,
-                sessionUUID: uuidGenerator.generateUnique(), // create new RUM session
+                sessionUUID: sessionID,
                 context: crashContext,
                 // As the crash occurred after initializing SDK but before starting the first view,
                 // we can't know if Session Replay was configured. However, lack of view implies

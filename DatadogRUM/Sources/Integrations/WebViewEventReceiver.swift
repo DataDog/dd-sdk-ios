@@ -68,7 +68,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         )
 
         featureScope.eventWriteContext { context, writer in
-            guard let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.sample() else {
+            guard let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.isSampled else {
                 return // Drop event if RUM is not enabled or RUM session is not sampled
             }
 
@@ -130,7 +130,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     private func receive(telemetry event: JSON) {
         // RUM-2866: Update with dedicated telemetry track
         featureScope.eventWriteContext { context, writer in
-            guard let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.sample() else {
+            guard let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.isSampled else {
                 return // Drop event if RUM is not enabled or RUM session is not sampled
             }
 
