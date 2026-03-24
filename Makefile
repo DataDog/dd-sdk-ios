@@ -276,9 +276,7 @@ spm-build-visionos:
 # Builds SPM package for watchOS
 spm-build-watchos:
 	# Build only compatible schemes for watchOS:
-	@$(MAKE) spm-build DESTINATION="generic/platform=watchOS" SCHEME="DatadogCore"
-	@$(MAKE) spm-build DESTINATION="generic/platform=watchOS" SCHEME="DatadogLogs"
-	@$(MAKE) spm-build DESTINATION="generic/platform=watchOS" SCHEME="DatadogTrace"
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=watchOS"
 
 # Builds SPM package for macOS (and Mac Catalyst)
 spm-build-macos:
