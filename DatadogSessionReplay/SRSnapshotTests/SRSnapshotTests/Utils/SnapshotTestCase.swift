@@ -154,6 +154,7 @@ internal class SnapshotTestCase: XCTestCase {
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
             additionalNodeRecorders: [],
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
             featureFlags: [.swiftui: true]
         )
 
@@ -181,6 +182,7 @@ internal class SnapshotTestCase: XCTestCase {
                 sessionID: "",
                 viewID: "",
                 viewServerTimeOffset: 0,
+                viewPath: nil,
                 date: Date(),
                 telemetry: NOPTelemetry()
             )

@@ -599,6 +599,7 @@
 		5B5B8CC32E8C0E9100A6740E /* FlagsClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */; };
 		5B5B8CC52E8C14B900A6740E /* FlagsClientRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CC42E8C14B200A6740E /* FlagsClientRegistry.swift */; };
 		5B5B8CC62E8C14B900A6740E /* FlagsClientRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CC42E8C14B200A6740E /* FlagsClientRegistry.swift */; };
+		5B616CB62F6D586B00EA6D4C /* HeatmapIdentifierComputationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B616CB52F6D586A00EA6D4C /* HeatmapIdentifierComputationTests.swift */; };
 		5B69166B2F3B823B0074A909 /* TimerScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B69166A2F3B82340074A909 /* TimerScheduler.swift */; };
 		5B69166D2F3B854C0074A909 /* TimeSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B69166C2F3B85480074A909 /* TimeSource.swift */; };
 		5B69166F2F3B89060074A909 /* TestTimerScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B69166E2F3B88FE0074A909 /* TestTimerScheduler.swift */; };
@@ -3058,6 +3059,7 @@
 		5B5B8CBE2E8BDB0D00A6740E /* FlagsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsData.swift; sourceTree = "<group>"; };
 		5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientProtocol.swift; sourceTree = "<group>"; };
 		5B5B8CC42E8C14B200A6740E /* FlagsClientRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientRegistry.swift; sourceTree = "<group>"; };
+		5B616CB52F6D586A00EA6D4C /* HeatmapIdentifierComputationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierComputationTests.swift; sourceTree = "<group>"; };
 		5B69166A2F3B82340074A909 /* TimerScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerScheduler.swift; sourceTree = "<group>"; };
 		5B69166C2F3B85480074A909 /* TimeSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSource.swift; sourceTree = "<group>"; };
 		5B69166E2F3B88FE0074A909 /* TestTimerScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTimerScheduler.swift; sourceTree = "<group>"; };
@@ -5459,6 +5461,7 @@
 		61054F652A6EE1BA00AAA894 /* ViewTreeSnapshot */ = {
 			isa = PBXGroup;
 			children = (
+				5B616CB52F6D586A00EA6D4C /* HeatmapIdentifierComputationTests.swift */,
 				61054F662A6EE1BA00AAA894 /* ViewTreeRecordingContextTests.swift */,
 				61054F672A6EE1BA00AAA894 /* ViewTreeSnapshotBuilderTests.swift */,
 				61054F682A6EE1BA00AAA894 /* NodeIDGeneratorTests.swift */,
@@ -10215,6 +10218,7 @@
 				5BE0EA2F2E66F25200216E1C /* Path+SessionReplayTests.swift in Sources */,
 				D2C5D52D2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift in Sources */,
 				5B7448422EFBB77E003E622C /* ScreenChangeMonitorTests.swift in Sources */,
+				5B616CB62F6D586B00EA6D4C /* HeatmapIdentifierComputationTests.swift in Sources */,
 				61054FBA2A6EE1BA00AAA894 /* UIImageViewRecorderTests.swift in Sources */,
 				61054FC02A6EE1BA00AAA894 /* UITextViewRecorderTests.swift in Sources */,
 				D233E7D62E46293A00E7CFDE /* SegmentJSONTests.swift in Sources */,

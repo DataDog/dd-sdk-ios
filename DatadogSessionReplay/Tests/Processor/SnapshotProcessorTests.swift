@@ -474,9 +474,85 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertNil(weakView)
     }
 
+    // MARK: - Heatmap Identifier
+
+    func testWhenProcessingSnapshot_itSetsHeatmapIdentifierOnWireframes() {
+        // Given
+        let time = Date()
+        let rum: RUMCoreContext = .mockRandom()
+        let recordWriter = RecordWriterMock()
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+        let processor = SnapshotProcessor(
+            queue: NoQueue(),
+            recordWriter: recordWriter,
+            resourceProcessor: ResourceProcessorSpy(),
+            srContextPublisher: srContextPublisher,
+            telemetry: TelemetryMock()
+        )
+
+        let viewTree = generateSimpleViewTree()
+        let snapshot = generateViewTreeSnapshot(for: viewTree, date: time, rumContext: rum)
+
+        // Stamp nodes with heatmap identifier
+        let identifier = HeatmapIdentifier(rawValue: "abc123")
+        var stampedNodes = snapshot.nodes
+        for i in stampedNodes.indices {
+            stampedNodes[i].heatmapIdentifier = identifier
+        }
+        let stampedSnapshot = ViewTreeSnapshot.mockWith(
+            date: snapshot.date,
+            context: snapshot.context,
+            viewportSize: snapshot.viewportSize,
+            nodes: stampedNodes
+        )
+
+        // When
+        var capturedWireframes: [SRWireframe]?
+        processor.interceptWireframes = { capturedWireframes = $0 }
+        processor.process(viewTreeSnapshot: stampedSnapshot, touchSnapshot: nil)
+
+        // Then
+        let permanentIds = (capturedWireframes ?? []).compactMap(\.permanentId)
+        XCTAssertFalse(permanentIds.isEmpty)
+        XCTAssertTrue(permanentIds.allSatisfy { $0 == "abc123" })
+    }
+
+    func testWhenProcessingSnapshot_withNoHeatmapIdentifier_wireframesHaveNilPermanentId() {
+        // Given
+        let time = Date()
+        let rum: RUMCoreContext = .mockWith(viewPath: nil)
+        let recordWriter = RecordWriterMock()
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+        let processor = SnapshotProcessor(
+            queue: NoQueue(),
+            recordWriter: recordWriter,
+            resourceProcessor: ResourceProcessorSpy(),
+            srContextPublisher: srContextPublisher,
+            telemetry: TelemetryMock()
+        )
+
+        let viewTree = generateSimpleViewTree()
+        let snapshot = generateViewTreeSnapshot(for: viewTree, date: time, rumContext: rum)
+
+        // When
+        var capturedWireframes: [SRWireframe]?
+        processor.interceptWireframes = { capturedWireframes = $0 }
+        processor.process(viewTreeSnapshot: snapshot, touchSnapshot: nil)
+
+        // Then
+        let permanentIds = (capturedWireframes ?? []).compactMap(\.permanentId)
+        XCTAssertTrue(permanentIds.isEmpty)
+    }
+
     // MARK: - `ViewTreeSnapshot` generation
 
-    private let snapshotBuilder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [], featureFlags: .allEnabled)
+    private let snapshotBuilder = ViewTreeSnapshotBuilder(
+        additionalNodeRecorders: [],
+        heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+        featureFlags: .allEnabled
+    )
 
     private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMCoreContext) -> ViewTreeSnapshot {
         snapshotBuilder.createSnapshot(
@@ -551,6 +627,23 @@ fileprivate extension PassthroughCoreMock {
         context.additionalContext(
             ofType: SessionReplayCoreContext.RecordsCount.self
         )?.value
+    }
+}
+
+extension SRWireframe {
+    fileprivate var permanentId: String? {
+        switch self {
+        case .shapeWireframe(let value):
+            return value.permanentId
+        case .textWireframe(let value):
+            return value.permanentId
+        case .imageWireframe(let value):
+            return value.permanentId
+        case .placeholderWireframe(let value):
+            return value.permanentId
+        case .webviewWireframe(let value):
+            return value.permanentId
+        }
     }
 }
 #endif
