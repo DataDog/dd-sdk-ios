@@ -1,5 +1,7 @@
 # Unreleased
 
+# 3.8.3 / 26-03-2026
+
 - [FIX] Fix TOC/TOU race in RUM scroll tracking. See [#2776][]
 
 # 3.8.2 / 17-03-2026
