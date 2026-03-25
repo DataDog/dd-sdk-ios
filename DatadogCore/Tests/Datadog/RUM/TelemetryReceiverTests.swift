@@ -31,15 +31,7 @@ class TelemetryReceiverTests: XCTestCase {
                 { core.telemetry.debug(id: .mockRandom(), message: "telemetry debug") },
                 { core.telemetry.error(id: .mockRandom(), message: "telemetry error", kind: "error.kind", stack: "error.stack") },
                 { core.telemetry.configuration(batchSize: .mockRandom()) },
-                { core.set(
-                    context: RUMCoreContext(
-                        applicationID: .mockRandom(),
-                        sessionID: .mockRandom(),
-                        viewID: .mockRandom(),
-                        userActionID: .mockRandom()
-                    )
-                )
-                }
+                { core.set(context: RUMCoreContext.mockRandom()) }
             ],
             iterations: 50
         )

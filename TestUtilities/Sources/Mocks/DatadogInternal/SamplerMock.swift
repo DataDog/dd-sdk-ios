@@ -24,3 +24,15 @@ extension Sampler: AnyMockable, RandomMockable {
         return .init(samplingRate: 0)
     }
 }
+
+extension DeterministicSampler {
+    /// Returns a sampler that always samples (100% rate, seed=0).
+    public static func mockKeepAll() -> DeterministicSampler {
+        return .init(seed: 0, samplingRate: 100)
+    }
+
+    /// Returns a sampler that never samples (0% rate, seed=0).
+    public static func mockRejectAll() -> DeterministicSampler {
+        return .init(seed: 0, samplingRate: 0)
+    }
+}

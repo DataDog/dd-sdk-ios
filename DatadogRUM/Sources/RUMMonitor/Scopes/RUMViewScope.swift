@@ -174,7 +174,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
 
         // Notify Synthetics if needed
-        if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
+        if dependencies.syntheticsTest != nil {
             NSLog("_dd.session.id=" + self.context.sessionID.toRUMDataFormat)
             NSLog("_dd.application.id=" + self.context.rumApplicationID)
             NSLog("_dd.view.id=" + self.viewUUID.toRUMDataFormat)
@@ -570,7 +570,7 @@ extension RUMViewScope {
                 cls: nil,
                 configuration: .init(
                     sessionReplaySampleRate: sessionReplayConfig.map { Double($0.sampleRate) },
-                    sessionSampleRate: Double(dependencies.sessionSampler.samplingRate),
+                    sessionSampleRate: Double(dependencies.samplingRate),
                     startSessionReplayRecordingManually: sessionReplayConfig?.startRecordingManually,
                     traceSampleRate: dependencies.distributedTracingSampleRate.map(Double.init)
                 ),
@@ -730,7 +730,7 @@ extension RUMViewScope {
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.samplingRate)),
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition
@@ -821,7 +821,7 @@ extension RUMViewScope {
         let longTaskEvent = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.samplingRate)),
                 discarded: nil,
                 session: .init(
                     plan: .plan1,
