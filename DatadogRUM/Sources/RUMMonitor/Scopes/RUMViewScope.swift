@@ -6,6 +6,7 @@
 
 import DatadogInternal
 import Foundation
+import os
 
 internal class RUMViewScope: RUMScope, RUMContextProvider {
     struct Constants {
@@ -175,9 +176,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil {
-            NSLog("_dd.session.id=" + self.context.sessionID.toRUMDataFormat)
-            NSLog("_dd.application.id=" + self.context.rumApplicationID)
-            NSLog("_dd.view.id=" + self.viewUUID.toRUMDataFormat)
+            os_log("_dd.session.id=%{public}s", self.context.sessionID.toRUMDataFormat)
+            os_log("_dd.application.id=%{public}s", self.context.rumApplicationID)
+            os_log("_dd.view.id=%{public}s", self.viewUUID.toRUMDataFormat)
         }
     }
 
