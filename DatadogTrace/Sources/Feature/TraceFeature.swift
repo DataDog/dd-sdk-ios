@@ -33,7 +33,7 @@ internal final class TraceFeature: DatadogRemoteFeature {
         self.contextReceiver = ContextMessageReceiver(sampleRate: sampleRate)
         self.tracer = DatadogTracer(
             core: core,
-            contextReceiver: contextReceiver,
+            samplingProvider: contextReceiver,
             tags: configuration.tags ?? [:],
             traceIDGenerator: configuration.traceIDGenerator,
             spanIDGenerator: configuration.spanIDGenerator,

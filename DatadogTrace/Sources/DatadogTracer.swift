@@ -27,7 +27,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     let activeSpansPool = ActiveSpansPool()
 
     /// Local trace sampler. Used for spans created with tracer API.
-    let contextReceiver: ContextMessageReceiver
+    let samplingProvider: TracerSamplingProvider
     /// Creates span events.
     let spanEventBuilder: SpanEventBuilder
 
@@ -35,7 +35,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
 
     convenience init(
         core: DatadogCoreProtocol,
-        contextReceiver: ContextMessageReceiver,
+        samplingProvider: TracerSamplingProvider,
         tags: [String: Encodable],
         traceIDGenerator: TraceIDGenerator,
         spanIDGenerator: SpanIDGenerator,
@@ -45,7 +45,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     ) {
         self.init(
             featureScope: core.scope(for: TraceFeature.self),
-            contextReceiver: contextReceiver,
+            samplingProvider: samplingProvider,
             tags: tags,
             traceIDGenerator: traceIDGenerator,
             spanIDGenerator: spanIDGenerator,
@@ -57,7 +57,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
 
     init(
         featureScope: FeatureScope,
-        contextReceiver: ContextMessageReceiver,
+        samplingProvider: TracerSamplingProvider,
         tags: [String: Encodable],
         traceIDGenerator: TraceIDGenerator,
         spanIDGenerator: SpanIDGenerator,
@@ -71,7 +71,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         self.spanIDGenerator = spanIDGenerator
         self.dateProvider = dateProvider
         self.loggingIntegration = loggingIntegration
-        self.contextReceiver = contextReceiver
+        self.samplingProvider = samplingProvider
         self.spanEventBuilder = spanEventBuilder
     }
 
@@ -80,7 +80,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
         let parentSpanContext = references?.compactMap { $0.context.dd }.last ?? activeSpan?.context as? DDSpanContext
         return startSpan(
-            spanContext: createSpanContext(parentSpanContext: parentSpanContext, using: contextReceiver.context.sampler),
+            spanContext: createSpanContext(parentSpanContext: parentSpanContext, using: samplingProvider.sampler),
             operationName: operationName,
             tags: tags,
             startTime: startTime
@@ -89,9 +89,9 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
 
     func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil, customSampleRate: SampleRate? = nil) -> OTSpan {
         let sampler: Sampling = if let customSampleRate {
-            TraceFeature.makeCurrentSamplerFor(deterministicSampler: contextReceiver.context.rumContext?.sessionSampler, using: customSampleRate)
+            samplingProvider.makeSamplerFor(samplingRate: customSampleRate)
         } else {
-            contextReceiver.context.sampler
+            samplingProvider.sampler
         }
 
         return startSpan(
@@ -117,7 +117,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
             spanID: context.spanID,
             parentSpanID: context.parentSpanID,
             baggageItems: context.baggageItems,
-            sampleRate: context.sampleRate,
+            sampleRate: samplingProvider.sampler.samplingRate,
             samplingDecision: context.samplingDecision
         )
     }
