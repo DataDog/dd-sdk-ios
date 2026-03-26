@@ -292,7 +292,7 @@ class TelemetryReceiverTests: XCTestCase {
         let applicationId: String = .mockRandom()
 
         featureScope.contextMock.set(
-            additionalContext: RUMCoreContext(
+            additionalContext: RUMCoreContext.mockWith(
                 applicationID: applicationId,
                 sessionID: .mockRandom()
             )
@@ -301,7 +301,7 @@ class TelemetryReceiverTests: XCTestCase {
 
         // When
         featureScope.contextMock.set(
-            additionalContext: RUMCoreContext(
+            additionalContext: RUMCoreContext.mockWith(
                 applicationID: applicationId,
                 sessionID: .mockRandom()
             )

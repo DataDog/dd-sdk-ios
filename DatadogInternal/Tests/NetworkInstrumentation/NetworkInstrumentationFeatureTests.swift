@@ -2161,7 +2161,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let provider = NetworkContextCoreProvider()
         let userInfo = UserInfo(id: "user123", name: "TestUser", email: "test@example.com")
         let accountInfo = AccountInfo(id: "account456", name: "TestAccount")
-        let rumContext = RUMCoreContext(applicationID: "app123", sessionID: "session789")
+        let rumContext: RUMCoreContext = .mockWith(applicationID: "app123", sessionID: .mockWith("E621E1F8-C36C-495A-93FC-0C247A3E6E5F"))
 
         let context = DatadogContext.mockWith(
             userInfo: userInfo,
@@ -2178,7 +2178,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Verify RUM context
         XCTAssertEqual(networkContext.rumContext?.applicationID, "app123")
-        XCTAssertEqual(networkContext.rumContext?.sessionID, "session789")
+        XCTAssertEqual(networkContext.rumContext?.sessionID, "e621e1f8-c36c-495a-93fc-0c247a3e6e5f")
 
         // Verify User configuration context
         XCTAssertEqual(networkContext.userConfigurationContext?.id, "user123")
@@ -2193,7 +2193,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testWhenReceivingContextMessage_withoutUserAndAccountInfo_itCreatesNetworkContextWithNilValues() throws {
         // Given
         let provider = NetworkContextCoreProvider()
-        let rumContext = RUMCoreContext(applicationID: "app123", sessionID: "session789")
+        let rumContext: RUMCoreContext = .mockWith(applicationID: "app123", sessionID: .mockWith("E621E1F8-C36C-495A-93FC-0C247A3E6E5F"))
 
         let context = DatadogContext.mockWith(
             userInfo: .mockEmpty(),
@@ -2210,7 +2210,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Verify RUM context is still available
         XCTAssertEqual(networkContext.rumContext?.applicationID, "app123")
-        XCTAssertEqual(networkContext.rumContext?.sessionID, "session789")
+        XCTAssertEqual(networkContext.rumContext?.sessionID, "e621e1f8-c36c-495a-93fc-0c247a3e6e5f")
 
         // Verify User and Account configuration contexts are nil
         XCTAssertNil(networkContext.userConfigurationContext?.id)

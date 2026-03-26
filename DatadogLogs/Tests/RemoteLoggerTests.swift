@@ -473,6 +473,7 @@ class RemoteLoggerTests: XCTestCase {
                 RUMCoreContext(
                     applicationID: applicationID,
                     sessionID: sessionID,
+                    sessionSampler: .mockKeepAll(),
                     viewID: viewID,
                     userActionID: actionID
                 )
@@ -490,6 +491,46 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(log.attributes.internalAttributes?["session_id"] as? String, sessionID)
         XCTAssertEqual(log.attributes.internalAttributes?["view.id"] as? String, viewID)
         XCTAssertEqual(log.attributes.internalAttributes?["user_action.id"] as? String, actionID)
+    }
+
+    func testWhenRUMIntegrationIsEnabled_withRUMContext_butSampledOut_itDoesNotSendTelemetryError() throws {
+        // Given
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: true,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
+        )
+
+        let applicationID: String = .mockRandom()
+        let sessionID: String = .mockRandom()
+
+        // When
+        featureScope.contextMock = .mockWith(
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: applicationID,
+                    sessionID: sessionID,
+                    sessionSampler: .mockRejectAll()
+                )
+            ]
+        )
+
+        logger.info("message")
+
+        // Then
+        let logs = featureScope.eventsWritten(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 1)
+
+        let log = try XCTUnwrap(logs.first)
+        XCTAssertNil(log.attributes.internalAttributes?["application_id"])
+        XCTAssertNil(log.attributes.internalAttributes?["session_id"])
+        XCTAssertNil(log.attributes.internalAttributes?["view.id"])
+        XCTAssertNil(log.attributes.internalAttributes?["user_action.id"])
+        XCTAssertTrue(featureScope.telemetryMock.messages.isEmpty)
     }
 
     func testWhenRUMIntegrationIsEnabled_withNoRUMContext_itDoesNotSendTelemetryError() throws {

@@ -1,5 +1,5 @@
 ---
-name: xcode-file-management
+name: dd-sdk-ios:xcode-file-management
 description: Use when adding, removing, moving, or renaming Swift source files in the dd-sdk-ios Xcode project. Use when the task involves file creation, deletion, or relocation in any module (DatadogRUM, DatadogLogs, DatadogCore, etc.). Use when you would otherwise reach for Write, Bash mv/mkdir/rm, or manual pbxproj editing for file management.
 ---
 

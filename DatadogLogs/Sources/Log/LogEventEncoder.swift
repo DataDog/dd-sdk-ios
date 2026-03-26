@@ -221,6 +221,7 @@ internal struct LogEventEncoder {
         case networkConnectionSupportsIPv6 = "network.client.supports_ipv6"
         case networkConnectionIsExpensive = "network.client.is_expensive"
         case networkConnectionIsConstrained = "network.client.is_constrained"
+        case networkConnectionLinkQuality = "network.client.link_quality"
 
         // MARK: - Mobile carrier info
 
@@ -295,6 +296,9 @@ internal struct LogEventEncoder {
             try container.encode(networkConnectionInfo.isExpensive, forKey: .networkConnectionIsExpensive)
             try networkConnectionInfo.isConstrained.dd.ifNotNil {
                 try container.encode($0, forKey: .networkConnectionIsConstrained)
+            }
+            try networkConnectionInfo.linkQuality.dd.ifNotNil {
+                try container.encode($0, forKey: .networkConnectionLinkQuality)
             }
         }
 

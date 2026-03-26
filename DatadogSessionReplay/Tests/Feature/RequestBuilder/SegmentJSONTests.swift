@@ -136,7 +136,7 @@ class SegmentJSONTests: XCTestCase {
             indexInView: nil,
             records: records,
             recordsCount: recordsCount,
-            session: .init(id: .mockRandom()),
+            session: .init(id: UUID().uuidString.lowercased()),
             source: source,
             start: timestamps.min(by: <)!,
             view: .init(id: .mockRandom())
@@ -150,7 +150,7 @@ class SegmentJSONTests: XCTestCase {
             touchPrivacy: .mockRandom(),
             rumContext: .mockWith(
                 applicationID: segment.application.id,
-                sessionID: segment.session.id,
+                sessionID: .mockWith(segment.session.id),
                 viewID: segment.view.id,
                 serverTimeOffset: 0
             )

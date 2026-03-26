@@ -498,6 +498,13 @@ public class objc_LogEventNetworkConnectionInfo: NSObject {
     public var isConstrained: NSNumber? {
         root.swiftModel.networkConnectionInfo?.isConstrained as NSNumber?
     }
+
+    public var linkQuality: objc_LogEventLinkQuality {
+        if let quality = root.swiftModel.networkConnectionInfo?.linkQuality {
+            return .init(swift: quality)
+        }
+        return .none
+    }
 }
 
 @objc(DDLogEventReachability)
@@ -552,6 +559,36 @@ public enum objc_LogEventInterface: Int {
     case cellular
     case loopback
     case other
+}
+
+@objc(DDLogEventLinkQuality)
+@_spi(objc)
+public enum objc_LogEventLinkQuality: Int {
+    internal init(swift: NetworkConnectionInfo.LinkQuality?) {
+        switch swift {
+        case nil: self = .none
+        case .good?: self = .good
+        case .minimal?: self = .minimal
+        case .moderate?: self = .moderate
+        case .unknown?: self = .unknown
+        }
+    }
+
+    internal var toSwift: NetworkConnectionInfo.LinkQuality? {
+        switch self {
+        case .none: return nil
+        case .good: return .good
+        case .minimal: return .minimal
+        case .moderate: return .moderate
+        case .unknown: return .unknown
+        }
+    }
+
+    case none
+    case good
+    case minimal
+    case moderate
+    case unknown
 }
 
 @objc(DDLogEventCarrierInfo)
