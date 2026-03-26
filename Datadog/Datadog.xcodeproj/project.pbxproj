@@ -12,8 +12,6 @@
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		093AC3292F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
 		093AC32A2F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
-		094B55262F754F0B00BAB8B5 /* SamplerBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094B55252F754F0B00BAB8B5 /* SamplerBuilder.swift */; };
-		094B55272F754F0B00BAB8B5 /* SamplerBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094B55252F754F0B00BAB8B5 /* SamplerBuilder.swift */; };
 		097452CD2F72B7A20064FA59 /* TracerSamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097452CC2F72B7A20064FA59 /* TracerSamplerProvider.swift */; };
 		097452CE2F72B7A20064FA59 /* TracerSamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097452CC2F72B7A20064FA59 /* TracerSamplerProvider.swift */; };
 		09A9369D2F0EB989000B6379 /* SamplingMechanismType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */; };
@@ -2777,7 +2775,6 @@
 /* Begin PBXFileReference section */
 		0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensionsTests.swift; sourceTree = "<group>"; };
 		093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpanProvider.swift; sourceTree = "<group>"; };
-		094B55252F754F0B00BAB8B5 /* SamplerBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplerBuilder.swift; sourceTree = "<group>"; };
 		097452CC2F72B7A20064FA59 /* TracerSamplerProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerSamplerProvider.swift; sourceTree = "<group>"; };
 		09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingMechanismType.swift; sourceTree = "<group>"; };
 		09A9369B2F0EB989000B6379 /* SamplingPriority.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingPriority.swift; sourceTree = "<group>"; };
@@ -6550,7 +6547,6 @@
 				61C5A87C24509A0C00DA608C /* Casting.swift */,
 				E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */,
 				61C5A87D24509A0C00DA608C /* Warnings.swift */,
-				094B55252F754F0B00BAB8B5 /* SamplerBuilder.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -10995,7 +10991,6 @@
 				097452CE2F72B7A20064FA59 /* TracerSamplerProvider.swift in Sources */,
 				D2C1A4FB29C4C4CB00946C31 /* MessageReceivers.swift in Sources */,
 				3C32359D2B55386C000B4258 /* OTelSpanLink.swift in Sources */,
-				094B55262F754F0B00BAB8B5 /* SamplerBuilder.swift in Sources */,
 				61A2CC362A44B0A20000FF25 /* TraceConfiguration.swift in Sources */,
 				61A2CC392A44B0EA0000FF25 /* Trace.swift in Sources */,
 				D2C1A50029C4C4CB00946C31 /* ActiveSpansPool.swift in Sources */,
@@ -11306,7 +11301,6 @@
 				097452CD2F72B7A20064FA59 /* TracerSamplerProvider.swift in Sources */,
 				D2C1A54129C4F2DF00946C31 /* MessageReceivers.swift in Sources */,
 				3C32359E2B55386C000B4258 /* OTelSpanLink.swift in Sources */,
-				094B55272F754F0B00BAB8B5 /* SamplerBuilder.swift in Sources */,
 				61A2CC372A44B0A20000FF25 /* TraceConfiguration.swift in Sources */,
 				61A2CC3A2A44B0EA0000FF25 /* Trace.swift in Sources */,
 				D2C1A54229C4F2DF00946C31 /* ActiveSpansPool.swift in Sources */,

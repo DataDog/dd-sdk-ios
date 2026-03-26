@@ -34,7 +34,7 @@ internal struct CoreContext {
 
 internal final class ContextMessageReceiver: FeatureMessageReceiver {
     init(sampleRate: SampleRate) {
-        self.context = .init(sampler: SamplerBuilder.makeCurrentSamplerFor(deterministicSampler: nil, using: sampleRate))
+        self.context = .init(sampler: Self.makeCurrentSamplerFor(deterministicSampler: nil, using: sampleRate))
     }
 
     /// The up-to-date core context.
@@ -62,7 +62,7 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
     /// - Parameter context: The updated core context.
     private func update(context datadogContext: DatadogContext, from core: DatadogCoreProtocol) -> Bool {
         let rumContext = datadogContext.additionalContext(ofType: RUMCoreContext.self)
-        let sampler = SamplerBuilder.makeCurrentSamplerFor(deterministicSampler: rumContext?.sessionSampler, using: context.sampler.samplingRate)
+        let sampler = Self.makeCurrentSamplerFor(deterministicSampler: rumContext?.sessionSampler, using: context.sampler.samplingRate)
 
         _context.mutate {
             $0.applicationStateHistory = datadogContext.applicationStateHistory
@@ -74,6 +74,25 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
 
         return true
     }
+
+    /// Creates the most appropriate sampler for the tracing feature.
+    ///
+    /// Refer to ``TracerSamplerProvider`` documentation for details on why using a dynamic
+    /// sampler provider.
+    ///
+    /// - parameters:
+    ///   - deterministicSampler: If a deterministic sampler provided by RUM exists, it must be
+    ///   passed in this parameter. Otherwise, pass `nil`.
+    ///   - samplingRate: The desired sampling rate. This can either be the value defined in the
+    ///   Trace feature configuration, or a custom value for a situation where a custom sampling rate
+    ///   was requested.
+    static func makeCurrentSamplerFor(deterministicSampler: DeterministicSampler?, using samplingRate: SampleRate) -> Sampling {
+        if let deterministicSampler {
+            return DeterministicSampler(seed: deterministicSampler.seed, samplingRate: samplingRate)
+        } else {
+            return Sampler(samplingRate: samplingRate)
+        }
+    }
 }
 
 extension ContextMessageReceiver: TracerSamplerProvider {
@@ -82,6 +101,6 @@ extension ContextMessageReceiver: TracerSamplerProvider {
     }
 
     func makeSamplerFor(samplingRate: DatadogInternal.SampleRate) -> any Sampling {
-        SamplerBuilder.makeCurrentSamplerFor(deterministicSampler: context.rumContext?.sessionSampler, using: samplingRate)
+        Self.makeCurrentSamplerFor(deterministicSampler: context.rumContext?.sessionSampler, using: samplingRate)
     }
 }
