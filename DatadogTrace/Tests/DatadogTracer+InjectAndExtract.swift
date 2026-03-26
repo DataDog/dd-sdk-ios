@@ -29,7 +29,7 @@ class DatadogTracer_InjectAndExtract: XCTestCase {
     private func createTracer(sampleRate: Float) -> DatadogTracer {
         return DatadogTracer(
             featureScope: NOPFeatureScope(),
-            samplingProvider: TestTracerSamplingProvider(sampler: Sampler(samplingRate: sampleRate)),
+            samplingProvider: TestTracerSamplerProvider(sampler: Sampler(samplingRate: sampleRate)),
             tags: [:],
             traceIDGenerator: DefaultTraceIDGenerator(),
             spanIDGenerator: DefaultSpanIDGenerator(),

@@ -120,7 +120,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         self.isRecording = true
         self.tracer = tracer
         self.spanLinks = spanLinks
-        let sampler = tracer.samplingProvider.sampler
+        let sampler = tracer.samplerProvider.sampler
         self.ddSpan = .init(
             tracer: tracer,
             context: .init(

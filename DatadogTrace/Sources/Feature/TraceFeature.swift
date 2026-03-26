@@ -56,12 +56,4 @@ internal final class TraceFeature: DatadogRemoteFeature {
         // Send configuration telemetry:
         core.telemetry.configuration(useTracing: true)
     }
-
-    static func makeCurrentSamplerFor(deterministicSampler: DeterministicSampler?, using samplingRate: SampleRate) -> Sampling {
-        if let deterministicSampler {
-            return DeterministicSampler(seed: deterministicSampler.seed, samplingRate: samplingRate)
-        } else {
-            return Sampler(samplingRate: samplingRate)
-        }
-    }
 }
