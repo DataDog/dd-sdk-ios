@@ -34,9 +34,10 @@ public struct DeterministicSampler: Sampling, Equatable, Sendable {
     ///     - `0.0` disables sampling entirely (no data is sampled).
     ///     - `100.0` enables full sampling (all data is sampled).
     public init(seed: UInt64, samplingRate: SampleRate) {
+        let normalizedSampleRate = samplingRate.normalized
         self.seed = seed
-        self.samplingRate = samplingRate
-        if samplingRate >= 100.0 {
+        self.samplingRate = normalizedSampleRate
+        if normalizedSampleRate == 100.0 {
             self.isSampled = true
         } else {
             // We use overflow multiplication to create a "randomized" hash based on the `seed`
@@ -64,7 +65,7 @@ public struct DeterministicSampler: Sampling, Equatable, Sendable {
     /// - Parameter childRate: The child feature's sampling rate (0.0–100.0).
     /// - Returns: A new sampler with `samplingRate.composed(with: childRate)` as its rate.
     public func combined(with childRate: SampleRate) -> DeterministicSampler {
-        DeterministicSampler(seed: seed, samplingRate: samplingRate.composed(with: childRate))
+        DeterministicSampler(seed: seed, samplingRate: samplingRate.composed(with: childRate.normalized))
     }
 }
 

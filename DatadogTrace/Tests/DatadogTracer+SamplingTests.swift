@@ -15,7 +15,7 @@ class DatadogTracer_SamplingTests: XCTestCase {
     private func createTracer(sampleRate: Float) -> DatadogTracer {
         return DatadogTracer(
             featureScope: featureScope,
-            samplingProvider: TestTracerSamplerProvider(sampler: Sampler(samplingRate: sampleRate)),
+            samplingProvider: TracerSamplerProviderMock(sampler: Sampler(samplingRate: sampleRate)),
             tags: [:],
             traceIDGenerator: DefaultTraceIDGenerator(),
             spanIDGenerator: DefaultSpanIDGenerator(),

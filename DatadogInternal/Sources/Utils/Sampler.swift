@@ -28,7 +28,7 @@ public struct Sampler: Sampling {
     public let samplingRate: SampleRate
 
     public init(samplingRate: SampleRate) {
-        self.samplingRate = max(0, min(100, samplingRate))
+        self.samplingRate = samplingRate.normalized
     }
 
     /// Based on the sampling rate, it returns random value deciding if an event should be "sampled" or not.
@@ -48,5 +48,10 @@ extension SampleRate {
     /// Composes two sample rates. For example, one SampleRate of 20% composed with another of 15% will return a percentage of 3%.
     public func composed(with sampleRate: SampleRate) -> Self {
         self.percentageProportion * sampleRate.percentageProportion * 100
+    }
+
+    /// Clamps the value between 0 and 100
+    internal var normalized: Self {
+        max(0, min(100, self))
     }
 }
