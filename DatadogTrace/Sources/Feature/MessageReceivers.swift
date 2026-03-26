@@ -24,7 +24,6 @@ internal struct CoreContext {
 }
 
 internal final class ContextMessageReceiver: FeatureMessageReceiver {
-
     init(sampleRate: SampleRate) {
         self.context = .init(sampler: TraceFeature.makeCurrentSamplerFor(deterministicSampler: nil, using: sampleRate))
     }
@@ -67,3 +66,14 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
         return true
     }
 }
+
+extension ContextMessageReceiver: TracerSamplingProvider {
+    var sampler: any Sampling {
+        context.sampler
+    }
+    
+    func makeSamplerFor(samplingRate: DatadogInternal.SampleRate) -> any Sampling {
+        TraceFeature.makeCurrentSamplerFor(deterministicSampler: context.rumContext?.sessionSampler, using: samplingRate)
+    }
+}
+

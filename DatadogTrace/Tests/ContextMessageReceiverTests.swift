@@ -13,7 +13,7 @@ import DatadogInternal
 class ContextMessageReceiverTests: XCTestCase {
     func testItReceivesApplicationStateHistory() throws {
         // Given
-        let receiver = ContextMessageReceiver()
+        let receiver = ContextMessageReceiver(sampleRate: .mockAny())
         let core = PassthroughCoreMock(
             context: .mockWith(applicationStateHistory: .mockAppInBackground()),
             messageReceiver: receiver

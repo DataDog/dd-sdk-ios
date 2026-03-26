@@ -20,7 +20,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        let receiver = ContextMessageReceiver()
+        let receiver = ContextMessageReceiver(sampleRate: .mockAny())
         core = PassthroughCoreMock(messageReceiver: CombinedFeatureMessageReceiver([
             LogMessageReceiver.mockAny(),
             receiver
