@@ -101,7 +101,7 @@ extension DatadogTracer {
 
     public static func mockWith(
         core: DatadogCoreProtocol,
-        samplingProvider: TracerSamplingProvider = TestTracerSamplingProvider.mockKeepAll(),
+        samplingProvider: TracerSamplerProvider = TestTracerSamplerProvider.mockKeepAll(),
         tags: [String: Encodable] = [:],
         traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
         spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
@@ -123,7 +123,7 @@ extension DatadogTracer {
 
     public static func mockWith(
         featureScope: FeatureScope,
-        samplingProvider: TracerSamplingProvider = TestTracerSamplingProvider.mockKeepAll(),
+        samplingProvider: TracerSamplerProvider = TestTracerSamplerProvider.mockKeepAll(),
         tags: [String: Encodable] = [:],
         traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
         spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
@@ -391,7 +391,7 @@ public struct MockActiveSpanProvider: TraceActiveSpanProvider {
     }
 }
 
-public struct TestTracerSamplingProvider: TracerSamplingProvider {
+public struct TestTracerSamplerProvider: TracerSamplerProvider {
     public let sampler: any Sampling
 
     public init(sampler: any Sampling) {
@@ -402,19 +402,19 @@ public struct TestTracerSamplingProvider: TracerSamplingProvider {
         Sampler(samplingRate: samplingRate)
     }
 
-    public static func mockAny() -> TracerSamplingProvider {
-        return TestTracerSamplingProvider(sampler: Sampler(samplingRate: 50))
+    public static func mockAny() -> TracerSamplerProvider {
+        return TestTracerSamplerProvider(sampler: Sampler(samplingRate: 50))
     }
 
-    public static func mockRandom() -> TracerSamplingProvider {
-        return TestTracerSamplingProvider(sampler: Sampler(samplingRate: .random(in: (0.0...100.0))))
+    public static func mockRandom() -> TracerSamplerProvider {
+        return TestTracerSamplerProvider(sampler: Sampler(samplingRate: .random(in: (0.0...100.0))))
     }
 
-    public static func mockKeepAll() -> TracerSamplingProvider {
-        return TestTracerSamplingProvider(sampler: Sampler(samplingRate: 100))
+    public static func mockKeepAll() -> TracerSamplerProvider {
+        return TestTracerSamplerProvider(sampler: Sampler(samplingRate: 100))
     }
 
-    public static func mockRejectAll() -> TracerSamplingProvider {
-        return TestTracerSamplingProvider(sampler: Sampler(samplingRate: 0))
+    public static func mockRejectAll() -> TracerSamplerProvider {
+        return TestTracerSamplerProvider(sampler: Sampler(samplingRate: 0))
     }
 }

@@ -65,7 +65,7 @@ class TraceTests: XCTestCase {
         // Then
         let tracer = Tracer.shared(in: core).dd
         let trace = try XCTUnwrap(core.get(feature: TraceFeature.self))
-        XCTAssertEqual(tracer.samplingProvider.sampler.samplingRate, 100)
+        XCTAssertEqual(tracer.samplerProvider.sampler.samplingRate, 100)
         XCTAssertNil(tracer.spanEventBuilder.service)
         XCTAssertNil(tracer.loggingIntegration.service)
         XCTAssertTrue(tracer.tags.isEmpty)
@@ -85,7 +85,7 @@ class TraceTests: XCTestCase {
 
         // Then
         let tracer = Tracer.shared(in: core).dd
-        XCTAssertEqual(tracer.samplingProvider.sampler.samplingRate, random, accuracy: 0.001)
+        XCTAssertEqual(tracer.samplerProvider.sampler.samplingRate, random, accuracy: 0.001)
     }
 
     func testWhenEnabled_itUpdateCoreContext() {
@@ -260,7 +260,7 @@ class TraceTests: XCTestCase {
         let tracer = try XCTUnwrap(Tracer.shared(in: core) as? DatadogTracer)
         let networkInstrumentation = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         let tracingHandler = try XCTUnwrap(networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self))
-        XCTAssertEqual(tracer.samplingProvider.sampler.samplingRate, 100)
+        XCTAssertEqual(tracer.samplerProvider.sampler.samplingRate, 100)
         XCTAssertEqual(tracingHandler.samplingRate, 100)
     }
 
@@ -283,7 +283,7 @@ class TraceTests: XCTestCase {
         let tracer = try XCTUnwrap(Tracer.shared(in: core) as? DatadogTracer)
         let networkInstrumentation = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         let tracingHandler = try XCTUnwrap(networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self))
-        XCTAssertEqual(tracer.samplingProvider.sampler.samplingRate, random)
+        XCTAssertEqual(tracer.samplerProvider.sampler.samplingRate, random)
         XCTAssertEqual(tracingHandler.samplingRate, random)
     }
 }
