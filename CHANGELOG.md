@@ -1,5 +1,9 @@
 # Unreleased
 
+# 3.8.3 / 26-03-2026
+
+- [FIX] Fix TOC/TOU race in RUM scroll tracking. See [#2776][]
+
 # 3.8.2 / 17-03-2026
 
 - [FIX] Fix crash and incorrect delegate getter return value when using RUM scroll tracking. See [#2761][]
@@ -1087,6 +1091,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2761]: https://github.com/DataDog/dd-sdk-ios/pull/2761
 [#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
 [#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
+[#2776]: https://github.com/DataDog/dd-sdk-ios/pull/2776
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
