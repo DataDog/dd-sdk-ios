@@ -56,7 +56,7 @@ When swizzling a property setter that installs an internal proxy (e.g., `UIScrol
 
 | Guard | What it stops |
 |---|---|
-| nil check | Stale proxy leaked when property is cleared |
+| nil check | Proxy reuse with wrong state when the property is later re-assigned |
 | type check (`value is OurProxy`) | Re-wrapping when our own proxy is passed back directly |
 | re-entrancy guard (`objectsBeingSet`) | Infinite recursion when a third-party swizzle wraps our proxy in its own and re-calls the setter via ObjC dispatch with a *different* delegate type |
 
@@ -70,9 +70,9 @@ private static var objectsBeingSet: Set<ObjectIdentifier> = []
 
 // Inside swizzle closure:
 
-// 1. Nil guard — clean up associated proxy, forward nil
-if value == nil {
-    objc_setAssociatedObject(object, &Self.proxyKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+// 1. Nil guard — just forward nil; the proxy will be released automatically
+//    when the previous value is eventually deallocated (see Pattern 4).
+guard let value = value else {
     previousImplementation(object, selector, nil)
     return
 }
@@ -92,7 +92,7 @@ guard !Self.objectsBeingSet.contains(objectID) else {
 Self.objectsBeingSet.insert(objectID)
 defer { Self.objectsBeingSet.remove(objectID) }
 
-// 4. Normal path — create or reuse proxy, then forward
+// 4. Normal path — create or reuse proxy keyed on value (see Pattern 4 below)
 previousImplementation(object, selector, wrappedValue)
 ```
 
@@ -123,6 +123,31 @@ swizzle(getterMethod) { previousImplementation -> Signature in
 ```
 
 Always install getter and setter swizzles together, and always remove them together.
+
+### 4. Proxy lifetime: attach the proxy to the value, not the receiver
+
+When the swizzled setter installs a proxy keyed to the **value** being set (e.g. the delegate object), store the associated object on that value — not on the receiver (e.g. the scroll view).
+
+**Why this matters:** The receiver typically holds the value through a `weak` reference. If the proxy is associated with the receiver, it stays alive as long as the receiver is alive — which is longer than the value. When the value is deallocated and the weak reference becomes `nil`, UIKit may have already cached `responds(to:) == true` for selectors the proxy advertised. On the next event UIKit dispatches the selector directly to the still-alive proxy, whose `originalDelegate` is now `nil`, causing an "unrecognized selector" crash.
+
+By associating the proxy with the value itself, the proxy's lifetime equals the value's lifetime. When the value is released, the proxy is released with it, the receiver's weak reference naturally becomes `nil`, and UIKit stops dispatching to that proxy.
+
+```swift
+// WRONG — proxy outlives the delegate when delegate is released
+objc_setAssociatedObject(scrollView, &Self.proxyKey, proxy, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+
+// CORRECT — proxy lifetime = delegate lifetime
+objc_setAssociatedObject(delegate, &Self.proxyKey, proxy, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+```
+
+**Corollary:** when reusing an existing proxy (found via `objc_getAssociatedObject(value, ...)`), always update mutable state that could be stale — specifically, the handler reference in case the SDK was stopped and re-initialized:
+
+```swift
+if let existingProxy = objc_getAssociatedObject(value, &Self.proxyKey) as? OurProxy {
+    existingProxy.handler = handler  // update in case RUM was restarted with a new handler
+    previousImplementation(object, selector, existingProxy)
+}
+```
 
 ### 3. Re-entrancy guard in proxy forwarding methods
 
@@ -174,16 +199,21 @@ A global `static var isSwizzling = false` flag breaks when two different objects
 
 Any proxy pattern involving `responds(to:)` + `forwardingTarget(for:)` that delegates to an `originalDelegate` is vulnerable to circular chains. Third-party delegate proxies (RxSwift, Firebase Analytics, etc.) use the same pattern and may install themselves in your chain. Always guard `responds(to:)`.
 
-### Pitfall: not cleaning up associated objects on nil assignment
+### Pitfall: attaching the proxy to the receiver instead of the value
 
-When a setter swizzle stores an associated object (e.g., a proxy keyed to the object under swizzle), it must explicitly remove that associated object when the property is set to `nil`. Failing to do so leaks the proxy and can cause stale state on object reuse.
+When the swizzled property holds a `weak` reference to the value (e.g. `UIScrollView.delegate` is `weak`), attaching the proxy to the receiver (e.g. the scroll view) means the proxy outlives the value it wraps. When the value is deallocated, the proxy is still alive and `originalDelegate` is `nil`. UIKit may dispatch cached selectors to the proxy — "unrecognized selector" crash.
+
+**Fix:** attach the proxy to the value being set (Pattern 4 above). The proxy is then released with the value, and the receiver's weak property naturally becomes `nil`.
+
+This also means you do **not** need to explicitly remove the associated object when the property is set to `nil`. Just forward `nil` and let ARC do the cleanup:
 
 ```swift
-if value == nil {
-    objc_setAssociatedObject(object, &Self.proxyKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+// Correct nil handling when proxy is on the value:
+guard let value = value else {
     previousImplementation(object, selector, nil)
     return
 }
+// No manual objc_setAssociatedObject cleanup needed.
 ```
 
 ---
@@ -204,6 +234,16 @@ The crash manifested in `responds(to:)` due to the circular delegation chain cre
 3. Proxy reuse via associated objects in `SetDelegate` — avoids creating a new proxy on each setter call for the same scroll view
 4. Re-entrancy guard in `UIScrollViewDelegateProxy.responds(to:)` using `isRespondingToSelector: Bool` — breaks circular `responds(to:)` chains when two proxies mutually reference each other
 
+### RUM 3.8.3 — Crash after delegate deallocation in SwiftUI UICollectionView (#2776)
+
+**Symptom:** Apps using SwiftUI's `List` or `ScrollView` (which internally use `UICollectionView`) crashed with "unrecognized selector sent to instance" after a view was dismissed and later interacted with again.
+
+**Root cause:** `UIScrollViewSwizzler` stored the `UIScrollViewDelegateProxy` as an associated object on the **scroll view**. This tied the proxy's lifetime to the scroll view, not the delegate. When SwiftUI's internal delegate was deallocated (view dismissed), the proxy's `originalDelegate` became `nil`. However, UIKit had previously called `responds(to:)` on the proxy and cached the result (`true`) for scroll-related selectors. On the next scroll event UIKit dispatched the selector directly to the proxy — which forwarded to `forwardingTarget(for:)` — which returned `nil` (since `originalDelegate` was gone) — crash.
+
+**Fix applied:** Changed `objc_setAssociatedObject` to key on the **delegate** instead of the scroll view (PR #2776). The proxy's lifetime now equals the delegate's lifetime. When the delegate is released, the proxy is released with it, `scrollView.delegate` (a `weak` reference) naturally becomes `nil`, and UIKit stops dispatching.
+
+Additionally, when reusing an existing proxy on a delegate, the handler is now updated (`existingProxy.handler = handler`) in case RUM was stopped and re-initialized with a new handler instance.
+
 ### RUM 3.8.0 — `collectionView.delegate as? CustomDelegate` returns nil (#2760)
 
 **Symptom:** After upgrading to 3.8.0, customer code that cast `collectionView.delegate` to a custom type always returned `nil`. Type checks like `collectionView.delegate is MyDelegate` also failed.
@@ -222,7 +262,8 @@ Before submitting a swizzle:
 - [ ] Setter wrapping a value → getter swizzle installed that unwraps it
 - [ ] Setter calls `previousImplementation` → re-entrancy guard keyed on object identity
 - [ ] Proxy with `responds(to:)` / `forwardingTarget(for:)` → `isRespondingToSelector` guard
-- [ ] `nil` assignment removes associated objects
+- [ ] Proxy is associated with the **value** (not the receiver) so its lifetime matches the value's
+- [ ] When reusing an existing proxy, mutable state (e.g. `handler`) is updated
 - [ ] `unswizzle()` removes both setter and getter swizzles together
 - [ ] Unit test for the proxy `responds(to:)` re-entrancy guard (circular proxy chain does not stack-overflow)
 - [ ] Unit test for the setter re-entrancy guard (simulating a third-party swizzle that re-calls the setter with its own proxy type)
