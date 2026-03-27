@@ -1,9 +1,3 @@
-/*
- * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
- * This product includes software developed at Datadog (https://www.datadoghq.com/).
- * Copyright 2019-Present Datadog, Inc.
- */
-
 # Swizzling in dd-sdk-ios
 
 This document captures the mandatory patterns, known pitfalls, and real production incidents related to Objective-C method swizzling in the Datadog iOS SDK. **Read this before writing or modifying any swizzle.**
@@ -38,11 +32,20 @@ Before applying any pattern, identify which category your swizzle falls into:
 | Category | Description | Examples in this SDK |
 |---|---|---|
 | **Pure method intercept** | Observe a method call and delegate to `previousImplementation`. No value is stored, no proxy is created. | `UIViewController.viewDidAppear`, `UIApplication.sendEvent`, `URLSessionTask.resume`, `CALayer.display` |
-| **Proxy-setter swizzle** | Intercept a *stored property setter* to replace the stored value with an internal proxy. Requires mirroring the getter too. | `UIScrollView.delegate` |
+| **Proxy-setter swizzle** ⚠️ | Intercept a *stored property setter* to replace the stored value with an internal proxy. Requires mirroring the getter too. | `UIScrollView.delegate` |
 
 **Pure method intercepts** only need to call `previousImplementation` in the correct position. The three-guard pattern below does **not** apply.
 
-**Proxy-setter swizzles** require all mandatory patterns below. `UIScrollViewSwizzler` is the only current example.
+**Proxy-setter swizzles are a last-resort, legacy pattern. Do not add new ones.**
+
+The existing `UIScrollView.delegate` implementation works only because UIKit accesses the delegate ivar directly rather than through the synthesized getter. If UIKit called `self.delegate` via the accessor internally, our getter swizzle would unwrap the proxy and return the original delegate — bypassing the proxy entirely and defeating its purpose. This is a fragile assumption that can break with any UIKit update.
+
+For new instrumentation:
+- **Prefer swizzling methods on the delegate type directly** (e.g. `URLSessionTaskDelegate` methods), so no proxy or getter swizzle is needed.
+- **Look for other methods on the receiver to intercept** before reaching for a property setter swizzle.
+- If a proxy-setter swizzle cannot be avoided, treat it as technical debt to be replaced, and document the UIKit ivar-access assumption explicitly.
+
+The patterns documented below describe how to maintain the existing `UIScrollViewSwizzler` safely — not a template to replicate.
 
 ---
 
@@ -124,7 +127,7 @@ swizzle(getterMethod) { previousImplementation -> Signature in
 
 Always install getter and setter swizzles together, and always remove them together.
 
-### 4. Proxy lifetime: attach the proxy to the value, not the receiver
+### 3. Proxy lifetime: attach the proxy to the value, not the receiver
 
 When the swizzled setter installs a proxy keyed to the **value** being set (e.g. the delegate object), store the associated object on that value — not on the receiver (e.g. the scroll view).
 
@@ -149,7 +152,7 @@ if let existingProxy = objc_getAssociatedObject(value, &Self.proxyKey) as? OurPr
 }
 ```
 
-### 3. Re-entrancy guard in proxy forwarding methods
+### 4. Re-entrancy guard in proxy forwarding methods
 
 When a proxy object is used to intercept delegate calls, it forwards unknown selectors to an `originalDelegate`. If another framework's proxy stores your proxy as *its* forward-to delegate while your proxy stores the other framework's proxy as `originalDelegate`, a circular chain forms:
 
