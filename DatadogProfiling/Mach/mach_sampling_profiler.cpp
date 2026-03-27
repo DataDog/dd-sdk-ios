@@ -467,7 +467,10 @@ void mach_sampling_profiler::main() {
         // Check for flush request at safe point (no threads suspended)
         if (flush_requested) {
             flush_buffer();
-            flush_requested = false;
+            {
+                std::lock_guard<std::mutex> lock(flush_mutex);
+                flush_requested = false;
+            }
             flush_cv.notify_one();
         }
 
@@ -511,6 +514,13 @@ void mach_sampling_profiler::main() {
     
     // Flush any remaining samples
     flush_buffer();
+
+    // Unblock waiters if sampling stops before servicing a pending flush request.
+    {
+        std::lock_guard<std::mutex> lock(flush_mutex);
+        flush_requested = false;
+    }
+    flush_cv.notify_all();
 }
 
 /**
