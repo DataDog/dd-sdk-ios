@@ -73,7 +73,8 @@ private extension RUMAppLaunchManager {
             vital: .init(
                 id: ttidVitalId,
                 name: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric.ttid.name,
-                start: context.launchInfo.processLaunchDate.timeIntervalSince1970.dd.toInt64Nanoseconds,
+                type: .applicationLaunch,
+                date: context.launchInfo.processLaunchDate,
                 duration: ttid.dd.toInt64Nanoseconds
             ),
             activeView: activeView
@@ -225,18 +226,10 @@ private extension RUMAppLaunchManager {
     }
 
     func sendTTIDMessageToProfiler(vital: Vital, activeView: RUMViewScope?) {
-        var context: [String: Encodable] = [
-            RUMContextAttributes.IDs.applicationID: parent.context.rumApplicationID,
-            RUMContextAttributes.IDs.sessionID: parent.context.sessionID.toRUMDataFormat,
-            RUMContextAttributes.IDs.vitalID: vital.id
-        ]
+        var contextAttributes: [String: Encodable] = parent.rumContextAttributes
+        contextAttributes[RUMCoreContext.IDs.vitalID] = vital.id
 
-        if let activeView {
-            context[RUMContextAttributes.IDs.viewID] = [activeView.viewUUID.toRUMDataFormat]
-            context[RUMContextAttributes.IDs.viewName] = [activeView.viewName]
-        }
-
-        dependencies.featureScope.send(message: .payload(TTIDMessage(context: context, vital: vital)))
+        dependencies.featureScope.send(message: .payload(VitalMessage(attributes: contextAttributes, vital: vital)))
     }
 }
 

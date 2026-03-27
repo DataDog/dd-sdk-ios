@@ -12,3 +12,22 @@ internal protocol RUMContextProvider: AnyObject {
     var context: RUMContext { get }
     var attributes: [AttributeKey: AttributeValue] { get }
 }
+
+extension RUMContextProvider {
+    var rumContextAttributes: [String: AttributeValue] {
+        var attributes: [String: AttributeValue] = [
+            RUMCoreContext.IDs.applicationID: context.rumApplicationID,
+            RUMCoreContext.IDs.sessionID: context.sessionID.toRUMDataFormat,
+        ]
+
+        if let activeViewID = context.activeViewID {
+            attributes[RUMCoreContext.IDs.viewID] = [activeViewID.toRUMDataFormat]
+        }
+
+        if let activeViewName = context.activeViewName {
+            attributes[RUMCoreContext.IDs.viewName] = [activeViewName]
+        }
+
+        return attributes
+    }
+}

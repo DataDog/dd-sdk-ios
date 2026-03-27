@@ -13,6 +13,7 @@ import TestUtilities
 @testable import DatadogProfiling
 
 final class ProfilerFeatureTests: XCTestCase {
+    private let core: DatadogCoreProtocol = PassthroughCoreMock()
     private let requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     private let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     private let telemetryController = ProfilingTelemetryController()
@@ -38,9 +39,9 @@ final class ProfilerFeatureTests: XCTestCase {
 
         // When
         _ = ProfilerFeature(
+            core: core,
+            configuration: .init(),
             requestBuilder: requestBuilder,
-            messageReceiver: messageReceiver,
-            sampleRate: .maxSampleRate,
             telemetryController: telemetryController,
             userDefaults: userDefaults
         )
@@ -51,20 +52,20 @@ final class ProfilerFeatureTests: XCTestCase {
 
     func testInit_setsSampleRateValue() {
         // Given
-        userDefaults.removeObject(forKey: DD_PROFILING_SAMPLE_RATE_KEY)
+        userDefaults.removeObject(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
         let newSampleRate: SampleRate = 23
 
         // When
         _ = ProfilerFeature(
+            core: core,
+            configuration: .init(applicationLaunch: .enabled(sampleRate: newSampleRate)),
             requestBuilder: requestBuilder,
-            messageReceiver: messageReceiver,
-            sampleRate: newSampleRate,
             telemetryController: telemetryController,
             userDefaults: userDefaults
         )
 
         // Then
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate, newSampleRate)
+        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, newSampleRate)
     }
 
     func testInit_overridesPreviousSampleRate_whenNewSampleRateIsLower() {
@@ -72,20 +73,20 @@ final class ProfilerFeatureTests: XCTestCase {
         let previousSampleRate: SampleRate = 80
         let lowerSampleRate: SampleRate = 20
 
-        userDefaults.setValue(previousSampleRate, forKey: DD_PROFILING_SAMPLE_RATE_KEY)
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
+        userDefaults.setValue(previousSampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
+        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
 
         // When
         _ = ProfilerFeature(
+            core: core,
+            configuration: .init(applicationLaunch: .enabled(sampleRate: lowerSampleRate)),
             requestBuilder: requestBuilder,
-            messageReceiver: messageReceiver,
-            sampleRate: lowerSampleRate,
             telemetryController: telemetryController,
             userDefaults: userDefaults
         )
 
         // Then
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate, lowerSampleRate)
+        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, lowerSampleRate)
     }
 
     func testInit_keepsPreviousSampleRate_whenNewSampleRateIsHigher() {
@@ -93,20 +94,20 @@ final class ProfilerFeatureTests: XCTestCase {
         let previousSampleRate: SampleRate = 20
         let higherSampleRate: SampleRate = 80
 
-        userDefaults.setValue(previousSampleRate, forKey: DD_PROFILING_SAMPLE_RATE_KEY)
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
+        userDefaults.setValue(previousSampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
+        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
 
         // When
         _ = ProfilerFeature(
+            core: core,
+            configuration: .init(applicationLaunch: .enabled(sampleRate: higherSampleRate)),
             requestBuilder: requestBuilder,
-            messageReceiver: messageReceiver,
-            sampleRate: higherSampleRate,
             telemetryController: telemetryController,
             userDefaults: userDefaults
         )
 
         // Then
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
+        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
     }
 }
 
