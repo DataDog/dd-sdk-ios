@@ -311,12 +311,18 @@ public enum Trace
         public var networkInfoEnabled: Bool
         public var eventMapper: EventMapper?
         public var customEndpoint: URL?
+        public typealias SpanCustomization = (InterceptedRequest, OTSpan, URLResponse?, Error?) -> Void
+        public struct InterceptedRequest
+            public let url: URL?
+            public let httpMethod: String?
+            public let httpBody: Data?
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing
+            public var spanCustomization: SpanCustomization?
             public enum FirstPartyHostsTracing
                 case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
                 case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
-            public init(firstPartyHostsTracing: FirstPartyHostsTracing)
+            public init(firstPartyHostsTracing: FirstPartyHostsTracing,spanCustomization: SpanCustomization? = nil)
         public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: Encodable]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
 public enum SpanTags
     public static let resource = "resource.name"

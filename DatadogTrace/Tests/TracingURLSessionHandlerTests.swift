@@ -851,6 +851,351 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(span.resource, "404", "404 responses should have resource set to '404'")
     }
 
+    // MARK: - Span Customization Tests
+
+    func testGivenSpanCustomization_whenInterceptionCompletes_itCallsCustomizationWithAllParameters() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        var receivedRequest: Trace.Configuration.InterceptedRequest?
+        var receivedSpan: OTSpan?
+        var receivedResponse: URLResponse?
+        var receivedError: Error?
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init([
+                "www.example.com": [.datadog]
+            ]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry(),
+            spanCustomization: { request, span, response, error in
+                receivedRequest = request
+                receivedSpan = span
+                receivedResponse = response
+                receivedError = error
+                span.setTag(key: "graphql.operation.name", value: "GetUser")
+            }
+        )
+
+        // Given
+        let requestBody = #"{"operationName":"GetUser"}"#.data(using: .utf8)
+        let request: ImmutableRequest = .mockWith(
+            url: URL(string: "https://www.example.com/graphql")!,
+            httpMethod: "POST",
+            httpBody: requestBody
+        )
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        XCTAssertNotNil(receivedRequest, "Customization callback should receive the request")
+        XCTAssertEqual(receivedRequest?.url?.absoluteString, "https://www.example.com/graphql")
+        XCTAssertEqual(receivedRequest?.httpMethod, "POST")
+        XCTAssertEqual(receivedRequest?.httpBody, requestBody, "Customization callback should receive the request body")
+        XCTAssertNotNil(receivedSpan, "Customization callback should receive the span")
+        XCTAssertNotNil(receivedResponse, "Customization callback should receive the response")
+        XCTAssertEqual((receivedResponse as? HTTPURLResponse)?.statusCode, 200)
+        XCTAssertNil(receivedError, "Error should be nil for successful requests")
+
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        // Custom tags set via callback
+        XCTAssertEqual(span.tags["graphql.operation.name"], "GetUser")
+        // Default tags still present
+        XCTAssertEqual(span.tags[OTTags.httpMethod], "POST")
+        XCTAssertEqual(span.tags[OTTags.httpStatusCode], "200")
+        XCTAssertEqual(span.tags[OTTags.spanKind], "client")
+    }
+
+    func testGivenNoSpanCustomization_whenInterceptionCompletes_itCreatesSpanNormally() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init([
+                "www.example.com": [.datadog]
+            ]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry(),
+            spanCustomization: nil
+        )
+
+        // Given
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertEqual(span.operationName, "urlsession.request")
+        XCTAssertFalse(span.isError)
+    }
+
+    func testGivenSpanCustomization_whenInterceptionCompletesWithError_itCallsCustomizationWithError() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        var receivedResponse: URLResponse?
+        var receivedError: Error?
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init([
+                "www.example.com": [.datadog]
+            ]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry(),
+            spanCustomization: { _, span, response, error in
+                receivedResponse = response
+                receivedError = error
+                span.setTag(key: "custom.error.tag", value: "handled")
+            }
+        )
+
+        // Given
+        let request: ImmutableRequest = .mockWith(
+            url: URL(string: "https://www.example.com/api")!,
+            httpMethod: "GET"
+        )
+        let networkError = NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut, userInfo: nil)
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: nil, error: networkError)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        XCTAssertNil(receivedResponse, "Response should be nil for error-only requests")
+        XCTAssertNotNil(receivedError, "Customization callback should receive the error")
+        XCTAssertEqual((receivedError as? NSError)?.code, NSURLErrorTimedOut)
+
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertTrue(span.isError)
+        XCTAssertEqual(span.tags["custom.error.tag"], "handled")
+    }
+
+    func testGivenSpanCustomization_whenRequestHasNoBody_itReceivesNilHttpBody() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        var receivedHttpBody: Data? = Data() // non-nil sentinel to detect it was set
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init([
+                "www.example.com": [.datadog]
+            ]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry(),
+            spanCustomization: { request, _, _, _ in
+                receivedHttpBody = request.httpBody
+            }
+        )
+
+        // Given - request with no body
+        let request: ImmutableRequest = .mockWith(
+            url: URL(string: "https://www.example.com/api")!,
+            httpMethod: "GET"
+        )
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertNil(receivedHttpBody, "httpBody should be nil when the request has no body")
+    }
+
+    func testGivenSpanCustomization_whenMultipleConcurrentRequestsComplete_itSafelyReadsPropertiesFromAllCallbacks() throws {
+        // This test simulates multiple URLSession tasks completing simultaneously on different background
+        // threads, each triggering `spanCustomization`. It verifies that reading `InterceptedRequest`
+        // properties is thread-safe: `url` and `httpMethod` are pre-captured value-type snapshots;
+        // `httpBody` is backed by immutable NSData, safe for concurrent reads.
+        let concurrentCount = 5
+        let allSpansWritten = expectation(description: "All spans written")
+        allSpansWritten.expectedFulfillmentCount = concurrentCount
+        core.onEventWriteContext = { _ in allSpansWritten.fulfill() }
+
+        var receivedUrls: [URL?] = Array(repeating: nil, count: concurrentCount)
+        var receivedMethods: [String?] = Array(repeating: nil, count: concurrentCount)
+        var receivedBodies: [Data?] = Array(repeating: nil, count: concurrentCount)
+        let lock = NSLock()
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init([
+                "www.example.com": [.datadog]
+            ]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry(),
+            spanCustomization: { request, _, _, _ in
+                // Read all InterceptedRequest properties — must be safe from any background thread
+                let url = request.url
+                let method = request.httpMethod
+                let body = request.httpBody
+                guard let index = Int(url?.lastPathComponent ?? "") else {
+                    return
+                }
+                lock.lock()
+                receivedUrls[index] = url
+                receivedMethods[index] = method
+                receivedBodies[index] = body
+                lock.unlock()
+            }
+        )
+
+        // Given - prepare one interception per concurrent "task"
+        let interceptions: [URLSessionTaskInterception] = (0..<concurrentCount).map { i in
+            let body = "body-\(i)".data(using: .utf8)
+            let request: ImmutableRequest = .mockWith(
+                url: URL(string: "https://www.example.com/api/\(i)")!,
+                httpMethod: "POST",
+                httpBody: body
+            )
+            let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
+            interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+            interception.register(
+                metrics: .mockWith(
+                    fetch: .init(
+                        start: .mockDecember15th2019At10AMUTC(),
+                        end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                    )
+                )
+            )
+            return interception
+        }
+
+        // When - complete all interceptions concurrently from background threads
+        // (simulating multiple URLSession tasks finishing simultaneously)
+        let concurrentQueue = DispatchQueue(label: "test.concurrent", attributes: .concurrent)
+        for interception in interceptions {
+            concurrentQueue.async {
+                handler.interceptionDidComplete(interception: interception)
+            }
+        }
+
+        // Then - all callbacks must complete with correct, non-corrupted property values
+        waitForExpectations(timeout: 2.0, handler: nil)
+        for i in 0..<concurrentCount {
+            XCTAssertEqual(receivedUrls[i]?.absoluteString, "https://www.example.com/api/\(i)")
+            XCTAssertEqual(receivedMethods[i], "POST")
+            XCTAssertEqual(receivedBodies[i], "body-\(i)".data(using: .utf8))
+        }
+    }
+
+    func testGivenSpanCustomization_whenDecodingGraphQLBody_itTagsSpanWithOperationName() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init([
+                "api.example.com": [.datadog]
+            ]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry(),
+            spanCustomization: { request, span, _, _ in
+                // Primary use case: decode GraphQL operation name from request body
+                if let body = request.httpBody,
+                   let json = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+                   let operationName = json["operationName"] as? String {
+                    span.setTag(key: "graphql.operation.name", value: operationName)
+                    span.setOperationName("graphql.\(operationName)")
+                }
+            }
+        )
+
+        // Given
+        let graphQLBody = #"{"operationName":"GetUser","variables":{"id":"123"}}"#.data(using: .utf8)!
+        let request: ImmutableRequest = .mockWith(
+            url: URL(string: "https://api.example.com/graphql")!,
+            httpMethod: "POST",
+            httpBody: graphQLBody
+        )
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertEqual(span.operationName, "graphql.GetUser")
+        XCTAssertEqual(span.tags["graphql.operation.name"], "GetUser")
+    }
+
     private func assert(capturedState: URLSessionHandlerCapturedState?, has span: OTSpan?) {
         guard let state = capturedState as? TracingURLSessionHandler.TracingURLSessionHandlerCapturedState else {
             XCTFail("Expected TracingURLSessionHandlerCapturedState instance, got \(String(describing: capturedState))")
