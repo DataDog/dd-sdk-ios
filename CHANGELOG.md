@@ -1,9 +1,10 @@
 # Unreleased
 
+- [FIX] Fix stack overflow crash when RUM scroll tracking is used alongside third-party delegate proxy libraries (e.g. RxSwift). See [#2791][]
+
 # 3.8.3 / 26-03-2026
 
 - [FIX] Fix TOC/TOU race in RUM scroll tracking. See [#2776][]
-- [FIX] Fix stack overflow crash when RUM scroll tracking is used alongside third-party delegate proxy libraries (e.g. RxSwift). See [#2791][]
 
 # 3.8.2 / 17-03-2026
 
