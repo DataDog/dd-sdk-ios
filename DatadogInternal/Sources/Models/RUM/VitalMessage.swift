@@ -9,17 +9,17 @@ import Foundation
 /// Message payload used to signal the occurrence of a vital.
 public struct VitalMessage {
     /// Correlation context containing IDs for data correlation.
-    public let context: [String: AttributeValue]
+    public let attributes: [String: AttributeValue]
     /// Vital info for data correlation.
     public let vital: Vital
 
     /// Creates a new message payload.
     ///
     /// - Parameters
-    ///   - context: Correlation context containing IDs for data correlation.
+    ///   - attributes: Correlation context containing IDs for data correlation.
     ///   - vital: Vital info for data correlation.
-    public init(context: [String: AttributeValue], vital: Vital) {
-        self.context = context
+    public init(attributes: [String: AttributeValue], vital: Vital) {
+        self.attributes = attributes
         self.vital = vital
     }
 }
