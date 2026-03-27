@@ -279,36 +279,37 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
 
     // MARK: - features
 
-    /// Starts a Feature Operation
+    /// Starts a RUM Operation
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - attributes: custom attributes to attach to this operation
-    func startFeatureOperation(
+    ///   - options: options to attach to this operation (e.g. profiling options)
+    func startOperation(
         name: String,
         operationKey: String?,
         attributes: [AttributeKey: AttributeValue],
-        profiling: SamplingOption
+        options: OperationOptions?
     )
 
-    /// Completes a Feature successfully.
+    /// Completes a RUM Operation successfully.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startFeatureOperation`
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
     ///   - attributes: custom attributes to attach to this operation
-    func succeedFeatureOperation(
+    func succeedOperation(
         name: String,
         operationKey: String?,
         attributes: [AttributeKey: AttributeValue]
     )
 
-    /// Fails a Feature Operation.
+    /// Fails a RUM Operation.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startFeatureOperation`
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
     ///   - reason: the reason for the failure
     ///   - attributes: custom attributes to attach to this operation
-    func failFeatureOperation(
+    func failOperation(
         name: String,
         operationKey: String?,
         reason: RUMFeatureOperationFailureReason,
@@ -479,9 +480,9 @@ internal class NOPMonitor: RUMMonitorProtocol {
         warn()
         completionHandler()
     }
-    func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue], profiling: SamplingOption) { warn() }
-    func succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
-    func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func startOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue], options: OperationOptions?) { warn() }
+    func succeedOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func failOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) { warn() }
     var debug: Bool {
         set { warn() }
         get {

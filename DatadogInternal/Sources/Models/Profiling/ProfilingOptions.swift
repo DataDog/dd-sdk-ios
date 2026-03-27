@@ -4,14 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import UIKit
-import DatadogRUM
+public struct ProfilingOptions: OperationOptions {
+    // The profiling sample rate for operations. Must be a value between `0` and `100`.
+    public let sampleRate: SampleRate
 
-final class RUMFeatureOperationsNextViewController: UIViewController {
-
-    @IBAction func didTapSucceedLoginFlowButton(_ sender: Any) {
-        rumMonitor.succeedOperation(
-            name: Operation.login()
-        )
+    public init(sampleRate: SampleRate) {
+        self.sampleRate = sampleRate
     }
 }
