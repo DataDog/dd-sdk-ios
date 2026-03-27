@@ -227,9 +227,9 @@ private extension RUMAppLaunchManager {
 
     func sendTTIDMessageToProfiler(vital: Vital, activeView: RUMViewScope?) {
         var contextAttributes: [String: Encodable] = parent.rumContextAttributes
-        contextAttributes[RUMContextAttributes.IDs.vitalID] = vital.id
+        contextAttributes[RUMCoreContext.IDs.vitalID] = vital.id
 
-        dependencies.featureScope.send(message: .payload(VitalMessage(context: contextAttributes, vital: vital)))
+        dependencies.featureScope.send(message: .payload(VitalMessage(attributes: contextAttributes, vital: vital)))
     }
 }
 
