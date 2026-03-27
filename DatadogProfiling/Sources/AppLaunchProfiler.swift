@@ -20,7 +20,7 @@ internal import DatadogMachProfiler
 internal typealias Operation = (start: Vital, end: Vital?)
 
 internal final class AppLaunchProfiler: ProfilingHandler {
-    /// Shared counter to track pending `AppLaunchProfiler`s from handling the `VitalMessage` message.
+    /// Shared counter to track pending `AppLaunchProfiler`s until a `TTIDMessage` harvest completes.
     private static var pendingInstances: Int = 0
     /// App launch profile attached with TTID.
     private static var appLaunchProfile: OpaquePointer?
@@ -59,18 +59,14 @@ internal final class AppLaunchProfiler: ProfilingHandler {
 
 extension AppLaunchProfiler: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(message as VitalMessage) = message,
-              hasProcessedAppLaunch == false else {
+        guard hasProcessedAppLaunch == false else {
             return false
         }
-        attributes = message.attributes
 
-        self.updateProfilingContext()
-
-        switch message.vital.type {
-        case .applicationLaunch:
+        if case let .payload(message as TTIDMessage) = message {
             hasProcessedAppLaunch = true
-            currentRUMVitals[message.vital.key] = (start: message.vital, nil)
+            currentRUMVitals[message.ttid.key] = (start: message.ttid, nil)
+            attributes = message.attributes
 
             dd_profiler_stop()
             self.updateProfilingContext()
@@ -82,17 +78,22 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
             }
 
             self.write(profile: profile, rumVitals: self.currentRUMVitals.allVitals())
-            return true
-        case let .rumOperation(stepType):
-            if stepType == .start {
-                currentRUMVitals[message.vital.key] = (start: message.vital, nil)
-            } else if let startVital = currentRUMVitals[message.vital.key]?.start {
-                currentRUMVitals[message.vital.key] = (start: startVital, end: message.vital)
+            return false
+        } else if case let .payload(message as OperationMessage) = message {
+            switch message.operation.type {
+            case let .rumOperation(stepType):
+                if stepType == .start {
+                    currentRUMVitals[message.operation.key] = (start: message.operation, nil)
+                } else if let startVital = currentRUMVitals[message.operation.key]?.start {
+                    currentRUMVitals[message.operation.key] = (start: startVital, end: message.operation)
+                }
+                return false
+            default:
+                return false
             }
-            return false
-        default:
-            return false
         }
+
+        return false
     }
 
     private func appLaunchProfile() -> OpaquePointer? {
@@ -181,10 +182,19 @@ extension ProfilingContext.Status {
 extension Dictionary where Key == String, Value == Operation {
     func allVitals() -> [Vital] {
         let vitals = self.values
-
         return vitals.reduce([]) {
             $0 + [$1.start, $1.end].compactMap(\.self)
         }
+    }
+
+    func didCompleteOperations() -> Bool {
+        let vitals = self.values
+        return vitals.contains { $0.end == nil } == false
+    }
+
+    func ongoingOperations() -> [String: Operation] {
+        let operations = self
+        return operations.filter { $0.1.end == nil }
     }
 }
 #endif

@@ -31,6 +31,7 @@ extension Profiling {
         /// - Parameters:
         ///   - customEndpoint: Optional custom server endpoint for profile uploads.
         ///   - applicationLaunch: Sampling option for the application launch profiling.
+        ///   - continuous: Sampling option for the continuous profiling.
         public init(
             customEndpoint: URL? = nil,
             applicationLaunch: SamplingOption = .enabled(sampleRate: 5.0)

@@ -707,8 +707,19 @@ extension RUMViewScope {
     }
 
     private func sendErrorEvent(on command: RUMErrorCommand, context: DatadogContext, writer: Writer) {
+        let errorId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
         errorsCount += 1
         totalAppHangDuration += (command as? RUMAddCurrentViewAppHangCommand)?.hangDuration ?? 0
+
+        if let appHangCommand = command as? RUMAddCurrentViewAppHangCommand {
+            let appHang = DurationEvent(
+                id: errorId,
+                start: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds,
+                duration: appHangCommand.hangDuration.dd.toInt64Nanoseconds
+            )
+
+            dependencies.featureScope.send(message: .payload(AppHangMessage(attributes: rumContextAttributes, hang: appHang)))
+        }
 
         // Error event attributes
         // Attribute Precedence: global attributes <- view attributes <- event attributes (highest priority)
@@ -727,10 +738,16 @@ extension RUMViewScope {
             }
         }
 
+        var profiling: RUMErrorEvent.DD.Profiling?
+        if let profilingContext = context.additionalContext(ofType: ProfilingContext.self) {
+            profiling = .init(errorReason: profilingContext.errorEventErrorReason, status: profilingContext.errorEventProfilingStatus)
+        }
+
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.samplingRate)),
+                profiling: profiling,
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition
@@ -759,7 +776,7 @@ extension RUMViewScope {
                 fingerprint: errorFingerprint,
                 handling: nil,
                 handlingStack: nil,
-                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                id: errorId,
                 isCrash: command.isCrash ?? false,
                 message: command.message,
                 meta: nil,
@@ -809,8 +826,17 @@ extension RUMViewScope {
     }
 
     private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogContext, writer: Writer) {
+        let longTaskId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
+        let start = (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970
         let taskDurationInNs = command.duration.dd.toInt64Nanoseconds
         let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
+
+        let longTask = DurationEvent(
+            id: longTaskId,
+            start: start.dd.toInt64Nanoseconds,
+            duration: taskDurationInNs
+        )
+        dependencies.featureScope.send(message: .payload(LongTaskMessage(attributes: rumContextAttributes, longTask: longTask)))
 
         // Long task event attributes
         // Attribute Precedence: global attributes <- view attributes <- event attributes (highest priority)
@@ -818,11 +844,17 @@ extension RUMViewScope {
             .merging(attributes) { $1 }
             .merging(command.attributes) { $1 }
 
+        var profiling: RUMLongTaskEvent.DD.Profiling?
+        if let profilingContext = context.additionalContext(ofType: ProfilingContext.self) {
+            profiling = .init(errorReason: profilingContext.longTaskErrorReason, status: profilingContext.longTaskProfilingStatus)
+        }
+
         let longTaskEvent = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.samplingRate)),
                 discarded: nil,
+                profiling: profiling,
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition
@@ -839,7 +871,7 @@ extension RUMViewScope {
             connectivity: .init(context: context),
             container: nil,
             context: .init(contextInfo: commandAttributes),
-            date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
+            date: start.dd.toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
@@ -848,7 +880,7 @@ extension RUMViewScope {
                 duration: taskDurationInNs,
                 entryType: nil,
                 firstUiEventTimestamp: nil,
-                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                id: longTaskId,
                 isFrozenFrame: isFrozenFrame,
                 renderStart: nil,
                 scripts: nil,
@@ -946,5 +978,75 @@ private extension Result {
         case .success(let success): return success
         case .failure: return nil
         }
+    }
+}
+
+private extension ProfilingContext {
+    /**
+     * Returns the profiling status reported for app launch.
+     *
+     * Returns:
+     *  - `.running` when the profiler is actively running, or when it was manually stopped or timed out.
+     *  - `.stopped` when the profiler was not started, was sampled out, or the app launch was prewarmed.
+     *  - `.error` when the profiler encountered an error while starting or it is in an unknown status.
+     */
+    var longTaskProfilingStatus: RUMLongTaskEvent.DD.Profiling.Status {
+        switch self.status {
+        case .running: return .running
+        case .stopped: return .stopped
+        case .error: return .error
+        case .unknown: return .error
+        }
+    }
+
+    /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+    ///
+    /// Possible values:
+    /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+    var longTaskErrorReason: RUMLongTaskEvent.DD.Profiling.ErrorReason? {
+        // RUM-15325: Update RUM schema with the mobile profiler errors
+        if case .error(reason: let reason) = self.status {
+            switch reason {
+            case .memoryAllocationFailed:
+                return .unexpectedException
+            case .alreadyStarted:
+                return nil
+            }
+        }
+        return nil
+    }
+
+    /**
+     * Returns the profiling status reported for app launch.
+     *
+     * Returns:
+     *  - `.running` when the profiler is actively running, or when it was manually stopped or timed out.
+     *  - `.stopped` when the profiler was not started, was sampled out, or the app launch was prewarmed.
+     *  - `.error` when the profiler encountered an error while starting or it is in an unknown status.
+     */
+    var errorEventProfilingStatus: RUMErrorEvent.DD.Profiling.Status {
+        switch self.status {
+        case .running: return .running
+        case .stopped: return .stopped
+        case .error: return .error
+        case .unknown: return .error
+        }
+    }
+
+    /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+    ///
+    /// Possible values:
+    /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+    var errorEventErrorReason: RUMErrorEvent.DD.Profiling.ErrorReason? {
+        // RUM-15325: Update RUM schema with the mobile profiler errors
+        if case .error(reason: let reason) = self.status {
+            switch reason {
+            case .memoryAllocationFailed:
+                return .unexpectedException
+            case .alreadyStarted:
+                return nil
+            }
+        }
+        return nil
     }
 }
