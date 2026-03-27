@@ -102,14 +102,9 @@ internal class RecordingCoordinator {
 
     private func onRUMContextChanged(rumContext: RUMCoreContext?) {
         if currentRUMContext?.sessionID != rumContext?.sessionID || currentRUMContext == nil {
-            if let sampler = rumContext?.sessionSampler {
-                isSampled = sampler.combined(with: replaySampleRate).sample()
-            } else {
-                // No RUM session context means there is no session to correlate a replay to.
-                // Random sampling is intentional here — the replay cannot be linked to a session,
-                // so deterministic Knuth sampling would provide no benefit.
-                isSampled = Sampler(samplingRate: replaySampleRate).sample()
-            }
+            // TODO RUM-15318: Use cross-product deterministic sampling once Session Replay
+            // retention filters are ready
+            isSampled = Sampler(samplingRate: replaySampleRate).sample()
         }
 
         currentRUMContext = rumContext
