@@ -17,7 +17,7 @@ internal import DatadogMachProfiler
 #endif
 // swiftlint:enable duplicate_imports
 
-internal typealias Operation = (start: Vital?, end: Vital?)
+internal typealias Operation = (start: Vital, end: Vital?)
 
 internal final class AppLaunchProfiler: ProfilingHandler {
     /// Shared counter to track pending `AppLaunchProfiler`s from handling the `VitalMessage` message.
@@ -32,7 +32,7 @@ internal final class AppLaunchProfiler: ProfilingHandler {
     let encoder: JSONEncoder
 
     @ReadWriteLock
-    private(set) var context: [String: AttributeValue] = [:]
+    private(set) var attributes: [String: AttributeValue] = [:]
     @ReadWriteLock
     private var currentRUMVitals: [String: Operation] = [:]
     @ReadWriteLock
@@ -63,7 +63,7 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
               hasProcessedAppLaunch == false else {
             return false
         }
-        context = message.context
+        attributes = message.attributes
 
         self.updateProfilingContext()
 
