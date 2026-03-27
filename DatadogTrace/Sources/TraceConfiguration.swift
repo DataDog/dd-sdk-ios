@@ -25,21 +25,25 @@ extension Trace {
 
         /// A callback that allows customizing the span created for each intercepted network request.
         ///
-        /// This closure receives an ``ImmutableRequest`` (a thread-safe snapshot of the original request),
-        /// the ``OTSpan`` created for it, the HTTP response (if any), and an error (if any). You can use
-        /// the span's `setTag(key:value:)` or `setOperationName(_:)` methods to add custom attributes.
+        /// This closure receives an ``InterceptedRequest`` (a thread-safe snapshot of the original
+        /// request), the ``OTSpan`` created for it, the HTTP response (if any), and an error (if any).
+        /// You can use the span's `setTag(key:value:)` or `setOperationName(_:)` methods to add custom
+        /// attributes.
         ///
-        /// Example — tagging requests by URL path:
+        /// Example — tagging GraphQL requests with the operation name:
         /// ```swift
         /// Trace.Configuration.SpanCustomization { request, span, response, error in
-        ///     if let url = request.url {
-        ///         span.setTag(key: "http.route", value: url.path)
+        ///     if let body = request.httpBody,
+        ///        let json = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+        ///        let operationName = json["operationName"] as? String {
+        ///         span.setTag(key: "graphql.operation.name", value: operationName)
+        ///         span.setOperationName("graphql.\(operationName)")
         ///     }
         /// }
         /// ```
         ///
         /// - Note: Keep the implementation fast and do not make any assumptions on the thread used to run it.
-        public typealias SpanCustomization = (ImmutableRequest, OTSpan, URLResponse?, Error?) -> Void
+        public typealias SpanCustomization = (InterceptedRequest, OTSpan, URLResponse?, Error?) -> Void
 
         /// The sampling rate for spans created with the default tracer.
         ///

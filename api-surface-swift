@@ -311,7 +311,11 @@ public enum Trace
         public var networkInfoEnabled: Bool
         public var eventMapper: EventMapper?
         public var customEndpoint: URL?
-        public typealias SpanCustomization = (ImmutableRequest, OTSpan, URLResponse?, Error?) -> Void
+        public typealias SpanCustomization = (InterceptedRequest, OTSpan, URLResponse?, Error?) -> Void
+        public struct InterceptedRequest
+            public let url: URL?
+            public let httpMethod: String?
+            public let httpBody: Data?
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing
             public var spanCustomization: SpanCustomization?

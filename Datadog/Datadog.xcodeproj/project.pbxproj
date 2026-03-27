@@ -978,6 +978,8 @@
 		61A2CC342A44A6030000FF25 /* DatadogRUM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23F8E9929DDCD28001CFAE8 /* DatadogRUM.framework */; };
 		61A2CC362A44B0A20000FF25 /* TraceConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A2CC352A44B0A20000FF25 /* TraceConfiguration.swift */; };
 		61A2CC372A44B0A20000FF25 /* TraceConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A2CC352A44B0A20000FF25 /* TraceConfiguration.swift */; };
+		7F859F0296CB41419B09C221 /* InterceptedRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4209932100E4E73BADD5A3D /* InterceptedRequest.swift */; };
+		817358634A3541559D67A261 /* InterceptedRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4209932100E4E73BADD5A3D /* InterceptedRequest.swift */; };
 		61A2CC392A44B0EA0000FF25 /* Trace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A2CC382A44B0EA0000FF25 /* Trace.swift */; };
 		61A2CC3A2A44B0EA0000FF25 /* Trace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A2CC382A44B0EA0000FF25 /* Trace.swift */; };
 		61A2CC3C2A44BED30000FF25 /* Tracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A2CC3B2A44BED30000FF25 /* Tracer.swift */; };
@@ -3400,6 +3402,7 @@
 		61A2CC202A443D330000FF25 /* DDRUMConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDRUMConfigurationTests.swift; sourceTree = "<group>"; };
 		61A2CC232A44454D0000FF25 /* DDRUMTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDRUMTests.swift; sourceTree = "<group>"; };
 		61A2CC352A44B0A20000FF25 /* TraceConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceConfiguration.swift; sourceTree = "<group>"; };
+		C4209932100E4E73BADD5A3D /* InterceptedRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterceptedRequest.swift; sourceTree = "<group>"; };
 		61A2CC382A44B0EA0000FF25 /* Trace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trace.swift; sourceTree = "<group>"; };
 		61A2CC3B2A44BED30000FF25 /* Tracer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tracer.swift; sourceTree = "<group>"; };
 		61A614E7276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOffViewEventsHandlingRule.swift; sourceTree = "<group>"; };
@@ -7407,6 +7410,7 @@
 				61C5A87E24509A0C00DA608C /* DDSpanContext.swift */,
 				61A2CC382A44B0EA0000FF25 /* Trace.swift */,
 				61A2CC352A44B0A20000FF25 /* TraceConfiguration.swift */,
+				C4209932100E4E73BADD5A3D /* InterceptedRequest.swift */,
 				61A2CC3B2A44BED30000FF25 /* Tracer.swift */,
 				09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */,
 				D2546C0629AF55CE0054E00B /* Feature */,
@@ -10987,6 +10991,7 @@
 				D2C1A4FB29C4C4CB00946C31 /* MessageReceivers.swift in Sources */,
 				3C32359D2B55386C000B4258 /* OTelSpanLink.swift in Sources */,
 				61A2CC362A44B0A20000FF25 /* TraceConfiguration.swift in Sources */,
+				7F859F0296CB41419B09C221 /* InterceptedRequest.swift in Sources */,
 				61A2CC392A44B0EA0000FF25 /* Trace.swift in Sources */,
 				D2C1A50029C4C4CB00946C31 /* ActiveSpansPool.swift in Sources */,
 				3CB012DF2B482E0400557951 /* NOPOTelSpanBuilder.swift in Sources */,
@@ -11296,6 +11301,7 @@
 				D2C1A54129C4F2DF00946C31 /* MessageReceivers.swift in Sources */,
 				3C32359E2B55386C000B4258 /* OTelSpanLink.swift in Sources */,
 				61A2CC372A44B0A20000FF25 /* TraceConfiguration.swift in Sources */,
+				817358634A3541559D67A261 /* InterceptedRequest.swift in Sources */,
 				61A2CC3A2A44B0EA0000FF25 /* Trace.swift in Sources */,
 				D2C1A54229C4F2DF00946C31 /* ActiveSpansPool.swift in Sources */,
 				3CB012E02B482E0400557951 /* NOPOTelSpanBuilder.swift in Sources */,
