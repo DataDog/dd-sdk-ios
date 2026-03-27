@@ -50,3 +50,30 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
         self.viewServerTimeOffset = viewServerTimeOffset
     }
 }
+
+extension RUMCoreContext {
+    /// RUM attributes keys shared with other Features registered in core.
+    public enum IDs {
+        /// The ID of RUM application (`String`).
+        public static let applicationID = "application.id"
+
+        /// The ID of current RUM session (standard UUID `String`, lowercased).
+        /// In case the session is rejected (not sampled), RUM context is set to empty (`[:]`) in core.
+        public static let sessionID = "session.id"
+
+        /// The ID of current RUM view (standard UUID `String`, lowercased).
+        public static let viewID = "view.id"
+
+        /// The name of current RUM view.
+        public static let viewName = "view.name"
+
+        /// The ID of current RUM action (standard UUID `String`, lowercased).
+        public static let userActionID = "user_action.id"
+
+        /// The ID of current RUM vital (standard UUID `String`, lowercased).
+        public static let vitalID = "vital.id"
+
+        /// The name of current RUM vital.
+        public static let vitalLabel = "vital.label"
+    }
+}
