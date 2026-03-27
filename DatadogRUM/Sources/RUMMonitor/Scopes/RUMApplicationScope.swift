@@ -330,15 +330,25 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// is started on SDK init only when the app is launched by user with no prewarming or when app was prewarmed but SDK was initialized
     /// after it became active.
     private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
-        applicationActive = true
-
         let isUserLaunch = context.launchInfo.launchReason == .userLaunch
         let isPrewarmed = context.launchInfo.launchReason == .prewarming
         let isBackgroundLaunch = context.launchInfo.launchReason == .backgroundLaunch
         let isStartedInForeground = command is RUMSDKInitCommand && context.applicationStateHistory.currentState != .background
-        guard isUserLaunch || (isPrewarmed && isStartedInForeground) || (isBackgroundLaunch && isStartedInForeground) else {
+
+        // For backgroundLaunch (task_policy_get returned non-foreground on ~20% of devices or for
+        // UISceneDelegate apps that initialise in background), also allow view creation when a
+        // subsequent command explicitly requests it via canStartApplicationLaunchView. This covers
+        // the case where SDKInit happened in background but the app is now handling user-visible work.
+        let backgroundLaunchWithEligibleCommand = isBackgroundLaunch && command.canStartApplicationLaunchView
+
+        guard isUserLaunch || (isPrewarmed && isStartedInForeground) || (isBackgroundLaunch && isStartedInForeground) || backgroundLaunchWithEligibleCommand else {
             return
         }
+
+        // Only latch applicationActive after all guards pass — ensures subsequent commands can retry
+        // view creation if the guard condition wasn't met (e.g., backgroundLaunch SDKInit in background
+        // before any canStartApplicationLaunchView command arrives).
+        applicationActive = true
 
         // Immediately start the ApplicationLaunchView for the new session
         _ = process(
