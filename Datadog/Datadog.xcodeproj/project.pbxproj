@@ -6725,6 +6725,7 @@
 				D2552AF42BBC47D900A45725 /* WebEventIntegrationTests.swift */,
 				61DCC84C2C05D4E500CB59E5 /* SDKMetrics */,
 				D2AB895D2F71780900040F58 /* DeterministicSamplingIntegrationTests.swift */,
+				094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -9604,6 +9605,7 @@
 				118248652D908CE300E3D16F /* AnonymousIdentifierTests.swift in Sources */,
 				118248662D908CF400E3D16F /* RUMViewHitchesIntegrationTests.swift in Sources */,
 				118248672D908CF400E3D16F /* RUMAttributesIntegrationTests.swift in Sources */,
+				094B553F2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift in Sources */,
 				6119DDDE2DD24AB700DA80F9 /* AppRun.swift in Sources */,
 				6119DDDF2DD24AB700DA80F9 /* AppRunStep+Fixtures.swift in Sources */,
 				6119DDE02DD24AB700DA80F9 /* AppRunner.swift in Sources */,
@@ -9641,6 +9643,7 @@
 			files = (
 				118249272D9096B400E3D16F /* CoreTelemetryIntegrationTests.swift in Sources */,
 				118249282D9096B400E3D16F /* CoreMetricsIntegrationTests.swift in Sources */,
+				094B55402F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift in Sources */,
 				118249292D9096B400E3D16F /* WebLogIntegrationTests.swift in Sources */,
 				1182492A2D9096B400E3D16F /* AppHangsMonitoringTests.swift in Sources */,
 				1182492B2D9096B400E3D16F /* Datadog+MultipleInstancesIntegrationTests.swift in Sources */,
