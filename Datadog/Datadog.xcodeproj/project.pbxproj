@@ -12,6 +12,8 @@
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		093AC3292F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
 		093AC32A2F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
+		094B553F2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */; };
+		094B55402F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */; };
 		097452CD2F72B7A20064FA59 /* TracerSamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097452CC2F72B7A20064FA59 /* TracerSamplerProvider.swift */; };
 		097452CE2F72B7A20064FA59 /* TracerSamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 097452CC2F72B7A20064FA59 /* TracerSamplerProvider.swift */; };
 		09A9369D2F0EB989000B6379 /* SamplingMechanismType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */; };
@@ -2775,6 +2777,7 @@
 /* Begin PBXFileReference section */
 		0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensionsTests.swift; sourceTree = "<group>"; };
 		093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpanProvider.swift; sourceTree = "<group>"; };
+		094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceTraceIntegrationTests.swift; sourceTree = "<group>"; };
 		097452CC2F72B7A20064FA59 /* TracerSamplerProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerSamplerProvider.swift; sourceTree = "<group>"; };
 		09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingMechanismType.swift; sourceTree = "<group>"; };
 		09A9369B2F0EB989000B6379 /* SamplingPriority.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingPriority.swift; sourceTree = "<group>"; };
@@ -6709,6 +6712,7 @@
 				D2552AF42BBC47D900A45725 /* WebEventIntegrationTests.swift */,
 				61DCC84C2C05D4E500CB59E5 /* SDKMetrics */,
 				D2AB895D2F71780900040F58 /* DeterministicSamplingIntegrationTests.swift */,
+				094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -9589,6 +9593,7 @@
 				118248652D908CE300E3D16F /* AnonymousIdentifierTests.swift in Sources */,
 				118248662D908CF400E3D16F /* RUMViewHitchesIntegrationTests.swift in Sources */,
 				118248672D908CF400E3D16F /* RUMAttributesIntegrationTests.swift in Sources */,
+				094B553F2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift in Sources */,
 				6119DDDE2DD24AB700DA80F9 /* AppRun.swift in Sources */,
 				6119DDDF2DD24AB700DA80F9 /* AppRunStep+Fixtures.swift in Sources */,
 				6119DDE02DD24AB700DA80F9 /* AppRunner.swift in Sources */,
@@ -9626,6 +9631,7 @@
 			files = (
 				118249272D9096B400E3D16F /* CoreTelemetryIntegrationTests.swift in Sources */,
 				118249282D9096B400E3D16F /* CoreMetricsIntegrationTests.swift in Sources */,
+				094B55402F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift in Sources */,
 				118249292D9096B400E3D16F /* WebLogIntegrationTests.swift in Sources */,
 				1182492A2D9096B400E3D16F /* AppHangsMonitoringTests.swift in Sources */,
 				1182492B2D9096B400E3D16F /* Datadog+MultipleInstancesIntegrationTests.swift in Sources */,
