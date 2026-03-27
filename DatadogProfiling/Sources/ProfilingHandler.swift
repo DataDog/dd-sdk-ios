@@ -16,7 +16,7 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 internal protocol ProfilingHandler {
-    var context: [String: AttributeValue] { get }
+    var attributes: [String: AttributeValue] { get }
     var operation: ProfilingOperation { get }
 
     var featureScope: FeatureScope { get }
@@ -34,16 +34,16 @@ extension ProfilingHandler {
     }
 
     func write(profile: OpaquePointer, rumVitals: [Vital]) {
-        var context = self.context
+        var attributes = self.attributes
         if rumVitals.isEmpty == false {
-            context[RUMContextAttributes.IDs.vitalID] = rumVitals.map { $0.id }
-            context[RUMContextAttributes.IDs.vitalLabel] = rumVitals.map { $0.name }
+            attributes[RUMCoreContext.IDs.vitalID] = rumVitals.map { $0.id }
+            attributes[RUMCoreContext.IDs.vitalLabel] = rumVitals.map { $0.name }
         }
 
         self.writeProfilingEvent(
             with: profile,
             rumEvents: RUMEvents(vitals: rumVitals),
-            attributes: context
+            attributes: attributes
         )
     }
 
@@ -59,6 +59,7 @@ extension ProfilingHandler {
         let size = dd_pprof_serialize(profile, &data)
 
         guard let data else {
+            // RUM-14251: Add telemetry for custom and continuous profiling
             telemetryController.send(metric: AppLaunchMetric.noData)
             return
         }
