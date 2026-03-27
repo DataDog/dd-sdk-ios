@@ -34,7 +34,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     // MARK: - Message Handling Tests
 
-    func testReceiveRUMMessage() {
+    func testReceiveTTIDMessage() {
         // Given
         let core = PassthroughCoreMock()
         let profiler = appLaunchProfiler
@@ -42,15 +42,48 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         // When
         let result = profiler.receive(
-            message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: vital)),
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)),
             from: core
         )
         // Then
         XCTAssertFalse(result, "Continuous profiler and AppLaunch profiler consume app launch vitals")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
     }
 
-    func testReceiveNonVitalMessage() {
+    func testReceiveOperationMessage_andTTIDMessage() {
+        // Given
+        let core = PassthroughCoreMock()
+        let profiler = AppLaunchProfiler(core: core)
+        XCTAssertEqual(dd_profiler_start(), 1)
+
+        let operation: Vital = .mockWith(type: .duration)
+        XCTAssertFalse(
+            profiler.receive(
+                message: .payload(
+                    OperationMessage(
+                        attributes: mockRandomAttributes(),
+                        operation: operation
+                    )
+                ),
+                from: core
+            )
+        )
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        // When
+        let ttidResult = profiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)),
+            from: core
+        )
+
+        // Then
+        XCTAssertFalse(ttidResult)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
+    }
+
+    func testReceiveUnrecognizedPayload_returnsFalse() {
         // Given
         let core = PassthroughCoreMock()
         let profiler = appLaunchProfiler
@@ -59,10 +92,10 @@ final class AppLaunchProfilerTests: XCTestCase {
         let result = profiler.receive(message: .payload(0), from: core)
 
         // Then
-        XCTAssertFalse(result, "Should return false for non-ProfilerStop messages")
+        XCTAssertFalse(result, "Should return false for payloads that are not TTIDMessage or OperationMessage")
     }
 
-    func testReceiveVitalMessage_stopsProfiler() {
+    func testReceiveTTIDMessage_stopsProfiler() {
         // Given
         let core = PassthroughCoreMock()
         let profiler = appLaunchProfiler
@@ -72,7 +105,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 1)
 
         // When
-        _ = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: vital)), from: core)
+        _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)), from: core)
 
         // Then
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
@@ -81,7 +114,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
     }
 
-    func testReceive_withVitalMessage_whenNoProfileData_returnsFalse() {
+    func testReceiveTTIDMessage_whenNoProfileData() {
         // Given - profiler not started, so no profile data
         let core = PassthroughCoreMock()
         let profiler = appLaunchProfiler
@@ -89,13 +122,13 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED, "Profiler should not be created")
 
         // When
-        let result = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: vital)), from: core)
+        let result = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)), from: core)
 
         // Then
         XCTAssertFalse(result, "Should return false when no profile data is available")
     }
 
-    func testReceive_withVitalMessage_whenProfilerSampledOut_returnsFalse() {
+    func testReceiveTTIDMessage_whenProfilerSampledOut() {
         // Given - profiler sampled out
         let core = PassthroughCoreMock()
         let profiler = appLaunchProfiler
@@ -104,13 +137,13 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED, "Profiler should be sampled out")
 
         // When
-        let result = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: vital)), from: core)
+        let result = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)), from: core)
 
         // Then
         XCTAssertFalse(result, "Should return false when profiler was sampled out")
     }
 
-    func testReceive_withVitalMessage_whenProfilerPrewarmed_returnsFalse() {
+    func testReceiveTTIDMessage_whenProfilerPrewarmed() {
         // Given - profiler prewarmed
         let core = PassthroughCoreMock()
         let profiler = appLaunchProfiler
@@ -119,7 +152,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_PREWARMED, "Profiler should be prewarmed")
 
         // When
-        let result = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: vital)), from: core)
+        let result = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)), from: core)
 
         // Then
         XCTAssertFalse(result, "Should return false when profiler was prewarmed")
@@ -127,7 +160,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     // MARK: - Core Integration Tests
 
-    func testReceive_withValidProfileData_createsCorrectProfileEvent() throws {
+    func testReceiveValidProfileData_createsCorrectProfileEvent() throws {
         // Given
         let core = SingleFeatureCoreMock(
             context: .mockWith(
@@ -153,7 +186,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         let stopContext = mockRandomAttributes()
 
         // When
-        _ = profiler.receive(message: .payload(RUMMessage(attributes: stopContext, event: vital)), from: core)
+        _ = profiler.receive(message: .payload(TTIDMessage(attributes: stopContext, ttid: vital)), from: core)
 
         // Then
         let profilingContext = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
@@ -291,8 +324,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertTrue(dd_is_profiling_enabled())
     }
 
-    // MARK: - RUM Vitals
-
+    // MARK: - TTID and RUM operation messages
 
     func testReceiveCompleteRumOperation() {
         // Given
@@ -302,8 +334,8 @@ final class AppLaunchProfilerTests: XCTestCase {
         let endVital = Vital.mockWith(name: startVital.name, operationKey: startVital.operationKey, type: .rumOperation(.end))
 
         // When
-        _ = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: startVital)), from: core)
-        let result = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: endVital)), from: core)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startVital)), from: core)
+        let result = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endVital)), from: core)
 
         // Then
         XCTAssertFalse(result, "Continuous profiler and AppLaunch profiler consume RUM operations")
@@ -316,14 +348,14 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(dd_profiler_start(), 1)
 
         // When
-        var result = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: vital)), from: core)
+        var result = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)), from: core)
         // Then
         XCTAssertFalse(result, "Continuous profiler and AppLaunch profiler consume app launch vitals")
 
         // When
-        result = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: vital)), from: core)
+        result = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)), from: core)
         // Then
-        XCTAssertFalse(result, "Continuous profiler and AppLaunch profiler consume RUM operations")
+        XCTAssertFalse(result, "Continuous profiler and AppLaunch profiler consume second app launch vital")
     }
 
     func testApplicationLaunchWithRumOperations_includesVitalsInProfile() throws {
@@ -331,14 +363,14 @@ final class AppLaunchProfilerTests: XCTestCase {
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler(core: core)
         let startVital = Vital.mockWith(id: "start-id", name: "operation", type: .rumOperation(.start))
-        let endVital = Vital.mockWith(id: "end-id", name: "operation", type: .rumOperation(.end))
+        let endVital = Vital.mockWith(id: "end-id", name: "operation", operationKey: startVital.operationKey, type: .rumOperation(.end))
 
         XCTAssertEqual(dd_profiler_start(), 1)
-        _ = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: startVital)), from: core)
-        _ = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: endVital)), from: core)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startVital)), from: core)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endVital)), from: core)
 
         // When
-        _ = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: vital)), from: core)
+        _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)), from: core)
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
@@ -358,11 +390,11 @@ final class AppLaunchProfilerTests: XCTestCase {
         let orphanedEnd = Vital.mockWith(id: "orphan-id", name: "operation2", type: .rumOperation(.end))
 
         XCTAssertEqual(dd_profiler_start(), 1)
-        _ = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: startVital)), from: core)
-        _ = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: orphanedEnd)), from: core)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startVital)), from: core)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: orphanedEnd)), from: core)
 
         // When
-        _ = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: vital)), from: core)
+        _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)), from: core)
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
@@ -372,6 +404,27 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(vitalIDs.count, 2)
         XCTAssertTrue(vitalIDs.contains("start-id"))
         XCTAssertFalse(vitalIDs.contains("orphan-id"))
+    }
+
+    func testReceiveMessages_afterTTIDMessage() throws {
+        let core = PassthroughCoreMock()
+        let profiler = AppLaunchProfiler(core: core)
+        XCTAssertEqual(dd_profiler_start(), 1)
+        Thread.sleep(forTimeInterval: 0.05)
+
+        _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)), from: core)
+        XCTAssertEqual(core.events.count, 1)
+
+        let startVital = Vital.mockWith(type: .rumOperation(.start))
+        _ = profiler.receive(
+            message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startVital)),
+            from: core
+        )
+        _ = profiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)),
+            from: core
+        )
+        XCTAssertEqual(core.events.count, 1, "Only the first TTID harvest should emit a profile")
     }
 
     // MARK: - Pending Instances Tests
@@ -389,7 +442,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         // When
         for (index, profiler) in profilers.enumerated() {
-            _ = profiler.receive(message: .payload(RUMMessage(attributes: mockRandomAttributes(), event: vital)), from: cores[index])
+            _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: vital)), from: cores[index])
 
             let remainingInstances = iterations - index - 1
             if remainingInstances > 0 {

@@ -20,7 +20,7 @@ internal import DatadogMachProfiler
 internal typealias Operation = (start: Vital, end: Vital?)
 
 internal final class AppLaunchProfiler: ProfilingHandler {
-    /// Shared counter to track pending `AppLaunchProfiler`s from handling the `VitalMessage` message.
+    /// Shared counter to track pending `AppLaunchProfiler`s until a `TTIDMessage` harvest completes.
     private static var pendingInstances: Int = 0
     /// App launch profile attached with TTID.
     private static var appLaunchProfile: OpaquePointer?
@@ -59,45 +59,41 @@ internal final class AppLaunchProfiler: ProfilingHandler {
 
 extension AppLaunchProfiler: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(message as RUMMessage) = message,
-              hasProcessedAppLaunch == false else {
+        guard hasProcessedAppLaunch == false else {
             return false
         }
-        attributes = message.attributes
 
-        self.updateProfilingContext()
+        if case let .payload(message as TTIDMessage) = message {
+            hasProcessedAppLaunch = true
+            currentRUMVitals[message.ttid.key] = (start: message.ttid, nil)
+            attributes = message.attributes
 
-        switch message.event {
-        case let vital as Vital:
-            switch vital.type {
-            case .applicationLaunch:
-                hasProcessedAppLaunch = true
-                currentRUMVitals[vital.key] = (start: vital, nil)
+            dd_profiler_stop()
+            self.updateProfilingContext()
 
-                dd_profiler_stop()
-                self.updateProfilingContext()
-
-                defer { Self.unregisterInstance() }
-                guard let profile = appLaunchProfile() else {
-                    telemetryController.send(metric: AppLaunchMetric.noProfile)
-                    return false
-                }
-
-                self.write(profile: profile, rumVitals: self.currentRUMVitals.allVitals())
+            defer { Self.unregisterInstance() }
+            guard let profile = appLaunchProfile() else {
+                telemetryController.send(metric: AppLaunchMetric.noProfile)
                 return false
+            }
+
+            self.write(profile: profile, rumVitals: self.currentRUMVitals.allVitals())
+            return false
+        } else if case let .payload(message as OperationMessage) = message {
+            switch message.operation.type {
             case let .rumOperation(stepType):
                 if stepType == .start {
-                    currentRUMVitals[vital.key] = (start: vital, nil)
-                } else if let startVital = currentRUMVitals[vital.key]?.start {
-                    currentRUMVitals[vital.key] = (start: startVital, end: vital)
+                    currentRUMVitals[message.operation.key] = (start: message.operation, nil)
+                } else if let startVital = currentRUMVitals[message.operation.key]?.start {
+                    currentRUMVitals[message.operation.key] = (start: startVital, end: message.operation)
                 }
                 return false
             default:
                 return false
             }
-        default:
-            return false
         }
+
+        return false
     }
 
     private func appLaunchProfile() -> OpaquePointer? {

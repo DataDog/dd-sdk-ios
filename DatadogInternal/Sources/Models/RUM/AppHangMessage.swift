@@ -6,20 +6,20 @@
 
 import Foundation
 
-/// Message payload used to signal the occurrence of an event.
-public struct RUMMessage {
+/// Message payload sent on the message bus when RUM reports an app hang
+public struct AppHangMessage {
     /// Correlation context containing IDs for data correlation.
     public let attributes: [String: AttributeValue]
-    /// Vital info for data correlation.
-    public let event: Codable
+    /// Hang info for data correlation.
+    public let hang: DurationEvent
 
     /// Creates a new message payload.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - attributes: Correlation context containing IDs for data correlation.
-    ///   - vital: Vital info for data correlation.
-    public init(attributes: [String: AttributeValue], event: Codable) {
+    ///   - hang: Hang info for data correlation.
+    public init(attributes: [String: AttributeValue], hang: DurationEvent) {
         self.attributes = attributes
-        self.event = event
+        self.hang = hang
     }
 }

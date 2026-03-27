@@ -712,13 +712,13 @@ extension RUMViewScope {
         totalAppHangDuration += (command as? RUMAddCurrentViewAppHangCommand)?.hangDuration ?? 0
 
         if let appHangCommand = command as? RUMAddCurrentViewAppHangCommand {
-            let appHang = DurationEvent<RUMErrorEvent>(
+            let appHang = DurationEvent(
                 id: errorId,
                 start: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds,
                 duration: appHangCommand.hangDuration.dd.toInt64Nanoseconds
             )
 
-            dependencies.featureScope.send(message: .payload(RUMMessage(attributes: rumContextAttributes, event: appHang)))
+            dependencies.featureScope.send(message: .payload(AppHangMessage(attributes: rumContextAttributes, hang: appHang)))
         }
 
         // Error event attributes
@@ -831,12 +831,12 @@ extension RUMViewScope {
         let taskDurationInNs = command.duration.dd.toInt64Nanoseconds
         let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
 
-        let appHang = DurationEvent<RUMLongTaskEvent>(
+        let longTask = DurationEvent(
             id: longTaskId,
             start: start.dd.toInt64Nanoseconds,
             duration: taskDurationInNs
         )
-        dependencies.featureScope.send(message: .payload(RUMMessage(attributes: rumContextAttributes, event: appHang)))
+        dependencies.featureScope.send(message: .payload(LongTaskMessage(attributes: rumContextAttributes, longTask: longTask)))
 
         // Long task event attributes
         // Attribute Precedence: global attributes <- view attributes <- event attributes (highest priority)
@@ -1004,6 +1004,7 @@ private extension ProfilingContext {
     /// Possible values:
     /// - `unexpected-exception`: An exception occurred when starting the Profiler.
     var longTaskErrorReason: RUMLongTaskEvent.DD.Profiling.ErrorReason? {
+        // RUM-15325: Update RUM schema with the mobile profiler errors
         if case .error(reason: let reason) = self.status {
             switch reason {
             case .memoryAllocationFailed:
@@ -1037,6 +1038,7 @@ private extension ProfilingContext {
     /// Possible values:
     /// - `unexpected-exception`: An exception occurred when starting the Profiler.
     var errorEventErrorReason: RUMErrorEvent.DD.Profiling.ErrorReason? {
+        // RUM-15325: Update RUM schema with the mobile profiler errors
         if case .error(reason: let reason) = self.status {
             switch reason {
             case .memoryAllocationFailed:

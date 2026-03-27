@@ -229,7 +229,7 @@ private extension RUMAppLaunchManager {
         var contextAttributes: [String: Encodable] = parent.rumContextAttributes
         contextAttributes[RUMCoreContext.IDs.vitalID] = vital.id
 
-        dependencies.featureScope.send(message: .payload(RUMMessage(attributes: contextAttributes, event: vital)))
+        dependencies.featureScope.send(message: .payload(TTIDMessage(attributes: contextAttributes, ttid: vital)))
     }
 }
 
@@ -312,6 +312,7 @@ private extension ProfilingContext {
     /// Possible values:
     /// - `unexpected-exception`: An exception occurred when starting the Profiler.
     var error: RUMVitalAppLaunchEvent.DD.Profiling.ErrorReason? {
+        // RUM-15325: Update RUM schema with the mobile profiler errors
         if case .error(reason: let reason) = self.status {
             switch reason {
             case .memoryAllocationFailed:

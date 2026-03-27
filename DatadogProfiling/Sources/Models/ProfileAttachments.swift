@@ -28,6 +28,6 @@ internal struct RUMEvents: Codable, Equatable {
     }
 
     let vitals: [Vital]
-    let hangs: [DurationEvent<RUMErrorEvent>]?
-    let longTasks: [DurationEvent<RUMLongTaskEvent>]?
+    let hangs: [DurationEvent]?
+    let longTasks: [DurationEvent]?
 }
