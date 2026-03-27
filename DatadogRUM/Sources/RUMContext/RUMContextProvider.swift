@@ -16,16 +16,16 @@ internal protocol RUMContextProvider: AnyObject {
 extension RUMContextProvider {
     var rumContextAttributes: [String: AttributeValue] {
         var attributes: [String: AttributeValue] = [
-            RUMContextAttributes.IDs.applicationID: context.rumApplicationID,
-            RUMContextAttributes.IDs.sessionID: context.sessionID.toRUMDataFormat,
+            RUMCoreContext.IDs.applicationID: context.rumApplicationID,
+            RUMCoreContext.IDs.sessionID: context.sessionID.toRUMDataFormat,
         ]
 
         if let activeViewID = context.activeViewID {
-            attributes[RUMContextAttributes.IDs.viewID] = [activeViewID.toRUMDataFormat]
+            attributes[RUMCoreContext.IDs.viewID] = [activeViewID.toRUMDataFormat]
         }
 
         if let activeViewName = context.activeViewName {
-            attributes[RUMContextAttributes.IDs.viewName] = [activeViewName]
+            attributes[RUMCoreContext.IDs.viewName] = [activeViewName]
         }
 
         return attributes
