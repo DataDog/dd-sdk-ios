@@ -1388,8 +1388,16 @@ public class objc_RUMErrorEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    public var parentSpanId: String? {
+        root.swiftModel.dd.parentSpanId
+    }
+
     public var profiling: objc_RUMErrorEventDDProfiling? {
         root.swiftModel.dd.profiling != nil ? objc_RUMErrorEventDDProfiling(root: root) : nil
+    }
+
+    public var rulePsr: NSNumber? {
+        root.swiftModel.dd.rulePsr as NSNumber?
     }
 
     public var sdkName: String? {
@@ -1398,6 +1406,14 @@ public class objc_RUMErrorEventDD: NSObject {
 
     public var session: objc_RUMErrorEventDDSession? {
         root.swiftModel.dd.session != nil ? objc_RUMErrorEventDDSession(root: root) : nil
+    }
+
+    public var spanId: String? {
+        root.swiftModel.dd.spanId
+    }
+
+    public var traceId: String? {
+        root.swiftModel.dd.traceId
     }
 }
 
@@ -2412,6 +2428,10 @@ public class objc_RUMErrorEventErrorResource: NSObject {
         self.root = root
     }
 
+    public var graphql: objc_RUMErrorEventErrorResourceGraphql? {
+        root.swiftModel.error.resource!.graphql != nil ? objc_RUMErrorEventErrorResourceGraphql(root: root) : nil
+    }
+
     public var method: objc_RUMErrorEventErrorResourceRUMMethod {
         .init(swift: root.swiftModel.error.resource!.method)
     }
@@ -2428,6 +2448,144 @@ public class objc_RUMErrorEventErrorResource: NSObject {
         set { root.swiftModel.error.resource!.url = newValue }
         get { root.swiftModel.error.resource!.url }
     }
+}
+
+@objc(DDRUMErrorEventErrorResourceGraphql)
+@objcMembers
+@_spi(objc)
+public class objc_RUMErrorEventErrorResourceGraphql: NSObject {
+    internal let root: objc_RUMErrorEvent
+
+    internal init(root: objc_RUMErrorEvent) {
+        self.root = root
+    }
+
+    public var errorCount: NSNumber? {
+        root.swiftModel.error.resource!.graphql!.errorCount as NSNumber?
+    }
+
+    public var errors: [objc_RUMErrorEventErrorResourceGraphqlErrors]? {
+        root.swiftModel.error.resource!.graphql!.errors?.map { objc_RUMErrorEventErrorResourceGraphqlErrors(swiftModel: $0) }
+    }
+
+    public var operationName: String? {
+        root.swiftModel.error.resource!.graphql!.operationName
+    }
+
+    public var operationType: objc_RUMErrorEventErrorResourceGraphqlOperationType {
+        .init(swift: root.swiftModel.error.resource!.graphql!.operationType)
+    }
+
+    public var payload: String? {
+        set { root.swiftModel.error.resource!.graphql!.payload = newValue }
+        get { root.swiftModel.error.resource!.graphql!.payload }
+    }
+
+    public var variables: String? {
+        set { root.swiftModel.error.resource!.graphql!.variables = newValue }
+        get { root.swiftModel.error.resource!.graphql!.variables }
+    }
+}
+
+@objc(DDRUMErrorEventErrorResourceGraphqlErrors)
+@objcMembers
+@_spi(objc)
+public class objc_RUMErrorEventErrorResourceGraphqlErrors: NSObject {
+    internal var swiftModel: RUMErrorEvent.Error.Resource.Graphql.Errors
+    internal var root: objc_RUMErrorEventErrorResourceGraphqlErrors { self }
+
+    internal init(swiftModel: RUMErrorEvent.Error.Resource.Graphql.Errors) {
+        self.swiftModel = swiftModel
+    }
+
+    public var code: String? {
+        root.swiftModel.code
+    }
+
+    public var locations: [objc_RUMErrorEventErrorResourceGraphqlErrorsLocations]? {
+        root.swiftModel.locations?.map { objc_RUMErrorEventErrorResourceGraphqlErrorsLocations(swiftModel: $0) }
+    }
+
+    public var message: String {
+        root.swiftModel.message
+    }
+
+    public var path: [objc_RUMErrorEventErrorResourceGraphqlErrorsPath]? {
+        root.swiftModel.path?.map { objc_RUMErrorEventErrorResourceGraphqlErrorsPath(swiftModel: $0) }
+    }
+}
+
+@objc(DDRUMErrorEventErrorResourceGraphqlErrorsLocations)
+@objcMembers
+@_spi(objc)
+public class objc_RUMErrorEventErrorResourceGraphqlErrorsLocations: NSObject {
+    internal var swiftModel: RUMErrorEvent.Error.Resource.Graphql.Errors.Locations
+    internal var root: objc_RUMErrorEventErrorResourceGraphqlErrorsLocations { self }
+
+    internal init(swiftModel: RUMErrorEvent.Error.Resource.Graphql.Errors.Locations) {
+        self.swiftModel = swiftModel
+    }
+
+    public var column: NSNumber {
+        root.swiftModel.column as NSNumber
+    }
+
+    public var line: NSNumber {
+        root.swiftModel.line as NSNumber
+    }
+}
+
+@objc(DDRUMErrorEventErrorResourceGraphqlErrorsPath)
+@objcMembers
+@_spi(objc)
+public class objc_RUMErrorEventErrorResourceGraphqlErrorsPath: NSObject {
+    internal var swiftModel: RUMErrorEvent.Error.Resource.Graphql.Errors.Path
+    internal var root: objc_RUMErrorEventErrorResourceGraphqlErrorsPath { self }
+
+    internal init(swiftModel: RUMErrorEvent.Error.Resource.Graphql.Errors.Path) {
+        self.swiftModel = swiftModel
+    }
+
+    public var string: String? {
+        guard case .string(let value) = root.swiftModel else {
+            return nil
+        }
+        return value
+    }
+
+    public var integer: NSNumber? {
+        guard case .integer(let value) = root.swiftModel else {
+            return nil
+        }
+        return value as NSNumber
+    }
+}
+
+@objc(DDRUMErrorEventErrorResourceGraphqlOperationType)
+@_spi(objc)
+public enum objc_RUMErrorEventErrorResourceGraphqlOperationType: Int {
+    internal init(swift: RUMErrorEvent.Error.Resource.Graphql.OperationType?) {
+        switch swift {
+        case nil: self = .none
+        case .query?: self = .query
+        case .mutation?: self = .mutation
+        case .subscription?: self = .subscription
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.Resource.Graphql.OperationType? {
+        switch self {
+        case .none: return nil
+        case .query: return .query
+        case .mutation: return .mutation
+        case .subscription: return .subscription
+        }
+    }
+
+    case none
+    case query
+    case mutation
+    case subscription
 }
 
 @objc(DDRUMErrorEventErrorResourceRUMMethod)
@@ -7463,8 +7621,8 @@ public class objc_RUMViewEventViewFrustration: NSObject {
         self.root = root
     }
 
-    public var count: NSNumber {
-        root.swiftModel.view.frustration!.count as NSNumber
+    public var count: NSNumber? {
+        root.swiftModel.view.frustration!.count as NSNumber?
     }
 }
 
@@ -9355,8 +9513,8 @@ public class objc_RUMViewUpdateEventViewFrustration: NSObject {
         self.root = root
     }
 
-    public var count: NSNumber {
-        root.swiftModel.view.frustration!.count as NSNumber
+    public var count: NSNumber? {
+        root.swiftModel.view.frustration!.count as NSNumber?
     }
 }
 
@@ -14499,4 +14657,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/dc859a26e0d0546e45fac5fa9fd55444359093c1
+// Generated from https://github.com/DataDog/rum-events-format/tree/0d9435f867237b1cd993324902fe88ec235b9707
