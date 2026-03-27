@@ -1092,7 +1092,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 let url = request.url
                 let method = request.httpMethod
                 let body = request.httpBody
-                guard let index = Int(url?.lastPathComponent ?? "") else { return }
+                guard let index = Int(url?.lastPathComponent ?? "") else {
+                    return
+                }
                 lock.lock()
                 receivedUrls[index] = url
                 receivedMethods[index] = method
