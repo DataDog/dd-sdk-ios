@@ -330,8 +330,6 @@
 		1182FAC52DA2F827007FE71A /* RUMSessionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9CB2DA2F827007FE71A /* RUMSessionMatcher.swift */; };
 		1182FAC62DA2F827007FE71A /* BacktraceReportMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9D12DA2F827007FE71A /* BacktraceReportMocks.swift */; };
 		1182FAC72DA2F827007FE71A /* DatadogRemoteFeatureMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9E12DA2F827007FE71A /* DatadogRemoteFeatureMock.swift */; };
-		118848502F6C4DE0008D2919 /* RUMContextAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188484F2F6C4DE0008D2919 /* RUMContextAttributes.swift */; };
-		118848512F6C4DE0008D2919 /* RUMContextAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188484F2F6C4DE0008D2919 /* RUMContextAttributes.swift */; };
 		118848532F6C4E0C008D2919 /* VitalMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118848522F6C4E0C008D2919 /* VitalMessage.swift */; };
 		118848542F6C4E0C008D2919 /* VitalMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118848522F6C4E0C008D2919 /* VitalMessage.swift */; };
 		1188485A2F6C50EC008D2919 /* ProfilingHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118848592F6C50EC008D2919 /* ProfilingHandler.swift */; };
@@ -2928,7 +2926,6 @@
 		1182FA1A2DA2F827007FE71A /* DatadogCoreProxy+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DatadogCoreProxy+Utils.swift"; sourceTree = "<group>"; };
 		1182FA1B2DA2F827007FE71A /* ServerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerMock.swift; sourceTree = "<group>"; };
 		1182FA1D2DA2F827007FE71A /* PrintFunctionSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintFunctionSpy.swift; sourceTree = "<group>"; };
-		1188484F2F6C4DE0008D2919 /* RUMContextAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContextAttributes.swift; sourceTree = "<group>"; };
 		118848522F6C4E0C008D2919 /* VitalMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalMessage.swift; sourceTree = "<group>"; };
 		118848592F6C50EC008D2919 /* ProfilingHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingHandler.swift; sourceTree = "<group>"; };
 		1188485E2F6C5122008D2919 /* ProfilingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingOperation.swift; sourceTree = "<group>"; };
@@ -7308,7 +7305,6 @@
 				861FD6872DF3366400F59823 /* LocaleInfo.swift */,
 				D23039B9298D5235001A1FA3 /* NetworkConnectionInfo.swift */,
 				11B5439E2DE9C40B006F6C0A /* OperatingSystem+Utils.swift */,
-				1188484F2F6C4DE0008D2919 /* RUMContextAttributes.swift */,
 				D23039B8298D5235001A1FA3 /* Sysctl.swift */,
 				D23039BB298D5235001A1FA3 /* TrackingConsent.swift */,
 				D23039B4298D5235001A1FA3 /* UserInfo.swift */,
@@ -10543,7 +10539,6 @@
 				D23354FC2A42E32000AFCAE2 /* InternalExtended.swift in Sources */,
 				D2D7483A2DC2306100C61353 /* TraceID.swift in Sources */,
 				D2D7483B2DC2306100C61353 /* SpanID.swift in Sources */,
-				118848502F6C4DE0008D2919 /* RUMContextAttributes.swift in Sources */,
 				D23039F3298D5236001A1FA3 /* DynamicCodingKey.swift in Sources */,
 				D2BEEDB22B335DA90065F3AC /* URLSessionTaskDelegateSwizzler.swift in Sources */,
 				D23039FE298D5236001A1FA3 /* FeatureRequestBuilder.swift in Sources */,
@@ -11836,7 +11831,6 @@
 				D2BEEDB62B3360830065F3AC /* URLSessionSwizzler.swift in Sources */,
 				D2EBEE2F29BA161100B15732 /* W3CHTTPHeaders.swift in Sources */,
 				6167E6F72B81E94C00C3CA2D /* DDThread.swift in Sources */,
-				118848512F6C4DE0008D2919 /* RUMContextAttributes.swift in Sources */,
 				D2BEEDAD2B3356710065F3AC /* URLSessionTaskSwizzler.swift in Sources */,
 				D2DA2363298D57AA00C6C7E6 /* BatteryStatus.swift in Sources */,
 				D2EBEE3829BA161100B15732 /* TracingHTTPHeaders.swift in Sources */,

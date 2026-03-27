@@ -23,7 +23,7 @@ final class ProfilingHandlerTests: XCTestCase {
         super.setUp()
         core = PassthroughCoreMock()
         handler = ProfilingHandlerMock(
-            context: [:],
+            attributes: [:],
             operation: .appLaunch,
             featureScope: core.scope(for: ProfilerFeature.self),
             telemetryController: .init(),
@@ -95,8 +95,8 @@ final class ProfilingHandlerTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
-        XCTAssertNil(event.additionalAttributes?[RUMContextAttributes.IDs.vitalID])
-        XCTAssertNil(event.additionalAttributes?[RUMContextAttributes.IDs.vitalLabel])
+        XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.vitalID])
+        XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.vitalLabel])
     }
 
     func testWriteWithVitals_addsVitalIDsAndLabelsToEvent() throws {
@@ -113,8 +113,8 @@ final class ProfilingHandlerTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
-        let vitalIDs = event.additionalAttributes?[RUMContextAttributes.IDs.vitalID] as? [String]
-        let vitalLabels = event.additionalAttributes?[RUMContextAttributes.IDs.vitalLabel] as? [String]
+        let vitalIDs = event.additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String]
+        let vitalLabels = event.additionalAttributes?[RUMCoreContext.IDs.vitalLabel] as? [String]
         XCTAssertEqual(vitalIDs, ["id1", "id2"])
         XCTAssertEqual(vitalLabels, ["operation1", "operation2"])
     }
@@ -123,7 +123,7 @@ final class ProfilingHandlerTests: XCTestCase {
         // Given
         XCTAssertEqual(dd_profiler_start(), 1)
         let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
-        handler.context = ["session.id": "session1", "view.id": ["view1"]]
+        handler.attributes = ["session.id": "session1", "view.id": ["view1"]]
 
         // When
         handler.write(profile: profile, rumVitals: [])
@@ -192,7 +192,7 @@ final class ProfilingHandlerTests: XCTestCase {
 }
 
 private struct ProfilingHandlerMock: ProfilingHandler {
-    var context: [String: AttributeValue]
+    var attributes: [String: AttributeValue]
     var operation: ProfilingOperation
     var featureScope: FeatureScope
     var telemetryController: ProfilingTelemetryController
