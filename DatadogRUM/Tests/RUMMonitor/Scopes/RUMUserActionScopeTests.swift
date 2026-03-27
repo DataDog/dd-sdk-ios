@@ -1015,11 +1015,9 @@ class RUMUserActionScopeTests: XCTestCase {
             scope.process(
                 command: RUMAddUserActionCommand.mockWith(
                     heatmapAttributes: HeatmapAttributes(
-                        targetPermanentID: "abc123",
-                        targetWidth: 100,
-                        targetHeight: 50,
-                        positionX: 10,
-                        positionY: 20
+                        identifier: .init(rawValue: "abc123"),
+                        size: .init(width: 100, height: 50),
+                        location: .init(x: 10, y: 20)
                     )
                 ),
                 context: context,
