@@ -1491,8 +1491,14 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// parent span identifier in decimal format
+        public let parentSpanId: String?
+
         /// Profiling context
         public let profiling: Profiling?
+
+        /// trace sample rate in decimal format
+        public let rulePsr: Double?
 
         /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         public let sdkName: String?
@@ -1500,13 +1506,23 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Session-related internal properties
         public let session: Session?
 
+        /// span identifier in decimal format
+        public let spanId: String?
+
+        /// trace identifier, either a 64 bit decimal number or a 128 bit hexadecimal number padded with 0s
+        public let traceId: String?
+
         public enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
             case formatVersion = "format_version"
+            case parentSpanId = "parent_span_id"
             case profiling = "profiling"
+            case rulePsr = "rule_psr"
             case sdkName = "sdk_name"
             case session = "session"
+            case spanId = "span_id"
+            case traceId = "trace_id"
         }
 
         /// Internal properties
@@ -1514,21 +1530,33 @@ public struct RUMErrorEvent: RUMDataModel {
         /// - Parameters:
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - parentSpanId: parent span identifier in decimal format
         ///   - profiling: Profiling context
+        ///   - rulePsr: trace sample rate in decimal format
         ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
+        ///   - spanId: span identifier in decimal format
+        ///   - traceId: trace identifier, either a 64 bit decimal number or a 128 bit hexadecimal number padded with 0s
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            parentSpanId: String? = nil,
             profiling: Profiling? = nil,
+            rulePsr: Double? = nil,
             sdkName: String? = nil,
-            session: Session? = nil
+            session: Session? = nil,
+            spanId: String? = nil,
+            traceId: String? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.parentSpanId = parentSpanId
             self.profiling = profiling
+            self.rulePsr = rulePsr
             self.sdkName = sdkName
             self.session = session
+            self.spanId = spanId
+            self.traceId = traceId
         }
 
         /// Subset of the SDK configuration options in use during its execution
@@ -2202,6 +2230,9 @@ public struct RUMErrorEvent: RUMDataModel {
 
         /// Resource properties of the error
         public struct Resource: Codable {
+            /// GraphQL request parameters
+            public var graphql: Graphql?
+
             /// HTTP method of the resource
             public let method: RUMMethod
 
@@ -2215,6 +2246,7 @@ public struct RUMErrorEvent: RUMDataModel {
             public var url: String
 
             public enum CodingKeys: String, CodingKey {
+                case graphql = "graphql"
                 case method = "method"
                 case provider = "provider"
                 case statusCode = "status_code"
@@ -2224,20 +2256,194 @@ public struct RUMErrorEvent: RUMDataModel {
             /// Resource properties of the error
             ///
             /// - Parameters:
+            ///   - graphql: GraphQL request parameters
             ///   - method: HTTP method of the resource
             ///   - provider: The provider for this resource
             ///   - statusCode: HTTP Status code of the resource
             ///   - url: URL of the resource
             public init(
+                graphql: Graphql? = nil,
                 method: RUMMethod,
                 provider: Provider? = nil,
                 statusCode: Int64,
                 url: String
             ) {
+                self.graphql = graphql
                 self.method = method
                 self.provider = provider
                 self.statusCode = statusCode
                 self.url = url
+            }
+
+            /// GraphQL request parameters
+            public struct Graphql: Codable {
+                /// Number of GraphQL errors in the response
+                public let errorCount: Int64?
+
+                /// Array of GraphQL errors from the response
+                public let errors: [Errors]?
+
+                /// Name of the GraphQL operation
+                public let operationName: String?
+
+                /// Type of the GraphQL operation
+                public let operationType: OperationType?
+
+                /// Content of the GraphQL operation
+                public var payload: String?
+
+                /// String representation of the operation variables
+                public var variables: String?
+
+                public enum CodingKeys: String, CodingKey {
+                    case errorCount = "error_count"
+                    case errors = "errors"
+                    case operationName = "operationName"
+                    case operationType = "operationType"
+                    case payload = "payload"
+                    case variables = "variables"
+                }
+
+                /// GraphQL request parameters
+                ///
+                /// - Parameters:
+                ///   - errorCount: Number of GraphQL errors in the response
+                ///   - errors: Array of GraphQL errors from the response
+                ///   - operationName: Name of the GraphQL operation
+                ///   - operationType: Type of the GraphQL operation
+                ///   - payload: Content of the GraphQL operation
+                ///   - variables: String representation of the operation variables
+                public init(
+                    errorCount: Int64? = nil,
+                    errors: [Errors]? = nil,
+                    operationName: String? = nil,
+                    operationType: OperationType? = nil,
+                    payload: String? = nil,
+                    variables: String? = nil
+                ) {
+                    self.errorCount = errorCount
+                    self.errors = errors
+                    self.operationName = operationName
+                    self.operationType = operationType
+                    self.payload = payload
+                    self.variables = variables
+                }
+
+                /// GraphQL error details
+                public struct Errors: Codable {
+                    /// Error code (used by some providers)
+                    public let code: String?
+
+                    /// Array of error locations in the GraphQL query
+                    public let locations: [Locations]?
+
+                    /// Error message
+                    public let message: String
+
+                    /// Path to the field that caused the error
+                    public let path: [Path]?
+
+                    public enum CodingKeys: String, CodingKey {
+                        case code = "code"
+                        case locations = "locations"
+                        case message = "message"
+                        case path = "path"
+                    }
+
+                    /// GraphQL error details
+                    ///
+                    /// - Parameters:
+                    ///   - code: Error code (used by some providers)
+                    ///   - locations: Array of error locations in the GraphQL query
+                    ///   - message: Error message
+                    ///   - path: Path to the field that caused the error
+                    public init(
+                        code: String? = nil,
+                        locations: [Locations]? = nil,
+                        message: String,
+                        path: [Path]? = nil
+                    ) {
+                        self.code = code
+                        self.locations = locations
+                        self.message = message
+                        self.path = path
+                    }
+
+                    /// Error location
+                    public struct Locations: Codable {
+                        /// Column number where the error occurred
+                        public let column: Int64
+
+                        /// Line number where the error occurred
+                        public let line: Int64
+
+                        public enum CodingKeys: String, CodingKey {
+                            case column = "column"
+                            case line = "line"
+                        }
+
+                        /// Error location
+                        ///
+                        /// - Parameters:
+                        ///   - column: Column number where the error occurred
+                        ///   - line: Line number where the error occurred
+                        public init(
+                            column: Int64,
+                            line: Int64
+                        ) {
+                            self.column = column
+                            self.line = line
+                        }
+                    }
+
+                    public enum Path: Codable {
+                        case string(value: String)
+                        case integer(value: Int64)
+
+                        // MARK: - Codable
+
+                        public func encode(to encoder: Encoder) throws {
+                            // Encode only the associated value, without encoding enum case
+                            var container = encoder.singleValueContainer()
+
+                            switch self {
+                            case .string(let value):
+                                try container.encode(value)
+                            case .integer(let value):
+                                try container.encode(value)
+                            }
+                        }
+
+                        public init(from decoder: Decoder) throws {
+                            // Decode enum case from associated value
+                            let container = try decoder.singleValueContainer()
+
+                            if let value = try? container.decode(String.self) {
+                                self = .string(value: value)
+                                return
+                            }
+                            if let value = try? container.decode(Int64.self) {
+                                self = .integer(value: value)
+                                return
+                            }
+                            let error = DecodingError.Context(
+                                codingPath: container.codingPath,
+                                debugDescription: """
+                                Failed to decode `Path`.
+                                Ran out of possibilities when trying to decode the value of associated type.
+                                """
+                            )
+                            throw DecodingError.typeMismatch(Path.self, error)
+                        }
+                    }
+                }
+
+                /// Type of the GraphQL operation
+                public enum OperationType: String, Codable {
+                    case query = "query"
+                    case mutation = "mutation"
+                    case subscription = "subscription"
+                }
             }
 
             /// The provider for this resource
@@ -3953,7 +4159,7 @@ public struct RUMResourceEvent: RUMDataModel {
         /// First Byte phase properties
         public let firstByte: FirstByte?
 
-        /// GraphQL requests parameters
+        /// GraphQL request parameters
         public var graphql: Graphql?
 
         /// UUID of the resource
@@ -4039,7 +4245,7 @@ public struct RUMResourceEvent: RUMDataModel {
         ///   - duration: Duration of the resource
         ///   - encodedBodySize: Size in octet of the response body before removing any applied content encodings
         ///   - firstByte: First Byte phase properties
-        ///   - graphql: GraphQL requests parameters
+        ///   - graphql: GraphQL request parameters
         ///   - id: UUID of the resource
         ///   - method: HTTP method of the resource
         ///   - `protocol`: Network protocol used to fetch the resource (e.g., 'http/1.1', 'h2')
@@ -4222,7 +4428,7 @@ public struct RUMResourceEvent: RUMDataModel {
             }
         }
 
-        /// GraphQL requests parameters
+        /// GraphQL request parameters
         public struct Graphql: Codable {
             /// Number of GraphQL errors in the response
             public let errorCount: Int64?
@@ -4251,7 +4457,7 @@ public struct RUMResourceEvent: RUMDataModel {
                 case variables = "variables"
             }
 
-            /// GraphQL requests parameters
+            /// GraphQL request parameters
             ///
             /// - Parameters:
             ///   - errorCount: Number of GraphQL errors in the response
@@ -6638,7 +6844,7 @@ public struct RUMViewEvent: RUMDataModel {
         /// Properties of the frustrations of the view
         public struct Frustration: Codable {
             /// Number of frustrations that occurred on the view
-            public let count: Int64
+            public let count: Int64?
 
             public enum CodingKeys: String, CodingKey {
                 case count = "count"
@@ -6649,7 +6855,7 @@ public struct RUMViewEvent: RUMDataModel {
             /// - Parameters:
             ///   - count: Number of frustrations that occurred on the view
             public init(
-                count: Int64
+                count: Int64? = nil
             ) {
                 self.count = count
             }
@@ -8642,7 +8848,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         /// Properties of the frustrations of the view
         public struct Frustration: Codable {
             /// Number of frustrations that occurred on the view
-            public let count: Int64
+            public let count: Int64?
 
             public enum CodingKeys: String, CodingKey {
                 case count = "count"
@@ -8653,7 +8859,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             /// - Parameters:
             ///   - count: Number of frustrations that occurred on the view
             public init(
-                count: Int64
+                count: Int64? = nil
             ) {
                 self.count = count
             }
@@ -14096,4 +14302,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/dc859a26e0d0546e45fac5fa9fd55444359093c1
+// Generated from https://github.com/DataDog/rum-events-format/tree/0d9435f867237b1cd993324902fe88ec235b9707
