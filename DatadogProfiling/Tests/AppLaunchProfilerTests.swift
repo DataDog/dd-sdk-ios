@@ -81,6 +81,23 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
     }
 
+    // Profiler should remain running when continuous profiling is enabled
+    func testReceiveVitalMessageWhenContinuousProfiling_doesNotStopProfiler() {
+        // Given
+        let core = PassthroughCoreMock()
+        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: true)
+
+        XCTAssertEqual(dd_profiler_start(), 1)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        // When
+        let result = profiler.receive(message: .payload(RUMMessage(context: mockRandomAttributes(), event: vital)), from: core)
+
+        // Then
+        XCTAssertFalse(result, "Continuous profiler and AppLaunch profiler consume app launch vitals")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+    }
+
     func testReceive_withVitalMessage_whenNoProfileData_returnsFalse() {
         // Given - profiler not started, so no profile data
         let core = PassthroughCoreMock()
@@ -145,7 +162,7 @@ final class AppLaunchProfilerTests: XCTestCase {
                 telemetryController: .init()
             )
         )
-        let profiler = AppLaunchProfiler(core: core)
+        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: false)
 
         XCTAssertEqual(dd_profiler_start(), 1)
         Thread.sleep(forTimeInterval: 0.1) // allow few samples
@@ -296,7 +313,7 @@ final class AppLaunchProfilerTests: XCTestCase {
     func testReceiveCompleteRumOperation() {
         // Given
         let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler(core: core)
+        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: false)
         let startVital = Vital.mockWith(type: .rumOperation(.start))
         let endVital = Vital.mockWith(name: startVital.name, operationKey: startVital.operationKey, type: .rumOperation(.end))
 
@@ -314,7 +331,7 @@ final class AppLaunchProfilerTests: XCTestCase {
     func testReceiveApplicationLaunchAndOperations() {
         // Given
         let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler(core: core)
+        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: false)
         XCTAssertEqual(dd_profiler_start(), 1)
 
         // When
@@ -331,7 +348,7 @@ final class AppLaunchProfilerTests: XCTestCase {
     func testApplicationLaunchWithRumOperations_includesVitalsInProfile() throws {
         // Given
         let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler(core: core)
+        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: false)
         let startVital = Vital.mockWith(id: "start-id", name: "operation", type: .rumOperation(.start))
         let endVital = Vital.mockWith(id: "end-id", name: "operation", type: .rumOperation(.end))
 
@@ -355,7 +372,7 @@ final class AppLaunchProfilerTests: XCTestCase {
     func testApplicationLaunchWithOrphanedEndVital_excludesOrphanedFromProfile() throws {
         // Given
         let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler(core: core)
+        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: false)
         let startVital = Vital.mockWith(id: "start-id", name: "operation1", type: .rumOperation(.start))
         let orphanedEnd = Vital.mockWith(id: "orphan-id", name: "operation2", type: .rumOperation(.end))
 
@@ -425,7 +442,7 @@ final class AppLaunchProfilerTests: XCTestCase {
     }
 
     private var appLaunchProfiler: AppLaunchProfiler {
-        AppLaunchProfiler(core: PassthroughCoreMock())
+        AppLaunchProfiler(core: PassthroughCoreMock(), isContinuousProfiling: false)
     }
 
     private var vital: Vital {
