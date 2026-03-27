@@ -7,8 +7,6 @@
 import Foundation
 import DatadogInternal
 
-@_exported import enum DatadogInternal.SamplingOption
-
 #if !os(watchOS)
 
 extension Profiling {
@@ -18,10 +16,12 @@ extension Profiling {
         /// If `nil`, the default Datadog endpoint will be used.
         public var customEndpoint: URL?
 
-        /// Sampling option for the application launch profiling.
+        /// The sampling rate for App Launch Profiling.
         ///
-        /// Default: Feature enabled with `5.0%` sample rate.
-        public var applicationLaunch: SamplingOption
+        /// It must be a number between 0.0 and 100.0, where 0 means no profiles will be collected.
+        ///
+        /// Default: `5.0`.
+        public var applicationLaunchSampleRate: SampleRate
 
         // MARK: - Internal
 
@@ -30,13 +30,13 @@ extension Profiling {
         /// Creates the Profiling configuration.
         /// - Parameters:
         ///   - customEndpoint: Optional custom server endpoint for profile uploads.
-        ///   - applicationLaunch: Sampling option for the application launch profiling.
+        ///   - applicationLaunchSampleRate: Sampling rate for the application launch profiling.
         public init(
             customEndpoint: URL? = nil,
-            applicationLaunch: SamplingOption = .enabled(sampleRate: 5.0)
+            applicationLaunchSampleRate: SampleRate = 5
         ) {
             self.customEndpoint = customEndpoint
-            self.applicationLaunch = applicationLaunch
+            self.applicationLaunchSampleRate = applicationLaunchSampleRate
         }
     }
 }

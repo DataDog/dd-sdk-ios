@@ -17,7 +17,7 @@ import QuartzCore
 @_exported import struct DatadogInternal.RUMErrorEvent
 @_exported import struct DatadogInternal.RUMActionEvent
 @_exported import struct DatadogInternal.RUMLongTaskEvent
-@_exported import enum DatadogInternal.SamplingOption
+@_exported import struct DatadogInternal.ProfilingOptions
 // swiftlint:enable duplicate_imports
 
 extension RUM {

@@ -766,30 +766,35 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.addFeatureFlagEvaluation(name: name, value: AnyEncodable(value))
     }
 
-    public func startFeatureOperation(
+    public func startOperation(
         name: String,
         operationKey: String?,
         attributes: [String: Any],
-        profiling: objc_SamplingOption
+        options: objc_OperationOptions?
     ) {
-        swiftRUMMonitor.startFeatureOperation(name: name, operationKey: operationKey, attributes: attributes.dd.swiftAttributes, profiling: profiling.swiftType)
+        swiftRUMMonitor.startOperation(
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes.dd.swiftAttributes,
+            options: options?.swiftType
+        )
     }
 
-    public func succeedFeatureOperation(
+    public func succeedOperation(
         name: String,
         operationKey: String?,
         attributes: [String: Any]
     ) {
-        swiftRUMMonitor.succeedFeatureOperation(name: name, operationKey: operationKey, attributes: attributes.dd.swiftAttributes)
+        swiftRUMMonitor.succeedOperation(name: name, operationKey: operationKey, attributes: attributes.dd.swiftAttributes)
     }
 
-    public func failFeatureOperation(
+    public func failOperation(
         name: String,
         operationKey: String?,
         reason: objc_RUMFeatureOperationFailureReason,
         attributes: [String: Any]
     ) {
-        swiftRUMMonitor.failFeatureOperation(
+        swiftRUMMonitor.failOperation(
             name: name,
             operationKey: operationKey,
             reason: reason.swiftType,

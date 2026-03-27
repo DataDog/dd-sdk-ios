@@ -2905,9 +2905,9 @@ public class objc_RUMMonitor: NSObject
     public func removeAttribute(forKey key: String)
     public func removeAttributes(forKeys keys: [String])
     public func addFeatureFlagEvaluation(name: String, value: Any)
-    public func startFeatureOperation(name: String,operationKey: String?,attributes: [String: Any])
-    public func succeedFeatureOperation(name: String,operationKey: String?,attributes: [String: Any])
-    public func failFeatureOperation(name: String,operationKey: String?,reason: objc_RUMFeatureOperationFailureReason,attributes: [String: Any])
+    public func startOperation(name: String,operationKey: String?,attributes: [String: Any],options: objc_OperationOptions?)
+    public func succeedOperation(name: String,operationKey: String?,attributes: [String: Any])
+    public func failOperation(name: String,operationKey: String?,reason: objc_RUMFeatureOperationFailureReason,attributes: [String: Any])
     public var debug: Bool
 [?] extension objc_RUMMonitor
     public func _internal_sync_addError(_ error: Error,source: objc_RUMErrorSource,attributes: [String: Any])
