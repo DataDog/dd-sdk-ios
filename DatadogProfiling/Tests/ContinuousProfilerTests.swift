@@ -23,11 +23,13 @@ final class ContinuousProfilerTests: XCTestCase {
         super.setUp()
         core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInForeground()))
         notificationCenter = MockNotificationCenter()
+        ContinuousProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
     }
 
     override func tearDown() {
+        ContinuousProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
         dd_delete_profiling_defaults()
@@ -124,9 +126,10 @@ final class ContinuousProfilerTests: XCTestCase {
         // Then
         XCTAssertTrue(result, "App hangs should be consumed by continuous profiler after app launch")
     }
+}
+// MARK: - Notifications
 
-    // MARK: - Notifications
-
+extension ContinuousProfilerTests {
     func testApplicationDidEnterBackground_stopsProfiler() {
         // Given
         let dateProvider = DateProviderMock()
@@ -222,9 +225,10 @@ final class ContinuousProfilerTests: XCTestCase {
         XCTAssertEqual(rumEvents.hangs?.map(\.id), [hang.id])
         withExtendedLifetime(profiler) {}
     }
+}
+// MARK: - canWriteProfile
 
-    // MARK: - canWriteProfile
-
+extension ContinuousProfilerTests {
     func testDoesNotWriteProfile_whenNoEventsAccumulated() {
         // Given
         let profiler = continuousProfiler()
@@ -302,36 +306,6 @@ final class ContinuousProfilerTests: XCTestCase {
         // Then
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
         withExtendedLifetime(profiler) {}
-    }
-
-    private func continuousProfiler(
-        profilingConditions: ProfilingConditions = ProfilingConditions(),
-        profilingInterval: TimeInterval = .infinity,
-        dateProvider: DateProvider = DateProviderMock()
-    ) -> ContinuousProfiler {
-        ContinuousProfiler(
-            core: core,
-            isContinuousProfiling: true,
-            profilingConditions: profilingConditions,
-            profilingInterval: profilingInterval,
-            notificationCenter: notificationCenter,
-            dateProvider: dateProvider
-        )
-    }
-
-    private func customProfiler(
-        profilingConditions: ProfilingConditions = ProfilingConditions(),
-        profilingInterval: TimeInterval = .infinity,
-        dateProvider: DateProvider = DateProviderMock()
-    ) -> ContinuousProfiler {
-        ContinuousProfiler(
-            core: core,
-            isContinuousProfiling: false,
-            profilingConditions: profilingConditions,
-            profilingInterval: profilingInterval,
-            notificationCenter: notificationCenter,
-            dateProvider: dateProvider
-        )
     }
 }
 
@@ -529,6 +503,111 @@ extension ContinuousProfilerTests {
         // Then - custom profiler does not restart without recent operations (unlike continuous)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
         withExtendedLifetime(profiler) {}
+    }
+}
+
+// MARK: - Singleton Guard
+
+extension ContinuousProfilerTests {
+    func testSingletonGuard() {
+        // When
+        let profiler = continuousProfiler()
+
+        // Then
+        XCTAssertTrue(ContinuousProfiler.isInstantiated)
+        XCTAssertNotNil(profiler)
+    }
+
+    func testSingletonGuard_secondInstanceIsIgnored() {
+        // Given
+        let first = continuousProfiler()
+        XCTAssertTrue(ContinuousProfiler.isInstantiated)
+
+        // When
+        let second = ContinuousProfiler(core: core, isContinuousProfiling: true, notificationCenter: notificationCenter)
+        XCTAssertNil(second)
+
+        // Then - first still processes messages normally
+        XCTAssertEqual(dd_profiler_start(), 1)
+        let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
+        XCTAssertTrue(first.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core))
+        XCTAssertNotNil(first)
+    }
+
+    func testSingletonGuard_instanceBecomesActiveAfterPreviousDeallocates() {
+        // Given
+        var first: ContinuousProfiler? = continuousProfiler()
+        XCTAssertTrue(ContinuousProfiler.isInstantiated)
+        XCTAssertNotNil(first)
+        first = nil
+        XCTAssertFalse(ContinuousProfiler.isInstantiated, "Singleton guard should be released after dealloc")
+
+        // When
+        let second = continuousProfiler()
+
+        // Then
+        XCTAssertTrue(ContinuousProfiler.isInstantiated)
+        XCTAssertEqual(dd_profiler_start(), 1)
+        let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
+        XCTAssertTrue(second.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core))
+        XCTAssertNotNil(second)
+    }
+
+    func testSingletonGuard_isThreadSafe() {
+        // Given
+        let iterations = 100
+        let expectation = expectation(description: "All concurrent creations complete")
+        expectation.expectedFulfillmentCount = iterations
+        var profilers: [ContinuousProfiler?] = []
+        let lock = NSLock()
+
+        // When - many instances created concurrently
+        DispatchQueue.concurrentPerform(iterations: iterations) { _ in
+            let profiler = ContinuousProfiler(core: core, isContinuousProfiling: true, notificationCenter: notificationCenter)
+            lock.lock()
+            profilers.append(profiler)
+            lock.unlock()
+            expectation.fulfill()
+        }
+
+        // Then
+        wait(for: [expectation], timeout: 1.0)
+        XCTAssertEqual(profilers.compactMap { $0 }.count, 1, "Exactly one instance should have been created")
+        XCTAssertTrue(ContinuousProfiler.isInstantiated)
+    }
+}
+
+// MARK: - Private
+
+private extension ContinuousProfilerTests {
+    func continuousProfiler(
+        profilingConditions: ProfilingConditions = ProfilingConditions(),
+        profilingInterval: TimeInterval = .infinity,
+        dateProvider: DateProvider = DateProviderMock()
+    ) -> ContinuousProfiler {
+        ContinuousProfiler(
+            core: core,
+            isContinuousProfiling: true,
+            profilingConditions: profilingConditions,
+            profilingInterval: profilingInterval,
+            notificationCenter: notificationCenter,
+            dateProvider: dateProvider
+        )! // swiftlint:disable:this force_unwrapping
+    }
+
+    private func customProfiler(
+        profilingConditions: ProfilingConditions = ProfilingConditions(),
+        profilingInterval: TimeInterval = .infinity,
+        dateProvider: DateProvider = DateProviderMock()
+    ) -> ContinuousProfiler {
+        ContinuousProfiler(
+            core: core,
+            isContinuousProfiling: false,
+            profilingConditions: profilingConditions,
+            profilingInterval: profilingInterval,
+            notificationCenter: notificationCenter,
+            dateProvider: dateProvider
+        )! // swiftlint:disable:this force_unwrapping
     }
 }
 #endif // !os(watchOS)
