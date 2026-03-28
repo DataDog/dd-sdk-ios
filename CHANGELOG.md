@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Fix stack overflow crash when RUM scroll tracking is used alongside third-party delegate proxy libraries (e.g. RxSwift). See [#2791][]
+
 # 3.8.3 / 26-03-2026
 
 - [FIX] Fix TOC/TOU race in RUM scroll tracking. See [#2776][]
@@ -1094,6 +1096,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
 [#2751]: https://github.com/DataDog/dd-sdk-ios/pull/2751
 [#2776]: https://github.com/DataDog/dd-sdk-ios/pull/2776
+[#2791]: https://github.com/DataDog/dd-sdk-ios/pull/2791
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

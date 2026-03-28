@@ -51,6 +51,13 @@ internal final class UIScrollViewSwizzler {
         /// original delegate is gone.
         private static var proxyKey: Void?
 
+        /// Set of scroll views that are currently having their delegate set.
+        /// Detects and breaks re-entrant setter calls from third-party delegate proxies
+        /// (e.g. RxSwift's `DelegateProxy`) that receive our proxy and re-call this setter
+        /// via ObjC dispatch. UIKit setter calls happen on the main thread, so a plain
+        /// `Set` is safe here.
+        private static var scrollViewsBeingSet: Set<ObjectIdentifier> = []
+
         init(handler: UIScrollViewHandler) throws {
             self.method = try dd_class_getInstanceMethod(UIScrollView.self, Self.selector)
             self.handler = handler
@@ -77,6 +84,18 @@ internal final class UIScrollViewSwizzler {
                         previousImplementation(scrollView, Self.selector, delegate)
                         return
                     }
+
+                    // Re-entrancy guard: prevents infinite recursion when a third-party swizzle
+                    // (e.g. RxSwift's DelegateProxy) receives our proxy and re-calls this setter
+                    // via ObjC dispatch with a different delegate type. Keyed on object identity
+                    // so independently managed scroll views do not interfere with each other.
+                    let scrollViewID = ObjectIdentifier(scrollView)
+                    guard !Self.scrollViewsBeingSet.contains(scrollViewID) else {
+                        previousImplementation(scrollView, Self.selector, delegate)
+                        return
+                    }
+                    Self.scrollViewsBeingSet.insert(scrollViewID)
+                    defer { Self.scrollViewsBeingSet.remove(scrollViewID) }
 
                     // Check if this delegate already has a proxy attached to it
                     if let existingProxy = objc_getAssociatedObject(delegate, &Self.proxyKey) as? UIScrollViewDelegateProxy {
