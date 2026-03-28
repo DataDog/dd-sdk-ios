@@ -5,7 +5,7 @@
  */
 
 import XCTest
-import DatadogInternal
+@testable import DatadogInternal
 
 final class SampleRateTests: XCTestCase {
     func testPercentageProportion() {
@@ -78,5 +78,13 @@ final class SampleRateTests: XCTestCase {
         // Then
         XCTAssertEqual(composedRateWith3Layers, 10.0)
         XCTAssertEqual(composedRateWith4Layers, 1.5)
+    }
+
+    func testNormalization() {
+        XCTAssertEqual(SampleRate(42).normalized, 42)
+        XCTAssertEqual(SampleRate(0).normalized, 0)
+        XCTAssertEqual(SampleRate(100).normalized, 100)
+        XCTAssertEqual(SampleRate(-10).normalized, 0)
+        XCTAssertEqual(SampleRate(298).normalized, 100)
     }
 }

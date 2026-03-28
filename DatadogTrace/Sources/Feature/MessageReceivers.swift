@@ -19,14 +19,29 @@ internal struct CoreContext {
 
     /// Provides the current account information, if any
     var accountInfo: AccountInfo?
+
+    /// Sampler that should be used by tracing operations with the configured sampling rate.
+    ///
+    /// ``ContextMessageReceiver`` implements the ``TracerSamplerProvider`` protocol.
+    /// This sampler is provided directly by it to the Trace feature operations that use the default sample
+    /// rate (defined in the Trace configuration) and used as the basis for creating samplers with custom
+    /// sample rates.
+    ///
+    /// Refer to ``TracerSamplerProvider`` documentation for details on why using a dynamic
+    /// sampler provider.
+    var sampler: Sampling
 }
 
 internal final class ContextMessageReceiver: FeatureMessageReceiver {
+    init(sampleRate: SampleRate) {
+        self.context = .init(sampler: Self.makeCurrentSamplerFor(deterministicSampler: nil, using: sampleRate))
+    }
+
     /// The up-to-date core context.
     ///
     /// The context is synchronized using a read-write lock.
     @ReadWriteLock
-    var context: CoreContext = .init()
+    var context: CoreContext
 
     /// Process messages receives from the bus.
     ///
@@ -45,14 +60,47 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
     /// Updates context of the `DatadogTracer` if available.
     ///
     /// - Parameter context: The updated core context.
-    private func update(context: DatadogContext, from core: DatadogCoreProtocol) -> Bool {
+    private func update(context datadogContext: DatadogContext, from core: DatadogCoreProtocol) -> Bool {
+        let rumContext = datadogContext.additionalContext(ofType: RUMCoreContext.self)
+        let sampler = Self.makeCurrentSamplerFor(deterministicSampler: rumContext?.sessionSampler, using: context.sampler.samplingRate)
+
         _context.mutate {
-            $0.applicationStateHistory = context.applicationStateHistory
-            $0.rumContext = context.additionalContext(ofType: RUMCoreContext.self)
-            $0.userInfo = context.userInfo
-            $0.accountInfo = context.accountInfo
+            $0.applicationStateHistory = datadogContext.applicationStateHistory
+            $0.rumContext = rumContext
+            $0.userInfo = datadogContext.userInfo
+            $0.accountInfo = datadogContext.accountInfo
+            $0.sampler = sampler
         }
 
         return true
+    }
+
+    /// Creates the most appropriate sampler for the tracing feature.
+    ///
+    /// Refer to ``TracerSamplerProvider`` documentation for details on why using a dynamic
+    /// sampler provider.
+    ///
+    /// - parameters:
+    ///   - deterministicSampler: If a deterministic sampler provided by RUM exists, it must be
+    ///   passed in this parameter. Otherwise, pass `nil`.
+    ///   - samplingRate: The desired sampling rate. This can either be the value defined in the
+    ///   Trace feature configuration, or a custom value for a situation where a custom sampling rate
+    ///   was requested.
+    static func makeCurrentSamplerFor(deterministicSampler: DeterministicSampler?, using samplingRate: SampleRate) -> Sampling {
+        if let deterministicSampler {
+            return DeterministicSampler(seed: deterministicSampler.seed, samplingRate: samplingRate)
+        } else {
+            return Sampler(samplingRate: samplingRate)
+        }
+    }
+}
+
+extension ContextMessageReceiver: TracerSamplerProvider {
+    var sampler: any Sampling {
+        context.sampler
+    }
+
+    func makeSamplerFor(samplingRate: DatadogInternal.SampleRate) -> any Sampling {
+        Self.makeCurrentSamplerFor(deterministicSampler: context.rumContext?.sessionSampler, using: samplingRate)
     }
 }
