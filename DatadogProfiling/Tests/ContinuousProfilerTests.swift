@@ -23,11 +23,13 @@ final class ContinuousProfilerTests: XCTestCase {
         super.setUp()
         core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInForeground()))
         notificationCenter = MockNotificationCenter()
+        ContinuousProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
     }
 
     override func tearDown() {
+        ContinuousProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
         dd_delete_profiling_defaults()
