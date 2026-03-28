@@ -248,6 +248,20 @@ Avoid adding new dependencies unless absolutely necessary (small footprint princ
 
 Agents must not introduce APIs that require newer OS versions unless approved.
 
+## Swizzling
+
+The SDK uses Objective-C method swizzling to instrument UIKit and Foundation APIs transparently. Swizzling is a high-risk technique in an SDK context because **you never control the full runtime environment** — customer apps, third-party libraries (RxSwift, Alamofire, Firebase, …), and other SDKs may swizzle the same methods.
+
+**→ Before writing or modifying any swizzle, read `docs/SWIZZLING.md`.**
+
+It documents the mandatory patterns, known pitfalls, and real incidents that have caused production crashes.
+
+Key rules at a glance:
+- Every swizzled method must be treated as already swizzled by someone else — both before and after the SDK installs its swizzle
+- Setter swizzles must include a **re-entrancy guard** per object identity to survive frameworks that call back into the swizzled setter from within their own swizzle
+- Getter swizzles must **unwrap any internal proxy** so that user code observing the property sees the original value, not the SDK wrapper
+- Proxy objects used for forwarding must guard `responds(to:)` against circular delegation chains
+
 ## Continuous learning
 
 When discovering new patterns or common mistakes during tasks,
