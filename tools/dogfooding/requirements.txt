@@ -4,5 +4,5 @@ iniconfig==2.3.0
 packaging==26.0
 pluggy==1.6.0
 pytest==9.0.2
-smmap==5.0.2
+smmap==6.0.0
 tomli==2.4.0
