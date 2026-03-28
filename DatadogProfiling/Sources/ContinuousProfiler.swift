@@ -25,6 +25,10 @@ internal final class ContinuousProfiler: ProfilingHandler {
         static let customProfilingCutOffTime: TimeInterval = 60 // 1 minute cutoff
     }
 
+    /// Ensures only one `ContinuousProfiler` is active at a time.
+    private static var hasActiveInstance = false
+    private static let lock = NSLock()
+
     private let isContinuousProfiling: Bool
     private let profilingConditions: ProfilingConditions
     private let profilingInterval: TimeInterval
@@ -55,7 +59,7 @@ internal final class ContinuousProfiler: ProfilingHandler {
     /// The notification center where this profiler observes `UIApplication` lifecycle notifications.
     private weak var notificationCenter: NotificationCenter?
 
-    init(
+    init?(
         core: DatadogCoreProtocol,
         isContinuousProfiling: Bool,
         operation: ProfilingOperation = .continuousProfiling,
@@ -66,6 +70,14 @@ internal final class ContinuousProfiler: ProfilingHandler {
         notificationCenter: NotificationCenter = .default,
         dateProvider: DateProvider = SystemDateProvider()
     ) {
+        Self.lock.lock()
+        guard Self.hasActiveInstance == false else {
+            Self.lock.unlock()
+            return nil
+        }
+        Self.hasActiveInstance = true
+        Self.lock.unlock()
+
         self.featureScope = core.scope(for: ProfilerFeature.self)
         self.isContinuousProfiling = isContinuousProfiling
         self.operation = operation
@@ -84,6 +96,10 @@ internal final class ContinuousProfiler: ProfilingHandler {
     }
 
     deinit {
+        Self.lock.lock()
+        Self.hasActiveInstance = false
+        Self.lock.unlock()
+
         notificationCenter?.removeObserver(
             self,
             name: ApplicationNotifications.didEnterBackground,
@@ -325,5 +341,23 @@ private extension ContinuousProfiler {
         }
         _hangs.mutate { $0.removeAll() }
         _longTasks.mutate { $0.removeAll() }
+    }
+}
+
+// MARK: - Testing funcs
+
+extension ContinuousProfiler {
+    /// Whether a `ContinuousProfiler` instance is currently active.
+    static var isInstantiated: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return hasActiveInstance
+    }
+
+    /// Resets the singleton guard (for testing only).
+    static func resetActiveInstance() {
+        lock.lock()
+        defer { lock.unlock() }
+        hasActiveInstance = false
     }
 }
