@@ -161,6 +161,8 @@ public enum WebViewTracking {
                 forMainFrameOnly: false
             )
         )
+
+        core.telemetry.send(telemetry: .usage(.init(event: .trackWebView, sampleRate: UsageTelemetry.defaultSampleRate)))
     }
 
     /// Conversion matrix from global privacy level to fine-grained privaly levels.

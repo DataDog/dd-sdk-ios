@@ -576,4 +576,27 @@ class TelemetryReceiverTests: XCTestCase {
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
         XCTAssertNil(event)
     }
+
+    // MARK: - Usage Telemetry Events
+
+    func testSendTelemetryUsage_trackWebView() {
+        // Given
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, sampler: .mockKeepAll())
+
+        // When
+        receiver.receive(
+            message: .telemetry(.usage(.init(event: .trackWebView, sampleRate: 100))),
+            from: NOPDatadogCore()
+        )
+
+        // Then
+        let event = featureScope.eventsWritten(ofType: TelemetryUsageEvent.self).first
+        XCTAssertNotNil(event)
+        XCTAssertEqual(event?.effectiveSampleRate, 100)
+        guard case .telemetryMobileFeaturesUsage(let usage) = event?.telemetry.usage,
+              case .trackWebView = usage else {
+            XCTFail("Expected .telemetryMobileFeaturesUsage(.trackWebView)")
+            return
+        }
+    }
 }
