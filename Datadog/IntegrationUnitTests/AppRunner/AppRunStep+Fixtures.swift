@@ -145,6 +145,35 @@ extension AppRunStep {
             app.rum.stopResource(resourceKey: key, response: .mockAny())
         })
     }
+
+    // MARK: - User Info
+
+    static func setUserInfo(
+        after dt: TimeInterval = 0,
+        id: String? = nil,
+        name: String? = nil,
+        email: String? = nil,
+        extraInfo: [String: any Encodable] = [:]
+    ) -> AppRunStep {
+        return AppRunStep({ app in
+            app.advanceTime(by: dt)
+            app.setUserInfo(id: id, name: name, email: email, extraInfo: extraInfo)
+        })
+    }
+
+    static func addUserExtraInfo(after dt: TimeInterval = 0, _ extraInfo: [String: (any Encodable)?]) -> AppRunStep {
+        return AppRunStep({ app in
+            app.advanceTime(by: dt)
+            app.addUserExtraInfo(extraInfo)
+        })
+    }
+
+    static func clearUserInfo(after dt: TimeInterval = 0) -> AppRunStep {
+        return AppRunStep({ app in
+            app.advanceTime(by: dt)
+            app.clearUserInfo()
+        })
+    }
 }
 
 // MARK: - Test Utils

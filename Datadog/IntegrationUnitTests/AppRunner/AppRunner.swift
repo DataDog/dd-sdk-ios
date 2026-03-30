@@ -248,6 +248,23 @@ internal class AppRunner {
     }
     #endif
 
+    // MARK: - User Info
+
+    /// Sets user info on the SDK core.
+    func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [AttributeKey: AttributeValue] = [:]) {
+        core.setUserInfo(id: id, name: name, email: email, extraInfo: extraInfo)
+    }
+
+    /// Adds extra info to the current user.
+    func addUserExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
+        core.addUserExtraInfo(newExtraInfo)
+    }
+
+    /// Clears user info on the SDK core.
+    func clearUserInfo() {
+        core.clearUserInfo()
+    }
+
     // MARK: - SDK Setup
 
     /// Typealias for SDK configuration closure.

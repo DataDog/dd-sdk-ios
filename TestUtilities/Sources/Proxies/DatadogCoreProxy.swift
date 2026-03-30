@@ -109,6 +109,10 @@ public final class DatadogCoreProxy: DatadogCoreProtocol {
         core.addUserExtraInfo(newExtraInfo)
     }
 
+    public func clearUserInfo() {
+        core.clearUserInfo()
+    }
+
     public func setAccountInfo(
         id: String,
         name: String? = nil,
