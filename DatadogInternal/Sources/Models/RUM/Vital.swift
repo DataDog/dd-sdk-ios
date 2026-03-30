@@ -20,7 +20,7 @@ public struct Vital: Codable, Equatable {
     /// Operation key of the vital
     public let operationKey: String?
     /// Step type of the vital ["start", "end"]
-    public let type: VitalType
+    public let stepType: RUMVitalOperationStepEvent.Vital.StepType?
     /// Date when the vital was created
     public let date: Date
     /// Start of the vital from epoch in nanoseconds
@@ -34,14 +34,14 @@ public struct Vital: Codable, Equatable {
         id: String,
         name: String,
         operationKey: String? = nil,
-        type: VitalType = .duration,
+        stepType: RUMVitalOperationStepEvent.Vital.StepType? = nil,
         date: Date = Date(),
         duration: Int64 = 0
     ) {
         self.id = id
         self.name = name
         self.operationKey = operationKey
-        self.type = type
+        self.stepType = stepType
         self.date = date
         self.start = date.timeIntervalSince1970.dd.toInt64Nanoseconds
         self.duration = duration
@@ -60,17 +60,9 @@ public struct Vital: Codable, Equatable {
         id = try container.decode(String.self, forKey: .id)
         name = try container.decode(String.self, forKey: .name)
         operationKey = nil
-        type = .duration
+        stepType = nil
         start = try container.decode(Int64.self, forKey: .start)
         date = Date(timeIntervalSince1970: TimeInterval.ddFromNanoseconds(start))
         duration = try container.decode(Int64.self, forKey: .duration)
-    }
-}
-
-extension Vital {
-    public enum VitalType: Equatable {
-        case duration
-        case applicationLaunch
-        case rumOperation(RUMVitalOperationStepEvent.Vital.StepType)
     }
 }

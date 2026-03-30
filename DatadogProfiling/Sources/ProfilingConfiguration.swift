@@ -23,6 +23,11 @@ extension Profiling {
         /// Default: Feature enabled with `5.0%` sample rate.
         public var applicationLaunch: SamplingOption
 
+        /// Sampling option for the continuous profiling.
+        ///
+        /// Default: Feature enabled with `5.0%` sample rate.
+        public var continuous: SamplingOption
+
         // MARK: - Internal
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
@@ -34,10 +39,12 @@ extension Profiling {
         ///   - continuous: Sampling option for the continuous profiling.
         public init(
             customEndpoint: URL? = nil,
-            applicationLaunch: SamplingOption = .enabled(sampleRate: 5.0)
+            applicationLaunch: SamplingOption = .enabled(sampleRate: 5.0),
+            continuous: SamplingOption = .enabled(sampleRate: 5.0)
         ) {
             self.customEndpoint = customEndpoint
             self.applicationLaunch = applicationLaunch
+            self.continuous = continuous
         }
     }
 }

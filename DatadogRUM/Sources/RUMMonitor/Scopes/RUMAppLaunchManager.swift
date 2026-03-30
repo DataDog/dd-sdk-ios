@@ -73,7 +73,6 @@ private extension RUMAppLaunchManager {
             vital: .init(
                 id: ttidVitalId,
                 name: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric.ttid.name,
-                type: .applicationLaunch,
                 date: context.launchInfo.processLaunchDate,
                 duration: ttid.dd.toInt64Nanoseconds
             ),
