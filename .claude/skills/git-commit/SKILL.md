@@ -1,5 +1,5 @@
 ---
-name: git-commit
+name: dd-sdk-ios:git-commit
 description: Use when committing changes in dd-sdk-ios. Use when writing commit messages, signing commits, or staging files before a commit.
 ---
 

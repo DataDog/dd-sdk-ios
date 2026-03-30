@@ -67,8 +67,8 @@ internal enum RUMOffViewEventsHandlingRule: Equatable {
         command: RUMCommand?
     ) {
         if let session = sessionState {
-            guard session.sessionUUID != UUID.dd.nullUUID else {
-                self = .doNotHandle // when session is sampled, do not track off-view events at all
+            guard session.isSampled else {
+                self = .doNotHandle // when session is NOT sampled, do not track off-view events at all
                 return
             }
 

@@ -32,7 +32,7 @@ public struct APISurface {
         let module = Module(
             xcodeBuildArguments: [
                 "-scheme", libraryName,
-                "-destination", "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.3.1",
+                "-destination", "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest",
                 "-sdk", "iphonesimulator",
             ],
             inPath: patchedPackageWorkspace.path

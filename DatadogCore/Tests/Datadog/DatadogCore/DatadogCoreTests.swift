@@ -7,6 +7,7 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+@_spi(Internal)
 @testable import DatadogCore
 
 private struct FeatureMock: DatadogRemoteFeature {
@@ -507,6 +508,117 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertNil(userAfterUpdate.id)
         XCTAssertNil(userAfterUpdate.name)
         XCTAssertNil(userAfterUpdate.email)
+    }
+
+    func testFlushAndUpload_uploadsAuthorizedEvents() throws {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.stop() }
+
+        let requestBuilderSpy = FeatureRequestBuilderSpy()
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
+        let scope = core.scope(for: FeatureMock.self)
+
+        scope.eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "test"))
+        }
+
+        // When
+        core.flushAndUpload()
+
+        // Then
+        let uploadedEvents = requestBuilderSpy.requestParameters
+            .flatMap { $0.events }
+            .map { $0.data.utf8String }
+
+        XCTAssertEqual(uploadedEvents, [#"{"event":"test"}"#])
+    }
+
+    func testFlushAndUpload_sdkRemainsOperationalAfterFlush() throws {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.stop() }
+
+        let requestBuilderSpy = FeatureRequestBuilderSpy()
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
+        let scope = core.scope(for: FeatureMock.self)
+
+        scope.eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "first"))
+        }
+        core.flushAndUpload()
+
+        // When - write more events after flush
+        scope.eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "second"))
+        }
+        core.flushAndUpload()
+
+        // Then
+        let uploadedEvents = requestBuilderSpy.requestParameters
+            .flatMap { $0.events }
+            .map { $0.data.utf8String }
+
+        XCTAssertTrue(uploadedEvents.contains(#"{"event":"first"}"#))
+        XCTAssertTrue(uploadedEvents.contains(#"{"event":"second"}"#))
+    }
+
+    func testDatadogFlush_uploadsEventsAndReturnsSynchronously() throws {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        let requestBuilderSpy = FeatureRequestBuilderSpy()
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
+        let scope = core.scope(for: FeatureMock.self)
+
+        CoreRegistry.register(default: core)
+        defer { Datadog.internalFlushAndDeinitialize() }
+
+        scope.eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "test"))
+        }
+
+        // When
+        Datadog.flush()
+
+        // Then - if flush is synchronous, events are uploaded before this assertion
+        let uploadedEvents = requestBuilderSpy.requestParameters
+            .flatMap { $0.events }
+            .map { $0.data.utf8String }
+
+        XCTAssertEqual(uploadedEvents, [#"{"event":"test"}"#])
     }
 
     func testItClearsAnonymousIdentifier() {

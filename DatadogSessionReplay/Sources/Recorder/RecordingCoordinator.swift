@@ -15,7 +15,7 @@ import DatadogInternal
 internal class RecordingCoordinator {
     let recorder: Recording
     let scheduler: Scheduler
-    let sampler: Sampler
+    let replaySampleRate: SampleRate
     let textAndInputPrivacy: TextAndInputPrivacyLevel
     let imagePrivacy: ImagePrivacyLevel
     let touchPrivacy: TouchPrivacyLevel
@@ -24,7 +24,7 @@ internal class RecordingCoordinator {
     private var currentRUMContext: RUMCoreContext? = nil
     private var isSampled = false
 
-    /// `recordingEnabled` is used to track when the user 
+    /// `recordingEnabled` is used to track when the user
     /// has enabled or disabled the recording for Session Replay.
     private var recordingEnabled = false
 
@@ -44,14 +44,14 @@ internal class RecordingCoordinator {
         rumContextObserver: RUMContextObserver,
         srContextPublisher: SRContextPublisher,
         recorder: Recording,
-        sampler: Sampler,
+        replaySampleRate: SampleRate,
         telemetry: Telemetry,
         startRecordingImmediately: Bool,
         methodCallTelemetrySamplingRate: Float = 0.1
     ) {
         self.recorder = recorder
         self.scheduler = scheduler
-        self.sampler = sampler
+        self.replaySampleRate = replaySampleRate
         self.textAndInputPrivacy = textAndInputPrivacy
         self.imagePrivacy = imagePrivacy
         self.touchPrivacy = touchPrivacy
@@ -102,7 +102,14 @@ internal class RecordingCoordinator {
 
     private func onRUMContextChanged(rumContext: RUMCoreContext?) {
         if currentRUMContext?.sessionID != rumContext?.sessionID || currentRUMContext == nil {
-            isSampled = sampler.sample()
+            if let sampler = rumContext?.sessionSampler {
+                isSampled = sampler.combined(with: replaySampleRate).sample()
+            } else {
+                // No RUM session context means there is no session to correlate a replay to.
+                // Random sampling is intentional here — the replay cannot be linked to a session,
+                // so deterministic Knuth sampling would provide no benefit.
+                isSampled = Sampler(samplingRate: replaySampleRate).sample()
+            }
         }
 
         currentRUMContext = rumContext

@@ -320,7 +320,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope) {
         let sessionID = sessionScope.sessionUUID.rawValue.uuidString
-        let isDiscarded = !sessionScope.isSampled
+        let isDiscarded = !sessionScope.sampler.isSampled
         dependencies.onSessionStart?(sessionID, isDiscarded)
     }
 

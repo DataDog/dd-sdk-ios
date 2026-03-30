@@ -70,7 +70,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         // Use the current active span as parent if the propagation headers support it.
-        let newSpanElements = makeElementsForNewSpanContext(tracer: tracer, parentSpanContext: tracer.activeSpan?.context as? DDSpanContext)
+        let newSpanElements = makeElementsForNewSpanContext(tracer: tracer, parentSpanContext: tracer.activeSpan?.context as? DDSpanContext, networkContext: networkContext)
 
         let injectedSpanContext = TraceContext(
             traceID: newSpanElements.traceID,
@@ -327,10 +327,16 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     ///    - parentSpanContext: If the span created by the session handler should be related to a parent span, pass
     ///    the parent span context here, otherwise, pass `nil`.
     /// - returns: A ``TracingURLSessionHandler.NewSpanElements`` helper struct.
-    private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?) -> NewSpanElements {
+    private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?, networkContext: NetworkContext? = nil) -> NewSpanElements {
         let traceID = parentSpanContext?.traceID ?? tracer.traceIDGenerator.generate()
-        let sampler = sampler(sessionID: contextReceiver.context.rumContext?.sessionID, traceID: traceID.idLo)
-        let samplingDecision = parentSpanContext.map { $0.samplingDecision } ?? SamplingDecision(sampling: sampler)
+        let sampled = isSampled(
+            rumContext: networkContext?.rumContext ?? contextReceiver.context.rumContext,
+            traceID: traceID.idLo
+        )
+        let samplingDecision = parentSpanContext.map { $0.samplingDecision } ?? SamplingDecision(
+            from: sampled ? .autoKeep : .autoDrop,
+            decisionMaker: .agentRate
+        )
 
         return NewSpanElements(
             spanID: tracer.spanIDGenerator.generate(),
@@ -343,20 +349,27 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         )
     }
 
-    private func sampler(sessionID: String?, traceID: UInt64?) -> Sampling {
-        if let sessionID,
-           // for a UUID with value aaaaaaaa-bbbb-Mccc-Nddd-1234567890ab
-           // we use as the base id the last part : 0x1234567890ab
-            let seed = sessionID
-            .split(separator: "-")
-            .last
-            .flatMap({ UInt64($0, radix: 16) }) {
-            return DeterministicSampler(seed: seed, samplingRate: samplingRate)
-        } else if let traceID {
-            return DeterministicSampler(seed: traceID, samplingRate: samplingRate)
+    /// Determines whether the current request should be sampled.
+    ///
+    /// When a RUM session is active, combines the session sampler with the trace sampling rate
+    /// for a consistent decision. Otherwise, falls back to a deterministic sample seeded by the
+    /// trace ID, or a random sample if no trace ID is available.
+    ///
+    /// - Parameters:
+    ///   - rumSampling: The current RUM deterministic sampling context, if available.
+    ///   - traceID: The trace ID used as a deterministic seed when no RUM session is present.
+    /// - Returns: `true` if the request should be sampled.
+    private func isSampled(rumContext: RUMCoreContext?, traceID: UInt64?) -> Bool {
+        if let rumContext {
+            return rumContext.sessionSampler.combined(with: samplingRate).sample()
         }
 
-        return Sampler(samplingRate: samplingRate)
+        // No RUM context: fall back to Knuth on traceID or random sampler.
+        if let traceID {
+            return DeterministicSampler(seed: traceID, samplingRate: samplingRate).sample()
+        }
+
+        return Sampler(samplingRate: samplingRate).sample()
     }
 }
 

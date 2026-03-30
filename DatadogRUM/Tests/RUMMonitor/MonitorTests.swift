@@ -26,13 +26,12 @@ class MonitorTests: XCTestCase {
 
     func testWhenSessionIsSampled_itSetsRUMContextInCore() throws {
         // Given
-        let sampler = Sampler(samplingRate: 100)
-
-        // When
         let monitor = Monitor(
-            dependencies: .mockWith(featureScope: featureScope, sessionSampler: sampler),
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
             dateProvider: DateProviderMock()
         )
+
+        // When
         monitor.startView(key: "foo")
 
         // Then
@@ -45,22 +44,21 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(rumContext.viewID, expectedContext.activeViewID?.toRUMDataFormat)
     }
 
-    func testWhenSessionIsNotSampled_itSetsNoRUMContextInCore() throws {
+    func testWhenSessionIsNotSampled_RUMCoreSampler_returnsFalse() throws {
         // Given
-        let sampler = Sampler(samplingRate: 0)
-
-        // When
         let monitor = Monitor(
-            dependencies: .mockWith(featureScope: featureScope, sessionSampler: sampler),
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 0),
             dateProvider: DateProviderMock()
         )
+
+        // When
         monitor.startView(key: "foo")
 
         // Then
-        var datadogContext: DatadogContext?
-        featureScope.context { datadogContext = $0 }
-        let contextMock = try XCTUnwrap(datadogContext)
-        XCTAssertNil(contextMock.additionalContext(ofType: RUMCoreContext.self))
+        var context: DatadogContext?
+        featureScope.context { context = $0 }
+        let rumContext = try XCTUnwrap(context?.additionalContext(ofType: RUMCoreContext.self))
+        XCTAssertFalse(rumContext.sessionSampler.isSampled)
     }
 
     #if !os(watchOS)
@@ -70,7 +68,7 @@ class MonitorTests: XCTestCase {
 
         // When
         let monitor = Monitor(
-            dependencies: .mockWith(featureScope: featureScope, sessionSampler: .mockKeepAll()),
+            dependencies: .mockWith(featureScope: featureScope),
             dateProvider: DateProviderMock()
         )
         monitor.startView(viewController: vc)
@@ -86,7 +84,7 @@ class MonitorTests: XCTestCase {
 
         // When
         let monitor = Monitor(
-            dependencies: .mockWith(featureScope: featureScope, sessionSampler: .mockKeepAll()),
+            dependencies: .mockWith(featureScope: featureScope),
             dateProvider: DateProviderMock()
         )
         monitor.startView(viewController: vc, name: "Some View")

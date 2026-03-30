@@ -111,7 +111,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
-            sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
+            samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             hasAppHangsEnabled: configuration.appHangThreshold != nil,
@@ -126,7 +126,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             syntheticsTest: {
                 if let testId = configuration.syntheticsTestId,
                    let resultId = configuration.syntheticsResultId {
-                    return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId)
+                    return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
                 } else {
                     return nil
                 }
@@ -266,7 +266,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
                 syntheticsTest: {
                     if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
-                        return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId)
+                        return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
                     } else {
                         return nil
                     }

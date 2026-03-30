@@ -48,7 +48,7 @@ class RUMApplicationScopeTests: XCTestCase {
         // When
         let scope = createRUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: .mockRejectAll(),
+                samplingRate: 0,
                 onSessionStart: onSessionStart
             )
         )
@@ -119,7 +119,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let currentTime = Date()
         let scope = createRUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: Sampler(samplingRate: 100)
+                samplingRate: 100
             )
         )
 
@@ -142,7 +142,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let currentTime = Date()
         let scope = createRUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: Sampler(samplingRate: 0)
+                samplingRate: 0
             )
         )
 
@@ -164,7 +164,7 @@ class RUMApplicationScopeTests: XCTestCase {
         var currentTime = Date()
         let scope = createRUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: Sampler(samplingRate: 50)
+                samplingRate: 50
             )
         )
 
@@ -198,7 +198,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let currentTime = Date()
         let scope = createRUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: .mockRandom() // no matter sampling
+                samplingRate: .mockRandom(min: 0, max: 100) // no matter sampling
             )
         )
 
@@ -218,7 +218,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let currentTime = Date()
         let scope = createRUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: .mockKeepAll()
+                samplingRate: 100
             )
         )
         _ = scope.process(
@@ -249,7 +249,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let currentTime = Date()
         let scope = createRUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: .mockKeepAll()
+                samplingRate: 100
             )
         )
         _ = scope.process(
@@ -275,7 +275,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let currentTime = Date()
         let scope = createRUMApplicationScope(
             dependencies: .mockWith(
-                sessionSampler: .mockKeepAll()
+                samplingRate: 100
             )
         )
         let resourceKey = "resources/1"
@@ -332,7 +332,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // When
         let scope = createRUMApplicationScope(
-            dependencies: .mockWith(sessionSampler: .mockKeepAll()),
+            dependencies: .mockWith(samplingRate: 100),
             sdkContext: sdkContext
         )
 
@@ -363,7 +363,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // When
         let scope = createRUMApplicationScope(
-            dependencies: .mockWith(sessionSampler: .mockKeepAll()),
+            dependencies: .mockWith(samplingRate: 100),
             sdkContext: sdkContext
         )
 
@@ -392,7 +392,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // When
         let scope = createRUMApplicationScope(
-            dependencies: .mockWith(sessionSampler: .mockKeepAll()),
+            dependencies: .mockWith(samplingRate: 100),
             sdkContext: sdkContext
         )
 
@@ -414,7 +414,7 @@ class RUMApplicationScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let sdkContext: DatadogContext = .mockWith(sdkInitDate: currentTime)
         let scope = createRUMApplicationScope(
-            dependencies: .mockWith(sessionSampler: .mockKeepAll()),
+            dependencies: .mockWith(samplingRate: 100),
             sdkContext: sdkContext
         )
 
@@ -436,7 +436,7 @@ class RUMApplicationScopeTests: XCTestCase {
         var currentTime: Date = initialTime
         let sdkContext: DatadogContext = .mockWith(sdkInitDate: currentTime)
         let scope = createRUMApplicationScope(
-            dependencies: .mockWith(sessionSampler: .mockKeepAll()),
+            dependencies: .mockWith(samplingRate: 100),
             sdkContext: sdkContext
         )
 
@@ -466,7 +466,7 @@ class RUMApplicationScopeTests: XCTestCase {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let sdkContext: DatadogContext = .mockWith(sdkInitDate: currentTime)
         let scope = createRUMApplicationScope(
-            dependencies: .mockWith(sessionSampler: .mockKeepAll()),
+            dependencies: .mockWith(samplingRate: 100),
             sdkContext: sdkContext
         )
 
