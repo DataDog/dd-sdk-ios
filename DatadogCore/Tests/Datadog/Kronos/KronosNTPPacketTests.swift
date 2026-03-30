@@ -14,8 +14,8 @@ final class KronosNTPPacketTests: XCTestCase {
     func testToData() {
         var packet = KronosNTPPacket()
         let data = packet.prepareToSend(transmitTime: 1_463_303_662.776552)
-        XCTAssertEqual(data, Data(hex: "1b0004fa0001000000010000000000000000000000000000" +
-                                       "00000000000000000000000000000000dae2bc6ec6cc1c00")!)
+        XCTAssertEqual(data!, Data(hex: "1b0004fa0001000000010000000000000000000000000000" +
+                                        "00000000000000000000000000000000dae2bc6ec6cc1c00")!)
     }
 
     func testParseInvalidData() {
@@ -34,6 +34,58 @@ final class KronosNTPPacketTests: XCTestCase {
         XCTAssertEqual(PDU?.stratum, KronosStratum.secondary)
         XCTAssertEqual(PDU?.poll, 3)
         XCTAssertEqual(PDU?.precision, -23)
+    }
+
+    // MARK: - Overflow Protection Tests (Issue #2568)
+
+    func testPrepareToSendWithFarFutureTime_returnsNil() {
+        // time + kEpochDelta > UInt32.max → packet cannot be represented in NTP format.
+        // Returns nil instead of crashing or sending corrupted data.
+        var packet = KronosNTPPacket()
+        let farFutureTime: TimeInterval = 2_200_000_000.0 // ~year 2039
+        XCTAssertNil(
+            packet.prepareToSend(transmitTime: farFutureTime),
+            "Should return nil when timestamp overflows NTP format"
+        )
+    }
+
+    func testPrepareToSendWithNegativeTime_returnsNil() {
+        // time + kEpochDelta < 0 → outside representable NTP range
+        var packet = KronosNTPPacket()
+        let negativeTime: TimeInterval = -3_000_000_000.0
+        XCTAssertNil(
+            packet.prepareToSend(transmitTime: negativeTime),
+            "Should return nil when timestamp is negative in NTP format"
+        )
+    }
+
+    func testPrepareToSendWithExtremelyLargeTime_returnsNil() {
+        var packet = KronosNTPPacket()
+        let extremeTime: TimeInterval = Double(UInt32.max) * 2
+        XCTAssertNil(
+            packet.prepareToSend(transmitTime: extremeTime),
+            "Should return nil for extremely large timestamps"
+        )
+    }
+
+    func testPrepareToSendWithMaxDateBoundary_producesValidPacket() {
+        // Just below the overflow boundary should produce a valid packet
+        var packet = KronosNTPPacket()
+        let epochDelta = 2_208_988_800.0
+        let justBelowOverflow: TimeInterval = Double(UInt32.max) - epochDelta - 1.0
+        let data = packet.prepareToSend(transmitTime: justBelowOverflow)
+        XCTAssertNotNil(data, "Should produce a valid packet near the boundary")
+        XCTAssertEqual(data?.count, 48)
+    }
+
+    // MARK: - Integration: NTP round-trip with valid timestamps
+
+    func testNTPPacketRoundTrip_validTime_canBeParsedBack() {
+        var clientPacket = KronosNTPPacket()
+        let validTime: TimeInterval = 1_463_303_662.776552
+        let encoded = clientPacket.prepareToSend(transmitTime: validTime)
+        XCTAssertNotNil(encoded)
+        XCTAssertNoThrow(try KronosNTPPacket(data: encoded!, destinationTime: validTime))
     }
 
     func testParseTimeData() {

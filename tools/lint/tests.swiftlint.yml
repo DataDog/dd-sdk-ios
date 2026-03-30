@@ -82,6 +82,9 @@ custom_rules:
     message: "All singletons must provide an explicit deinitialization API (e.g. `deinitialize()`) to reset its state and tear down all asynchronous work."
     severity: error
 
+excluded:
+  - ../../**/*/.build
+  
 included:
   - ../../TestUtilities
   - ../../DatadogInternal/Tests

@@ -34,14 +34,14 @@ class RecordingCoordinatorTests: XCTestCase {
     // MARK: Configuration Tests
 
     func test_itDoesNotStartScheduler_afterInitializing() {
-        prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
+        prepareRecordingCoordinator(replaySampleRate: .mockRandom(min: 0, max: 100))
         XCTAssertFalse(scheduler.isRunning)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
     func test_whenNotSampled_itStopsScheduler_andShouldNotRecord() throws {
         // Given
-        prepareRecordingCoordinator(sampler: .mockRejectAll())
+        prepareRecordingCoordinator(replaySampleRate: 0.0)
 
         // When
         rumContextObserver.notify(rumContext: .mockRandom())
@@ -80,7 +80,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
     func test_whenEmptyRUMContext_itShouldNotRecord() {
         // Given
-        prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
+        prepareRecordingCoordinator(replaySampleRate: .mockRandom(min: 0, max: 100))
 
         // When
         rumContextObserver.notify(rumContext: nil)
@@ -91,7 +91,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
     func test_whenNoRUMContext_itShouldNotRecord() throws {
         // Given
-        prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
+        prepareRecordingCoordinator(replaySampleRate: .mockRandom(min: 0, max: 100))
 
         // Then
         let hasReplay = try XCTUnwrap(core.context.additionalContext(ofType: SessionReplayCoreContext.HasReplay.self))
@@ -290,8 +290,95 @@ class RecordingCoordinatorTests: XCTestCase {
         XCTAssertFalse(hasReplay.value)
     }
 
+    // MARK: - Deterministic sampling
+
+    func test_givenSameSessionID_samplingDecisionIsIdentical_acrossMultipleCalls() {
+        // Given
+        prepareRecordingCoordinator(replaySampleRate: 60.0)
+        let fixedSessionID = "abcdef01-2345-6789-abcd-ef0123456789"
+        let sessionSampler = DeterministicSampler(uuid: .mockWith(fixedSessionID), samplingRate: 70.0)
+        let rumContext = RUMCoreContext(
+            applicationID: "app-id",
+            sessionID: fixedSessionID,
+            sessionSampler: sessionSampler,
+            viewID: "view-id"
+        )
+
+        // When
+        rumContextObserver.notify(rumContext: rumContext)
+        let firstDecision = scheduler.isRunning
+
+        rumContextObserver.notify(rumContext: rumContext)
+        let secondDecision = scheduler.isRunning
+
+        // Then
+        XCTAssertEqual(firstDecision, secondDecision, "Knuth sampling must be deterministic for the same session UUID")
+    }
+
+    func test_knownSessionUUID_matchesPrecomputedKnuthResult() throws {
+        // UUID: "abcdef01-2345-6789-abcd-ef0123456789", last segment 0xef0123456789
+        // sessionRate=50, replayRate=80 → effectiveRate=40.0
+        let knownSessionID = "abcdef01-2345-6789-abcd-ef0123456789"
+        let replaySampleRate: SampleRate = 80.0
+        let sessionSampleRate: SampleRate = 50.0
+
+        // Precompute using combined(with:) — canonical cross-SDK formula
+        let sessionSampler = DeterministicSampler(uuid: .mockWith(knownSessionID), samplingRate: sessionSampleRate)
+        let expectedResult = sessionSampler.combined(with: replaySampleRate).isSampled
+
+        prepareRecordingCoordinator(replaySampleRate: replaySampleRate)
+        let rumContext = RUMCoreContext(
+            applicationID: "app-id",
+            sessionID: knownSessionID,
+            sessionSampler: sessionSampler,
+            viewID: "view-id"
+        )
+        rumContextObserver.notify(rumContext: rumContext)
+
+        let hasReplay = try XCTUnwrap(core.context.additionalContext(ofType: SessionReplayCoreContext.HasReplay.self))
+        XCTAssertEqual(
+            scheduler.isRunning,
+            expectedResult,
+            "RecordingCoordinator must use sessionSampler.combined(with:).isSampled with the composed effective rate"
+        )
+        XCTAssertEqual(hasReplay.value, expectedResult)
+    }
+
+    func test_childRateCorrectionIsApplied_replay() throws {
+        // seed 0xd860b2b9437a (~68.7% hash): sampled at replay-only 80% but NOT at composed 40% (50*80/100)
+        // This verifies the session rate is not ignored.
+        let knownSessionID = "00000000-0000-0000-0000-d860b2b9437a"
+        let sessionSampleRate: SampleRate = 50.0
+        let replaySampleRate: SampleRate = 80.0
+
+        let sessionSampler = DeterministicSampler(uuid: .mockWith(knownSessionID), samplingRate: sessionSampleRate)
+        let composedResult = sessionSampler.combined(with: replaySampleRate).isSampled
+        let replayOnlyResult = DeterministicSampler(uuid: .mockWith(knownSessionID), samplingRate: replaySampleRate).isSampled
+        guard composedResult != replayOnlyResult else {
+            XCTFail("Precondition: chosen vector must differ between composed and replay-only rate")
+            return
+        }
+
+        prepareRecordingCoordinator(replaySampleRate: replaySampleRate)
+        let rumContext = RUMCoreContext(
+            applicationID: "app",
+            sessionID: knownSessionID,
+            sessionSampler: sessionSampler,
+            viewID: "view"
+        )
+        rumContextObserver.notify(rumContext: rumContext)
+
+        let hasReplay = try XCTUnwrap(core.context.additionalContext(ofType: SessionReplayCoreContext.HasReplay.self))
+        XCTAssertEqual(
+            scheduler.isRunning,
+            composedResult,
+            "RecordingCoordinator must apply child-rate correction via sessionSampler.combined(with:)"
+        )
+        XCTAssertEqual(hasReplay.value, composedResult)
+    }
+
     private func prepareRecordingCoordinator(
-        sampler: Sampler = .mockKeepAll(),
+        replaySampleRate: SampleRate = 100.0,
         textAndInputPrivacy: TextAndInputPrivacyLevel = .maskSensitiveInputs,
         imagePrivacy: ImagePrivacyLevel = .maskNonBundledOnly,
         touchPrivacy: TouchPrivacyLevel = .show,
@@ -307,7 +394,7 @@ class RecordingCoordinatorTests: XCTestCase {
             rumContextObserver: rumContextObserver,
             srContextPublisher: contextPublisher,
             recorder: recordingMock,
-            sampler: sampler,
+            replaySampleRate: replaySampleRate,
             telemetry: telemetry,
             startRecordingImmediately: startRecordingImmediately,
             methodCallTelemetrySamplingRate: methodCallTelemetrySamplingRate

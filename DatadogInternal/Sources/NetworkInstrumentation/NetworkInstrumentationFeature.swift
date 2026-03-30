@@ -531,6 +531,13 @@ extension NetworkInstrumentationFeature {
                 error: error
             )
 
+            // Capture responseSize here in case `didChangeToState(.completed)` fires after this callback.
+            // The ordering of these two callbacks is not guaranteed by URLSession, so we capture it in
+            // both places with a nil-check to avoid overwriting.
+            if interception.responseSize == nil {
+                interception.register(responseSize: task.countOfBytesReceived)
+            }
+
             if interception.isDone {
                 self.finish(task: task, interception: interception, endDate: endTime)
             }

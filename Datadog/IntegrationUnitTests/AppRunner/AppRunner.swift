@@ -283,6 +283,11 @@ internal class AppRunner {
 
     // MARK: - Data Retrieval
 
+    /// Flushes all pending SDK operations synchronously.
+    func flush() {
+        core.flush()
+    }
+
     /// Returns grouped RUM sessions recorded during the test.
     /// - Returns: An array of `RUMSessionMatcher` grouped by `session.id`.
     func recordedRUMSessions() throws -> [RUMSessionMatcher] {

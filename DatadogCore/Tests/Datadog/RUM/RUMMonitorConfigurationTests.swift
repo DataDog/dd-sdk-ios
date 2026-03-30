@@ -54,7 +54,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
             expectation.fulfill()
         }
 
-        XCTAssertEqual(dependencies.sessionSampler.samplingRate, 42.5)
+        XCTAssertEqual(dependencies.samplingRate, 42.5)
         XCTAssertEqual(monitor.scopes.context.rumApplicationID, "rum-123")
         waitForExpectations(timeout: 0.5)
     }

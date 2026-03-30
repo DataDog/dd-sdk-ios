@@ -86,23 +86,26 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
         let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
 
+        let distributedTracing: (FirstPartyHosts, SampleRate)? = {
+            switch configuration.urlSessionTracking?.firstPartyHostsTracing {
+            case let .trace(hosts, sampleRate, _):
+                return (FirstPartyHosts(hosts), sampleRate)
+            case let .traceWithHeaders(hostsWithHeaders, sampleRate, _):
+                return (FirstPartyHosts(hostsWithHeaders), sampleRate)
+            case .none:
+                return nil
+            }
+        }()
+
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
-            sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
+            samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             hasAppHangsEnabled: configuration.appHangThreshold != nil,
-            firstPartyHosts: {
-                switch configuration.urlSessionTracking?.firstPartyHostsTracing {
-                case let .trace(hosts, _, _):
-                    return FirstPartyHosts(hosts)
-                case let .traceWithHeaders(hostsWithHeaders, _, _):
-                    return FirstPartyHosts(hostsWithHeaders)
-                case .none:
-                    return nil
-                }
-            }(),
+            firstPartyHosts: distributedTracing?.0,
+            distributedTracingSampleRate: distributedTracing.map { configuration.debugSDK ? 100 : $0.1 },
             eventBuilder: RUMEventBuilder(
                 eventsMapper: eventsMapper
             ),
@@ -112,7 +115,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             syntheticsTest: {
                 if let testId = configuration.syntheticsTestId,
                    let resultId = configuration.syntheticsResultId {
-                    return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId)
+                    return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
                 } else {
                     return nil
                 }
@@ -253,7 +256,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
                 syntheticsTest: {
                     if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
-                        return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId)
+                        return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
                     } else {
                         return nil
                     }

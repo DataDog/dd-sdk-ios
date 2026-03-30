@@ -15,8 +15,10 @@ public enum RUMPayloadMessages {
 /// Lightweight representation of current RUM session state, used to compute `RUMOffViewEventsHandlingRule`.
 /// It gets serialized into fatal error context for computing the rule upon app process restart.
 public struct RUMSessionState: Codable, Equatable {
-    /// The session ID. Can be `.nullUUID` if the session was rejected by sampler.
+    /// The session ID.
     public let sessionUUID: UUID
+    /// `true` is the session is sampled.
+    public let isSampled: Bool
     /// If this is the very first session in the app process (`true`) or was re-created upon timeout (`false`).
     public let isInitialSession: Bool
     /// If this session has ever tracked any view (used to reason about "application launch" events).
@@ -26,20 +28,35 @@ public struct RUMSessionState: Codable, Equatable {
 
     /// Creates a RUM Session State
     /// - Parameters:
-    ///   - sessionUUID: The session ID. Can be `.nullUUID` if the session was rejected by sampler.
+    ///   - sessionUUID: The session ID.
+    ///   - isSampled: `true` is the session is sampled.
     ///   - isInitialSession: If this is the very first session in the app process (`true`) or was re-created upon timeout (`false`).
     ///   - hasTrackedAnyView: If this session has ever tracked any view (used to reason about "application launch" events).
     ///   - didStartWithReplay: If there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
     public init(
         sessionUUID: UUID,
+        isSampled: Bool,
         isInitialSession: Bool,
         hasTrackedAnyView: Bool,
         didStartWithReplay: Bool?
     ) {
         self.sessionUUID = sessionUUID
+        self.isSampled = isSampled
         self.isInitialSession = isInitialSession
         self.hasTrackedAnyView = hasTrackedAnyView
         self.didStartWithReplay = didStartWithReplay
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sessionUUID = try container.decode(UUID.self, forKey: .sessionUUID)
+        isInitialSession = try container.decode(Bool.self, forKey: .isInitialSession)
+        hasTrackedAnyView = try container.decode(Bool.self, forKey: .hasTrackedAnyView)
+        didStartWithReplay = try container.decodeIfPresent(Bool.self, forKey: .didStartWithReplay)
+        // `isSampled` was introduced in a later SDK version. For crash reports persisted by older
+        // SDK versions, fall back to deriving the sampling state from `sessionUUID`: a null UUID
+        // indicated a rejected (non-sampled) session in the previous encoding.
+        isSampled = try container.decodeIfPresent(Bool.self, forKey: .isSampled) ?? (sessionUUID != UUID.dd.nullUUID)
     }
 }
 

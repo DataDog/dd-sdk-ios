@@ -39,9 +39,10 @@ class UITextViewRecorderTests: XCTestCase {
         // Given
         let randomText: String = .mockRandom()
         textView.textColor = .mockRandom()
-        textView.font = .systemFont(ofSize: .mockRandom())
-        // RUMM-2681 Following is required to avoid "CALayer position contains NaN: [0 nan]. (...) (CALayerInvalidGeometry)" error
-        textView.layoutManager.allowsNonContiguousLayout = true
+        // RUMM-2681 A valid frame and a reasonable font size are required to avoid "CALayer position contains NaN: [0 nan]. (...) (CALayerInvalidGeometry)" error.
+        // On iOS 17+ with TextKit 2, extremely large font sizes overflow the layout engine and produce NaN geometry.
+        textView.font = .systemFont(ofSize: .mockRandom(min: 1, max: 100))
+        textView.frame = CGRect(x: 0, y: 0, width: 320, height: 44)
 
         // When
         textView.text = randomText

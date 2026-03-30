@@ -323,6 +323,10 @@ extension SamplingDecision: AnyMockable, RandomMockable {
         var samplingRate: SampleRate { 50 }
 
         func sample() -> Bool { decision }
+
+        func combined(with childRate: SampleRate) -> SamplingDecision.MockSampler {
+            self
+        }
     }
 
     public static func mockAny() -> SamplingDecision {

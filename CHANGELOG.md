@@ -1,5 +1,11 @@
 # Unreleased
 
+- [FIX] Fix stack overflow crash when RUM scroll tracking is used alongside third-party delegate proxy libraries (e.g. RxSwift). See [#2791][]
+
+# 3.8.3 / 26-03-2026
+
+- [FIX] Fix TOC/TOU race in RUM scroll tracking. See [#2776][]
+
 # 3.8.2 / 17-03-2026
 
 - [FIX] Fix crash and incorrect delegate getter return value when using RUM scroll tracking. See [#2761][]
@@ -18,6 +24,7 @@
 - [IMPROVEMENT] Add encoded and decoded body sizes to RUM resource events. See [#2697][] and [#2699][]
 - [IMPROVEMENT] Align the tags of WebView log events with the native Logs. See [#2710][]
 - [FIX] Fix crash context C-string conversion in KSCrash injection. See [#2740][]
+- [IMPROVEMENT] Add `NWPath.linkQuality` to network info attached to Logs and Traces on supported platforms. See [#2751][]
 
 # 3.7.0 / 18-02-2026
 
@@ -1087,6 +1094,9 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2761]: https://github.com/DataDog/dd-sdk-ios/pull/2761
 [#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
 [#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
+[#2751]: https://github.com/DataDog/dd-sdk-ios/pull/2751
+[#2776]: https://github.com/DataDog/dd-sdk-ios/pull/2776
+[#2791]: https://github.com/DataDog/dd-sdk-ios/pull/2791
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
@@ -1124,3 +1134,4 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@jbluntz]: https://github.com/jbluntz
 [@tdr-alays]: https://github.com/tdr-alays
 [@blimmer]: https://github.com/blimmer
+[@thedavidharris]: https://github.com/thedavidharris

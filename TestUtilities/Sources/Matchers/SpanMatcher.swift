@@ -144,6 +144,7 @@ public class SpanMatcher {
         public func networkConnectionSupportsIPv6()  throws -> String { try matcher.meta(forKeyPath: "meta.network.client.supports_ipv6") }
         public func networkConnectionIsExpensive()   throws -> String { try matcher.meta(forKeyPath: "meta.network.client.is_expensive") }
         public func networkConnectionIsConstrained() throws -> String { try matcher.meta(forKeyPath: "meta.network.client.is_constrained") }
+        public func networkConnectionLinkQuality()   throws -> String { try matcher.meta(forKeyPath: "meta.network.client.link_quality") }
 
         public func mobileNetworkCarrierName()            throws -> String { try matcher.meta(forKeyPath: "meta.network.client.sim_carrier.name") }
         public func mobileNetworkCarrierISOCountryCode()  throws -> String { try matcher.meta(forKeyPath: "meta.network.client.sim_carrier.iso_country") }
