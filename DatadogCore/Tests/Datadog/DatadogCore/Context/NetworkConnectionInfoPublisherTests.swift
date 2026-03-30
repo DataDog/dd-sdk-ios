@@ -48,7 +48,7 @@ class NetworkConnectionInfoConversionTests: XCTestCase {
 
     #if compiler(>=6.2)
     func testNWPathLinkQuality() throws {
-        guard #available(iOS 26.0, tvOS 26.0, macOS 26.0, watchOS 26.0, *) else {
+        guard #available(iOS 26.0, tvOS 26.0, macOS 26.0, watchOS 26.0, visionOS 26.0, *) else {
             throw XCTSkip("NWPath.LinkQuality requires iOS 26+")
         }
         XCTAssertEqual(LinkQuality(.good), .good)
