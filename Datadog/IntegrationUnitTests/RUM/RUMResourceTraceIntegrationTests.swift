@@ -11,8 +11,6 @@ import TestUtilities
 @testable import DatadogRUM
 @testable import DatadogTrace
 
-private class InstrumentedSessionDelegate: NSObject, URLSessionDataDelegate {}
-
 class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -28,121 +26,97 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
     }
 
     func testNoActiveSpan_traceSampled_sessionSampled_requestSampled() throws {
-        let span = initTraceAndMakeSpan(active: false, sampled: true)
-        initRUM(sessionSampled: true, urlSessionTrackingSampled: true)
+        let span = prepare(activeSpan: false, spanSampled: true, sessionSampled: true, urlSessionTrackingSampled: true)
         try performRequestAndVerifyIfSampled(.rum, span: span)
     }
 
     func testNoActiveSpan_traceSampled_sessionSampled_requestNotSampled() throws {
-        let span = initTraceAndMakeSpan(active: false, sampled: true)
-        initRUM(sessionSampled: true, urlSessionTrackingSampled: false)
+        let span = prepare(activeSpan: false, spanSampled: true, sessionSampled: true, urlSessionTrackingSampled: false)
         try performRequestAndVerifyIfSampled(.sessionSampledRequestNotSampled, span: span)
     }
 
     func testNoActiveSpan_traceSampled_sessionNotSampled_requestSampled() throws {
-        let span = initTraceAndMakeSpan(active: false, sampled: true)
-        initRUM(sessionSampled: false, urlSessionTrackingSampled: true)
+        let span = prepare(activeSpan: false, spanSampled: true, sessionSampled: false, urlSessionTrackingSampled: true)
         try performRequestAndVerifyIfSampled(.sessionNotSampled, span: span)
     }
 
     func testNoActiveSpan_traceSampled_sessionNotSampled_requestNotSampled() throws {
-        let span = initTraceAndMakeSpan(active: false, sampled: true)
-        initRUM(sessionSampled: false, urlSessionTrackingSampled: false)
+        let span = prepare(activeSpan: false, spanSampled: true, sessionSampled: false, urlSessionTrackingSampled: false)
         try performRequestAndVerifyIfSampled(.sessionNotSampled, span: span)
     }
 
     func testNoActiveSpan_traceNotSampled_sessionSampled_requestSampled() throws {
-        let span = initTraceAndMakeSpan(active: false, sampled: false)
-        initRUM(sessionSampled: true, urlSessionTrackingSampled: true)
+        let span = prepare(activeSpan: false, spanSampled: false, sessionSampled: true, urlSessionTrackingSampled: true)
         try performRequestAndVerifyIfSampled(.rum, span: span)
     }
 
     func testNoActiveSpan_traceNotSampled_sessionSampled_requestNotSampled() throws {
-        let span = initTraceAndMakeSpan(active: false, sampled: false)
-        initRUM(sessionSampled: true, urlSessionTrackingSampled: false)
+        let span = prepare(activeSpan: false, spanSampled: false, sessionSampled: true, urlSessionTrackingSampled: false)
         try performRequestAndVerifyIfSampled(.sessionSampledRequestNotSampled, span: span)
     }
 
     func testNoActiveSpan_traceNotSampled_sessionNotSampled_requestSampled() throws {
-        let span = initTraceAndMakeSpan(active: false, sampled: false)
-        initRUM(sessionSampled: false, urlSessionTrackingSampled: true)
+        let span = prepare(activeSpan: false, spanSampled: false, sessionSampled: false, urlSessionTrackingSampled: true)
         try performRequestAndVerifyIfSampled(.sessionNotSampled, span: span)
     }
 
     func testNoActiveSpan_traceNotSampled_sessionNotSampled_requestNotSampled() throws {
-        let span = initTraceAndMakeSpan(active: false, sampled: false)
-        initRUM(sessionSampled: false, urlSessionTrackingSampled: false)
+        let span = prepare(activeSpan: false, spanSampled: false, sessionSampled: false, urlSessionTrackingSampled: false)
         try performRequestAndVerifyIfSampled(.sessionNotSampled, span: span)
     }
 
     func testActiveSpan_traceSampled_sessionSampled_requestSampled() throws {
-        let span = initTraceAndMakeSpan(active: true, sampled: true)
-        initRUM(sessionSampled: true, urlSessionTrackingSampled: true)
+        let span = prepare(activeSpan: true, spanSampled: true, sessionSampled: true, urlSessionTrackingSampled: true)
         try performRequestAndVerifyIfSampled(.activeSpan, span: span)
     }
 
     func testActiveSpan_traceSampled_sessionSampled_requestNotSampled() throws {
-        let span = initTraceAndMakeSpan(active: true, sampled: true)
-        initRUM(sessionSampled: true, urlSessionTrackingSampled: false)
+        let span = prepare(activeSpan: true, spanSampled: true, sessionSampled: true, urlSessionTrackingSampled: false)
         try performRequestAndVerifyIfSampled(.activeSpan, span: span)
     }
 
     func testActiveSpan_traceSampled_sessionNotSampled_requestSampled() throws {
-        let span = initTraceAndMakeSpan(active: true, sampled: true)
-        initRUM(sessionSampled: false, urlSessionTrackingSampled: true)
+        let span = prepare(activeSpan: true, spanSampled: true, sessionSampled: false, urlSessionTrackingSampled: true)
         try performRequestAndVerifyIfSampled(.sessionNotSampled, span: span)
     }
 
     func testActiveSpan_traceSampled_sessionNotSampled_requestNotSampled() throws {
-        let span = initTraceAndMakeSpan(active: true, sampled: true)
-        initRUM(sessionSampled: false, urlSessionTrackingSampled: false)
+        let span = prepare(activeSpan: true, spanSampled: true, sessionSampled: false, urlSessionTrackingSampled: false)
         try performRequestAndVerifyIfSampled(.sessionNotSampled, span: span)
     }
 
     func testActiveSpan_traceNotSampled_sessionSampled_requestSampled() throws {
-        let span = initTraceAndMakeSpan(active: true, sampled: false)
-        initRUM(sessionSampled: true, urlSessionTrackingSampled: true)
+        let span = prepare(activeSpan: true, spanSampled: false, sessionSampled: true, urlSessionTrackingSampled: true)
         try performRequestAndVerifyIfSampled(.rum, span: span)
     }
 
     func testActiveSpan_traceNotSampled_sessionSampled_requestNotSampled() throws {
-        let span = initTraceAndMakeSpan(active: true, sampled: false)
-        initRUM(sessionSampled: true, urlSessionTrackingSampled: false)
+        let span = prepare(activeSpan: true, spanSampled: false, sessionSampled: true, urlSessionTrackingSampled: false)
         try performRequestAndVerifyIfSampled(.sessionSampledRequestNotSampled, span: span)
     }
 
     func testActiveSpan_traceNotSampled_sessionNotSampled_requestSampled() throws {
-        let span = initTraceAndMakeSpan(active: true, sampled: false)
-        initRUM(sessionSampled: false, urlSessionTrackingSampled: true)
+        let span = prepare(activeSpan: true, spanSampled: false, sessionSampled: false, urlSessionTrackingSampled: true)
         try performRequestAndVerifyIfSampled(.sessionNotSampled, span: span)
     }
 
     func testActiveSpan_traceNotSampled_sessionNotSampled_requestNotSampled() throws {
-        let span = initTraceAndMakeSpan(active: true, sampled: false)
-        initRUM(sessionSampled: false, urlSessionTrackingSampled: false)
+        let span = prepare(activeSpan: true, spanSampled: false, sessionSampled: false, urlSessionTrackingSampled: false)
         try performRequestAndVerifyIfSampled(.sessionNotSampled, span: span)
     }
 
-    private func initTraceAndMakeSpan(active: Bool, sampled: Bool) -> OTSpan {
+    private func prepare(activeSpan: Bool, spanSampled: Bool, sessionSampled: Bool, urlSessionTrackingSampled: Bool) -> OTSpan {
         Trace.enable(
-            with: Trace.Configuration(sampleRate: sampled ? 90 : 5),
+            with: Trace.Configuration(sampleRate: spanSampled ? 90 : 5),
             in: core
         )
 
-        let span = Tracer.shared(in: core).startRootSpan(operationName: "test-op")
-        if active {
-            span.setActive()
-        }
-        return span
-    }
-
-    private func initRUM(sessionSampled: Bool, urlSessionTrackingSampled: Bool) {
         var config = RUM.Configuration(
             applicationID: .mockAny(),
             sessionSampleRate: sessionSampled ? 80 : 20,
             urlSessionTracking: .init(
                 firstPartyHostsTracing: .trace(
-                    hosts: ["example.com"],
+                    hosts: ["www.example.com"],
                     sampleRate: urlSessionTrackingSampled ? 70 : 10
                 )
             )
@@ -150,6 +124,15 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
         // This session ID is not sampled at 50%, but it is sampled at 60%.
         config.uuidGenerator = RUMUUIDGeneratorMock(uuid: RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!))
         RUM.enable(with: config, in: core)
+
+        // We need to wait for all the messages between features to stabilize so we have everything setup correctly.
+        core.flush()
+
+        let span = Tracer.shared(in: core).startRootSpan(operationName: "test-op")
+        if activeSpan {
+            span.setActive()
+        }
+        return span
     }
 
     enum SamplingExpectation {
@@ -160,7 +143,7 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
     }
 
     private func performRequestAndVerifyIfSampled(_ expectation: SamplingExpectation, span: OTSpan) throws {
-        let request = try sendURLSessionRequest(to: URL.mockAny(), using: InstrumentedSessionDelegate())
+        let request = try sendURLSessionRequest(to: URL.mockAny())
         let matchers = try core.waitAndReturnRUMEventMatchers()
         let possibleResourceMatcher = try matchers.first(where: { try $0.eventType() == "resource" })
 
@@ -195,7 +178,7 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
             XCTAssertNotEqual(request.value(forHTTPHeaderField: "x-datadog-trace-id"), spanDD.traceID.toString(representation: .decimal))
             XCTAssertNotNil(request.value(forHTTPHeaderField: "x-datadog-sampling-priority"))
             XCTAssertNotNil(request.value(forHTTPHeaderField: "traceparent"))
-            XCTAssertEqual(sessionSampleRate, 70)
+            XCTAssertEqual(sessionSampleRate, 80)
         } else { // expectation == .activeSpan
             let parentSpanIDString: String = try XCTUnwrap(resourceMatcher.attribute(forKeyPath: "_dd.parent_span_id"))
             let parentSpanID = SpanID(parentSpanIDString, representation: .decimal)
@@ -203,24 +186,7 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
             XCTAssertEqual(parentSpanID, spanDD.spanID)
             XCTAssertEqual(request.value(forHTTPHeaderField: "x-datadog-trace-id"), spanDD.traceID.toString(representation: .decimal))
             XCTAssertNotNil(request.value(forHTTPHeaderField: "traceparent"))
-            XCTAssertEqual(sessionSampleRate, 90)
+            XCTAssertEqual(sessionSampleRate, 80)
         }
-
-        print(matchers)
-    }
-
-    private func sendURLSessionRequest(to url: URL, using delegate: URLSessionDelegate, completionHandler: (() -> Void)? = nil) throws -> URLRequest {
-        let server = ServerMock(delivery: .success(response: .mockAny(), data: .mockAny()))
-        let session = server.getInterceptedURLSession(delegate: delegate)
-        let taskCompleted = expectation(description: "wait for task completion")
-        let task = session.dataTask(with: .mockWith(url: url)) { _, _, _ in
-            completionHandler?()
-            taskCompleted.fulfill()
-        }
-        task.resume()
-        waitForExpectations(timeout: 5)
-
-        let requests = server.waitAndReturnRequests(count: 1)
-        return try XCTUnwrap(requests.first)
     }
 }

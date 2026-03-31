@@ -99,4 +99,46 @@ extension XCTestCase {
         expectation.isInverted = true
         return expectation
     }
+
+    /// Sends request to `url` using real `URLSession` instrumented with provided `delegate`.
+    /// It returns the actual request that was sent to the server which can include additional headers set by the SDK.
+    ///
+    /// # Implementation note
+    /// `completionHandler` runs as part of `session.dataTask`'s completion handler. This is useful to finish
+    /// active (or parent) spans in a more realistic way. Here's a description of problem this solves.
+    ///
+    /// By the end of a request interception, the `DatadogURLSessionHandler.interceptionDidComplete(interception:)`
+    /// method is called. In situations where a span should be created to trace this request, that span is created inside this
+    /// method. This span can be a child of a currently active span, or a root span if no active span is present.
+    ///
+    /// If the SDK users want to trace a process that includes a request, one possibility is setting an active span before
+    /// initiating the request, and finishing it when the request ends, using the `DataTask` completion handler. Given
+    /// how interception implemented, `interceptionDidComplete(interception:)` runs after that completion
+    /// handler, which means if the active span is removed on the completion handler, there would not be an active session
+    /// any more.
+    ///
+    /// The SDK handles this situation (as well as if the SDK users immediately finish the active span after initiating the
+    /// request), so this is not a problem. However, in tests, we want to make sure this happens as we expect.
+    ///
+    /// In this specific method, and unlike most real world code, we block the main thread waiting for test expectations
+    /// after initiating the request. In the previous implementation, any active span would be terminated inside the test,
+    /// after we returned from this method, meaning after the entire request interception finished. This would not test
+    /// if the request interceptors handled correctly the fact the active session is gone by the end of the request, but still
+    /// existed in the beginning. Therefore, `completionHandler` was added, and runs as part of the `DataTask`
+    /// completion handler. This allows tests to finish active spans inside this completion handler, in a more realistic way,
+    /// close to what real world apps would do.
+    public func sendURLSessionRequest(to url: URL, using delegate: URLSessionDelegate? = nil, completionHandler: (() -> Void)? = nil) throws -> URLRequest {
+        let server = ServerMock(delivery: .success(response: .mockAny(), data: .mockAny()))
+        let session = server.getInterceptedURLSession(delegate: delegate)
+        let taskCompleted = expectation(description: "wait for task completion")
+        let task = session.dataTask(with: .mockWith(url: url)) { _, _, _ in
+            completionHandler?()
+            taskCompleted.fulfill()
+        }
+        task.resume()
+        waitForExpectations(timeout: 5)
+
+        let requests = server.waitAndReturnRequests(count: 1)
+        return try XCTUnwrap(requests.first)
+    }
 }
