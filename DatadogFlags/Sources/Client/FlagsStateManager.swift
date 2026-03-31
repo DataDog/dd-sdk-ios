@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// A listener that receives state change notifications from a ``FlagsClient``.
 ///
@@ -38,51 +39,57 @@ public protocol FlagsStateObservable: AnyObject {
 
 /// Manages state transitions and listener notifications for a ``FlagsClient``.
 ///
-/// Thread-safe: all state reads, writes, and listener notifications are
-/// serialized through a single lock to guarantee listeners observe transitions
-/// in the same order they are applied.
-///
-/// - Important: Listeners are notified while the lock is held. Calling any
-///   `FlagsStateManager` method from within a listener callback will deadlock.
-///   This enforces the documented contract that listeners should be fast and non-blocking.
+/// Thread-safe: state reads and writes are synchronized using a read-write lock.
+/// Listener notifications are performed outside the lock to prevent deadlocks
+/// when listeners call back into the manager.
 internal final class FlagsStateManager: FlagsStateObservable {
-    /// Guards both `_state` and `_listeners` to ensure atomic state + notify.
-    /// Uses `NSLock` (not `NSRecursiveLock`) to fail fast on re-entrant calls.
-    private let lock = NSLock()
+    /// Groups state and listeners for atomic access.
+    private struct ManagerState {
+        var clientState: FlagsClientState = .notReady
+        var listeners: [WeakListener] = []
+    }
 
-    private var _state: FlagsClientState = .notReady
-    private var _listeners: [WeakListener] = []
+    @ReadWriteLock
+    private var managerState = ManagerState()
 
     var currentState: FlagsClientState {
-        lock.lock()
-        defer { lock.unlock() }
-        return _state
+        managerState.clientState
     }
 
     func updateState(_ newState: FlagsClientState) {
-        lock.lock()
-        defer { lock.unlock() }
-        guard newState != _state else {
-            return
+        // Capture listeners under lock, then notify outside lock to prevent deadlock.
+        var listenersToNotify: [WeakListener] = []
+
+        _managerState.mutate { state in
+            guard newState != state.clientState else {
+                return
+            }
+            state.clientState = newState
+            listenersToNotify = state.listeners
         }
-        _state = newState
-        for weakListener in _listeners {
+
+        for weakListener in listenersToNotify {
             weakListener.value?.flagsStateDidChange(newState)
         }
     }
 
     func addListener(_ listener: FlagsStateListener) {
-        lock.lock()
-        defer { lock.unlock() }
-        _listeners.removeAll { $0.value == nil }
-        _listeners.append(WeakListener(listener))
-        listener.flagsStateDidChange(_state)
+        // Capture current state under lock, then notify outside lock.
+        var currentStateForNotification: FlagsClientState = .notReady
+
+        _managerState.mutate { state in
+            state.listeners.removeAll { $0.value == nil }
+            state.listeners.append(WeakListener(listener))
+            currentStateForNotification = state.clientState
+        }
+
+        listener.flagsStateDidChange(currentStateForNotification)
     }
 
     func removeListener(_ listener: FlagsStateListener) {
-        lock.lock()
-        defer { lock.unlock() }
-        _listeners.removeAll { $0.value === listener || $0.value == nil }
+        _managerState.mutate { state in
+            state.listeners.removeAll { $0.value === listener || $0.value == nil }
+        }
     }
 }
 
