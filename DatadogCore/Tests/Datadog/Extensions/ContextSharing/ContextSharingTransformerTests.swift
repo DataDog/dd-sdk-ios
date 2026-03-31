@@ -18,9 +18,10 @@ class ContextSharingTransformerTests: XCTestCase {
         core = DatadogCoreProxy()
     }
 
-    override func tearDown() {
+    override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
-        super.tearDown()
+        try super.tearDownWithError()
     }
 
     func testReceiveContextMessage_transformsToSharedContext() throws {
