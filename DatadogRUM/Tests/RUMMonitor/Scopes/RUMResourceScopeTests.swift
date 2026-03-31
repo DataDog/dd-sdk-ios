@@ -10,21 +10,8 @@ import DatadogInternal
 @testable import TestUtilities
 
 // Extension to make Path conform to Equatable for testing
-extension RUMResourceEvent.Resource.Graphql.Errors.Path: Equatable {
-    public static func == (lhs: RUMResourceEvent.Resource.Graphql.Errors.Path, rhs: RUMResourceEvent.Resource.Graphql.Errors.Path) -> Bool {
-        switch (lhs, rhs) {
-        case (.string(let lhsValue), .string(let rhsValue)):
-            return lhsValue == rhsValue
-        case (.integer(let lhsValue), .integer(let rhsValue)):
-            return lhsValue == rhsValue
-        default:
-            return false
-        }
-    }
-}
-
-extension RUMErrorEvent.Error.Resource.Graphql.Errors.Path: Equatable {
-    public static func == (lhs: RUMErrorEvent.Error.Resource.Graphql.Errors.Path, rhs: RUMErrorEvent.Error.Resource.Graphql.Errors.Path) -> Bool {
+extension RUMGraphql.Errors.Path: Equatable {
+    public static func == (lhs: RUMGraphql.Errors.Path, rhs: RUMGraphql.Errors.Path) -> Bool {
         switch (lhs, rhs) {
         case (.string(let lhsValue), .string(let rhsValue)):
             return lhsValue == rhsValue
@@ -1982,7 +1969,7 @@ class RUMResourceScopeTests: XCTestCase {
             spanContext: .init(
                 traceID: .init(idLo: 100),
                 spanID: .init(rawValue: 200),
-                parentSpanID: nil,
+                parentSpanID: .init(rawValue: 300),
                 samplingRate: 0.42
             )
         )
@@ -2008,7 +1995,7 @@ class RUMResourceScopeTests: XCTestCase {
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.dd.traceId, "64") // hex of 100 (idLo: 100)
         XCTAssertEqual(event.dd.spanId, "200")
-        XCTAssertNil(event.dd.parentSpanId)
+        XCTAssertEqual(event.dd.parentSpanId, "300")
         XCTAssertEqual(event.dd.rulePsr, 0.42)
     }
 
@@ -2182,78 +2169,7 @@ class RUMResourceScopeTests: XCTestCase {
             "locations": [{ "line": 10, "column": 3 }],
             "path": ["user", "profile"],
             "extensions": { "code": "UNAUTHORIZED" }
-          }
-        ]
-        """
-
-        // When
-        XCTAssertFalse(
-            scope.process(
-                command: RUMStopResourceWithErrorCommand(
-                    resourceKey: "/graphql",
-                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
-                    error: ErrorMock("graphql error"),
-                    source: .network,
-                    httpStatusCode: 200,
-                    globalAttributes: [:],
-                    attributes: [
-                        CrossPlatformAttributes.graphqlOperationType: "query",
-                        CrossPlatformAttributes.graphqlErrors: graphQLErrorsJSON
-                    ]
-                ),
-                context: context,
-                writer: writer
-            )
-        )
-
-        // Then
-        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        let graphql = try XCTUnwrap(event.error.resource?.graphql)
-        XCTAssertEqual(graphql.errorCount, 2)
-
-        let errors = try XCTUnwrap(graphql.errors)
-        XCTAssertEqual(errors.count, 2)
-
-        let error1 = errors[0]
-        XCTAssertEqual(error1.message, "Book not found")
-        XCTAssertEqual(error1.code, "NOT_FOUND")
-        let locations1 = try XCTUnwrap(error1.locations)
-        XCTAssertEqual(locations1.count, 2)
-        XCTAssertEqual(locations1[0].line, 2)
-        XCTAssertEqual(locations1[0].column, 7)
-        XCTAssertEqual(locations1[1].line, 5)
-        XCTAssertEqual(locations1[1].column, 12)
-        let path1 = try XCTUnwrap(error1.path)
-        XCTAssertEqual(path1.count, 2)
-        XCTAssertEqual(path1[0], .string(value: "library"))
-        XCTAssertEqual(path1[1], .string(value: "book"))
-
-        let error2 = errors[1]
-        XCTAssertEqual(error2.message, "Unauthorized access to user profile")
-        XCTAssertEqual(error2.code, "UNAUTHORIZED")
-        let locations2 = try XCTUnwrap(error2.locations)
-        XCTAssertEqual(locations2.count, 1)
-        XCTAssertEqual(locations2[0].line, 10)
-        XCTAssertEqual(locations2[0].column, 3)
-        let path2 = try XCTUnwrap(error2.path)
-        XCTAssertEqual(path2.count, 2)
-        XCTAssertEqual(path2[0], .string(value: "user"))
-        XCTAssertEqual(path2[1], .string(value: "profile"))
-    }
-
-    func testGivenResourceWithIntegerPathInGraphQLError_whenResourceLoadingEndsWithError_itMapsIntegerPathCorrectly() throws {
-        // Given
-        let scope = RUMResourceScope.mockWith(
-            parent: provider,
-            dependencies: dependencies,
-            resourceKey: "/graphql",
-            startTime: .mockDecember15th2019At10AMUTC(),
-            url: "https://api.example.com/graphql",
-            httpMethod: .post
-        )
-
-        let graphQLErrorsJSON = """
-        [
+          },
           {
             "message": "Index out of bounds",
             "path": ["users", 0, "name"]
@@ -2283,12 +2199,46 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        let errors = try XCTUnwrap(event.error.resource?.graphql?.errors)
-        let path = try XCTUnwrap(errors[0].path)
-        XCTAssertEqual(path.count, 3)
-        XCTAssertEqual(path[0], .string(value: "users"))
-        XCTAssertEqual(path[1], .integer(value: 0))
-        XCTAssertEqual(path[2], .string(value: "name"))
+        let graphql = try XCTUnwrap(event.error.resource?.graphql)
+        XCTAssertEqual(graphql.errorCount, 3)
+
+        let errors = try XCTUnwrap(graphql.errors)
+        XCTAssertEqual(errors.count, 3)
+
+        let error1 = errors[0]
+        XCTAssertEqual(error1.message, "Book not found")
+        XCTAssertEqual(error1.code, "NOT_FOUND")
+        let locations1 = try XCTUnwrap(error1.locations)
+        XCTAssertEqual(locations1.count, 2)
+        XCTAssertEqual(locations1[0].line, 2)
+        XCTAssertEqual(locations1[0].column, 7)
+        XCTAssertEqual(locations1[1].line, 5)
+        XCTAssertEqual(locations1[1].column, 12)
+        let path1 = try XCTUnwrap(error1.path)
+        XCTAssertEqual(path1.count, 2)
+        XCTAssertEqual(path1[0], .string(value: "library"))
+        XCTAssertEqual(path1[1], .string(value: "book"))
+
+        let error2 = errors[1]
+        XCTAssertEqual(error2.message, "Unauthorized access to user profile")
+        XCTAssertEqual(error2.code, "UNAUTHORIZED")
+        let locations2 = try XCTUnwrap(error2.locations)
+        XCTAssertEqual(locations2.count, 1)
+        XCTAssertEqual(locations2[0].line, 10)
+        XCTAssertEqual(locations2[0].column, 3)
+        let path2 = try XCTUnwrap(error2.path)
+        XCTAssertEqual(path2.count, 2)
+        XCTAssertEqual(path2[0], .string(value: "user"))
+        XCTAssertEqual(path2[1], .string(value: "profile"))
+
+        let error3 = errors[2]
+        XCTAssertEqual(error3.message, "Index out of bounds")
+        XCTAssertNil(error3.code)
+        let path3 = try XCTUnwrap(error3.path)
+        XCTAssertEqual(path3.count, 3)
+        XCTAssertEqual(path3[0], .string(value: "users"))
+        XCTAssertEqual(path3[1], .integer(value: 0))
+        XCTAssertEqual(path3[2], .string(value: "name"))
     }
 
     func testGivenResourceWithCrossPlatformTraceAttributes_whenResourceLoadingEndsWithError_itSendsErrorEventWithTraceContext() throws {
@@ -2313,6 +2263,7 @@ class RUMResourceScopeTests: XCTestCase {
                     attributes: [
                         CrossPlatformAttributes.traceID: "1a2b3c",
                         CrossPlatformAttributes.spanID: "12345678901",
+                        CrossPlatformAttributes.parentSpanID: "9999",
                         CrossPlatformAttributes.rulePSR: 0.5
                     ]
                 ),
@@ -2325,47 +2276,8 @@ class RUMResourceScopeTests: XCTestCase {
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(event.dd.traceId, "1a2b3c")
         XCTAssertEqual(event.dd.spanId, "12345678901")
-        XCTAssertNil(event.dd.parentSpanId)
+        XCTAssertEqual(event.dd.parentSpanId, "9999")
         XCTAssertEqual(event.dd.rulePsr, 0.5)
-    }
-
-    func testGivenResourceWithParentSpanID_whenResourceLoadingEndsWithError_itSendsErrorEventWithParentSpanId() throws {
-        // Given
-        let scope = RUMResourceScope.mockWith(
-            parent: provider,
-            dependencies: dependencies,
-            resourceKey: "/resource/1",
-            spanContext: .init(
-                traceID: .init(idLo: 100),
-                spanID: .init(rawValue: 200),
-                parentSpanID: .init(rawValue: 300),
-                samplingRate: 0.42
-            )
-        )
-
-        // When
-        XCTAssertFalse(
-            scope.process(
-                command: RUMStopResourceWithErrorCommand(
-                    resourceKey: "/resource/1",
-                    time: .mockDecember15th2019At10AMUTC(),
-                    error: ErrorMock("network issue"),
-                    source: .network,
-                    httpStatusCode: 500,
-                    globalAttributes: [:],
-                    attributes: [:]
-                ),
-                context: context,
-                writer: writer
-            )
-        )
-
-        // Then
-        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        XCTAssertEqual(event.dd.traceId, "64") // hex of 100 (idLo: 100)
-        XCTAssertEqual(event.dd.spanId, "200")
-        XCTAssertEqual(event.dd.parentSpanId, "300")
-        XCTAssertEqual(event.dd.rulePsr, 0.42)
     }
 
     func testGivenResourceWithMutationGraphQLOperationType_whenResourceLoadingEndsWithError_itSendsErrorEventWithGraphQL() throws {
@@ -2440,40 +2352,6 @@ class RUMResourceScopeTests: XCTestCase {
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
         XCTAssertNil(event.error.resource?.graphql)
-    }
-
-    func testGivenResourceWithNoTraceContext_whenResourceLoadingEndsWithError_itSendsErrorEventWithNilTraceFields() throws {
-        // Given
-        let scope = RUMResourceScope.mockWith(
-            parent: provider,
-            dependencies: dependencies,
-            resourceKey: "/resource/1",
-            spanContext: nil
-        )
-
-        // When
-        XCTAssertFalse(
-            scope.process(
-                command: RUMStopResourceWithErrorCommand(
-                    resourceKey: "/resource/1",
-                    time: .mockDecember15th2019At10AMUTC(),
-                    error: ErrorMock("network issue"),
-                    source: .network,
-                    httpStatusCode: 500,
-                    globalAttributes: [:],
-                    attributes: [:]
-                ),
-                context: context,
-                writer: writer
-            )
-        )
-
-        // Then
-        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        XCTAssertNil(event.dd.traceId)
-        XCTAssertNil(event.dd.spanId)
-        XCTAssertNil(event.dd.parentSpanId)
-        XCTAssertNil(event.dd.rulePsr)
     }
 
     func testGivenResourceWithNoGraphQLOperationType_whenResourceLoadingEndsWithError_itDoesNotSetGraphQL() throws {

@@ -125,23 +125,7 @@ internal class RUMResourceScope: RUMScope {
 
         // GraphQL attributes from cross-platform attributes
         let graphqlAttributes = extractGraphQLAttributes()
-        let graphqlErrors = parseGraphQLErrors(from: graphqlAttributes.errorsJSON)
-        let graphql: RUMResourceEvent.Resource.Graphql? = {
-            guard
-                let rawOperationType = graphqlAttributes.operationType,
-                let operationType = RUMResourceEvent.Resource.Graphql.OperationType(rawValue: rawOperationType)
-            else {
-                return nil
-            }
-            return .init(
-                errorCount: graphqlErrors?.count.toInt64,
-                errors: graphqlErrors,
-                operationName: graphqlAttributes.operationName,
-                operationType: operationType,
-                payload: graphqlAttributes.payload,
-                variables: graphqlAttributes.variables
-            )
-        }()
+        let graphql = buildGraphQL(from: graphqlAttributes)
 
         // Extract captured HTTP headers
         let requestHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.requestHeaders)?.dd.decode()
@@ -313,23 +297,7 @@ internal class RUMResourceScope: RUMScope {
 
         // GraphQL attributes from cross-platform attributes
         let graphqlAttributes = extractGraphQLAttributes()
-        let graphqlErrors = parseGraphQLErrorsForErrorEvent(from: graphqlAttributes.errorsJSON)
-        let graphql: RUMErrorEvent.Error.Resource.Graphql? = {
-            guard
-                let rawOperationType = graphqlAttributes.operationType,
-                let operationType = RUMErrorEvent.Error.Resource.Graphql.OperationType(rawValue: rawOperationType)
-            else {
-                return nil
-            }
-            return .init(
-                errorCount: graphqlErrors?.count.toInt64,
-                errors: graphqlErrors,
-                operationName: graphqlAttributes.operationName,
-                operationType: operationType,
-                payload: graphqlAttributes.payload,
-                variables: graphqlAttributes.variables
-            )
-        }()
+        let graphql = buildGraphQL(from: graphqlAttributes)
 
         // Write error event
         let errorEvent = RUMErrorEvent(
@@ -484,10 +452,18 @@ internal class RUMResourceScope: RUMScope {
         }
     }
 
-    /// Decodes GraphQL errors from JSON string and returns them as RUM resource event errors.
-    private func parseGraphQLErrors(from jsonString: String?) -> [RUMResourceEvent.Resource.Graphql.Errors]? {
-        decodeGraphQLResponseErrors(from: jsonString)?.map { error in
-            RUMResourceEvent.Resource.Graphql.Errors(
+    /// Builds a `RUMGraphql` value from extracted GraphQL attributes, or returns `nil` if no valid operation type is found.
+    private func buildGraphQL(
+        from attributes: (operationType: String?, operationName: String?, payload: String?, variables: String?, errorsJSON: String?)
+    ) -> RUMGraphql? {
+        guard
+            let rawOperationType = attributes.operationType,
+            let operationType = RUMGraphql.OperationType(rawValue: rawOperationType)
+        else {
+            return nil
+        }
+        let errors = decodeGraphQLResponseErrors(from: attributes.errorsJSON)?.map { error in
+            RUMGraphql.Errors(
                 code: error.code,
                 locations: error.locations?.map { .init(column: Int64($0.column), line: Int64($0.line)) },
                 message: error.message,
@@ -499,23 +475,14 @@ internal class RUMResourceScope: RUMScope {
                 }
             )
         }
-    }
-
-    /// Decodes GraphQL errors from JSON string and returns them as RUM error event errors.
-    private func parseGraphQLErrorsForErrorEvent(from jsonString: String?) -> [RUMErrorEvent.Error.Resource.Graphql.Errors]? {
-        decodeGraphQLResponseErrors(from: jsonString)?.map { error in
-            RUMErrorEvent.Error.Resource.Graphql.Errors(
-                code: error.code,
-                locations: error.locations?.map { .init(column: Int64($0.column), line: Int64($0.line)) },
-                message: error.message,
-                path: error.path?.map { pathElement in
-                    switch pathElement {
-                    case .string(let value): return .string(value: value)
-                    case .int(let value): return .integer(value: Int64(value))
-                    }
-                }
-            )
-        }
+        return .init(
+            errorCount: errors?.count.toInt64,
+            errors: errors,
+            operationName: attributes.operationName,
+            operationType: operationType,
+            payload: attributes.payload,
+            variables: attributes.variables
+        )
     }
 
     // MARK: - Attribute extraction helpers

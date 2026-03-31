@@ -102,6 +102,10 @@ public class objc_RUMActionEvent: NSObject {
         root.swiftModel.synthetics != nil ? objc_RUMActionEventRUMSyntheticsTest(root: root) : nil
     }
 
+    public var tab: objc_RUMActionEventTAB? {
+        root.swiftModel.tab != nil ? objc_RUMActionEventTAB(root: root) : nil
+    }
+
     public var type: String {
         root.swiftModel.type
     }
@@ -1180,6 +1184,21 @@ public class objc_RUMActionEventRUMSyntheticsTest: NSObject {
     }
 }
 
+@objc(DDRUMActionEventTAB)
+@objcMembers
+@_spi(objc)
+public class objc_RUMActionEventTAB: NSObject {
+    internal let root: objc_RUMActionEvent
+
+    internal init(root: objc_RUMActionEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.tab!.id
+    }
+}
+
 @objc(DDRUMActionEventRUMUser)
 @objcMembers
 @_spi(objc)
@@ -1347,6 +1366,10 @@ public class objc_RUMErrorEvent: NSObject {
 
     public var synthetics: objc_RUMErrorEventRUMSyntheticsTest? {
         root.swiftModel.synthetics != nil ? objc_RUMErrorEventRUMSyntheticsTest(root: root) : nil
+    }
+
+    public var tab: objc_RUMErrorEventTAB? {
+        root.swiftModel.tab != nil ? objc_RUMErrorEventTAB(root: root) : nil
     }
 
     public var type: String {
@@ -2428,8 +2451,8 @@ public class objc_RUMErrorEventErrorResource: NSObject {
         self.root = root
     }
 
-    public var graphql: objc_RUMErrorEventErrorResourceGraphql? {
-        root.swiftModel.error.resource!.graphql != nil ? objc_RUMErrorEventErrorResourceGraphql(root: root) : nil
+    public var graphql: objc_RUMErrorEventErrorResourceRUMGraphql? {
+        root.swiftModel.error.resource!.graphql != nil ? objc_RUMErrorEventErrorResourceRUMGraphql(root: root) : nil
     }
 
     public var method: objc_RUMErrorEventErrorResourceRUMMethod {
@@ -2450,10 +2473,10 @@ public class objc_RUMErrorEventErrorResource: NSObject {
     }
 }
 
-@objc(DDRUMErrorEventErrorResourceGraphql)
+@objc(DDRUMErrorEventErrorResourceRUMGraphql)
 @objcMembers
 @_spi(objc)
-public class objc_RUMErrorEventErrorResourceGraphql: NSObject {
+public class objc_RUMErrorEventErrorResourceRUMGraphql: NSObject {
     internal let root: objc_RUMErrorEvent
 
     internal init(root: objc_RUMErrorEvent) {
@@ -2464,15 +2487,15 @@ public class objc_RUMErrorEventErrorResourceGraphql: NSObject {
         root.swiftModel.error.resource!.graphql!.errorCount as NSNumber?
     }
 
-    public var errors: [objc_RUMErrorEventErrorResourceGraphqlErrors]? {
-        root.swiftModel.error.resource!.graphql!.errors?.map { objc_RUMErrorEventErrorResourceGraphqlErrors(swiftModel: $0) }
+    public var errors: [objc_RUMErrorEventErrorResourceRUMGraphqlErrors]? {
+        root.swiftModel.error.resource!.graphql!.errors?.map { objc_RUMErrorEventErrorResourceRUMGraphqlErrors(swiftModel: $0) }
     }
 
     public var operationName: String? {
         root.swiftModel.error.resource!.graphql!.operationName
     }
 
-    public var operationType: objc_RUMErrorEventErrorResourceGraphqlOperationType {
+    public var operationType: objc_RUMErrorEventErrorResourceRUMGraphqlOperationType {
         .init(swift: root.swiftModel.error.resource!.graphql!.operationType)
     }
 
@@ -2487,14 +2510,14 @@ public class objc_RUMErrorEventErrorResourceGraphql: NSObject {
     }
 }
 
-@objc(DDRUMErrorEventErrorResourceGraphqlErrors)
+@objc(DDRUMErrorEventErrorResourceRUMGraphqlErrors)
 @objcMembers
 @_spi(objc)
-public class objc_RUMErrorEventErrorResourceGraphqlErrors: NSObject {
-    internal var swiftModel: RUMErrorEvent.Error.Resource.Graphql.Errors
-    internal var root: objc_RUMErrorEventErrorResourceGraphqlErrors { self }
+public class objc_RUMErrorEventErrorResourceRUMGraphqlErrors: NSObject {
+    internal var swiftModel: RUMGraphql.Errors
+    internal var root: objc_RUMErrorEventErrorResourceRUMGraphqlErrors { self }
 
-    internal init(swiftModel: RUMErrorEvent.Error.Resource.Graphql.Errors) {
+    internal init(swiftModel: RUMGraphql.Errors) {
         self.swiftModel = swiftModel
     }
 
@@ -2502,27 +2525,27 @@ public class objc_RUMErrorEventErrorResourceGraphqlErrors: NSObject {
         root.swiftModel.code
     }
 
-    public var locations: [objc_RUMErrorEventErrorResourceGraphqlErrorsLocations]? {
-        root.swiftModel.locations?.map { objc_RUMErrorEventErrorResourceGraphqlErrorsLocations(swiftModel: $0) }
+    public var locations: [objc_RUMErrorEventErrorResourceRUMGraphqlErrorsLocations]? {
+        root.swiftModel.locations?.map { objc_RUMErrorEventErrorResourceRUMGraphqlErrorsLocations(swiftModel: $0) }
     }
 
     public var message: String {
         root.swiftModel.message
     }
 
-    public var path: [objc_RUMErrorEventErrorResourceGraphqlErrorsPath]? {
-        root.swiftModel.path?.map { objc_RUMErrorEventErrorResourceGraphqlErrorsPath(swiftModel: $0) }
+    public var path: [objc_RUMErrorEventErrorResourceRUMGraphqlErrorsPath]? {
+        root.swiftModel.path?.map { objc_RUMErrorEventErrorResourceRUMGraphqlErrorsPath(swiftModel: $0) }
     }
 }
 
-@objc(DDRUMErrorEventErrorResourceGraphqlErrorsLocations)
+@objc(DDRUMErrorEventErrorResourceRUMGraphqlErrorsLocations)
 @objcMembers
 @_spi(objc)
-public class objc_RUMErrorEventErrorResourceGraphqlErrorsLocations: NSObject {
-    internal var swiftModel: RUMErrorEvent.Error.Resource.Graphql.Errors.Locations
-    internal var root: objc_RUMErrorEventErrorResourceGraphqlErrorsLocations { self }
+public class objc_RUMErrorEventErrorResourceRUMGraphqlErrorsLocations: NSObject {
+    internal var swiftModel: RUMGraphql.Errors.Locations
+    internal var root: objc_RUMErrorEventErrorResourceRUMGraphqlErrorsLocations { self }
 
-    internal init(swiftModel: RUMErrorEvent.Error.Resource.Graphql.Errors.Locations) {
+    internal init(swiftModel: RUMGraphql.Errors.Locations) {
         self.swiftModel = swiftModel
     }
 
@@ -2535,14 +2558,14 @@ public class objc_RUMErrorEventErrorResourceGraphqlErrorsLocations: NSObject {
     }
 }
 
-@objc(DDRUMErrorEventErrorResourceGraphqlErrorsPath)
+@objc(DDRUMErrorEventErrorResourceRUMGraphqlErrorsPath)
 @objcMembers
 @_spi(objc)
-public class objc_RUMErrorEventErrorResourceGraphqlErrorsPath: NSObject {
-    internal var swiftModel: RUMErrorEvent.Error.Resource.Graphql.Errors.Path
-    internal var root: objc_RUMErrorEventErrorResourceGraphqlErrorsPath { self }
+public class objc_RUMErrorEventErrorResourceRUMGraphqlErrorsPath: NSObject {
+    internal var swiftModel: RUMGraphql.Errors.Path
+    internal var root: objc_RUMErrorEventErrorResourceRUMGraphqlErrorsPath { self }
 
-    internal init(swiftModel: RUMErrorEvent.Error.Resource.Graphql.Errors.Path) {
+    internal init(swiftModel: RUMGraphql.Errors.Path) {
         self.swiftModel = swiftModel
     }
 
@@ -2561,10 +2584,10 @@ public class objc_RUMErrorEventErrorResourceGraphqlErrorsPath: NSObject {
     }
 }
 
-@objc(DDRUMErrorEventErrorResourceGraphqlOperationType)
+@objc(DDRUMErrorEventErrorResourceRUMGraphqlOperationType)
 @_spi(objc)
-public enum objc_RUMErrorEventErrorResourceGraphqlOperationType: Int {
-    internal init(swift: RUMErrorEvent.Error.Resource.Graphql.OperationType?) {
+public enum objc_RUMErrorEventErrorResourceRUMGraphqlOperationType: Int {
+    internal init(swift: RUMGraphql.OperationType?) {
         switch swift {
         case nil: self = .none
         case .query?: self = .query
@@ -2573,7 +2596,7 @@ public enum objc_RUMErrorEventErrorResourceGraphqlOperationType: Int {
         }
     }
 
-    internal var toSwift: RUMErrorEvent.Error.Resource.Graphql.OperationType? {
+    internal var toSwift: RUMGraphql.OperationType? {
         switch self {
         case .none: return nil
         case .query: return .query
@@ -3030,6 +3053,21 @@ public class objc_RUMErrorEventRUMSyntheticsTest: NSObject {
     }
 }
 
+@objc(DDRUMErrorEventTAB)
+@objcMembers
+@_spi(objc)
+public class objc_RUMErrorEventTAB: NSObject {
+    internal let root: objc_RUMErrorEvent
+
+    internal init(root: objc_RUMErrorEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.tab!.id
+    }
+}
+
 @objc(DDRUMErrorEventRUMUser)
 @objcMembers
 @_spi(objc)
@@ -3189,6 +3227,10 @@ public class objc_RUMLongTaskEvent: NSObject {
 
     public var synthetics: objc_RUMLongTaskEventRUMSyntheticsTest? {
         root.swiftModel.synthetics != nil ? objc_RUMLongTaskEventRUMSyntheticsTest(root: root) : nil
+    }
+
+    public var tab: objc_RUMLongTaskEventTAB? {
+        root.swiftModel.tab != nil ? objc_RUMLongTaskEventTAB(root: root) : nil
     }
 
     public var type: String {
@@ -4245,6 +4287,21 @@ public class objc_RUMLongTaskEventRUMSyntheticsTest: NSObject {
     }
 }
 
+@objc(DDRUMLongTaskEventTAB)
+@objcMembers
+@_spi(objc)
+public class objc_RUMLongTaskEventTAB: NSObject {
+    internal let root: objc_RUMLongTaskEvent
+
+    internal init(root: objc_RUMLongTaskEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.tab!.id
+    }
+}
+
 @objc(DDRUMLongTaskEventRUMUser)
 @objcMembers
 @_spi(objc)
@@ -4400,6 +4457,10 @@ public class objc_RUMResourceEvent: NSObject {
 
     public var synthetics: objc_RUMResourceEventRUMSyntheticsTest? {
         root.swiftModel.synthetics != nil ? objc_RUMResourceEventRUMSyntheticsTest(root: root) : nil
+    }
+
+    public var tab: objc_RUMResourceEventTAB? {
+        root.swiftModel.tab != nil ? objc_RUMResourceEventTAB(root: root) : nil
     }
 
     public var type: String {
@@ -5126,8 +5187,8 @@ public class objc_RUMResourceEventResource: NSObject {
         root.swiftModel.resource.firstByte != nil ? objc_RUMResourceEventResourceFirstByte(root: root) : nil
     }
 
-    public var graphql: objc_RUMResourceEventResourceGraphql? {
-        root.swiftModel.resource.graphql != nil ? objc_RUMResourceEventResourceGraphql(root: root) : nil
+    public var graphql: objc_RUMResourceEventResourceRUMGraphql? {
+        root.swiftModel.resource.graphql != nil ? objc_RUMResourceEventResourceRUMGraphql(root: root) : nil
     }
 
     public var id: String? {
@@ -5295,10 +5356,10 @@ public class objc_RUMResourceEventResourceFirstByte: NSObject {
     }
 }
 
-@objc(DDRUMResourceEventResourceGraphql)
+@objc(DDRUMResourceEventResourceRUMGraphql)
 @objcMembers
 @_spi(objc)
-public class objc_RUMResourceEventResourceGraphql: NSObject {
+public class objc_RUMResourceEventResourceRUMGraphql: NSObject {
     internal let root: objc_RUMResourceEvent
 
     internal init(root: objc_RUMResourceEvent) {
@@ -5309,15 +5370,15 @@ public class objc_RUMResourceEventResourceGraphql: NSObject {
         root.swiftModel.resource.graphql!.errorCount as NSNumber?
     }
 
-    public var errors: [objc_RUMResourceEventResourceGraphqlErrors]? {
-        root.swiftModel.resource.graphql!.errors?.map { objc_RUMResourceEventResourceGraphqlErrors(swiftModel: $0) }
+    public var errors: [objc_RUMResourceEventResourceRUMGraphqlErrors]? {
+        root.swiftModel.resource.graphql!.errors?.map { objc_RUMResourceEventResourceRUMGraphqlErrors(swiftModel: $0) }
     }
 
     public var operationName: String? {
         root.swiftModel.resource.graphql!.operationName
     }
 
-    public var operationType: objc_RUMResourceEventResourceGraphqlOperationType {
+    public var operationType: objc_RUMResourceEventResourceRUMGraphqlOperationType {
         .init(swift: root.swiftModel.resource.graphql!.operationType)
     }
 
@@ -5332,14 +5393,14 @@ public class objc_RUMResourceEventResourceGraphql: NSObject {
     }
 }
 
-@objc(DDRUMResourceEventResourceGraphqlErrors)
+@objc(DDRUMResourceEventResourceRUMGraphqlErrors)
 @objcMembers
 @_spi(objc)
-public class objc_RUMResourceEventResourceGraphqlErrors: NSObject {
-    internal var swiftModel: RUMResourceEvent.Resource.Graphql.Errors
-    internal var root: objc_RUMResourceEventResourceGraphqlErrors { self }
+public class objc_RUMResourceEventResourceRUMGraphqlErrors: NSObject {
+    internal var swiftModel: RUMGraphql.Errors
+    internal var root: objc_RUMResourceEventResourceRUMGraphqlErrors { self }
 
-    internal init(swiftModel: RUMResourceEvent.Resource.Graphql.Errors) {
+    internal init(swiftModel: RUMGraphql.Errors) {
         self.swiftModel = swiftModel
     }
 
@@ -5347,27 +5408,27 @@ public class objc_RUMResourceEventResourceGraphqlErrors: NSObject {
         root.swiftModel.code
     }
 
-    public var locations: [objc_RUMResourceEventResourceGraphqlErrorsLocations]? {
-        root.swiftModel.locations?.map { objc_RUMResourceEventResourceGraphqlErrorsLocations(swiftModel: $0) }
+    public var locations: [objc_RUMResourceEventResourceRUMGraphqlErrorsLocations]? {
+        root.swiftModel.locations?.map { objc_RUMResourceEventResourceRUMGraphqlErrorsLocations(swiftModel: $0) }
     }
 
     public var message: String {
         root.swiftModel.message
     }
 
-    public var path: [objc_RUMResourceEventResourceGraphqlErrorsPath]? {
-        root.swiftModel.path?.map { objc_RUMResourceEventResourceGraphqlErrorsPath(swiftModel: $0) }
+    public var path: [objc_RUMResourceEventResourceRUMGraphqlErrorsPath]? {
+        root.swiftModel.path?.map { objc_RUMResourceEventResourceRUMGraphqlErrorsPath(swiftModel: $0) }
     }
 }
 
-@objc(DDRUMResourceEventResourceGraphqlErrorsLocations)
+@objc(DDRUMResourceEventResourceRUMGraphqlErrorsLocations)
 @objcMembers
 @_spi(objc)
-public class objc_RUMResourceEventResourceGraphqlErrorsLocations: NSObject {
-    internal var swiftModel: RUMResourceEvent.Resource.Graphql.Errors.Locations
-    internal var root: objc_RUMResourceEventResourceGraphqlErrorsLocations { self }
+public class objc_RUMResourceEventResourceRUMGraphqlErrorsLocations: NSObject {
+    internal var swiftModel: RUMGraphql.Errors.Locations
+    internal var root: objc_RUMResourceEventResourceRUMGraphqlErrorsLocations { self }
 
-    internal init(swiftModel: RUMResourceEvent.Resource.Graphql.Errors.Locations) {
+    internal init(swiftModel: RUMGraphql.Errors.Locations) {
         self.swiftModel = swiftModel
     }
 
@@ -5380,14 +5441,14 @@ public class objc_RUMResourceEventResourceGraphqlErrorsLocations: NSObject {
     }
 }
 
-@objc(DDRUMResourceEventResourceGraphqlErrorsPath)
+@objc(DDRUMResourceEventResourceRUMGraphqlErrorsPath)
 @objcMembers
 @_spi(objc)
-public class objc_RUMResourceEventResourceGraphqlErrorsPath: NSObject {
-    internal var swiftModel: RUMResourceEvent.Resource.Graphql.Errors.Path
-    internal var root: objc_RUMResourceEventResourceGraphqlErrorsPath { self }
+public class objc_RUMResourceEventResourceRUMGraphqlErrorsPath: NSObject {
+    internal var swiftModel: RUMGraphql.Errors.Path
+    internal var root: objc_RUMResourceEventResourceRUMGraphqlErrorsPath { self }
 
-    internal init(swiftModel: RUMResourceEvent.Resource.Graphql.Errors.Path) {
+    internal init(swiftModel: RUMGraphql.Errors.Path) {
         self.swiftModel = swiftModel
     }
 
@@ -5406,10 +5467,10 @@ public class objc_RUMResourceEventResourceGraphqlErrorsPath: NSObject {
     }
 }
 
-@objc(DDRUMResourceEventResourceGraphqlOperationType)
+@objc(DDRUMResourceEventResourceRUMGraphqlOperationType)
 @_spi(objc)
-public enum objc_RUMResourceEventResourceGraphqlOperationType: Int {
-    internal init(swift: RUMResourceEvent.Resource.Graphql.OperationType?) {
+public enum objc_RUMResourceEventResourceRUMGraphqlOperationType: Int {
+    internal init(swift: RUMGraphql.OperationType?) {
         switch swift {
         case nil: self = .none
         case .query?: self = .query
@@ -5418,7 +5479,7 @@ public enum objc_RUMResourceEventResourceGraphqlOperationType: Int {
         }
     }
 
-    internal var toSwift: RUMResourceEvent.Resource.Graphql.OperationType? {
+    internal var toSwift: RUMGraphql.OperationType? {
         switch self {
         case .none: return nil
         case .query: return .query
@@ -5898,6 +5959,21 @@ public class objc_RUMResourceEventRUMSyntheticsTest: NSObject {
     }
 }
 
+@objc(DDRUMResourceEventTAB)
+@objcMembers
+@_spi(objc)
+public class objc_RUMResourceEventTAB: NSObject {
+    internal let root: objc_RUMResourceEvent
+
+    internal init(root: objc_RUMResourceEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.tab!.id
+    }
+}
+
 @objc(DDRUMResourceEventRUMUser)
 @objcMembers
 @_spi(objc)
@@ -6053,6 +6129,10 @@ public class objc_RUMViewEvent: NSObject {
 
     public var synthetics: objc_RUMViewEventRUMSyntheticsTest? {
         root.swiftModel.synthetics != nil ? objc_RUMViewEventRUMSyntheticsTest(root: root) : nil
+    }
+
+    public var tab: objc_RUMViewEventTAB? {
+        root.swiftModel.tab != nil ? objc_RUMViewEventTAB(root: root) : nil
     }
 
     public var type: String {
@@ -7132,6 +7212,21 @@ public class objc_RUMViewEventRUMSyntheticsTest: NSObject {
     }
 }
 
+@objc(DDRUMViewEventTAB)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewEventTAB: NSObject {
+    internal let root: objc_RUMViewEvent
+
+    internal init(root: objc_RUMViewEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.tab!.id
+    }
+}
+
 @objc(DDRUMViewEventRUMUser)
 @objcMembers
 @_spi(objc)
@@ -7621,8 +7716,8 @@ public class objc_RUMViewEventViewFrustration: NSObject {
         self.root = root
     }
 
-    public var count: NSNumber? {
-        root.swiftModel.view.frustration!.count as NSNumber?
+    public var count: NSNumber {
+        root.swiftModel.view.frustration!.count as NSNumber
     }
 }
 
@@ -7948,8 +8043,8 @@ public class objc_RUMViewEventViewPerformanceINPSubParts: NSObject {
         root.swiftModel.view.performance!.inp!.subParts!.presentationDelay as NSNumber
     }
 
-    public var processingTime: NSNumber {
-        root.swiftModel.view.performance!.inp!.subParts!.processingTime as NSNumber
+    public var processingDuration: NSNumber {
+        root.swiftModel.view.performance!.inp!.subParts!.processingDuration as NSNumber
     }
 }
 
@@ -8132,6 +8227,10 @@ public class objc_RUMViewUpdateEvent: NSObject {
 
     public var synthetics: objc_RUMViewUpdateEventRUMSyntheticsTest? {
         root.swiftModel.synthetics != nil ? objc_RUMViewUpdateEventRUMSyntheticsTest(root: root) : nil
+    }
+
+    public var tab: objc_RUMViewUpdateEventTAB? {
+        root.swiftModel.tab != nil ? objc_RUMViewUpdateEventTAB(root: root) : nil
     }
 
     public var type: String {
@@ -9024,6 +9123,21 @@ public class objc_RUMViewUpdateEventRUMSyntheticsTest: NSObject {
     }
 }
 
+@objc(DDRUMViewUpdateEventTAB)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewUpdateEventTAB: NSObject {
+    internal let root: objc_RUMViewUpdateEvent
+
+    internal init(root: objc_RUMViewUpdateEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.tab!.id
+    }
+}
+
 @objc(DDRUMViewUpdateEventRUMUser)
 @objcMembers
 @_spi(objc)
@@ -9513,8 +9627,8 @@ public class objc_RUMViewUpdateEventViewFrustration: NSObject {
         self.root = root
     }
 
-    public var count: NSNumber? {
-        root.swiftModel.view.frustration!.count as NSNumber?
+    public var count: NSNumber {
+        root.swiftModel.view.frustration!.count as NSNumber
     }
 }
 
@@ -9840,8 +9954,8 @@ public class objc_RUMViewUpdateEventViewPerformanceINPSubParts: NSObject {
         root.swiftModel.view.performance!.inp!.subParts!.presentationDelay as NSNumber
     }
 
-    public var processingTime: NSNumber {
-        root.swiftModel.view.performance!.inp!.subParts!.processingTime as NSNumber
+    public var processingDuration: NSNumber {
+        root.swiftModel.view.performance!.inp!.subParts!.processingDuration as NSNumber
     }
 }
 
@@ -10016,6 +10130,10 @@ public class objc_RUMVitalAppLaunchEvent: NSObject {
 
     public var synthetics: objc_RUMVitalAppLaunchEventRUMSyntheticsTest? {
         root.swiftModel.synthetics != nil ? objc_RUMVitalAppLaunchEventRUMSyntheticsTest(root: root) : nil
+    }
+
+    public var tab: objc_RUMVitalAppLaunchEventTAB? {
+        root.swiftModel.tab != nil ? objc_RUMVitalAppLaunchEventTAB(root: root) : nil
     }
 
     public var type: String {
@@ -10865,6 +10983,21 @@ public class objc_RUMVitalAppLaunchEventRUMSyntheticsTest: NSObject {
     }
 }
 
+@objc(DDRUMVitalAppLaunchEventTAB)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventTAB: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.tab!.id
+    }
+}
+
 @objc(DDRUMVitalAppLaunchEventRUMUser)
 @objcMembers
 @_spi(objc)
@@ -11104,6 +11237,10 @@ public class objc_RUMVitalDurationEvent: NSObject {
 
     public var synthetics: objc_RUMVitalDurationEventRUMSyntheticsTest? {
         root.swiftModel.synthetics != nil ? objc_RUMVitalDurationEventRUMSyntheticsTest(root: root) : nil
+    }
+
+    public var tab: objc_RUMVitalDurationEventTAB? {
+        root.swiftModel.tab != nil ? objc_RUMVitalDurationEventTAB(root: root) : nil
     }
 
     public var type: String {
@@ -11953,6 +12090,21 @@ public class objc_RUMVitalDurationEventRUMSyntheticsTest: NSObject {
     }
 }
 
+@objc(DDRUMVitalDurationEventTAB)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventTAB: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.tab!.id
+    }
+}
+
 @objc(DDRUMVitalDurationEventRUMUser)
 @objcMembers
 @_spi(objc)
@@ -12131,6 +12283,10 @@ public class objc_RUMVitalOperationStepEvent: NSObject {
 
     public var synthetics: objc_RUMVitalOperationStepEventRUMSyntheticsTest? {
         root.swiftModel.synthetics != nil ? objc_RUMVitalOperationStepEventRUMSyntheticsTest(root: root) : nil
+    }
+
+    public var tab: objc_RUMVitalOperationStepEventTAB? {
+        root.swiftModel.tab != nil ? objc_RUMVitalOperationStepEventTAB(root: root) : nil
     }
 
     public var type: String {
@@ -12977,6 +13133,21 @@ public class objc_RUMVitalOperationStepEventRUMSyntheticsTest: NSObject {
     public var syntheticsInfo: [String: Any] {
         set { root.swiftModel.synthetics!.syntheticsInfo = newValue.dd.swiftAttributes }
         get { root.swiftModel.synthetics!.syntheticsInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventTAB)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventTAB: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.tab!.id
     }
 }
 
@@ -14657,4 +14828,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/0d9435f867237b1cd993324902fe88ec235b9707
+// Generated from https://github.com/DataDog/rum-events-format/tree/ea41a41f19117b04ed9a06977fdeb8f7a90319e3
