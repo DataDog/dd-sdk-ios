@@ -263,7 +263,7 @@ final class FlagsRepositoryTests: XCTestCase {
             context: .mockAny(),
             date: .mockAny()
         )
-        let asyncStore = AsyncDataStoreMock()
+        let asyncStore = DataStoreAsyncMock()
         try asyncStore.setValue(
             JSONEncoder().encode(cachedData),
             forKey: .mockAny()
@@ -416,38 +416,5 @@ final class FlagsRepositoryTests: XCTestCase {
         // (dd-openfeature-provider-swift depends on this ordering)
         waitForExpectations(timeout: 0)
         XCTAssertEqual(stateInCompletion, .error)
-    }
-}
-
-// MARK: - Helpers
-
-/// A data store mock that dispatches callbacks asynchronously on a background queue,
-/// matching the production `FeatureDataStore` behavior. This enables testing race conditions
-/// where the disk read may not have completed before other operations begin.
-private final class AsyncDataStoreMock: DataStore {
-    private let queue = DispatchQueue(label: "test.async-data-store")
-    private var storage: [String: DataStoreValueResult] = [:]
-
-    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
-        storage[key] = .value(value, version)
-    }
-
-    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
-        let result = storage[key] ?? .noValue
-        queue.async {
-            callback(result)
-        }
-    }
-
-    func removeValue(forKey key: String) {
-        storage[key] = nil
-    }
-
-    func clearAllData() {
-        storage.removeAll()
-    }
-
-    func flush() {
-        queue.sync {}
     }
 }
