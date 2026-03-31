@@ -57,7 +57,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: hangDuration * 20)
+        waitForExpectations(timeout: hangDuration * 10)
         watchdogThread.cancel()
     }
 

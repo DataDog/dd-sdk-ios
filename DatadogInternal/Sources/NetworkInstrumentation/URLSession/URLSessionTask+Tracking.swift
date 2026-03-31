@@ -54,7 +54,13 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
         // `_internalDelegateWrapper` is a private ivar on `NSURLSessionTask`. It is non-nil on
         // OS-internal task wrappers created by watchOS to handle the actual networking, and nil
         // on user-created tasks returned from `URLSession.dataTask(...)`.
-        type.value(forKey: "_internalDelegateWrapper") != nil
+        //
+        // We first verify the ivar exists on the class (guard against future OS changes that rename
+        // or remove it), then read its instance value via object_getIvar.
+        guard let ivar = class_getInstanceVariable(Swift.type(of: type), "_internalDelegateWrapper") else {
+            return false
+        }
+        return object_getIvar(type, ivar) != nil
     }
     #endif
 

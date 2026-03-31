@@ -9,7 +9,7 @@ import DatadogInternal
 
 /// Bundles RUM instrumentation components.
 internal final class RUMInstrumentation: RUMCommandPublisher {
-    private enum Constants {
+    fileprivate enum Constants {
         /// Minimum allowed value for long task threshold configuration.
         static let minLongTaskThreshold: TimeInterval = 0
         /// Minimum allowed value for app hang threshold configuration.
@@ -158,37 +158,6 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         }
         #endif
 
-        // Create long tasks and app hang observers only if configured:
-        var longTasks: LongTaskObserver? = nil
-        var appHangs: AppHangsMonitor? = nil
-
-        if let longTaskThreshold = longTaskThreshold {
-            if longTaskThreshold > Constants.minLongTaskThreshold {
-                longTasks = LongTaskObserver(threshold: longTaskThreshold, dateProvider: dateProvider)
-            } else {
-                DD.logger.error("`RUM.Configuration.longTaskThreshold` cannot be less than 0s. Long Tasks monitoring will be disabled.")
-            }
-        }
-
-        if bundleType == .iOSApp,
-           var appHangThreshold = appHangThreshold {
-            if appHangThreshold < Constants.minAppHangThreshold {
-                appHangThreshold = Constants.minAppHangThreshold
-                DD.logger.warn("`RUM.Configuration.appHangThreshold` cannot be less than \(Constants.minAppHangThreshold)s. A value of \(Constants.minAppHangThreshold)s will be used.")
-            }
-
-            appHangs = AppHangsMonitor(
-                featureScope: featureScope,
-                appHangThreshold: appHangThreshold,
-                observedQueue: mainQueue,
-                backtraceReporter: backtraceReporter,
-                fatalErrorContext: fatalErrorContext,
-                dateProvider: dateProvider,
-                uuidGenerator: uuidGenerator,
-                processID: processID
-            )
-        }
-
         self.viewsHandler = viewsHandler
         self.viewControllerSwizzler = viewControllerSwizzler
         self.actionsHandler = actionsHandler
@@ -197,8 +166,18 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.scrollHandler = scrollHandler
         self.scrollViewSwizzler = scrollViewSwizzler
         #endif
-        self.longTasks = longTasks
-        self.appHangs = appHangs
+        self.longTasks = LongTaskObserver(threshold: longTaskThreshold, dateProvider: dateProvider)
+        self.appHangs = AppHangsMonitor(
+            featureScope: featureScope,
+            appHangThreshold: appHangThreshold,
+            bundleType: bundleType,
+            mainQueue: mainQueue,
+            dateProvider: dateProvider,
+            backtraceReporter: backtraceReporter,
+            fatalErrorContext: fatalErrorContext,
+            processID: processID,
+            uuidGenerator: uuidGenerator
+        )
         self.watchdogTermination = watchdogTermination
         self.memoryWarningMonitor = memoryWarningMonitor
 
@@ -232,40 +211,18 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     ) {
         // Always create views handler (we can't know if it will be used by manual instrumentation)
         self.viewsHandler = RUMViewsHandler(dateProvider: dateProvider, notificationCenter: notificationCenter)
-
-        // Create long tasks and app hang observers only if configured:
-        var longTasks: LongTaskObserver? = nil
-        var appHangs: AppHangsMonitor? = nil
-
-        if let longTaskThreshold = longTaskThreshold {
-            if longTaskThreshold > Constants.minLongTaskThreshold {
-                longTasks = LongTaskObserver(threshold: longTaskThreshold, dateProvider: dateProvider)
-            } else {
-                DD.logger.error("`RUM.Configuration.longTaskThreshold` cannot be less than 0s. Long Tasks monitoring will be disabled.")
-            }
-        }
-
-        if bundleType == .iOSApp,
-           var appHangThreshold = appHangThreshold {
-            if appHangThreshold < Constants.minAppHangThreshold {
-                appHangThreshold = Constants.minAppHangThreshold
-                DD.logger.warn("`RUM.Configuration.appHangThreshold` cannot be less than \(Constants.minAppHangThreshold)s. A value of \(Constants.minAppHangThreshold)s will be used.")
-            }
-
-            appHangs = AppHangsMonitor(
-                featureScope: featureScope,
-                appHangThreshold: appHangThreshold,
-                observedQueue: mainQueue,
-                backtraceReporter: backtraceReporter,
-                fatalErrorContext: fatalErrorContext,
-                dateProvider: dateProvider,
-                uuidGenerator: uuidGenerator,
-                processID: processID
-            )
-        }
-
-        self.longTasks = longTasks
-        self.appHangs = appHangs
+        self.longTasks = LongTaskObserver(threshold: longTaskThreshold, dateProvider: dateProvider)
+        self.appHangs = AppHangsMonitor(
+            featureScope: featureScope,
+            appHangThreshold: appHangThreshold,
+            bundleType: bundleType,
+            mainQueue: mainQueue,
+            dateProvider: dateProvider,
+            backtraceReporter: backtraceReporter,
+            fatalErrorContext: fatalErrorContext,
+            processID: processID,
+            uuidGenerator: uuidGenerator
+        )
         self.watchdogTermination = watchdogTermination
         self.memoryWarningMonitor = memoryWarningMonitor
 
@@ -303,5 +260,56 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         longTasks?.publish(to: subscriber)
         appHangs?.nonFatalHangsHandler.publish(to: subscriber)
         memoryWarningMonitor?.reporter.publish(to: subscriber)
+    }
+}
+
+private extension LongTaskObserver {
+    /// Creates a `LongTaskObserver` if `threshold` is non-nil and above the minimum, otherwise returns `nil`.
+    convenience init?(threshold: TimeInterval?, dateProvider: DateProvider) {
+        guard let threshold = threshold else {
+            return nil
+        }
+
+        guard threshold > RUMInstrumentation.Constants.minLongTaskThreshold else {
+            DD.logger.error("`RUM.Configuration.longTaskThreshold` cannot be less than 0s. Long Tasks monitoring will be disabled.")
+            return nil
+        }
+
+        self.init(threshold: threshold, dateProvider: dateProvider)
+    }
+}
+
+private extension AppHangsMonitor {
+    /// Creates an `AppHangsMonitor` if `appHangThreshold` is non-nil and `bundleType` is `.iOSApp`, otherwise returns `nil`.
+    convenience init?(
+        featureScope: FeatureScope,
+        appHangThreshold: TimeInterval?,
+        bundleType: BundleType,
+        mainQueue: DispatchQueue,
+        dateProvider: DateProvider,
+        backtraceReporter: BacktraceReporting,
+        fatalErrorContext: FatalErrorContextNotifying,
+        processID: UUID,
+        uuidGenerator: RUMUUIDGenerator
+    ) {
+        guard bundleType == .iOSApp, var appHangThreshold = appHangThreshold else {
+            return nil
+        }
+
+        if appHangThreshold < RUMInstrumentation.Constants.minAppHangThreshold {
+            appHangThreshold = RUMInstrumentation.Constants.minAppHangThreshold
+            DD.logger.warn("`RUM.Configuration.appHangThreshold` cannot be less than \(RUMInstrumentation.Constants.minAppHangThreshold)s. A value of \(RUMInstrumentation.Constants.minAppHangThreshold)s will be used.")
+        }
+
+        self.init(
+            featureScope: featureScope,
+            appHangThreshold: appHangThreshold,
+            observedQueue: mainQueue,
+            backtraceReporter: backtraceReporter,
+            fatalErrorContext: fatalErrorContext,
+            dateProvider: dateProvider,
+            uuidGenerator: uuidGenerator,
+            processID: processID
+        )
     }
 }
