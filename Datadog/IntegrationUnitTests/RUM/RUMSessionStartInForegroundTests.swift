@@ -57,8 +57,10 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             // When
             let session = try when.then().takeSingle()
+            #if !os(watchOS)
             XCTAssertNotNil(session.ttidEvent)
             DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
+            #endif
             DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
             DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -122,8 +124,10 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
+                #if !os(watchOS)
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
+                #endif
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
                 DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -175,6 +179,9 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     }
 
     func testGivenUserLaunch_whenAutomaticViewIsTracked() throws {
+        #if os(watchOS)
+        throw XCTSkip("This test is not available on watchOS")
+        #else
         // Given
         let givens1 = [
             enableRUMBeforeFirstFrame(userLaunchWithSceneDelegate) { rumConfig in
@@ -259,6 +266,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 DDAssertEqual(session.views[1].duration, dt2, accuracy: accuracy)
             }
         }
+        #endif
     }
 
     func testGivenUserLaunch_whenActionsAreTracked() throws {
@@ -285,8 +293,10 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
+                #if !os(watchOS)
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
+                #endif
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
                 DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -358,8 +368,10 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
+                #if !os(watchOS)
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
+                #endif
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
                 DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -430,8 +442,10 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 let session = try when.then().takeSingle()
+                #if !os(watchOS)
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
+                #endif
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
                 DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -484,8 +498,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate) }
 
     func testGivenOSPrewarmLaunch_whenNoEventIsTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = enableRUMBeforeAppBecomesActive(osPrewarmLaunch)
@@ -527,8 +541,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     }
 
     func testGivenOSPrewarmLaunch_whenManualViewIsTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
@@ -595,8 +609,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     }
 
     func testGivenOSPrewarmLaunch_whenAutomaticViewIsTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch) { rumConfig in
@@ -665,8 +679,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     }
 
     func testGivenOSPrewarmLaunch_whenActionsAreTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
@@ -729,8 +743,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     }
 
     func testGivenOSPrewarmLaunch_whenResourceIsTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
@@ -791,8 +805,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     }
 
     func testGivenOSPrewarmLaunch_whenLongTasksAreTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(osPrewarmLaunch)
@@ -858,8 +872,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     private var backgroundLaunch: AppRunner.ProcessLaunchType { .backgroundLaunch(processLaunchDate: processLaunchDate) }
 
     func testGivenBackgroundLaunch_whenNoEventIsTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS and watchOS")
         #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
@@ -901,8 +915,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundLaunch_whenManualViewIsTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS and watchOS")
         #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
@@ -968,8 +982,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundLaunch_whenAutomaticViewIsTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
         #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch) { rumConfig in
@@ -1038,8 +1052,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundLaunch_whenActionsAreTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS and watchOS")
         #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
@@ -1102,8 +1116,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundLaunch_whenResourceIsTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS and watchOS")
         #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)
@@ -1164,8 +1178,8 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
     }
 
     func testGivenBackgroundLaunch_whenLongTasksAreTracked() throws {
-        #if os(tvOS)
-        throw XCTSkip("This test is not available on tvOS")
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS and watchOS")
         #else
         // Given
         let given1 = enableRUMBeforeFirstFrame(backgroundLaunch)

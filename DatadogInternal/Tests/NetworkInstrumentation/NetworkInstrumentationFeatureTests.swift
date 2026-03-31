@@ -1413,10 +1413,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // When - Create task to an unreachable IP address (TEST-NET-1, guaranteed to not respond quickly)
         // This ensures the task will still be running when we cancel it
-        let url = URL(string: "https://192.0.2.1:9999")! // TEST-NET-1: Reserved for documentation, never responds
+        let url = URL(string: "https://192.0.2.0:9999")! // TEST-NET-1: Reserved for documentation, never responds
         let task = session.dataTask(with: url)
         task.resume()
-        Thread.sleep(forTimeInterval: 0.05) // Brief delay to ensure task has started
         task.cancel() // Cancel the task while it's still running
 
         // Then

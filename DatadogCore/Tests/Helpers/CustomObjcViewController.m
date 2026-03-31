@@ -6,6 +6,8 @@
 
 #import "CustomObjcViewController.h"
 
+#if !TARGET_OS_WATCH
+
 @interface CustomObjcViewController ()
 
 @end
@@ -17,3 +19,5 @@
 }
 
 @end
+
+#endif

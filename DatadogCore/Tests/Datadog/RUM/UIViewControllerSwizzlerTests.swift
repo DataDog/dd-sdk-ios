@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import TestUtilities
 @testable import DatadogRUM
@@ -79,3 +81,5 @@ class UIViewControllerSwizzlerTests: XCTestCase {
         wait(for: [notifyHandlerExpectation, callOriginalMethodExpectation], timeout: 0.5, enforceOrder: true)
     }
 }
+
+#endif

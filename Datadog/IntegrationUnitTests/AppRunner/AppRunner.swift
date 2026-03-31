@@ -29,11 +29,20 @@ internal class AppRunner {
         /// unlike app-delegate-only apps which start in `INACTIVE`.
         ///
         /// Sets `TASK_FOREGROUND_APPLICATION` as the task policy role — confirmed through local testing.
+        ///
+        /// On watchOS, there is no UIScene support, so the app starts in `INACTIVE` (like app-delegate-based apps).
+        /// The task policy role is also unavailable on watchOS.
         static func userLaunchInSceneDelegateBasedApp(processLaunchDate: Date) -> ProcessLaunchType {
             #if os(iOS) || os(visionOS)
             let taskPolicyRole = Int(TASK_FOREGROUND_APPLICATION.rawValue)
+            let initialAppState = AppState.background
+            #elseif os(watchOS)
+            let taskPolicyRole = __dd_private_TASK_POLICY_UNAVAILABLE
+            // watchOS has no UIScene-based lifecycle; the app starts in INACTIVE state.
+            let initialAppState = AppState.inactive
             #else
             let taskPolicyRole = __dd_private_TASK_POLICY_UNAVAILABLE
+            let initialAppState = AppState.background
             #endif
 
             return .init(
@@ -41,7 +50,7 @@ internal class AppRunner {
                 processInfoEnvironment: [:],
                 processLaunchDate: processLaunchDate,
                 runtimeLoadDate: processLaunchDate,
-                initialAppState: .background,
+                initialAppState: initialAppState,
                 description: "user launch (with scene-delegate)"
             )
         }
@@ -135,7 +144,9 @@ internal class AppRunner {
     private var dateProvider: DateProviderMock!
     private var appStateProvider: AppStateProviderMock!
     private var appLaunchHandler: AppLaunchHandlerMock!
+    #if !os(watchOS)
     private var frameInfoProvider: FrameInfoProviderMock!
+    #endif
     private var core: DatadogCoreProxy!
     // swiftlint:enable implicitly_unwrapped_optional
     private var appStateObservers: [NSObjectProtocol] = []
@@ -146,7 +157,7 @@ internal class AppRunner {
     func launch(_ launchType: ProcessLaunchType) {
         appDirectory = { Directory(url: temporaryDirectory) }
         processInfo = ProcessInfoMock(environment: launchType.processInfoEnvironment)
-        notificationCenter = .default
+        notificationCenter = NotificationCenter()
         dateProvider = DateProviderMock(now: launchType.processLaunchDate)
         appStateProvider = AppStateProviderMock(state: launchType.initialAppState)
         appLaunchHandler = AppLaunchHandlerMock(
@@ -208,12 +219,15 @@ internal class AppRunner {
     /// Returns the current simulated time.
     var currentTime: Date { dateProvider.now }
 
-    private var lastAppearedViewController: UIViewController?
-
     /// Simulates the first frame of an app launch.
     func displayFirstFrame(after interval: TimeInterval) {
+        #if !os(watchOS)
         self.frameInfoProvider.triggerCallback(interval: interval)
+        #endif
     }
+
+    #if !os(watchOS)
+    private var lastAppearedViewController: UIViewController?
 
     /// Simulates `viewDidAppear()` for a given view controller.
     /// If another view controller had previously appeared, it will automatically simulate `viewDidDisappear()` for it.
@@ -232,6 +246,7 @@ internal class AppRunner {
             lastAppearedViewController = nil
         }
     }
+    #endif
 
     // MARK: - SDK Setup
 
@@ -269,11 +284,13 @@ internal class AppRunner {
         config.dateProvider = dateProvider
         config.mediaTimeProvider = MediaTimeProviderMock(current: 0)
         config.notificationCenter = notificationCenter
+        #if !os(watchOS)
         config.frameInfoProviderFactory = { [weak self] in
             let frameInfoProvider = FrameInfoProviderMock(target: $0, selector: $1)
             self?.frameInfoProvider = frameInfoProvider
             return frameInfoProvider
         }
+        #endif
         rumSetup(&config)
         RUM.enable(with: config, in: core)
     }
