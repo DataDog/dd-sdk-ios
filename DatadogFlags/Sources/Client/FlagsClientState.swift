@@ -13,8 +13,8 @@ import Foundation
 /// - On `setEvaluationContext()`: ``notReady`` → ``reconciling`` → ``ready`` / ``stale`` / ``error``
 /// - On context change: ``ready`` or ``stale`` → ``reconciling`` → ``ready`` / ``stale`` / ``error``
 /// - On `reset()`: any → ``notReady``
-public enum FlagsClientState: Equatable {
-    /// The provider has not been initialized.
+public enum FlagsClientState: Sendable {
+    /// The client has not been initialized.
     ///
     /// This state occurs before `setEvaluationContext()` is called or after `reset()`.
     case notReady
@@ -23,7 +23,7 @@ public enum FlagsClientState: Equatable {
     case ready
 
     /// The client is currently fetching flags for a context change.
-    /// Cached flags may still be available for evaluation during this state.
+    /// Previously cached flags, if any, may still be available for evaluation during this state.
     case reconciling
 
     /// A network request to fetch flags failed, but cached flags are still available for evaluation.
