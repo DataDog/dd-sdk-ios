@@ -78,6 +78,17 @@ public protocol FlagsClientProtocol: AnyObject {
 }
 
 extension FlagsClientProtocol {
+    /// Default state observable for backward compatibility with external conformers.
+    ///
+    /// External implementations of ``FlagsClientProtocol`` that don't provide their own
+    /// state management will receive this default implementation, which returns a no-op
+    /// observable in the ``FlagsClientState/notReady`` state.
+    public var state: FlagsStateObservable {
+        NOPStateObservable(state: .notReady)
+    }
+}
+
+extension FlagsClientProtocol {
     /// Sets the evaluation context without waiting for completion.
     ///
     /// This is a convenience method that calls ``setEvaluationContext(_:completion:)`` without
