@@ -584,10 +584,11 @@ class TelemetryReceiverTests: XCTestCase {
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, sampler: .mockKeepAll())
 
         // When
-        receiver.receive(
+        let result = receiver.receive(
             message: .telemetry(.usage(.init(event: .trackWebView, sampleRate: 100))),
             from: NOPDatadogCore()
         )
+        XCTAssertTrue(result)
 
         // Then
         let event = featureScope.eventsWritten(ofType: TelemetryUsageEvent.self).first
