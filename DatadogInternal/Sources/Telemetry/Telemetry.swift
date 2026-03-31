@@ -503,6 +503,11 @@ extension Telemetry {
     public func metric(name: String, attributes: [String: Encodable], sampleRate: SampleRate = MetricTelemetry.defaultSampleRate) {
         send(telemetry: .metric(MetricTelemetry(name: name, attributes: attributes, sampleRate: sampleRate)))
     }
+
+    /// Reports WebView tracking API usage.
+    public func trackWebView() {
+        send(telemetry: .usage(.init(event: .trackWebView, sampleRate: UsageTelemetry.defaultSampleRate)))
+    }
 }
 
 public struct NOPTelemetry: Telemetry {

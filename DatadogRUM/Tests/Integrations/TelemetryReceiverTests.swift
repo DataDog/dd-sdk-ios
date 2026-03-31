@@ -581,6 +581,7 @@ class TelemetryReceiverTests: XCTestCase {
 
     func testSendTelemetryUsage_trackWebView() {
         // Given
+        featureScope.contextMock = .mockWith(source: "ios", sdkVersion: "sdk-version")
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, sampler: .mockKeepAll())
 
         // When
@@ -594,6 +595,9 @@ class TelemetryReceiverTests: XCTestCase {
         let event = featureScope.eventsWritten(ofType: TelemetryUsageEvent.self).first
         XCTAssertNotNil(event)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
+        XCTAssertEqual(event?.service, "dd-sdk-ios")
+        XCTAssertEqual(event?.source, .ios)
+        XCTAssertEqual(event?.version, "sdk-version")
         guard case .telemetryMobileFeaturesUsage(let usage) = event?.telemetry.usage,
               case .trackWebView = usage else {
             XCTFail("Expected .telemetryMobileFeaturesUsage(.trackWebView)")
