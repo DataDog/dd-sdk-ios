@@ -143,7 +143,7 @@ extension AnyValue: AnyMockable, RandomMockable {
 final class FlagsRepositoryMock: FlagsRepositoryProtocol {
     var clientName: String
     var flagsData: FlagsData?
-    let stateManager = FlagsStateManager()
+    let state: FlagsStateObservable = NOPStateObservable(state: .notReady)
     var setEvaluationContextStub: ((FlagsEvaluationContext, @escaping (Result<Void, FlagsError>) -> Void) -> Void)?
 
     var context: FlagsEvaluationContext? {

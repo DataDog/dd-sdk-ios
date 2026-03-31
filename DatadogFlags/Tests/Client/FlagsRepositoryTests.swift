@@ -134,7 +134,7 @@ final class FlagsRepositoryTests: XCTestCase {
             dateProvider: DateProviderMock(),
             featureScope: featureScope
         )
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .notReady)
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
         let completed = expectation(description: "completed")
 
         // When
@@ -144,7 +144,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0)
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
     }
 
     func testStateTransitionsToErrorOnFailureWithNoCache() {
@@ -157,7 +157,7 @@ final class FlagsRepositoryTests: XCTestCase {
             dateProvider: DateProviderMock(),
             featureScope: featureScope
         )
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .notReady)
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
         let completed = expectation(description: "completed")
 
         // When
@@ -167,7 +167,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0)
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .error)
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
     }
 
     func testStateTransitionsToStaleOnFailureWithCache() {
@@ -186,7 +186,7 @@ final class FlagsRepositoryTests: XCTestCase {
             firstCompleted.fulfill()
         }
         waitForExpectations(timeout: 0)
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
 
         // Given — now make the fetcher fail
         fetcherMock.flagAssignmentsStub = { _, completion in
@@ -201,7 +201,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0)
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .stale)
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
         // Cached flags should still be available
         XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
     }
@@ -217,17 +217,17 @@ final class FlagsRepositoryTests: XCTestCase {
             dateProvider: DateProviderMock(),
             featureScope: featureScope
         )
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .notReady)
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
 
         // When — start the fetch (but don't complete it)
         flagsRepository.setEvaluationContext(.mockAny()) { _ in }
 
         // Then — state should be reconciling while fetch is in progress
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .reconciling)
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
 
         // Complete the fetch
         capturedCompletion?(.success(["test": .mockAny()]))
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
     }
 
     func testResetTransitionsToNotReady() {
@@ -245,13 +245,13 @@ final class FlagsRepositoryTests: XCTestCase {
             completed.fulfill()
         }
         waitForExpectations(timeout: 0)
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
 
         // When
         flagsRepository.reset()
 
         // Then
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .notReady)
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
     }
 
     func testStateTransitionsToStaleOnFailureWithDiskCache() throws {
@@ -288,7 +288,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
         // Then — should be .stale (not .error) because cached flags exist on disk
         waitForExpectations(timeout: 1)
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .stale)
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
     }
 
     func testStateTransitionsToErrorOnFailureWithMismatchedCachedContext() {
@@ -310,7 +310,7 @@ final class FlagsRepositoryTests: XCTestCase {
             firstCompleted.fulfill()
         }
         waitForExpectations(timeout: 0)
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
 
         // Given — now make the fetcher fail and request a DIFFERENT context
         fetcherMock.flagAssignmentsStub = { _, completion in
@@ -326,7 +326,7 @@ final class FlagsRepositoryTests: XCTestCase {
         // Then — should be .error (not .stale) because cached context A != requested context B
         // This prevents serving user A's flags to user B
         waitForExpectations(timeout: 0)
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .error)
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
     }
 
     func testStateRecoveryFromStaleToReady() {
@@ -345,7 +345,7 @@ final class FlagsRepositoryTests: XCTestCase {
         let first = expectation(description: "first")
         flagsRepository.setEvaluationContext(.mockAny()) { _ in first.fulfill() }
         waitForExpectations(timeout: 0)
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
 
         // Reach stale state
         fetcherMock.flagAssignmentsStub = { _, completion in
@@ -354,7 +354,7 @@ final class FlagsRepositoryTests: XCTestCase {
         let second = expectation(description: "second")
         flagsRepository.setEvaluationContext(.mockAny()) { _ in second.fulfill() }
         waitForExpectations(timeout: 0)
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .stale)
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
 
         // Recover to ready
         fetcherMock.flagAssignmentsStub = { _, completion in
@@ -363,7 +363,7 @@ final class FlagsRepositoryTests: XCTestCase {
         let third = expectation(description: "third")
         flagsRepository.setEvaluationContext(.mockAny()) { _ in third.fulfill() }
         waitForExpectations(timeout: 0)
-        XCTAssertEqual(flagsRepository.stateManager.currentState, .ready)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
     }
 
     // MARK: - State-Before-Completion Ordering
@@ -383,7 +383,7 @@ final class FlagsRepositoryTests: XCTestCase {
         // When
         var stateInCompletion: FlagsClientState?
         flagsRepository.setEvaluationContext(.mockAny()) { _ in
-            stateInCompletion = flagsRepository.stateManager.currentState
+            stateInCompletion = flagsRepository.state.currentState
             completed.fulfill()
         }
 
@@ -408,7 +408,7 @@ final class FlagsRepositoryTests: XCTestCase {
         // When
         var stateInCompletion: FlagsClientState?
         flagsRepository.setEvaluationContext(.mockAny()) { _ in
-            stateInCompletion = flagsRepository.stateManager.currentState
+            stateInCompletion = flagsRepository.state.currentState
             completed.fulfill()
         }
 

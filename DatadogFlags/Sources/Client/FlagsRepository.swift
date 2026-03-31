@@ -12,7 +12,7 @@ internal protocol FlagsRepositoryProtocol {
 
     var context: FlagsEvaluationContext? { get }
 
-    var stateManager: FlagsStateManager { get }
+    var state: FlagsStateObservable { get }
 
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
@@ -32,7 +32,7 @@ internal final class FlagsRepository {
     }
 
     let clientName: String
-    let stateManager: FlagsStateManager
+    private let stateManager = FlagsStateManager()
 
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
@@ -50,14 +50,12 @@ internal final class FlagsRepository {
         clientName: String,
         flagAssignmentsFetcher: any FlagAssignmentsFetching,
         dateProvider: any DateProvider,
-        featureScope: any FeatureScope,
-        stateManager: FlagsStateManager = FlagsStateManager()
+        featureScope: any FeatureScope
     ) {
         self.clientName = clientName
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
         self.dateProvider = dateProvider
         self.featureScope = featureScope
-        self.stateManager = stateManager
         readState()
     }
 
@@ -93,6 +91,8 @@ internal final class FlagsRepository {
 }
 
 extension FlagsRepository: FlagsRepositoryProtocol {
+    var state: FlagsStateObservable { stateManager }
+
     var context: FlagsEvaluationContext? {
         waitForFlagsDataRead()
         return flagsData?.context

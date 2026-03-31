@@ -101,3 +101,21 @@ private struct WeakListener {
         self.value = value
     }
 }
+
+/// A no-op observable that always reports a fixed state.
+/// Used for fallback clients where state management is not needed.
+internal final class NOPStateObservable: FlagsStateObservable {
+    let currentState: FlagsClientState
+
+    init(state: FlagsClientState) {
+        self.currentState = state
+    }
+
+    func addListener(_ listener: FlagsStateListener) {
+        listener.flagsStateDidChange(currentState)
+    }
+
+    func removeListener(_ listener: FlagsStateListener) {
+        // No-op: listeners are not tracked
+    }
+}

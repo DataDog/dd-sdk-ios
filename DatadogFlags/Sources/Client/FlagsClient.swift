@@ -199,7 +199,7 @@ public final class FlagsClient {
 
 extension FlagsClient: FlagsClientProtocol {
     public var state: FlagsStateObservable {
-        repository.stateManager
+        repository.state
     }
 
     public func setEvaluationContext(
