@@ -114,6 +114,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     ) {
         waitForFlagsDataRead()
         let hadFlags = flagsData != nil
+        let cachedContext = flagsData?.context
         stateManager.updateState(.reconciling)
 
         flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
@@ -136,8 +137,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 // dd-openfeature-provider-swift checks currentState in the callback.
                 // Only use cached flags if they match the requested context to avoid
                 // serving flags from a different user/context.
-                let cachedContextMatches = self?.flagsData?.context == context
-                if hadFlags && cachedContextMatches {
+                if hadFlags && cachedContext == context {
                     self?.stateManager.updateState(.stale)
                 } else {
                     self?.stateManager.updateState(.error)
@@ -148,8 +148,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     }
 
     func reset() {
+        // Clear disk first, then memory, then update state.
+        // This prevents race conditions where a listener reacts to the state
+        // change and queries the data store before disk is cleared.
+        featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
         flagsData = nil
         stateManager.updateState(.notReady)
-        featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
     }
 }
