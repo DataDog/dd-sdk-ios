@@ -85,9 +85,9 @@ extension DeterministicSampler {
     public init(uuid: UUID, samplingRate: SampleRate) {
         assert(MemoryLayout<UUID>.size == 16)
         let seed = withUnsafePointer(to: uuid) { uuidPointer in
-            uuidPointer.withMemoryRebound(to: UInt64.self, capacity: 2) { pointer in
-                UInt64(bigEndian: pointer.successor().pointee) & 0x0000FFFFFFFFFFFF
-            }
+            let buffer = UnsafeRawBufferPointer(start: uuidPointer, count: MemoryLayout<UUID>.size)
+            let last8Bytes = buffer.loadUnaligned(fromByteOffset: 8, as: UInt64.self)
+            return UInt64(bigEndian: last8Bytes) & 0x0000FFFFFFFFFFFF
         }
         self.init(seed: seed, samplingRate: samplingRate)
     }
