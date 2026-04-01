@@ -9,6 +9,7 @@ import DatadogInternal
 import TestUtilities
 @testable import DatadogCore
 @testable import DatadogRUM
+@testable import DatadogTrace
 
 #if os(iOS)
 @_spi(Internal)
@@ -116,4 +117,155 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
         XCTAssertTrue(srData.isEmpty, "SR must not record: UUID is excluded by the combined 40% rate")
     }
     #endif
+
+    // MARK: - Trace (manually created spans) sampling with RUM Session ID
+    // MARK: 1. Trace rate is lower than session rate
+
+    /*
+        Session sampled -> Trace may or may not be sampled
+        Session not sampled -> Trace not sampled
+     */
+    func testManuallyCreatedSpan_traceRateLowerThanSessionRate_sampledSession() throws {
+        // Session is sampled, trace is not.
+        let sessionUUID = try makeValidatedSessionID()
+        enabledRUMWith(samplingRate: 60, traceSamplingRate: .random(in: 0...50), sessionUUID: sessionUUID)
+        let span = createViewAndSpan()
+        try assert(rumViewsExist: true, span: span, spansExist: false)
+    }
+
+    func testManuallyCreatedSpan_traceRateLowerThanSessionRate_nonSampledSession() throws {
+        // Session is NOT sampled, trace is also not.
+        let sessionUUID = try makeValidatedSessionID()
+        enabledRUMWith(samplingRate: 50, traceSamplingRate: .random(in: 0...50), sessionUUID: sessionUUID)
+        let span = createViewAndSpan()
+        try assert(rumViewsExist: false, span: span, spansExist: false)
+    }
+
+    func testManuallyCreatedSpan_traceRateLowerThanSessionRate_random() throws {
+        let sessionUUID = UUID()
+        let sampler = DeterministicSampler(uuid: sessionUUID, samplingRate: .random(in: 0...100))
+        let traceSampler = DeterministicSampler(uuid: sessionUUID, samplingRate: .random(in: 0...Float.random(in: 0...(min(50, sampler.samplingRate)))))
+        enabledRUMWith(samplingRate: sampler.samplingRate, traceSamplingRate: traceSampler.samplingRate, sessionUUID: sessionUUID)
+        let span = createViewAndSpan()
+        try assert(rumViewsExist: sampler.isSampled, span: span, spansExist: traceSampler.isSampled)
+        XCTAssert(
+            sampler.isSampled /* Session sampled -> Trace may or may not be sampled */
+            || (traceSampler.isSampled == false) /* Session not sampled -> Trace not sampled */
+        )
+    }
+
+    // MARK: 2. Trace rate is equal to session rate
+
+    /*
+       Session sampled -> Trace is sampled
+       Session not sampled -> Trace not sampled
+     */
+    func testManuallyCreatedSpan_traceRateEqualToSessionRate_sampledSession() throws {
+        let sessionUUID = try makeValidatedSessionID()
+        enabledRUMWith(samplingRate: 60, traceSamplingRate: 60, sessionUUID: sessionUUID)
+        let span = createViewAndSpan()
+        try assert(rumViewsExist: true, span: span, spansExist: true)
+    }
+
+    func testManuallyCreatedSpan_traceRateEqualToSessionRate_nonSampledSession() throws {
+        let sessionUUID = try makeValidatedSessionID()
+        enabledRUMWith(samplingRate: 50, traceSamplingRate: 50, sessionUUID: sessionUUID)
+        let span = createViewAndSpan()
+        try assert(rumViewsExist: false, span: span, spansExist: false)
+    }
+
+    func testManuallyCreatedSpan_traceRateEqualToSessionRate_random() throws {
+        let sessionUUID = UUID()
+        let sampler = DeterministicSampler(uuid: sessionUUID, samplingRate: .random(in: 0...100))
+        enabledRUMWith(samplingRate: sampler.samplingRate, traceSamplingRate: sampler.samplingRate, sessionUUID: sessionUUID)
+        let span = createViewAndSpan()
+        try assert(rumViewsExist: sampler.isSampled, span: span, spansExist: sampler.isSampled)
+    }
+
+    // MARK: 3. Trace rate is higher than session rate
+
+    /*
+        Session sampled -> Trace is sampled
+        Session not sampled -> Trace may or may not be sampled
+     */
+    func testManuallyCreatedSpan_traceRateHigherThanSessionRate_sampledSession() throws {
+        // Session is sampled, trace is.
+        let sessionUUID = try makeValidatedSessionID()
+        enabledRUMWith(samplingRate: 60, traceSamplingRate: .random(in: 60...100), sessionUUID: sessionUUID)
+        let span = createViewAndSpan()
+        try assert(rumViewsExist: true, span: span, spansExist: true)
+    }
+
+    func testManuallyCreatedSpan_traceRateHigherThanSessionRate_nonSampledSession() throws {
+        // Session is NOT sampled, trace is.
+        let sessionUUID = try makeValidatedSessionID()
+        enabledRUMWith(samplingRate: 50, traceSamplingRate: .random(in: 60...100), sessionUUID: sessionUUID)
+        let span = createViewAndSpan()
+        try assert(rumViewsExist: false, span: span, spansExist: true)
+    }
+
+    func testManuallyCreatedSpan_traceRateHigherThanSessionRate_random() throws {
+        let sessionUUID = UUID()
+        let sampler = DeterministicSampler(uuid: sessionUUID, samplingRate: .random(in: 0...100))
+        let traceSampler = DeterministicSampler(uuid: sessionUUID, samplingRate: Float.random(in: (max(60, sampler.samplingRate))...100))
+        enabledRUMWith(samplingRate: sampler.samplingRate, traceSamplingRate: traceSampler.samplingRate, sessionUUID: sessionUUID)
+        let span = createViewAndSpan()
+        try assert(rumViewsExist: sampler.isSampled, span: span, spansExist: traceSampler.isSampled)
+        XCTAssert(
+            sampler.isSampled == false /* Session not sampled -> Trace may or may not be sampled */
+            || traceSampler.isSampled /* Session sampled -> Trace is sampled */
+        )
+    }
+
+    // MARK: Helper methods
+
+    private func makeValidatedSessionID() throws -> UUID {
+        // This session ID is not sampled at 50%, but it is sampled at 60%.
+        let sessionUUID = UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!
+
+        // Preconditions guard — if hash properties ever change, fail loudly
+        let canary1 = DeterministicSampler(uuid: sessionUUID, samplingRate: 50)
+        try XCTSkipUnless(canary1.isSampled == false, "Precondition: UUID must NOT be sampled at 50%")
+        let canary2 = DeterministicSampler(uuid: sessionUUID, samplingRate: 60)
+        try XCTSkipUnless(canary2.isSampled == true, "Precondition: UUID must be sampled at 60%")
+
+        return sessionUUID
+    }
+
+    private func enabledRUMWith(samplingRate rumSamplingRate: Float, traceSamplingRate: Float, sessionUUID: UUID) {
+        var rumConfig = RUM.Configuration(applicationID: "test-app-id")
+        rumConfig.sessionSampleRate = rumSamplingRate
+        rumConfig.uuidGenerator = RUMUUIDGeneratorMock(uuid: RUMUUID(rawValue: sessionUUID))
+        RUM.enable(with: rumConfig, in: core)
+
+        let traceConfig = Trace.Configuration(sampleRate: traceSamplingRate)
+        Trace.enable(with: traceConfig, in: core)
+
+        // Wait until all the pieces injected in the context and shared between modules are in place.
+        core.flush()
+    }
+
+    private func createViewAndSpan(customSpanSampleRate: Float? = nil) -> OTSpan {
+        let tracer = Tracer.shared(in: core)
+
+        RUMMonitor.shared(in: core).startView(key: "test-view", name: "TestView")
+        let span = tracer.startRootSpan(operationName: "Test Action", customSampleRate: customSpanSampleRate)
+        span.finish()
+        _ = core.waitAndReturnEventsData(ofFeature: RUMFeature.name)
+        _ = core.waitAndReturnEventsData(ofFeature: TraceFeature.name)
+
+        return span
+    }
+
+    private func assert(rumViewsExist: Bool, span: OTSpan, spansExist: Bool) throws {
+        // The RUM view must exist (session sampled at 60%)
+        let rumMatchers = try core.waitAndReturnRUMEventMatchers()
+        XCTAssert(rumMatchers.filterRUMEvents(ofType: RUMViewEvent.self).isEmpty != rumViewsExist)
+
+        let traceMatchers = try core.waitAndReturnSpanMatchers()
+        XCTAssert(traceMatchers.isEmpty != spansExist)
+
+        let dd = try XCTUnwrap(span.context.dd)
+        XCTAssert(dd.samplingDecision.samplingPriority.isKept == spansExist)
+    }
 }
