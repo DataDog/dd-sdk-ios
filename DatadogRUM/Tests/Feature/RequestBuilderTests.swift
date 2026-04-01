@@ -109,7 +109,7 @@ class RequestBuilderTests: XCTestCase {
         let request = try builder.request(for: mockEvents, with: context, execution: execution)
 
         // Then
-        let expextedQuery = "ddsource=\(randomSource)&ddtags=retry_count:\(randomAttempt + 1),last_failure_status:\(randomStatus)"
+        let expextedQuery = "ddsource=\(randomSource)&ddtags=retry_count:\(randomAttempt + 1),retry_after:\(randomStatus)"
         XCTAssertEqual(request.url?.query, expextedQuery)
     }
 

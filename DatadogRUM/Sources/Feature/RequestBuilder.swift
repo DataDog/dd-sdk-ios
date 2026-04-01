@@ -29,7 +29,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     ) throws -> URLRequest {
         var tags = ["retry_count:\(execution.attempt + 1)"]
         if let previousResponseCode = execution.previousResponseCode {
-            tags.append("last_failure_status:\(previousResponseCode)")
+            tags.append("retry_after:\(previousResponseCode)")
         }
 
         let filteredEvents = eventsFilter.filter(events: events)
