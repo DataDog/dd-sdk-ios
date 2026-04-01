@@ -366,6 +366,65 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
     }
 
+    // MARK: - Overlapping Requests
+
+    func testOverlappingContextUpdates_laterSuccessShouldNotBeClearedByEarlierFailure() {
+        // This test reproduces the race condition from Codex feedback #24:
+        // 1. Request A starts (captures hadFlags = false)
+        // 2. Request B starts and succeeds (writes flags)
+        // 3. Request A fails (should NOT clear request B's flags)
+
+        // Given — a fetcher that captures completions so we can control timing
+        var capturedCompletions: [(context: FlagsEvaluationContext, completion: (Result<[String: FlagAssignment], FlagsError>) -> Void)] = []
+        let fetcherMock = FlagAssignmentsFetcherMock { context, completion in
+            capturedCompletions.append((context, completion))
+        }
+
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        let flagsForB: [String: FlagAssignment] = ["feature": .mockAny()]
+
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcherMock,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+
+        let completedA = expectation(description: "request A completed")
+        let completedB = expectation(description: "request B completed")
+
+        // When — start request A (captures hadFlags = false)
+        flagsRepository.setEvaluationContext(contextA) { _ in
+            completedA.fulfill()
+        }
+
+        // When — start request B (also captures hadFlags = false)
+        flagsRepository.setEvaluationContext(contextB) { _ in
+            completedB.fulfill()
+        }
+
+        // Both requests should be in-flight
+        XCTAssertEqual(capturedCompletions.count, 2)
+
+        // When — request B completes successfully first (writes flags)
+        capturedCompletions[1].completion(.success(flagsForB))
+
+        // When — request A fails after B succeeded
+        capturedCompletions[0].completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+
+        waitForExpectations(timeout: 1)
+
+        // Then — request B's flags should still be available
+        // This is the key assertion: the later successful request's flags should NOT
+        // be wiped out by the earlier failing request
+        XCTAssertNotNil(
+            flagsRepository.flagAssignment(for: "feature"),
+            "Request B's flags should not be cleared by request A's failure"
+        )
+        XCTAssertEqual(flagsRepository.context, contextB, "Context should be from request B")
+    }
+
     // MARK: - State-Before-Completion Ordering
 
     func testStateIsUpdatedBeforeCompletionOnSuccess() {

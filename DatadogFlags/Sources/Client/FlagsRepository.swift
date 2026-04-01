@@ -41,6 +41,11 @@ internal final class FlagsRepository {
     @ReadWriteLock
     private var flagsData: FlagsData?
 
+    /// Version counter for `flagsData`. Incremented on every write to detect
+    /// when a newer request has succeeded while an older request was in-flight.
+    @ReadWriteLock
+    private var flagsDataVersion: UInt64 = 0
+
     /// Tracks disk read state and pending callbacks for async operations.
     /// When `isComplete` is false, callbacks are queued and executed once disk read finishes.
     /// When `isComplete` is true, callbacks execute immediately.
@@ -166,6 +171,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
             let hadFlags = self.flagsData != nil
             let cachedContext = self.flagsData?.context
+            let versionAtStart = self.flagsDataVersion
             self.stateManager.updateState(.reconciling)
 
             self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
@@ -180,10 +186,18 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         context: context,
                         date: self.dateProvider.now
                     )
+                    self._flagsDataVersion.mutate { $0 += 1 }
                     self.writeState()
                     self.stateManager.updateState(.ready)
                     completion(.success(()))
                 case .failure(let error):
+                    // Only update state if no newer request has succeeded.
+                    // This prevents an older failing request from clearing data
+                    // written by a newer successful request.
+                    guard self?.flagsDataVersion == versionAtStart else {
+                        completion(.failure(error))
+                        return
+                    }
                     // State must be updated before calling completion —
                     // dd-openfeature-provider-swift checks currentState in the callback.
                     // Only use cached flags if they match the requested context to avoid
