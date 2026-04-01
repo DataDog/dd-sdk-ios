@@ -191,6 +191,10 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     if hadFlags && cachedContext == context {
                         self?.stateManager.updateState(.stale)
                     } else {
+                        // Clear cached data to prevent cross-context flag leakage.
+                        // Without this, flagAssignment() could return the previous
+                        // user's flags while in .error state.
+                        self?.flagsData = nil
                         self?.stateManager.updateState(.error)
                     }
                     completion(.failure(error))
