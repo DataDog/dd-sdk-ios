@@ -16,7 +16,7 @@ import DatadogInternal
 /// Trace code that requires sampling should never create a custom sampler. Instead, use the
 /// functions below for either obtaining the default sampler or creating one for a custom sampling
 /// rate.
-internal protocol TracerSamplerProvider {
+internal protocol TracerSamplerProvider: Sendable {
     /// Obtains the sampler that should be used for Trace sampling operations.
     ///
     /// Depending on the runtime situation, this can either be a deterministic sampler, consistent

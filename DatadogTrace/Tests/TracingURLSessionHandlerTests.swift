@@ -19,7 +19,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        let receiver = ContextMessageReceiver(sampleRate: .mockAny())
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
         core = PassthroughCoreMock(messageReceiver: receiver)
 
         tracer = .mockWith(
@@ -49,7 +49,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(sampleRate: .mockAny()),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all,
@@ -99,7 +99,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(sampleRate: .mockAny()),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all,
@@ -157,7 +157,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(sampleRate: .mockAny()),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: 0,
             firstPartyHosts: .init(),
             traceContextInjection: .sampled,
@@ -200,7 +200,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(sampleRate: .mockAny()),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all,
@@ -254,7 +254,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(sampleRate: .mockAny()),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all,
@@ -309,7 +309,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(sampleRate: .mockAny()),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all,
@@ -364,7 +364,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(sampleRate: .mockAny()),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: 0,
             firstPartyHosts: .init(),
             traceContextInjection: .sampled,
@@ -637,7 +637,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
-        let receiver = ContextMessageReceiver(sampleRate: .mockAny())
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
 
         let handler = TracingURLSessionHandler(
             tracer: .mockWith(core: core),
@@ -874,7 +874,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testDeterministicSamplingForSameSessionID() {
         // Given
-        let receiver = ContextMessageReceiver(sampleRate: .mockAny())
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
         let sessionUUID = "abcdef01-2345-6789-abcd-ef0123456789"
         let sessionSampler = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: 80.0)
         let networkContext = NetworkContext(rumContext: RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampler: sessionSampler))
@@ -908,7 +908,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testChildRateCorrectionIsApplied() throws {
         // seed 0xd860b2b9437a (~68.7% hash): NOT sampled at composed 40%, but sampled at trace-only 80%.
-        let receiver = ContextMessageReceiver(sampleRate: .mockAny())
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
         let sessionUUID = "a1b2c3d4-e5f6-7890-abcd-d860b2b9437a"
         let sessionSampleRate: SampleRate = 50.0
         let traceRate: SampleRate = 80.0
@@ -944,7 +944,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testNoRUMContextFallbackDoesNotCrash() {
         // Given — no RUM context in networkContext
-        let receiver = ContextMessageReceiver(sampleRate: .mockAny())
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
         let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: receiver,
@@ -966,7 +966,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
     // MARK: Test 4 — Cross-SDK Knuth vector
 
     func testCrossSDKKnuthVector() throws {
-        let receiver = ContextMessageReceiver(sampleRate: .mockAny())
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
         // seed 0x8e45571aa876 (~51.2% hash): NOT sampled at composed 48%, but sampled at trace-only 80%.
         let sessionUUID = "a1b2c3d4-e5f6-7890-abcd-8e45571aa876"
         let sessionSampleRate: SampleRate = 60.0
