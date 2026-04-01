@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
 - [FIX] Fix stack overflow crash when RUM scroll tracking is used alongside third-party delegate proxy libraries (e.g. RxSwift). See [#2791][]
 
 # 3.8.3 / 26-03-2026
@@ -10,7 +11,6 @@
 
 - [FIX] Fix crash and incorrect delegate getter return value when using RUM scroll tracking. See [#2761][]
 - [FIX] Fix freeze in Session Replay when screen changes are triggered by the recording pipeline. See [#2759][]
-- [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
 
 # 3.8.1 / 13-03-2026
 
