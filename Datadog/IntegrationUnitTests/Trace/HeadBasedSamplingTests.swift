@@ -10,9 +10,9 @@ import XCTest
 import DatadogInternal
 import TestUtilities
 
-private class InstrumentedSessionDelegate: NSObject, URLSessionDataDelegate {}
-
 class HeadBasedSamplingTests: XCTestCase {
+    private class InstrumentedSessionDelegate: NSObject, URLSessionDataDelegate {}
+
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var traceConfig: Trace.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -234,7 +234,7 @@ class HeadBasedSamplingTests: XCTestCase {
         URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
 
         // When
-        let request = try sendURLSessionRequest(to: "https://foo.com/request", using: InstrumentedSessionDelegate())
+        let request = try sendURLSessionRequest(to: URL(string: "https://foo.com/request")!, using: InstrumentedSessionDelegate())
 
         // Then
         let span = try XCTUnwrap(core.waitAndReturnSpanEvents().first, "It should send span event")
@@ -273,7 +273,7 @@ class HeadBasedSamplingTests: XCTestCase {
         URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
 
         // When
-        let request = try sendURLSessionRequest(to: "https://foo.com/request", using: InstrumentedSessionDelegate())
+        let request = try sendURLSessionRequest(to: URL(string: "https://foo.com/request")!, using: InstrumentedSessionDelegate())
 
         // Then
         XCTAssertNil(core.waitAndReturnSpanEvents().first, "It should not send span event")
@@ -306,7 +306,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         let span = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
-        let request = try sendURLSessionRequest(to: "https://foo.com/request", using: InstrumentedSessionDelegate()) {
+        let request = try sendURLSessionRequest(to: URL(string: "https://foo.com/request")!, using: InstrumentedSessionDelegate()) {
             span.finish()
         }
 
@@ -355,7 +355,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         let span = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
-        let request = try sendURLSessionRequest(to: "https://foo.com/request", using: InstrumentedSessionDelegate()) {
+        let request = try sendURLSessionRequest(to: URL(string: "https://foo.com/request")!, using: InstrumentedSessionDelegate()) {
             span.finish()
         }
 
@@ -390,12 +390,12 @@ class HeadBasedSamplingTests: XCTestCase {
             firstPartyHostsTracing: .trace(hosts: ["foo.com"], sampleRate: distributedTraceSampling, traceControlInjection: .sampled)
         )
         Trace.enable(with: traceConfig, in: core)
-        URLSessionInstrumentation.enable(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
+        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: InstrumentedSessionDelegate.self), in: core)
 
         // When
         let span = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
         span.setTag(key: SpanTags.manualDrop, value: true)
-        let request = try sendURLSessionRequest(to: "https://foo.com/request", using: InstrumentedSessionDelegate()) {
+        let request = try sendURLSessionRequest(to: URL(string: "https://foo.com/request")!, using: InstrumentedSessionDelegate()) {
             span.finish()
         }
 
@@ -566,49 +566,5 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertNotNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
         XCTAssertNotNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField))
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
-    }
-
-    // MARK: - Helpers
-
-    /// Sends request to `url` using real `URLSession` instrumented with provided `delegate`.
-    /// It returns the actual request that was sent to the server which can include additional headers set by the SDK.
-    ///
-    /// # Implementation note
-    /// `completionHandler` runs as part of `session.dataTask`'s completion handler. This is useful to finish
-    /// active (or parent) spans in a more realistic way. Here's a description of problem this solves.
-    ///
-    /// By the end of a request interception, the `DatadogURLSessionHandler.interceptionDidComplete(interception:)`
-    /// method is called. In situations where a span should be created to trace this request, that span is created inside this
-    /// method. This span can be a child of a currently active span, or a root span if no active span is present.
-    ///
-    /// If the SDK users want to trace a process that includes a request, one possibility is setting an active span before
-    /// initiating the request, and finishing it when the request ends, using the `DataTask` completion handler. Given
-    /// how interception implemented, `interceptionDidComplete(interception:)` runs after that completion
-    /// handler, which means if the active span is removed on the completion handler, there would not be an active session
-    /// any more.
-    ///
-    /// The SDK handles this situation (as well as if the SDK users immediately finish the active span after initiating the
-    /// request), so this is not a problem. However, in tests, we want to make sure this happens as we expect.
-    ///
-    /// In this specific method, and unlike most real world code, we block the main thread waiting for test expectations
-    /// after initiating the request. In the previous implementation, any active span would be terminated inside the test,
-    /// after we returned from this method, meaning after the entire request interception finished. This would not test
-    /// if the request interceptors handled correctly the fact the active session is gone by the end of the request, but still
-    /// existed in the beginning. Therefore, `completionHandler` was added, and runs as part of the `DataTask`
-    /// completion handler. This allows tests to finish active spans inside this completion handler, in a more realistic way,
-    /// close to what real world apps would do.
-    private func sendURLSessionRequest(to url: String, using delegate: URLSessionDelegate, completionHandler: (() -> Void)? = nil) throws -> URLRequest {
-        let server = ServerMock(delivery: .success(response: .mockAny(), data: .mockAny()))
-        let session = server.getInterceptedURLSession(delegate: delegate)
-        let taskCompleted = expectation(description: "wait for task completion")
-        let task = session.dataTask(with: .mockWith(url: URL(string: url)!)) { _, _, _ in
-            completionHandler?()
-            taskCompleted.fulfill()
-        }
-        task.resume()
-        waitForExpectations(timeout: 5)
-
-        let requests = server.waitAndReturnRequests(count: 1)
-        return try XCTUnwrap(requests.first)
     }
 }
