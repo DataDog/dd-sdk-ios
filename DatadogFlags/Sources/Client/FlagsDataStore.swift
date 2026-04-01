@@ -36,6 +36,7 @@ internal struct FlagsDataStore {
             } catch let error {
                 DD.logger.error("Failed to decode \(FlagsData.self) from Flags Data Store", error: error)
                 featureScope.telemetry.error("Failed to decode \(FlagsData.self) from Flags Data Store", error: error)
+                callback(nil)
             }
         }
     }
