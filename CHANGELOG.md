@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
 - [FIX] Fix stack overflow crash when RUM scroll tracking is used alongside third-party delegate proxy libraries (e.g. RxSwift). See [#2791][]
 - [IMPROVEMENT] Trace now uses deterministic sampling for custom spans, based on the RUM session ID when available.
 - [FIX] When there is an active span, RUM session tracking uses it as the basis for the resource parent span and sampling decision. Starting in this release, if the active span is not sampled, session tracking falls back to making its own sampling decision based on the RUM session tracking sampling rate.
@@ -1099,6 +1100,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2751]: https://github.com/DataDog/dd-sdk-ios/pull/2751
 [#2776]: https://github.com/DataDog/dd-sdk-ios/pull/2776
 [#2791]: https://github.com/DataDog/dd-sdk-ios/pull/2791
+[#2719]: https://github.com/DataDog/dd-sdk-ios/pull/2719
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
