@@ -1,6 +1,8 @@
 # Unreleased
 
 - [FIX] Fix stack overflow crash when RUM scroll tracking is used alongside third-party delegate proxy libraries (e.g. RxSwift). See [#2791][]
+- [IMPROVEMENT] Trace now uses deterministic sampling for custom spans, based on the RUM session ID when available.
+- [FIX] When there is an active span, RUM session tracking uses it as the basis for the resource parent span and sampling decision. Starting in this release, if the active span is not sampled, session tracking falls back to making its own sampling decision based on the RUM session tracking sampling rate.
 
 # 3.8.3 / 26-03-2026
 
