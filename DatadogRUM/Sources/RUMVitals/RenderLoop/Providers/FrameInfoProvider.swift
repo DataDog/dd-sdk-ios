@@ -40,6 +40,7 @@ extension FrameInfoProvider {
     }
 }
 
+#if !os(watchOS)
 extension CADisplayLink: FrameInfoProvider {
     var maximumDeviceFramesPerSecond: Int {
         #if swift(>=5.9) && os(visionOS)
@@ -55,3 +56,4 @@ extension CADisplayLink: FrameInfoProvider {
 
     var nextFrameTimestamp: CFTimeInterval { targetTimestamp }
 }
+#endif

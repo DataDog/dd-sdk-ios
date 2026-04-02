@@ -13,9 +13,15 @@ import QuartzCore
 public final class MediaTimeProviderMock: CACurrentMediaTimeProvider {
     private let _current: ReadWriteLock<CFTimeInterval>
 
+    #if os(watchOS)
+    public init(current: CFTimeInterval = 0) {
+        self._current = .init(wrappedValue: current)
+    }
+    #else
     public init(current: CFTimeInterval = CACurrentMediaTime()) {
         self._current = .init(wrappedValue: current)
     }
+    #endif
 
     public var current: CFTimeInterval {
         get { _current.wrappedValue }

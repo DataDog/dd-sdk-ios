@@ -616,6 +616,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
     }
 
+    #if !os(watchOS)
     func testWhenAnotherViewIsStarted_itEndsTheScope() throws {
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
@@ -663,6 +664,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertFalse(view2IsActive)
         XCTAssertEqual(viewEvents[1].view.timeSpent, TimeInterval(1).dd.toInt64Nanoseconds, "The View should last for 1 second")
     }
+    #endif
 
     func testWhenTheViewIsStartedAnotherTime_itEndsTheScope() throws {
         var currentTime = Date()

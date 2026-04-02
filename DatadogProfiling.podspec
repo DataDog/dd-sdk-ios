@@ -27,7 +27,7 @@ Pod::Spec.new do |s|
   # Configure C++ compilation
   s.pod_target_xcconfig = {
     'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
-    'SWIFT_INCLUDE_PATHS' => '$(PODS_TARGET_SRCROOT)/DatadogProfiling/Mach'
+    'SWIFT_INCLUDE_PATHS' => '$(PODS_TARGET_SRCROOT)/DatadogProfiling/Mach/include'
   }
 
 end

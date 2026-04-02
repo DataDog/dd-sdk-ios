@@ -8,7 +8,7 @@ import SwiftUI
 import DatadogTrace
 import DatadogInternal
 
-@available(iOS 14, *)
+@available(iOS 13, tvOS 13, *)
 internal class DebugManualTraceInjectionViewController: UIHostingController<DebugManualTraceInjectionView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: DebugManualTraceInjectionView())
@@ -28,7 +28,7 @@ extension TraceContextInjection {
     }
 }
 
-@available(iOS 14.0, *)
+@available(iOS 13, tvOS 13, *)
 internal struct DebugManualTraceInjectionView: View {
     enum TraceHeaderType: String, CaseIterable, Identifiable {
         case datadog = "Datadog"
@@ -78,7 +78,6 @@ internal struct DebugManualTraceInjectionView: View {
                         Text(headerType.toString())
                     }
                 }
-                .pickerStyle(.inline)
                 MultiSelector(
                     label: Text("Trace header type:"),
                     options: TraceHeaderType.allCases,
@@ -175,8 +174,7 @@ internal struct DebugManualTraceInjectionView: View {
 
 // MARK - Preview
 
-@available(iOS 14.0, *)
-
+@available(iOS 13, tvOS 13, *)
 struct DebugTraceInjectionView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {

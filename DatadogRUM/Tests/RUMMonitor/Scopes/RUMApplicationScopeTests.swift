@@ -60,6 +60,7 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertTrue(session.isInitialSession, "Starting the very first view in application must create initial session")
     }
 
+    #if !os(watchOS)
     func testWhenSessionExpires_itStartsANewOneAndTransfersActiveViews() throws {
         let expectation = self.expectation(description: "onSessionStart is called twice")
         expectation.expectedFulfillmentCount = 2
@@ -110,6 +111,7 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertTrue(transferredViewScope.identity == ViewIdentifier(view), "Transferred view scope must track the same view")
         XCTAssertFalse(nextSession.isInitialSession, "Any next session in the application must be marked as 'not initial'")
     }
+    #endif
 
     // MARK: - RUM Session Sampling
 

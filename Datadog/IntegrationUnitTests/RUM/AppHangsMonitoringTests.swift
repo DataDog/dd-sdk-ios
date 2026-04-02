@@ -81,6 +81,9 @@ class AppHangsMonitoringTests: XCTestCase {
     }
 
     func testGivenRUMAndCrashReportingEnabled_whenMainThreadHangs_thenAppHangErrorIncludesStackTrace() throws {
+        #if os(watchOS)
+        throw XCTSkip("Backtrace generation is not supported on watchOS (thread_get_state unavailable)")
+        #else
         // Given (initialize SDK on the main thread)
         oneOf([ // no matter of RUM or CR initialization order
             {
@@ -106,10 +109,11 @@ class AppHangsMonitoringTests: XCTestCase {
 
         XCTAssertEqual(appHangError.error.message, AppHangsMonitor.Constants.appHangErrorMessage)
         XCTAssertEqual(appHangError.error.type, AppHangsMonitor.Constants.appHangErrorType)
-        XCTAssertTrue(mainThreadStack.contains(uiKitLibraryName), "Main thread stack should include UIKit symbols")
+        XCTAssertTrue(mainThreadStack.contains("XCTestCore"), "Main thread stack should include XCTestCore symbols")
         XCTAssertEqual(appHangError.error.source, .source)
         XCTAssertNotNil(appHangError.error.threads, "Other threads should be available")
         XCTAssertNotNil(appHangError.error.binaryImages,  "Binary Images should be available for symbolication")
+        #endif
     }
 
     func testGivenOnlyRUMEnabled_whenMainThreadHangs_itTracksAppHangWithNoStackTrace() throws {

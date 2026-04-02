@@ -369,6 +369,7 @@ public protocol RUMMonitorViewProtocol: AnyObject {
     /// - Parameter keys: array of attribute keys that will be removed.
     func removeViewAttributes(forKeys keys: [AttributeKey])
 
+    #if !os(watchOS)
     /// Starts RUM view.
     /// - Parameters:
     ///   - viewController: the instance of `UIViewController` representing this view.
@@ -388,6 +389,7 @@ public protocol RUMMonitorViewProtocol: AnyObject {
         viewController: UIViewController,
         attributes: [AttributeKey: AttributeValue]
     )
+    #endif
 
     /// Starts RUM view.
     /// - Parameters:
@@ -496,8 +498,10 @@ extension NOPMonitor: RUMMonitorViewProtocol {
     func removeViewAttribute(forKey key: AttributeKey) { warn() }
     func removeViewAttributes(forKeys keys: [AttributeKey]) { warn() }
 
+    #if !os(watchOS)
     func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) { warn() }
+    #endif
     func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopView(key: String, attributes: [AttributeKey: AttributeValue]) { warn() }
 

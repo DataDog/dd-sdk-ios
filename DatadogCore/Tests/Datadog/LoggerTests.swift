@@ -775,7 +775,7 @@ class LoggerTests: XCTestCase {
         let logger = Logger.create(in: core)
 
         // when
-        RUMMonitor.shared(in: core).startView(viewController: mockView)
+        RUMMonitor.shared(in: core).startView(key: .mockAny())
         logger.info("message 0")
         RUMMonitor.shared(in: core).startAction(type: .tap, name: .mockAny())
         logger.info("message 1")
@@ -816,7 +816,7 @@ class LoggerTests: XCTestCase {
         // given
         let logger = Logger.create(in: core)
         RUM.enable(with: .mockAny(), in: core)
-        RUMMonitor.shared(in: core).startView(viewController: mockView)
+        RUMMonitor.shared(in: core).startView(key: .mockAny())
 
         // when
         logger.debug("debug message")
@@ -849,7 +849,7 @@ class LoggerTests: XCTestCase {
         // given
         let logger = Logger.create(in: core)
         RUM.enable(with: .mockAny(), in: core)
-        RUMMonitor.shared(in: core).startView(viewController: mockView)
+        RUMMonitor.shared(in: core).startView(key: .mockAny())
 
         // when
         let attributeValueA: String = .mockRandom()
@@ -888,7 +888,7 @@ class LoggerTests: XCTestCase {
         // given
         let logger = Logger.create(in: core)
         RUM.enable(with: .mockAny(), in: core)
-        RUMMonitor.shared(in: core).startView(viewController: mockView)
+        RUMMonitor.shared(in: core).startView(key: .mockAny())
 
         // when
         logger.error("error message", attributes: [
@@ -923,7 +923,7 @@ class LoggerTests: XCTestCase {
         // given
         let logger = Logger.create(in: core)
         RUM.enable(with: .mockAny(), in: core)
-        RUMMonitor.shared(in: core).startView(viewController: mockView)
+        RUMMonitor.shared(in: core).startView(key: .mockAny())
 
         // when
         logger.error("error message", attributes: [

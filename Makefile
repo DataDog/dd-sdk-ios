@@ -1,7 +1,7 @@
 all: env-check repo-setup dependencies templates
 .PHONY: env-check repo-setup dependencies clean templates \
 		lint license-check \
-		test test-ios test-ios-all test-tvos test-tvos-all \
+		test test-ios test-ios-all test-tvos test-tvos-all test-visionos test-visionos-all \
 		ui-test ui-test-all ui-test-podinstall \
 		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-snapshot-tests-open \
 		tools-test \
@@ -62,6 +62,16 @@ DEFAULT_TVOS_OS := latest
 DEFAULT_TVOS_PLATFORM := tvOS Simulator
 DEFAULT_TVOS_DEVICE := Apple TV
 
+# Test env for running watchOS tests in local:
+DEFAULT_WATCHOS_OS := latest
+DEFAULT_WATCHOS_PLATFORM := watchOS Simulator
+DEFAULT_WATCHOS_DEVICE := Apple Watch Series 11 (46mm)
+
+# Test env for running visionOS tests in local:
+DEFAULT_VISIONOS_OS := latest
+DEFAULT_VISIONOS_PLATFORM := visionOS Simulator
+DEFAULT_VISIONOS_DEVICE := Apple Vision Pro
+
 # Test env for running SR snapshot tests in local:
 DEFAULT_SR_SNAPSHOT_TESTS_OS := 17.5
 DEFAULT_SR_SNAPSHOT_TESTS_PLATFORM := iOS Simulator
@@ -95,17 +105,17 @@ test-ios:
 
 # Run unit tests for all iOS schemes
 test-ios-all:
-	@$(MAKE) test-ios SCHEME="DatadogCore iOS"
-	@$(MAKE) test-ios SCHEME="DatadogInternal iOS"
-	@$(MAKE) test-ios SCHEME="DatadogRUM iOS"
-	@$(MAKE) test-ios SCHEME="DatadogSessionReplay iOS"
-	@$(MAKE) test-ios SCHEME="DatadogLogs iOS"
-	@$(MAKE) test-ios SCHEME="DatadogTrace iOS"
-	@$(MAKE) test-ios SCHEME="DatadogCrashReporting iOS"
-	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking iOS"
-	@$(MAKE) test-ios SCHEME="DatadogFlags iOS"
-	@$(MAKE) test-ios SCHEME="DatadogProfiling iOS"
-	@$(MAKE) test-ios SCHEME="DatadogIntegrationTests iOS"
+	@$(MAKE) test-ios SCHEME="DatadogCore"
+	@$(MAKE) test-ios SCHEME="DatadogInternal"
+	@$(MAKE) test-ios SCHEME="DatadogRUM"
+	@$(MAKE) test-ios SCHEME="DatadogSessionReplay"
+	@$(MAKE) test-ios SCHEME="DatadogLogs"
+	@$(MAKE) test-ios SCHEME="DatadogTrace"
+	@$(MAKE) test-ios SCHEME="DatadogCrashReporting"
+	@$(MAKE) test-ios SCHEME="DatadogWebViewTracking"
+	@$(MAKE) test-ios SCHEME="DatadogFlags"
+	@$(MAKE) test-ios SCHEME="DatadogProfiling"
+	@$(MAKE) test-ios SCHEME="DatadogIntegrationTests"
 
 # Run unit tests for specified SCHEME using tvOS Simulator
 test-tvos:
@@ -117,15 +127,55 @@ test-tvos:
 
 # Run unit tests for all tvOS schemes
 test-tvos-all:
-	@$(MAKE) test-tvos SCHEME="DatadogCore tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogInternal tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogRUM tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogLogs tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogTrace tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogFlags tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogProfiling tvOS"
-	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests tvOS"
+	@$(MAKE) test-tvos SCHEME="DatadogCore"
+	@$(MAKE) test-tvos SCHEME="DatadogInternal"
+	@$(MAKE) test-tvos SCHEME="DatadogRUM"
+	@$(MAKE) test-tvos SCHEME="DatadogLogs"
+	@$(MAKE) test-tvos SCHEME="DatadogTrace"
+	@$(MAKE) test-tvos SCHEME="DatadogCrashReporting"
+	@$(MAKE) test-tvos SCHEME="DatadogFlags"
+	@$(MAKE) test-tvos SCHEME="DatadogProfiling"
+	@$(MAKE) test-tvos SCHEME="DatadogIntegrationTests"
+
+# Run unit tests for specified SCHEME using watchOS Simulator
+test-watchos:
+	@$(call require_param,SCHEME)
+	@:$(eval OS ?= $(DEFAULT_WATCHOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_WATCHOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_WATCHOS_DEVICE))
+	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run unit tests for all watchOS schemes
+test-watchos-all:
+	@$(MAKE) test-watchos SCHEME="DatadogCore"
+	@$(MAKE) test-watchos SCHEME="DatadogInternal"
+	@$(MAKE) test-watchos SCHEME="DatadogRUM"
+	@$(MAKE) test-watchos SCHEME="DatadogLogs"
+	@$(MAKE) test-watchos SCHEME="DatadogTrace"
+	@$(MAKE) test-watchos SCHEME="DatadogCrashReporting"
+	@$(MAKE) test-watchos SCHEME="DatadogFlags"
+	@$(MAKE) test-watchos SCHEME="DatadogIntegrationTests"
+
+# Run unit tests for specified SCHEME using visionOS Simulator
+test-visionos:
+	@$(call require_param,SCHEME)
+	@:$(eval OS ?= $(DEFAULT_VISIONOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_VISIONOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_VISIONOS_DEVICE))
+	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run unit tests for all visionOS schemes
+test-visionos-all:
+	@$(MAKE) test-visionos SCHEME="DatadogCore"
+	@$(MAKE) test-visionos SCHEME="DatadogInternal"
+	@$(MAKE) test-visionos SCHEME="DatadogRUM"
+	@$(MAKE) test-visionos SCHEME="DatadogLogs"
+	@$(MAKE) test-visionos SCHEME="DatadogTrace"
+	@$(MAKE) test-visionos SCHEME="DatadogCrashReporting"
+	@$(MAKE) test-visionos SCHEME="DatadogWebViewTracking"
+	@$(MAKE) test-visionos SCHEME="DatadogFlags"
+	@$(MAKE) test-visionos SCHEME="DatadogProfiling"
+	@$(MAKE) test-visionos SCHEME="DatadogIntegrationTests"
 
 # Run UI tests for specified TEST_PLAN
 ui-test:

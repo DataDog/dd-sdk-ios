@@ -559,7 +559,7 @@ extension DatadogContextProvider {
         subscribe(\.carrierInfo, to: CarrierInfoPublisher())
         #endif
 
-        #if os(iOS) && !targetEnvironment(simulator)
+        #if (os(iOS) || os(visionOS)) && !targetEnvironment(simulator)
         subscribe(\.batteryStatus, to: BatteryStatusPublisher(notificationCenter: notificationCenter, device: .current))
         subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher(notificationCenter: notificationCenter, processInfo: processInfo))
         #endif
@@ -570,7 +570,7 @@ extension DatadogContextProvider {
 
         subscribe(\.localeInfo, to: LocaleInfoPublisher(initialLocale: locale, notificationCenter: notificationCenter))
 
-        #if os(iOS) || os(tvOS)
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         let applicationStatePublisher = ApplicationStatePublisher(
             appStateHistory: appStateHistory,
             notificationCenter: notificationCenter,

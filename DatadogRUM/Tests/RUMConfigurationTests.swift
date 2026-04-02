@@ -16,10 +16,13 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertEqual(config.applicationID, "app-id")
         XCTAssertEqual(config.sessionSampleRate, 100)
         XCTAssertEqual(config.telemetrySampleRate, 20)
+        #if !os(watchOS)
         XCTAssertNil(config.uiKitViewsPredicate)
         XCTAssertNil(config.uiKitActionsPredicate)
         XCTAssertNil(config.swiftUIViewsPredicate)
         XCTAssertNil(config.swiftUIActionsPredicate)
+        XCTAssertTrue(config.trackMemoryWarnings)
+        #endif
         XCTAssertNil(config.urlSessionTracking)
         XCTAssertTrue(config.trackFrustrations)
         XCTAssertFalse(config.trackBackgroundEvents)
@@ -34,6 +37,5 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertNil(config.onSessionStart)
         XCTAssertNil(config.customEndpoint)
         XCTAssertTrue(config.trackAnonymousUser)
-        XCTAssertTrue(config.trackMemoryWarnings)
     }
 }

@@ -8,7 +8,9 @@ import Foundation
 
 /// A unique identifier for a RUM view.
 internal enum ViewIdentifier: Equatable {
+    #if !os(watchOS)
     case viewController(ObjectIdentifier)
+    #endif
     case key(String)
 }
 
@@ -18,7 +20,7 @@ extension ViewIdentifier {
     }
 }
 
-#if canImport(UIKit)
+#if !os(watchOS)
 import UIKit
 
 extension ViewIdentifier {
@@ -26,5 +28,4 @@ extension ViewIdentifier {
         self = .viewController(ObjectIdentifier(vc))
     }
 }
-
 #endif

@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(WebKit)
+
 import UIKit
 import WebKit
 import DatadogRUM
@@ -90,7 +92,7 @@ class WebviewViewController: UIViewController {
         let controller = WKUserContentController()
         let config = WKWebViewConfiguration()
         config.userContentController = controller
-        webView = WKWebView(frame: UIScreen.main.bounds, configuration: config)
+        webView = WKWebView(frame: view.layer.bounds, configuration: config)
 
         WebViewTracking.enable(webView: webView)
 
@@ -117,3 +119,5 @@ class WebviewViewController: UIViewController {
         }
     }
 }
+
+#endif
