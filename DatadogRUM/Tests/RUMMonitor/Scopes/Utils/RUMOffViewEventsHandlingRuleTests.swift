@@ -22,7 +22,8 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
         }
 
         let notSampledSession = RUMSessionState(
-            sessionUUID: .dd.nullUUID,
+            sessionUUID: UUID(),
+            isSampled: false,
             isInitialSession: true,
             hasTrackedAnyView: false,
             didStartWithReplay: nil
@@ -30,6 +31,7 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
 
         let initialNoViews = RUMSessionState(
             sessionUUID: UUID(),
+            isSampled: true,
             isInitialSession: true,
             hasTrackedAnyView: false,
             didStartWithReplay: nil
@@ -37,6 +39,7 @@ class RUMOffViewEventsHandlingRuleTests: XCTestCase {
 
         let hasViews = RUMSessionState(
             sessionUUID: UUID(),
+            isSampled: true,
             isInitialSession: false,
             hasTrackedAnyView: true,
             didStartWithReplay: nil

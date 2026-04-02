@@ -163,6 +163,7 @@ internal struct SpanEventEncoder {
         case networkConnectionSupportsIPv6 = "meta.network.client.supports_ipv6"
         case networkConnectionIsExpensive = "meta.network.client.is_expensive"
         case networkConnectionIsConstrained = "meta.network.client.is_constrained"
+        case networkConnectionLinkQuality = "meta.network.client.link_quality"
 
         case mobileNetworkCarrierName = "meta.network.client.sim_carrier.name"
         case mobileNetworkCarrierISOCountryCode = "meta.network.client.sim_carrier.iso_country"
@@ -258,6 +259,9 @@ internal struct SpanEventEncoder {
             }
             if let isConstrained = networkConnectionInfo.isConstrained {
                 try container.encode(isConstrained ? "1" : "0", forKey: .networkConnectionIsConstrained)
+            }
+            if let linkQuality = networkConnectionInfo.linkQuality {
+                try container.encode(linkQuality, forKey: .networkConnectionLinkQuality)
             }
         }
 

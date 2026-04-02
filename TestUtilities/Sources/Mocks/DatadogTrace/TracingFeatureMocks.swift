@@ -101,7 +101,7 @@ extension DatadogTracer {
 
     public static func mockWith(
         core: DatadogCoreProtocol,
-        localTraceSampler: Sampler = .mockKeepAll(),
+        samplingProvider: TracerSamplerProvider = TracerSamplerProviderMock.mockKeepAll(),
         tags: [String: Encodable] = [:],
         traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
         spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
@@ -111,7 +111,7 @@ extension DatadogTracer {
     ) -> DatadogTracer {
         return DatadogTracer(
             core: core,
-            localTraceSampler: localTraceSampler,
+            samplingProvider: samplingProvider,
             tags: tags,
             traceIDGenerator: traceIDGenerator,
             spanIDGenerator: spanIDGenerator,
@@ -123,7 +123,7 @@ extension DatadogTracer {
 
     public static func mockWith(
         featureScope: FeatureScope,
-        localTraceSampler: Sampler = .mockKeepAll(),
+        samplingProvider: TracerSamplerProvider = TracerSamplerProviderMock.mockKeepAll(),
         tags: [String: Encodable] = [:],
         traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
         spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
@@ -133,7 +133,7 @@ extension DatadogTracer {
     ) -> DatadogTracer {
         return DatadogTracer(
             featureScope: featureScope,
-            localTraceSampler: localTraceSampler,
+            samplingProvider: samplingProvider,
             tags: tags,
             traceIDGenerator: traceIDGenerator,
             spanIDGenerator: spanIDGenerator,
@@ -156,7 +156,7 @@ extension TracingWithLoggingIntegration {
 
 extension ContextMessageReceiver {
     public static func mockAny() -> ContextMessageReceiver {
-        return ContextMessageReceiver()
+        return ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
     }
 }
 
@@ -323,6 +323,10 @@ extension SamplingDecision: AnyMockable, RandomMockable {
         var samplingRate: SampleRate { 50 }
 
         func sample() -> Bool { decision }
+
+        func combined(with childRate: SampleRate) -> SamplingDecision.MockSampler {
+            self
+        }
     }
 
     public static func mockAny() -> SamplingDecision {
@@ -384,5 +388,33 @@ public struct MockActiveSpanProvider: TraceActiveSpanProvider {
 
     public func activeSpanContext() -> ActiveSpanContext? {
         storedActiveSpanContext
+    }
+}
+
+public struct TracerSamplerProviderMock: TracerSamplerProvider {
+    public let sampler: any Sampling
+
+    public init(sampler: any Sampling) {
+        self.sampler = sampler
+    }
+
+    public func makeSamplerFor(samplingRate: SampleRate) -> any Sampling {
+        Sampler(samplingRate: samplingRate)
+    }
+
+    public static func mockAny() -> TracerSamplerProvider {
+        return TracerSamplerProviderMock(sampler: Sampler(samplingRate: 50))
+    }
+
+    public static func mockRandom() -> TracerSamplerProvider {
+        return TracerSamplerProviderMock(sampler: Sampler(samplingRate: .random(in: (0.0...100.0))))
+    }
+
+    public static func mockKeepAll() -> TracerSamplerProvider {
+        return TracerSamplerProviderMock(sampler: Sampler(samplingRate: 100))
+    }
+
+    public static func mockRejectAll() -> TracerSamplerProvider {
+        return TracerSamplerProviderMock(sampler: Sampler(samplingRate: 0))
     }
 }

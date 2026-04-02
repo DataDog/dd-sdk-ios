@@ -358,7 +358,7 @@ private extension TelemetryUsageEvent.Telemetry.Usage {
         case .addFeatureFlagEvaluation:
             self = .telemetryCommonFeaturesUsage(value: .addFeatureFlagEvaluation(value: .init()))
         case .addViewLoadingTime(let viewLoadingTime):
-            self = .telemetryMobileFeaturesUsage(
+            self = .telemetryCommonFeaturesUsage(
                 value: .addViewLoadingTime(
                     value: .init(
                         noActiveView: viewLoadingTime.noActiveView,

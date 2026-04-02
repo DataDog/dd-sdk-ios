@@ -1045,11 +1045,12 @@ extension RUMScopeDependencies {
     static func mockWith(
         featureScope: FeatureScope = NOPFeatureScope(),
         rumApplicationID: String = .mockAny(),
-        sessionSampler: Sampler = .mockKeepAll(),
+        samplingRate: SampleRate = .maxSampleRate,
         trackBackgroundEvents: Bool = .mockAny(),
         trackFrustrations: Bool = true,
         hasAppHangsEnabled: Bool = true,
         firstPartyHosts: FirstPartyHosts = .init([:]),
+        distributedTracingSampleRate: SampleRate? = nil,
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         backtraceReporter: BacktraceReporting = BacktraceReporterMock(backtrace: nil),
@@ -1080,11 +1081,12 @@ extension RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: rumApplicationID,
-            sessionSampler: sessionSampler,
+            samplingRate: samplingRate,
             trackBackgroundEvents: trackBackgroundEvents,
             trackFrustrations: trackFrustrations,
             hasAppHangsEnabled: hasAppHangsEnabled,
             firstPartyHosts: firstPartyHosts,
+            distributedTracingSampleRate: distributedTracingSampleRate,
             eventBuilder: eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator,
             backtraceReporter: backtraceReporter,
@@ -1111,11 +1113,12 @@ extension RUMScopeDependencies {
     /// Creates new instance of `RUMScopeDependencies` by replacing individual dependencies.
     public func replacing(
         rumApplicationID: String? = nil,
-        sessionSampler: Sampler? = nil,
+        samplingRate: SampleRate? = nil,
         trackBackgroundEvents: Bool? = nil,
         trackFrustrations: Bool? = nil,
         hasAppHangsEnabled: Bool? = nil,
         firstPartyHosts: FirstPartyHosts? = nil,
+        distributedTracingSampleRate: SampleRate? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
         backtraceReporter: BacktraceReporting? = nil,
@@ -1140,11 +1143,12 @@ extension RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
-            sessionSampler: sessionSampler ?? self.sessionSampler,
+            samplingRate: samplingRate ?? self.samplingRate,
             trackBackgroundEvents: trackBackgroundEvents ?? self.trackBackgroundEvents,
             trackFrustrations: trackFrustrations ?? self.trackFrustrations,
             hasAppHangsEnabled: hasAppHangsEnabled ?? self.hasAppHangsEnabled,
             firstPartyHosts: firstPartyHosts ?? self.firstPartyHosts,
+            distributedTracingSampleRate: distributedTracingSampleRate ?? self.distributedTracingSampleRate,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             backtraceReporter: backtraceReporter ?? self.backtraceReporter,
@@ -1741,25 +1745,28 @@ extension RUMCoreContext: RandomMockable {
 
     public static func mockWith(
         applicationID: String = .mockAny(),
-        sessionID: String = .mockAny(),
+        sessionID: UUID = .mockAny(),
+        sessionSampleRate: SampleRate = .maxSampleRate,
         viewID: String? = .mockAny(),
+        userActionID: String? = nil,
         serverTimeOffset: TimeInterval = .mockAny()
     ) -> Self {
         .init(
             applicationID: applicationID,
-            sessionID: sessionID,
+            sessionID: sessionID.uuidString.lowercased(),
+            sessionSampler: DeterministicSampler(uuid: sessionID, samplingRate: sessionSampleRate),
             viewID: viewID,
             viewServerTimeOffset: serverTimeOffset
         )
     }
 
     public static func mockRandom() -> Self {
-        .init(
+        .mockWith(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
             viewID: .mockRandom(),
             userActionID: .mockRandom(),
-            viewServerTimeOffset: .mockRandom()
+            serverTimeOffset: .mockRandom()
         )
     }
 }

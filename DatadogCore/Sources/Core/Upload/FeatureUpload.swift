@@ -82,4 +82,13 @@ internal struct FeatureUpload {
         uploader.cancelSynchronously()
         uploader.flushSynchronously()
     }
+
+    /// Flushes all authorised data without tearing down the upload stack.
+    /// - It flushes all data stored in authorized files by performing their arbitrary upload (without retrying).
+    /// - Unlike `flushAndTearDown()`, the upload scheduler is kept running after this call.
+    ///
+    /// This method is executed synchronously. After return, all authorized data should be considered uploaded.
+    internal func flush() {
+        uploader.flushSynchronously()
+    }
 }

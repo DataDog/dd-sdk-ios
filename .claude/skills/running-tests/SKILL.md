@@ -1,5 +1,5 @@
 ---
-name: running-tests
+name: dd-sdk-ios:running-tests
 description: Use when asked to run tests in the dd-sdk-ios project — whether a full module suite, a specific test class, or a single test method. Use when choosing between make, xcodebuild, or Xcode MCP for running iOS/tvOS/visionOS tests.
 ---
 

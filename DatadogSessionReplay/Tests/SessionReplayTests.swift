@@ -80,7 +80,7 @@ class SessionReplayTests: XCTestCase {
 
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 42)
+        XCTAssertEqual(sr.recordingCoordinator.replaySampleRate, 42)
         XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, .maskAll)
         XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, .maskAll)
         XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, .hide)
@@ -105,7 +105,7 @@ class SessionReplayTests: XCTestCase {
 
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 42)
+        XCTAssertEqual(sr.recordingCoordinator.replaySampleRate, 42)
         XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, textAndInputPrivacy)
         XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, imagePrivacy)
         XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, touchPrivacy)
@@ -123,7 +123,7 @@ class SessionReplayTests: XCTestCase {
 
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, random)
+        XCTAssertEqual(sr.recordingCoordinator.replaySampleRate, random)
     }
 
     func testWhenEnabled_itUpdateCoreContext() throws {
@@ -164,7 +164,7 @@ class SessionReplayTests: XCTestCase {
 
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 100)
+        XCTAssertEqual(sr.recordingCoordinator.replaySampleRate, 100)
     }
 
     func testWhenEnabledWithNoDebugSDKArgument() throws {
@@ -178,7 +178,7 @@ class SessionReplayTests: XCTestCase {
 
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, random)
+        XCTAssertEqual(sr.recordingCoordinator.replaySampleRate, random)
     }
 
     func testItDoesntStartFeatureWhenSamplingRateIsZero() throws {

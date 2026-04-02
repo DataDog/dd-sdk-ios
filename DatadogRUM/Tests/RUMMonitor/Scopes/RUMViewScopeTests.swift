@@ -95,10 +95,12 @@ class RUMViewScopeTests: XCTestCase {
 
     func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() throws {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let traceSampleRate: SampleRate = .mockRandom(min: 0, max: 100)
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
             dependencies: .mockWith(
+                distributedTracingSampleRate: traceSampleRate,
                 networkSettledMetricFactory: { _, _ in TNSMetricMock(value: .success(0.42)) }
             ),
             identity: .mockViewIdentifier(),
@@ -112,13 +114,11 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let hasReplay: Bool = .mockRandom()
-        let traceSampleRate: SampleRate = .mockRandom(min: 0, max: 100)
         let sessionReplaySampleRate: SampleRate = .mockRandom(min: 0, max: 100)
         let startRecordingManually: Bool = .random()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
         context.set(additionalContext: SessionReplayCoreContext.RecordsCount(value: [scope.viewUUID.toRUMDataFormat: 1]))
-        context.set(additionalContext: TraceCoreContext.Configuration(sampleRate: traceSampleRate))
         context.set(additionalContext: SessionReplayCoreContext.Configuration(
             sampleRate: sessionReplaySampleRate,
             startRecordingManually: startRecordingManually
@@ -478,7 +478,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: isInitialView,
             parent: parent,
-            dependencies: .mockWith(syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId)),
+            dependencies: .mockWith(syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId, syntheticsInfo: [:])),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
@@ -560,7 +560,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: isInitialView,
             parent: parent,
             dependencies: .mockWith(
-                syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId),
+                syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId, syntheticsInfo: [:]),
                 sessionType: .user
             ),
             identity: .mockViewIdentifier(),

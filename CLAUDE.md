@@ -10,6 +10,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is the Datadog SDK for iOS and tvOS - a modular Swift/Objective-C library for observability (Logs, Traces, RUM, Session Replay, Crash Reporting, WebView Tracking, and Feature Flags).
 
+## Available Skills
+
+Use these skills (via `/skill-name`) for common workflows in this project:
+
+| Skill | When to use |
+|---|---|
+| `dd-sdk-ios:git-branch` | Creating a new branch for a JIRA ticket or feature |
+| `dd-sdk-ios:git-commit` | Committing changes (signed commits, message format) |
+| `dd-sdk-ios:open-pr` | Opening a pull request against `develop` |
+| `dd-sdk-ios:running-tests` | Running unit, module, or integration tests |
+| `dd-sdk-ios:xcode-file-management` | Adding, removing, moving, or renaming Swift source files |
+
 ## Build & Test Commands
 
 ### Initial Setup
@@ -205,6 +217,7 @@ The `ENV=ci` flag is used in CI to enable special behaviors (e.g., different API
 - Official docs: https://docs.datadoghq.com/real_user_monitoring/ios
 - SDK performance guidelines: `docs/sdk_performance.md`
 - Session Replay performance: `docs/session_replay_performance.md`
+- **Swizzling patterns and pitfalls**: `docs/SWIZZLING.md` — **read before writing or modifying any swizzle**
 
 ## Contributing
 

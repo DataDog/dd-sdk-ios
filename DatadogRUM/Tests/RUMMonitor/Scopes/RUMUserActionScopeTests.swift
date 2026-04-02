@@ -286,7 +286,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let fakeSyntheticsResultId: String = .mockRandom()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            dependencies: .mockWith(syntheticsTest: .init(RUMSyntheticsTest(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId))),
+            dependencies: .mockWith(syntheticsTest: .init(RUMSyntheticsTest(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId, syntheticsInfo: [:]))),
             actionType: .swipe,
             startTime: currentTime,
             isContinuous: true
@@ -340,7 +340,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: .mockWith(
-                syntheticsTest: .init(RUMSyntheticsTest(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId)),
+                syntheticsTest: .init(RUMSyntheticsTest(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId, syntheticsInfo: [:])),
                 sessionType: .user
             ),
             actionType: .swipe,

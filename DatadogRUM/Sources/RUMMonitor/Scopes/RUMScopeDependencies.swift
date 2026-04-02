@@ -30,11 +30,12 @@ internal struct RUMScopeDependencies {
     /// The RUM feature scope to interact with core.
     let featureScope: FeatureScope
     let rumApplicationID: String
-    let sessionSampler: Sampler
+    let samplingRate: SampleRate
     let trackBackgroundEvents: Bool
     let trackFrustrations: Bool
     let hasAppHangsEnabled: Bool
     let firstPartyHosts: FirstPartyHosts?
+    let distributedTracingSampleRate: SampleRate?
     let eventBuilder: RUMEventBuilder
     let rumUUIDGenerator: RUMUUIDGenerator
     let backtraceReporter: BacktraceReporting?
@@ -72,11 +73,12 @@ internal struct RUMScopeDependencies {
     init(
         featureScope: FeatureScope,
         rumApplicationID: String,
-        sessionSampler: Sampler,
+        samplingRate: SampleRate,
         trackBackgroundEvents: Bool,
         trackFrustrations: Bool,
         hasAppHangsEnabled: Bool,
         firstPartyHosts: FirstPartyHosts?,
+        distributedTracingSampleRate: SampleRate?,
         eventBuilder: RUMEventBuilder,
         rumUUIDGenerator: RUMUUIDGenerator,
         backtraceReporter: BacktraceReporting?,
@@ -100,11 +102,12 @@ internal struct RUMScopeDependencies {
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID
-        self.sessionSampler = sessionSampler
+        self.samplingRate = samplingRate
         self.trackBackgroundEvents = trackBackgroundEvents
         self.trackFrustrations = trackFrustrations
         self.hasAppHangsEnabled = hasAppHangsEnabled
         self.firstPartyHosts = firstPartyHosts
+        self.distributedTracingSampleRate = distributedTracingSampleRate
         self.eventBuilder = eventBuilder
         self.rumUUIDGenerator = rumUUIDGenerator
         self.backtraceReporter = backtraceReporter
