@@ -1714,6 +1714,7 @@
 		D297324B2A5C108700827599 /* MessageEmitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29732472A5C108700827599 /* MessageEmitter.swift */; };
 		D29732512A5C109A00827599 /* MessageEmitterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D297324F2A5C109A00827599 /* MessageEmitterTests.swift */; };
 		D29732532A5C109A00827599 /* WebViewTrackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29732502A5C109A00827599 /* WebViewTrackingTests.swift */; };
+		129321A0B6144607B30C74AA /* WebViewTrackingRUMS5686Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9124FF5108E841CBBC8CD447 /* WebViewTrackingRUMS5686Tests.swift */; };
 		D29A470D2D2ED49F0092BC79 /* Xoshiro.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29A470C2D2ED49F0092BC79 /* Xoshiro.swift */; };
 		D29A470F2D2ED6410092BC79 /* Int64+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29A470E2D2ED6410092BC79 /* Int64+SessionReplay.swift */; };
 		D29A9F3C29DD84AB005C54A4 /* DatadogRUM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D29A9F3429DD84AA005C54A4 /* DatadogRUM.framework */; };
@@ -3860,6 +3861,7 @@
 		D29732472A5C108700827599 /* MessageEmitter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageEmitter.swift; sourceTree = "<group>"; };
 		D297324F2A5C109A00827599 /* MessageEmitterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageEmitterTests.swift; sourceTree = "<group>"; };
 		D29732502A5C109A00827599 /* WebViewTrackingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewTrackingTests.swift; sourceTree = "<group>"; };
+		9124FF5108E841CBBC8CD447 /* WebViewTrackingRUMS5686Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewTrackingRUMS5686Tests.swift; sourceTree = "<group>"; };
 		D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		D29A470C2D2ED49F0092BC79 /* Xoshiro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Xoshiro.swift; sourceTree = "<group>"; };
 		D29A470E2D2ED6410092BC79 /* Int64+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int64+SessionReplay.swift"; sourceTree = "<group>"; };
@@ -4860,6 +4862,7 @@
 			children = (
 				D297324F2A5C109A00827599 /* MessageEmitterTests.swift */,
 				D29732502A5C109A00827599 /* WebViewTrackingTests.swift */,
+				9124FF5108E841CBBC8CD447 /* WebViewTrackingRUMS5686Tests.swift */,
 			);
 			name = DatadogWebViewTrackingTests;
 			path = ../DatadogWebViewTracking/Tests;
@@ -9690,6 +9693,7 @@
 			files = (
 				D29732532A5C109A00827599 /* WebViewTrackingTests.swift in Sources */,
 				D29732512A5C109A00827599 /* MessageEmitterTests.swift in Sources */,
+				129321A0B6144607B30C74AA /* WebViewTrackingRUMS5686Tests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
