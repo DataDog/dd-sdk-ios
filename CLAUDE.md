@@ -217,6 +217,7 @@ The `ENV=ci` flag is used in CI to enable special behaviors (e.g., different API
 - Official docs: https://docs.datadoghq.com/real_user_monitoring/ios
 - SDK performance guidelines: `docs/sdk_performance.md`
 - Session Replay performance: `docs/session_replay_performance.md`
+- **Swizzling patterns and pitfalls**: `docs/SWIZZLING.md` — **read before writing or modifying any swizzle**
 
 ## Contributing
 

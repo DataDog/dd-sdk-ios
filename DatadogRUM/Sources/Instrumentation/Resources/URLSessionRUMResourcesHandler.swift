@@ -248,7 +248,19 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
 extension DistributedTracing {
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
-        let activeSpanContext = networkContext?.activeSpanProvider?.activeSpanContext()
+        // Per RUM-15310: If there is an active span, and that span is sampled, we use it as the parent span,
+        // and set everything in the RUM resource span to be consistent with it.
+        // If we don't have an active span, or if we do have one, but it's not sampled, we ignore it. The
+        // latter case is important, as it provides RUM the opportunity to sample this request even if the
+        // trace that would be related to it is not. In that case, the RUM Resource span will be the root.
+        let activeSpanContext: ActiveSpanContext?
+        if let possibleActiveSpanContext = networkContext?.activeSpanProvider?.activeSpanContext(),
+           possibleActiveSpanContext.samplingPriority.isKept {
+            activeSpanContext = possibleActiveSpanContext
+        } else {
+            activeSpanContext = nil
+        }
+
         // When a RUM context is available, its `sessionSampler` is a `DeterministicSampler`
         // seeded from the session ID. Calling `combined(with:)` composes the session rate
         // with the tracing `samplingRate` while preserving the seed, so every resource in

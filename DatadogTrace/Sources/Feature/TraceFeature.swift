@@ -28,10 +28,13 @@ internal final class TraceFeature: DatadogRemoteFeature {
             telemetry: core.telemetry
         )
 
-        self.contextReceiver = ContextMessageReceiver()
+        let sampleRate = configuration.debugSDK ? 100 : configuration.sampleRate
+        let samplingProvider = SamplerProvider(sampleRate: sampleRate)
+
+        self.contextReceiver = ContextMessageReceiver(samplerProvider: samplingProvider)
         self.tracer = DatadogTracer(
             core: core,
-            localTraceSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sampleRate),
+            samplingProvider: samplingProvider,
             tags: configuration.tags ?? [:],
             traceIDGenerator: configuration.traceIDGenerator,
             spanIDGenerator: configuration.spanIDGenerator,
