@@ -41,6 +41,18 @@ internal class MemoryTimeseriesCollector {
     /// Track number of failed reads for telemetry (Phase 3).
     private var failedReadCount: Int = 0
 
+    /// Track whether we've logged test schema event JSON for Option A (first flush only).
+    /// Phase 2.3 PROTOTYPE — remove before Phase 3 merge.
+    private var hasLoggedTestSchemaOptionA = false
+
+    /// Track whether we've logged test schema event JSON for Option B (first flush only).
+    /// Phase 2.3 PROTOTYPE — remove before Phase 3 merge.
+    private var hasLoggedTestSchemaOptionB = false
+
+    /// Track whether we've logged test schema event JSON for Option C (first flush only).
+    /// Phase 2.3 PROTOTYPE — remove before Phase 3 merge.
+    private var hasLoggedTestSchemaOptionC = false
+
     /// Initializes a new memory timeseries collector.
     ///
     /// - Parameters:
@@ -210,6 +222,33 @@ internal class MemoryTimeseriesCollector {
                 ORDER BY start
                 ========================================
                 """)
+        }
+
+        // Phase 2.3: Send test schema validation events alongside production memory_usage
+        // PROTOTYPE ONLY — remove before Phase 3 merge
+        if eventCount > 0 {
+            let testDate = Date().timeIntervalSince1970.dd.toInt64Milliseconds
+            sendTestOptionA(
+                sessionID: sessionID,
+                applicationID: applicationID,
+                date: testDate,
+                writer: writer,
+                logFirstEvent: &hasLoggedTestSchemaOptionA
+            )
+            sendTestOptionB(
+                sessionID: sessionID,
+                applicationID: applicationID,
+                date: testDate,
+                writer: writer,
+                logFirstEvent: &hasLoggedTestSchemaOptionB
+            )
+            sendTestOptionC(
+                sessionID: sessionID,
+                applicationID: applicationID,
+                date: testDate,
+                writer: writer,
+                logFirstEvent: &hasLoggedTestSchemaOptionC
+            )
         }
 
         return eventCount
