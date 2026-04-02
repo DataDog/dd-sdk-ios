@@ -2,6 +2,7 @@
 
 # 3.9.0 / 02-04-2026
 
+- [IMPROVEMENT] Add `NWPath.linkQuality` to network info attached to Logs and Traces on supported platforms. See [#2751][]
 - [IMPROVEMENT] Trace now uses deterministic sampling for custom spans, based on the RUM session ID when available. See [#2794][]
 - [FIX] Fix stack overflow crash when RUM scroll tracking is used alongside third-party delegate proxy libraries (e.g. RxSwift). See [#2791][]
 - [FIX] When there is an active span, RUM session tracking uses it as the basis for the resource parent span and sampling decision. Starting in this release, if the active span is not sampled, session tracking falls back to making its own sampling decision based on the RUM session tracking sampling rate. See [#2807][]
@@ -29,7 +30,6 @@
 - [IMPROVEMENT] Add encoded and decoded body sizes to RUM resource events. See [#2697][] and [#2699][]
 - [IMPROVEMENT] Align the tags of WebView log events with the native Logs. See [#2710][]
 - [FIX] Fix crash context C-string conversion in KSCrash injection. See [#2740][]
-- [IMPROVEMENT] Add `NWPath.linkQuality` to network info attached to Logs and Traces on supported platforms. See [#2751][]
 
 # 3.7.0 / 18-02-2026
 
