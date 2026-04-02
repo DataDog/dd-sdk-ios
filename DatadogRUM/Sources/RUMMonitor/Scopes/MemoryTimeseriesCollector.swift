@@ -43,15 +43,15 @@ internal class MemoryTimeseriesCollector {
 
     /// Track whether we've logged test schema event JSON for Option A (first flush only).
     /// Phase 2.3 PROTOTYPE — remove before Phase 3 merge.
-    private var hasLoggedTestSchemaOptionA = false
+    private var hasLoggedTestSchemaOptionA = true
 
     /// Track whether we've logged test schema event JSON for Option B (first flush only).
     /// Phase 2.3 PROTOTYPE — remove before Phase 3 merge.
-    private var hasLoggedTestSchemaOptionB = false
+    private var hasLoggedTestSchemaOptionB = true
 
     /// Track whether we've logged test schema event JSON for Option C (first flush only).
     /// Phase 2.3 PROTOTYPE — remove before Phase 3 merge.
-    private var hasLoggedTestSchemaOptionC = false
+    private var hasLoggedTestSchemaOptionC = true
 
     /// Initializes a new memory timeseries collector.
     ///
