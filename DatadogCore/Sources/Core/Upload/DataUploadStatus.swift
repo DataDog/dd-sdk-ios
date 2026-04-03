@@ -93,7 +93,7 @@ extension DataUploadStatus {
 
     init(networkError: Error, attempt: UInt) {
         self.init(
-            needsRetry: true, // retry this upload as it failed due to network transport isse
+            needsRetry: true, // retry this upload as it failed due to network transport issue
             responseCode: nil,
             userDebugDescription: "[error: \(DDError(error: networkError).message)]", // e.g. "[error: A data connection is not currently allowed]"
             error: DataUploadError(networkError: networkError),
