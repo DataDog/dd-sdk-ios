@@ -36,7 +36,7 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
         ]
 
         if let previousResponseCode = execution.previousResponseCode {
-            tags.append("last_failure_status:\(previousResponseCode)")
+            tags.append("retry_after:\(previousResponseCode)")
         }
 
         let decoder = JSONDecoder()
