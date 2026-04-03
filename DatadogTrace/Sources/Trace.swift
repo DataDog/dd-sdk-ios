@@ -48,6 +48,10 @@ public enum Trace {
         if configuration.statsComputationEnabled {
             let stats = ClientStatsFeature(core: core, configuration: configuration)
             try core.register(feature: stats)
+
+            trace.tracer.onSpanFinished = { [weak concentrator = stats.concentrator] snapshot in
+                concentrator?.add(snapshot)
+            }
         }
 
         // If `URLSession` tracking is configured, register `URLSessionHandler` to enable distributed tracing:
