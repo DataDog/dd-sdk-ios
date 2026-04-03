@@ -76,6 +76,16 @@ extension Trace {
         /// Default: `nil`.
         public var customEndpoint: URL?
 
+        /// Enables client-side computation of APM stats (hit count, error rate,
+        /// latency distribution) on all eligible spans, including sampled-out ones.
+        ///
+        /// When enabled, the SDK computes RED (Rate, Error, Duration) metrics locally
+        /// and uploads them to the Datadog stats intake, providing accurate metrics
+        /// regardless of the trace sampling rate.
+        ///
+        /// Default: `false`.
+        public var statsComputationEnabled: Bool
+
         // MARK: - Nested Types
 
         /// Configuration of automatic network requests tracing.
@@ -145,6 +155,7 @@ extension Trace {
         ///   - networkInfoEnabled: Determines if traces should be enriched with network connection information.
         ///   - eventMapper: Custom mapper for span events.
         ///   - customEndpoint: Custom server url for sending traces.
+        ///   - statsComputationEnabled: Determines if client-side APM stats should be computed.
         public init(
             sampleRate: SampleRate = .maxSampleRate,
             service: String? = nil,
@@ -153,7 +164,8 @@ extension Trace {
             bundleWithRumEnabled: Bool = true,
             networkInfoEnabled: Bool = false,
             eventMapper: EventMapper? = nil,
-            customEndpoint: URL? = nil
+            customEndpoint: URL? = nil,
+            statsComputationEnabled: Bool = false
         ) {
             self.sampleRate = sampleRate
             self.service = service
@@ -163,6 +175,7 @@ extension Trace {
             self.networkInfoEnabled = networkInfoEnabled
             self.eventMapper = eventMapper
             self.customEndpoint = customEndpoint
+            self.statsComputationEnabled = statsComputationEnabled
         }
     }
 }
