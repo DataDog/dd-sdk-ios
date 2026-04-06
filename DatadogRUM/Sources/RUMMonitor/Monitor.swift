@@ -470,7 +470,7 @@ extension Monitor: RUMMonitorProtocol {
             id: rumUUIDGenerator.generateUnique().toRUMDataFormat,
             name: name,
             operationKey: operationKey,
-            type: .rumOperation(.start),
+            stepType: .start,
             date: dateProvider.now,
             duration: 0
         )
@@ -501,7 +501,7 @@ extension Monitor: RUMMonitorProtocol {
             id: rumUUIDGenerator.generateUnique().toRUMDataFormat,
             name: name,
             operationKey: operationKey,
-            type: .rumOperation(.end),
+            stepType: .end,
             date: dateProvider.now,
             duration: 0
         )
@@ -532,7 +532,7 @@ extension Monitor: RUMMonitorProtocol {
             id: rumUUIDGenerator.generateUnique().toRUMDataFormat,
             name: name,
             operationKey: operationKey,
-            type: .rumOperation(.end),
+            stepType: .end,
             date: dateProvider.now,
             duration: 0
         )
