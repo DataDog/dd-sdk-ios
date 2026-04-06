@@ -769,10 +769,9 @@ public class objc_RUMMonitor: NSObject {
     public func startFeatureOperation(
         name: String,
         operationKey: String?,
-        attributes: [String: Any],
-        profiling: objc_SamplingOption
+        attributes: [String: Any]
     ) {
-        swiftRUMMonitor.startFeatureOperation(name: name, operationKey: operationKey, attributes: attributes.dd.swiftAttributes, profiling: profiling.swiftType)
+        swiftRUMMonitor.startFeatureOperation(name: name, operationKey: operationKey, attributes: attributes.dd.swiftAttributes)
     }
 
     public func succeedFeatureOperation(

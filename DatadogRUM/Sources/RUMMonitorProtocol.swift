@@ -287,8 +287,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     func startFeatureOperation(
         name: String,
         operationKey: String?,
-        attributes: [AttributeKey: AttributeValue],
-        profiling: SamplingOption
+        attributes: [AttributeKey: AttributeValue]
     )
 
     /// Completes a Feature successfully.
@@ -479,7 +478,7 @@ internal class NOPMonitor: RUMMonitorProtocol {
         warn()
         completionHandler()
     }
-    func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue], profiling: SamplingOption) { warn() }
+    func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) { warn() }
     var debug: Bool {
