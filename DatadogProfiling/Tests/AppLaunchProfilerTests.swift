@@ -326,10 +326,10 @@ final class AppLaunchProfilerTests: XCTestCase {
         let result = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endVital)), from: core)
 
         // Then
-        XCTAssertFalse(result, "RUM operations are also consumed by continuous profiler")
+        XCTAssertFalse(result, "Continuous profiler and AppLaunch profiler consume RUM operations")
     }
 
-    func testReceiveApplicationLaunch_returnsTrue() {
+    func testReceiveApplicationLaunchAndOperations() {
         // Given
         let core = PassthroughCoreMock()
         let profiler = AppLaunchProfiler(core: core)
@@ -343,7 +343,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         // When
         result = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: vital)), from: core)
         // Then
-        XCTAssertFalse(result, "RUM operations are also consumed by continuous profiler")
+        XCTAssertFalse(result, "Continuous profiler and AppLaunch profiler consume RUM operations")
     }
 
     func testApplicationLaunchWithRumOperations_includesVitalsInProfile() throws {
