@@ -58,7 +58,6 @@ extension RUMCoreContext {
         public static let applicationID = "application.id"
 
         /// The ID of current RUM session (standard UUID `String`, lowercased).
-        /// In case the session is rejected (not sampled), RUM context is set to empty (`[:]`) in core.
         public static let sessionID = "session.id"
 
         /// The ID of current RUM view (standard UUID `String`, lowercased).
@@ -75,5 +74,11 @@ extension RUMCoreContext {
 
         /// The name of current RUM vital.
         public static let vitalLabel = "vital.label"
+
+        /// The ID of current RUM error (standard UUID `String`, lowercased).
+        public static let errorID = "error.id"
+
+        /// The ID of current RUM long task (standard UUID `String`, lowercased).
+        public static let longTaskID = "long_task.id"
     }
 }
