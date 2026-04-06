@@ -58,7 +58,7 @@ final class ProfilerFeatureTests: XCTestCase {
         // When
         _ = ProfilerFeature(
             core: core,
-            configuration: .init(applicationLaunch: .enabled(sampleRate: newSampleRate)),
+            configuration: .init(applicationLaunchSampleRate: newSampleRate),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
             userDefaults: userDefaults
@@ -79,7 +79,7 @@ final class ProfilerFeatureTests: XCTestCase {
         // When
         _ = ProfilerFeature(
             core: core,
-            configuration: .init(applicationLaunch: .enabled(sampleRate: lowerSampleRate)),
+            configuration: .init(applicationLaunchSampleRate: lowerSampleRate),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
             userDefaults: userDefaults
@@ -100,7 +100,7 @@ final class ProfilerFeatureTests: XCTestCase {
         // When
         _ = ProfilerFeature(
             core: core,
-            configuration: .init(applicationLaunch: .enabled(sampleRate: higherSampleRate)),
+            configuration: .init(applicationLaunchSampleRate: higherSampleRate),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
             userDefaults: userDefaults
