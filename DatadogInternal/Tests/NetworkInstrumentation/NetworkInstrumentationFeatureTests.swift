@@ -24,7 +24,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     override func tearDown() {
+        // Flush the feature's serial queue before releasing the core to ensure
+        // all pending async blocks (especially from the concurrent test) complete
+        // before the feature is deallocated. Without this, a block executing past
+        // `guard let self = self` holds the feature alive, causing deallocation
+        // on a background thread — which can race with the next test's swizzles
+        // via `_unswizzle`'s transient IMP resets.
+        core?.get(feature: NetworkInstrumentationFeature.self)?.flush()
         core = nil
+        handler = nil
         super.tearDown()
     }
 
