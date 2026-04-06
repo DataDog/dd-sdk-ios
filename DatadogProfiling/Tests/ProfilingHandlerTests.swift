@@ -195,7 +195,7 @@ final class ProfilingHandlerTests: XCTestCase {
 }
 
 private struct ProfilingHandlerMock: ProfilingHandler {
-    var attributes: [String: AttributeValue]
+    var attributes: [AttributeKey: AttributeValue]
     var operation: ProfilingOperation
     var featureScope: FeatureScope
     var telemetryController: ProfilingTelemetryController
