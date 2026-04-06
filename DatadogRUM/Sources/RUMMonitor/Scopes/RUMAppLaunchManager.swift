@@ -73,7 +73,6 @@ private extension RUMAppLaunchManager {
             vital: .init(
                 id: ttidVitalId,
                 name: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric.ttid.name,
-                type: .applicationLaunch,
                 date: context.launchInfo.processLaunchDate,
                 duration: ttid.dd.toInt64Nanoseconds
             ),
@@ -229,7 +228,7 @@ private extension RUMAppLaunchManager {
         var contextAttributes: [String: Encodable] = parent.rumContextAttributes
         contextAttributes[RUMCoreContext.IDs.vitalID] = vital.id
 
-        dependencies.featureScope.send(message: .payload(VitalMessage(attributes: contextAttributes, vital: vital)))
+        dependencies.featureScope.send(message: .payload(TTIDMessage(attributes: contextAttributes, ttid: vital)))
     }
 }
 
