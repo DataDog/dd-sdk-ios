@@ -30,7 +30,7 @@ extension Profiling {
         /// Creates the Profiling configuration.
         /// - Parameters:
         ///   - customEndpoint: Optional custom server endpoint for profile uploads.
-        ///   - applicationLaunchSampleRate: The sampling rate for Profiling.
+        ///   - applicationLaunchSampleRate: The sampling rate for the application launch profiling.
         public init(
             customEndpoint: URL? = nil,
             applicationLaunchSampleRate: SampleRate = 5
