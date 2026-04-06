@@ -191,10 +191,12 @@ extension ImmutableRequest: AnyMockable {
     public static func mockWith(
         url: URL = .mockAny(),
         httpMethod: String = "GET",
+        httpBody: Data? = nil,
         allHTTPHeaderFields: [String: String] = .mockAny()
     ) -> ImmutableRequest {
         var request = URLRequest(url: url)
         request.httpMethod = httpMethod
+        request.httpBody = httpBody
         request.allHTTPHeaderFields = allHTTPHeaderFields
         return ImmutableRequest(request: request)
     }

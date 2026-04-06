@@ -23,6 +23,28 @@ extension Trace {
     public struct Configuration: SampledTelemetry {
         public typealias EventMapper = (SpanEvent) -> SpanEvent
 
+        /// A callback that allows customizing the span created for each intercepted network request.
+        ///
+        /// This closure receives an ``InterceptedRequest`` (a thread-safe snapshot of the original
+        /// request), the ``OTSpan`` created for it, the HTTP response (if any), and an error (if any).
+        /// You can use the span's `setTag(key:value:)` or `setOperationName(_:)` methods to add custom
+        /// attributes.
+        ///
+        /// Example — tagging GraphQL requests with the operation name:
+        /// ```swift
+        /// Trace.Configuration.SpanCustomization { request, span, response, error in
+        ///     if let body = request.httpBody,
+        ///        let json = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+        ///        let operationName = json["operationName"] as? String {
+        ///         span.setTag(key: "graphql.operation.name", value: operationName)
+        ///         span.setOperationName("graphql.\(operationName)")
+        ///     }
+        /// }
+        /// ```
+        ///
+        /// - Note: Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        public typealias SpanCustomization = (InterceptedRequest, OTSpan, URLResponse?, Error?) -> Void
+
         /// The sampling rate for spans created with the default tracer.
         ///
         /// It must be a number between 0.0 and 100.0, where 0 means no spans will be collected.
@@ -94,6 +116,11 @@ extension Trace {
             /// If your backend is also instrumented with Datadog, you will see the full trace (app → backend).
             public var firstPartyHostsTracing: FirstPartyHostsTracing
 
+            /// Optional callback to customize spans for intercepted network requests.
+            ///
+            /// - SeeAlso: ``SpanCustomization``
+            public var spanCustomization: SpanCustomization?
+
             /// Defines configuration for first-party hosts in distributed tracing.
             public enum FirstPartyHostsTracing {
                 /// Trace the specified hosts using Datadog and W3C `tracecontext` tracing headers.
@@ -123,8 +150,13 @@ extension Trace {
             /// Configuration for automatic network requests tracing.
             /// - Parameters:
             ///   - firstPartyHostsTracing: Distributed tracing configuration for particular first-party hosts.
-            public init(firstPartyHostsTracing: FirstPartyHostsTracing) {
+            ///   - spanCustomization: Optional callback to customize spans for intercepted requests.
+            public init(
+                firstPartyHostsTracing: FirstPartyHostsTracing,
+                spanCustomization: SpanCustomization? = nil
+            ) {
                 self.firstPartyHostsTracing = firstPartyHostsTracing
+                self.spanCustomization = spanCustomization
             }
         }
 
