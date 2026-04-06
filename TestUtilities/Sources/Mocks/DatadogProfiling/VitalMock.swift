@@ -17,7 +17,7 @@ extension Vital: AnyMockable, RandomMockable {
             id: .mockRandom(),
             name: .mockRandom(),
             operationKey: .mockRandom(),
-            type: [VitalType.duration, .applicationLaunch, .rumOperation(.start)].randomElement()!,
+            stepType: [.start, .end].randomElement()!,
             date: .mockRandom(),
             duration: .mockRandom()
         )
@@ -27,10 +27,10 @@ extension Vital: AnyMockable, RandomMockable {
         id: String = .mockAny(),
         name: String = .mockAny(),
         operationKey: String? = .mockAny(),
-        type: VitalType = .duration,
+        stepType: RUMVitalOperationStepEvent.Vital.StepType? = .start,
         date: Date = .mockAny(),
         duration: Int64 = .mockAny()
     ) -> Self {
-        .init(id: id, name: name, operationKey: operationKey, type: type, date: date, duration: duration)
+        .init(id: id, name: name, operationKey: operationKey, stepType: stepType, date: date, duration: duration)
     }
 }
