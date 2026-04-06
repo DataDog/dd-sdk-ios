@@ -22,7 +22,7 @@
 // Typical profile span is ~1 minute; this cutoff includes additional slack beyond that.
 // The extra time avoids stopping sampling while the profile is still being processed.
 static constexpr int64_t DD_PROFILER_TIMEOUT_NS = 90000000000ULL; // 1:30 minutes
-static constexpr int64_t DD_PROFILER_MAX_SAMPLE_RATE = 100.0;
+static constexpr double DD_PROFILER_MAX_SAMPLE_RATE = 100.0;
 
 namespace dd::profiler { class dd_profiler; }
 
