@@ -16,7 +16,7 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 internal protocol ProfilingHandler {
-    var attributes: [String: AttributeValue] { get }
+    var attributes: [AttributeKey: AttributeValue] { get }
     var operation: ProfilingOperation { get }
 
     var featureScope: FeatureScope { get }
@@ -50,12 +50,11 @@ extension ProfilingHandler {
     private func writeProfilingEvent(
         with profile: OpaquePointer,
         rumEvents: RUMEvents,
-        attributes: [String: AttributeValue]
+        attributes: [AttributeKey: AttributeValue]
     ) {
         var data: UnsafeMutablePointer<UInt8>?
         let start = dd_pprof_get_start_timestamp_s(profile)
         let end = dd_pprof_get_end_timestamp_s(profile)
-        let duration = (end - start).dd.toInt64Nanoseconds
         let size = dd_pprof_serialize(profile, &data)
 
         guard let data else {
@@ -69,9 +68,9 @@ extension ProfilingHandler {
 
         featureScope.eventWriteContext { context, writer in
             let event = ProfileEvent(
-                family: "ios",
-                runtime: "ios",
-                version: "4",
+                family: Constants.family,
+                runtime: Constants.runtime,
+                version: Constants.version,
                 start: Date(timeIntervalSince1970: start),
                 end: Date(timeIntervalSince1970: end),
                 attachments: [
@@ -79,17 +78,17 @@ extension ProfilingHandler {
                     ProfileAttachments.Constants.rumEventsFilename
                 ],
                 tags: [
-                    "service:\(context.service)",
-                    "version:\(context.version)",
-                    "sdk_version:\(context.sdkVersion)",
-                    "profiler_version:\(context.sdkVersion)",
-                    "runtime_version:\(context.os.version)",
-                    "env:\(context.env)",
-                    "source:\(context.source)",
-                    "language:swift",
-                    "format:pprof",
-                    "remote_symbols:yes",
-                    "operation:\(operation.rawValue)"
+                    tag(Tag.Key.service, context.service),
+                    tag(Tag.Key.version, context.version),
+                    tag(Tag.Key.sdkVersion, context.sdkVersion),
+                    tag(Tag.Key.profilerVersion, context.sdkVersion),
+                    tag(Tag.Key.runtimeVersion, context.os.version),
+                    tag(Tag.Key.env, context.env),
+                    tag(Tag.Key.source, context.source),
+                    tag(Tag.Key.language, Tag.Value.language),
+                    tag(Tag.Key.format, Tag.Value.format),
+                    tag(Tag.Key.remoteSymbols, Tag.Value.remoteSymbols),
+                    tag(Tag.Key.operation, operation.rawValue)
                 ].joined(separator: ","),
                 additionalAttributes: attributes
             )
@@ -98,5 +97,37 @@ extension ProfilingHandler {
             let attachments = ProfileAttachments(pprof: pprof, rumEvents: rumEventsData)
             writer.write(value: event, metadata: attachments)
         }
+    }
+
+    private func tag(_ key: String, _ value: String) -> String {
+        "\(key):\(value)"
+    }
+}
+
+private enum Constants {
+    static let family = "ios"
+    static let runtime = "ios"
+    static let version = "4"
+}
+
+private enum Tag {
+    enum Key {
+        static let service = "service"
+        static let version = "version"
+        static let sdkVersion = "sdk_version"
+        static let profilerVersion = "profiler_version"
+        static let runtimeVersion = "runtime_version"
+        static let env = "env"
+        static let source = "source"
+        static let language = "language"
+        static let format = "format"
+        static let remoteSymbols = "remote_symbols"
+        static let operation = "operation"
+    }
+
+    enum Value {
+        static let language = "swift"
+        static let format = "pprof"
+        static let remoteSymbols = "yes"
     }
 }

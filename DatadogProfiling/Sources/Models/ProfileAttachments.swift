@@ -20,6 +20,6 @@ internal struct ProfileAttachments: Codable {
 }
 
 /// Bundles all RUM events that are part of a profile event.
-internal struct RUMEvents: Codable, Equatable {
+internal struct RUMEvents: Encodable, Equatable {
     let vitals: [Vital]
 }

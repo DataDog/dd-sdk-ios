@@ -83,7 +83,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
     }
 
-    func testReceive_withVitalMessage_stopsProfiler() {
+    func testReceive_withTTIDMessage_stopsProfiler() {
         // Given
         let core = PassthroughCoreMock()
         let profiler = appLaunchProfiler
@@ -102,7 +102,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
     }
 
-    func testReceive_withVitalMessage_whenNoProfileData_returnsFalse() {
+    func testReceive_withTTIDMessage_whenNoProfileData_returnsFalse() {
         // Given - profiler not started, so no profile data
         let core = PassthroughCoreMock()
         let profiler = appLaunchProfiler
@@ -116,7 +116,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertFalse(result, "Should return false when no profile data is available")
     }
 
-    func testReceive_withVitalMessage_whenProfilerSampledOut_returnsFalse() {
+    func testReceive_withTTIDMessage_whenProfilerSampledOut_returnsFalse() {
         // Given - profiler sampled out
         let core = PassthroughCoreMock()
         let profiler = appLaunchProfiler
@@ -131,7 +131,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertFalse(result, "Should return false when profiler was sampled out")
     }
 
-    func testReceive_withVitalMessage_whenProfilerPrewarmed_returnsFalse() {
+    func testReceive_withTTIDMessage_whenProfilerPrewarmed_returnsFalse() {
         // Given - profiler prewarmed
         let core = PassthroughCoreMock()
         let profiler = appLaunchProfiler
