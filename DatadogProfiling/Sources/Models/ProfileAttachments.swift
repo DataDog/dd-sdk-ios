@@ -21,5 +21,13 @@ internal struct ProfileAttachments: Codable {
 
 /// Bundles all RUM events that are part of a profile event.
 internal struct RUMEvents: Encodable, Equatable {
+    enum CodingKeys: String, CodingKey {
+        case vitals
+        case hangs
+        case longTasks = "long_tasks"
+    }
+
     let vitals: [Vital]
+    let hangs: [DurationEvent<RUMErrorEvent>]?
+    let longTasks: [DurationEvent<RUMLongTaskEvent>]?
 }
