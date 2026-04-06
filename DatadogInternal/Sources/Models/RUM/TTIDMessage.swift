@@ -6,20 +6,20 @@
 
 import Foundation
 
-/// Message payload used to signal the occurrence of a vital.
-public struct VitalMessage {
+/// Message payload sent on the message bus when RUM reports a TTID vital
+public struct TTIDMessage {
     /// Correlation context containing IDs for data correlation.
-    public let attributes: [String: AttributeValue]
-    /// Vital info for data correlation.
-    public let vital: Vital
+    public let attributes: [AttributeKey: AttributeValue]
+    /// TTID info for data correlation.
+    public let ttid: Vital
 
     /// Creates a new message payload.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - attributes: Correlation context containing IDs for data correlation.
-    ///   - vital: Vital info for data correlation.
-    public init(attributes: [String: AttributeValue], vital: Vital) {
+    ///   - ttid: TTID info for data correlation.
+    public init(attributes: [AttributeKey: AttributeValue], ttid: Vital) {
         self.attributes = attributes
-        self.vital = vital
+        self.ttid = ttid
     }
 }

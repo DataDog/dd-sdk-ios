@@ -185,9 +185,12 @@ final class ProfilingHandlerTests: XCTestCase {
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
         let rumEventsData = try XCTUnwrap(metadata.rumEvents)
-        let rumEvents = try JSONDecoder().decode(RUMEvents.self, from: rumEventsData)
-        XCTAssertEqual(rumEvents.vitals.map(\.id), ["id1", "id2"])
-        XCTAssertEqual(rumEvents.vitals.map(\.name), ["operation1", "operation2"])
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
+        let vitalsFromJson = try XCTUnwrap(json["vitals"] as? [[String: Any]])
+        let vitalIDs = vitalsFromJson.compactMap { $0["id"] as? String }
+        let vitalNames = vitalsFromJson.compactMap { $0["name"] as? String }
+        XCTAssertEqual(vitalIDs, ["id1", "id2"])
+        XCTAssertEqual(vitalNames, ["operation1", "operation2"])
     }
 }
 
