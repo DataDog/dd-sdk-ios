@@ -181,5 +181,15 @@ extension Dictionary where Key == String, Value == Operation {
             $0 + [$1.start, $1.end].compactMap(\.self)
         }
     }
+
+    func didCompleteOperations() -> Bool {
+        let vitals = self.values
+        return vitals.contains { $0.end == nil } == false
+    }
+    
+    func ongoingOperations() -> [String: Operation] {
+        let operations = self
+        return operations.filter { $0.1.end == nil }
+    }
 }
 #endif
