@@ -15,7 +15,7 @@ internal protocol RUMContextProvider: AnyObject {
 
 extension RUMContextProvider {
     var rumContextAttributes: [String: AttributeValue] {
-        var attributes: [String: AttributeValue] = [
+        var attributes: [AttributeKey: AttributeValue] = [
             RUMCoreContext.IDs.applicationID: context.rumApplicationID,
             RUMCoreContext.IDs.sessionID: context.sessionID.toRUMDataFormat,
         ]
