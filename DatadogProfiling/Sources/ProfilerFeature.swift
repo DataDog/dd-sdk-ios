@@ -59,7 +59,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
 
         setProfilingEnabled(in: userDefaults)
-        let sampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunch.sampleRate
+        let sampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
         setAppLaunch(sampleRate: sampleRate, in: userDefaults)
     }
 
