@@ -32,7 +32,7 @@ internal final class AppLaunchProfiler: ProfilingHandler {
     let encoder: JSONEncoder
 
     @ReadWriteLock
-    private(set) var attributes: [String: AttributeValue] = [:]
+    private(set) var attributes: [AttributeKey: AttributeValue] = [:]
     @ReadWriteLock
     private var currentRUMVitals: [String: Operation] = [:]
     @ReadWriteLock
@@ -65,7 +65,7 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
 
         if case let .payload(message as TTIDMessage) = message {
             hasProcessedAppLaunch = true
-            currentRUMVitals[message.ttid.key] = (start: message.ttid, nil)
+            _currentRUMVitals.mutate { $0[message.ttid.key] = (start: message.ttid, nil) }
             attributes = message.attributes
 
             dd_profiler_stop()
@@ -81,9 +81,9 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
             return false
         } else if case let .payload(message as OperationMessage) = message {
             if message.operation.stepType == .start {
-                currentRUMVitals[message.operation.key] = (start: message.operation, nil)
+                _currentRUMVitals.mutate { $0[message.operation.key] = (start: message.operation, nil) }
             } else if let startVital = currentRUMVitals[message.operation.key]?.start {
-                currentRUMVitals[message.operation.key] = (start: startVital, end: message.operation)
+                _currentRUMVitals.mutate { $0[message.operation.key] = (start: startVital, end: message.operation) }
             }
             return false
         }
