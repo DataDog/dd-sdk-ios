@@ -1,10 +1,16 @@
-// swift-tools-version: 5.7.1
+// swift-tools-version: 5.10
 
 import PackageDescription
 
 let package = Package(
     name: "TestUtilities",
-    platforms: [.iOS(.v12), .tvOS(.v12), .macOS(.v12), .watchOS(.v7)],
+    platforms: [
+        .iOS(.v12),
+        .tvOS(.v12),
+        .macOS(.v12),
+        .watchOS(.v7),
+        .visionOS(.v1)
+    ],
     products: [
         .library(
             name: "TestUtilities",
