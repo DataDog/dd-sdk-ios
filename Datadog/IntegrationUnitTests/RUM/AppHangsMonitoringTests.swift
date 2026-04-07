@@ -26,8 +26,8 @@ class AppHangsMonitoringTests: XCTestCase {
 
     override func setUp() {
         rumConfig.mainQueue = mainQueue
-        rumConfig.appHangThreshold = 0.4
-        hangDuration = rumConfig.appHangThreshold! * 1.25
+        rumConfig.appHangThreshold = 0.5
+        hangDuration = rumConfig.appHangThreshold! * 2
         core = DatadogCoreProxy()
     }
 

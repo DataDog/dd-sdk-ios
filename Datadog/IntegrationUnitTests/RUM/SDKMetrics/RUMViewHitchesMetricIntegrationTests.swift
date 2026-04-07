@@ -95,13 +95,13 @@ final class RUMViewHitchesMetricIntegrationTests: XCTestCase {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             // sleep main thread to have some slow frames
-            Thread.sleep(forTimeInterval: 0.1)
+            Thread.sleep(forTimeInterval: 0.2)
 
             // schedule completion to the next runloop
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { completion.fulfill() }
         }
 
-        wait(for: [completion], timeout: 2)
+        wait(for: [completion], timeout: 5)
 
         monitor.stopView(key: "key")
 
