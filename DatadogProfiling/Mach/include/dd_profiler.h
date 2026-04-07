@@ -80,8 +80,9 @@ typedef struct sampling_config {
  * Default sampling configuration values.
  */
 /// Sampling frequency. Default to ~101 Hz (1/101 seconds ≈ 9.9ms)
-#define SAMPLING_CONFIG_DEFAULT_INTERVAL_HZ     101     // 101 Hz
-#define SAMPLING_CONFIG_DEFAULT_INTERVAL_NANOS  1000000 // 1ms
+#define SAMPLING_CONFIG_DEFAULT_FREQUENCY_HZ    101     // 101 Hz
+#define SAMPLING_CONFIG_DEFAULT_INTERVAL_NANOS  9900990 // ~101 Hz (1/101 seconds ≈ 9.9ms)
+
 /// Max buffer size of samples. It is a larger buffer to delay stack aggregation.
 #define SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE     10000
 /// Max frames per trace.
@@ -120,7 +121,7 @@ typedef void (*stack_trace_callback_t)(stack_trace_t* traces, size_t count, void
 // UserDefaults constants centralized for Profiling
 #define DD_PROFILING_USER_DEFAULTS_SUITE_NAME "com.datadoghq.ios-sdk.profiling"
 #define DD_PROFILING_IS_ENABLED_KEY "is_profiling_enabled"
-#define DD_PROFILING_SAMPLE_RATE_KEY "profiling_sample_rate"
+#define DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY "profiling_app_launch_sample_rate"
 
 #ifdef __cplusplus
 
@@ -143,49 +144,26 @@ typedef struct profiler profiler_t;
 #endif
 
 /**
- * Creates a profiler instance.
+ * Starts the global Datadog profiler.
  *
- * Uses fixed intervals for consistent sampling behavior.
+ * If `g_dd_profiler` does not exist, it is created with a 100% sample rate.
  *
- * @param config The base sampling configuration (can be NULL for defaults)
- * @param callback The callback to receive stack traces
- * @param ctx Context pointer to pass to the callback
- * @return Handle to the profiler instance or NULL on error
+ * @return 1 if successfully started (or already running), 0 otherwise.
  */
-profiler_t* profiler_create(
-    const sampling_config_t* config,
-    stack_trace_callback_t callback,
-    void* ctx);
-
-/**
- * Destroys a profiler instance.
- *
- * @param profiler Handle to the profiler instance
- */
-void profiler_destroy(profiler_t* profiler);
-
-/**
- * Starts the profiler.
- *
- * @param profiler Handle to the profiler instance
- * @return 1 if successfully started, 0 otherwise
- */
-int profiler_start(profiler_t* profiler);
+int dd_profiler_start(void);
 
 /**
  * Stops the profiler.
  *
- * @param profiler Handle to the profiler instance
  */
-void profiler_stop(profiler_t* profiler);
+void dd_profiler_stop();
 
 /**
  * Checks if the profiler is currently running.
  *
- * @param profiler Handle to the profiler instance
- * @return 1 if running, 0 otherwise
+ * @return true if profiler is running.
  */
-int profiler_is_running(const profiler_t* profiler);
+bool dd_profiler_is_running();
 
 // MARK: - DD Profiler (auto-start) API
 
@@ -199,9 +177,8 @@ typedef enum {
     DD_PROFILER_STATUS_STOPPED = 3,           ///< Profiler was stopped manually
     DD_PROFILER_STATUS_TIMEOUT = 4,           ///< Profiler was stopped due to timeout
     DD_PROFILER_STATUS_PREWARMED = 5,         ///< Profiler was not started due to prewarming
-    DD_PROFILER_STATUS_SAMPLED_OUT = 6,       ///< Profiler was not started due to sample rate
-    DD_PROFILER_STATUS_ALLOCATION_FAILED = 7, ///< Memory allocation failed
-    DD_PROFILER_STATUS_ALREADY_STARTED = 8,   ///< Failed to start profiler because it is already started
+    DD_PROFILER_STATUS_ALLOCATION_FAILED = 6, ///< Memory allocation failed
+    DD_PROFILER_STATUS_ALREADY_STARTED = 7,   ///< Failed to start profiler because it is already started
 } dd_profiler_status_t;
 
 /**
@@ -244,38 +221,40 @@ dd_profiler_status_t dd_profiler_get_status(void);
 void dd_profiler_stop(void);
 
 /**
- * @brief Retrieves the aggregated profile data from profiling
+ * @brief Retrieves the current profile
  *
- * Returns a typed handle to the profile data collected during profiling. This data
- * contains deduplicated stack traces, binary mappings, and sample metadata that can
- * be serialized for analysis.
+ * Returns a typed handle to the profile data being collected.
+ *
+ * @return Typed handle to profile data, or NULL if profiling was never started
+ *         or no profile exists
+ */
+dd_profile_t* dd_profiler_get_profile(void);
+
+/**
+ * @brief Flushes the sampling buffer and retrieves the profile
+ *
+ * Requests a flush of pending samples, then atomically swaps the internal
+ * profile with a fresh empty one. Sampling continues uninterrupted into the
+ * new profile.
  *
  * @return Typed handle to profile data, or NULL if:
  *         - Profiling was never started
  *         - No samples were collected
- *         - Profile data has been destroyed
- *
- * @note The returned handle remains valid until destroyed
- * @note This function can be called before or after stopping the profiler
- * @note The profile data accumulates all samples from start to stop
- *
- * @see `dd_profiler_stop()`, `dd_profiler_destroy()`
  */
-dd_profile_t* dd_profiler_get_profile(void);
+dd_profile_t* dd_profiler_flush_and_get_profile(void);
 
 /**
  * @brief Destroys the dd profiler data and frees all associated memory
  *
  * This function should be called when the profile data is no longer needed
- * to free memory resources. After calling this function, `dd_profiler_get_profile()`
- * will return NULL.
+ * to free memory resources.
  *
  * @note Safe to call multiple times - subsequent calls are no-ops
  * @note Safe to call even if profiling was never started
  *
  * @warning After calling this function, any previously returned profile handles become invalid
  *
- * @see `dd_profiler_get_profile()`
+ * @see `dd_profiler_get_profile()`, `dd_profiler_flush_and_get_profile()`
  */
 void dd_profiler_destroy(void);
 

@@ -6,6 +6,7 @@
 
 #import <XCTest/XCTest.h>
 @import DatadogRUM;
+@import DatadogInternal;
 
 @interface DDRUMMonitor_apiTests : XCTestCase
 @end

@@ -10,6 +10,7 @@
 
 #include <dlfcn.h>
 #include <thread>
+#include <chrono>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
@@ -413,6 +414,14 @@ void mach_sampling_profiler::stop_sampling() {
     pthread_join(sampling_thread, nullptr);
 }
 
+void mach_sampling_profiler::request_flush() {
+    if (!running) return;
+
+    std::unique_lock<std::mutex> lock(flush_mutex);
+    flush_requested = true;
+    flush_cv.wait(lock, [this] { return !flush_requested; });
+}
+
 /**
  * Samples a single thread's stack.
  *
@@ -455,6 +464,16 @@ void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_na
  */
 void mach_sampling_profiler::main() {
     while (running) {
+        // Check for flush request at safe point (no threads suspended)
+        if (flush_requested) {
+            flush_buffer();
+            {
+                std::lock_guard<std::mutex> lock(flush_mutex);
+                flush_requested = false;
+            }
+            flush_cv.notify_one();
+        }
+
         // Sampling interval in nanoseconds
         uint64_t interval_nanos = config.sampling_interval_nanos;
 
@@ -495,6 +514,13 @@ void mach_sampling_profiler::main() {
     
     // Flush any remaining samples
     flush_buffer();
+
+    // Unblock waiters if sampling stops before servicing a pending flush request.
+    {
+        std::lock_guard<std::mutex> lock(flush_mutex);
+        flush_requested = false;
+    }
+    flush_cv.notify_all();
 }
 
 /**

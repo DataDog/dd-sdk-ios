@@ -25,7 +25,7 @@ class RequestBuilderTests: XCTestCase {
         additionalAttributes: mockRandomAttributes()
     )
 
-    let rumEvents: RUMEvents = .init(vitals: [.mockRandom()])
+    let rumEvents: RUMEvents = .init(vitals: [.mockWith(operationKey: nil)])
     let pprof: Data = .mockRandom()
 
     private func mockEvent() throws -> Event {
@@ -175,8 +175,13 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(rumEventsFile.filename, "rum-mobile-events.json")
         XCTAssertEqual(rumEventsFile.mimeType, "application/json")
 
-        let rumEventsDecoded = try XCTUnwrap(JSONDecoder().decode(RUMEvents.self, from: rumEventsFile.data))
-        XCTAssertEqual(rumEventsDecoded, rumEvents)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsFile.data) as? [String: Any])
+        let vitals = try XCTUnwrap(json["vitals"] as? [[String: Any]])
+        let vitalIDs = vitals.compactMap { $0["id"] as? String }
+        let vitalNames = vitals.compactMap { $0["name"] as? String }
+
+        XCTAssertEqual(vitalIDs, rumEvents.vitals.map(\.id))
+        XCTAssertEqual(vitalNames, rumEvents.vitals.map(\.name))
     }
 
     func testWhenBatchDataHasMoreThanOneProfile() {

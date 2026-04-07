@@ -17,105 +17,98 @@ internal import DatadogMachProfiler
 #endif
 // swiftlint:enable duplicate_imports
 
-internal final class AppLaunchProfiler: FeatureMessageReceiver {
-    /// Shared counter to track pending `AppLaunchProfiler`s from handling the `ProfilerStop` message
+internal typealias Operation = (start: Vital, end: Vital?)
+
+internal final class AppLaunchProfiler: ProfilingHandler {
+    /// Shared counter to track pending `AppLaunchProfiler`s from handling the `VitalMessage` message.
     private static var pendingInstances: Int = 0
+    /// App launch profile attached with TTID.
+    private static var appLaunchProfile: OpaquePointer?
     private static let lock = NSLock()
 
-    private let telemetryController: ProfilingTelemetryController
-    private let encoder: JSONEncoder
+    let featureScope: FeatureScope
+    let telemetryController: ProfilingTelemetryController
+    let operation: ProfilingOperation = .appLaunch
+    let encoder: JSONEncoder
+
+    @ReadWriteLock
+    private(set) var attributes: [AttributeKey: AttributeValue] = [:]
+    @ReadWriteLock
+    private var currentRUMVitals: [String: Operation] = [:]
+    @ReadWriteLock
+    private var hasProcessedAppLaunch: Bool = false
 
     init(
+        core: DatadogCoreProtocol,
         telemetryController: ProfilingTelemetryController = .init(),
         encoder: JSONEncoder = JSONEncoder()
     ) {
         Self.registerInstance()
+
+        self.featureScope = core.scope(for: ProfilerFeature.self)
         self.telemetryController = telemetryController
         self.encoder = encoder
     }
 
+    deinit {
+        if !hasProcessedAppLaunch {
+            Self.unregisterInstance()
+        }
+    }
+}
+
+extension AppLaunchProfiler: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(cmd as TTIDMessage) = message else {
+        guard hasProcessedAppLaunch == false else {
             return false
         }
 
-        let rumEvents = RUMEvents(vitals: [cmd.vital])
-        let rumEventsData = try? encoder.encode(rumEvents)
+        if case let .payload(message as TTIDMessage) = message {
+            hasProcessedAppLaunch = true
+            _currentRUMVitals.mutate { $0[message.ttid.key] = (start: message.ttid, nil) }
+            attributes = message.attributes
 
-        let profileStatus = dd_profiler_get_status()
-        guard profileStatus == DD_PROFILER_STATUS_RUNNING
-                || profileStatus == DD_PROFILER_STATUS_TIMEOUT
-                || profileStatus == DD_PROFILER_STATUS_STOPPED else {
-            if profileStatus != DD_PROFILER_STATUS_SAMPLED_OUT
-                && profileStatus != DD_PROFILER_STATUS_PREWARMED {
-                telemetryController.send(metric: AppLaunchMetric.statusNotHandled)
+            dd_profiler_stop()
+            self.updateProfilingContext()
+
+            defer { Self.unregisterInstance() }
+            guard let profile = appLaunchProfile() else {
+                telemetryController.send(metric: AppLaunchMetric.noProfile)
+                return false
+            }
+
+            self.write(profile: profile, rumVitals: self.currentRUMVitals.allVitals())
+            return false
+        } else if case let .payload(message as OperationMessage) = message {
+            if message.operation.stepType == .start {
+                _currentRUMVitals.mutate { $0[message.operation.key] = (start: message.operation, nil) }
+            } else if let startVital = currentRUMVitals[message.operation.key]?.start {
+                _currentRUMVitals.mutate { $0[message.operation.key] = (start: startVital, end: message.operation) }
             }
             return false
         }
 
-        dd_profiler_stop()
-        core.set(context: ProfilingContext(status: .current))
-        defer { Self.unregisterInstance() }
+        return false
+    }
 
-        guard let profile = dd_profiler_get_profile() else {
-            telemetryController.send(metric: AppLaunchMetric.noProfile)
-            return false
+    private func appLaunchProfile() -> OpaquePointer? {
+        Self.lock.lock()
+        defer { Self.lock.unlock() }
+        if let profile = Self.appLaunchProfile {
+            return profile
         }
 
-        var data: UnsafeMutablePointer<UInt8>?
-        let start = dd_pprof_get_start_timestamp_s(profile)
-        let end = dd_pprof_get_end_timestamp_s(profile)
-        let duration = (end - start).dd.toInt64Nanoseconds
-        let size = dd_pprof_serialize(profile, &data)
+        let currentProfile = dd_profiler_flush_and_get_profile()
+        Self.appLaunchProfile = currentProfile
 
-        guard let data else {
-            telemetryController.send(metric: AppLaunchMetric.noData)
-            return false
-        }
-
-        let pprof = Data(bytes: data, count: size)
-        dd_pprof_free_serialized_data(data)
-
-        core.scope(for: ProfilerFeature.self).eventWriteContext { context, writer in
-            let event = ProfileEvent(
-                family: "ios",
-                runtime: "ios",
-                version: "4",
-                start: Date(timeIntervalSince1970: start),
-                end: Date(timeIntervalSince1970: end),
-                attachments: [
-                    ProfileAttachments.Constants.wallFilename,
-                    ProfileAttachments.Constants.rumEventsFilename
-                ],
-                tags: [
-                    "\(DDTag.service):\(context.service)",
-                    "\(DDTag.version):\(context.version)",
-                    "\(DDTag.sdkVersion):\(context.sdkVersion)",
-                    "profiler_version:\(context.sdkVersion)",
-                    "runtime_version:\(context.os.version)",
-                    "\(DDTag.env):\(context.env)",
-                    "source:\(context.source)",
-                    "language:swift",
-                    "format:pprof",
-                    "remote_symbols:yes",
-                    "operation:launch"
-                ].joined(separator: ","),
-                additionalAttributes: cmd.context
-            )
-
-            let attachments = ProfileAttachments(pprof: pprof, rumEvents: rumEventsData)
-            writer.write(value: event, metadata: attachments)
-            self.telemetryController.send(metric: AppLaunchMetric(status: .init(profileStatus), durationNs: duration, fileSize: Int64(size)))
-        }
-
-        return true
+        return currentProfile
     }
 }
 
 // MARK: - Handle AppLaunchProfiler instances
 
 private extension AppLaunchProfiler {
-    /// Registers the `AppLaunchProfiler` to handle the `ProfilerStop` message.
+    /// Registers the `AppLaunchProfiler` for app launch profile lifecycle tracking.
     static func registerInstance() {
         lock.lock()
         defer { lock.unlock() }
@@ -130,7 +123,8 @@ private extension AppLaunchProfiler {
 
         pendingInstances -= 1
         if pendingInstances <= 0 {
-            dd_profiler_destroy()
+            dd_pprof_destroy(Self.appLaunchProfile)
+            Self.appLaunchProfile = nil
         }
     }
 }
@@ -145,10 +139,12 @@ extension AppLaunchProfiler {
         return pendingInstances
     }
 
-    /// Resets the pending instances counter.
+    /// Resets the pending instances counter and destroys any stored profile (for testing).
     static func resetPendingInstances() {
         lock.lock()
         defer { lock.unlock() }
+        dd_pprof_destroy(Self.appLaunchProfile)
+        Self.appLaunchProfile = nil
         pendingInstances = 0
     }
 }
@@ -168,8 +164,6 @@ extension ProfilingContext.Status {
             self = .stopped(reason: .timeout)
         case DD_PROFILER_STATUS_PREWARMED:
             self = .stopped(reason: .prewarmed)
-        case DD_PROFILER_STATUS_SAMPLED_OUT:
-            self = .stopped(reason: .sampledOut)
         case DD_PROFILER_STATUS_ALLOCATION_FAILED:
             self = .error(reason: .memoryAllocationFailed)
         case DD_PROFILER_STATUS_ALREADY_STARTED:
@@ -180,4 +174,12 @@ extension ProfilingContext.Status {
     }
 }
 
+extension Dictionary where Key == String, Value == Operation {
+    func allVitals() -> [Vital] {
+        let vitals = self.values
+        return vitals.reduce([]) {
+            $0 + [$1.start, $1.end].compactMap(\.self)
+        }
+    }
+}
 #endif

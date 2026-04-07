@@ -20,130 +20,50 @@ final class DDProfilerCAPITests: XCTestCase {
         callbackUserData = nil
     }
 
-    // MARK: - Profiler Creation Tests
-
-    func testCreateProfiler_withDefaultConfig_createsValidInstance() {
-        // Given
-        let callback: stack_trace_callback_t = { _, _, _ in }
-
-        // When
-        let profiler = profiler_create(nil, callback, nil)
-
-        // Then
-        XCTAssertNotNil(profiler, "Profiler should be created successfully with default config")
-        profiler_destroy(profiler)
-    }
-
-    func testCreateProfiler_withCustomConfig_createsValidInstance() {
-        // Given
-        var config = sampling_config_t(
-            sampling_interval_nanos: 500_000, // 0.5ms
-            profile_current_thread_only: 1,
-            max_buffer_size: 50,
-            max_stack_depth: 64,
-            max_thread_count: 10,
-            qos_class: QOS_CLASS_USER_INITIATED
-        )
-
-        let callback: stack_trace_callback_t = { _, _, _ in }
-
-        // When
-        let profiler = profiler_create(&config, callback, nil)
-
-        // Then
-        XCTAssertNotNil(profiler, "Profiler should be created with custom config")
-        profiler_destroy(profiler)
-    }
-
-    func testCreateProfiler_withNilCallback_returnsNil() {
-        // When
-        let profiler = profiler_create(nil, nil, nil)
-
-        // Then
-        XCTAssertNil(profiler, "Profiler creation should fail with nil callback")
-    }
-
     // MARK: - Profiler State Management Tests
 
     func testProfilerState_initiallyNotRunning() {
-        // Given
-        let callback: stack_trace_callback_t = { _, _, _ in }
-        let profiler = profiler_create(nil, callback, nil)
-
-        // Then
-        XCTAssertEqual(profiler_is_running(profiler), 0, "Newly created profiler should not be running")
-        profiler_destroy(profiler)
+        XCTAssertFalse(dd_profiler_is_running(), "Profiler should not be running until started")
     }
 
     func testProfilerStart_changesStateToRunning() {
-        // Given
-        let callback: stack_trace_callback_t = { _, _, _ in }
-        let profiler = profiler_create(nil, callback, nil)
-        XCTAssertNotNil(profiler)
+        XCTAssertEqual(dd_profiler_start(), 1)
+        XCTAssertTrue(dd_profiler_is_running(), "Profiler should be running after start")
 
-        // Then
-        XCTAssertEqual(profiler_start(profiler), 1)
-        XCTAssertEqual(profiler_is_running(profiler), 1, "Profiler should be running after start")
-
-        // Cleanup
-        profiler_stop(profiler)
-        profiler_destroy(profiler)
+        dd_profiler_stop()
+        dd_profiler_destroy()
     }
 
     func testProfilerStop_changesStateToNotRunning() {
-        // Given
-        let callback: stack_trace_callback_t = { _, _, _ in }
-        let profiler = profiler_create(nil, callback, nil)
-        XCTAssertNotNil(profiler)
-        XCTAssertEqual(profiler_start(profiler), 1)
-        XCTAssertEqual(profiler_is_running(profiler), 1, "Precondition: profiler should be running")
+        XCTAssertEqual(dd_profiler_start(), 1)
+        XCTAssertTrue(dd_profiler_is_running(), "Precondition: profiler should be running")
 
-        // When
-        profiler_stop(profiler)
+        dd_profiler_stop()
 
-        // Then
-        XCTAssertEqual(profiler_is_running(profiler), 0, "Profiler should not be running after stop")
+        XCTAssertFalse(dd_profiler_is_running(), "Profiler should not be running after stop")
 
-        // Cleanup
-        profiler_destroy(profiler)
+        dd_profiler_destroy()
     }
 
     func testProfilerStartTwice_doesNotCrash() {
-        // Given
-        let callback: stack_trace_callback_t = { _, _, _ in }
-        let profiler = profiler_create(nil, callback, nil)
-        XCTAssertNotNil(profiler)
-        XCTAssertEqual(profiler_start(profiler), 1)
+        XCTAssertEqual(dd_profiler_start(), 1)
 
-        // When
-        let secondStartResult = profiler_start(profiler)
+        let secondStartResult = dd_profiler_start()
 
-        // Then
-        XCTAssertEqual(secondStartResult, 0, "Second start should return failure")
-        XCTAssertEqual(profiler_is_running(profiler), 1, "Profiler should still be running")
+        XCTAssertEqual(secondStartResult, 1, "Second start while running should succeed (idempotent)")
+        XCTAssertTrue(dd_profiler_is_running(), "Profiler should still be running")
 
-        // Cleanup
-        profiler_stop(profiler)
-        profiler_destroy(profiler)
+        dd_profiler_stop()
+        dd_profiler_destroy()
     }
 
     // MARK: - Memory Management Tests
 
-    func testProfilerDestroy_withNilProfiler_doesNotCrash() {
-        // Should not crash
-        profiler_destroy(nil)
-    }
-
     func testProfilerDestroy_stopsRunningProfiler() {
-        // Given
-        let callback: stack_trace_callback_t = { _, _, _ in }
-        let profiler = profiler_create(nil, callback, nil)
-        XCTAssertNotNil(profiler)
-        XCTAssertEqual(profiler_start(profiler), 1)
-        XCTAssertEqual(profiler_is_running(profiler), 1)
+        XCTAssertEqual(dd_profiler_start(), 1)
+        XCTAssertTrue(dd_profiler_is_running())
 
-        // When
-        profiler_destroy(profiler)
+        dd_profiler_destroy()
 
         // Then
         // Should have cleaned up resources without crashing

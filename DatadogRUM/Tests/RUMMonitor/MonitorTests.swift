@@ -73,8 +73,8 @@ class MonitorTests: XCTestCase {
         monitor.startView(viewController: vc)
 
         // Then
-        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewName, "SomeViewController")
-        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewPath, "SomeViewController")
+        XCTAssertEqual(monitor.applicationScope.sessionScopes.first?.viewScopes.first?.viewName, "SomeViewController")
+        XCTAssertEqual(monitor.applicationScope.sessionScopes.first?.viewScopes.first?.viewPath, "SomeViewController")
     }
 
     func testStartView_withViewController_itUsesClassNameAsViewPath() throws {
@@ -89,8 +89,8 @@ class MonitorTests: XCTestCase {
         monitor.startView(viewController: vc, name: "Some View")
 
         // Then
-        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewName, "Some View")
-        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewPath, "SomeViewController")
+        XCTAssertEqual(monitor.applicationScope.sessionScopes.first?.viewScopes.first?.viewName, "Some View")
+        XCTAssertEqual(monitor.applicationScope.sessionScopes.first?.viewScopes.first?.viewPath, "SomeViewController")
     }
 
     // MARK: - App launch
@@ -241,5 +241,5 @@ class MonitorTests: XCTestCase {
 
 private extension Monitor {
     /// Returns RUM context assuming that some view is started.
-    var currentRUMContext: RUMContext { scopes.activeSession!.viewScopes.last!.context }
+    var currentRUMContext: RUMContext { applicationScope.activeSession!.viewScopes.last!.context }
 }
