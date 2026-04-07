@@ -1,8 +1,12 @@
 # Unreleased
 
+# 3.9.0 / 02-04-2026
+
+- [IMPROVEMENT] Add `NWPath.linkQuality` to network info attached to Logs and Traces on supported platforms. See [#2751][]
+- [IMPROVEMENT] Trace now uses deterministic sampling for custom spans, based on the RUM session ID when available. See [#2794][]
 - [FIX] Fix stack overflow crash when RUM scroll tracking is used alongside third-party delegate proxy libraries (e.g. RxSwift). See [#2791][]
-- [IMPROVEMENT] Trace now uses deterministic sampling for custom spans, based on the RUM session ID when available.
-- [FIX] When there is an active span, RUM session tracking uses it as the basis for the resource parent span and sampling decision. Starting in this release, if the active span is not sampled, session tracking falls back to making its own sampling decision based on the RUM session tracking sampling rate.
+- [FIX] When there is an active span, RUM session tracking uses it as the basis for the resource parent span and sampling decision. Starting in this release, if the active span is not sampled, session tracking falls back to making its own sampling decision based on the RUM session tracking sampling rate. See [#2807][]
+- [FIX] Replace `DatadogMachProfiler` unsafe build flags with the package-level `cxxLanguageStandard` parameter. See [#2773][]
 
 # 3.8.3 / 26-03-2026
 
@@ -26,7 +30,6 @@
 - [IMPROVEMENT] Add encoded and decoded body sizes to RUM resource events. See [#2697][] and [#2699][]
 - [IMPROVEMENT] Align the tags of WebView log events with the native Logs. See [#2710][]
 - [FIX] Fix crash context C-string conversion in KSCrash injection. See [#2740][]
-- [IMPROVEMENT] Add `NWPath.linkQuality` to network info attached to Logs and Traces on supported platforms. See [#2751][]
 
 # 3.7.0 / 18-02-2026
 
@@ -1097,8 +1100,11 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
 [#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
 [#2751]: https://github.com/DataDog/dd-sdk-ios/pull/2751
+[#2773]: https://github.com/DataDog/dd-sdk-ios/pull/2773
 [#2776]: https://github.com/DataDog/dd-sdk-ios/pull/2776
 [#2791]: https://github.com/DataDog/dd-sdk-ios/pull/2791
+[#2794]: https://github.com/DataDog/dd-sdk-ios/pull/2794
+[#2807]: https://github.com/DataDog/dd-sdk-ios/pull/2807
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

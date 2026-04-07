@@ -38,4 +38,18 @@ final class DeterministicSamplerTests: XCTestCase {
         XCTAssertFalse(DeterministicSampler(seed: 0, samplingRate: 0.0).sample(), "rate=0.0 must never be sampled")
         XCTAssertFalse(DeterministicSampler(seed: UInt64.max, samplingRate: 0.0).sample(), "rate=0.0 must never be sampled regardless of seed")
     }
+
+    /// Tests the fast algorithm for creating a seed.
+    func testFastInit() {
+        func seedUsingReferenceImplementation(for uuid: UUID) -> UInt64 {
+            uuid.uuidString.split(separator: "-").last.flatMap { UInt64($0, radix: 16) } ?? 0
+        }
+
+        for _ in 0..<100 {
+            let uuid = UUID()
+            let fast = DeterministicSampler(uuid: uuid, samplingRate: 50)
+            let ref = DeterministicSampler(seed: seedUsingReferenceImplementation(for: uuid), samplingRate: 50)
+            XCTAssertEqual(fast.seed, ref.seed, "Seeds are different for UUID \(uuid.uuidString)")
+        }
+    }
 }
