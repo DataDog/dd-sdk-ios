@@ -11,10 +11,6 @@ internal struct FlagsDataStore {
     private static let encoder = JSONEncoder()
     private static let decoder = JSONDecoder()
 
-    /// Timeout for data store reads. This is a fallback in case the underlying
-    /// DataStore implementation doesn't call the callback (e.g., NOPDataStore).
-    private static let readTimeout: TimeInterval = 0.1
-
     let featureScope: FeatureScope
 
     func setFlagsData(_ flagsData: FlagsData, forClientNamed clientName: String) {
@@ -28,8 +24,8 @@ internal struct FlagsDataStore {
     }
 
     func flagsData(forClientNamed clientName: String, callback: @escaping (FlagsData?) -> Void) {
-        // Use a safe wrapper with timeout fallback to guarantee the callback is always
-        // invoked, even if the underlying DataStore doesn't call it (e.g., NOPDataStore).
+        // Use a safe wrapper to guarantee the callback is always invoked,
+        // even if the underlying DataStore doesn't call it (e.g., NOPDataStore).
         safeDataStoreValue(forKey: clientName) { result in
             guard let data = result.data() else {
                 callback(nil)
@@ -47,40 +43,17 @@ internal struct FlagsDataStore {
         }
     }
 
-    /// Wraps `DataStore.value(forKey:callback:)` with a timeout to guarantee the callback
+    /// Wraps `DataStore.value(forKey:callback:)` to guarantee the callback
     /// is always invoked, even if the underlying implementation doesn't call it.
+    ///
+    /// `NOPDataStore` never invokes callbacks, so we short-circuit for that case.
     private func safeDataStoreValue(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
-        let callbackInvoked = ReadWriteLock(wrappedValue: false)
-
-        // Set up timeout fallback
-        let timeoutWorkItem = DispatchWorkItem {
-            var shouldInvoke = false
-            callbackInvoked.mutate { invoked in
-                if !invoked {
-                    invoked = true
-                    shouldInvoke = true
-                }
-            }
-            if shouldInvoke {
-                callback(.noValue)
-            }
+        let dataStore = featureScope.dataStore
+        if dataStore is NOPDataStore {
+            callback(.noValue)
+            return
         }
-        DispatchQueue.global().asyncAfter(deadline: .now() + Self.readTimeout, execute: timeoutWorkItem)
-
-        // Call the underlying data store
-        featureScope.dataStore.value(forKey: key) { result in
-            timeoutWorkItem.cancel()
-            var shouldInvoke = false
-            callbackInvoked.mutate { invoked in
-                if !invoked {
-                    invoked = true
-                    shouldInvoke = true
-                }
-            }
-            if shouldInvoke {
-                callback(result)
-            }
-        }
+        dataStore.value(forKey: key, callback: callback)
     }
 
     func removeFlagsData(forClientNamed clientName: String) {
