@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
+
 # 3.9.0 / 02-04-2026
 
 - [IMPROVEMENT] Add `NWPath.linkQuality` to network info attached to Logs and Traces on supported platforms. See [#2751][]
