@@ -81,21 +81,7 @@ class ResourceRequestBuilderTests: XCTestCase {
         let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: .init(previousResponseCode: nil, attempt: 0))
 
         // Then
-        XCTAssertEqual(request.url!.query, "ddtags=retry_count:1")
-    }
-
-    func testItSetsRetryQueryParameters() throws {
-        let randomAttempt: UInt = .mockRandom()
-        let randomStatus: Int = .mockRandom()
-
-        // Given
-        let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
-
-        // When
-        let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: .init(previousResponseCode: randomStatus, attempt: randomAttempt))
-
-        // Then
-        XCTAssertEqual(request.url!.query, "ddtags=retry_count:\(randomAttempt + 1),retry_after:\(randomStatus)")
+        XCTAssertNil(request.url!.query)
     }
 
     func testItSetsHTTPHeaders() throws {
@@ -171,6 +157,20 @@ class ResourceRequestBuilderTests: XCTestCase {
 
         // When, Then
         XCTAssertThrowsError(try builder.request(for: [.mockWith(data: "abc".utf8Data)], with: .mockRandom(), execution: .mockAny()))
+    }
+
+    func testItSetsRetryQueryParameters() throws {
+        // Given
+        let randomAttempt: UInt = .mockRandom(min: 1, max: 10)
+        let randomStatus: Int = .mockRandom()
+        let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let execution: ExecutionContext = .mockWith(previousResponseCode: randomStatus, attempt: randomAttempt)
+
+        // When
+        let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: execution)
+
+        // Then
+        XCTAssertEqual(request.url!.query, "ddtags=retry_count:\(randomAttempt),retry_after:\(randomStatus)")
     }
 }
 #endif

@@ -27,11 +27,6 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         with context: DatadogContext,
         execution: ExecutionContext
     ) throws -> URLRequest {
-        var tags = ["retry_count:\(execution.attempt + 1)"]
-        if let previousResponseCode = execution.previousResponseCode {
-            tags.append("retry_after:\(previousResponseCode)")
-        }
-
         let filteredEvents = eventsFilter.filter(events: events)
 
         guard !filteredEvents.isEmpty else {
@@ -42,10 +37,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
 
         let builder = URLRequestBuilder(
             url: url(with: context),
-            queryItems: [
-                .ddsource(source: context.source),
-                .ddtags(tags: tags)
-            ],
+            queryItems: [.ddsource(source: context.source)] + execution.retryQueryItems,
             headers: [
                 .contentTypeHeader(contentType: .textPlainUTF8),
                 .userAgentHeader(

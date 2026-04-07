@@ -34,7 +34,7 @@ extension TracingCommonAsserts {
         requests.forEach { request in
             XCTAssertEqual(request.httpMethod, "POST")
 
-            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddtags=retry_count:1`
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309`
             XCTAssertFalse(request.path.isEmpty)
             XCTAssertNil(request.queryItems)
 

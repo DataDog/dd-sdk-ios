@@ -54,16 +54,9 @@ internal struct RequestBuilder: FeatureRequestBuilder {
             mimeType: "application/octet-stream"
         )
 
-        var tags = ["retry_count:\(execution.attempt + 1)"]
-        if let previousResponseCode = execution.previousResponseCode {
-            tags.append("retry_after:\(previousResponseCode)")
-        }
-
         let builder = URLRequestBuilder(
             url: url(with: context),
-            queryItems: [
-                .ddtags(tags: tags)
-            ],
+            queryItems: execution.retryQueryItems,
             headers: [
                 .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary)),
                 .userAgentHeader(

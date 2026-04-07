@@ -40,6 +40,25 @@ public struct ExecutionContext {
     /// The current attempt number.
     public let attempt: UInt
 
+    /// Tags to include in the request when this is a retry attempt.
+    /// Returns `nil` on the first request (`attempt == 0`).
+    private var retryTags: [String]? {
+        guard attempt > 0 else {
+            return nil
+        }
+        var tags = ["retry_count:\(attempt)"]
+        if let code = previousResponseCode {
+            tags.append("retry_after:\(code)")
+        }
+        return tags
+    }
+
+    /// Query items to include in the request when this is a retry attempt.
+    /// Returns an empty array on the first request (`attempt == 0`).
+    public var retryQueryItems: [URLRequestBuilder.QueryItem] {
+        retryTags.map { [.ddtags(tags: $0)] } ?? []
+    }
+
     /// Initializes the execution context.
     /// - Parameters:
     ///   - previousResponseCode: Previous HTTP status code, if available.

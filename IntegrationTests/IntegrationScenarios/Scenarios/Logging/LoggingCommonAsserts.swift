@@ -22,7 +22,7 @@ extension LoggingCommonAsserts {
         requests.forEach { request in
             XCTAssertEqual(request.httpMethod, "POST")
 
-            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddsource=ios&ddtags=retry_count:1`
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddsource=ios`
             XCTAssertNotNil(request.path, file: file, line: line)
             XCTAssertNotNil(request.queryItems)
             XCTAssertEqual(request.queryItems!.count, 1)
