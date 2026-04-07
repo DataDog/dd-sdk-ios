@@ -20,7 +20,7 @@ internal import DatadogMachProfiler
 internal typealias Operation = (start: Vital, end: Vital?)
 
 internal final class AppLaunchProfiler: ProfilingHandler {
-    /// Shared counter to track pending `AppLaunchProfiler`s from handling the `VitalMessage` message.
+    /// Shared counter to track pending `AppLaunchProfiler`s until a `TTIDMessage` harvest completes.
     private static var pendingInstances: Int = 0
     /// App launch profile attached with TTID.
     private static var appLaunchProfile: OpaquePointer?
@@ -186,7 +186,7 @@ extension Dictionary where Key == String, Value == Operation {
         let vitals = self.values
         return vitals.contains { $0.end == nil } == false
     }
-    
+
     func ongoingOperations() -> [String: Operation] {
         let operations = self
         return operations.filter { $0.1.end == nil }
