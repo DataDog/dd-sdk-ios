@@ -427,9 +427,9 @@ Publish CP podspecs (internal):
     - make clean
     - make release-publish-internal-podspecs
 
-Publish CP podspecs (dependent):
+.publish-dependent-podspec:
   stage: release-publish
-  rules: 
+  rules:
     - !reference [.release-pipeline-20m-delayed-job, rules]
   before_script:
     - *export_MAKE_release_params
@@ -438,7 +438,52 @@ Publish CP podspecs (dependent):
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make env-check
     - make clean
-    - make release-publish-dependent-podspecs
+    - make release-publish-podspec PODSPEC_NAME="$PODSPEC_NAME"
+
+Publish CP podspec (Core):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogCore.podspec"
+
+Publish CP podspec (Logs):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogLogs.podspec"
+
+Publish CP podspec (Trace):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogTrace.podspec"
+
+Publish CP podspec (RUM):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogRUM.podspec"
+
+Publish CP podspec (SessionReplay):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogSessionReplay.podspec"
+
+Publish CP podspec (CrashReporting):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogCrashReporting.podspec"
+
+Publish CP podspec (WebViewTracking):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogWebViewTracking.podspec"
+
+Publish CP podspec (Flags):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogFlags.podspec"
+
+Publish CP podspec (Profiling):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogProfiling.podspec"
 
 # ┌────────────────┐
 # │ Notifications: │

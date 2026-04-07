@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogFlags"
-  s.version      = "3.8.3"
+  s.version      = "3.9.0"
   s.summary      = "Official Datadog Feature Flags module of the Swift SDK."
 
   s.homepage     = "https://www.datadoghq.com"
