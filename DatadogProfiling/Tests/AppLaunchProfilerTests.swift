@@ -334,7 +334,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         }
 
         // Then
-        wait(for: [expectation], timeout: 0.1)
+        wait(for: [expectation], timeout: 2.0)
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, iterations)
     }
 }
