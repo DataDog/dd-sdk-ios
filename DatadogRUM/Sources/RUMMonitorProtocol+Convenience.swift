@@ -303,50 +303,94 @@ public extension RUMMonitorProtocol {
         stopAction(type: type, name: name, attributes: attributes)
     }
 
-    // MARK: - Feature Operations
+    // MARK: - Operations
+
+    /// Starts a RUM Operation.
+    /// - Parameters:
+    ///   - name: the name of the operation (e.g., `login_flow`)
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
+    ///   - attributes: custom attributes to attach to this operation
+    @available(*, message: "This API is in preview and may change in future releases")
+    func startOperation(
+        name: String,
+        operationKey: String? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        startOperation(name: name, operationKey: operationKey, attributes: attributes)
+    }
 
     /// Starts a Feature Operation.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - attributes: custom attributes to attach to this operation
-    @available(*, message: "This API is in preview and may change in future releases")
+    @available(*, deprecated, renamed: "startOperation(name:operationKey:attributes:)", message: "Use startOperation(name:operationKey:attributes:) instead.")
     func startFeatureOperation(
         name: String,
         operationKey: String? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        startFeatureOperation(name: name, operationKey: operationKey, attributes: attributes)
+        startOperation(name: name, operationKey: operationKey, attributes: attributes)
+    }
+
+    /// Completes a RUM Operation successfully.
+    /// - Parameters:
+    ///   - name: the name of the operation (e.g., `login_flow`)
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
+    ///   - attributes: custom attributes to attach to this operation
+    @available(*, message: "This API is in preview and may change in future releases")
+    func succeedOperation(
+        name: String,
+        operationKey: String? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        succeedOperation(name: name, operationKey: operationKey, attributes: attributes)
     }
 
     /// Completes a Feature Operation successfully.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startFeatureOperation`
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
     ///   - attributes: custom attributes to attach to this operation
-    @available(*, message: "This API is in preview and may change in future releases")
+    @available(*, deprecated, renamed: "succeedOperation(name:operationKey:attributes:)", message: "Use succeedOperation(name:operationKey:attributes:) instead.")
     func succeedFeatureOperation(
         name: String,
         operationKey: String? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        succeedFeatureOperation(name: name, operationKey: operationKey, attributes: attributes)
+        succeedOperation(name: name, operationKey: operationKey, attributes: attributes)
+    }
+
+    /// Fails a RUM Operation.
+    /// - Parameters:
+    ///   - name: the name of the operation (e.g., `login_flow`)
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
+    ///   - reason: the reason for the failure
+    ///   - attributes: custom attributes to attach to this operation
+    @available(*, message: "This API is in preview and may change in future releases")
+    func failOperation(
+        name: String,
+        operationKey: String? = nil,
+        reason: RUMFeatureOperationFailureReason,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
     }
 
     /// Fails a Feature Operation.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startFeatureOperation`
+    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
     ///   - reason: the reason for the failure
     ///   - attributes: custom attributes to attach to this operation
-    @available(*, message: "This API is in preview and may change in future releases")
+    @available(*, deprecated, renamed: "failOperation(name:operationKey:reason:attributes:)", message: "Use failOperation(name:operationKey:reason:attributes:) instead.")
     func failFeatureOperation(
         name: String,
         operationKey: String? = nil,
         reason: RUMFeatureOperationFailureReason,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        failFeatureOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
+        failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
     }
 }
 

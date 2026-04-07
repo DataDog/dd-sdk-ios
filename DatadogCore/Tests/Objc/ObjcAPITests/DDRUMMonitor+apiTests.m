@@ -92,9 +92,9 @@
     [monitor addAttributes:@{@"string": @"value", @"integer": @1, @"boolean": @true}];
     [monitor removeAttributesForKeys:@[@"string",@"integer",@"boolean"]];
     [monitor addFeatureFlagEvaluationWithName: @"name" value: @"value"];
-    [monitor startFeatureOperationWithName:@"test_flow" operationKey:@"operation_1" attributes:@{}];
-    [monitor succeedFeatureOperationWithName:@"test_flow" operationKey:@"operation_1" attributes:@{}];
-    [monitor failFeatureOperationWithName:@"test_flow" operationKey:@"operation_1" reason:DDRUMFeatureOperationFailureReasonError attributes:@{}];
+    [monitor startOperationWithName:@"test_flow" operationKey:@"operation_1" attributes:@{}];
+    [monitor succeedOperationWithName:@"test_flow" operationKey:@"operation_1" attributes:@{}];
+    [monitor failOperationWithName:@"test_flow" operationKey:@"operation_1" reason:DDRUMFeatureOperationFailureReasonError attributes:@{}];
 
     [monitor _internal_sync_addError:[NSError errorWithDomain:NSCocoaErrorDomain code:-100 userInfo:nil]
                               source:DDRUMErrorSourceCustom attributes:@{}];
