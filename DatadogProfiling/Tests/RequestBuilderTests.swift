@@ -202,5 +202,17 @@ class RequestBuilderTests: XCTestCase {
         // Then
         XCTAssertEqual(request.url!.query, "ddtags=retry_count:\(randomAttempt),retry_after:\(randomStatus)")
     }
+
+    func testItSetsRetryQueryParametersOnNetworkErrorRetry() throws {
+        // Given
+        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let execution: ExecutionContext = .mockWith(previousResponseCode: nil, attempt: 1) // network error retry has no response code
+
+        // When
+        let request = try builder.request(for: [mockEvent()], with: .mockRandom(), execution: execution)
+
+        // Then
+        XCTAssertEqual(request.url!.query, "ddtags=retry_count:1") // no last_failure_status without response code
+    }
 }
 #endif // !os(watchOS)

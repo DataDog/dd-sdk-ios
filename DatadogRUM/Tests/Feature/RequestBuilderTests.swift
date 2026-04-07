@@ -201,4 +201,18 @@ class RequestBuilderTests: XCTestCase {
         // Then
         XCTAssertEqual(request.url?.query, "ddsource=\(randomSource)") // no ddtags on first request
     }
+
+    func testItSetsRetryQueryParametersOnNetworkErrorRetry() throws {
+        // Given
+        let randomSource: String = .mockRandom(among: .alphanumerics)
+        let builder = RequestBuilder(customIntakeURL: nil, eventsFilter: .init(telemetry: TelemetryMock()), telemetry: NOPTelemetry())
+        let context: DatadogContext = .mockWith(source: randomSource)
+        let execution: ExecutionContext = .mockWith(previousResponseCode: nil, attempt: 1) // network error retry has no response code
+
+        // When
+        let request = try builder.request(for: mockEvents, with: context, execution: execution)
+
+        // Then
+        XCTAssertEqual(request.url?.query, "ddsource=\(randomSource)&ddtags=retry_count:1") // no last_failure_status without response code
+    }
 }
