@@ -284,11 +284,13 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - attributes: custom attributes to attach to this operation
+    ///   - options: options to attach to this operation (e.g. profiling options)
     @available(*, message: "This API is in preview and may change in future releases")
     func startOperation(
         name: String,
         operationKey: String?,
-        attributes: [AttributeKey: AttributeValue]
+        attributes: [AttributeKey: AttributeValue],
+        options: OperationOptions?
     )
 
     /// Starts a Feature Operation
@@ -296,7 +298,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - attributes: custom attributes to attach to this operation
-    @available(*, deprecated, renamed: "startOperation(name:operationKey:attributes:)", message: "Use startOperation(name:operationKey:attributes:) instead.")
+    @available(*, deprecated, renamed: "startOperation(name:operationKey:attributes:options:)", message: "Use startOperation(name:operationKey:attributes:options:) instead.")
     func startFeatureOperation(
         name: String,
         operationKey: String?,
@@ -521,7 +523,7 @@ internal class NOPMonitor: RUMMonitorProtocol {
         warn()
         completionHandler()
     }
-    func startOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func startOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue], options: OperationOptions?) { warn() }
     func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func succeedOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) { warn() }

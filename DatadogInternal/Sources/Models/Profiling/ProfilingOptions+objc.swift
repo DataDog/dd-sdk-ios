@@ -4,14 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import UIKit
-import DatadogRUM
+import Foundation
 
-final class RUMFeatureOperationsNextViewController: UIViewController {
-
-    @IBAction func didTapSucceedLoginFlowButton(_ sender: Any) {
-        rumMonitor.succeedOperation(
-            name: Operation.login()
-        )
+@objc(DDProfilingOptions)
+@objcMembers
+@_spi(objc)
+public final class objc_ProfilingOptions: objc_OperationOptions {
+    public init(sampleRate: Float) {
+        super.init(swiftType: ProfilingOptions(sampleRate: sampleRate))
     }
 }

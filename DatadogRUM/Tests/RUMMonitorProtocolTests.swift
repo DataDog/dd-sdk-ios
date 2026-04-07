@@ -86,7 +86,7 @@ class NOPMonitorTests: XCTestCase {
             "startAction(type:name:attributes:)",
             "stopAction(type:name:attributes:)",
             "addFeatureFlagEvaluation(name:value:)",
-            "startOperation(name:operationKey:attributes:)",
+            "startOperation(name:operationKey:attributes:options:)",
             "succeedOperation(name:operationKey:attributes:)",
             "failOperation(name:operationKey:reason:attributes:)",
             "debug",

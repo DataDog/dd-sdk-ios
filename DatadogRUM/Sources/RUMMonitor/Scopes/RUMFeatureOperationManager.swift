@@ -143,7 +143,7 @@ internal class RUMFeatureOperationManager {
         // Check if operation is currently being tracked
         if !activeOperations.contains(lookupKey) {
             // Warning: Operation step called without a corresponding start
-            DD.logger.warn("`\(stepType.rawValue)` was called, but operation \(formatOperationName(name, operationKey: operationKey)) is currently not active. This may lead to a backend `instrumentation_error`. Make sure to call `startOperation(name:operationKey:attributes:)` first. Note that the SDK only tracks operations locally and not across sessions.")
+            DD.logger.warn("`\(stepType.rawValue)` was called, but operation \(formatOperationName(name, operationKey: operationKey)) is currently not active. This may lead to a backend `instrumentation_error`. Make sure to call `startOperation(name:operationKey:attributes:options:)` first. Note that the SDK only tracks operations locally and not across sessions.")
         }
 
         // Remove operation from tracking when it ends

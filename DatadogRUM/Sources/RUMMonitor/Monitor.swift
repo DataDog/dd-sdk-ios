@@ -463,7 +463,7 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - Feature Operations
 
-    func startOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+    func startOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue], options: OperationOptions?) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) started")
 
         telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .start)))))
@@ -482,7 +482,7 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
-        startOperation(name: name, operationKey: operationKey, attributes: attributes)
+        startOperation(name: name, operationKey: operationKey, attributes: attributes, options: nil)
     }
 
     func succeedOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {

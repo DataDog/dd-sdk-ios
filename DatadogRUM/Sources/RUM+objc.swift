@@ -775,18 +775,24 @@ public class objc_RUMMonitor: NSObject {
     public func startOperation(
         name: String,
         operationKey: String?,
-        attributes: [String: Any]
+        attributes: [String: Any],
+        options: objc_OperationOptions?
     ) {
-        swiftRUMMonitor.startOperation(name: name, operationKey: operationKey, attributes: attributes.dd.swiftAttributes)
+        swiftRUMMonitor.startOperation(
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes.dd.swiftAttributes,
+            options: options?.swiftType
+        )
     }
 
-    @available(*, deprecated, renamed: "startOperation(name:operationKey:attributes:)", message: "Use startOperation(name:operationKey:attributes:) instead.")
+    @available(*, deprecated, renamed: "startOperation(name:operationKey:attributes:options:)", message: "Use startOperation(name:operationKey:attributes:options:) instead.")
     public func startFeatureOperation(
         name: String,
         operationKey: String?,
         attributes: [String: Any]
     ) {
-        startOperation(name: name, operationKey: operationKey, attributes: attributes)
+        startOperation(name: name, operationKey: operationKey, attributes: attributes, options: nil)
     }
 
     public func succeedOperation(

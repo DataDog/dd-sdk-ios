@@ -491,8 +491,11 @@ public extension RUMMonitorProtocol
     func addAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
     func startAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
     func stopAction(type: RUMActionType,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func startOperation(name: String,operationKey: String? = nil,attributes: [AttributeKey: AttributeValue] = [:],options: OperationOptions? = nil)
     func startFeatureOperation(name: String,operationKey: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func succeedOperation(name: String,operationKey: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
     func succeedFeatureOperation(name: String,operationKey: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func failOperation(name: String,operationKey: String? = nil,reason: RUMFeatureOperationFailureReason,attributes: [AttributeKey: AttributeValue] = [:])
     func failFeatureOperation(name: String,operationKey: String? = nil,reason: RUMFeatureOperationFailureReason,attributes: [AttributeKey: AttributeValue] = [:])
 public extension RUMMonitorProtocol
     var _internal: DatadogInternalInterface?
@@ -537,8 +540,11 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject
     func startAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue])
     func stopAction(type: RUMActionType,name: String?,attributes: [AttributeKey: AttributeValue])
     func addFeatureFlagEvaluation(name: String,value: Encodable)
+    func startOperation(name: String,operationKey: String?,attributes: [AttributeKey: AttributeValue],options: OperationOptions?)
     func startFeatureOperation(name: String,operationKey: String?,attributes: [AttributeKey: AttributeValue])
+    func succeedOperation(name: String,operationKey: String?,attributes: [AttributeKey: AttributeValue])
     func succeedFeatureOperation(name: String,operationKey: String?,attributes: [AttributeKey: AttributeValue])
+    func failOperation(name: String,operationKey: String?,reason: RUMFeatureOperationFailureReason,attributes: [AttributeKey: AttributeValue])
     func failFeatureOperation(name: String,operationKey: String?,reason: RUMFeatureOperationFailureReason,attributes: [AttributeKey: AttributeValue])
     var debug: Bool
     func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue],completionHandler: @escaping CompletionHandler)

@@ -310,13 +310,15 @@ public extension RUMMonitorProtocol {
     ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - attributes: custom attributes to attach to this operation
+    ///   - options: options to attach to this operation (e.g. profiling options)
     @available(*, message: "This API is in preview and may change in future releases")
     func startOperation(
         name: String,
         operationKey: String? = nil,
-        attributes: [AttributeKey: AttributeValue] = [:]
+        attributes: [AttributeKey: AttributeValue] = [:],
+        options: OperationOptions? = nil
     ) {
-        startOperation(name: name, operationKey: operationKey, attributes: attributes)
+        startOperation(name: name, operationKey: operationKey, attributes: attributes, options: options)
     }
 
     /// Starts a Feature Operation.
@@ -324,13 +326,13 @@ public extension RUMMonitorProtocol {
     ///   - name: the name of the operation (e.g., `login_flow`)
     ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
     ///   - attributes: custom attributes to attach to this operation
-    @available(*, deprecated, renamed: "startOperation(name:operationKey:attributes:)", message: "Use startOperation(name:operationKey:attributes:) instead.")
+    @available(*, deprecated, renamed: "startOperation(name:operationKey:attributes:options:)", message: "Use startOperation(name:operationKey:attributes:options:) instead.")
     func startFeatureOperation(
         name: String,
         operationKey: String? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        startOperation(name: name, operationKey: operationKey, attributes: attributes)
+        startOperation(name: name, operationKey: operationKey, attributes: attributes, options: nil)
     }
 
     /// Completes a RUM Operation successfully.

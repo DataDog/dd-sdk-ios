@@ -190,7 +190,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
         // Then
         let logMessage = try XCTUnwrap(dd.logger.warnLog?.message)
-        XCTAssertEqual(logMessage, "`\(stepType.rawValue)` was called, but operation `\(operationName)` is currently not active. This may lead to a backend `instrumentation_error`. Make sure to call `startOperation(name:operationKey:attributes:)` first. Note that the SDK only tracks operations locally and not across sessions.")
+        XCTAssertEqual(logMessage, "`\(stepType.rawValue)` was called, but operation `\(operationName)` is currently not active. This may lead to a backend `instrumentation_error`. Make sure to call `startOperation(name:operationKey:attributes:options:)` first. Note that the SDK only tracks operations locally and not across sessions.")
     }
 
     func testProcess_OperationStartTwice_LogsWarning() throws {
