@@ -213,6 +213,6 @@ class RequestBuilderTests: XCTestCase {
         let request = try builder.request(for: mockEvents, with: context, execution: execution)
 
         // Then
-        XCTAssertEqual(request.url?.query, "ddsource=\(randomSource)&ddtags=retry_count:1") // no last_failure_status without response code
+        XCTAssertEqual(request.url?.query, "ddsource=\(randomSource)&ddtags=retry_count:1") // no retry_after without response code
     }
 }

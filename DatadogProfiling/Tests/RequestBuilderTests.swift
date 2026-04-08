@@ -212,7 +212,7 @@ class RequestBuilderTests: XCTestCase {
         let request = try builder.request(for: [mockEvent()], with: .mockRandom(), execution: execution)
 
         // Then
-        XCTAssertEqual(request.url!.query, "ddtags=retry_count:1") // no last_failure_status without response code
+        XCTAssertEqual(request.url!.query, "ddtags=retry_count:1") // no retry_after without response code
     }
 }
 #endif // !os(watchOS)
