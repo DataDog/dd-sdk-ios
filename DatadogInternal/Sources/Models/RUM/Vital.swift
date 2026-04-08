@@ -24,7 +24,7 @@ public struct Vital: Encodable, Equatable {
     /// Date when the vital was created
     public let date: Date
     /// Duration of the vital in nanoseconds
-    public let duration: Int64
+    public var duration: Int64?
     /// Key identifier of the vital
     public let key: String
 
@@ -34,7 +34,7 @@ public struct Vital: Encodable, Equatable {
         operationKey: String? = nil,
         stepType: RUMVitalOperationStepEvent.Vital.StepType? = nil,
         date: Date = Date(),
-        duration: Int64 = 0
+        duration: Int64? = nil
     ) {
         self.id = id
         self.name = name
@@ -51,6 +51,6 @@ public struct Vital: Encodable, Equatable {
         try container.encode(name, forKey: .name)
         let start = date.timeIntervalSince1970.dd.toInt64Nanoseconds
         try container.encode(start, forKey: .start)
-        try container.encode(duration, forKey: .duration)
+        try container.encodeIfPresent(duration, forKey: .duration)
     }
 }
