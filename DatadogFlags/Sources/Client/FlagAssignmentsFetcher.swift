@@ -130,10 +130,10 @@ extension DatadogSite {
         case .eu1: return URL(string: "https://\(subdomain).ff-cdn.datadoghq.eu")!
         case .ap1: return URL(string: "https://\(subdomain).ff-cdn.ap1.datadoghq.com")!
         case .ap2: return URL(string: "https://\(subdomain).ff-cdn.ap2.datadoghq.com")!
-        case .us1_fed:
+        case .us1_fed, .us2_fed:
             DD.logger.warn(
                 """
-                Government sites (us1_fed) are not officially supported for feature flags. \
+                Government sites (us1_fed, us2_fed) are not officially supported for feature flags. \
                 Falling back to us1 endpoint.
                 """
             )

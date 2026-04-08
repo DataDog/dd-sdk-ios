@@ -50,6 +50,9 @@ class DDConfigurationTests: XCTestCase {
         objcConfig.site = .us1_fed()
         XCTAssertEqual(objcConfig.sdkConfiguration.site, .us1_fed)
 
+        objcConfig.site = .us2_fed()
+        XCTAssertEqual(objcConfig.sdkConfiguration.site, .us2_fed)
+
         objcConfig.service = "service-name"
         XCTAssertEqual(objcConfig.sdkConfiguration.service, "service-name")
 

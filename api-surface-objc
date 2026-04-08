@@ -28,6 +28,7 @@ public final class objc_DatadogSite: NSObject
     public static func ap1() -> objc_DatadogSite
     public static func ap2() -> objc_DatadogSite
     public static func us1_fed() -> objc_DatadogSite
+    public static func us2_fed() -> objc_DatadogSite
 public enum objc_BatchSize: Int
     case small
     case medium
@@ -369,6 +370,7 @@ public class objc_RUMActionEvent: NSObject
     public var source: objc_RUMActionEventSource
     public var stream: objc_RUMActionEventStream?
     public var synthetics: objc_RUMActionEventRUMSyntheticsTest?
+    public var tab: objc_RUMActionEventTAB?
     public var type: String
     public var usr: objc_RUMActionEventRUMUser?
     public var version: String?
@@ -575,6 +577,8 @@ public class objc_RUMActionEventRUMSyntheticsTest: NSObject
     public var resultId: String
     public var testId: String
     public var syntheticsInfo: [String: Any]
+public class objc_RUMActionEventTAB: NSObject
+    public var id: String
 public class objc_RUMActionEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -613,6 +617,7 @@ public class objc_RUMErrorEvent: NSObject
     public var source: objc_RUMErrorEventSource
     public var stream: objc_RUMErrorEventStream?
     public var synthetics: objc_RUMErrorEventRUMSyntheticsTest?
+    public var tab: objc_RUMErrorEventTAB?
     public var type: String
     public var usr: objc_RUMErrorEventRUMUser?
     public var version: String?
@@ -621,9 +626,13 @@ public class objc_RUMErrorEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMErrorEventDDConfiguration?
     public var formatVersion: NSNumber
+    public var parentSpanId: String?
     public var profiling: objc_RUMErrorEventDDProfiling?
+    public var rulePsr: NSNumber?
     public var sdkName: String?
     public var session: objc_RUMErrorEventDDSession?
+    public var spanId: String?
+    public var traceId: String?
 public class objc_RUMErrorEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
@@ -818,10 +827,34 @@ public class objc_RUMErrorEventErrorMeta: NSObject
     public var path: String?
     public var process: String?
 public class objc_RUMErrorEventErrorResource: NSObject
+    public var graphql: objc_RUMErrorEventErrorResourceRUMGraphql?
     public var method: objc_RUMErrorEventErrorResourceRUMMethod
     public var provider: objc_RUMErrorEventErrorResourceProvider?
     public var statusCode: NSNumber
     public var url: String
+public class objc_RUMErrorEventErrorResourceRUMGraphql: NSObject
+    public var errorCount: NSNumber?
+    public var errors: [objc_RUMErrorEventErrorResourceRUMGraphqlErrors]?
+    public var operationName: String?
+    public var operationType: objc_RUMErrorEventErrorResourceRUMGraphqlOperationType
+    public var payload: String?
+    public var variables: String?
+public class objc_RUMErrorEventErrorResourceRUMGraphqlErrors: NSObject
+    public var code: String?
+    public var locations: [objc_RUMErrorEventErrorResourceRUMGraphqlErrorsLocations]?
+    public var message: String
+    public var path: [objc_RUMErrorEventErrorResourceRUMGraphqlErrorsPath]?
+public class objc_RUMErrorEventErrorResourceRUMGraphqlErrorsLocations: NSObject
+    public var column: NSNumber
+    public var line: NSNumber
+public class objc_RUMErrorEventErrorResourceRUMGraphqlErrorsPath: NSObject
+    public var string: String?
+    public var integer: NSNumber?
+public enum objc_RUMErrorEventErrorResourceRUMGraphqlOperationType: Int
+    case none
+    case query
+    case mutation
+    case subscription
 public enum objc_RUMErrorEventErrorResourceRUMMethod: Int
     case post
     case get
@@ -916,6 +949,8 @@ public class objc_RUMErrorEventRUMSyntheticsTest: NSObject
     public var resultId: String
     public var testId: String
     public var syntheticsInfo: [String: Any]
+public class objc_RUMErrorEventTAB: NSObject
+    public var id: String
 public class objc_RUMErrorEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -952,6 +987,7 @@ public class objc_RUMLongTaskEvent: NSObject
     public var source: objc_RUMLongTaskEventSource
     public var stream: objc_RUMLongTaskEventStream?
     public var synthetics: objc_RUMLongTaskEventRUMSyntheticsTest?
+    public var tab: objc_RUMLongTaskEventTAB?
     public var type: String
     public var usr: objc_RUMLongTaskEventRUMUser?
     public var version: String?
@@ -1157,6 +1193,8 @@ public class objc_RUMLongTaskEventRUMSyntheticsTest: NSObject
     public var resultId: String
     public var testId: String
     public var syntheticsInfo: [String: Any]
+public class objc_RUMLongTaskEventTAB: NSObject
+    public var id: String
 public class objc_RUMLongTaskEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -1192,6 +1230,7 @@ public class objc_RUMResourceEvent: NSObject
     public var source: objc_RUMResourceEventSource
     public var stream: objc_RUMResourceEventStream?
     public var synthetics: objc_RUMResourceEventRUMSyntheticsTest?
+    public var tab: objc_RUMResourceEventTAB?
     public var type: String
     public var usr: objc_RUMResourceEventRUMUser?
     public var version: String?
@@ -1332,7 +1371,7 @@ public class objc_RUMResourceEventResource: NSObject
     public var duration: NSNumber?
     public var encodedBodySize: NSNumber?
     public var firstByte: objc_RUMResourceEventResourceFirstByte?
-    public var graphql: objc_RUMResourceEventResourceGraphql?
+    public var graphql: objc_RUMResourceEventResourceRUMGraphql?
     public var id: String?
     public var method: objc_RUMResourceEventResourceRUMMethod
     public var `protocol`: String?
@@ -1365,25 +1404,25 @@ public class objc_RUMResourceEventResourceDownload: NSObject
 public class objc_RUMResourceEventResourceFirstByte: NSObject
     public var duration: NSNumber
     public var start: NSNumber
-public class objc_RUMResourceEventResourceGraphql: NSObject
+public class objc_RUMResourceEventResourceRUMGraphql: NSObject
     public var errorCount: NSNumber?
-    public var errors: [objc_RUMResourceEventResourceGraphqlErrors]?
+    public var errors: [objc_RUMResourceEventResourceRUMGraphqlErrors]?
     public var operationName: String?
-    public var operationType: objc_RUMResourceEventResourceGraphqlOperationType
+    public var operationType: objc_RUMResourceEventResourceRUMGraphqlOperationType
     public var payload: String?
     public var variables: String?
-public class objc_RUMResourceEventResourceGraphqlErrors: NSObject
+public class objc_RUMResourceEventResourceRUMGraphqlErrors: NSObject
     public var code: String?
-    public var locations: [objc_RUMResourceEventResourceGraphqlErrorsLocations]?
+    public var locations: [objc_RUMResourceEventResourceRUMGraphqlErrorsLocations]?
     public var message: String
-    public var path: [objc_RUMResourceEventResourceGraphqlErrorsPath]?
-public class objc_RUMResourceEventResourceGraphqlErrorsLocations: NSObject
+    public var path: [objc_RUMResourceEventResourceRUMGraphqlErrorsPath]?
+public class objc_RUMResourceEventResourceRUMGraphqlErrorsLocations: NSObject
     public var column: NSNumber
     public var line: NSNumber
-public class objc_RUMResourceEventResourceGraphqlErrorsPath: NSObject
+public class objc_RUMResourceEventResourceRUMGraphqlErrorsPath: NSObject
     public var string: String?
     public var integer: NSNumber?
-public enum objc_RUMResourceEventResourceGraphqlOperationType: Int
+public enum objc_RUMResourceEventResourceRUMGraphqlOperationType: Int
     case none
     case query
     case mutation
@@ -1481,6 +1520,8 @@ public class objc_RUMResourceEventRUMSyntheticsTest: NSObject
     public var resultId: String
     public var testId: String
     public var syntheticsInfo: [String: Any]
+public class objc_RUMResourceEventTAB: NSObject
+    public var id: String
 public class objc_RUMResourceEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -1516,6 +1557,7 @@ public class objc_RUMViewEvent: NSObject
     public var source: objc_RUMViewEventSource
     public var stream: objc_RUMViewEventStream?
     public var synthetics: objc_RUMViewEventRUMSyntheticsTest?
+    public var tab: objc_RUMViewEventTAB?
     public var type: String
     public var usr: objc_RUMViewEventRUMUser?
     public var version: String?
@@ -1724,6 +1766,8 @@ public class objc_RUMViewEventRUMSyntheticsTest: NSObject
     public var resultId: String
     public var testId: String
     public var syntheticsInfo: [String: Any]
+public class objc_RUMViewEventTAB: NSObject
+    public var id: String
 public class objc_RUMViewEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -1886,7 +1930,7 @@ public class objc_RUMViewEventViewPerformanceINP: NSObject
 public class objc_RUMViewEventViewPerformanceINPSubParts: NSObject
     public var inputDelay: NSNumber
     public var presentationDelay: NSNumber
-    public var processingTime: NSNumber
+    public var processingDuration: NSNumber
 public class objc_RUMViewEventViewPerformanceLCP: NSObject
     public var resourceUrl: String?
     public var subParts: objc_RUMViewEventViewPerformanceLCPSubParts?
@@ -1925,6 +1969,7 @@ public class objc_RUMViewUpdateEvent: NSObject
     public var source: objc_RUMViewUpdateEventSource
     public var stream: objc_RUMViewUpdateEventStream?
     public var synthetics: objc_RUMViewUpdateEventRUMSyntheticsTest?
+    public var tab: objc_RUMViewUpdateEventTAB?
     public var type: String
     public var usr: objc_RUMViewUpdateEventRUMUser?
     public var version: String?
@@ -2098,6 +2143,8 @@ public class objc_RUMViewUpdateEventRUMSyntheticsTest: NSObject
     public var resultId: String
     public var testId: String
     public var syntheticsInfo: [String: Any]
+public class objc_RUMViewUpdateEventTAB: NSObject
+    public var id: String
 public class objc_RUMViewUpdateEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -2260,7 +2307,7 @@ public class objc_RUMViewUpdateEventViewPerformanceINP: NSObject
 public class objc_RUMViewUpdateEventViewPerformanceINPSubParts: NSObject
     public var inputDelay: NSNumber
     public var presentationDelay: NSNumber
-    public var processingTime: NSNumber
+    public var processingDuration: NSNumber
 public class objc_RUMViewUpdateEventViewPerformanceLCP: NSObject
     public var resourceUrl: String?
     public var subParts: objc_RUMViewUpdateEventViewPerformanceLCPSubParts?
@@ -2297,6 +2344,7 @@ public class objc_RUMVitalAppLaunchEvent: NSObject
     public var source: objc_RUMVitalAppLaunchEventSource
     public var stream: objc_RUMVitalAppLaunchEventStream?
     public var synthetics: objc_RUMVitalAppLaunchEventRUMSyntheticsTest?
+    public var tab: objc_RUMVitalAppLaunchEventTAB?
     public var type: String
     public var usr: objc_RUMVitalAppLaunchEventRUMUser?
     public var version: String?
@@ -2462,6 +2510,8 @@ public class objc_RUMVitalAppLaunchEventRUMSyntheticsTest: NSObject
     public var resultId: String
     public var testId: String
     public var syntheticsInfo: [String: Any]
+public class objc_RUMVitalAppLaunchEventTAB: NSObject
+    public var id: String
 public class objc_RUMVitalAppLaunchEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -2512,6 +2562,7 @@ public class objc_RUMVitalDurationEvent: NSObject
     public var source: objc_RUMVitalDurationEventSource
     public var stream: objc_RUMVitalDurationEventStream?
     public var synthetics: objc_RUMVitalDurationEventRUMSyntheticsTest?
+    public var tab: objc_RUMVitalDurationEventTAB?
     public var type: String
     public var usr: objc_RUMVitalDurationEventRUMUser?
     public var version: String?
@@ -2677,6 +2728,8 @@ public class objc_RUMVitalDurationEventRUMSyntheticsTest: NSObject
     public var resultId: String
     public var testId: String
     public var syntheticsInfo: [String: Any]
+public class objc_RUMVitalDurationEventTAB: NSObject
+    public var id: String
 public class objc_RUMVitalDurationEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -2716,6 +2769,7 @@ public class objc_RUMVitalOperationStepEvent: NSObject
     public var source: objc_RUMVitalOperationStepEventSource
     public var stream: objc_RUMVitalOperationStepEventStream?
     public var synthetics: objc_RUMVitalOperationStepEventRUMSyntheticsTest?
+    public var tab: objc_RUMVitalOperationStepEventTAB?
     public var type: String
     public var usr: objc_RUMVitalOperationStepEventRUMUser?
     public var version: String?
@@ -2881,6 +2935,8 @@ public class objc_RUMVitalOperationStepEventRUMSyntheticsTest: NSObject
     public var resultId: String
     public var testId: String
     public var syntheticsInfo: [String: Any]
+public class objc_RUMVitalOperationStepEventTAB: NSObject
+    public var id: String
 public class objc_RUMVitalOperationStepEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -3307,6 +3363,7 @@ public class objc_RUMConfiguration: NSObject
     public var uiKitActionsPredicate: objc_UIKitRUMActionsPredicate?
     public var swiftUIViewsPredicate: objc_SwiftUIRUMViewsPredicate?
     public var swiftUIActionsPredicate: objc_SwiftUIRUMActionsPredicate?
+    public var trackMemoryWarnings: Bool
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking)
     public var trackFrustrations: Bool
     public var trackBackgroundEvents: Bool
@@ -3322,7 +3379,6 @@ public class objc_RUMConfiguration: NSObject
     public var onSessionStart: ((String, Bool) -> Void)?
     public var customEndpoint: URL?
     public var trackAnonymousUser: Bool
-    public var trackMemoryWarnings: Bool
 public class objc_RUM: NSObject
     public static func enable(with configuration: objc_RUMConfiguration)
 public class objc_RUMMonitor: NSObject

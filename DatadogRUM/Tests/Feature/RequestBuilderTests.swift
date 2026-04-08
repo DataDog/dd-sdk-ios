@@ -53,6 +53,7 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(url(for: .ap1), "https://browser-intake-ap1-datadoghq.com/api/v2/rum")
         XCTAssertEqual(url(for: .ap2), "https://browser-intake-ap2-datadoghq.com/api/v2/rum")
         XCTAssertEqual(url(for: .us1_fed), "https://browser-intake-ddog-gov.com/api/v2/rum")
+        XCTAssertEqual(url(for: .us2_fed), "https://browser-intake-fed2-ddog-gov.com/api/v2/rum")
     }
 
     func testItSetsCustomIntakeURL() throws {
@@ -79,6 +80,7 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(url(for: .ap1), expectedURL)
         XCTAssertEqual(url(for: .ap2), expectedURL)
         XCTAssertEqual(url(for: .us1_fed), expectedURL)
+        XCTAssertEqual(url(for: .us2_fed), expectedURL)
     }
 
     func testItSetsRUMQueryParameters() throws {
