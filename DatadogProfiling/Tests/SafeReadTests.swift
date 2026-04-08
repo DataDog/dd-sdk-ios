@@ -89,7 +89,7 @@ final class SafeReadTests: XCTestCase {
         }
 
         // Then
-        wait(for: [expectation], timeout: 0.1)
+        wait(for: [expectation], timeout: 2.0)
     }
 
     private func get_invalid_address() -> UnsafeMutableRawPointer {

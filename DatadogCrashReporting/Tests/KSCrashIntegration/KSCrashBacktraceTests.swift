@@ -50,30 +50,39 @@ class KSCrashBacktraceTests: XCTestCase {
         // Given
         let backtrace = KSCrashBacktrace()
         let expectation = XCTestExpectation(description: "Background thread backtrace")
-        var backgroundThreadID: ThreadID?
         var capturedReport: BacktraceReport?
+        var backgroundThreadID: ThreadID?
 
-        // When - Create a background thread
+        // Use a lock-protected flag so the background thread busy-spins inside `keepThreadBusy()`
+        // (defined in this test module). This keeps user code frames on the stack at capture time.
+        let threadReady = DispatchSemaphore(value: 0)
+        let lock = NSLock()
+        var shouldStop = false
+
+        // When - Create a background thread that busy-spins inside user code
         Thread.detachNewThread {
-            let semaphore = DispatchSemaphore(value: 0)
             backgroundThreadID = Thread.currentThreadID
-
-            // Capture backtrace from main thread
-            DispatchQueue.global().async {
-                do {
-                    capturedReport = try backtrace.generateBacktrace(threadID: backgroundThreadID!)
-                    expectation.fulfill()
-                } catch {
-                    XCTFail("Failed to generate backtrace: \(error)")
-                    expectation.fulfill()
-                }
-
-                semaphore.signal()
-            }
-
-            // keep thread alive to generate its backtrace
-            semaphore.wait()
+            threadReady.signal()
+            KSCrashBacktraceTests.keepThreadBusy(lock: lock, stop: &shouldStop) // user code on the stack
         }
+
+        // Wait for the background thread to be ready and spinning
+        threadReady.wait()
+        Thread.sleep(forTimeInterval: 0.05) // ensure thread enters the busy loop
+
+        // Capture backtrace while background thread is spinning in user code
+        do {
+            capturedReport = try backtrace.generateBacktrace(threadID: backgroundThreadID!)
+            expectation.fulfill()
+        } catch {
+            XCTFail("Failed to generate backtrace: \(error)")
+            expectation.fulfill()
+        }
+
+        // Stop the background thread
+        lock.lock()
+        shouldStop = true
+        lock.unlock()
 
         wait(for: [expectation], timeout: 5.0)
 
@@ -92,14 +101,28 @@ class KSCrashBacktraceTests: XCTestCase {
         }
 
         let userImage = report.binaryImages.first(where: { $0.libraryName.contains("DatadogCrashReportingTests") })
-        let systemImage = report.binaryImages.first(where: { $0.libraryName == "Foundation" })
-
         XCTAssertFalse(userImage?.isSystemLibrary ?? true, "Should include current binary image")
-        XCTAssertTrue(systemImage?.isSystemLibrary ?? false, "Should include Foundation system image")
+        XCTAssertTrue(
+            report.binaryImages.contains(where: { $0.isSystemLibrary }),
+            "Should include system binary images"
+        )
         XCTAssertFalse(report.binaryImages.contains(where: { $0.libraryName == "xctest" }), "Should not include xctest")
         XCTAssertEqual(report.threads.count, 1, "Should have one thread")
         XCTAssertEqual(report.stack, report.threads[0].stack)
         XCTAssertFalse(report.threads[0].name.isEmpty, "Thread should have a name")
+    }
+
+    /// Keeps the current thread busy with user code frames on the stack until the flag is set.
+    /// This function must not be inlined so it appears as a distinct frame in the backtrace.
+    @inline(never)
+    private static func keepThreadBusy(lock: NSLock, stop: UnsafeMutablePointer<Bool>) {
+        while true {
+            lock.lock()
+            let done = stop.pointee
+            lock.unlock()
+            if done { break }
+            Thread.sleep(forTimeInterval: 0.001)
+        }
     }
 
     func testInvalidThreadIDReturnsNil() throws {

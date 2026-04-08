@@ -109,7 +109,12 @@ class WatchdogTerminationsMonitoringTests: XCTestCase {
     /// - Parameter core: `DatadogCoreProxy` instance
     func waitForWatchdogTerminationCheck(core: DatadogCoreProxy) throws {
         let watchdogTermination = try XCTUnwrap(core.get(feature: RUMFeature.self)?.instrumentation.watchdogTermination)
+        let deadline = Date().addingTimeInterval(10.0) // 10s upper bound to prevent infinite loop
         while watchdogTermination.currentState != .started {
+            if Date() > deadline {
+                XCTFail("Timed out waiting for watchdog termination check to reach .started state (current: \(watchdogTermination.currentState))")
+                return
+            }
             Thread.sleep(forTimeInterval: .fromMilliseconds(100))
         }
     }

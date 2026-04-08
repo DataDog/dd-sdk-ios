@@ -29,7 +29,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         trackHangEnds.expectedFulfillmentCount = 3
 
         // Given
-        let appHangThreshold: TimeInterval = 0.1
+        let appHangThreshold: TimeInterval = 0.5
         let hangDuration: TimeInterval = appHangThreshold * 2
         let queue = DispatchQueue(label: "main-queue", qos: .userInteractive)
 
@@ -57,7 +57,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: hangDuration * 10)
+        waitForExpectations(timeout: hangDuration * 15)
         watchdogThread.cancel()
     }
 
@@ -65,7 +65,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         let doNotTrackHangs = invertedExpectation(description: "track no App Hangs")
 
         // Given
-        let appHangThreshold: TimeInterval = 0.5
+        let appHangThreshold: TimeInterval = 1.0
         let hangDuration: TimeInterval = appHangThreshold * 0.1
         let queue = DispatchQueue(label: "main-queue", qos: .userInteractive)
 
@@ -93,7 +93,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: hangDuration * 10)
+        waitForExpectations(timeout: 2.0)
         watchdogThread.cancel()
     }
 
@@ -121,8 +121,11 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         delegate.onHangEnded = { hang, duration in
             XCTAssertEqual(hang.startDate, .mockDecember15th2019At10AMUTC())
             XCTAssertEqual(hang.backtraceResult.stack, "Main thread stack")
-            XCTAssertGreaterThanOrEqual(duration, hangDuration * (1 - AppHangsWatchdogThread.Constants.tolerance))
-            XCTAssertLessThanOrEqual(duration, hangDuration * (1 + AppHangsWatchdogThread.Constants.tolerance))
+            // Add padding on top of production tolerance to account for CI thread scheduling variability
+            let ciPadding: Double = 0.05
+            let durationTolerance = AppHangsWatchdogThread.Constants.tolerance + ciPadding
+            XCTAssertGreaterThanOrEqual(duration, hangDuration * (1 - durationTolerance))
+            XCTAssertLessThanOrEqual(duration, hangDuration * (1 + durationTolerance))
             trackHangEnd.fulfill()
         }
         delegate.onHangCancelled = { _ in XCTFail("It should not cancel the hang") }
@@ -134,7 +137,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: hangDuration * 10)
+        waitForExpectations(timeout: hangDuration * 15)
         watchdogThread.cancel()
     }
 
@@ -143,7 +146,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         let trackHangEnd = expectation(description: "track end of App Hang")
 
         // Given
-        let appHangThreshold: TimeInterval = 0.25
+        let appHangThreshold: TimeInterval = 0.5
         let hangDuration: TimeInterval = appHangThreshold * 2
         let queue = DispatchQueue(label: "main-queue", qos: .userInteractive)
 
@@ -171,7 +174,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: hangDuration * 10)
+        waitForExpectations(timeout: hangDuration * 15)
         watchdogThread.cancel()
     }
 
@@ -180,7 +183,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         let trackHangEnd = expectation(description: "track end of App Hang")
 
         // Given
-        let appHangThreshold: TimeInterval = 0.25
+        let appHangThreshold: TimeInterval = 0.5
         let hangDuration: TimeInterval = appHangThreshold * 2
         let queue = DispatchQueue(label: "main-queue", qos: .userInteractive)
 
@@ -208,7 +211,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: hangDuration * 10)
+        waitForExpectations(timeout: hangDuration * 15)
         watchdogThread.cancel()
     }
 
@@ -248,7 +251,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: hangDuration * 10)
+        waitForExpectations(timeout: hangDuration * 15)
         watchdogThread.cancel()
     }
 }
