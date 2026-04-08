@@ -1909,6 +1909,7 @@
 		F70B4701C2C2A1684F3C15D2 /* StatsRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A26A2FA864409C70B0D26CBD /* StatsRequestBuilder.swift */; };
 		3B232F5C8965A13E7627237B /* SpanSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 825B72534A26D3AB5D458B82 /* SpanSnapshot.swift */; };
 		5314C6635972BD3195DFF949 /* StatsConcentrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C95A061626863603998100 /* StatsConcentrator.swift */; };
+		E7F1A2B409C4D5A800FNV1A2 /* FNV1aHash.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F1A2B309C4D5A800FNV1A1 /* FNV1aHash.swift */; };
 		D2C1A50B29C4C4CB00946C31 /* SpanEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A8A524509FAA00DA608C /* SpanEventBuilder.swift */; };
 		D2C1A50C29C4C4CB00946C31 /* DDNoOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87924509A0C00DA608C /* DDNoOps.swift */; };
 		D2C1A50D29C4C4CB00946C31 /* SpanTagsReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614872762485067300E3EBDB /* SpanTagsReducer.swift */; };
@@ -1957,6 +1958,7 @@
 		48199DE79B0AB44B90ED6B67 /* StatsRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A26A2FA864409C70B0D26CBD /* StatsRequestBuilder.swift */; };
 		A9432D701FBDB1B4BFB4FA3A /* SpanSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 825B72534A26D3AB5D458B82 /* SpanSnapshot.swift */; };
 		CD0D865B184DCEF621175B55 /* StatsConcentrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C95A061626863603998100 /* StatsConcentrator.swift */; };
+		E7F1A2B509C4D5A800FNV1A3 /* FNV1aHash.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F1A2B309C4D5A800FNV1A1 /* FNV1aHash.swift */; };
 		D2C1A55129C4F2DF00946C31 /* TracingURLSessionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25BADA029C1EF3000112069 /* TracingURLSessionHandler.swift */; };
 		D2C1A55229C4F2DF00946C31 /* DatadogTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2546BF029AF4F550054E00B /* DatadogTracer.swift */; };
 		D2C1A55F29C4F2E800946C31 /* Casting+Tracing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89C24509C1100DA608C /* Casting+Tracing.swift */; };
@@ -3826,6 +3828,7 @@
 		A26A2FA864409C70B0D26CBD /* StatsRequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsRequestBuilder.swift; sourceTree = "<group>"; };
 		825B72534A26D3AB5D458B82 /* SpanSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanSnapshot.swift; sourceTree = "<group>"; };
 		84C95A061626863603998100 /* StatsConcentrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsConcentrator.swift; sourceTree = "<group>"; };
+		E7F1A2B309C4D5A800FNV1A1 /* FNV1aHash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FNV1aHash.swift; sourceTree = "<group>"; };
 		D2546C0A29AF56270054E00B /* MessageReceivers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageReceivers.swift; sourceTree = "<group>"; };
 		D2552AF42BBC47D900A45725 /* WebEventIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebEventIntegrationTests.swift; sourceTree = "<group>"; };
 		D2553825288F0B1A00727FAD /* BatteryStatusPublisher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BatteryStatusPublisher.swift; sourceTree = "<group>"; };
@@ -7454,6 +7457,7 @@
 			isa = PBXGroup;
 			children = (
 				84C95A061626863603998100 /* StatsConcentrator.swift */,
+				E7F1A2B309C4D5A800FNV1A1 /* FNV1aHash.swift */,
 			);
 			path = ClientStats;
 			sourceTree = "<group>";
@@ -11078,6 +11082,7 @@
 				F70B4701C2C2A1684F3C15D2 /* StatsRequestBuilder.swift in Sources */,
 				3B232F5C8965A13E7627237B /* SpanSnapshot.swift in Sources */,
 				5314C6635972BD3195DFF949 /* StatsConcentrator.swift in Sources */,
+				E7F1A2B409C4D5A800FNV1A2 /* FNV1aHash.swift in Sources */,
 				D2C1A50829C4C4CB00946C31 /* TracingURLSessionHandler.swift in Sources */,
 				D2C1A50529C4C4CB00946C31 /* DatadogTracer.swift in Sources */,
 			);
@@ -11396,6 +11401,7 @@
 				48199DE79B0AB44B90ED6B67 /* StatsRequestBuilder.swift in Sources */,
 				A9432D701FBDB1B4BFB4FA3A /* SpanSnapshot.swift in Sources */,
 				CD0D865B184DCEF621175B55 /* StatsConcentrator.swift in Sources */,
+				E7F1A2B509C4D5A800FNV1A3 /* FNV1aHash.swift in Sources */,
 				D2C1A55129C4F2DF00946C31 /* TracingURLSessionHandler.swift in Sources */,
 				D2C1A55229C4F2DF00946C31 /* DatadogTracer.swift in Sources */,
 			);

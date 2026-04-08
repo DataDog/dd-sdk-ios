@@ -15,7 +15,7 @@ import DatadogInternal
 ///
 /// The snapshot captures only the data needed for stats aggregation, avoiding
 /// any reference back to the mutable `DDSpan`.
-internal struct SpanSnapshot {
+internal struct SpanSnapshot: Sendable {
     let traceID: TraceID
     let spanID: SpanID
     let parentSpanID: SpanID?
@@ -27,9 +27,9 @@ internal struct SpanSnapshot {
     let httpStatusCode: UInt32
     let isError: Bool
     /// Span start time in nanoseconds since Unix epoch.
-    let startTime: UInt64
+    let startTime: Nanoseconds
     /// Span duration in nanoseconds.
-    let duration: UInt64
+    let duration: Nanoseconds
     let isTopLevel: Bool
     let isMeasured: Bool
     /// Peer tag values for downstream-service aggregation (e.g., `peer.service`, `out.host`).

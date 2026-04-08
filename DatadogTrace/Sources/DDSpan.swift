@@ -35,8 +35,6 @@ internal final class DDSpan: OTSpan {
     private let eventBuilder: SpanEventBuilder
     /// Writes span events to core.
     private let eventWriter: SpanWriteContext
-    /// Called when this span finishes (before sampling check) to feed client-side stats.
-    private let onSpanFinished: ((SpanSnapshot) -> Void)?
 
     init(
         tracer: DatadogTracer,
@@ -45,8 +43,7 @@ internal final class DDSpan: OTSpan {
         startTime: Date,
         tags: [String: Encodable],
         eventBuilder: SpanEventBuilder,
-        eventWriter: SpanWriteContext,
-        onSpanFinished: ((SpanSnapshot) -> Void)? = nil
+        eventWriter: SpanWriteContext
     ) {
         self.ddTracer = tracer
         self.ddContext = context
@@ -58,7 +55,6 @@ internal final class DDSpan: OTSpan {
         self.isFinished = false
         self.eventBuilder = eventBuilder
         self.eventWriter = eventWriter
-        self.onSpanFinished = onSpanFinished
     }
 
     // MARK: - Open Tracing interface
@@ -136,9 +132,9 @@ internal final class DDSpan: OTSpan {
 
         // Client-side stats: create snapshot BEFORE the sampling check
         // so that all spans (including sampled-out) contribute to stats.
-        if let onSpanFinished = onSpanFinished {
+        if ddTracer.onSpanFinished != nil {
             let snapshot = createSnapshot(finishTime: time)
-            onSpanFinished(snapshot)
+            ddTracer.notifySpanFinished(snapshot)
         }
 
         if self.ddContext.samplingDecision.samplingPriority.isKept {
