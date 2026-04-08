@@ -7,6 +7,8 @@
 import Foundation
 import DatadogInternal
 
+#if !os(watchOS)
+
 // swiftlint:disable duplicate_imports
 #if swift(>=6.0)
 internal import DatadogMachProfiler
@@ -44,7 +46,7 @@ internal final class ContinuousProfiler: ProfilingHandler {
     private(set) var attributes: [String: AttributeValue] = [:]
     // Ongoing RUM Operations to attach to profiles.
     @ReadWriteLock
-    private var currentRUMVitals: [String: Operation] = [:]
+    private var currentRUMVitals: [String: Vital] = [:]
     // App hangs to attach to profiles.
     @ReadWriteLock
     private var hangs: [DurationEvent] = []
@@ -186,10 +188,14 @@ private extension ContinuousProfiler {
                     updateProfilerState(context: context)
                 }
 
-                _currentRUMVitals.mutate { $0[message.operation.key] = (start: message.operation, nil) }
+                _currentRUMVitals.mutate { $0[message.operation.key] = message.operation }
             case .end:
-                if let startVital = currentRUMVitals[message.operation.key]?.start {
-                    _currentRUMVitals.mutate { $0[message.operation.key] = (start: startVital, message.operation) }
+                if var startVital = currentRUMVitals[message.operation.key] {
+                    _currentRUMVitals.mutate {
+                        let duration = message.operation.date.timeIntervalSince(startVital.date)
+                        startVital.duration = duration.dd.toInt64Nanoseconds
+                        $0[message.operation.key] = startVital
+                    }
 
                     // Stop profiler if it is a custom profiler and the operations have completed
                     if currentRUMVitals.didCompleteOperations() && isContinuousProfiling == false {
@@ -268,7 +274,7 @@ private extension ContinuousProfiler {
         if canWriteProfile() {
             write(
                 profile: profile,
-                rumVitals: self.currentRUMVitals.allVitals(),
+                rumVitals: Array(self.currentRUMVitals.values),
                 hangs: hangs,
                 longTasks: longTasks
             )
@@ -328,7 +334,7 @@ private extension ContinuousProfiler {
 
     func canExtendCustomProfiling() -> Bool {
         self.currentRUMVitals.contains {
-            dateProvider.now.timeIntervalSince($1.start.date) < Constants.customProfilingCutOffTime
+            dateProvider.now.timeIntervalSince($1.date) < Constants.customProfilingCutOffTime
         }
     }
 
@@ -361,3 +367,4 @@ extension ContinuousProfiler {
         hasActiveInstance = false
     }
 }
+#endif

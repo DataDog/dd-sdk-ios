@@ -369,9 +369,8 @@ final class AppLaunchProfilerTests: XCTestCase {
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
         let vitals = try XCTUnwrap(json["vitals"] as? [[String: Any]])
         let vitalIDs = vitals.compactMap { $0["id"] as? String }
-        XCTAssertEqual(vitalIDs.count, 3)
+        XCTAssertEqual(vitalIDs.count, 2)
         XCTAssertTrue(vitalIDs.contains("start-id"))
-        XCTAssertTrue(vitalIDs.contains("end-id"))
     }
 
     func testApplicationLaunchWithOrphanedEndVital_excludesOrphanedFromProfile() throws {

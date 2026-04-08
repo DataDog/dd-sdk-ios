@@ -17,8 +17,6 @@ internal import DatadogMachProfiler
 #endif
 // swiftlint:enable duplicate_imports
 
-internal typealias Operation = (start: Vital, end: Vital?)
-
 internal final class AppLaunchProfiler: ProfilingHandler {
     /// Shared counter to track pending `AppLaunchProfiler`s until a `TTIDMessage` harvest completes.
     private static var pendingInstances: Int = 0
@@ -36,7 +34,7 @@ internal final class AppLaunchProfiler: ProfilingHandler {
     @ReadWriteLock
     private(set) var attributes: [AttributeKey: AttributeValue] = [:]
     @ReadWriteLock
-    private var currentRUMVitals: [String: Operation] = [:]
+    private var currentRUMVitals: [String: Vital] = [:]
     @ReadWriteLock
     private var hasProcessedAppLaunch: Bool = false
 
@@ -76,7 +74,7 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
                 self.updateProfilingContext()
             }
 
-            _currentRUMVitals.mutate { $0[message.ttid.key] = (start: message.ttid, nil) }
+            _currentRUMVitals.mutate { $0[message.ttid.key] = message.ttid }
 
             defer { Self.unregisterInstance() }
             guard let profile = appLaunchProfile() else {
@@ -84,13 +82,17 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
                 return false
             }
 
-            self.write(profile: profile, rumVitals: self.currentRUMVitals.allVitals())
+            self.write(profile: profile, rumVitals: Array(self.currentRUMVitals.values))
             return false
         } else if case let .payload(message as OperationMessage) = message {
             if message.operation.stepType == .start {
-                _currentRUMVitals.mutate { $0[message.operation.key] = (start: message.operation, nil) }
-            } else if let startVital = currentRUMVitals[message.operation.key]?.start {
-                _currentRUMVitals.mutate { $0[message.operation.key] = (start: startVital, end: message.operation) }
+                _currentRUMVitals.mutate { $0[message.operation.key] = message.operation }
+            } else if var startVital = currentRUMVitals[message.operation.key] {
+                _currentRUMVitals.mutate {
+                    let duration = message.operation.date.timeIntervalSince(startVital.date)
+                    startVital.duration = duration.dd.toInt64Nanoseconds
+                    $0[message.operation.key] = startVital
+                }
             }
             return false
         }
@@ -181,22 +183,14 @@ extension ProfilingContext.Status {
     }
 }
 
-extension Dictionary where Key == String, Value == Operation {
-    func allVitals() -> [Vital] {
-        let vitals = self.values
-        return vitals.reduce([]) {
-            $0 + [$1.start, $1.end].compactMap(\.self)
-        }
-    }
-
+extension Dictionary where Key == String, Value == Vital {
     func didCompleteOperations() -> Bool {
         let vitals = self.values
-        return vitals.contains { $0.end == nil } == false
+        return vitals.contains { $0.duration == nil } == false
     }
 
-    func ongoingOperations() -> [String: Operation] {
-        let operations = self
-        return operations.filter { $0.1.end == nil }
+    func ongoingOperations() -> [String: Vital] {
+        filter { $0.1.duration == nil }
     }
 }
 #endif
