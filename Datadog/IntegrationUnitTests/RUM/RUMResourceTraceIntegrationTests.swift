@@ -144,6 +144,11 @@ class RUMResourceTraceIntegrationTests: RUMSessionTestsBase {
 
     private func performRequestAndVerifyIfSampled(_ expectation: SamplingExpectation, span: OTSpan) throws {
         let request = try sendURLSessionRequest(to: URL.mockAny())
+        // Finish the span to leave the os_activity scope. Without this, repeated setActive()
+        // calls across tests accumulate nested os_activity scopes that can corrupt the activity
+        // hierarchy and cause getActiveSpan() to return nil in subsequent tests.
+        span.finish()
+
         let matchers = try core.waitAndReturnRUMEventMatchers()
         let possibleResourceMatcher = try matchers.first(where: { try $0.eventType() == "resource" })
 
