@@ -74,12 +74,12 @@ jobs:
 
           # Clone source repo and fetch PR ref
           echo "Cloning source repo..."
-          git clone --depth=1 --no-checkout "https://x-access-token:${GITHUB_TOKEN}@github.com/${SOURCE_REPO}.git" "${WORK_DIR}/repo"
+          git clone --no-checkout "https://x-access-token:${GITHUB_TOKEN}@github.com/${SOURCE_REPO}.git" "${WORK_DIR}/repo"
           cd "${WORK_DIR}/repo"
           echo "Fetching PR head..."
-          git fetch origin "pull/${PR_NUMBER}/head:pr-head" --depth=50
+          git fetch origin "pull/${PR_NUMBER}/head:pr-head"
           echo "Fetching base ref..."
-          git fetch origin "${PR_BASE_REF}:base-ref" --depth=50
+          git fetch origin "${PR_BASE_REF}:base-ref"
 
           # Compute merge base
           MERGE_BASE=$(git merge-base pr-head base-ref)
