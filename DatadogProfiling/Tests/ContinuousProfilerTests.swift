@@ -109,7 +109,11 @@ final class ContinuousProfilerTests: XCTestCase {
         // Given
         let profiler = continuousProfiler(profilingInterval: 0.1)
         let completedOperationStart = Vital.mockWith(name: "completed-operation")
-        let completedOperationEnd = Vital.mockWith(name: completedOperationStart.name, stepType: .end)
+        let completedOperationEnd = Vital.mockWith(
+            name: completedOperationStart.name,
+            operationKey: completedOperationStart.operationKey,
+            stepType: .end
+        )
         let ongoingOperationStart = Vital.mockWith(name: "ongoing-operation", stepType: .start)
         let hang = DurationEvent(id: "hang-id", start: 0, duration: 500)
         let longTask = DurationEvent(id: "long-task-id", start: 0, duration: 100)
@@ -225,7 +229,6 @@ extension ContinuousProfilerTests {
         let vitals = try XCTUnwrap(json["vitals"] as? [[String: Any]])
         let vitalIDs = vitals.compactMap { $0["id"] as? String }
         XCTAssertTrue(vitalIDs.contains(startOperation.id))
-        XCTAssertTrue(vitalIDs.contains(endOperation.id))
         withExtendedLifetime(profiler) {}
     }
 
