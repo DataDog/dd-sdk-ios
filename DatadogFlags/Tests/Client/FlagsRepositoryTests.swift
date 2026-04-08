@@ -121,4 +121,359 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNil(flagsRepository.context)
         XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
     }
+
+    // MARK: - State Transitions
+
+    func testStateTransitionsToReadyOnSuccess() {
+        // Given
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
+        let completed = expectation(description: "completed")
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testStateTransitionsToErrorOnFailureWithNoCache() {
+        // Given
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
+        let completed = expectation(description: "completed")
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+    }
+
+    func testStateTransitionsToStaleOnFailureWithCache() {
+        // Given — first set context successfully to populate cache
+        let fetcherMock = FlagAssignmentsFetcherMock { _, completion in
+            completion(.success(["test": .mockAny()]))
+        }
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcherMock,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let firstCompleted = expectation(description: "first completed")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            firstCompleted.fulfill()
+        }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+
+        // Given — now make the fetcher fail
+        fetcherMock.flagAssignmentsStub = { _, completion in
+            completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+        }
+        let secondCompleted = expectation(description: "second completed")
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            secondCompleted.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
+        // Cached flags should still be available
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
+    }
+
+    func testStateTransitionsToReconcilingDuringFetch() {
+        // Given
+        var capturedCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                capturedCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
+
+        // When — start the fetch (but don't complete it)
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in }
+
+        // Then — state should be reconciling while fetch is in progress
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+
+        // Complete the fetch
+        capturedCompletion?(.success(["test": .mockAny()]))
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testResetTransitionsToNotReady() {
+        // Given — set context to reach ready state
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let completed = expectation(description: "completed")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            completed.fulfill()
+        }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+
+        // When
+        flagsRepository.reset()
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
+    }
+
+    func testStateTransitionsToStaleOnFailureWithDiskCache() throws {
+        // Given — pre-populate the data store with cached flags, using an async
+        // data store that delays the callback to simulate production behavior
+        // where the disk read may not complete before setEvaluationContext is called.
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAny()],
+            context: .mockAny(),
+            date: .mockAny()
+        )
+        let asyncStore = DataStoreAsyncMock()
+        try asyncStore.setValue(
+            JSONEncoder().encode(cachedData),
+            forKey: .mockAny()
+        )
+        let asyncFeatureScope = FeatureScopeMock(dataStore: asyncStore)
+
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: asyncFeatureScope
+        )
+
+        // When — call setEvaluationContext while the disk read may still be in-flight.
+        // The fix ensures waitForFlagsDataRead() is called before checking hadFlags.
+        let completed = expectation(description: "completed")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then — should be .stale (not .error) because cached flags exist on disk
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
+    }
+
+    func testStateTransitionsToErrorOnFailureWithMismatchedCachedContext() {
+        // Given — first set context successfully to populate cache with context A
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+
+        let fetcherMock = FlagAssignmentsFetcherMock { _, completion in
+            completion(.success(["test": .mockAny()]))
+        }
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcherMock,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let firstCompleted = expectation(description: "first completed")
+        flagsRepository.setEvaluationContext(contextA) { _ in
+            firstCompleted.fulfill()
+        }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+
+        // Given — now make the fetcher fail and request a DIFFERENT context
+        fetcherMock.flagAssignmentsStub = { _, completion in
+            completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+        }
+        let secondCompleted = expectation(description: "second completed")
+
+        // When — set context B (different from cached context A)
+        flagsRepository.setEvaluationContext(contextB) { _ in
+            secondCompleted.fulfill()
+        }
+
+        // Then — should be .error (not .stale) because cached context A != requested context B
+        // This prevents serving user A's flags to user B
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+    }
+
+    func testStateRecoveryFromStaleToReady() {
+        // Given — first succeed, then fail (stale), then succeed again
+        let fetcherMock = FlagAssignmentsFetcherMock { _, completion in
+            completion(.success(["test": .mockAny()]))
+        }
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcherMock,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+
+        // Reach ready state
+        let first = expectation(description: "first")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in first.fulfill() }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+
+        // Reach stale state
+        fetcherMock.flagAssignmentsStub = { _, completion in
+            completion(.failure(.networkError(URLError(.timedOut))))
+        }
+        let second = expectation(description: "second")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in second.fulfill() }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
+
+        // Recover to ready
+        fetcherMock.flagAssignmentsStub = { _, completion in
+            completion(.success(["test": .mockAny()]))
+        }
+        let third = expectation(description: "third")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in third.fulfill() }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    // MARK: - Overlapping Requests
+
+    func testOverlappingContextUpdates_laterSuccessShouldNotBeClearedByEarlierFailure() {
+        // This test reproduces the race condition from Codex feedback #24:
+        // 1. Request A starts (captures hadFlags = false)
+        // 2. Request B starts and succeeds (writes flags)
+        // 3. Request A fails (should NOT clear request B's flags)
+
+        // Given — a fetcher that captures completions so we can control timing
+        var capturedCompletions: [(context: FlagsEvaluationContext, completion: (Result<[String: FlagAssignment], FlagsError>) -> Void)] = []
+        let fetcherMock = FlagAssignmentsFetcherMock { context, completion in
+            capturedCompletions.append((context, completion))
+        }
+
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        let flagsForB: [String: FlagAssignment] = ["feature": .mockAny()]
+
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcherMock,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+
+        let completedA = expectation(description: "request A completed")
+        let completedB = expectation(description: "request B completed")
+
+        // When — start request A (captures hadFlags = false)
+        flagsRepository.setEvaluationContext(contextA) { _ in
+            completedA.fulfill()
+        }
+
+        // When — start request B (also captures hadFlags = false)
+        flagsRepository.setEvaluationContext(contextB) { _ in
+            completedB.fulfill()
+        }
+
+        // Both requests should be in-flight
+        XCTAssertEqual(capturedCompletions.count, 2)
+
+        // When — request B completes successfully first (writes flags)
+        capturedCompletions[1].completion(.success(flagsForB))
+
+        // When — request A fails after B succeeded
+        capturedCompletions[0].completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+
+        waitForExpectations(timeout: 1)
+
+        // Then — request B's flags should still be available
+        // This is the key assertion: the later successful request's flags should NOT
+        // be wiped out by the earlier failing request
+        XCTAssertNotNil(
+            flagsRepository.flagAssignment(for: "feature"),
+            "Request B's flags should not be cleared by request A's failure"
+        )
+        XCTAssertEqual(flagsRepository.context, contextB, "Context should be from request B")
+    }
+
+    // MARK: - State-Before-Completion Ordering
+
+    func testStateIsUpdatedBeforeCompletionOnSuccess() {
+        // Given
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let completed = expectation(description: "completed")
+
+        // When
+        var stateInCompletion: FlagsClientState?
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            stateInCompletion = flagsRepository.state.currentState
+            completed.fulfill()
+        }
+
+        // Then — state must already be .ready when completion is called
+        // (dd-openfeature-provider-swift depends on this ordering)
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(stateInCompletion, .ready)
+    }
+
+    func testStateIsUpdatedBeforeCompletionOnFailure() {
+        // Given
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let completed = expectation(description: "completed")
+
+        // When
+        var stateInCompletion: FlagsClientState?
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            stateInCompletion = flagsRepository.state.currentState
+            completed.fulfill()
+        }
+
+        // Then — state must already be .error when completion is called (no cached flags)
+        // (dd-openfeature-provider-swift depends on this ordering)
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(stateInCompletion, .error)
+    }
 }

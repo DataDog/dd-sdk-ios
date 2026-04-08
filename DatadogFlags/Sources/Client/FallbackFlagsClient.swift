@@ -11,6 +11,8 @@ internal final class FallbackFlagsClient: FlagsClientProtocol {
     private let name: String
     private weak var core: (any DatadogCoreProtocol)?
 
+    let state: FlagsStateObservable = NOPStateObservable(state: .error)
+
     init(name: String, core: any DatadogCoreProtocol) {
         self.name = name
         self.core = core

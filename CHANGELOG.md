@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
+
 # 3.9.0 / 02-04-2026
 
 - [IMPROVEMENT] Add `NWPath.linkQuality` to network info attached to Logs and Traces on supported platforms. See [#2751][]
@@ -1103,6 +1105,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2773]: https://github.com/DataDog/dd-sdk-ios/pull/2773
 [#2776]: https://github.com/DataDog/dd-sdk-ios/pull/2776
 [#2791]: https://github.com/DataDog/dd-sdk-ios/pull/2791
+[#2719]: https://github.com/DataDog/dd-sdk-ios/pull/2719
 [#2794]: https://github.com/DataDog/dd-sdk-ios/pull/2794
 [#2807]: https://github.com/DataDog/dd-sdk-ios/pull/2807
 

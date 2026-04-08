@@ -13,6 +13,12 @@ import DatadogInternal
 /// with detailed evaluation information. The protocol is extended with convenience methods for
 /// common flag types.
 public protocol FlagsClientProtocol: AnyObject {
+    /// An observable for tracking client state changes.
+    ///
+    /// Use this property to observe state transitions such as ``FlagsClientState/ready``,
+    /// ``FlagsClientState/stale``, or ``FlagsClientState/error``.
+    var state: FlagsStateObservable { get }
+
     /// Sets the evaluation context for flag targeting.
     ///
     /// The evaluation context includes user or session information used to determine which flag
@@ -69,6 +75,17 @@ public protocol FlagsClientProtocol: AnyObject {
     ///
     /// - Returns: A ``FlagDetails`` struct containing the evaluated value and metadata.
     func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
+}
+
+extension FlagsClientProtocol {
+    /// Default state observable for backward compatibility with external conformers.
+    ///
+    /// External implementations of ``FlagsClientProtocol`` that don't provide their own
+    /// state management will receive this default implementation, which returns a no-op
+    /// observable in the ``FlagsClientState/notReady`` state.
+    public var state: FlagsStateObservable {
+        NOPStateObservable(state: .notReady)
+    }
 }
 
 extension FlagsClientProtocol {
