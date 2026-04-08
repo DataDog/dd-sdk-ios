@@ -129,6 +129,14 @@ internal final class DDSpan: OTSpan {
             ddTracer.removeSpan(span: self)
             activity.leave()
         }
+
+        // Client-side stats: create snapshot BEFORE the sampling check
+        // so that all spans (including sampled-out) contribute to stats.
+        if ddTracer.onSpanFinished != nil {
+            let snapshot = createSnapshot(finishTime: time)
+            ddTracer.notifySpanFinished(snapshot)
+        }
+
         if self.ddContext.samplingDecision.samplingPriority.isKept {
             sendSpan(finishTime: time)
         }
@@ -164,6 +172,65 @@ internal final class DDSpan: OTSpan {
         loggingIntegration.writeLog(withSpanContext: ddContext, message: message, fields: fields, date: date, else: {
             DD.logger.warn("The log for span \"\(self.operationName)\" will not be send, because the Logs feature is not enabled.")
         })
+    }
+
+    // MARK: - Snapshot
+
+    /// Creates a lightweight, immutable snapshot of this span for client-side stats.
+    private func createSnapshot(finishTime: Date) -> SpanSnapshot {
+        let currentTags = tags
+        let tagsReducer = SpanTagsReducer(spanTags: currentTags, logFields: logFields)
+
+        let resolvedService = tagsReducer.extractedServiceName
+            ?? eventBuilder.service
+            ?? "unnamed-service"
+        let resolvedResource = tagsReducer.extractedResourceName ?? operationName
+        let resolvedOperationName = tagsReducer.extractedOperationName ?? operationName
+
+        let startNanos = startTime.timeIntervalSince1970.dd.toNanoseconds
+        let durationNanos = finishTime.timeIntervalSince(startTime).dd.toNanoseconds
+
+        let httpStatusCode: UInt32 = {
+            if let code = currentTags[OTTags.httpStatusCode] as? Int {
+                return UInt32(code)
+            }
+            return 0
+        }()
+
+        let isError = tagsReducer.extractedIsError ?? false
+        let spanKind = currentTags[SpanTags.kind] as? String
+            ?? currentTags[OTTags.spanKind] as? String
+        let isMeasured = (currentTags["_dd.measured"] as? Int == 1)
+            || (currentTags["_dd.measured"] as? Bool == true)
+
+        var peerTags: [String: String] = [:]
+        for key in StatsConcentrator.defaultPeerTagKeys {
+            if let value = currentTags[key] as? String, !value.isEmpty {
+                peerTags[key] = value
+            }
+        }
+
+        let serviceSource = currentTags["_dd.svc_src"] as? String
+
+        return SpanSnapshot(
+            traceID: ddContext.traceID,
+            spanID: ddContext.spanID,
+            parentSpanID: ddContext.parentSpanID,
+            service: resolvedService,
+            operationName: resolvedOperationName,
+            resource: resolvedResource,
+            type: "custom",
+            spanKind: spanKind,
+            httpStatusCode: httpStatusCode,
+            isError: isError,
+            startTime: startNanos,
+            duration: durationNanos,
+            isTopLevel: ddContext.parentSpanID == nil,
+            isMeasured: isMeasured,
+            peerTags: peerTags,
+            isSynthetics: false,
+            serviceSource: serviceSource
+        )
     }
 
     // MARK: - Private

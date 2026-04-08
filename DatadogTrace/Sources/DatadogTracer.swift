@@ -35,6 +35,16 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     /// Creates span events.
     let spanEventBuilder: SpanEventBuilder
 
+    /// Called when any span finishes (before sampling), for client-side stats.
+    /// Set after initialization when `ClientStatsFeature` is enabled.
+    var onSpanFinished: ((SpanSnapshot) -> Void)?
+
+    /// Notifies the tracer that a span has finished, forwarding its snapshot
+    /// to the client-side stats pipeline (if enabled).
+    func notifySpanFinished(_ snapshot: SpanSnapshot) {
+        onSpanFinished?(snapshot)
+    }
+
     // MARK: - Initialization
 
     convenience init(
