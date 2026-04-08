@@ -6,7 +6,7 @@
 
 import XCTest
 
-#if !os(tvOS)
+#if os(iOS)
 import WebKit
 
 import TestUtilities

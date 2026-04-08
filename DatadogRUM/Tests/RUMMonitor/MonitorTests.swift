@@ -61,6 +61,7 @@ class MonitorTests: XCTestCase {
         XCTAssertFalse(rumContext.sessionSampler.isSampled)
     }
 
+    #if !os(watchOS)
     func testStartView_withViewController_itUsesClassNameAsViewName() throws {
         // Given
         let vc = createMockView(viewControllerClassName: "SomeViewController")
@@ -92,6 +93,7 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewName, "Some View")
         XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewPath, "SomeViewController")
     }
+    #endif
 
     // MARK: - App launch
 

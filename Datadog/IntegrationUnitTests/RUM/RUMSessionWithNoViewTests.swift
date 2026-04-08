@@ -31,6 +31,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
     /// ```
     /// [BG:Background] --> [FG:(no view)]
     /// ```
+    @available(tvOS, unavailable)
     func prewarmedSessionWithResourceThatBecameActive(
         resourceStartAfter: TimeInterval,
         resourceDuration: TimeInterval,
@@ -56,16 +57,21 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
     /// ```
     /// [FG:ApplicationLaunch] --> [FG:AutomaticView] --> [BG:(no view)]
     /// ```
+    #if !os(watchOS)
     func userSessionWithAutomaticViewThatEnteredBackground(
         rumSetup: AppRunner.RUMSetup? = nil
     ) -> AppRun {
         return userSessionWithAutomaticView(rumSetup: rumSetup)
             .and(.appEntersBackground(after: timeToAppEnterBackground))
     }
+    #endif
 
     // MARK: - Session in foreground with no view
 
     func testGivenBackgroundOrPrewarmedSessionThatBecameActive_whenEventsAreTracked() throws {
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS/watchOS")
+        #else
         // Given
         let given1 = backgroundSessionWithResourceThatBecameActive(resourceStartAfter: dt1, resourceDuration: dt2)
         let given2 = prewarmedSessionWithResourceThatBecameActive(resourceStartAfter: dt1, resourceDuration: dt2)
@@ -98,11 +104,15 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
                 DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
             }
         }
+        #endif
     }
 
     // MARK: - Session in background with no view
 
     func testGivenBackgroundOrPrewarmedSession_whenEventsAreTracked() throws {
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS/watchOS")
+        #else
         // Given
         // - BET disabled
         let given1 = backgroundSession()
@@ -159,6 +169,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
             let sessions = try when.then()
             XCTAssertTrue(sessions.isEmpty)
         }
+        #endif
     }
 
     func testGivenUserSessionThatEnteredBackground_whenEventsAreTracked() throws {
@@ -178,8 +189,13 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
             // Then
             // - it only tracks ApplicationLaunch view (background events are dropped due to BET disabled)
             let session = try when.then().takeSingle()
+            #if !os(watchOS)
             XCTAssertNotNil(session.ttidEvent)
             DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
+            #else
+            XCTAssertNil(session.ttidEvent)
+            XCTAssertNil(session.timeToInitialDisplay)
+            #endif
             DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
             DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + timeToAppEnterBackground, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -202,8 +218,13 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
             // Then
             // - it tracks ApplicationLaunch and Background views
             let session = try when.then().takeSingle()
+            #if !os(watchOS)
             XCTAssertNotNil(session.ttidEvent)
             DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
+            #else
+            XCTAssertNil(session.ttidEvent)
+            XCTAssertNil(session.timeToInitialDisplay)
+            #endif
             DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
             DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + timeToAppEnterBackground + dt1 + dt2, accuracy: accuracy)
             XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -221,8 +242,13 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
         // Then
         // - it only tracks ApplicationLaunch view (Long Tasks are not tracked in background even if BET is enabled)
         let session = try when6.then().takeSingle()
+        #if !os(watchOS)
         XCTAssertNotNil(session.ttidEvent)
         DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
+        #else
+        XCTAssertNil(session.ttidEvent)
+        XCTAssertNil(session.timeToInitialDisplay)
+        #endif
         DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
         DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + timeToAppEnterBackground, accuracy: accuracy)
         XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -232,6 +258,9 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
     }
 
     func testGivenUserSessionWithAutomaticViewThatEnteredBackground_whenEventsAreTracked() throws {
+        #if os(watchOS)
+        throw XCTSkip("UIKit view instrumentation is not available on watchOS")
+        #else
         // Given
         // - BET disabled
         let given1 = userSessionWithAutomaticViewThatEnteredBackground()
@@ -305,5 +334,6 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
         DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
         XCTAssertEqual(session.views[1].name, automaticViewName)
         DDAssertEqual(session.views[1].duration, timeToAppEnterBackground, accuracy: accuracy)
+        #endif
     }
 }

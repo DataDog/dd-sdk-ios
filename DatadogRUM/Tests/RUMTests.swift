@@ -97,6 +97,7 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(crashReportReceiver?.sessionSampler.samplingRate, 100)
     }
 
+    #if !os(watchOS)
     func testWhenEnabledWithAllInstrumentations() throws {
         // Given
         config.uiKitViewsPredicate = UIKitRUMViewsPredicateMock()
@@ -149,6 +150,7 @@ class RUMTests: XCTestCase {
         XCTAssertNil(rum.instrumentation.appHangs)
         XCTAssertNil(rum.instrumentation.memoryWarningMonitor)
     }
+    #endif
 
     func testWhenEnabledWithInvalidLongTasksThreshold() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())

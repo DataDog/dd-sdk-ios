@@ -27,6 +27,7 @@ internal protocol RenderLoopObserver {
     func unregister(_ renderLoopReader: RenderLoopReader)
 }
 
+#if !os(watchOS)
 /// A class reading information from the display vsync.
 internal class DisplayLinker {
     @ReadWriteLock
@@ -112,3 +113,5 @@ extension DisplayLinker: RenderLoopObserver {
         renderLoopReaders.removeAll { $0 === renderLoopReader }
     }
 }
+
+#endif

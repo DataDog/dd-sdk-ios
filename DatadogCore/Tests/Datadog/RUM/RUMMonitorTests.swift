@@ -80,7 +80,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
 
         // When
         monitor.stopSession()
@@ -103,9 +103,9 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
-        monitor.startView(viewController: mockView)
-        monitor.stopView(viewController: mockView)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
+        monitor.stopView(key: .mockAny())
+        monitor.startView(key: .mockAny())
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -148,7 +148,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
         monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
@@ -175,7 +175,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "POST"))
         monitor.addResourceMetrics(
             resourceKey: "/resource/1",
@@ -211,7 +211,7 @@ class RUMMonitorTests: XCTestCase {
 
         setGlobalAttributes(of: monitor)
         let url: URL = .mockRandom()
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", url: url)
         monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
@@ -232,7 +232,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", httpMethod: .post, urlString: "/some/url/string", attributes: [:])
         monitor.stopResource(resourceKey: "/resource/1", statusCode: 333, kind: .beacon)
 
@@ -259,7 +259,7 @@ class RUMMonitorTests: XCTestCase {
 
         setGlobalAttributes(of: monitor)
         let url: URL = .mockRandom()
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", url: url)
         monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
@@ -281,7 +281,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", httpMethod: .post, urlString: "http://www.foo.com/some/url/string", attributes: [:])
         monitor.stopResource(resourceKey: "/resource/1", statusCode: 333, kind: .beacon)
 
@@ -300,7 +300,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", httpMethod: .post, urlString: "/some/url/string", attributes: [
             "_dd.graphql.operation_name": "GetCountry",
             "_dd.graphql.operation_type": "query",
@@ -328,9 +328,9 @@ class RUMMonitorTests: XCTestCase {
 
         setGlobalAttributes(of: monitor)
         let actionName = String.mockRandom()
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.addAction(type: .tap, name: actionName)
-        monitor.stopView(viewController: mockView)
+        monitor.stopView(key: .mockAny())
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -365,7 +365,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startAction(type: .scroll, name: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
         monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200))
@@ -422,7 +422,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startAction(type: .scroll, name: .mockAny())
 #sourceLocation(file: "/user/abc/Foo.swift", line: 100)
         monitor.addError(message: "View error message", source: .source)
@@ -477,46 +477,44 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
-        let view1 = createMockView(viewControllerClassName: "FirstViewController")
-        monitor.startView(viewController: view1)
-        let view2 = createMockView(viewControllerClassName: "SecondViewController")
-        monitor.startView(viewController: view2)
+        monitor.startView(key: "view1", name: "View 1")
+        monitor.startView(key: "view2", name: "View 2")
         monitor.addAction(type: .tap, name: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", request: .mockAny())
         monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
-        monitor.stopView(viewController: view1)
-        monitor.stopView(viewController: view2)
+        monitor.stopView(key: "view1")
+        monitor.stopView(key: "view2")
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
         verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers
-            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "FirstViewController" }
+            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "view1" }
             .model(ofType: RUMViewEvent.self) { rumModel in
-                XCTAssertEqual(rumModel.view.url, "FirstViewController")
-                XCTAssertEqual(rumModel.view.name, "FirstViewController")
+                XCTAssertEqual(rumModel.view.url, "view1")
+                XCTAssertEqual(rumModel.view.name, "View 1")
                 XCTAssertEqual(rumModel.view.action.count, 0, "First View should track no actions")
                 XCTAssertEqual(rumModel.view.resource.count, 0)
             }
         try rumEventMatchers
-            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "SecondViewController" }
+            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "view2" }
             .model(ofType: RUMViewEvent.self) { rumModel in
-                XCTAssertEqual(rumModel.view.url, "SecondViewController")
-                XCTAssertEqual(rumModel.view.name, "SecondViewController")
+                XCTAssertEqual(rumModel.view.url, "view2")
+                XCTAssertEqual(rumModel.view.name, "View 2")
                 XCTAssertEqual(rumModel.view.action.count, 1, "Second View should track the 'tap' Action")
                 XCTAssertEqual(rumModel.view.resource.count, 1, "Second View should track the Resource")
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMActionEvent.self)
             .model(ofType: RUMActionEvent.self) { rumModel in
-                XCTAssertEqual(rumModel.view.url, "SecondViewController", "Action should be associated with the second View")
-                XCTAssertEqual(rumModel.view.name, "SecondViewController", "Action should be associated with the second View")
+                XCTAssertEqual(rumModel.view.url, "view2", "Action should be associated with the second View")
+                XCTAssertEqual(rumModel.view.name, "View 2", "Action should be associated with the second View")
                 XCTAssertEqual(rumModel.action.type, .tap)
             }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMResourceEvent.self)
             .model(ofType: RUMResourceEvent.self) { rumModel in
-                XCTAssertEqual(rumModel.view.url, "SecondViewController", "Resource should be associated with the second View")
-                XCTAssertEqual(rumModel.view.name, "SecondViewController", "Resource should be associated with the second View")
+                XCTAssertEqual(rumModel.view.url, "view2", "Resource should be associated with the second View")
+                XCTAssertEqual(rumModel.view.name, "View 2", "Resource should be associated with the second View")
             }
     }
 
@@ -526,15 +524,12 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
-        let view1 = createMockView(viewControllerClassName: "FirstViewController")
-        monitor.startView(viewController: view1)
+        monitor.startView(key: "view1", name: "View 1")
         monitor.startResource(resourceKey: "/resource/1", request: URLRequest(url: .mockWith(pathComponent: "/resource/1")))
         monitor.startResource(resourceKey: "/resource/2", request: URLRequest(url: .mockWith(pathComponent: "/resource/2")))
+        monitor.stopView(key: "view1")
 
-        monitor.stopView(viewController: view1)
-
-        let view2 = createMockView(viewControllerClassName: "SecondViewController")
-        monitor.startView(viewController: view2)
+        monitor.startView(key: "view2", name: "View 2")
         monitor.startResource(resourceKey: "/resource/3", request: URLRequest(url: .mockWith(pathComponent: "/resource/3")))
         monitor.startResource(resourceKey: "/resource/4", request: URLRequest(url: .mockWith(pathComponent: "/resource/4")))
         monitor.startResource(resourceKey: "/resource/5", request: URLRequest(url: .mockWith(pathComponent: "/resource/5")))
@@ -544,7 +539,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResource(resourceKey: "/resource/4", response: .mockAny())
         let customType: String = .mockRandom(among: .alphanumerics)
         monitor.stopResourceWithError(resourceKey: "/resource/5", message: .mockAny(), type: customType)
-        monitor.stopView(viewController: view2)
+        monitor.stopView(key: "view2")
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -555,12 +550,12 @@ class RUMMonitorTests: XCTestCase {
 
         let firstView = views[0]
         let secondView = views[1]
-        XCTAssertEqual(firstView.viewEvents.last?.view.url, "FirstViewController")
-        XCTAssertEqual(firstView.viewEvents.last?.view.name, "FirstViewController")
+        XCTAssertEqual(firstView.viewEvents.last?.view.url, "view1")
+        XCTAssertEqual(firstView.viewEvents.last?.view.name, "View 1")
         XCTAssertEqual(firstView.viewEvents.last?.view.resource.count, 1, "First view must track 1 resource")
         XCTAssertEqual(firstView.viewEvents.last?.view.error.count, 1, "First view must track 1 resource error")
-        XCTAssertEqual(secondView.viewEvents.last?.view.url, "SecondViewController")
-        XCTAssertEqual(secondView.viewEvents.last?.view.name, "SecondViewController")
+        XCTAssertEqual(secondView.viewEvents.last?.view.url, "view2")
+        XCTAssertEqual(secondView.viewEvents.last?.view.name, "View 2")
         XCTAssertEqual(secondView.viewEvents.last?.view.resource.count, 2, "Second view must track 2 resources")
         XCTAssertEqual(secondView.viewEvents.last?.view.error.count, 1, "Second view must track 1 resource error")
 
@@ -590,10 +585,10 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.shared(in: core)
 
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.addAction(type: .tap, name: "1st action")
         monitor.addAction(type: .swipe, name: "2nd action")
-        monitor.stopView(viewController: mockView)
+        monitor.stopView(key: .mockAny())
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         try rumEventMatchers.lastRUMEvent(ofType: RUMActionEvent.self) { $0.action.target?.name == "1st action" }
@@ -616,7 +611,7 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.shared(in: core)
 
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
 
         monitor.addAction(type: .tap, name: "tap action", attributes: ["event-attribute1": "foo1"])
 
@@ -657,7 +652,7 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.shared(in: core)
 
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startAction(type: .scroll, name: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", request: .mockAny())
         monitor.startResource(resourceKey: "/resource/2", request: .mockAny())
@@ -665,7 +660,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
         monitor.stopResourceWithError(resourceKey: "/resource/2", message: .mockAny())
         monitor.addError(message: .mockAny(), source: .source)
-        monitor.stopView(viewController: mockView)
+        monitor.stopView(key: .mockAny())
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         let expectedUserInfo = RUMUser(anonymousId: nil, email: "foo@bar.com", id: "abc-123", name: "Foo", usrInfo: [
@@ -703,7 +698,7 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.shared(in: core)
 
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startAction(type: .scroll, name: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", request: .mockAny())
         monitor.startResource(resourceKey: "/resource/2", request: .mockAny())
@@ -711,7 +706,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
         monitor.stopResourceWithError(resourceKey: "/resource/2", message: .mockAny())
         monitor.addError(message: .mockAny(), source: .source)
-        monitor.stopView(viewController: mockView)
+        monitor.stopView(key: .mockAny())
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         let expectedConnectivityInfo = RUMConnectivity(
@@ -737,9 +732,6 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Sending Attributes
 
     func testSendingAttributes() throws {
-        let view1 = createMockView(viewControllerClassName: "FirstViewController")
-        let view2 = createMockView(viewControllerClassName: "SecondViewController")
-
         RUM.enable(with: config, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
@@ -749,21 +741,21 @@ class RUMMonitorTests: XCTestCase {
         monitor.addAttribute(forKey: "attribute2", value: "value 2")
 
         // start View 1:
-        monitor.startView(viewController: view1)
+        monitor.startView(key: "view1")
 
         // update global attributes while the View 1 is active
         monitor.addAttribute(forKey: "attribute1", value: "changed value 1") // change the attribute value
         monitor.removeAttribute(forKey: "attribute2") // remove the attribute
 
-        monitor.stopView(viewController: view1)
+        monitor.stopView(key: "view1")
 
         // start View 2:
-        monitor.startView(viewController: view2)
-        monitor.stopView(viewController: view2)
+        monitor.startView(key: "view2")
+        monitor.stopView(key: "view2")
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         let firstViewEvent = try rumEventMatchers
-            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "FirstViewController" }
+            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "view1" }
 
         XCTAssertNil(try? firstViewEvent.attribute(forKeyPath: "attribute1") as String)
         XCTAssertNil(try? firstViewEvent.attribute(forKeyPath: "attribute2") as String)
@@ -773,7 +765,7 @@ class RUMMonitorTests: XCTestCase {
 //        XCTAssertEqual(try firstViewEvent.attribute(forKeyPath: "context.attribute2") as String, "value 2")
 
         let secondViewEvent = try rumEventMatchers
-            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "SecondViewController" }
+            .lastRUMEvent(ofType: RUMViewEvent.self) { rumModel in rumModel.view.url == "view2" }
 
         XCTAssertNil(try? secondViewEvent.attribute(forKeyPath: "attribute1") as String)
         XCTAssertEqual(try secondViewEvent.attribute(forKeyPath: "context.attribute1") as String, "changed value 1")
@@ -817,7 +809,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         setGlobalAttributes(of: monitor)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.addTiming(name: "timing1")
         monitor.addTiming(name: "timing2")
         monitor.addTiming(name: "timing3_.@$-()&+=Д")
@@ -838,7 +830,7 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.shared(in: core)
 
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
 
         // When
         let flagName: String = .mockRandom()
@@ -856,7 +848,7 @@ class RUMMonitorTests: XCTestCase {
         RUM.enable(with: config, in: core)
         let monitor = RUMMonitor.shared(in: core)
 
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         let flagName: String = .mockRandom()
         let flagValue: Bool = .mockRandom()
         monitor.addFeatureFlagEvaluation(name: flagName, value: flagValue)
@@ -877,12 +869,11 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.shared(in: core)
 
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.addFeatureFlagEvaluation(name: .mockAny(), value: String.mockAny())
 
         // When
-        let mockSecondView = createMockViewInWindow()
-        monitor.startView(viewController: mockSecondView)
+        monitor.startView(key: "view2")
 
         // Then
         let rumEventMatchers = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMViewEvent.self)
@@ -906,7 +897,7 @@ class RUMMonitorTests: XCTestCase {
         RUM.enable(with: config, in: core)
 
         let monitor = RUMMonitor.shared(in: core)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         waitForExpectations(timeout: 0.5)
     }
 
@@ -929,7 +920,7 @@ class RUMMonitorTests: XCTestCase {
 
         // When
         let monitor = RUMMonitor.shared(in: core)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.addAction(type: .tap, name: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", request: .mockAny())
         monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
@@ -991,7 +982,7 @@ class RUMMonitorTests: XCTestCase {
         // When
         RUM.enable(with: config, in: core)
         let monitor = RUMMonitor.shared(in: core)
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
 
         // Then
         let viewEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMViewEvent.self)
@@ -1026,7 +1017,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         // When
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
 
         // Then
         let viewEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMViewEvent.self)
@@ -1133,7 +1124,7 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.shared(in: core)
 
-        monitor.startView(viewController: mockView, name: "OriginalViewName")
+        monitor.startView(key: .mockAny(), name: "OriginalViewName")
         monitor.startResource(resourceKey: "/resource/1", url: URL(string: "https://foo.com?q=original-resource-url")!)
         monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
         monitor.addAction(type: .tap, name: "Original tap action name")
@@ -1166,7 +1157,7 @@ class RUMMonitorTests: XCTestCase {
 
         let monitor = RUMMonitor.shared(in: core)
 
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", url: .mockAny())
         monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
         monitor.addAction(type: .tap, name: .mockAny())
@@ -1212,7 +1203,7 @@ class RUMMonitorTests: XCTestCase {
         // When
         RUM.enable(with: config, in: core)
         let monitor = RUMMonitor.shared(in: core)
-        monitor.startView(viewController: mockView, attributes: randomViewEventAttributes)
+        monitor.startView(key: .mockAny(), attributes: randomViewEventAttributes)
 
         // Then
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -1230,14 +1221,13 @@ class RUMMonitorTests: XCTestCase {
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() throws {
         RUM.enable(with: config, in: core)
         let monitor = RUMMonitor.shared(in: core)
-        let view = mockView
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
             let modulo = iteration % 14
 
             switch modulo {
-            case 0: monitor.startView(viewController: view)
-            case 1: monitor.stopView(viewController: view)
+            case 0: monitor.startView(key: "view1")
+            case 1: monitor.stopView(key: "view1")
             case 2: monitor.addError(error: ErrorMock(), source: .custom)
             case 3: monitor.addError(message: .mockAny(), source: .custom)
             case 4: monitor.startResource(resourceKey: .mockAny(), request: .mockAny())
@@ -1388,7 +1378,7 @@ class RUMMonitorTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core)
 
         // When
-        monitor.startView(viewController: mockView)
+        monitor.startView(key: .mockAny())
         monitor.startAction(type: .scroll, name: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", request: .mockAny())
         monitor.startResource(resourceKey: "/resource/2", request: .mockAny())
@@ -1397,7 +1387,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResourceWithError(resourceKey: "/resource/2", message: .mockAny())
         monitor.addError(message: .mockAny(), source: .source)
         monitor._internal?.addLongTask(at: Date(), duration: 1.0)
-        monitor.stopView(viewController: mockView)
+        monitor.stopView(key: .mockAny())
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 

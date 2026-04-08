@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Add watchOS and visionOS support. See [#2817][]
+
 # 3.9.0 / 02-04-2026
 
 - [IMPROVEMENT] Add `NWPath.linkQuality` to network info attached to Logs and Traces on supported platforms. See [#2751][]
@@ -1105,6 +1107,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2791]: https://github.com/DataDog/dd-sdk-ios/pull/2791
 [#2794]: https://github.com/DataDog/dd-sdk-ios/pull/2794
 [#2807]: https://github.com/DataDog/dd-sdk-ios/pull/2807
+[#2817]: https://github.com/DataDog/dd-sdk-ios/pull/2817
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

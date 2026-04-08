@@ -4,8 +4,55 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if canImport(UIKit)
 import UIKit
+
+#if os(watchOS)
+
+import WatchKit
+
+public class UIDeviceMock: WKInterfaceDevice {
+    override public var model: String { _model }
+    override public var systemName: String { _systemName }
+    override public var systemVersion: String { _systemVersion }
+    override public var isBatteryMonitoringEnabled: Bool {
+        get { _isBatteryMonitoringEnabled }
+        set { _isBatteryMonitoringEnabled = newValue }
+    }
+    override public var batteryLevel: Float { _batteryLevel }
+    override public var batteryState: WKInterfaceDeviceBatteryState { _batteryState }
+
+    private var _model: String
+    private var _systemName: String
+    private var _systemVersion: String
+
+    private var _isBatteryMonitoringEnabled: Bool
+    private var _batteryLevel: Float
+    private var _batteryState: WKInterfaceDeviceBatteryState
+
+    public init(
+        model: String = .mockAny(),
+        systemName: String = .mockAny(),
+        systemVersion: String = .mockAny(),
+        isBatteryMonitoringEnabled: Bool = .mockAny(),
+        batteryLevel: Float = .mockAny(),
+        batteryState: WKInterfaceDeviceBatteryState = .mockAny()
+    ) {
+        self._model = model
+        self._systemName = systemName
+        self._systemVersion = systemVersion
+        self._isBatteryMonitoringEnabled = isBatteryMonitoringEnabled
+        self._batteryState = batteryState
+        self._batteryLevel = batteryLevel
+    }
+}
+
+extension WKInterfaceDeviceBatteryState: AnyMockable {
+    public static func mockAny() -> WKInterfaceDeviceBatteryState {
+        return .full
+    }
+}
+
+#else
 
 public class UIDeviceMock: UIDevice {
     override public var model: String { _model }
@@ -85,8 +132,6 @@ extension UIDevice.BatteryState: AnyMockable {
         return .full
     }
 }
-#endif
-
 #endif
 
 extension UIEvent {
@@ -319,3 +364,5 @@ extension UIImage: RandomMockable {
         return UIImage(cgImage: cgImage) as! Self
     }
 }
+
+#endif

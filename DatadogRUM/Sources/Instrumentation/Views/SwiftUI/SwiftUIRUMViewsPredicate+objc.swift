@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import Foundation
 import DatadogInternal
 
@@ -74,3 +75,4 @@ public class objc_DefaultSwiftUIRUMActionsPredicate: NSObject, objc_SwiftUIRUMAc
         }
     }
 }
+#endif

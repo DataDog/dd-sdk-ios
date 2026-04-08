@@ -18,6 +18,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-value"
 
+#if !TARGET_OS_WATCH
 - (void)testDDRUMViewAPI {
     DDRUMView *view = [[DDRUMView alloc] initWithName:@"abc" attributes:@{@"foo": @"bar"}];
     XCTAssertEqual(view.name, @"abc");
@@ -29,6 +30,7 @@
     XCTAssertEqual(action.name, @"abc");
     XCTAssertNotNil(action.attributes[@"foo"]); // TODO: RUMM-1583 assert with `XCTAssertEqual`
 }
+#endif
 
 - (void)testDDRUMErrorSourceAPI {
     DDRUMErrorSourceSource; DDRUMErrorSourceNetwork; DDRUMErrorSourceWebview; DDRUMErrorSourceConsole; DDRUMErrorSourceCustom;
@@ -54,8 +56,6 @@
 }
 
 - (void)testDDRUMMonitorAPI {
-    UIViewController *anyVC = [UIViewController new];
-
     DDRUMMonitor *monitor = [DDRUMMonitor shared];
     [monitor currentSessionIDWithCompletion:^(NSString * _Nullable sessionID) {}];
     [monitor stopSession];
@@ -65,8 +65,8 @@
     [monitor addViewAttributes:@{@"string": @"value", @"integer": @1, @"boolean": @true}];
     [monitor removeViewAttributeForKey:@"key"];
     [monitor removeViewAttributesForKeys:@[@"string",@"integer",@"boolean"]];
-    [monitor startViewWithViewController:anyVC name:@"" attributes:@{}];
-    [monitor stopViewWithViewController:anyVC attributes:@{}];
+    [monitor startViewWithKey:@"view" name:@"" attributes:@{}];
+    [monitor stopViewWithKey:@"view" attributes:@{}];
     [monitor startViewWithKey:@"" name:nil attributes:@{}];
     [monitor stopViewWithKey:@"" attributes:@{}];
     [monitor addViewLoadingTimeWithOverwrite:YES];

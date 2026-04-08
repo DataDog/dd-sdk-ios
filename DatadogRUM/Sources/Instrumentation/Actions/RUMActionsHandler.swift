@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import UIKit
 import DatadogInternal
 
@@ -124,3 +125,4 @@ internal final class RUMActionsHandler: RUMActionsHandling {
         subscriber.process(command: command)
     }
 }
+#endif

@@ -605,6 +605,7 @@ extension Monitor: RUMMonitorViewProtocol {
         )
     }
 
+    #if !os(watchOS)
     func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartViewCommand(
@@ -629,6 +630,7 @@ extension Monitor: RUMMonitorViewProtocol {
             )
         )
     }
+    #endif
 
     func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) {
         process(

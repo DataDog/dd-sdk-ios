@@ -257,10 +257,6 @@ public enum Datadog {
         consolePrint("⚠️ macOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
         #endif
 
-        #if swift(>=5.9) && os(visionOS)
-        consolePrint("⚠️ visionOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
-        #endif
-
         do {
             // To safely instrument the application lifecycle observer and other providers,
             // SDK initialization must occur on the main thread. This enforcement is also present

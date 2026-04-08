@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import UIKit
 import DatadogInternal
 
@@ -98,3 +99,4 @@ private extension UIView {
         return typeDescription
     }
 }
+#endif

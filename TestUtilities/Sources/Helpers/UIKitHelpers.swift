@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import UIKit
 
 /// The library name for UIKit framework as it will appear in unsymbolicated stack trace.
@@ -47,3 +48,4 @@ extension UIView {
         return result
     }
 }
+#endif
