@@ -38,7 +38,7 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
         ]
 
         if let previousResponseCode = execution.previousResponseCode {
-            tags.append("last_failure_status:\(previousResponseCode)")
+            tags.append("retry_after:\(previousResponseCode)")
         }
 
         guard !events.isEmpty else {

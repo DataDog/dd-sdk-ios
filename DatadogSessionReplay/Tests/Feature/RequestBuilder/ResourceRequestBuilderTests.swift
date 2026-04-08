@@ -84,6 +84,20 @@ class ResourceRequestBuilderTests: XCTestCase {
         XCTAssertEqual(request.url!.query, "ddtags=retry_count:1")
     }
 
+    func testItSetsRetryQueryParameters() throws {
+        let randomAttempt: UInt = .mockRandom()
+        let randomStatus: Int = .mockRandom()
+
+        // Given
+        let builder = ResourceRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+
+        // When
+        let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: .init(previousResponseCode: randomStatus, attempt: randomAttempt))
+
+        // Then
+        XCTAssertEqual(request.url!.query, "ddtags=retry_count:\(randomAttempt + 1),retry_after:\(randomStatus)")
+    }
+
     func testItSetsHTTPHeaders() throws {
         let randomApplicationName: String = .mockRandom(among: .alphanumerics)
         let randomVersion: String = .mockRandom(among: .decimalDigits)
