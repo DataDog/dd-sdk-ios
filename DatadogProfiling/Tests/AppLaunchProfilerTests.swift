@@ -54,7 +54,7 @@ final class AppLaunchProfilerTests: XCTestCase {
     func testReceiveTTIDMessage_afterIncompleteOperationMessage() {
         // Given
         let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: true)
+        let profiler = appLaunchProfiler(core: core, isContinuousProfiling: true)
         XCTAssertEqual(dd_profiler_start(), 1)
 
         XCTAssertFalse(
@@ -104,7 +104,7 @@ final class AppLaunchProfilerTests: XCTestCase {
     func testReceiveVitalMessageWhenContinuousProfiling_doesNotStopProfiler() {
         // Given
         let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: true)
+        let profiler = appLaunchProfiler(core: core, isContinuousProfiling: true)
 
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
         XCTAssertEqual(dd_profiler_start(), 1)
@@ -168,7 +168,7 @@ final class AppLaunchProfilerTests: XCTestCase {
                 telemetryController: .init()
             )
         )
-        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: false)
+        let profiler = appLaunchProfiler(core: core, isContinuousProfiling: false)
 
         XCTAssertEqual(dd_profiler_start(), 1)
         Thread.sleep(forTimeInterval: 0.1) // allow few samples
@@ -319,7 +319,7 @@ final class AppLaunchProfilerTests: XCTestCase {
     func testReceiveCompleteRumOperation() {
         // Given
         let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: false)
+        let profiler = appLaunchProfiler(core: core, isContinuousProfiling: false)
         let startVital = startOperationVital
         let endVital = Vital.mockWith(name: startVital.name, operationKey: startVital.operationKey, stepType: .end)
 
@@ -334,7 +334,7 @@ final class AppLaunchProfilerTests: XCTestCase {
     func testReceiveApplicationLaunchAndOperations() {
         // Given
         let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: false)
+        let profiler = appLaunchProfiler(core: core, isContinuousProfiling: false)
         XCTAssertEqual(dd_profiler_start(), 1)
 
         // When
@@ -352,7 +352,7 @@ final class AppLaunchProfilerTests: XCTestCase {
     func testApplicationLaunchWithRumOperations_includesVitalsInProfile() throws {
         // Given
         let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: false)
+        let profiler = appLaunchProfiler(core: core, isContinuousProfiling: false)
         let startVital = Vital.mockWith(id: "start-id", name: "operation", stepType: .start)
         let endVital = Vital.mockWith(id: "end-id", name: "operation", operationKey: startVital.operationKey, stepType: .end)
 
@@ -376,7 +376,7 @@ final class AppLaunchProfilerTests: XCTestCase {
     func testApplicationLaunchWithOrphanedEndVital_excludesOrphanedFromProfile() throws {
         // Given
         let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: false)
+        let profiler = appLaunchProfiler(core: core, isContinuousProfiling: false)
         let startVital: Vital = .mockWith(id: "start-id", name: "operation1", stepType: .start)
         let orphanedEnd: Vital = .mockWith(id: "orphan-id", name: "operation2", stepType: .end)
 
@@ -400,7 +400,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     func testReceiveMessages_afterTTIDMessage() throws {
         let core = PassthroughCoreMock()
-        let profiler = AppLaunchProfiler(core: core, isContinuousProfiling: true)
+        let profiler = appLaunchProfiler(core: core, isContinuousProfiling: true)
         XCTAssertEqual(dd_profiler_start(), 1)
         Thread.sleep(forTimeInterval: 0.05)
 
@@ -467,7 +467,21 @@ final class AppLaunchProfilerTests: XCTestCase {
     }
 
     private var appLaunchProfiler: AppLaunchProfiler {
-        AppLaunchProfiler(core: PassthroughCoreMock(), isContinuousProfiling: false)
+        appLaunchProfiler()
+    }
+
+    private func appLaunchProfiler(
+        core: DatadogCoreProtocol = PassthroughCoreMock(),
+        isContinuousProfiling: Bool = false
+    ) -> AppLaunchProfiler {
+        let profilingSamplerProvider = ProfilingSamplerProvider(
+            continuousSampleRate: isContinuousProfiling ? .maxSampleRate : 0
+        )
+
+        return AppLaunchProfiler(
+            core: core,
+            profilingSamplerProvider: profilingSamplerProvider
+        )
     }
 
     private var startOperationVital: Vital {

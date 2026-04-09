@@ -51,7 +51,7 @@ extension SampleRate {
     }
 
     /// Clamps the value between 0 and 100
-    internal var normalized: Self {
+    public var normalized: Self {
         max(0, min(100, self))
     }
 }

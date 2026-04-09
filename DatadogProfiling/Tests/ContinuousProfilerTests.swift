@@ -234,7 +234,17 @@ extension ContinuousProfilerTests {
 
     func testApplicationDidEnterBackground_includesLongTasksInProfile() throws {
         // Given
-        let profiler = continuousProfiler()
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        profilingSamplerProvider.updateWith(
+            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
+        )
+        let profiler = ContinuousProfiler(
+            core: core,
+            profilingSamplerProvider: profilingSamplerProvider,
+            profilingInterval: .infinity,
+            notificationCenter: notificationCenter,
+            dateProvider: DateProviderMock()
+        )! // swiftlint:disable:this force_unwrapping
         XCTAssertEqual(dd_profiler_start(), 1)
 
         let longTask = DurationEvent(id: .mockRandom(), start: 0, duration: 100)
@@ -256,7 +266,17 @@ extension ContinuousProfilerTests {
 
     func testApplicationDidEnterBackground_includesAppHangsInProfile() throws {
         // Given
-        let profiler = continuousProfiler()
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        profilingSamplerProvider.updateWith(
+            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
+        )
+        let profiler = ContinuousProfiler(
+            core: core,
+            profilingSamplerProvider: profilingSamplerProvider,
+            profilingInterval: .infinity,
+            notificationCenter: notificationCenter,
+            dateProvider: DateProviderMock()
+        )! // swiftlint:disable:this force_unwrapping
         XCTAssertEqual(dd_profiler_start(), 1)
 
         let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
@@ -276,7 +296,7 @@ extension ContinuousProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 }
-// MARK: - canWriteProfile
+// MARK: - Write Decisions
 
 extension ContinuousProfilerTests {
     func testDoesNotWriteProfile_whenNoEventsAccumulated() {
@@ -291,6 +311,31 @@ extension ContinuousProfilerTests {
 
         // Then
         XCTAssertTrue(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testWritesProfile_whenContinuousProfileIsSampled_evenWithoutPriorityData() {
+        // Given
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        profilingSamplerProvider.updateWith(
+            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
+        )
+        let profiler = ContinuousProfiler(
+            core: core,
+            profilingSamplerProvider: profilingSamplerProvider,
+            profilingInterval: .infinity,
+            notificationCenter: notificationCenter,
+            dateProvider: DateProviderMock()
+        )! // swiftlint:disable:this force_unwrapping
+        XCTAssertEqual(dd_profiler_start(), 1)
+
+        // When
+        waitForProfileWrite {
+            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        }
+
+        // Then
+        XCTAssertFalse(core.metadata.isEmpty)
         withExtendedLifetime(profiler) {}
     }
 
@@ -314,13 +359,29 @@ extension ContinuousProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
-    func testWritesProfile_whenLongTasksAccumulated() {
+    func testWritesProfile_whenRUMOperationsExist_evenIfContinuousProfileIsNotSampled() {
         // Given
-        let profiler = continuousProfiler()
-        let longTask = DurationEvent(id: .mockRandom(), start: 0, duration: 100)
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        profilingSamplerProvider.updateWith(
+            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: 0)
+        )
+        let profiler = ContinuousProfiler(
+            core: core,
+            profilingSamplerProvider: profilingSamplerProvider,
+            profilingInterval: .infinity,
+            notificationCenter: notificationCenter,
+            dateProvider: DateProviderMock()
+        )! // swiftlint:disable:this force_unwrapping
+        let startOperation = Vital.mockWith(name: "operation")
+        let endOperation = Vital.mockWith(
+            name: startOperation.name,
+            operationKey: startOperation.operationKey,
+            stepType: .end
+        )
         XCTAssertEqual(dd_profiler_start(), 1)
 
-        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)), from: core)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)), from: core)
 
         // When
         waitForProfileWrite {
@@ -332,7 +393,25 @@ extension ContinuousProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
-    func testWritesProfile_whenAppHangsAccumulated() {
+    func testDoesNotWriteProfile_whenOnlyLongTasksAccumulated() {
+        // Given
+        let profiler = continuousProfiler()
+        let longTask = DurationEvent(id: .mockRandom(), start: 0, duration: 100)
+        XCTAssertEqual(dd_profiler_start(), 1)
+
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
+
+        // When
+        waitForProfileWrite(expectingWrite: false) {
+            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        }
+
+        // Then
+        XCTAssertTrue(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testDoesNotWriteProfile_whenOnlyAppHangsAccumulated() {
         // Given
         let profiler = continuousProfiler()
         let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
@@ -341,12 +420,12 @@ extension ContinuousProfilerTests {
         _ = profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core)
 
         // When
-        waitForProfileWrite {
+        waitForProfileWrite(expectingWrite: false) {
             notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
         }
 
         // Then
-        XCTAssertFalse(core.metadata.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
         withExtendedLifetime(profiler) {}
     }
 
@@ -520,7 +599,15 @@ extension ContinuousProfilerTests {
         let profiler = customProfiler()
         XCTAssertEqual(dd_profiler_start(), 1)
 
+        let startOperation = Vital.mockWith(name: "operation")
+        let endOperation = Vital.mockWith(
+            name: startOperation.name,
+            operationKey: startOperation.operationKey,
+            stepType: .end
+        )
         let longTask = DurationEvent(id: .mockRandom(), start: 0, duration: 100)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)), from: core)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)), from: core)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
 
         // When
@@ -542,7 +629,15 @@ extension ContinuousProfilerTests {
         let profiler = customProfiler()
         XCTAssertEqual(dd_profiler_start(), 1)
 
+        let startOperation = Vital.mockWith(name: "operation")
+        let endOperation = Vital.mockWith(
+            name: startOperation.name,
+            operationKey: startOperation.operationKey,
+            stepType: .end
+        )
         let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)), from: core)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)), from: core)
         _ = profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core)
 
         // When
@@ -594,7 +689,11 @@ extension ContinuousProfilerTests {
         XCTAssertTrue(ContinuousProfiler.isInstantiated)
 
         // When
-        let second = ContinuousProfiler(core: core, isContinuousProfiling: true, notificationCenter: notificationCenter)
+        let second = ContinuousProfiler(
+            core: core,
+            profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: true),
+            notificationCenter: notificationCenter
+        )
         XCTAssertNil(second)
 
         // Then - first still processes messages normally
@@ -633,7 +732,11 @@ extension ContinuousProfilerTests {
 
         // When - many instances created concurrently
         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
-            let profiler = ContinuousProfiler(core: core, isContinuousProfiling: true, notificationCenter: notificationCenter)
+            let profiler = ContinuousProfiler(
+                core: core,
+                profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: true),
+                notificationCenter: notificationCenter
+            )
             lock.lock()
             profilers.append(profiler)
             lock.unlock()
@@ -673,7 +776,7 @@ private extension ContinuousProfilerTests {
     ) -> ContinuousProfiler {
         ContinuousProfiler(
             core: core,
-            isContinuousProfiling: true,
+            profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: true),
             profilingConditions: profilingConditions,
             profilingInterval: profilingInterval,
             notificationCenter: notificationCenter,
@@ -688,12 +791,16 @@ private extension ContinuousProfilerTests {
     ) -> ContinuousProfiler {
         ContinuousProfiler(
             core: core,
-            isContinuousProfiling: false,
+            profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: false),
             profilingConditions: profilingConditions,
             profilingInterval: profilingInterval,
             notificationCenter: notificationCenter,
             dateProvider: dateProvider
         )! // swiftlint:disable:this force_unwrapping
+    }
+
+    func profilingSamplerProvider(isContinuousProfiling: Bool) -> ProfilingSamplerProvider {
+        ProfilingSamplerProvider(continuousSampleRate: isContinuousProfiling ? .maxSampleRate : 0)
     }
 }
 #endif // !os(watchOS)

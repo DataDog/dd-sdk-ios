@@ -25,13 +25,10 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
     }
     static let name = "profiler"
 
-    let requestBuilder: FeatureRequestBuilder
-
-    let messageReceiver: FeatureMessageReceiver
-
-    let isContinuousProfiling: Bool
-
+    let profilingSamplerProvider: ProfilingSamplerProvider
     let telemetryController: ProfilingTelemetryController
+    let requestBuilder: FeatureRequestBuilder
+    let messageReceiver: FeatureMessageReceiver
 
     /// Setting max-file-age to minimum will force creating a batch per profile.
     /// It is necessary as the profiling intake only accepts one profile per request.
@@ -51,19 +48,23 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         self.requestBuilder = requestBuilder
         self.telemetryController = telemetryController
 
-        self.isContinuousProfiling = Sampler(
-            samplingRate: configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
-        ).sample()
+        let continuousSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
+        self.profilingSamplerProvider = ProfilingSamplerProvider(continuousSampleRate: continuousSampleRate)
 
         var messageReceivers: [FeatureMessageReceiver] = [
+            ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
             AppLaunchProfiler(
                 core: core,
-                isContinuousProfiling: isContinuousProfiling,
+                profilingSamplerProvider: profilingSamplerProvider,
                 telemetryController: telemetryController
             )
         ]
 
-        if let continuousProfiler = ContinuousProfiler(core: core, isContinuousProfiling: isContinuousProfiling, telemetryController: telemetryController) {
+        if let continuousProfiler = ContinuousProfiler(
+            core: core,
+            profilingSamplerProvider: profilingSamplerProvider,
+            telemetryController: telemetryController
+        ) {
             messageReceivers.append(continuousProfiler)
         }
 

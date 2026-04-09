@@ -31,7 +31,7 @@ internal final class ContinuousProfiler: ProfilingHandler {
     private static var hasActiveInstance = false
     private static let lock = NSLock()
 
-    private let isContinuousProfiling: Bool
+    private let profilingSamplerProvider: ProfilingSamplerProvider
     private let profilingConditions: ProfilingConditions
     private let profilingInterval: TimeInterval
     private var timer: Timer?
@@ -63,7 +63,7 @@ internal final class ContinuousProfiler: ProfilingHandler {
 
     init?(
         core: DatadogCoreProtocol,
-        isContinuousProfiling: Bool,
+        profilingSamplerProvider: ProfilingSamplerProvider,
         operation: ProfilingOperation = .continuousProfiling,
         telemetryController: ProfilingTelemetryController = .init(),
         profilingConditions: ProfilingConditions = .init(),
@@ -81,7 +81,7 @@ internal final class ContinuousProfiler: ProfilingHandler {
         Self.lock.unlock()
 
         self.featureScope = core.scope(for: ProfilerFeature.self)
-        self.isContinuousProfiling = isContinuousProfiling
+        self.profilingSamplerProvider = profilingSamplerProvider
         self.operation = operation
         self.telemetryController = telemetryController
         self.profilingConditions = profilingConditions
@@ -91,7 +91,7 @@ internal final class ContinuousProfiler: ProfilingHandler {
         self.dateProvider = dateProvider
         self.previousCustomProfilingStartDate = dateProvider.now
 
-        if isContinuousProfiling {
+        if profilingSamplerProvider.isContinuousProfilingConfigured {
             startTimer()
         }
         observeNotificationCenter()
@@ -119,33 +119,52 @@ internal final class ContinuousProfiler: ProfilingHandler {
 
 extension ContinuousProfiler: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(message) = message else {
-            return false
-        }
-
         switch message {
-        case let message as TTIDMessage:
-            handleAppLaunch(message: message)
+        case .context(let context):
+            handle(context: context)
             return false
-        case let message as OperationMessage:
-            handleOperation(message: message)
-            // Every OperationMessage is consumed by ContinuousProfiler after app launch vital
-            return hasReceivedAppLaunchVital
-        case let message as AppHangMessage:
-            handleAppHang(message: message)
-            return true
-        case let message as LongTaskMessage:
-            handleLongTask(message: message)
-            return true
+        case .payload(let message):
+            switch message {
+            case let message as TTIDMessage:
+                handleAppLaunch(message: message)
+                return false
+            case let message as OperationMessage:
+                handleOperation(message: message)
+                // Every OperationMessage is consumed by ContinuousProfiler after app launch vital
+                return hasReceivedAppLaunchVital
+            case let message as AppHangMessage:
+                handleAppHang(message: message)
+                return true
+            case let message as LongTaskMessage:
+                handleLongTask(message: message)
+                return true
+            default:
+                return false
+            }
         default:
             return false
         }
     }
 }
 
-// MARK: - Private
+// MARK: - App lifecycle
 
 private extension ContinuousProfiler {
+    func observeNotificationCenter() {
+        notificationCenter?.addObserver(
+            self,
+            selector: #selector(applicationDidEnterBackground),
+            name: ApplicationNotifications.didEnterBackground,
+            object: nil
+        )
+        notificationCenter?.addObserver(
+            self,
+            selector: #selector(applicationWillEnterForeground),
+            name: ApplicationNotifications.willEnterForeground,
+            object: nil
+        )
+    }
+
     @objc
     func applicationDidEnterBackground() {
         updateProfilerAndSendProfile()
@@ -154,6 +173,59 @@ private extension ContinuousProfiler {
     @objc
     func applicationWillEnterForeground() {
         updateProfilerAndSendProfile()
+    }
+}
+
+// MARK: - Timer
+
+private extension ContinuousProfiler {
+    func startTimer() {
+        guard self.timer == nil else {
+            // reset timer
+            fireTimer(after: profilingInterval)
+            return
+        }
+
+        // Schedule reoccurring samples
+        let timer = Timer(timeInterval: profilingInterval, repeats: true) { [weak self] _ in
+            guard let self else {
+                return
+            }
+
+            updateProfilerAndSendProfile()
+        }
+
+        RunLoop.main.add(timer, forMode: .common)
+        self.timer = timer
+    }
+
+    func stopTimer() {
+        self.timer?.invalidate()
+        self.timer = nil
+    }
+
+    func fireTimer(after interval: TimeInterval) {
+        timer?.fireDate = dateProvider.now.addingTimeInterval(interval)
+    }
+}
+
+// MARK: - Handle Messages
+
+private extension ContinuousProfiler {
+    func handle(context: DatadogContext) {
+        featureScope.context { [weak self] context in
+            guard let self else {
+                return
+            }
+            let canProfile = profilingSamplerProvider.isContinuousProfilingConfigured || canExtendCustomProfiling()
+
+            switch ProfilingContext.Status.current {
+            case .running, .stopped:
+                updateProfilerState(context: context, canProfile: canProfile)
+            default:
+                break
+            }
+        }
     }
 
     func handleAppLaunch(message: TTIDMessage) {
@@ -168,7 +240,10 @@ private extension ContinuousProfiler {
             _currentRUMVitals.mutate { $0 = $0.ongoingOperations() }
             _hangs.mutate { $0.removeAll() }
             _longTasks.mutate { $0.removeAll() }
-            updateProfilerState(context: context, canProfile: isContinuousProfiling || canExtendCustomProfiling())
+            updateProfilerState(
+                context: context,
+                canProfile: profilingSamplerProvider.isContinuousProfilingConfigured || canExtendCustomProfiling()
+            )
         }
     }
 
@@ -183,7 +258,7 @@ private extension ContinuousProfiler {
             switch message.operation.stepType {
             case .start:
                 // Start profiler if it is a custom profiler and the operations have started
-                if currentRUMVitals.isEmpty && isContinuousProfiling == false {
+                if currentRUMVitals.isEmpty && profilingSamplerProvider.isContinuousProfilingConfigured == false {
                     startTimer()
                     updateProfilerState(context: context)
                 }
@@ -198,7 +273,7 @@ private extension ContinuousProfiler {
                     }
 
                     // Stop profiler if it is a custom profiler and the operations have completed
-                    if currentRUMVitals.didCompleteOperations() && isContinuousProfiling == false {
+                    if currentRUMVitals.didCompleteOperations() && profilingSamplerProvider.isContinuousProfilingConfigured == false {
                         let customProfilingDuration = dateProvider.now.timeIntervalSince(previousCustomProfilingStartDate)
                         let fireInterval = customProfilingDuration < Constants.minProfileDuration ? Constants.minProfileDuration - customProfilingDuration : 0
                         fireTimer(after: fireInterval)
@@ -235,7 +310,7 @@ private extension ContinuousProfiler {
 
             updateProfilerState(
                 context: context,
-                canProfile: isContinuousProfiling || canExtendCustomProfiling()
+                canProfile: profilingSamplerProvider.isContinuousProfilingConfigured || canExtendCustomProfiling()
             )
             sendProfile()
         }
@@ -271,7 +346,7 @@ private extension ContinuousProfiler {
         }
 
         defer { dd_pprof_destroy(profile) }
-        if canWriteProfile() {
+        if canWriteProfile {
             write(
                 profile: profile,
                 rumVitals: Array(self.currentRUMVitals.values),
@@ -282,54 +357,9 @@ private extension ContinuousProfiler {
         }
     }
 
-    func observeNotificationCenter() {
-        notificationCenter?.addObserver(
-            self,
-            selector: #selector(applicationDidEnterBackground),
-            name: ApplicationNotifications.didEnterBackground,
-            object: nil
-        )
-        notificationCenter?.addObserver(
-            self,
-            selector: #selector(applicationWillEnterForeground),
-            name: ApplicationNotifications.willEnterForeground,
-            object: nil
-        )
-    }
-
-    func startTimer() {
-        guard self.timer == nil else {
-            // reset timer
-            fireTimer(after: profilingInterval)
-            return
-        }
-
-        // Schedule reoccurring samples
-        let timer = Timer(timeInterval: profilingInterval, repeats: true) { [weak self] _ in
-            guard let self else {
-                return
-            }
-
-            updateProfilerAndSendProfile()
-        }
-
-        RunLoop.main.add(timer, forMode: .common)
-        self.timer = timer
-    }
-
-    func stopTimer() {
-        self.timer?.invalidate()
-        self.timer = nil
-    }
-
-    func fireTimer(after interval: TimeInterval) {
-        timer?.fireDate = dateProvider.now.addingTimeInterval(interval)
-    }
-
-    func canWriteProfile() -> Bool {
-        self.currentRUMVitals.count > 0
-        || self.hangs.isEmpty == false
-        || self.longTasks.isEmpty == false
+    var canWriteProfile: Bool {
+        self.currentRUMVitals.count > 0 // Custom Profiling is running
+        || profilingSamplerProvider.isContinuousProfilingEnabled // Continuous Profiling is running
     }
 
     func canExtendCustomProfiling() -> Bool {
