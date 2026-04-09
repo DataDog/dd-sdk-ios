@@ -72,6 +72,8 @@ Feature-specific docs (in each module directory):
 | Lint | `./tools/lint/run-linter.sh` |
 | Test iOS | `make test-ios SCHEME="<scheme>"` |
 | All iOS tests | `make test-ios-all` |
+| Test watchOS | `make test-watchos SCHEME="<scheme>"` |
+| Test visionOS | `make test-visionos SCHEME="<scheme>"` |
 | Build SPM | `make spm-build-ios` |
 | API surface | `make api-surface` |
 

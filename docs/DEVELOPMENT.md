@@ -46,6 +46,8 @@ If you're about to make a change that modifies public API significantly, changes
 | Lint | `./tools/lint/run-linter.sh` |
 | Test iOS | `make test-ios SCHEME="<scheme>"` |
 | All iOS tests | `make test-ios-all` |
+| Test watchOS | `make test-watchos SCHEME="<scheme>"` |
+| Test visionOS | `make test-visionos SCHEME="<scheme>"` |
 | UI tests | `make ui-test TEST_PLAN="Default"` |
 | Build SPM | `make spm-build-ios` |
 | API surface | `make api-surface` |
