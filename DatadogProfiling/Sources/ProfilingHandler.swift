@@ -7,6 +7,8 @@
 import Foundation
 import DatadogInternal
 
+#if !os(watchOS)
+
 // swiftlint:disable duplicate_imports
 #if swift(>=6.0)
 internal import DatadogMachProfiler
@@ -44,6 +46,14 @@ extension ProfilingHandler {
         if rumVitals.isEmpty == false {
             attributes[RUMCoreContext.IDs.vitalID] = rumVitals.map { $0.id }
             attributes[RUMCoreContext.IDs.vitalLabel] = rumVitals.map { $0.name }
+        }
+
+        if let hangs {
+            attributes[RUMCoreContext.IDs.errorID] = hangs.map { $0.id }
+        }
+
+        if let longTasks {
+            attributes[RUMCoreContext.IDs.longTaskID] = longTasks.map { $0.id }
         }
 
         self.writeProfilingEvent(
@@ -137,3 +147,4 @@ private enum Tag {
         static let remoteSymbols = "yes"
     }
 }
+#endif

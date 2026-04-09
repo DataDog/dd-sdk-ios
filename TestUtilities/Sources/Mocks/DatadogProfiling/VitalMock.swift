@@ -29,7 +29,7 @@ extension Vital: AnyMockable, RandomMockable {
         operationKey: String? = .mockAny(),
         stepType: RUMVitalOperationStepEvent.Vital.StepType? = .start,
         date: Date = .mockAny(),
-        duration: Int64 = .mockAny()
+        duration: Int64? = nil
     ) -> Self {
         .init(id: id, name: name, operationKey: operationKey, stepType: stepType, date: date, duration: duration)
     }

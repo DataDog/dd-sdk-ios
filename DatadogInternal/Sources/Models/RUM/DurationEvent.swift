@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct DurationEvent: Codable, Equatable {
+public struct DurationEvent: Encodable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id = "id"
         case start = "start_ns"

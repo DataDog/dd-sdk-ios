@@ -470,8 +470,7 @@ extension Monitor: RUMMonitorProtocol {
             name: name,
             operationKey: operationKey,
             stepType: .start,
-            date: dateProvider.now,
-            duration: 0
+            date: dateProvider.now
         )
 
         // RUM-15482: Update sample rate decision
@@ -503,8 +502,7 @@ extension Monitor: RUMMonitorProtocol {
             name: name,
             operationKey: operationKey,
             stepType: .end,
-            date: dateProvider.now,
-            duration: 0
+            date: dateProvider.now
         )
 
         let attributes = applicationScope.activeSession?.rumContextAttributes ?? applicationScope.rumContextAttributes
@@ -533,8 +531,7 @@ extension Monitor: RUMMonitorProtocol {
             name: name,
             operationKey: operationKey,
             stepType: .end,
-            date: dateProvider.now,
-            duration: 0
+            date: dateProvider.now
         )
 
         let attributes = applicationScope.activeSession?.rumContextAttributes ?? applicationScope.rumContextAttributes
