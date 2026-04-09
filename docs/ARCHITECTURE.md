@@ -168,7 +168,6 @@ The SDK must **never throw exceptions** to customer code:
 - **Validation at boundaries**: Invalid input is logged via `DD.logger` and ignored.
 - **Upload backoff**: Upload failures trigger exponential backoff and retry. Network errors are logged but never crash.
 - **User callback safety**: Exceptions in user-provided callbacks (e.g., event mappers) are caught and logged — original event is sent.
-- **Event mappers**: View events cannot be dropped (mapper must return a value). All other event types can be dropped by returning `nil`.
 
 ## Thread Safety Rules
 
