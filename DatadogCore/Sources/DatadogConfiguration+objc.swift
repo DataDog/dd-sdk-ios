@@ -32,6 +32,8 @@ public final class objc_DatadogSite: NSObject {
     public static func ap2() -> objc_DatadogSite { .init(sdkSite: .ap2) }
 
     public static func us1_fed() -> objc_DatadogSite { .init(sdkSite: .us1_fed) }
+
+    public static func us2_fed() -> objc_DatadogSite { .init(sdkSite: .us2_fed) }
 }
 
 @objc(DDBatchSize)

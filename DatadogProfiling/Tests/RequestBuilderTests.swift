@@ -64,6 +64,7 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(try url(for: .ap1), "https://browser-intake-ap1-datadoghq.com/api/v2/profile")
         XCTAssertEqual(try url(for: .ap2), "https://browser-intake-ap2-datadoghq.com/api/v2/profile")
         XCTAssertEqual(try url(for: .us1_fed), "https://browser-intake-ddog-gov.com/api/v2/profile")
+        XCTAssertEqual(try url(for: .us2_fed), "https://browser-intake-fed2-ddog-gov.com/api/v2/profile")
     }
 
     func testItSetsCustomIntakeURL() {
@@ -86,6 +87,7 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(try url(for: .ap1), expectedURL)
         XCTAssertEqual(try url(for: .ap2), expectedURL)
         XCTAssertEqual(try url(for: .us1_fed), expectedURL)
+        XCTAssertEqual(try url(for: .us2_fed), expectedURL)
     }
 
     func testItSetsQueryParameters() throws {
