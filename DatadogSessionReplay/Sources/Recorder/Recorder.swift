@@ -80,16 +80,18 @@ public class Recorder: Recording {
     convenience init(
         snapshotProcessor: SnapshotProcessing,
         additionalNodeRecorders: [NodeRecorder],
-        heatmapIdentifierRegistry: HeatmapIdentifierRegistry?,
+        core: DatadogCoreProtocol,
         featureFlags: SessionReplay.Configuration.FeatureFlags
     ) throws {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
             windowObserver: windowObserver,
             snapshotBuilder: ViewTreeSnapshotBuilder(
-                additionalNodeRecorders: additionalNodeRecorders,
-                heatmapIdentifierRegistry: heatmapIdentifierRegistry,
-                featureFlags: featureFlags
+                viewTreeRecorder: ViewTreeRecorder(
+                    nodeRecorders: createDefaultNodeRecorders(featureFlags: featureFlags) + additionalNodeRecorders
+                ),
+                idsGenerator: NodeIDGenerator(),
+                core: core
             )
         )
         let touchSnapshotProducer = WindowTouchSnapshotProducer(windowObserver: windowObserver)

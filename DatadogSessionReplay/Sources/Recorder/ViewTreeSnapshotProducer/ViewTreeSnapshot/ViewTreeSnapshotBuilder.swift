@@ -19,8 +19,8 @@ internal struct ViewTreeSnapshotBuilder {
     let viewTreeRecorder: ViewTreeRecorder
     /// Generates stable IDs for traversed views.
     let idsGenerator: NodeIDGenerator
-    /// Stores heatmap identifiers shared with RUM
-    let heatmapIdentifierRegistry: HeatmapIdentifierRegistry?
+    /// A weak core reference.
+    weak var core: DatadogCoreProtocol?
     /// The webviews cache.
     let webViewCache: NSHashTable<WKWebView> = .weakObjects()
 
@@ -49,7 +49,7 @@ internal struct ViewTreeSnapshotBuilder {
             nodes: nodes,
             webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash))
         )
-        heatmapIdentifierRegistry?.setHeatmapIdentifiers(heatmapCache.identifiers)
+        core?.heatmapIdentifierRegistry?.setHeatmapIdentifiers(heatmapCache.identifiers)
         return snapshot
     }
 }
@@ -57,7 +57,7 @@ internal struct ViewTreeSnapshotBuilder {
 extension ViewTreeSnapshotBuilder {
     init(
         additionalNodeRecorders: [NodeRecorder],
-        heatmapIdentifierRegistry: HeatmapIdentifierRegistry?,
+        core: DatadogCoreProtocol,
         featureFlags: SessionReplay.Configuration.FeatureFlags
     ) {
         self.init(
@@ -65,7 +65,7 @@ extension ViewTreeSnapshotBuilder {
                 nodeRecorders: createDefaultNodeRecorders(featureFlags: featureFlags) + additionalNodeRecorders
             ),
             idsGenerator: NodeIDGenerator(),
-            heatmapIdentifierRegistry: heatmapIdentifierRegistry
+            core: core
         )
     }
 }

@@ -66,7 +66,7 @@ class RecorderTests: XCTestCase {
             windowObserver: windowObserver,
             snapshotBuilder: ViewTreeSnapshotBuilder(
                 additionalNodeRecorders: [additionalNodeRecorder],
-                heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+                core: PassthroughCoreMock(),
                 featureFlags: .allEnabled
             )
         )

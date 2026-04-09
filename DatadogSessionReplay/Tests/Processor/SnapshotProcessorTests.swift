@@ -551,7 +551,7 @@ class SnapshotProcessorTests: XCTestCase {
 
     private let snapshotBuilder = ViewTreeSnapshotBuilder(
         additionalNodeRecorders: [],
-        heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+        core: PassthroughCoreMock(),
         featureFlags: .allEnabled
     )
 

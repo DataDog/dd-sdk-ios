@@ -7,7 +7,7 @@
 import Foundation
 
 /// Heatmap attributes attached to a user action.
-public struct HeatmapAttributes {
+public struct HeatmapAttributes: Equatable {
     /// The permanent identifier of the action target.
     public let targetPermanentID: String
     /// The width of the action target, in points.
