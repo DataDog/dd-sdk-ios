@@ -27,3 +27,6 @@ artifacts/
 
 # AI files
 .claude/settings.local.json
+
+# GSD planning files (local only)
+.planning/

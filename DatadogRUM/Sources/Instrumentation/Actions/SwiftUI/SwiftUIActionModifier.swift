@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 #if canImport(SwiftUI)
 import SwiftUI
 import DatadogInternal
@@ -82,5 +83,6 @@ public extension SwiftUI.View {
     }
 }
 
+#endif
 #endif
 #endif

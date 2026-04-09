@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import Foundation
 import UIKit
 import DatadogInternal
@@ -57,3 +59,5 @@ private enum SwiftUIContainerViews {
         return ignoredTypeDescriptions.contains { typeDescription.contains($0) }
     }
 }
+
+#endif

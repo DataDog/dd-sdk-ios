@@ -11,7 +11,7 @@ import DatadogInternal
 @testable import DatadogRUM
 
 // TODO: RUMM-2034 Remove this flag once we have a host application for tests
-#if !os(tvOS)
+#if os(iOS)
 
 class RUMDebuggingTests: XCTestCase {
     func testWhenOneRUMViewIsActive_itDisplaysSingleRUMViewOutline() throws {

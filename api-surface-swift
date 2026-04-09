@@ -30,6 +30,8 @@ public enum Datadog
     public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func stopInstance(named instanceName: String = CoreRegistry.defaultInstanceName)
     public static func initialize(with configuration: Configuration,trackingConsent: TrackingConsent,instanceName: String = CoreRegistry.defaultInstanceName) -> DatadogCoreProtocol
+public extension Datadog
+    static func flush(instanceName: String = CoreRegistry.defaultInstanceName)
 [?] extension Datadog
     public struct Configuration
         public enum BatchSize: CaseIterable

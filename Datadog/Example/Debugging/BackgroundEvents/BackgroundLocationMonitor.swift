@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
+
 import Foundation
 import CoreLocation
 import UIKit.UIApplication
@@ -175,3 +177,5 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
         }
     }
 }
+
+#endif

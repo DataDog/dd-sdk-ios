@@ -91,12 +91,13 @@ class RUMTests: XCTestCase {
         let crashReportReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
         XCTAssertEqual(rum.performanceOverride?.maxFileAgeForRead, 24.hours)
         XCTAssertEqual(monitor.scopes.dependencies.rumApplicationID, applicationID)
-        XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, 100)
+        XCTAssertEqual(monitor.scopes.dependencies.samplingRate, 100)
         XCTAssertEqual(monitor.scopes.dependencies.sessionEndedMetric.sampleRate, 15)
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 20)
         XCTAssertEqual(crashReportReceiver?.sessionSampler.samplingRate, 100)
     }
 
+    #if !os(watchOS)
     func testWhenEnabledWithAllInstrumentations() throws {
         // Given
         config.uiKitViewsPredicate = UIKitRUMViewsPredicateMock()
@@ -149,6 +150,7 @@ class RUMTests: XCTestCase {
         XCTAssertNil(rum.instrumentation.appHangs)
         XCTAssertNil(rum.instrumentation.memoryWarningMonitor)
     }
+    #endif
 
     func testWhenEnabledWithInvalidLongTasksThreshold() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
@@ -344,7 +346,7 @@ class RUMTests: XCTestCase {
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
         let crashReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
-        XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, 100)
+        XCTAssertEqual(monitor.scopes.dependencies.samplingRate, 100)
         XCTAssertEqual(crashReceiver?.sessionSampler.samplingRate, 100)
     }
 
@@ -361,7 +363,7 @@ class RUMTests: XCTestCase {
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
         let crashReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
-        XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, random)
+        XCTAssertEqual(monitor.scopes.dependencies.samplingRate, random)
         XCTAssertEqual(crashReceiver?.sessionSampler.samplingRate, random)
     }
 

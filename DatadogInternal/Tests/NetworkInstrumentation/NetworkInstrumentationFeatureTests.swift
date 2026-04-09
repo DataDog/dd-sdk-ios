@@ -24,7 +24,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     override func tearDown() {
+        // Flush the feature's serial queue before releasing the core to ensure
+        // all pending async blocks (especially from the concurrent test) complete
+        // before the feature is deallocated. Without this, a block executing past
+        // `guard let self = self` holds the feature alive, causing deallocation
+        // on a background thread — which can race with the next test's swizzles
+        // via `_unswizzle`'s transient IMP resets.
+        core?.get(feature: NetworkInstrumentationFeature.self)?.flush()
         core = nil
+        handler = nil
         super.tearDown()
     }
 
@@ -205,13 +213,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testRegisteredDelegate_capturesMetricsForAsyncDataFromURL() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
@@ -246,13 +250,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testRegisteredDelegate_capturesMetricsForAsyncDataWithSessionDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
@@ -287,13 +287,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testRegisteredDelegate_capturesMetricsForAsyncDataWithPerTaskDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
@@ -328,13 +324,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testRegisteredDelegate_capturesMetricsForAsyncUploadWithPerTaskDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
@@ -369,13 +361,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testRegisteredDelegate_capturesMetricsForAsyncUploadWithSessionDelegate() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true)
 
         // Given
@@ -410,12 +398,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testRegisteredDelegate_capturesMetricsForAsyncDataTaskWithURLRequest() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         let server = ServerMock(
@@ -846,12 +831,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
-    @available(iOS 13.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testAutomaticMode_tracksAsyncUploadTasks() async throws {
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
         // Given - Enable automatic mode
@@ -996,7 +977,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testGivenBothModesEnabled_whenPerTaskDelegate_itUsesCorrectTrackingMode() throws {
         // pre iOS 15 cannot set delegate per task
-        guard #available(iOS 15, tvOS 15, *) else {
+        guard #available(iOS 15, tvOS 15, watchOS 8, *) else {
             return
         }
 
@@ -1089,7 +1070,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 15, tvOS 15, *)
+    @available(iOS 15, tvOS 15, watchOS 8, *)
     func testGivenBothModesEnabled_whenRegisteredDelegateWithCompletionHandler_itCapturesMetricsAndData() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1125,7 +1106,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 15, tvOS 15, *)
+    @available(iOS 15, tvOS 15, watchOS 8, *)
     func testGivenBothModesEnabled_whenRegisteredDelegateWithoutCompletionHandler_itCapturesMetricsAndData() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1161,7 +1142,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 15, tvOS 15, *)
+    @available(iOS 15, tvOS 15, watchOS 8, *)
     func testGivenBothModesEnabled_whenUnregisteredDelegateWithCompletionHandler_itUsesAutomaticMode() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1199,7 +1180,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
-    @available(iOS 15, tvOS 15, *)
+    @available(iOS 15, tvOS 15, watchOS 8, *)
     func testGivenBothModesEnabled_whenUnregisteredDelegateWithoutCompletionHandler_itUsesAutomaticMode() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1307,11 +1288,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testGivenBothModesEnabled_whenUsingAsyncAPI_itCapturesAllValues() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         notifyInterceptionDidStart.expectedFulfillmentCount = 2
@@ -1371,7 +1350,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testGivenBothModesEnabled_whenUsingDownloadTask_itUsesCorrectTrackingMode() throws {
         // pre iOS 15 cannot set delegate per task
-        guard #available(iOS 15, tvOS 15, *) else {
+        guard #available(iOS 15, tvOS 15, watchOS 8, *) else {
             return
         }
 
@@ -1442,10 +1421,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // When - Create task to an unreachable IP address (TEST-NET-1, guaranteed to not respond quickly)
         // This ensures the task will still be running when we cancel it
-        let url = URL(string: "https://192.0.2.1:9999")! // TEST-NET-1: Reserved for documentation, never responds
+        let url = URL(string: "https://192.0.2.0:9999")! // TEST-NET-1: Reserved for documentation, never responds
         let task = session.dataTask(with: url)
         task.resume()
-        Thread.sleep(forTimeInterval: 0.05) // Brief delay to ensure task has started
         task.cancel() // Cancel the task while it's still running
 
         // Then
@@ -1705,12 +1683,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual((completion.error as? NSError)?.code, 123, "Should capture correct error code")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testGivenRegisteredDelegate_whenUsingAsyncAPI_itCapturesAllValues() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        guard #available(iOS 16, tvOS 16, *) else {
-            return
-        }
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         notifyInterceptionDidStart.expectedFulfillmentCount = 2
@@ -2161,7 +2136,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let provider = NetworkContextCoreProvider()
         let userInfo = UserInfo(id: "user123", name: "TestUser", email: "test@example.com")
         let accountInfo = AccountInfo(id: "account456", name: "TestAccount")
-        let rumContext = RUMCoreContext(applicationID: "app123", sessionID: "session789")
+        let rumContext: RUMCoreContext = .mockWith(applicationID: "app123", sessionID: .mockWith("E621E1F8-C36C-495A-93FC-0C247A3E6E5F"))
 
         let context = DatadogContext.mockWith(
             userInfo: userInfo,
@@ -2178,7 +2153,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Verify RUM context
         XCTAssertEqual(networkContext.rumContext?.applicationID, "app123")
-        XCTAssertEqual(networkContext.rumContext?.sessionID, "session789")
+        XCTAssertEqual(networkContext.rumContext?.sessionID, "e621e1f8-c36c-495a-93fc-0c247a3e6e5f")
 
         // Verify User configuration context
         XCTAssertEqual(networkContext.userConfigurationContext?.id, "user123")
@@ -2193,7 +2168,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testWhenReceivingContextMessage_withoutUserAndAccountInfo_itCreatesNetworkContextWithNilValues() throws {
         // Given
         let provider = NetworkContextCoreProvider()
-        let rumContext = RUMCoreContext(applicationID: "app123", sessionID: "session789")
+        let rumContext: RUMCoreContext = .mockWith(applicationID: "app123", sessionID: .mockWith("E621E1F8-C36C-495A-93FC-0C247A3E6E5F"))
 
         let context = DatadogContext.mockWith(
             userInfo: .mockEmpty(),
@@ -2210,7 +2185,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Verify RUM context is still available
         XCTAssertEqual(networkContext.rumContext?.applicationID, "app123")
-        XCTAssertEqual(networkContext.rumContext?.sessionID, "session789")
+        XCTAssertEqual(networkContext.rumContext?.sessionID, "e621e1f8-c36c-495a-93fc-0c247a3e6e5f")
 
         // Verify User and Account configuration contexts are nil
         XCTAssertNil(networkContext.userConfigurationContext?.id)
@@ -2233,7 +2208,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testGivenBothModesEnabled_whenUsingDelegateSubclass_itOnlyProcessesWithRegisteredDelegate() throws {
         // pre iOS 15 cannot set delegate per task
-        guard #available(iOS 15, tvOS 15, *) else {
+        guard #available(iOS 15, tvOS 15, watchOS 8, *) else {
             return
         }
 

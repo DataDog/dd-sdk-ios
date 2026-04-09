@@ -18,6 +18,8 @@ variables:
   DEFAULT_XCODE: "26.0.0"
   DEFAULT_IOS_OS: "26.0.1"
   DEFAULT_TVOS_OS: "26.0"
+  DEFAULT_WATCHOS_OS: "26.0"
+  DEFAULT_VISIONOS_OS: "26.0"
   # Prefilled variables for running a pipeline manually:
   # Ref.: https://docs.gitlab.com/ee/ci/pipelines/index.html#prefill-variables-in-manual-pipelines
   RELEASE_GIT_TAG:
@@ -162,6 +164,36 @@ Unit Tests (tvOS):
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
+
+Unit Tests (watchOS):
+  stage: test
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
+  variables:
+    PLATFORM: "watchOS Simulator"
+    DEVICE: "Apple Watch Series 11 (46mm)"
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - make clean repo-setup ENV=ci
+    - make test-watchos-all OS="$DEFAULT_WATCHOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
+
+Unit Tests (visionOS):
+  stage: test
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
+  variables:
+    PLATFORM: "visionOS Simulator"
+    DEVICE: "Apple Vision Pro"
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - make clean repo-setup ENV=ci
+    - make test-visionos-all OS="$DEFAULT_VISIONOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
 
 UI Tests:
   stage: ui-test
@@ -427,9 +459,9 @@ Publish CP podspecs (internal):
     - make clean
     - make release-publish-internal-podspecs
 
-Publish CP podspecs (dependent):
+.publish-dependent-podspec:
   stage: release-publish
-  rules: 
+  rules:
     - !reference [.release-pipeline-20m-delayed-job, rules]
   before_script:
     - *export_MAKE_release_params
@@ -438,7 +470,52 @@ Publish CP podspecs (dependent):
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make env-check
     - make clean
-    - make release-publish-dependent-podspecs
+    - make release-publish-podspec PODSPEC_NAME="$PODSPEC_NAME"
+
+Publish CP podspec (Core):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogCore.podspec"
+
+Publish CP podspec (Logs):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogLogs.podspec"
+
+Publish CP podspec (Trace):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogTrace.podspec"
+
+Publish CP podspec (RUM):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogRUM.podspec"
+
+Publish CP podspec (SessionReplay):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogSessionReplay.podspec"
+
+Publish CP podspec (CrashReporting):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogCrashReporting.podspec"
+
+Publish CP podspec (WebViewTracking):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogWebViewTracking.podspec"
+
+Publish CP podspec (Flags):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogFlags.podspec"
+
+Publish CP podspec (Profiling):
+  extends: .publish-dependent-podspec
+  variables:
+    PODSPEC_NAME: "DatadogProfiling.podspec"
 
 # ┌────────────────┐
 # │ Notifications: │

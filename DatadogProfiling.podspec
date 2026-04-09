@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogProfiling"
-  s.version      = "3.8.2"
+  s.version      = "3.9.0"
   s.summary      = "Official Datadog Profiling module of the Swift SDK."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -12,6 +12,7 @@ Pod::Spec.new do |s|
   s.swift_version = '5.9'
   s.ios.deployment_target = '12.0'
   s.tvos.deployment_target = '12.0'
+  s.visionos.deployment_target = '1.0'
 
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
   
@@ -27,7 +28,7 @@ Pod::Spec.new do |s|
   # Configure C++ compilation
   s.pod_target_xcconfig = {
     'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
-    'SWIFT_INCLUDE_PATHS' => '$(PODS_TARGET_SRCROOT)/DatadogProfiling/Mach'
+    'SWIFT_INCLUDE_PATHS' => '$(PODS_TARGET_SRCROOT)/DatadogProfiling/Mach/include'
   }
 
 end

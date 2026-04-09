@@ -78,7 +78,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             rumContextObserver: contextReceiver,
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
-            sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate),
+            replaySampleRate: configuration.debugSDK ? 100 : configuration.replaySampleRate,
             telemetry: telemetry,
             startRecordingImmediately: configuration.startRecordingImmediately
         )

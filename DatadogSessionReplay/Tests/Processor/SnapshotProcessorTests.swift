@@ -393,8 +393,9 @@ class SnapshotProcessorTests: XCTestCase {
 
     func testWhenRUMContextTimeOffsetChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() {
         let time = Date()
-        let rum1: RUMCoreContext = .mockWith(serverTimeOffset: 123)
-        let rum2: RUMCoreContext = .mockWith(serverTimeOffset: 456)
+        let sharedSessionID: UUID = .mockAny()
+        let rum1: RUMCoreContext = .mockWith(sessionID: sharedSessionID, serverTimeOffset: 123)
+        let rum2: RUMCoreContext = .mockWith(sessionID: sharedSessionID, serverTimeOffset: 456)
 
         // Given
         let core = PassthroughCoreMock()

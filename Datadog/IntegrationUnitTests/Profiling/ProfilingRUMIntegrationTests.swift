@@ -5,6 +5,9 @@
  */
 
 import XCTest
+
+#if !os(watchOS)
+
 import DatadogInternal
 //swiftlint:disable duplicate_imports
 import DatadogMachProfiler
@@ -131,3 +134,5 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         XCTAssertTrue(is_profiling_enabled())
     }
 }
+
+#endif

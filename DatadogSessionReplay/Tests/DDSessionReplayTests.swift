@@ -168,7 +168,7 @@ class DDSessionReplayTests: XCTestCase {
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
         let requestBuilder = try XCTUnwrap(sr.requestBuilder as? DatadogSessionReplay.SegmentRequestBuilder)
-        XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 42)
+        XCTAssertEqual(sr.recordingCoordinator.replaySampleRate, 42)
         XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, .maskAll)
         XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, .maskAll)
         XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, .hide)
@@ -197,7 +197,7 @@ class DDSessionReplayTests: XCTestCase {
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
         let requestBuilder = try XCTUnwrap(sr.requestBuilder as? DatadogSessionReplay.SegmentRequestBuilder)
-        XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 42)
+        XCTAssertEqual(sr.recordingCoordinator.replaySampleRate, 42)
         XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, textAndInputPrivacy._swift)
         XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, imagePrivacy._swift)
         XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, touchPrivacy._swift)

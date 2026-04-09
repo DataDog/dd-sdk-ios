@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 @testable import DatadogRUM
 
@@ -40,3 +42,4 @@ final class MemoryWarningMonitorTests: XCTestCase {
         notificationCenter.post(name: UIApplication.didReceiveMemoryWarningNotification, object: nil)
     }
 }
+#endif

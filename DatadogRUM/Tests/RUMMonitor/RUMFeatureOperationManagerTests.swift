@@ -243,7 +243,8 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         let syntheticsTest = RUMSyntheticsTest(
             injected: nil,
             resultId: fakeSyntheticsResultId,
-            testId: fakeSyntheticsTestId
+            testId: fakeSyntheticsTestId,
+            syntheticsInfo: [:]
         )
 
         mockDependencies = RUMScopeDependencies.mockWith(syntheticsTest: syntheticsTest)

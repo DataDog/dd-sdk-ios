@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import UIKit
 
 internal extension UIViewController {
@@ -59,10 +60,20 @@ internal extension UIView {
 
     /// `true` if this view is a text field in a `UIAlertController`, `false` otherwise.
     var isUIAlertTextField: Bool {
-        guard let alertTextFieldClass = NSClassFromString("_UIAlertControllerTextField"),
+        // On iOS/tvOS the text field is a direct `_UIAlertControllerTextField` subview.
+        // On visionOS text fields are wrapped inside `_UIAlertControllerTextFieldView` cells
+        // inside a UICollectionView, so we match on that container class instead.
+        let className: String
+        #if os(visionOS)
+        className = "_UIAlertControllerTextFieldView"
+        #else
+        className = "_UIAlertControllerTextField"
+        #endif
+        guard let alertTextFieldClass = NSClassFromString(className),
               self.isKind(of: alertTextFieldClass) else {
             return false
         }
         return true
     }
 }
+#endif

@@ -14,9 +14,23 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "6133D1E52A6ED9E100384BEF"
-               BuildableName = "DatadogSessionReplay.framework"
-               BlueprintName = "DatadogSessionReplay iOS"
+               BlueprintIdentifier = "3CE119FD29F7BE0000202522"
+               BuildableName = "DatadogWebViewTracking.framework"
+               BlueprintName = "DatadogWebViewTracking"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3CE11A0429F7BE0300202522"
+               BuildableName = "DatadogWebViewTrackingTests.xctest"
+               BlueprintName = "DatadogWebViewTrackingTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,18 +46,12 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "6133D1E52A6ED9E100384BEF"
-            BuildableName = "DatadogSessionReplay.framework"
-            BlueprintName = "DatadogSessionReplay iOS"
+            BlueprintIdentifier = "3CE119FD29F7BE0000202522"
+            BuildableName = "DatadogWebViewTracking.framework"
+            BlueprintName = "DatadogWebViewTracking"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
-      <CommandLineArguments>
-         <CommandLineArgument
-            argument = "IS_RUNNING_UNIT_TESTS"
-            isEnabled = "YES">
-         </CommandLineArgument>
-      </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "DD_TEST_RUNNER"
@@ -189,9 +197,9 @@
       <CodeCoverageTargets>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "6133D1E52A6ED9E100384BEF"
-            BuildableName = "DatadogSessionReplay.framework"
-            BlueprintName = "DatadogSessionReplay iOS"
+            BlueprintIdentifier = "3CE119FD29F7BE0000202522"
+            BuildableName = "DatadogWebViewTracking.framework"
+            BlueprintName = "DatadogWebViewTracking"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </CodeCoverageTargets>
@@ -200,9 +208,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "6133D1F62A6EDB7700384BEF"
-               BuildableName = "DatadogSessionReplayTests iOS.xctest"
-               BlueprintName = "DatadogSessionReplayTests iOS"
+               BlueprintIdentifier = "3CE11A0429F7BE0300202522"
+               BuildableName = "DatadogWebViewTrackingTests.xctest"
+               BlueprintName = "DatadogWebViewTrackingTests"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -228,9 +236,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "6133D1E52A6ED9E100384BEF"
-            BuildableName = "DatadogSessionReplay.framework"
-            BlueprintName = "DatadogSessionReplay iOS"
+            BlueprintIdentifier = "3CE119FD29F7BE0000202522"
+            BuildableName = "DatadogWebViewTracking.framework"
+            BlueprintName = "DatadogWebViewTracking"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import UIKit
 import DatadogInternal
 
@@ -163,3 +164,4 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
         )
     }
 }
+#endif

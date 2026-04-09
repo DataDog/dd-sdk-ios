@@ -158,7 +158,13 @@ class CrashReportReceiverTests: XCTestCase {
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
-        let activeRUMSessionState: RUMSessionState = .mockRandom()
+        let activeRUMSessionState: RUMSessionState = .mockWith(
+            sessionUUID: .mockRandom(),
+            isSampled: true,
+            isInitialSession: .mockRandom(),
+            hasTrackedAnyView: .mockRandom(),
+            didStartWithReplay: .mockRandom()
+        )
 
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
@@ -193,7 +199,11 @@ class CrashReportReceiverTests: XCTestCase {
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
         let activeRUMSessionState = Bool.random() ?
-            nil : RUMSessionState.mockWith(isInitialSession: true, hasTrackedAnyView: false)
+            RUMSessionState.mockWith(
+                isSampled: true,
+                isInitialSession: true,
+                hasTrackedAnyView: false
+            ) : nil
 
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
@@ -287,7 +297,7 @@ class CrashReportReceiverTests: XCTestCase {
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
         let activeRUMSessionState: RUMSessionState = .mockWith(
-            sessionUUID: .dd.nullUUID, // there was RUM session but it was not sampled
+            sessionUUID: .mockRandom(), // there was RUM session but it was not sampled
             isInitialSession: .mockRandom(),
             hasTrackedAnyView: false // as it was not sampled, it couldn't track any view
         )
@@ -839,8 +849,8 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // Then
-            let sentRUMView = featureScope.eventsWritten(ofType: RUMViewEvent.self)[0]
-            let sentRUMError = featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0]
+            let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+            let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
 
             // Assert RUM view properties
             XCTAssertTrue(
@@ -910,7 +920,7 @@ class CrashReportReceiverTests: XCTestCase {
         }
 
         try test(
-            lastRUMSessionState: .mockWith(isInitialSession: true, hasTrackedAnyView: false), // when initial session with no views history
+            lastRUMSessionState: .mockWith(isSampled: true, isInitialSession: true, hasTrackedAnyView: false), // when initial session with no views history
             launchInForeground: true, // launch in foreground
             backgroundEventsTrackingEnabled: .mockRandom(), // no matter BET
             expectViewName: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
@@ -918,7 +928,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         try test(
-            lastRUMSessionState: .mockRandom(), // any sampled session
+            lastRUMSessionState: .mockWith(isSampled: true), // any sampled session
             launchInForeground: false, // launch in background
             backgroundEventsTrackingEnabled: true, // BET enabled
             expectViewName: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
@@ -975,18 +985,18 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // Then
-            let sentRUMError = featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0]
+            let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
             XCTAssertEqual(sentRUMError.error.sourceType, .iosIl2cpp, "Must send overridden sourceType")
         }
 
         try test(
-            lastRUMSessionState: .mockWith(isInitialSession: true, hasTrackedAnyView: false), // when initial session with no views history
+            lastRUMSessionState: .mockWith(isSampled: true, isInitialSession: true, hasTrackedAnyView: false), // when initial session with no views history
             launchInForeground: true, // launch in foreground
             backgroundEventsTrackingEnabled: .mockRandom() // no matter BET
         )
 
         try test(
-            lastRUMSessionState: .mockRandom(), // any sampled session
+            lastRUMSessionState: .mockWith(isSampled: true), // any sampled session
             launchInForeground: false, // launch in background
             backgroundEventsTrackingEnabled: true // BET enabled
         )
@@ -1055,18 +1065,18 @@ class CrashReportReceiverTests: XCTestCase {
             let sentRUMView = featureScope.eventsWritten(ofType: RUMViewEvent.self).last
             XCTAssertEqual(sentRUMView?.view.name, mappedViewName, "Must send mapped RUMView event")
 
-            let sentRUMError = featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0]
+            let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
             XCTAssertEqual(sentRUMError.error.fingerprint, errorFingerprint, "Must send mapped RUMError event")
         }
 
         try test(
-            lastRUMSessionState: .mockWith(isInitialSession: true, hasTrackedAnyView: false), // when initial session with no views history
+            lastRUMSessionState: .mockWith(isSampled: true, isInitialSession: true, hasTrackedAnyView: false), // when initial session with no views history
             launchInForeground: true, // launch in foreground
             backgroundEventsTrackingEnabled: .mockRandom() // no matter BET
         )
 
         try test(
-            lastRUMSessionState: .mockRandom(), // any sampled session
+            lastRUMSessionState: .mockWith(isSampled: true), // any sampled session
             launchInForeground: false, // launch in background
             backgroundEventsTrackingEnabled: true // BET enabled
         )
@@ -1120,20 +1130,20 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // Then
-            let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self)[0].context?.contextInfo)
-            let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0].context?.contextInfo)
+            let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first?.context?.contextInfo)
+            let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first?.context?.contextInfo)
             DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes)
             DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes)
         }
 
         try test(
-            lastRUMSessionState: .mockWith(isInitialSession: true, hasTrackedAnyView: false), // when initial session with no views history
+            lastRUMSessionState: .mockWith(isSampled: true, isInitialSession: true, hasTrackedAnyView: false), // when initial session with no views history
             launchInForeground: true, // launch in foreground
             backgroundEventsTrackingEnabled: .mockRandom() // no matter BET
         )
 
         try test(
-            lastRUMSessionState: .mockRandom(), // any sampled session
+            lastRUMSessionState: .mockWith(isSampled: true), // any sampled session
             launchInForeground: false, // launch in background
             backgroundEventsTrackingEnabled: true // BET enabled
         )
@@ -1191,8 +1201,8 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // Then
-            let sentRUMView = featureScope.eventsWritten(ofType: RUMViewEvent.self)[0]
-            let sentRUMError = featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0]
+            let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+            let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
 
             // Assert RUM view properties
             XCTAssertTrue(
@@ -1395,7 +1405,7 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertEqual(sentRUMView?.view.name, mappedViewName, "Must send mapped RUM view event")
 
             // Sent RUM Error should be unmapped
-            let sentRUMError = featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0]
+            let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
             XCTAssertNil(sentRUMError.error.fingerprint)
             DDAssertReflectionEqual(
                 sentRUMError.connectivity,
@@ -1474,8 +1484,8 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // Then
-            let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self)[0].context?.contextInfo)
-            let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0].context?.contextInfo)
+            let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first?.context?.contextInfo)
+            let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first?.context?.contextInfo)
             DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes)
             DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes)
         }

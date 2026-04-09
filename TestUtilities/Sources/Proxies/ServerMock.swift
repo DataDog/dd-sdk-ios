@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import ObjectiveC
 import DatadogInternal
 
 /// An utility header, added to each request by the `ServerMock` and removed while intercepting through `ServerMockProtocol`.
@@ -13,6 +14,83 @@ import DatadogInternal
 ///
 /// Added in RUMM-1381 to fix a range of flakiness caused by leaking asynchronous upload tasks.
 private let ddURLSessionUUIDHeaderField = "dd-urlsession-uuid"
+
+#if os(watchOS)
+/// On watchOS, `URLProtocol` subclasses (https://developer.apple.com/documentation/foundation/urlprotocol)
+/// are registered and their `canInit(with:)` is called, but the response from `startLoading` is ignored —
+/// the underlying networking stack performs the real request regardless. This means `ServerMockProtocol`
+/// cannot intercept requests on watchOS.
+///
+/// As a workaround, we swizzle `__NSCFLocalSessionTask._onqueue_resume`. When a `ServerMock` is active,
+/// we suppress the real network call and instead drive the task through its own internal callbacks,
+/// mirroring exactly what `URLProtocol`/`URLProtocolClient` does on other platforms:
+///
+///   URLProtocolClient                          __NSCFLocalSessionTask
+///   ─────────────────────────────────────────────────────────────────
+///   urlProtocol(_:didReceive:...)          →   _onqueue_didReceiveResponse:completion:
+///   urlProtocol(_:didLoad:)                →   _onqueue_didReceiveDispatchData:completion:
+///   urlProtocol(_:didFailWithError:)       →   _onqueue_didFinishWithError:
+///   urlProtocolDidFinishLoading            →   _onqueue_didFinishWithError: (nil error)
+///
+/// This is a test-only technique using private class and selector names.
+private final class NSCFLocalSessionTaskResumeSwizzler: MethodSwizzler<
+    @convention(c) (URLSessionTask, Selector) -> Void,
+    @convention(block) (URLSessionTask) -> Void
+> {
+    private static let selector = NSSelectorFromString("_onqueue_resume")
+    private let method: Method
+
+    static func build() throws -> NSCFLocalSessionTaskResumeSwizzler {
+        let className = "__NSCFLocalSessionTask"
+        guard let klass = NSClassFromString(className) else {
+            throw InternalError(description: "Failed to swizzle `__NSCFLocalSessionTask._onqueue_resume`: class not found.")
+        }
+        return try NSCFLocalSessionTaskResumeSwizzler(klass: klass)
+    }
+
+    private init(klass: AnyClass) throws {
+        self.method = try dd_class_getInstanceMethod(klass, Self.selector)
+        super.init()
+    }
+
+    func swizzle() {
+        typealias Signature = @convention(block) (URLSessionTask) -> Void
+        swizzle(method) { previousImplementation -> Signature in
+            return { task in
+                guard let server = ServerMock.activeInstance else {
+                    previousImplementation(task, Self.selector)
+                    return
+                }
+
+                // Suppress the real network request and deliver mock response via
+                // the task's own internal callbacks, matching `URLProtocol` behavior.
+                // The `completion:` arguments are flow-control acknowledgement blocks — pass a no-op.
+                let noop: @convention(block) () -> Void = {}
+                let completion = unsafeBitCast(noop, to: AnyObject.self)
+
+                if let response = server.mockedResponse {
+                    // _onqueue_didReceiveResponse:completion:
+                    task.perform(NSSelectorFromString("_onqueue_didReceiveResponse:completion:"), with: response, with: completion)
+                }
+
+                if let data = server.mockedData {
+                    // _onqueue_didReceiveDispatchData:completion:
+                    let dispatchData = data.withUnsafeBytes { DispatchData(bytes: $0) } as AnyObject
+                    task.perform(NSSelectorFromString("_onqueue_didReceiveDispatchData:completion:"), with: dispatchData, with: completion)
+                }
+
+                // _onqueue_didFinishWithError: (nil = success, or the mock error)
+                task.perform(NSSelectorFromString("_onqueue_didFinishWithError:"), with: server.mockedError)
+
+                // Record the request (mirrors ServerMockProtocol.startLoading).
+                if let request = task.currentRequest {
+                    server.record(newRequest: request)
+                }
+            }
+        }
+    }
+}
+#endif
 
 public class ServerMockProtocol: URLProtocol {
     override public class func canInit(with request: URLRequest) -> Bool {
@@ -93,6 +171,12 @@ public class ServerMock {
     private let queue: DispatchQueue
     private let skipIsMainThreadCheck: Bool
 
+    #if os(watchOS)
+    /// Swizzler that intercepts `__NSCFLocalSessionTask._onqueue_resume` to deliver mocked
+    /// responses on watchOS, where `URLProtocol` is non-functional.
+    private var taskResumeSwizzler: NSCFLocalSessionTaskResumeSwizzler?
+    #endif
+
     fileprivate let mockedResponse: HTTPURLResponse?
     fileprivate let mockedData: Data?
     fileprivate let mockedError: NSError?
@@ -139,6 +223,9 @@ public class ServerMock {
         /// NOTE: one of the `wait*` methods **must be called** within the test using `ServerMock`.
         ///
         precondition(Thread.isMainThread || skipIsMainThreadCheck, "`ServerMock` should be deinitialized on the main thread.")
+        #if os(watchOS)
+        taskResumeSwizzler?.unswizzle()
+        #endif
     }
 
     fileprivate func record(newRequest: URLRequest) {
@@ -161,11 +248,19 @@ public class ServerMock {
         precondition(!doesInterceptSession, "This instance of `ServerMock` already intercepts the `URLSession`. Re-use the existing one.")
         doesInterceptSession = true
 
-        let configuration = URLSessionConfiguration.ephemeral
+        #if os(watchOS)
+        // On watchOS, `URLProtocol` is non-functional. We swizzle `__NSCFLocalSessionTask._onqueue_resume`
+        // instead to intercept requests and deliver mocked responses directly via the task's internal callbacks.
+        taskResumeSwizzler = try? .build()
+        taskResumeSwizzler?.swizzle()
+        return URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: nil)
+        #else
+        let configuration: URLSessionConfiguration = .ephemeral
         // Set utility header so we can identify this request in `ServerMockProtocol`.
         configuration.httpAdditionalHeaders = [ddURLSessionUUIDHeaderField: urlSessionUUID.uuidString]
         configuration.protocolClasses = [ServerMockProtocol.self]
         return URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
+        #endif
     }
 
     // MARK: - Waiting for total number of requests
@@ -188,7 +283,7 @@ public class ServerMock {
             self.requests.forEach { _ in expectation.fulfill() } // fulfill already recorded
         }
 
-        let timeout = timeout ?? recommendedTimeoutFor(numberOfRequestsMade: max(count, 1))
+        let timeout: TimeInterval = timeout ?? recommendedTimeoutFor(numberOfRequestsMade: max(count, 1))
         let result = XCTWaiter().wait(for: [expectation], timeout: timeout)
 
         switch result {

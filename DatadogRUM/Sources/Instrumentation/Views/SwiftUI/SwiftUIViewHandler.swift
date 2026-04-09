@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import UIKit
 import DatadogInternal
 
 /// Publisher generating RUM Commands on `SwiftUI.View` events.

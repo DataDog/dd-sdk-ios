@@ -148,21 +148,21 @@ internal class Monitor: RUMCommandSubscriber {
                     return nil
                 }
 
-                let context = self.scopes.activeSession?.viewScopes.last?.context ??
-                                self.scopes.activeSession?.context ??
-                                self.scopes.context
-
-                guard context.sessionID != .nullUUID else {
-                    // if Session was sampled or not yet started
+                guard let activeSession = self.scopes.activeSession else {
                     return nil
                 }
+
+                let context = activeSession.viewScopes.last?.context ??
+                                activeSession.context ??
+                                self.scopes.context
 
                 return RUMCoreContext(
                     applicationID: context.rumApplicationID,
                     sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+                    sessionSampler: activeSession.sampler,
                     viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
                     userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
-                    viewServerTimeOffset: self.scopes.activeSession?.viewScopes.last?.serverTimeOffset,
+                    viewServerTimeOffset: activeSession.viewScopes.last?.serverTimeOffset,
                     viewPath: context.activeViewPath
                 )
             }
@@ -224,14 +224,14 @@ extension Monitor: RUMMonitorProtocol {
         // Synchronise it through the context thread to make sure we return the correct
         // sessionID after all other events have been processed (also on the context thread):
         featureScope.context { [weak self] _ in
-            guard let sessionId = self?.scopes.activeSession?.sessionUUID else {
+            guard let activeSession = self?.scopes.activeSession else {
                 completion(nil)
                 return
             }
 
             var sessionIdValue: String? = nil
-            if sessionId != RUMUUID.nullUUID {
-                sessionIdValue = sessionId.rawValue.uuidString
+            if activeSession.sampler.isSampled, activeSession.sessionUUID != .nullUUID {
+                sessionIdValue = activeSession.sessionUUID.rawValue.uuidString
             }
 
             completion(sessionIdValue)
@@ -606,6 +606,7 @@ extension Monitor: RUMMonitorViewProtocol {
         )
     }
 
+    #if !os(watchOS)
     func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartViewCommand(
@@ -630,6 +631,7 @@ extension Monitor: RUMMonitorViewProtocol {
             )
         )
     }
+    #endif
 
     func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) {
         process(

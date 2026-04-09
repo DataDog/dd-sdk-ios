@@ -120,46 +120,11 @@ internal class RUMResourceScope: RUMScope {
         let resourceDuration: TimeInterval
         let size: Int64?
 
-        // Check trace attributes
-        let traceId: TraceID? = attributes.removeValue(forKey: CrossPlatformAttributes.traceID)?
-            .dd.decode()
-            .map { .init($0, representation: .hexadecimal) }
-            ?? spanContext?.traceID
+        // Trace context from cross-platform attributes or spanContext fallback
+        let traceContext = extractTraceAttributes()
 
-        let spanId: SpanID? = attributes.removeValue(forKey: CrossPlatformAttributes.spanID)?
-            .dd.decode()
-            .map { .init($0, representation: .decimal) }
-            ?? spanContext?.spanID
-
-        let parentSpanID: SpanID? = attributes.removeValue(forKey: CrossPlatformAttributes.parentSpanID)?
-            .dd.decode()
-            .map { .init($0, representation: .decimal) }
-            ?? spanContext?.parentSpanID
-
-        let traceSamplingRate = attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR)?.dd.decode() ?? spanContext?.samplingRate
-
-        // Check GraphQL attributes
-        var graphql: RUMResourceEvent.Resource.Graphql? = nil
-        let graphqlOperationName: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationName)?.dd.decode()
-        let graphqlPayload: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlPayload)?.dd.decode()
-        let graphqlVariables: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlVariables)?.dd.decode()
-        let graphqlErrorsString: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlErrors)?.dd.decode()
-
-        // Parse GraphQL errors if present
-        let graphqlErrors = parseGraphQLErrors(from: graphqlErrorsString)
-
-        if
-            let rawGraphqlOperationType: String = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationType)?.dd.decode(),
-            let graphqlOperationType = RUMResourceEvent.Resource.Graphql.OperationType(rawValue: rawGraphqlOperationType) {
-            graphql = .init(
-                errorCount: graphqlErrors?.count.toInt64,
-                errors: graphqlErrors,
-                operationName: graphqlOperationName,
-                operationType: graphqlOperationType,
-                payload: graphqlPayload,
-                variables: graphqlVariables
-            )
-        }
+        // GraphQL attributes from cross-platform attributes
+        let graphql = extractGraphQL()
 
         // Extract captured HTTP headers
         let requestHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.requestHeaders)?.dd.decode()
@@ -206,17 +171,17 @@ internal class RUMResourceScope: RUMScope {
                 browserSdkVersion: nil,
                 configuration: .init(
                     sessionReplaySampleRate: nil,
-                    sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)
+                    sessionSampleRate: Double(dependencies.samplingRate)
                 ),
                 discarded: nil,
-                parentSpanId: parentSpanID?.toString(representation: .decimal),
-                rulePsr: traceSamplingRate,
+                parentSpanId: traceContext.parentSpanID?.toString(representation: .decimal),
+                rulePsr: traceContext.samplingRate,
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: parent.context.sessionPrecondition
                 ),
-                spanId: spanId?.toString(representation: .decimal),
-                traceId: traceId?.toString(representation: .hexadecimal)
+                spanId: traceContext.spanID?.toString(representation: .decimal),
+                traceId: traceContext.traceID?.toString(representation: .hexadecimal)
             ),
             account: .init(context: context),
             action: parent.context.activeUserActionID.map { rumUUID in
@@ -326,15 +291,22 @@ internal class RUMResourceScope: RUMScope {
         let errorFingerprint: String? = attributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
         let timeSinceAppStart = command.time.timeIntervalSince(context.launchInfo.processLaunchDate).dd.toInt64Milliseconds
 
+        // Trace context from cross-platform attributes or spanContext fallback
+        let traceContext = extractTraceAttributes()
+
+        // GraphQL attributes from cross-platform attributes
+        let graphql = extractGraphQL()
+
         // Write error event
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
-                session: .init(
-                    plan: .plan1,
-                    sessionPrecondition: parent.context.sessionPrecondition
-                )
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.samplingRate)),
+                parentSpanId: traceContext.parentSpanID?.toString(representation: .decimal),
+                rulePsr: traceContext.samplingRate,
+                session: .init(plan: .plan1, sessionPrecondition: parent.context.sessionPrecondition),
+                spanId: traceContext.spanID?.toString(representation: .decimal),
+                traceId: traceContext.traceID?.toString(representation: .hexadecimal)
             ),
             account: .init(context: context),
             action: parent.context.activeUserActionID.map { rumUUID in
@@ -363,6 +335,7 @@ internal class RUMResourceScope: RUMScope {
                 message: command.errorMessage,
                 meta: nil,
                 resource: .init(
+                    graphql: graphql,
                     method: resourceHTTPMethod,
                     provider: errorEventProvider,
                     statusCode: command.httpStatusCode?.toInt64 ?? 0,
@@ -454,49 +427,87 @@ internal class RUMResourceScope: RUMScope {
         return duration.dd.toInt64Nanoseconds
     }
 
-    /// Decodes GraphQL errors from JSON string and returns them as RUM event errors
-    private func parseGraphQLErrors(from jsonString: String?) -> [RUMResourceEvent.Resource.Graphql.Errors]? {
+    /// Decodes GraphQL errors JSON string into intermediate response error models.
+    ///
+    /// Note: The cross-platform attribute `_dd.graphql.errors` contains a JSON array of error objects
+    /// (e.g. `[{"message": "...", "locations": [...]}]`), not a full GraphQL response body.
+    /// This is why we decode `[GraphQLResponseError]` directly rather than using the `GraphQLResponse`
+    /// wrapper struct, which is used elsewhere for full response body parsing.
+    private func decodeGraphQLResponseErrors(from jsonString: String?) -> [GraphQLResponseError]? {
         guard let jsonString, !jsonString.isEmpty else {
             return nil
         }
-
         guard let data = jsonString.data(using: .utf8) else {
             DD.logger.debug("Failed to convert GraphQL errors string to UTF-8 data")
             return nil
         }
-
         do {
-            let responseErrors = try JSONDecoder().decode([GraphQLResponseError].self, from: data)
-
-            guard !responseErrors.isEmpty else {
-                return nil
-            }
-
-            let parsedErrors = responseErrors.map { error in
-                RUMResourceEvent.Resource.Graphql.Errors(
-                    code: error.code,
-                    locations: error.locations?.map { location in
-                        RUMResourceEvent.Resource.Graphql.Errors.Locations(
-                            column: Int64(location.column),
-                            line: Int64(location.line)
-                        )
-                    },
-                    message: error.message,
-                    path: error.path?.map { pathElement in
-                        switch pathElement {
-                        case .string(let value):
-                            return .string(value: value)
-                        case .int(let value):
-                            return .integer(value: Int64(value))
-                        }
-                    }
-                )
-            }
-
-            return parsedErrors
+            let errors = try JSONDecoder().decode([GraphQLResponseError].self, from: data)
+            return errors.isEmpty ? nil : errors
         } catch {
             DD.logger.debug("Failed to decode GraphQL errors: \(error)")
             return nil
         }
+    }
+
+    // MARK: - Attribute extraction helpers
+
+    /// Extracts trace attributes from `self.attributes`, consuming them via `removeValue`.
+    /// Must be called at most once per event send — repeated calls return nil for consumed keys.
+    private func extractTraceAttributes() -> (traceID: TraceID?, spanID: SpanID?, parentSpanID: SpanID?, samplingRate: Double?) {
+        let traceID: TraceID? = attributes.removeValue(forKey: CrossPlatformAttributes.traceID)?
+            .dd.decode()
+            .map { .init($0, representation: .hexadecimal) }
+            ?? spanContext?.traceID
+        let spanID: SpanID? = attributes.removeValue(forKey: CrossPlatformAttributes.spanID)?
+            .dd.decode()
+            .map { .init($0, representation: .decimal) }
+            ?? spanContext?.spanID
+        let parentSpanID: SpanID? = attributes.removeValue(forKey: CrossPlatformAttributes.parentSpanID)?
+            .dd.decode()
+            .map { .init($0, representation: .decimal) }
+            ?? spanContext?.parentSpanID
+        let samplingRate = attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR)?.dd.decode() ?? spanContext?.samplingRate
+
+        return (traceID, spanID, parentSpanID, samplingRate)
+    }
+
+    /// Extracts GraphQL attributes from `self.attributes` and builds a `RUMGraphql` value.
+    /// Consumes attributes via `removeValue` — must be called at most once per event send.
+    /// Returns `nil` if no valid operation type is found.
+    private func extractGraphQL() -> RUMGraphql? {
+        let operationType: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationType)?.dd.decode()
+        let operationName: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationName)?.dd.decode()
+        let payload: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlPayload)?.dd.decode()
+        let variables: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlVariables)?.dd.decode()
+        let errorsJSON: String? = attributes.removeValue(forKey: CrossPlatformAttributes.graphqlErrors)?.dd.decode()
+
+        guard
+            let rawOperationType = operationType,
+            let opType = RUMGraphql.OperationType(rawValue: rawOperationType)
+        else {
+            return nil
+        }
+        let errors = decodeGraphQLResponseErrors(from: errorsJSON)?.map { error in
+            RUMGraphql.Errors(
+                code: error.code,
+                locations: error.locations?.map { .init(column: Int64($0.column), line: Int64($0.line)) },
+                message: error.message,
+                path: error.path?.map { pathElement in
+                    switch pathElement {
+                    case .string(let value): return .string(value: value)
+                    case .int(let value): return .integer(value: Int64(value))
+                    }
+                }
+            )
+        }
+        return .init(
+            errorCount: errors?.count.toInt64,
+            errors: errors,
+            operationName: operationName,
+            operationType: opType,
+            payload: payload,
+            variables: variables
+        )
     }
 }

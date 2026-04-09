@@ -8,7 +8,13 @@ let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment[
 
 let package = Package(
     name: "Datadog",
-    platforms: [.iOS(.v12), .tvOS(.v12), .macOS(.v12), .watchOS(.v7)],
+    platforms: [
+        .iOS(.v12),
+        .tvOS(.v12),
+        .macOS(.v12),
+        .watchOS(.v7),
+        .visionOS(.v1)
+    ],
     products: [
         .library(
             name: "DatadogCore",
@@ -198,7 +204,8 @@ let package = Package(
                 .target(name: "DatadogInternal"),
                 .target(name: "DatadogMachProfiler")
             ],
-            path: "DatadogProfiling/Sources",
+            path: "DatadogProfiling",
+            sources: ["Sources"],
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ],
@@ -206,8 +213,7 @@ let package = Package(
         ),
         .target(
             name: "DatadogMachProfiler",
-            path: "DatadogProfiling/Mach",
-            cxxSettings: [.unsafeFlags(["-std=c++17"])]
+            path: "DatadogProfiling/Mach"
         ),
         .testTarget(
             name: "DatadogProfilingTests",
@@ -253,7 +259,8 @@ let package = Package(
             path: "TestUtilities/Sources",
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
         )
-    ]
+    ],
+    cxxLanguageStandard: .cxx17
 )
 
 // If the `DD_TEST_UTILITIES_ENABLED` development ENV is set, export additional utility packages.

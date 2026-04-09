@@ -161,7 +161,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             dd: .init(
                 action: .init(heatmapAttributes: heatmapAttributes),
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.samplingRate)),
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition

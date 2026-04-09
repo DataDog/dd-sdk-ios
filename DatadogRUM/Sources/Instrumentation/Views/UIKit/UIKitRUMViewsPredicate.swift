@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import UIKit
 import DatadogInternal
 
@@ -52,3 +53,4 @@ public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
         return view
     }
 }
+#endif

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import UIKit
 
 internal protocol UIViewControllerHandler: RUMCommandPublisher {
@@ -12,3 +13,4 @@ internal protocol UIViewControllerHandler: RUMCommandPublisher {
     /// Gets called on `super.viewDidDisappear()`.
     func notify_viewDidDisappear(viewController: UIViewController, animated: Bool)
 }
+#endif

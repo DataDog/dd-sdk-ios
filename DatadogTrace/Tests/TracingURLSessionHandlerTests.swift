@@ -19,7 +19,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        let receiver = ContextMessageReceiver()
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
         core = PassthroughCoreMock(messageReceiver: receiver)
 
         tracer = .mockWith(
@@ -49,7 +49,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all,
@@ -68,7 +68,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .init(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789",
+                    sessionSampler: .mockKeepAll()
                 )
             )
         )
@@ -98,7 +99,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all,
@@ -130,7 +131,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .init(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789",
+                    sessionSampler: .mockKeepAll()
                 )
             )
         )
@@ -155,7 +157,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: 0,
             firstPartyHosts: .init(),
             traceContextInjection: .sampled,
@@ -174,7 +176,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .init(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789",
+                    sessionSampler: .mockKeepAll()
                 )
             )
         )
@@ -197,7 +200,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all,
@@ -219,7 +222,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .init(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789",
+                    sessionSampler: .mockKeepAll()
                 )
             )
         )
@@ -250,7 +254,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all,
@@ -273,7 +277,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .init(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789",
+                    sessionSampler: .mockKeepAll()
                 )
             )
         )
@@ -304,7 +309,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(),
             traceContextInjection: .all,
@@ -327,7 +332,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .init(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789",
+                    sessionSampler: .mockKeepAll()
                 )
             )
         )
@@ -358,7 +364,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(),
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny())),
             samplingRate: 0,
             firstPartyHosts: .init(),
             traceContextInjection: .sampled,
@@ -381,7 +387,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .init(
                     applicationID: .mockRandom(),
-                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789"
+                    sessionID: "abcdef01-2345-6789-abcd-ef0123456789",
+                    sessionSampler: .mockKeepAll()
                 )
             )
         )
@@ -630,7 +637,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // Given
-        let receiver = ContextMessageReceiver()
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
 
         let handler = TracingURLSessionHandler(
             tracer: .mockWith(core: core),
@@ -861,5 +868,134 @@ class TracingURLSessionHandlerTests: XCTestCase {
             XCTFail("Expected spans to be the same DDSpan, got `\(String(describing: lhs))` and `\(String(describing: rhs))`")
             return
         }
+    }
+
+    // MARK: - Determinist sampling with child rate correction
+
+    func testDeterministicSamplingForSameSessionID() {
+        // Given
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
+        let sessionUUID = "abcdef01-2345-6789-abcd-ef0123456789"
+        let sessionSampler = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: 80.0)
+        let networkContext = NetworkContext(rumContext: RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampler: sessionSampler))
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: receiver,
+            samplingRate: 80.0,
+            firstPartyHosts: .init(["example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+
+        // When — modify is called twice with the same networkContext
+        let (_, ctx1, _) = handler.modify(
+            request: .mockWith(url: "https://example.com/path"),
+            headerTypes: [.datadog],
+            networkContext: networkContext
+        )
+        let (_, ctx2, _) = handler.modify(
+            request: .mockWith(url: "https://example.com/path"),
+            headerTypes: [.datadog],
+            networkContext: networkContext
+        )
+
+        // Then — both calls return the same sampling priority (determinism)
+        XCTAssertEqual(ctx1?.samplingPriority.isKept, ctx2?.samplingPriority.isKept, "Sampling decision must be deterministic")
+    }
+
+    // MARK: Test 2 — Child rate correction (TEST-04)
+
+    func testChildRateCorrectionIsApplied() throws {
+        // seed 0xd860b2b9437a (~68.7% hash): NOT sampled at composed 40%, but sampled at trace-only 80%.
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
+        let sessionUUID = "a1b2c3d4-e5f6-7890-abcd-d860b2b9437a"
+        let sessionSampleRate: SampleRate = 50.0
+        let traceRate: SampleRate = 80.0
+
+        let sessionSampler = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: sessionSampleRate)
+        let effectiveRate = sessionSampler.combined(with: traceRate).samplingRate
+        XCTAssertEqual(effectiveRate, 40.0, accuracy: 0.001)
+
+        let expectedSampled = sessionSampler.combined(with: traceRate).isSampled
+        let oldBehaviour = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: traceRate).isSampled
+        XCTAssertNotEqual(expectedSampled, oldBehaviour, "Chosen vector must differ between composed and trace-only rate")
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: receiver,
+            samplingRate: traceRate,
+            firstPartyHosts: .init(["example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+
+        let (_, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://example.com/resource"),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampler: sessionSampler))
+        )
+
+        let actualSampled = try XCTUnwrap(traceContext?.samplingPriority.isKept)
+        XCTAssertEqual(actualSampled, expectedSampled, "Handler must apply child-rate correction via sessionSampler.combined(with:)")
+    }
+
+    // MARK: Test 3 — No RUM context fallback
+
+    func testNoRUMContextFallbackDoesNotCrash() {
+        // Given — no RUM context in networkContext
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: receiver,
+            samplingRate: 80.0,
+            firstPartyHosts: .init(["example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+
+        let (_, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://example.com/path"),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: nil)
+        )
+
+        XCTAssertNotNil(traceContext?.samplingPriority.isKept, "Handler must return a sampling decision even without RUM context")
+    }
+
+    // MARK: Test 4 — Cross-SDK Knuth vector
+
+    func testCrossSDKKnuthVector() throws {
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
+        // seed 0x8e45571aa876 (~51.2% hash): NOT sampled at composed 48%, but sampled at trace-only 80%.
+        let sessionUUID = "a1b2c3d4-e5f6-7890-abcd-8e45571aa876"
+        let sessionSampleRate: SampleRate = 60.0
+        let traceRate: SampleRate = 80.0
+
+        let sessionSampler = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: sessionSampleRate)
+        let effectiveRate = sessionSampler.combined(with: traceRate).samplingRate
+        XCTAssertEqual(effectiveRate, 48.0, accuracy: 0.001)
+
+        let expectedSampled = sessionSampler.combined(with: traceRate).isSampled
+        let oldBehaviour = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: traceRate).isSampled
+        XCTAssertNotEqual(expectedSampled, oldBehaviour, "Chosen vector must differ between composed and trace-only rate")
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: receiver,
+            samplingRate: traceRate,
+            firstPartyHosts: .init(["example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+
+        let (_, traceContext, _) = handler.modify(
+            request: .mockWith(url: "https://example.com/resource"),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: RUMCoreContext(applicationID: "app-id", sessionID: sessionUUID, sessionSampler: sessionSampler))
+        )
+
+        let actualSampled = try XCTUnwrap(traceContext?.samplingPriority.isKept)
+        XCTAssertEqual(actualSampled, expectedSampled, "Cross-SDK vector: handler must match composed rate Knuth decision")
     }
 }
