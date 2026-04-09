@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Add Mobile Heatmaps support. See [#2829][]
 - [FEATURE] Add watchOS and visionOS support. See [#2817][]
 
 # 3.9.0 / 02-04-2026
