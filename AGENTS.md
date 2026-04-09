@@ -62,7 +62,8 @@ Feature-specific docs (in each module directory):
 - **Do NOT change networking formats or endpoints.**
 - **Do NOT introduce new public API** without RFC review.
 - **Do NOT edit build scripts** unless instructed.
-- **NEVER mention AI assistant names** (Claude, ChatGPT, Cursor, Copilot, etc.) in commit messages, PR descriptions, code comments, or co-author tags.
+- **Never mention AI assistant names** (Claude, ChatGPT, Cursor, Copilot, etc.) in commit messages, PR descriptions, code comments, or co-author tags.
+- **Never write or modify a swizzle without reading `docs/SWIZZLING.md` first.** Past incidents have caused production crashes.
 
 ## Quick Reference
 
