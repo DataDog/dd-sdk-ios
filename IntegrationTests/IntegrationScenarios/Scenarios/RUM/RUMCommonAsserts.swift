@@ -22,16 +22,11 @@ extension RUMCommonAsserts {
         requests.forEach { request in
             XCTAssertEqual(request.httpMethod, "POST")
 
-            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddsource=ios&&ddtags=service:ui-tests-service-name,version:1.0,sdk_version:1.3.0-beta3,env:integration,retry_count:1`
+            // Example path here: `/36882784-420B-494F-910D-CBAC5897A309?ddsource=ios`
             XCTAssertNotNil(request.path, file: file, line: line)
             XCTAssertNotNil(request.queryItems)
-            XCTAssertEqual(request.queryItems!.count, 2)
+            XCTAssertEqual(request.queryItems!.count, 1)
             XCTAssertEqual(request.queryItems?.value(name: "ddsource"), "ios", file: file, line: line)
-
-            let ddtags = request.queryItems?.ddtags()
-            XCTAssertNotNil(ddtags, file: file, line: line)
-            XCTAssertEqual(ddtags?.count, 1, file: file, line: line)
-            XCTAssertEqual(ddtags?["retry_count"], "1", file: file, line: line)
 
             XCTAssertEqual(request.httpHeaders["Content-Type"], "text/plain;charset=UTF-8", file: file, line: line)
             XCTAssertEqual(request.httpHeaders["User-Agent"]?.matches(regex: userAgentRegex), true, file: file, line: line)
