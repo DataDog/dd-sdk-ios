@@ -171,7 +171,6 @@ The SDK can be compiled against either:
 - **rum-models-generator**: Python tool to generate RUM and Session Replay data model code from https://github.com/DataDog/rum-events-format
 - **http-server-mock**: Mock HTTP server for integration testing
 - **sr-snapshots**: Tool for managing Session Replay snapshot images
-- **issue_handler**: Python tool for automated issue triage and analysis
 - **lint**: SwiftLint wrapper with custom rules
 - **license**: License header validation
 - **release**: Release automation scripts
