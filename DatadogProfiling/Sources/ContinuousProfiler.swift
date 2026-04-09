@@ -213,18 +213,13 @@ private extension ContinuousProfiler {
 
 private extension ContinuousProfiler {
     func handle(context: DatadogContext) {
-        featureScope.context { [weak self] context in
-            guard let self else {
-                return
-            }
-            let canProfile = profilingSamplerProvider.isContinuousProfilingConfigured || canExtendCustomProfiling()
+        let canProfile = shouldKeepProfilerRunning()
 
-            switch ProfilingContext.Status.current {
-            case .running, .stopped:
-                updateProfilerState(context: context, canProfile: canProfile)
-            default:
-                break
-            }
+        switch ProfilingContext.Status.current {
+        case .running, .stopped:
+            updateProfilerState(context: context, canProfile: canProfile)
+        default:
+            break
         }
     }
 
@@ -240,10 +235,7 @@ private extension ContinuousProfiler {
             _currentRUMVitals.mutate { $0 = $0.ongoingOperations() }
             _hangs.mutate { $0.removeAll() }
             _longTasks.mutate { $0.removeAll() }
-            updateProfilerState(
-                context: context,
-                canProfile: profilingSamplerProvider.isContinuousProfilingConfigured || canExtendCustomProfiling()
-            )
+            updateProfilerState(context: context, canProfile: shouldKeepProfilerRunning())
         }
     }
 
@@ -257,13 +249,11 @@ private extension ContinuousProfiler {
 
             switch message.operation.stepType {
             case .start:
-                // Start profiler if it is a custom profiler and the operations have started
-                if currentRUMVitals.isEmpty && profilingSamplerProvider.isContinuousProfilingConfigured == false {
-                    startTimer()
-                    updateProfilerState(context: context)
-                }
-
                 _currentRUMVitals.mutate { $0[message.operation.key] = message.operation }
+                updateProfilerState(
+                    context: context,
+                    canProfile: hasOngoingVital() || shouldKeepProfilerRunning()
+                )
             case .end:
                 if var startVital = currentRUMVitals[message.operation.key] {
                     _currentRUMVitals.mutate {
@@ -310,7 +300,7 @@ private extension ContinuousProfiler {
 
             updateProfilerState(
                 context: context,
-                canProfile: profilingSamplerProvider.isContinuousProfilingConfigured || canExtendCustomProfiling()
+                canProfile: shouldKeepProfilerRunning()
             )
             sendProfile()
         }
@@ -359,7 +349,24 @@ private extension ContinuousProfiler {
 
     var canWriteProfile: Bool {
         self.currentRUMVitals.count > 0 // Custom Profiling is running
-        || profilingSamplerProvider.isContinuousProfilingEnabled // Continuous Profiling is running
+        || profilingSamplerProvider.continuousProfilingSampled == true // Continuous Profiling is sampled in
+    }
+
+    func shouldKeepProfilerRunning() -> Bool {
+        if profilingSamplerProvider.isContinuousProfilingConfigured {
+            switch profilingSamplerProvider.continuousProfilingSampled {
+            case .none, .some(true):
+                return true
+            case .some(false):
+                return hasOngoingVital()
+            }
+        } else {
+            return canExtendCustomProfiling()
+        }
+    }
+
+    func hasOngoingVital() -> Bool {
+        currentRUMVitals.ongoingOperations().isEmpty == false
     }
 
     func canExtendCustomProfiling() -> Bool {

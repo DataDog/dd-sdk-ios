@@ -143,7 +143,7 @@ final class ContinuousProfilerTests: XCTestCase {
         )
 
         // When - continuous profiling writes on the next timer tick
-        waitForProfileWrite {
+        waitForProfileWrite(timeout: 0.2) {
             XCTAssertFalse(
                 profiler.receive(
                     message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: launchVital)),
@@ -169,6 +169,99 @@ final class ContinuousProfilerTests: XCTestCase {
 // MARK: - Notifications
 
 extension ContinuousProfilerTests {
+    func testReceiveContext_stopsProfiler_whenContinuousProfilingSamplesOut_andNoVitalIsOngoing() {
+        // Given
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        let profiler = ContinuousProfiler(
+            core: core,
+            profilingSamplerProvider: profilingSamplerProvider,
+            profilingInterval: .infinity,
+            notificationCenter: notificationCenter,
+            dateProvider: DateProviderMock()
+        )! // swiftlint:disable:this force_unwrapping
+        core.messageReceiver = CombinedFeatureMessageReceiver(
+            ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
+            profiler
+        )
+        XCTAssertEqual(dd_profiler_start(), 1)
+
+        // When
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 0)]
+        )
+
+        // Then
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testReceiveContext_keepsProfilerRunning_whenContinuousProfilingSamplesOut_andVitalIsOngoing() {
+        // Given
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        let profiler = ContinuousProfiler(
+            core: core,
+            profilingSamplerProvider: profilingSamplerProvider,
+            profilingInterval: .infinity,
+            notificationCenter: notificationCenter,
+            dateProvider: DateProviderMock()
+        )! // swiftlint:disable:this force_unwrapping
+        core.messageReceiver = CombinedFeatureMessageReceiver(
+            ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
+            profiler
+        )
+        let startOperation = Vital.mockWith(stepType: .start)
+        XCTAssertEqual(dd_profiler_start(), 1)
+        _ = profiler.receive(
+            message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)),
+            from: core
+        )
+
+        // When
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 0)]
+        )
+
+        // Then
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testReceiveOperationStart_restartsProfiler_whenContinuousProfilingSamplesOut_andVitalStarts() {
+        // Given
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        let profiler = ContinuousProfiler(
+            core: core,
+            profilingSamplerProvider: profilingSamplerProvider,
+            profilingInterval: .infinity,
+            notificationCenter: notificationCenter,
+            dateProvider: DateProviderMock()
+        )! // swiftlint:disable:this force_unwrapping
+        core.messageReceiver = CombinedFeatureMessageReceiver(
+            ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
+            profiler
+        )
+        XCTAssertEqual(dd_profiler_start(), 1)
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 0)]
+        )
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+
+        let startOperation = Vital.mockWith(stepType: .start)
+
+        // When
+        _ = profiler.receive(
+            message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)),
+            from: core
+        )
+
+        // Then
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        withExtendedLifetime(profiler) {}
+    }
+
     func testApplicationDidEnterBackground_stopsProfiler() {
         // Given
         let dateProvider = DateProviderMock()

@@ -121,16 +121,16 @@ final class ProfilerFeatureTests: XCTestCase {
         // When
         firstProvider.updateWith(deterministicSampler: sessionSampler)
         secondProvider.updateWith(deterministicSampler: sessionSampler)
-        let firstDecision = firstProvider.isContinuousProfilingEnabled
-        let secondDecision = secondProvider.isContinuousProfilingEnabled
+        let firstDecision = firstProvider.continuousProfilingSampled
+        let secondDecision = secondProvider.continuousProfilingSampled
 
         // Then
-        XCTAssertEqual(firstDecision, firstProvider.isContinuousProfilingEnabled)
+        XCTAssertEqual(firstDecision, firstProvider.continuousProfilingSampled)
         XCTAssertEqual(firstDecision, secondDecision)
     }
 
-    func testProfilingSamplerProvider_disablesContinuousProfiling_withoutDeterministicSampler() {
-        XCTAssertFalse(ProfilingSamplerProvider(continuousSampleRate: 100).isContinuousProfilingEnabled)
+    func testProfilingSamplerProvider_hasNoContinuousProfilingDecision_withoutDeterministicSampler() {
+        XCTAssertNil(ProfilingSamplerProvider(continuousSampleRate: 100).continuousProfilingSampled)
     }
 
     func testProfilingSamplerProvider_appliesChildRateCorrection() {
@@ -150,7 +150,7 @@ final class ProfilerFeatureTests: XCTestCase {
 
         // Then
         XCTAssertNotEqual(expectedSampled, oldBehavior, "Chosen vector must differ between composed and profiling-only rate")
-        XCTAssertEqual(provider.isContinuousProfilingEnabled, expectedSampled)
+        XCTAssertEqual(provider.continuousProfilingSampled, expectedSampled)
     }
 
     func testMessageReceiver_updatesContinuousProfileSamplingWhenRUMContextChanges() {
@@ -175,13 +175,13 @@ final class ProfilerFeatureTests: XCTestCase {
         _ = feature.messageReceiver.receive(message: .context(unsampledContext), from: core)
 
         // Then
-        XCTAssertFalse(feature.profilingSamplerProvider.isContinuousProfilingEnabled)
+        XCTAssertEqual(feature.profilingSamplerProvider.continuousProfilingSampled, false)
 
         // When
         _ = feature.messageReceiver.receive(message: .context(sampledContext), from: core)
 
         // Then
-        XCTAssertTrue(feature.profilingSamplerProvider.isContinuousProfilingEnabled)
+        XCTAssertEqual(feature.profilingSamplerProvider.continuousProfilingSampled, true)
     }
 
     func testMessageReceiver_keepsPreviousContinuousProfileSampling_whenContextHasNoRUM() {
@@ -204,13 +204,13 @@ final class ProfilerFeatureTests: XCTestCase {
         _ = feature.messageReceiver.receive(message: .context(unsampledContext), from: core)
 
         // Then
-        XCTAssertFalse(feature.profilingSamplerProvider.isContinuousProfilingEnabled)
+        XCTAssertEqual(feature.profilingSamplerProvider.continuousProfilingSampled, false)
 
         // When
         _ = feature.messageReceiver.receive(message: .context(contextWithoutRUM), from: core)
 
         // Then
-        XCTAssertFalse(feature.profilingSamplerProvider.isContinuousProfilingEnabled)
+        XCTAssertEqual(feature.profilingSamplerProvider.continuousProfilingSampled, false)
     }
 }
 
