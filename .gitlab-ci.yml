@@ -14,6 +14,7 @@ stages:
 variables:
   MAIN_BRANCH: "master"
   DEVELOP_BRANCH: "develop"
+  DOGFOODING_BRANCH: "dogfooding"
   # Default Xcode and runtime versions for all jobs:
   DEFAULT_XCODE: "26.0.0"
   DEFAULT_IOS_OS: "26.0.1"
@@ -378,7 +379,7 @@ Benchmark Test (upload to s8s):
 Dogfood (Shopist):
   stage: dogfood
   rules:
-    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == $DOGFOODING_BRANCH'
       when: manual
       allow_failure: true
   id_tokens:
@@ -390,7 +391,7 @@ Dogfood (Shopist):
 Dogfood (Datadog app):
   stage: dogfood
   rules:
-    - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == $DOGFOODING_BRANCH'
       when: manual
       allow_failure: true
   id_tokens:
