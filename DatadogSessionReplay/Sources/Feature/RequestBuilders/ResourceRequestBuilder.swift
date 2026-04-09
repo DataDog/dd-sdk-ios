@@ -31,29 +31,19 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
         with context: DatadogContext,
         execution: ExecutionContext
     ) throws -> URLRequest {
-        var tags = [
-            "retry_count:\(execution.attempt + 1)"
-        ]
-
-        if let previousResponseCode = execution.previousResponseCode {
-            tags.append("retry_after:\(previousResponseCode)")
-        }
-
         let decoder = JSONDecoder()
         let resources = try events.map { event in
             try decoder.decode(EnrichedResource.self, from: event.data)
         }
-        return try createRequest(resources: resources, context: context, tags: tags)
+        return try createRequest(resources: resources, context: context, execution: execution)
     }
 
-    private func createRequest(resources: [EnrichedResource], context: DatadogContext, tags: [String]) throws -> URLRequest {
+    private func createRequest(resources: [EnrichedResource], context: DatadogContext, execution: ExecutionContext) throws -> URLRequest {
         var multipart = multipartBuilder
 
         let builder = URLRequestBuilder(
             url: url(with: context),
-            queryItems: [
-                .ddtags(tags: tags)
-            ],
+            queryItems: execution.retryQueryItems,
             headers: [
                 .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary)),
                 .userAgentHeader(

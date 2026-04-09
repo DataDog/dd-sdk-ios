@@ -109,7 +109,7 @@ class RequestBuilderTests: XCTestCase {
         let request = try builder.request(for: mockEvents, with: context, execution: execution)
 
         // Then
-        let expextedQuery = "ddsource=\(randomSource)&ddtags=retry_count:\(randomAttempt + 1),retry_after:\(randomStatus)"
+        let expextedQuery = "ddsource=\(randomSource)&ddtags=retry_count:\(randomAttempt),retry_after:\(randomStatus)"
         XCTAssertEqual(request.url?.query, expextedQuery)
     }
 
@@ -186,5 +186,33 @@ class RequestBuilderTests: XCTestCase {
         event 3
         """
         XCTAssertEqual(expected, actual, "It must separate each event with newline character")
+    }
+
+    func testItSetsNoRetryQueryParametersOnFirstRequest() throws {
+        // Given
+        let randomSource: String = .mockRandom(among: .alphanumerics)
+        let builder = RequestBuilder(customIntakeURL: nil, eventsFilter: .init(telemetry: TelemetryMock()), telemetry: NOPTelemetry())
+        let context: DatadogContext = .mockWith(source: randomSource)
+        let execution: ExecutionContext = .mockWith(previousResponseCode: nil, attempt: 0)
+
+        // When
+        let request = try builder.request(for: mockEvents, with: context, execution: execution)
+
+        // Then
+        XCTAssertEqual(request.url?.query, "ddsource=\(randomSource)") // no ddtags on first request
+    }
+
+    func testItSetsRetryQueryParametersOnNetworkErrorRetry() throws {
+        // Given
+        let randomSource: String = .mockRandom(among: .alphanumerics)
+        let builder = RequestBuilder(customIntakeURL: nil, eventsFilter: .init(telemetry: TelemetryMock()), telemetry: NOPTelemetry())
+        let context: DatadogContext = .mockWith(source: randomSource)
+        let execution: ExecutionContext = .mockWith(previousResponseCode: nil, attempt: 1) // network error retry has no response code
+
+        // When
+        let request = try builder.request(for: mockEvents, with: context, execution: execution)
+
+        // Then
+        XCTAssertEqual(request.url?.query, "ddsource=\(randomSource)&ddtags=retry_count:1") // no retry_after without response code
     }
 }
