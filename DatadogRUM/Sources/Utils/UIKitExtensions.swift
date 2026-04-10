@@ -45,10 +45,6 @@ internal extension UIView {
         return true
     }
 
-    @objc var isSwiftUIView: Bool {
-        return NSStringFromClass(type(of: self)).contains("SwiftUI")
-    }
-
     /// `true` if this view is a button in a `UIAlertController`, `false` otherwise.
     var isUIAlertActionView: Bool {
         guard let actionViewClass = NSClassFromString("_UIAlertControllerActionView"),

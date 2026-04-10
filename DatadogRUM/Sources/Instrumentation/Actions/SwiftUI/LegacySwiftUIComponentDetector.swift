@@ -22,7 +22,7 @@ internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
         }
 
         if let view = touch.view,
-           view.isSwiftUIView,
+           view.dd.isSwiftUIView,
            // For iOS 17 and below, we can't reliably distinguish SwiftUI component types (e.g., Button vs Label).
            // We exclude hosting views and track other SwiftUI elements with a generic name.
            !SwiftUIContainerViews.shouldIgnore(view.typeDescription) {

@@ -59,7 +59,7 @@ internal final class ModernSwiftUIComponentDetector: SwiftUIComponentDetector {
     /// which is when we can detect the Button gesture.
     private func handleTouchBegan(_ touch: UITouch, dateProvider: DateProvider) -> Bool {
         guard let view = touch.view,
-              view.isSwiftUIView else {
+              view.dd.isSwiftUIView else {
             return false
         }
 

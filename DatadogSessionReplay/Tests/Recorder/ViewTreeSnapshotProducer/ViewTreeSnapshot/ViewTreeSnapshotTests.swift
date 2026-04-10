@@ -37,6 +37,32 @@ class ViewAttributesTests: XCTestCase {
         XCTAssertNil(attributes.hide)
     }
 
+    func testItAvoidsIntrinsicContentSizeReadForSwiftUIViewWithPendingLayout() {
+        // Given
+        let view = SwiftUIHostingViewSpy(frame: CGRect(x: 0, y: 0, width: 123, height: 45))
+        view.setNeedsLayout()
+
+        // When
+        let attributes = createViewAttributes(with: view)
+
+        // Then
+        XCTAssertEqual(view.intrinsicContentSizeReadCount, 0)
+        XCTAssertEqual(attributes.intrinsicContentSize, view.bounds.size)
+    }
+
+    func testItStillReadsIntrinsicContentSizeForCustomUIViewNamedLikeSwiftUI() {
+        // Given
+        let view = MySwiftUIView(frame: CGRect(x: 0, y: 0, width: 123, height: 45))
+        view.setNeedsLayout()
+
+        // When
+        let attributes = createViewAttributes(with: view)
+
+        // Then
+        XCTAssertEqual(view.intrinsicContentSizeReadCount, 1)
+        XCTAssertEqual(attributes.intrinsicContentSize, CGSize(width: 300, height: 200))
+    }
+
     func testWhenViewIsVisible() {
         // Given
         let view: UIView = .mockRandom()
@@ -229,6 +255,26 @@ class ViewAttributesTests: XCTestCase {
     }
 }
 // swiftlint:enable opening_brace
+
+// Give the spy a SwiftUI-like runtime name so the test exercises the same classifier path as real hosting views.
+@objc(_TtC7SwiftUI20SwiftUIHostingViewSpy)
+private final class SwiftUIHostingViewSpy: UIView {
+    private(set) var intrinsicContentSizeReadCount = 0
+
+    override var intrinsicContentSize: CGSize {
+        intrinsicContentSizeReadCount += 1
+        return CGSize(width: 300, height: 200)
+    }
+}
+
+private final class MySwiftUIView: UIView {
+    private(set) var intrinsicContentSizeReadCount = 0
+
+    override var intrinsicContentSize: CGSize {
+        intrinsicContentSizeReadCount += 1
+        return CGSize(width: 300, height: 200)
+    }
+}
 
 class NodeSemanticsTests: XCTestCase {
     func testImportance() {
