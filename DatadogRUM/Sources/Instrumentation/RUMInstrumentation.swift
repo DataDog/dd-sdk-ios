@@ -20,6 +20,10 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
     let viewsHandler: RUMViewsHandler
 
+    /// Receives interceptions of both automatic and manual instrumentations.
+    /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
+    let actionsHandler: RUMActionsHandling
+
     #if !os(watchOS)
     /// Swizzles `UIViewController` for intercepting its lifecycle callbacks.
     /// It is `nil` (no swizzling) if RUM View automatic instrumentation is not enabled.
@@ -28,9 +32,6 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// Swizzles `UIApplication` for intercepting `UIEvents` passed to the app.
     /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
     let uiApplicationSwizzler: UIApplicationSwizzler?
-    /// Receives interceptions of both automatic and manual instrumentations.
-    /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
-    let actionsHandler: RUMActionsHandling
 
     #if !os(tvOS)
     /// Swizzles `UIScrollView.delegate` setter for intercepting scroll gestures.
@@ -159,8 +160,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         #endif
 
         self.viewsHandler = viewsHandler
-        self.viewControllerSwizzler = viewControllerSwizzler
         self.actionsHandler = actionsHandler
+        self.viewControllerSwizzler = viewControllerSwizzler
         self.uiApplicationSwizzler = uiApplicationSwizzler
         #if !os(tvOS)
         self.scrollHandler = scrollHandler
@@ -211,6 +212,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     ) {
         // Always create views handler (we can't know if it will be used by manual instrumentation)
         self.viewsHandler = RUMViewsHandler(dateProvider: dateProvider, notificationCenter: notificationCenter)
+        // Always create the actions handler (we can't know if it will be used by SwiftUI manual instrumentation)
+        self.actionsHandler = RUMActionsHandler(dateProvider: dateProvider)
         self.longTasks = LongTaskObserver(threshold: longTaskThreshold, dateProvider: dateProvider)
         self.appHangs = AppHangsMonitor(
             featureScope: featureScope,
@@ -251,11 +254,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     func publish(to subscriber: RUMCommandSubscriber) {
         viewsHandler.publish(to: subscriber)
-        #if !os(watchOS)
         actionsHandler.publish(to: subscriber)
-        #if !os(tvOS)
+        #if !os(watchOS) && !os(tvOS)
         scrollHandler?.publish(to: subscriber)
-        #endif
         #endif
         longTasks?.publish(to: subscriber)
         appHangs?.nonFatalHangsHandler.publish(to: subscriber)
