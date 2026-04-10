@@ -60,6 +60,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     /// Number of Resources that started but not yet ended during this User Action's lifespan.
     private var activeResourcesCount: Int = 0
 
+    /// Heatmap information for this action, if available.
+    private let heatmapAttributes: HeatmapAttributes?
+
     /// Interaction-to-Next-View metric for this view.
     private let interactionToNextViewMetric: INVMetricTracking?
 
@@ -76,6 +79,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         serverTimeOffset: TimeInterval,
         isContinuous: Bool,
         instrumentation: InstrumentationType,
+        heatmapAttributes: HeatmapAttributes?,
         interactionToNextViewMetric: INVMetricTracking?,
         onActionEventSent: @escaping (RUMActionEvent) -> Void
     ) {
@@ -90,6 +94,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         self.isContinuous = isContinuous
         self.lastActivityTime = startTime
         self.instrumentation = instrumentation
+        self.heatmapAttributes = heatmapAttributes
         self.interactionToNextViewMetric = interactionToNextViewMetric
         self.onActionEventSent = onActionEventSent
     }
@@ -154,7 +159,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
         let actionEvent = RUMActionEvent(
             dd: .init(
-                action: nil,
+                action: .init(heatmapAttributes: heatmapAttributes),
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.samplingRate)),
                 session: .init(
@@ -243,5 +248,21 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     private func allResourcesCompletedLoading() -> Bool {
         return activeResourcesCount <= 0
+    }
+}
+
+extension RUMActionEvent.DD.Action {
+    fileprivate init?(heatmapAttributes: HeatmapAttributes?) {
+        guard let heatmapAttributes else {
+            return nil
+        }
+        self.init(
+            position: .init(x: heatmapAttributes.positionX, y: heatmapAttributes.positionY),
+            target: .init(
+                height: heatmapAttributes.targetHeight,
+                permanentId: heatmapAttributes.targetPermanentID,
+                width: heatmapAttributes.targetWidth
+            )
+        )
     }
 }

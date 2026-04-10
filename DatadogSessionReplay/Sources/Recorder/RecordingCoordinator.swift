@@ -150,6 +150,7 @@ internal class RecordingCoordinator {
             sessionID: rumContext.sessionID,
             viewID: viewID,
             viewServerTimeOffset: rumContext.viewServerTimeOffset,
+            viewPath: rumContext.viewPath,
             date: Date(),
             telemetry: telemetry
         )

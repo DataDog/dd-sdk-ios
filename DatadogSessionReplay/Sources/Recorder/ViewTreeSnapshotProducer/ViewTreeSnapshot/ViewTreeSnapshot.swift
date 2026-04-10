@@ -8,6 +8,7 @@
 import Foundation
 import CoreGraphics
 import UIKit
+import DatadogInternal
 
 /// The `ViewTreeSnapshot` is an intermediate representation of the app UI in Session Replay
 /// recording: [views hierarchy] → [`ViewTreeSnapshot`] → [wireframes].
@@ -43,6 +44,8 @@ public struct SessionReplayNode {
     public let viewAttributes: SessionReplayViewAttributes
     /// A type defining how to build SR wireframes for the UI element described by this node.
     public let wireframesBuilder: SessionReplayNodeWireframesBuilder
+    /// The heatmap identifier computed for this node
+    var heatmapIdentifier: HeatmapIdentifier?
 
     public init(viewAttributes: SessionReplayViewAttributes, wireframesBuilder: SessionReplayNodeWireframesBuilder) {
         self.viewAttributes = viewAttributes

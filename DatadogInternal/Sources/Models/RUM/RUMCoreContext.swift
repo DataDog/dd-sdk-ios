@@ -24,6 +24,8 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
     /// Consumers use `sessionSampler.combined(with: childRate).sample()` to apply
     /// child-rate correction without UUID parsing.
     public let sessionSampler: DeterministicSampler
+    /// Current RUM view path
+    public let viewPath: String?
 
     /// Creates a RUM context.
     ///
@@ -34,13 +36,15 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
     ///   - viewID: Current RUM view ID - standard UUID string, lowercased. It can be empty when view is being loaded.
     ///   - userActionID: The ID of current RUM action (standard UUID `String`, lowercased).
     ///   - viewServerTimeOffset: Current view related server time offset
+    ///   - viewPath: Current RUM view path
     public init(
         applicationID: String,
         sessionID: String,
         sessionSampler: DeterministicSampler,
         viewID: String? = nil,
         userActionID: String? = nil,
-        viewServerTimeOffset: TimeInterval? = nil
+        viewServerTimeOffset: TimeInterval? = nil,
+        viewPath: String? = nil
     ) {
         self.applicationID = applicationID
         self.sessionID = sessionID
@@ -48,5 +52,6 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
         self.viewID = viewID
         self.userActionID = userActionID
         self.viewServerTimeOffset = viewServerTimeOffset
+        self.viewPath = viewPath
     }
 }

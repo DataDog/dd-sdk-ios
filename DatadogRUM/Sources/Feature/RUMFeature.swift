@@ -209,6 +209,9 @@ internal final class RUMFeature: DatadogRemoteFeature {
             )
         }
 
+        let heatmapIdentifierStore = HeatmapIdentifierStore()
+        try core.register(heatmapIdentifierRegistry: heatmapIdentifierStore)
+
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
@@ -226,7 +229,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             bundleType: bundleType,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: memoryWarningMonitor,
-            uuidGenerator: configuration.uuidGenerator
+            uuidGenerator: configuration.uuidGenerator,
+            heatmapIdentifierRegistry: heatmapIdentifierStore
         )
         #else
         self.instrumentation = RUMInstrumentation(

@@ -852,7 +852,8 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:],
         instrumentation: InstrumentationType = .manual,
         actionType: RUMActionType = .tap,
-        name: String = .mockAny()
+        name: String = .mockAny(),
+        heatmapAttributes: HeatmapAttributes? = nil
     ) -> RUMAddUserActionCommand {
         return RUMAddUserActionCommand(
             time: time,
@@ -860,7 +861,8 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
             attributes: attributes,
             instrumentation: instrumentation,
             actionType: actionType,
-            name: name
+            name: name,
+            heatmapAttributes: heatmapAttributes
         )
     }
 }
@@ -1384,6 +1386,7 @@ extension RUMUserActionScope {
                 serverTimeOffset: serverTimeOffset,
                 isContinuous: isContinuous,
                 instrumentation: instrumentation,
+                heatmapAttributes: nil,
                 interactionToNextViewMetric: interactionToNextViewMetric,
                 onActionEventSent: onActionEventSent
         )
@@ -1817,7 +1820,7 @@ extension RUMAddCurrentViewAppHangCommand: AnyMockable, RandomMockable {
     }
 }
 
-extension RUMCoreContext: RandomMockable {
+extension RUMCoreContext: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
         .mockWith()
     }
@@ -1828,14 +1831,17 @@ extension RUMCoreContext: RandomMockable {
         sessionSampleRate: SampleRate = .maxSampleRate,
         viewID: String? = .mockAny(),
         userActionID: String? = nil,
-        serverTimeOffset: TimeInterval = .mockAny()
+        serverTimeOffset: TimeInterval = .mockAny(),
+        viewPath: String? = .mockAny()
     ) -> Self {
         .init(
             applicationID: applicationID,
             sessionID: sessionID.uuidString.lowercased(),
             sessionSampler: DeterministicSampler(uuid: sessionID, samplingRate: sessionSampleRate),
             viewID: viewID,
-            viewServerTimeOffset: serverTimeOffset
+            userActionID: userActionID,
+            viewServerTimeOffset: serverTimeOffset,
+            viewPath: viewPath
         )
     }
 
@@ -1845,7 +1851,8 @@ extension RUMCoreContext: RandomMockable {
             sessionID: .mockRandom(),
             viewID: .mockRandom(),
             userActionID: .mockRandom(),
-            serverTimeOffset: .mockRandom()
+            serverTimeOffset: .mockRandom(),
+            viewPath: .mockRandom()
         )
     }
 }

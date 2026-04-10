@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Add Mobile Heatmaps support. See [#2829][]
 - [FEATURE] Add watchOS and visionOS support. See [#2817][]
 - [FEATURE] Add support for the FedRAMP-compatible `fed2.ddog-gov.com` site. See [#2827][]
 

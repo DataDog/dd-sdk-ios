@@ -186,6 +186,9 @@ public struct SRImageWireframe: Codable, Hashable {
     /// MIME type of the image file
     public var mimeType: String?
 
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    public let permanentId: String?
+
     /// Unique identifier of the image resource
     public var resourceId: String?
 
@@ -212,6 +215,7 @@ public struct SRImageWireframe: Codable, Hashable {
         case id = "id"
         case isEmpty = "isEmpty"
         case mimeType = "mimeType"
+        case permanentId = "permanentId"
         case resourceId = "resourceId"
         case shapeStyle = "shapeStyle"
         case type = "type"
@@ -230,6 +234,7 @@ public struct SRImageWireframe: Codable, Hashable {
     ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
     ///   - isEmpty: Flag describing an image wireframe that should render an empty state placeholder
     ///   - mimeType: MIME type of the image file
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
     ///   - resourceId: Unique identifier of the image resource
     ///   - shapeStyle: The style of this wireframe.
     ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
@@ -243,6 +248,7 @@ public struct SRImageWireframe: Codable, Hashable {
         id: Int64,
         isEmpty: Bool? = nil,
         mimeType: String? = nil,
+        permanentId: String? = nil,
         resourceId: String? = nil,
         shapeStyle: SRShapeStyle? = nil,
         width: Int64,
@@ -256,6 +262,7 @@ public struct SRImageWireframe: Codable, Hashable {
         self.id = id
         self.isEmpty = isEmpty
         self.mimeType = mimeType
+        self.permanentId = permanentId
         self.resourceId = resourceId
         self.shapeStyle = shapeStyle
         self.width = width
@@ -1182,6 +1189,9 @@ public struct SRPlaceholderWireframe: Codable, Hashable {
     /// Label of the placeholder
     public var label: String?
 
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    public let permanentId: String?
+
     /// The type of the wireframe.
     public let type: String = "placeholder"
 
@@ -1199,6 +1209,7 @@ public struct SRPlaceholderWireframe: Codable, Hashable {
         case height = "height"
         case id = "id"
         case label = "label"
+        case permanentId = "permanentId"
         case type = "type"
         case width = "width"
         case x = "x"
@@ -1212,6 +1223,7 @@ public struct SRPlaceholderWireframe: Codable, Hashable {
     ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
     ///   - label: Label of the placeholder
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
     ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
     ///   - x: The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
     ///   - y: The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
@@ -1220,6 +1232,7 @@ public struct SRPlaceholderWireframe: Codable, Hashable {
         height: Int64,
         id: Int64,
         label: String? = nil,
+        permanentId: String? = nil,
         width: Int64,
         x: Int64,
         y: Int64
@@ -1228,6 +1241,7 @@ public struct SRPlaceholderWireframe: Codable, Hashable {
         self.height = height
         self.id = id
         self.label = label
+        self.permanentId = permanentId
         self.width = width
         self.x = x
         self.y = y
@@ -1540,6 +1554,9 @@ public struct SRShapeWireframe: Codable, Hashable {
     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
     public let id: Int64
 
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    public let permanentId: String?
+
     /// The style of this wireframe.
     public let shapeStyle: SRShapeStyle?
 
@@ -1560,6 +1577,7 @@ public struct SRShapeWireframe: Codable, Hashable {
         case clip = "clip"
         case height = "height"
         case id = "id"
+        case permanentId = "permanentId"
         case shapeStyle = "shapeStyle"
         case type = "type"
         case width = "width"
@@ -1574,6 +1592,7 @@ public struct SRShapeWireframe: Codable, Hashable {
     ///   - clip: Schema of clipping information for a Wireframe.
     ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
     ///   - shapeStyle: The style of this wireframe.
     ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
     ///   - x: The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
@@ -1583,6 +1602,7 @@ public struct SRShapeWireframe: Codable, Hashable {
         clip: SRContentClip? = nil,
         height: Int64,
         id: Int64,
+        permanentId: String? = nil,
         shapeStyle: SRShapeStyle? = nil,
         width: Int64,
         x: Int64,
@@ -1592,6 +1612,7 @@ public struct SRShapeWireframe: Codable, Hashable {
         self.clip = clip
         self.height = height
         self.id = id
+        self.permanentId = permanentId
         self.shapeStyle = shapeStyle
         self.width = width
         self.x = x
@@ -1773,6 +1794,9 @@ public struct SRTextWireframe: Codable, Hashable {
     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
     public let id: Int64
 
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    public let permanentId: String?
+
     /// The style of this wireframe.
     public let shapeStyle: SRShapeStyle?
 
@@ -1802,6 +1826,7 @@ public struct SRTextWireframe: Codable, Hashable {
         case clip = "clip"
         case height = "height"
         case id = "id"
+        case permanentId = "permanentId"
         case shapeStyle = "shapeStyle"
         case text = "text"
         case textPosition = "textPosition"
@@ -1819,6 +1844,7 @@ public struct SRTextWireframe: Codable, Hashable {
     ///   - clip: Schema of clipping information for a Wireframe.
     ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
     ///   - shapeStyle: The style of this wireframe.
     ///   - text: The text value of the wireframe.
     ///   - textPosition: Schema of all properties of a TextPosition.
@@ -1831,6 +1857,7 @@ public struct SRTextWireframe: Codable, Hashable {
         clip: SRContentClip? = nil,
         height: Int64,
         id: Int64,
+        permanentId: String? = nil,
         shapeStyle: SRShapeStyle? = nil,
         text: String,
         textPosition: SRTextPosition? = nil,
@@ -1843,6 +1870,7 @@ public struct SRTextWireframe: Codable, Hashable {
         self.clip = clip
         self.height = height
         self.id = id
+        self.permanentId = permanentId
         self.shapeStyle = shapeStyle
         self.text = text
         self.textPosition = textPosition
@@ -1995,6 +2023,9 @@ public struct SRWebviewWireframe: Codable, Hashable {
     /// Whether this webview is visible or not.
     public let isVisible: Bool?
 
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    public let permanentId: String?
+
     /// The style of this wireframe.
     public let shapeStyle: SRShapeStyle?
 
@@ -2019,6 +2050,7 @@ public struct SRWebviewWireframe: Codable, Hashable {
         case height = "height"
         case id = "id"
         case isVisible = "isVisible"
+        case permanentId = "permanentId"
         case shapeStyle = "shapeStyle"
         case slotId = "slotId"
         case type = "type"
@@ -2035,6 +2067,7 @@ public struct SRWebviewWireframe: Codable, Hashable {
     ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
     ///   - isVisible: Whether this webview is visible or not.
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
     ///   - shapeStyle: The style of this wireframe.
     ///   - slotId: Unique Id of the slot containing this webview.
     ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
@@ -2046,6 +2079,7 @@ public struct SRWebviewWireframe: Codable, Hashable {
         height: Int64,
         id: Int64,
         isVisible: Bool? = nil,
+        permanentId: String? = nil,
         shapeStyle: SRShapeStyle? = nil,
         slotId: String,
         width: Int64,
@@ -2057,6 +2091,7 @@ public struct SRWebviewWireframe: Codable, Hashable {
         self.height = height
         self.id = id
         self.isVisible = isVisible
+        self.permanentId = permanentId
         self.shapeStyle = shapeStyle
         self.slotId = slotId
         self.width = width
@@ -2129,4 +2164,4 @@ public enum SRWireframe: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/32918d999701fb7bfd876369e27ced77d6de1809
+// Generated from https://github.com/DataDog/rum-events-format/tree/79d6285a53f07fe507952081fef124dbc3bdeaf2

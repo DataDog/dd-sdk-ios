@@ -9,6 +9,8 @@ import Foundation
 import CoreGraphics
 import UIKit
 
+import DatadogInternal
+
 @_spi(Internal)
 public typealias WireframeID = NodeID
 
@@ -24,6 +26,8 @@ public class SessionReplayWireframesBuilder {
     private(set) var resources: [Resource]
     /// The cache of webview slot IDs in memory during snapshot.
     private var webViewSlotIDs: Set<Int>
+    /// The heatmap identifier that will be attached to the wireframes.
+    var heatmapIdentifier: HeatmapIdentifier?
 
     /// Creates a builder for builder wireframes in snapshot processing.
     ///
@@ -79,6 +83,7 @@ extension SessionReplayWireframesBuilder {
             clip: SRContentClip(frame, intersecting: clip),
             height: Int64.ddWithNoOverflow( frame.height),
             id: id,
+            permanentId: heatmapIdentifier?.rawValue,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             width: Int64.ddWithNoOverflow( frame.width),
             x: Int64.ddWithNoOverflow( frame.minX),
@@ -110,6 +115,7 @@ extension SessionReplayWireframesBuilder {
             id: id,
             isEmpty: false, // field deprecated - we should use placeholder wireframe instead
             mimeType: resource.mimeType,
+            permanentId: heatmapIdentifier?.rawValue,
             resourceId: resource.calculateIdentifier(),
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             width: Int64.ddWithNoOverflow( frame.width),
@@ -171,6 +177,7 @@ extension SessionReplayWireframesBuilder {
             clip: SRContentClip(frame, intersecting: clip),
             height: Int64.ddWithNoOverflow( frame.height),
             id: id,
+            permanentId: heatmapIdentifier?.rawValue,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             text: text,
             textPosition: textPosition,
@@ -194,6 +201,7 @@ extension SessionReplayWireframesBuilder {
             height: Int64.ddWithNoOverflow( frame.size.height),
             id: id,
             label: label,
+            permanentId: heatmapIdentifier?.rawValue,
             width: Int64.ddWithNoOverflow( frame.size.width),
             x: Int64.ddWithNoOverflow( frame.minX),
             y: Int64.ddWithNoOverflow( frame.minY)
@@ -217,6 +225,7 @@ extension SessionReplayWireframesBuilder {
             height: Int64.ddWithNoOverflow( frame.height),
             id: Int64(id),
             isVisible: true,
+            permanentId: heatmapIdentifier?.rawValue,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             slotId: String(id),
             width: Int64.ddWithNoOverflow( frame.size.width),

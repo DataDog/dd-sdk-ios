@@ -162,7 +162,8 @@ internal class Monitor: RUMCommandSubscriber {
                     sessionSampler: activeSession.sampler,
                     viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
                     userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
-                    viewServerTimeOffset: activeSession.viewScopes.last?.serverTimeOffset
+                    viewServerTimeOffset: activeSession.viewScopes.last?.serverTimeOffset,
+                    viewPath: context.activeViewPath
                 )
             }
         )
