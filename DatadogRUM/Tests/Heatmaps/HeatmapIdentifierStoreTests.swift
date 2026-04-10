@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
 import Testing
 import DatadogInternal
 import UIKit
@@ -31,3 +32,4 @@ struct HeatmapIdentifierStoreTests {
         #expect(store.heatmapIdentifier(for: ObjectIdentifier(view2)) == id2)
     }
 }
+#endif

@@ -1141,7 +1141,7 @@
 		D2C1A50129C4C4CB00946C31 /* DDSpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87E24509A0C00DA608C /* DDSpanContext.swift */; };
 		D2C1A50229C4C4CB00946C31 /* Casting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87C24509A0C00DA608C /* Casting.swift */; };
 		D2C1A50329C4C4CB00946C31 /* DDFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EBEDD629B8F08E00B15732 /* DDFormat.swift */; };
-		D2C1A50429C4C4CB00946C31 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		D2C1A50429C4C4CB00946C31 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		D2C1A50529C4C4CB00946C31 /* DatadogTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2546BF029AF4F550054E00B /* DatadogTracer.swift */; };
 		D2C1A50629C4C4CB00946C31 /* TracingWithLoggingIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216275247D1CD700AC5D67 /* TracingWithLoggingIntegration.swift */; };
 		D2C1A50729C4C4CB00946C31 /* DDSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87824509A0C00DA608C /* DDSpan.swift */; };
@@ -8663,7 +8663,7 @@
 				D2C1A51629C4C53F00946C31 /* OTConstants.swift in Sources */,
 				D2C1A50129C4C4CB00946C31 /* DDSpanContext.swift in Sources */,
 				D2C1A51529C4C53F00946C31 /* OTTracer.swift in Sources */,
-				D2C1A50429C4C4CB00946C31 /* BuildFile in Sources */,
+				D2C1A50429C4C4CB00946C31 /* (null) in Sources */,
 				D2C1A50729C4C4CB00946C31 /* DDSpan.swift in Sources */,
 				D2C1A50629C4C4CB00946C31 /* TracingWithLoggingIntegration.swift in Sources */,
 				D2C1A50B29C4C4CB00946C31 /* SpanEventBuilder.swift in Sources */,
