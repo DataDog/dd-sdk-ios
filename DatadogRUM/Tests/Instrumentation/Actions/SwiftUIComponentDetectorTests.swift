@@ -613,6 +613,7 @@ private class MockGestureRecognizer: UIGestureRecognizer {
     }
 }
 
+@objc(_TtC7SwiftUI17SwiftUIViewMock)
 private class SwiftUIViewMock: UIView {
     var mockTypeDescription: String?
 

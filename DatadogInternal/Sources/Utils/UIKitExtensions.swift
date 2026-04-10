@@ -23,9 +23,20 @@ extension DatadogExtension where ExtendedType == UIApplication {
 }
 
 extension DatadogExtension where ExtendedType: UIView {
+    /// Returns `true` when the class name matches SwiftUI runtime naming patterns.
+    static func isSwiftUIRuntimeClassName(_ className: String) -> Bool {
+        className.hasPrefix("SwiftUI.")
+            || className.hasPrefix("_TtC7SwiftUI")
+            || className.hasPrefix("_TtGC7SwiftUI")
+            || className.hasPrefix("_TtCV7SwiftUI")
+    }
+
     /// Whether this view is owned by SwiftUI.
     public var isSwiftUIView: Bool {
-        Bundle(for: Swift.type(of: type)).dd.isSwiftUI || NSStringFromClass(Swift.type(of: type)).contains("SwiftUI")
+        let viewType = Swift.type(of: type)
+        let className = NSStringFromClass(viewType)
+
+        return Bundle(for: viewType).dd.isSwiftUI || Self.isSwiftUIRuntimeClassName(className)
     }
 }
 
