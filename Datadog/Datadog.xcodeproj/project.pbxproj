@@ -11,15 +11,9 @@
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		093AC32A2F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
 		094B553F2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */; };
-		095AE9552F7D4E9F00C332AE /* TracerSamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE9542F7D4E9F00C332AE /* TracerSamplerProvider.swift */; };
-		095AE9562F7D4E9F00C332AE /* SamplingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE9522F7D4E9F00C332AE /* SamplingDecision.swift */; };
-		095AE9572F7D4E9F00C332AE /* SamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE9532F7D4E9F00C332AE /* SamplerProvider.swift */; };
 		095AE9582F7D4E9F00C332AE /* TracerSamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE9542F7D4E9F00C332AE /* TracerSamplerProvider.swift */; };
 		095AE9592F7D4E9F00C332AE /* SamplingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE9522F7D4E9F00C332AE /* SamplingDecision.swift */; };
 		095AE95A2F7D4E9F00C332AE /* SamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE9532F7D4E9F00C332AE /* SamplerProvider.swift */; };
-		09A9369D2F0EB989000B6379 /* SamplingMechanismType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */; };
-		09A9369E2F0EB989000B6379 /* SamplingPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369B2F0EB989000B6379 /* SamplingPriority.swift */; };
-		09A9369F2F0EB989000B6379 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369C2F0EB989000B6379 /* SpanContext.swift */; };
 		09A936A02F0EB989000B6379 /* SamplingMechanismType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369A2F0EB989000B6379 /* SamplingMechanismType.swift */; };
 		09A936A12F0EB989000B6379 /* SamplingPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369B2F0EB989000B6379 /* SamplingPriority.swift */; };
 		09A936A22F0EB989000B6379 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369C2F0EB989000B6379 /* SpanContext.swift */; };
@@ -779,7 +773,6 @@
 		AA0001012A000004000C0001 /* RUMScrollHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000004000A0001 /* RUMScrollHandlerTests.swift */; };
 		AA0001012A000006000C0001 /* UIScrollViewDelegateProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000006000A0001 /* UIScrollViewDelegateProxyTests.swift */; };
 		AA0001012A000007000C0001 /* UIScrollViewSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000007000A0001 /* UIScrollViewSwizzlerTests.swift */; };
-		AA0001012A000009000C0001 /* ThirdPartyDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000009000A0001 /* ThirdPartyDelegateProxy.swift */; };
 		AF9357FB8B8BF79EDD56F7C0 /* FlagsEvaluationFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD117A3F5E4EFA0335A8268F /* FlagsEvaluationFeature.swift */; };
 		B3E46CAB2D91B3AD00BABF66 /* NetworkContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E46CAA2D91B3A400BABF66 /* NetworkContextProvider.swift */; };
 		B3E46CAE2D91B40000BABF66 /* NetworkContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E46CAD2D91B3FC00BABF66 /* NetworkContext.swift */; };
@@ -2610,7 +2603,6 @@
 		AA0001012A000005000A0001 /* UIScrollViewHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIScrollViewHandler.swift; sourceTree = "<group>"; };
 		AA0001012A000006000A0001 /* UIScrollViewDelegateProxyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIScrollViewDelegateProxyTests.swift; sourceTree = "<group>"; };
 		AA0001012A000007000A0001 /* UIScrollViewSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIScrollViewSwizzlerTests.swift; sourceTree = "<group>"; };
-		AA0001012A000009000A0001 /* ThirdPartyDelegateProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThirdPartyDelegateProxy.swift; sourceTree = "<group>"; };
 		B3BBBCB0265E71C600943419 /* VitalMemoryReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalMemoryReader.swift; sourceTree = "<group>"; };
 		B3BBBCBB265E71D100943419 /* VitalMemoryReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalMemoryReaderTests.swift; sourceTree = "<group>"; };
 		B3E46CAA2D91B3A400BABF66 /* NetworkContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkContextProvider.swift; sourceTree = "<group>"; };
@@ -10656,7 +10648,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/../DatadogProfiling/Mach/include";
-				TARGETED_DEVICE_FAMILY = "1,2,3,7";				
+				TARGETED_DEVICE_FAMILY = "1,2,3,7";
 			};
 			name = Debug;
 		};
@@ -11631,7 +11623,7 @@
 			repositoryURL = "https://github.com/DataDog/dd-sdk-swift-testing.git";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 2.6.6;
+				minimumVersion = 2.7.0;
 			};
 		};
 		D22689B72EB12C3100875E44 /* XCRemoteSwiftPackageReference "KSCrash" */ = {
