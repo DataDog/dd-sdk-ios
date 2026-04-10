@@ -11,37 +11,22 @@ import DatadogInternal
 @testable import DatadogTrace
 
 class SpanSanitizerTests: XCTestCase {
-    func testWhenAttributeNameExceeds10NestedLevels_itIsEscapedByUnderscore() {
+    func testWhenAttributeNameExceeds20NestedLevels_itIsEscapedByUnderscore() {
+        // SpanSanitizer uses prefixLevels=0, so escape starts at dot 20.
+        let keyUnchanged = "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t"   // 19 dots — at limit
+        let keyToEscape = "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.u"  // 20 dots — 20th dot escaped
+        let expectedKeyEscaped = "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t_u"
+
         let span = SpanEvent.mockWith(
             userInfo: .mockWith(
                 extraInfo: [
-                    "extra-info-one": .mockAny(),
-                    "extra-info-one.two": .mockAny(),
-                    "extra-info-one.two.three": .mockAny(),
-                    "extra-info-one.two.three.four": .mockAny(),
-                    "extra-info-one.two.three.four.five": .mockAny(),
-                    "extra-info-one.two.three.four.five.six": .mockAny(),
-                    "extra-info-one.two.three.four.five.six.seven": .mockAny(),
-                    "extra-info-one.two.three.four.five.six.seven.eight": .mockAny(),
-                    "extra-info-one.two.three.four.five.six.seven.eight.nine": .mockAny(),
-                    "extra-info-one.two.three.four.five.six.seven.eight.nine.ten": .mockAny(),
-                    "extra-info-one.two.three.four.five.six.seven.eight.nine.ten.eleven": .mockAny(),
-                    "extra-info-one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": .mockAny(),
+                    keyUnchanged: .mockAny(),
+                    keyToEscape: .mockAny(),
                 ]
             ),
             tags: [
-                "tag-one": .mockAny(),
-                "tag-one.two": .mockAny(),
-                "tag-one.two.three": .mockAny(),
-                "tag-one.two.three.four": .mockAny(),
-                "tag-one.two.three.four.five": .mockAny(),
-                "tag-one.two.three.four.five.six": .mockAny(),
-                "tag-one.two.three.four.five.six.seven": .mockAny(),
-                "tag-one.two.three.four.five.six.seven.eight": .mockAny(),
-                "tag-one.two.three.four.five.six.seven.eight.nine": .mockAny(),
-                "tag-one.two.three.four.five.six.seven.eight.nine.ten": .mockAny(),
-                "tag-one.two.three.four.five.six.seven.eight.nine.ten.eleven": .mockAny(),
-                "tag-one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": .mockAny(),
+                keyUnchanged: .mockAny(),
+                keyToEscape: .mockAny(),
             ]
         )
 
@@ -49,33 +34,13 @@ class SpanSanitizerTests: XCTestCase {
         let sanitized = SpanSanitizer().sanitize(span: span)
 
         // Then
-        XCTAssertEqual(sanitized.userInfo.extraInfo.count, 12)
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight.nine"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight.nine.ten"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight.nine.ten_eleven"])
-        XCTAssertNotNil(sanitized.userInfo.extraInfo["extra-info-one.two.three.four.five.six.seven.eight.nine.ten_eleven_twelve"])
+        XCTAssertEqual(sanitized.userInfo.extraInfo.count, 2)
+        XCTAssertNotNil(sanitized.userInfo.extraInfo[keyUnchanged], "19-dot key must be unchanged")
+        XCTAssertNotNil(sanitized.userInfo.extraInfo[expectedKeyEscaped], "20th dot must be escaped to _")
 
-        XCTAssertEqual(sanitized.tags.count, 12)
-        XCTAssertNotNil(sanitized.tags["tag-one"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight.nine"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight.nine.ten"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight.nine.ten_eleven"])
-        XCTAssertNotNil(sanitized.tags["tag-one.two.three.four.five.six.seven.eight.nine.ten_eleven_twelve"])
+        XCTAssertEqual(sanitized.tags.count, 2)
+        XCTAssertNotNil(sanitized.tags[keyUnchanged], "19-dot key must be unchanged")
+        XCTAssertNotNil(sanitized.tags[expectedKeyEscaped], "20th dot must be escaped to _")
     }
 
     func testWhenNumberOfAttributesExceedsLimit_itDropsExtraOnes() {

@@ -22,7 +22,7 @@ import Foundation
 ///     }
 ///
 /// - Important
-/// Values can be nested up to 8 levels deep. Keys using more than 8 levels will be sanitized by the SDK.
+/// Values can be nested up to 20 levels deep. Keys using more than 20 levels will be sanitized by the SDK.
 ///
 public typealias AttributeKey = String
 
@@ -57,8 +57,8 @@ public typealias AttributeKey = String
 ///     }
 ///
 /// - Important
-/// Attributes in Datadog console can be nested up to 10 levels deep. If number of nested attribute levels
-/// defined as sum of key levels and value levels exceeds 10, the data may not be delivered.
+/// Attributes in Datadog console can be nested up to 20 levels deep. String values exceeding 25,600
+/// characters are truncated by the SDK before sending, as the backend discards anything beyond that limit.
 ///
 public typealias AttributeValue = Encodable
 
