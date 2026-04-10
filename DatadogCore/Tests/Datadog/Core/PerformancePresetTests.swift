@@ -96,11 +96,11 @@ class PerformancePresetTests: XCTestCase {
     }
 
     private func assertPresetCommonValues(in preset: PerformancePreset) {
-        XCTAssertEqual(preset.maxFileSize, 4 * 1_024 * 1_024) // 4MB
+        XCTAssertEqual(preset.maxFileSize, 5 * 1_024 * 1_024) // 5MB
         XCTAssertEqual(preset.maxDirectorySize, 512 * 1_024 * 1_024) // 512 MB
         XCTAssertEqual(preset.maxFileAgeForRead, 18 * 60 * 60) // 18h
-        XCTAssertEqual(preset.maxObjectsInFile, 500)
-        XCTAssertEqual(preset.maxObjectSize, 512 * 1_024) // 512KB
+        XCTAssertEqual(preset.maxObjectsInFile, 1_000)
+        XCTAssertEqual(preset.maxObjectSize, 1 * 1_024 * 1_024) // 1MB
     }
 
     func testPresetsConsistency() {
@@ -193,5 +193,10 @@ class PerformancePresetTests: XCTestCase {
         XCTAssertEqual(updatedPreset.minUploadDelay, uploadDelayOverride.range.lowerBound)
         XCTAssertEqual(updatedPreset.maxUploadDelay, uploadDelayOverride.range.upperBound)
         XCTAssertEqual(updatedPreset.uploadDelayChangeRate, uploadDelayOverride.changeRate)
+    }
+
+    func testMaxTLVDataLengthMatchesBatchSizeLimit() {
+        // Safety check must not exceed the server's 5 MB per-batch limit.
+        XCTAssertEqual(maxTLVDataLength, UInt32(5 * 1_024 * 1_024))
     }
 }

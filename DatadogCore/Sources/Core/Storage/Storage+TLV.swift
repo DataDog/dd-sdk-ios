@@ -6,8 +6,8 @@
 
 import Foundation
 
-/// Default max data length in TLV block for batch file (safety check) - 10 MB
-internal let maxTLVDataLength: TLVBlockSize = 10.MB.asUInt32()
+/// Default max data length in TLV block for batch file (safety check) - 5 MB
+internal let maxTLVDataLength: TLVBlockSize = 5.MB.asUInt32()
 
 /// TLV block type used in batch files.
 internal enum BatchBlockType: UInt16 {

@@ -293,8 +293,8 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         let storage1 = core1.stores.values.first?.storage
-        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxObjectSize, 512.KB.asUInt32())
-        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxFileSize, 4.MB.asUInt32())
+        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxObjectSize, 1.MB.asUInt32())
+        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxFileSize, 5.MB.asUInt32())
 
         let storage2 = core2.stores.values.first?.storage
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxObjectSize, 456)

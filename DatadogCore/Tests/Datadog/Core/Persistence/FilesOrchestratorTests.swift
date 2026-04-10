@@ -62,13 +62,13 @@ class FilesOrchestratorTests: XCTestCase {
 
         for _ in (0..<5) {
             for _ in (0 ..< performance.maxObjectsInFile).dropLast() { // skip first use
-                dateProvider.now.addTimeInterval(0.001)
+                dateProvider.now.addTimeInterval(0.0001)
                 nextFile = try orchestrator.getWritableFile(writeSize: 1)
                 XCTAssertEqual(nextFile.name, previousFile.name, "It should reuse the file \(performance.maxObjectsInFile) times")
                 previousFile = nextFile
             }
 
-            dateProvider.now.addTimeInterval(0.001)
+            dateProvider.now.addTimeInterval(0.0001)
             nextFile = try orchestrator.getWritableFile(writeSize: 1) // first use of a new file
             XCTAssertNotEqual(nextFile.name, previousFile.name, "It should create a new file when previous one is used \(performance.maxObjectsInFile) times")
             previousFile = nextFile

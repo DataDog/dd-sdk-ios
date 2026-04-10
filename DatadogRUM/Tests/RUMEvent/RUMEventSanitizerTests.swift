@@ -15,68 +15,36 @@ class RUMEventSanitizerTests: XCTestCase {
     private let errorEvent: RUMErrorEvent = .mockRandom()
     private let longTaskEvent: RUMLongTaskEvent = .mockRandom()
 
-    func testWhenAttributeNameExceeds10NestedLevels_itIsEscapedByUnderscore() {
+    func testWhenAttributeNameExceeds20NestedLevels_itIsEscapedByUnderscore() {
         func test<Event>(event: Event) where Event: RUMSanitizableEvent {
             var event = event
-            event.context?.contextInfo = [
-                "attribute-one": mockValue(),
-                "attribute-one.two": mockValue(),
-                "attribute-one.two.three": mockValue(),
-                "attribute-one.two.three.four": mockValue(),
-                "attribute-one.two.three.four.five": mockValue(),
-                "attribute-one.two.three.four.five.six": mockValue(),
-                "attribute-one.two.three.four.five.six.seven": mockValue(),
-                "attribute-one.two.three.four.five.six.seven.eight": mockValue(),
-                "attribute-one.two.three.four.five.six.seven.eight.nine": mockValue(),
-                "attribute-one.two.three.four.five.six.seven.eight.nine.ten": mockValue(),
-                "attribute-one.two.three.four.five.six.seven.eight.nine.ten.eleven": mockValue(),
-                "attribute-one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": mockValue(),
-            ]
+            // RUM sanitizer uses prefixLevels=1, so effective depth = 1 + key dots.
+            // 18 dots (19 segments) — total depth 19 < 20, must NOT be escaped
+            let keyUnchanged = "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s"
+            // 19 dots (20 segments) — total depth 20 >= 20, 19th dot must be escaped
+            let keyToEscape = "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t"
+            let expectedKeyEscaped = "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s_t"
 
+            event.context?.contextInfo = [
+                keyUnchanged: mockValue(),
+                keyToEscape: mockValue(),
+            ]
             event.usr?.usrInfo = [
-                "user-info-one": mockValue(),
-                "user-info-one.two": mockValue(),
-                "user-info-one.two.three": mockValue(),
-                "user-info-one.two.three.four": mockValue(),
-                "user-info-one.two.three.four.five": mockValue(),
-                "user-info-one.two.three.four.five.six": mockValue(),
-                "user-info-one.two.three.four.five.six.seven": mockValue(),
-                "user-info-one.two.three.four.five.six.seven.eight": mockValue(),
-                "user-info-one.two.three.four.five.six.seven.eight.nine": mockValue(),
-                "user-info-one.two.three.four.five.six.seven.eight.nine.ten": mockValue(),
-                "user-info-one.two.three.four.five.six.seven.eight.nine.ten.eleven": mockValue(),
-                "user-info-one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": mockValue(),
+                keyUnchanged: mockValue(),
+                keyToEscape: mockValue(),
             ]
 
             // When
             let sanitized = RUMEventSanitizer().sanitize(event: event)
 
             // Then
-            XCTAssertEqual(sanitized.context?.contextInfo.count, 12)
-            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one"])
-            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two"])
-            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three"])
-            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four"])
-            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five"])
-            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six"])
-            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven"])
-            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven.eight"])
-            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven.eight.nine_ten"])
-            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven.eight.nine_ten_eleven"])
-            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven.eight.nine_ten_eleven_twelve"])
+            XCTAssertEqual(sanitized.context?.contextInfo.count, 2)
+            XCTAssertNotNil(sanitized.context?.contextInfo[keyUnchanged], "18-dot key must be unchanged")
+            XCTAssertNotNil(sanitized.context?.contextInfo[expectedKeyEscaped], "19th dot must be escaped to _")
 
-            XCTAssertEqual(sanitized.usr?.usrInfo.count, 12)
-            XCTAssertNotNil(sanitized.usr?.usrInfo["user-info-one"])
-            XCTAssertNotNil(sanitized.usr?.usrInfo["user-info-one.two"])
-            XCTAssertNotNil(sanitized.usr?.usrInfo["user-info-one.two.three"])
-            XCTAssertNotNil(sanitized.usr?.usrInfo["user-info-one.two.three.four"])
-            XCTAssertNotNil(sanitized.usr?.usrInfo["user-info-one.two.three.four.five"])
-            XCTAssertNotNil(sanitized.usr?.usrInfo["user-info-one.two.three.four.five.six"])
-            XCTAssertNotNil(sanitized.usr?.usrInfo["user-info-one.two.three.four.five.six.seven"])
-            XCTAssertNotNil(sanitized.usr?.usrInfo["user-info-one.two.three.four.five.six.seven.eight"])
-            XCTAssertNotNil(sanitized.usr?.usrInfo["user-info-one.two.three.four.five.six.seven.eight.nine_ten"])
-            XCTAssertNotNil(sanitized.usr?.usrInfo["user-info-one.two.three.four.five.six.seven.eight.nine_ten_eleven"])
-            XCTAssertNotNil(sanitized.usr?.usrInfo["user-info-one.two.three.four.five.six.seven.eight.nine_ten_eleven_twelve"])
+            XCTAssertEqual(sanitized.usr?.usrInfo.count, 2)
+            XCTAssertNotNil(sanitized.usr?.usrInfo[keyUnchanged], "18-dot key must be unchanged")
+            XCTAssertNotNil(sanitized.usr?.usrInfo[expectedKeyEscaped], "19th dot must be escaped to _")
         }
 
         test(event: viewEvent)

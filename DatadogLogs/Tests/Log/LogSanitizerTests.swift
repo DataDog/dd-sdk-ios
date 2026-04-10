@@ -65,41 +65,35 @@ class LogSanitizerTests: XCTestCase {
         XCTAssertNotNil(sanitized.attributes.userAttributes["date"])
     }
 
-    func testWhenUserAttributeNameExceeds10NestedLevels_itIsEscapedByUnderscore() {
+    func testWhenUserAttributeNameExceeds20NestedLevels_itIsEscapedByUnderscore() {
         let log = LogEvent.mockWith(
             attributes: .mockWith(
                 userAttributes: [
-                    "one": mockValue(),
-                    "one.two": mockValue(),
-                    "one.two.three": mockValue(),
-                    "one.two.three.four": mockValue(),
-                    "one.two.three.four.five": mockValue(),
-                    "one.two.three.four.five.six": mockValue(),
-                    "one.two.three.four.five.six.seven": mockValue(),
-                    "one.two.three.four.five.six.seven.eight": mockValue(),
-                    "one.two.three.four.five.six.seven.eight.nine": mockValue(),
-                    "one.two.three.four.five.six.seven.eight.nine.ten": mockValue(),
-                    "one.two.three.four.five.six.seven.eight.nine.ten.eleven": mockValue(),
-                    "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": mockValue(),
+                    // 20 segments = 19 dots — must NOT be escaped
+                    "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve.thirteen.fourteen.fifteen.sixteen.seventeen.eighteen.nineteen.twenty": mockValue(),
+                    // 21 segments = 20 dots — 20th dot MUST be escaped to "_"
+                    "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve.thirteen.fourteen.fifteen.sixteen.seventeen.eighteen.nineteen.twenty.twentyone": mockValue(),
+                    // 22 segments = 21 dots — both 20th and 21st dots escaped
+                    "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve.thirteen.fourteen.fifteen.sixteen.seventeen.eighteen.nineteen.twenty.twentyone.twentytwo": mockValue(),
                 ]
             )
         )
 
         let sanitized = LogEventSanitizer().sanitize(log: log)
 
-        XCTAssertEqual(sanitized.attributes.userAttributes.count, 12)
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight.nine"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight.nine.ten"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight.nine.ten_eleven"])
-        XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight.nine.ten_eleven_twelve"])
+        XCTAssertEqual(sanitized.attributes.userAttributes.count, 3)
+        // 19 dots — untouched
+        XCTAssertNotNil(sanitized.attributes.userAttributes[
+            "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve.thirteen.fourteen.fifteen.sixteen.seventeen.eighteen.nineteen.twenty"
+        ])
+        // 20 dots — 20th dot escaped
+        XCTAssertNotNil(sanitized.attributes.userAttributes[
+            "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve.thirteen.fourteen.fifteen.sixteen.seventeen.eighteen.nineteen.twenty_twentyone"
+        ])
+        // 21 dots — both 20th and 21st dots escaped
+        XCTAssertNotNil(sanitized.attributes.userAttributes[
+            "one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve.thirteen.fourteen.fifteen.sixteen.seventeen.eighteen.nineteen.twenty_twentyone_twentytwo"
+        ])
     }
 
     func testWhenUserAttributeNameIsInvalid_itIsIgnored() {
@@ -173,6 +167,30 @@ class LogSanitizerTests: XCTestCase {
         dd.logger.errorLogs.forEach {
             XCTAssertTrue($0.message.matches(regex: "'.*' is a reserved attribute name. This attribute will be ignored."))
         }
+    }
+
+    func testWhenAttributeValueExceeds25600Characters_itIsTruncated() {
+        let longValue = String(repeating: "a", count: 25_601)
+        let log = LogEvent.mockWith(
+            attributes: .mockWith(userAttributes: ["key": longValue])
+        )
+
+        let sanitized = LogEventSanitizer().sanitize(log: log)
+
+        let value = sanitized.attributes.userAttributes["key"] as? String
+        XCTAssertEqual(value?.count, 25_600)
+    }
+
+    func testWhenAttributeValueIsWithinLimit_itIsNotModified() {
+        let value = String(repeating: "a", count: 25_600)
+        let log = LogEvent.mockWith(
+            attributes: .mockWith(userAttributes: ["key": value])
+        )
+
+        let sanitized = LogEventSanitizer().sanitize(log: log)
+
+        let result = sanitized.attributes.userAttributes["key"] as? String
+        XCTAssertEqual(result?.count, 25_600)
     }
 
     // MARK: - Tags sanitization
