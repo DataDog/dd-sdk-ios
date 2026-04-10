@@ -463,7 +463,7 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - Feature Operations
 
-    func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+    func startOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue], options: OperationOptions?) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) started")
 
         telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .start)))))
@@ -481,7 +481,11 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+    func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+        startOperation(name: name, operationKey: operationKey, attributes: attributes, options: nil)
+    }
+
+    func succeedOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) successfully ended")
 
         telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .succeed)))))
@@ -499,7 +503,11 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
+    func succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+        succeedOperation(name: name, operationKey: operationKey, attributes: attributes)
+    }
+
+    func failOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) unsuccessfully ended with the following failure reason: \(reason.rawValue)")
 
         telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .fail)))))
@@ -515,6 +523,10 @@ extension Monitor: RUMMonitorProtocol {
                 attributes: attributes
             )
         )
+    }
+
+    func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
+        failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
     }
 
     private func instanceSuffix(_ operationKey: String?) -> String {
