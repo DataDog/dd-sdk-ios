@@ -129,7 +129,7 @@ extension ViewAttributes {
         self.layerCornerRadius = view.layer.cornerRadius
         self.alpha = view.alpha
         self.isHidden = view.isHidden
-        self.intrinsicContentSize = view.intrinsicContentSize
+        self.intrinsicContentSize = view.dd.safeIntrinsicContentSize
         self.textAndInputPrivacy = overrides?.textAndInputPrivacy
         self.imagePrivacy = overrides?.imagePrivacy
         self.touchPrivacy = overrides?.touchPrivacy

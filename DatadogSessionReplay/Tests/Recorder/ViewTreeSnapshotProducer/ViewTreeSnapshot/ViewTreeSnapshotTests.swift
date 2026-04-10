@@ -37,6 +37,19 @@ class ViewAttributesTests: XCTestCase {
         XCTAssertNil(attributes.hide)
     }
 
+    func testItAvoidsIntrinsicContentSizeReadForSwiftUIViewWithPendingLayout() {
+        // Given
+        let view = SwiftUIHostingViewSpy(frame: CGRect(x: 0, y: 0, width: 123, height: 45))
+        view.setNeedsLayout()
+
+        // When
+        let attributes = createViewAttributes(with: view)
+
+        // Then
+        XCTAssertEqual(view.intrinsicContentSizeReadCount, 0)
+        XCTAssertEqual(attributes.intrinsicContentSize, view.bounds.size)
+    }
+
     func testWhenViewIsVisible() {
         // Given
         let view: UIView = .mockRandom()
@@ -229,6 +242,15 @@ class ViewAttributesTests: XCTestCase {
     }
 }
 // swiftlint:enable opening_brace
+
+private final class SwiftUIHostingViewSpy: UIView {
+    private(set) var intrinsicContentSizeReadCount = 0
+
+    override var intrinsicContentSize: CGSize {
+        intrinsicContentSizeReadCount += 1
+        return CGSize(width: 300, height: 200)
+    }
+}
 
 class NodeSemanticsTests: XCTestCase {
     func testImportance() {

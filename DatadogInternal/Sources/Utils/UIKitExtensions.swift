@@ -9,6 +9,8 @@ import Foundation
 #if canImport(UIKit) && !os(watchOS)
 import UIKit
 
+extension UIView: DatadogExtended { }
+
 extension DatadogExtension where ExtendedType == UIApplication {
     /// `UIApplication.shared` does not compile in some environments (e.g. notification service app extension), resulting with:
     /// _"shared' is unavailable in application extensions for iOS: Use view controller based solutions where appropriate instead"_.
@@ -17,6 +19,13 @@ extension DatadogExtension where ExtendedType == UIApplication {
     public static var managedShared: UIApplication? {
         return UIApplication
             .value(forKeyPath: #keyPath(UIApplication.shared)) as? UIApplication // swiftlint:disable:this unsafe_uiapplication_shared
+    }
+}
+
+extension DatadogExtension where ExtendedType: UIView {
+    /// Whether this view is owned by SwiftUI.
+    public var isSwiftUIView: Bool {
+        Bundle(for: Swift.type(of: type)).dd.isSwiftUI || NSStringFromClass(Swift.type(of: type)).contains("SwiftUI")
     }
 }
 

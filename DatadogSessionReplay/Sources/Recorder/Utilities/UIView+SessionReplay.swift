@@ -8,8 +8,6 @@
 import UIKit
 import DatadogInternal
 
-extension UIView: DatadogExtended { }
-
 /// Sensitive text content types as defined in Session Replay.
 private let UITextContentSensitiveTypes: Set<UITextContentType> = [
     .password,
@@ -62,6 +60,17 @@ internal extension DatadogExtension where ExtendedType: UITextInputTraits {
 
 internal extension DatadogExtension where ExtendedType: UITraitEnvironment {
     var usesDarkMode: Bool { type.traitCollection.userInterfaceStyle == .dark }
+}
+
+internal extension DatadogExtension where ExtendedType: UIView {
+    /// Returns a layout-safe size snapshot for views whose intrinsic size can trigger SwiftUI layout work.
+    var safeIntrinsicContentSize: CGSize {
+        guard type.dd.isSwiftUIView, type.layer.needsLayout() else {
+            return type.intrinsicContentSize
+        }
+
+        return type.bounds.size
+    }
 }
 
 #endif

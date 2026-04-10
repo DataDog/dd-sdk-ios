@@ -615,15 +615,10 @@ private class MockGestureRecognizer: UIGestureRecognizer {
 
 private class SwiftUIViewMock: UIView {
     var mockTypeDescription: String?
-    var overrideIsSwiftUIView: Bool?
 
     // Implement TypeDescribing protocol
     override var typeDescription: String {
         return mockTypeDescription ?? "_TtCV7SwiftUI9EmptyView"
-    }
-
-    @objc override var isSwiftUIView: Bool {
-        return overrideIsSwiftUIView ?? true
     }
 }
 

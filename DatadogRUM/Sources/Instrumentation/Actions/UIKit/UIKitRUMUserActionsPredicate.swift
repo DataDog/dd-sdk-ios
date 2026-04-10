@@ -52,7 +52,7 @@ public struct DefaultUIKitRUMActionsPredicate {
         // Some SwiftUI components are UIKit under the hood,
         // but need to clean up tangled SwiftUI name
         // e.g., _TtCV7SwiftUIP33_D74FE142C3C5A6C2CEA4987A69AEBD7522SystemSegmentedControl18UISegmentedControl
-        } else if view.isSwiftUIView {
+        } else if view.dd.isSwiftUIView {
             return view.swiftUIViewName
         } else {
             return className
