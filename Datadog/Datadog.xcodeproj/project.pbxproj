@@ -5506,25 +5506,25 @@
 		61E8C5062B28896100E709B4 /* RUM */ = {
 			isa = PBXGroup;
 			children = (
-				D26152332F433BBA0054EB7D /* UIApplicationSwizzlerTests.swift */,
-				6119DDC52DD24A9600DA80F9 /* RUMSessionTestsBase.swift */,
-				6119DDC32DD24A9600DA80F9 /* RUMSessionStartInForegroundTests.swift */,
-				6119DDC22DD24A9600DA80F9 /* RUMSessionStartInBackgroundTests.swift */,
-				6119DDC62DD24A9600DA80F9 /* RUMSessionTimeOutTests.swift */,
-				6119DDC42DD24A9600DA80F9 /* RUMSessionStopTests.swift */,
-				6119DDC72DD24A9600DA80F9 /* RUMSessionWithNoViewTests.swift */,
-				61536ABD2DF0A0D100B06D7D /* RUMSessionTrackingTests.swift */,
 				A757AE8F2D3815AC00C772FA /* AnonymousIdentifierTests.swift */,
 				6167E6DC2B811A8300C3CA2D /* AppHangsMonitoringTests.swift */,
+				D2AB895D2F71780900040F58 /* DeterministicSamplingIntegrationTests.swift */,
 				1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */,
+				D26152302F432C990054EB7D /* RUMDebuggingTests.swift */,
+				094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */,
+				6119DDC22DD24A9600DA80F9 /* RUMSessionStartInBackgroundTests.swift */,
+				6119DDC32DD24A9600DA80F9 /* RUMSessionStartInForegroundTests.swift */,
+				6119DDC42DD24A9600DA80F9 /* RUMSessionStopTests.swift */,
+				6119DDC52DD24A9600DA80F9 /* RUMSessionTestsBase.swift */,
+				6119DDC62DD24A9600DA80F9 /* RUMSessionTimeOutTests.swift */,
+				61536ABD2DF0A0D100B06D7D /* RUMSessionTrackingTests.swift */,
+				6119DDC72DD24A9600DA80F9 /* RUMSessionWithNoViewTests.swift */,
 				11BA765C2D7F0EE40058C21C /* RUMViewHitchesIntegrationTests.swift */,
+				D26152332F433BBA0054EB7D /* UIApplicationSwizzlerTests.swift */,
 				6105C5022CF8D5AB00C4C5EE /* ViewLoadingMetricsTests.swift */,
 				3CA00B062C2AE52400E6FE01 /* WatchdogTerminationsMonitoringTests.swift */,
 				D2552AF42BBC47D900A45725 /* WebEventIntegrationTests.swift */,
-				D26152302F432C990054EB7D /* RUMDebuggingTests.swift */,
 				61DCC84C2C05D4E500CB59E5 /* SDKMetrics */,
-				D2AB895D2F71780900040F58 /* DeterministicSamplingIntegrationTests.swift */,
-				094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
