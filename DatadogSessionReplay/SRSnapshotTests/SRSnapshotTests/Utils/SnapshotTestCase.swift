@@ -154,7 +154,7 @@ internal class SnapshotTestCase: XCTestCase {
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
             additionalNodeRecorders: [],
-            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+            core: PassthroughCoreMock(),
             featureFlags: [.swiftui: true]
         )
 
