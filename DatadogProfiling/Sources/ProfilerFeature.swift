@@ -63,8 +63,8 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
             )
         ]
 
-        if let continuousProfiler = ContinuousProfiler(core: core, isContinuousProfiling: isContinuousProfiling, telemetryController: telemetryController) {
-            messageReceivers.append(continuousProfiler)
+        if let datadogProfiler = DatadogProfiler(core: core, isContinuousProfiling: isContinuousProfiling, telemetryController: telemetryController) {
+            messageReceivers.append(datadogProfiler)
         }
 
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)

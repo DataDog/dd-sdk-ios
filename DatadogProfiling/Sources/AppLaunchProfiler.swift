@@ -33,9 +33,7 @@ internal final class AppLaunchProfiler: ProfilingHandler {
 
     @ReadWriteLock
     private(set) var attributes: [AttributeKey: AttributeValue] = [:]
-    @ReadWriteLock
     private var currentRUMVitals: [String: Vital] = [:]
-    @ReadWriteLock
     private var hasProcessedAppLaunch: Bool = false
 
     init(
@@ -74,7 +72,7 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
                 self.updateProfilingContext()
             }
 
-            _currentRUMVitals.mutate { $0[message.ttid.key] = message.ttid }
+            currentRUMVitals[message.ttid.key] = message.ttid
 
             defer { Self.unregisterInstance() }
             guard let profile = appLaunchProfile() else {
@@ -86,13 +84,12 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
             return false
         } else if case let .payload(message as OperationMessage) = message {
             if message.operation.stepType == .start {
-                _currentRUMVitals.mutate { $0[message.operation.key] = message.operation }
+                currentRUMVitals[message.operation.key] = message.operation
             } else if var startVital = currentRUMVitals[message.operation.key] {
-                _currentRUMVitals.mutate {
-                    let duration = message.operation.date.timeIntervalSince(startVital.date)
-                    startVital.duration = duration.dd.toInt64Nanoseconds
-                    $0[message.operation.key] = startVital
-                }
+                // Add duration to vital to help Profiling backend label correctly the samples of this vital
+                let duration = message.operation.date.timeIntervalSince(startVital.date)
+                startVital.duration = duration.dd.toInt64Nanoseconds
+                currentRUMVitals[message.operation.key] = startVital
             }
             return false
         }
