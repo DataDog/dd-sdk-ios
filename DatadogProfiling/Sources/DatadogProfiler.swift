@@ -17,7 +17,7 @@ internal import DatadogMachProfiler
 #endif
 // swiftlint:enable duplicate_imports
 
-internal final class ContinuousProfiler: ProfilingHandler {
+internal final class DatadogProfiler: ProfilingHandler {
     enum Constants {
         /// Default profile duration during continuous profiling.
         static let maxProfileDuration: TimeInterval = 60 // 1 minute profiles
@@ -27,14 +27,21 @@ internal final class ContinuousProfiler: ProfilingHandler {
         static let customProfilingCutOffTime: TimeInterval = 60 // 1 minute cutoff
     }
 
+    static let defaultQueue = DispatchQueue(
+        label: "com.datadoghq.datadog-profiler",
+        qos: .utility
+    )
+
     /// Ensures only one `ContinuousProfiler` is active at a time.
     private static var hasActiveInstance = false
     private static let lock = NSLock()
 
+    /// The queue used to synchronize the profiling data and the writes.
+    private let queue: DispatchQueue
     private let isContinuousProfiling: Bool
     private let profilingConditions: ProfilingConditions
     private let profilingInterval: TimeInterval
-    private var timer: Timer?
+    private var timer: DispatchSourceTimer?
 
     let operation: ProfilingOperation
     let featureScope: FeatureScope
@@ -44,140 +51,173 @@ internal final class ContinuousProfiler: ProfilingHandler {
 
     @ReadWriteLock
     private(set) var attributes: [String: AttributeValue] = [:]
-    // Ongoing RUM Operations to attach to profiles.
-    @ReadWriteLock
-    private var currentRUMVitals: [String: Vital] = [:]
-    // App hangs to attach to profiles.
-    @ReadWriteLock
-    private var hangs: [DurationEvent] = []
-    // Long tasks to attach to profiles.
-    @ReadWriteLock
-    private var longTasks: [DurationEvent] = []
     @ReadWriteLock
     private var hasReceivedAppLaunchVital = false
-    @ReadWriteLock
+    // Ongoing RUM Operations to attach to profiles.
+    private var currentRUMVitals: [String: Vital] = [:]
+    // App hangs to attach to profiles.
+    private var hangs: [DurationEvent] = []
+    // Long tasks to attach to profiles.
+    private var longTasks: [DurationEvent] = []
     private var previousCustomProfilingStartDate: Date
-
-    /// The notification center where this profiler observes `UIApplication` lifecycle notifications.
-    private weak var notificationCenter: NotificationCenter?
+    private var hasConditionsToProfile = true
 
     init?(
         core: DatadogCoreProtocol,
-        isContinuousProfiling: Bool,
+        queue: DispatchQueue = DatadogProfiler.defaultQueue,
+        isContinuousProfiling: Bool = true,
         operation: ProfilingOperation = .continuousProfiling,
         telemetryController: ProfilingTelemetryController = .init(),
         profilingConditions: ProfilingConditions = .init(),
         profilingInterval: TimeInterval = Constants.maxProfileDuration,
         encoder: JSONEncoder = JSONEncoder(),
-        notificationCenter: NotificationCenter = .default,
         dateProvider: DateProvider = SystemDateProvider()
     ) {
-        Self.lock.lock()
-        guard Self.hasActiveInstance == false else {
-            Self.lock.unlock()
-            return nil
+        do {
+            Self.lock.lock()
+            defer { Self.lock.unlock() }
+            guard Self.hasActiveInstance == false else {
+                return nil
+            }
+            Self.hasActiveInstance = true
         }
-        Self.hasActiveInstance = true
-        Self.lock.unlock()
 
         self.featureScope = core.scope(for: ProfilerFeature.self)
+        self.queue = queue
         self.isContinuousProfiling = isContinuousProfiling
         self.operation = operation
         self.telemetryController = telemetryController
         self.profilingConditions = profilingConditions
         self.profilingInterval = profilingInterval
         self.encoder = encoder
-        self.notificationCenter = notificationCenter
         self.dateProvider = dateProvider
         self.previousCustomProfilingStartDate = dateProvider.now
 
         if isContinuousProfiling {
             startTimer()
         }
-        observeNotificationCenter()
     }
 
     deinit {
         Self.lock.lock()
         Self.hasActiveInstance = false
         Self.lock.unlock()
-
-        notificationCenter?.removeObserver(
-            self,
-            name: ApplicationNotifications.didEnterBackground,
-            object: nil
-        )
-        notificationCenter?.removeObserver(
-            self,
-            name: ApplicationNotifications.willEnterForeground,
-            object: nil
-        )
     }
 }
 
 // MARK: - FeatureMessageReceiver
 
-extension ContinuousProfiler: FeatureMessageReceiver {
+extension DatadogProfiler: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(message) = message else {
-            return false
-        }
-
         switch message {
-        case let message as TTIDMessage:
-            handleAppLaunch(message: message)
+        case .context(let context):
+            handle(context: context)
             return false
-        case let message as OperationMessage:
-            handleOperation(message: message)
-            // Every OperationMessage is consumed by ContinuousProfiler after app launch vital
-            return hasReceivedAppLaunchVital
-        case let message as AppHangMessage:
-            handleAppHang(message: message)
-            return true
-        case let message as LongTaskMessage:
-            handleLongTask(message: message)
-            return true
+        case .payload(let message):
+            switch message {
+            case let message as TTIDMessage:
+                handleAppLaunch(message: message)
+                return false
+            case let message as OperationMessage:
+                handleOperation(message: message)
+                // Every OperationMessage is consumed by ContinuousProfiler after app launch vital
+                return hasReceivedAppLaunchVital
+            case let message as AppHangMessage:
+                handleAppHang(message: message)
+                return true
+            case let message as LongTaskMessage:
+                handleLongTask(message: message)
+                return true
+            default:
+                return false
+            }
         default:
             return false
         }
     }
 }
 
-// MARK: - Private
+// MARK: - Timer
 
-private extension ContinuousProfiler {
-    @objc
-    func applicationDidEnterBackground() {
-        updateProfilerAndSendProfile()
+private extension DatadogProfiler {
+    func startTimer() {
+        guard self.timer == nil else {
+            // reset timer
+            fireTimer(after: profilingInterval)
+            return
+        }
+
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now() + profilingInterval, repeating: profilingInterval)
+        timer.setEventHandler { [weak self] in
+            self?.updateProfilerAndSendProfile()
+        }
+        timer.resume()
+        self.timer = timer
     }
 
-    @objc
-    func applicationWillEnterForeground() {
-        updateProfilerAndSendProfile()
+    func stopTimer() {
+        timer?.cancel()
+        timer = nil
     }
 
-    func handleAppLaunch(message: TTIDMessage) {
-        featureScope.context { [weak self] context in
+    func fireTimer(after interval: TimeInterval) {
+        let delay = dateProvider.now.addingTimeInterval(interval).timeIntervalSinceNow
+        timer?.schedule(deadline: .now() + max(0, delay), repeating: profilingInterval)
+    }
+}
+
+// MARK: - Handle Messages and context
+
+private extension DatadogProfiler {
+    func handle(context: DatadogContext) {
+        queue.async { [weak self] in
             guard let self else {
                 return
             }
+            // Check, based on the context, if the profiler has conditions to profile
+            hasConditionsToProfile = profilingConditions.canProfileApplication(with: context)
 
+            if context.applicationStateHistory.currentState == .background {
+                // Updates the profiler state if the app was or is about to have foreground time
+                guard context.applicationStateHistory
+                    .containsState(during: context.launchInfo.processLaunchDate...dateProvider.now, where: { $0 == .active }) else {
+                    return
+                }
+
+                updateProfilerState(canProfile: hasConditionsToProfile && (isContinuousProfiling || canExtendCustomProfiling()))
+                sendProfile()
+            } else {
+                switch ProfilingContext.Status.current {
+                case .running, .stopped:
+                    updateProfilerState(canProfile: hasConditionsToProfile && (isContinuousProfiling || canExtendCustomProfiling()))
+                default:
+                    break
+                }
+            }
+        }
+    }
+
+    func handleAppLaunch(message: TTIDMessage) {
+        queue.async { [weak self] in
+            guard let self else {
+                return
+            }
             attributes = message.attributes
 
             // Remove events that were handled by `AppLaunchProfiler`
-            _currentRUMVitals.mutate { $0 = $0.ongoingOperations() }
-            _hangs.mutate { $0.removeAll() }
-            _longTasks.mutate { $0.removeAll() }
-            updateProfilerState(context: context, canProfile: isContinuousProfiling || canExtendCustomProfiling())
+            currentRUMVitals = currentRUMVitals.ongoingOperations()
+            hangs.removeAll()
+            longTasks.removeAll()
+            updateProfilerState(canProfile: hasConditionsToProfile && (isContinuousProfiling || canExtendCustomProfiling()))
         }
     }
 
     func handleOperation(message: OperationMessage) {
-        featureScope.context { [weak self] context in
+        queue.async { [weak self] in
             guard let self else {
                 return
             }
-
             attributes = message.attributes
 
             switch message.operation.stepType {
@@ -185,17 +225,16 @@ private extension ContinuousProfiler {
                 // Start profiler if it is a custom profiler and the operations have started
                 if currentRUMVitals.isEmpty && isContinuousProfiling == false {
                     startTimer()
-                    updateProfilerState(context: context)
+                    updateProfilerState(canProfile: hasConditionsToProfile)
                 }
 
-                _currentRUMVitals.mutate { $0[message.operation.key] = message.operation }
+                currentRUMVitals[message.operation.key] = message.operation
             case .end:
                 if var startVital = currentRUMVitals[message.operation.key] {
-                    _currentRUMVitals.mutate {
-                        let duration = message.operation.date.timeIntervalSince(startVital.date)
-                        startVital.duration = duration.dd.toInt64Nanoseconds
-                        $0[message.operation.key] = startVital
-                    }
+                    // Add duration to vital to help Profiling backend label correctly the samples of this vital
+                    let duration = message.operation.date.timeIntervalSince(startVital.date)
+                    startVital.duration = duration.dd.toInt64Nanoseconds
+                    currentRUMVitals[message.operation.key] = startVital
 
                     // Stop profiler if it is a custom profiler and the operations have completed
                     if currentRUMVitals.didCompleteOperations() && isContinuousProfiling == false {
@@ -210,40 +249,24 @@ private extension ContinuousProfiler {
     }
 
     func handleAppHang(message: AppHangMessage) {
-        featureScope.context { [weak self] context in
-            self?._hangs.mutate { $0.append(message.hang) }
+        queue.async { [weak self] in
+            self?.hangs.append(message.hang)
         }
     }
 
     func handleLongTask(message: LongTaskMessage) {
-        featureScope.context { [weak self] context in
-            self?._longTasks.mutate { $0.append(message.longTask) }
+        queue.async { [weak self] in
+            self?.longTasks.append(message.longTask)
         }
     }
 
     func updateProfilerAndSendProfile() {
-        featureScope.context { [weak self] context in
-            guard let self else {
-                return
-            }
-
-            // Updates the profiler state if the app was or is about to have foreground time
-            guard context.applicationStateHistory
-                .containsState(during: context.launchInfo.processLaunchDate...dateProvider.now, where: { $0 == .active }) else {
-                return
-            }
-
-            updateProfilerState(
-                context: context,
-                canProfile: isContinuousProfiling || canExtendCustomProfiling()
-            )
-            sendProfile()
-        }
+        updateProfilerState(canProfile: hasConditionsToProfile && (isContinuousProfiling || canExtendCustomProfiling()))
+        sendProfile()
     }
 
-    func updateProfilerState(context: DatadogContext, canProfile: Bool = true) {
-        let profilingContext = self.updateProfilingContext()
-        let canProfile = canProfile && profilingConditions.canProfileApplication(with: context)
+    func updateProfilerState(canProfile: Bool) {
+        let profilingContext = updateProfilingContext()
 
         switch profilingContext.status {
         case .stopped:
@@ -266,7 +289,7 @@ private extension ContinuousProfiler {
     func sendProfile() {
         previousCustomProfilingStartDate = dateProvider.now
         guard let profile = dd_profiler_flush_and_get_profile() else {
-            self.telemetryController.send(metric: AppLaunchMetric.noProfile)
+            telemetryController.send(metric: AppLaunchMetric.noProfile)
             return
         }
 
@@ -282,58 +305,14 @@ private extension ContinuousProfiler {
         }
     }
 
-    func observeNotificationCenter() {
-        notificationCenter?.addObserver(
-            self,
-            selector: #selector(applicationDidEnterBackground),
-            name: ApplicationNotifications.didEnterBackground,
-            object: nil
-        )
-        notificationCenter?.addObserver(
-            self,
-            selector: #selector(applicationWillEnterForeground),
-            name: ApplicationNotifications.willEnterForeground,
-            object: nil
-        )
-    }
-
-    func startTimer() {
-        guard self.timer == nil else {
-            // reset timer
-            fireTimer(after: profilingInterval)
-            return
-        }
-
-        // Schedule reoccurring samples
-        let timer = Timer(timeInterval: profilingInterval, repeats: true) { [weak self] _ in
-            guard let self else {
-                return
-            }
-
-            updateProfilerAndSendProfile()
-        }
-
-        RunLoop.main.add(timer, forMode: .common)
-        self.timer = timer
-    }
-
-    func stopTimer() {
-        self.timer?.invalidate()
-        self.timer = nil
-    }
-
-    func fireTimer(after interval: TimeInterval) {
-        timer?.fireDate = dateProvider.now.addingTimeInterval(interval)
-    }
-
     func canWriteProfile() -> Bool {
-        self.currentRUMVitals.count > 0
-        || self.hangs.isEmpty == false
-        || self.longTasks.isEmpty == false
+        currentRUMVitals.count > 0
+        || hangs.isEmpty == false
+        || longTasks.isEmpty == false
     }
 
     func canExtendCustomProfiling() -> Bool {
-        self.currentRUMVitals.contains {
+        currentRUMVitals.contains {
             dateProvider.now.timeIntervalSince($1.date) < Constants.customProfilingCutOffTime
         }
     }
@@ -341,18 +320,18 @@ private extension ContinuousProfiler {
     func cleanUpState() {
         // if it is custom profiling and reached the cutoff time
         if canExtendCustomProfiling() == false {
-            _currentRUMVitals.mutate { $0.removeAll() }
+            currentRUMVitals.removeAll()
         } else {
-            _currentRUMVitals.mutate { $0 = $0.ongoingOperations() }
+            currentRUMVitals = currentRUMVitals.ongoingOperations()
         }
-        _hangs.mutate { $0.removeAll() }
-        _longTasks.mutate { $0.removeAll() }
+        hangs.removeAll()
+        longTasks.removeAll()
     }
 }
 
 // MARK: - Testing funcs
 
-extension ContinuousProfiler {
+extension DatadogProfiler {
     /// Whether a `ContinuousProfiler` instance is currently active.
     static var isInstantiated: Bool {
         lock.lock()

@@ -15,25 +15,23 @@ import DatadogMachProfiler
 import DatadogMachProfiler.Testing
 //swiftlint:enable duplicate_imports
 
-final class ContinuousProfilerTests: XCTestCase {
+final class DatadogProfilerTests: XCTestCase {
     private var core: PassthroughCoreMock!  // swiftlint:disable:this implicitly_unwrapped_optional
-    private var notificationCenter: MockNotificationCenter! // swiftlint:disable:this implicitly_unwrapped_optional
+    private let profilerQueue = DispatchQueue(label: "test.profiler")
 
     override func setUp() {
         super.setUp()
         core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInForeground()))
-        notificationCenter = MockNotificationCenter()
-        ContinuousProfiler.resetActiveInstance()
+        DatadogProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
     }
 
     override func tearDown() {
-        ContinuousProfiler.resetActiveInstance()
+        DatadogProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
         dd_delete_profiling_defaults()
-        notificationCenter = nil
         core = nil
         super.tearDown()
     }
@@ -107,7 +105,8 @@ final class ContinuousProfilerTests: XCTestCase {
 
     func testReceiveApplicationLaunchVital_capturesOngoingRUMVitals() throws {
         // Given
-        let profiler = continuousProfiler(profilingInterval: 0.1)
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(dateProvider: dateProvider)
         let completedOperationStart = Vital.mockWith(name: "completed-operation")
         let completedOperationEnd = Vital.mockWith(
             name: completedOperationStart.name,
@@ -119,7 +118,7 @@ final class ContinuousProfilerTests: XCTestCase {
         let longTask = DurationEvent(id: "long-task-id", start: 0, duration: 100)
         let launchVital: Vital = .mockWith(stepType: nil)
 
-        XCTAssertEqual(dd_profiler_start(), 1)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         _ = profiler.receive(
             message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: completedOperationStart)),
@@ -142,7 +141,12 @@ final class ContinuousProfilerTests: XCTestCase {
             from: core
         )
 
-        // When - continuous profiling writes on the next timer tick
+        // When - receive TTID to clean up completed events, then transition to background to flush profile
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
         waitForProfileWrite {
             XCTAssertFalse(
                 profiler.receive(
@@ -150,6 +154,7 @@ final class ContinuousProfilerTests: XCTestCase {
                     from: core
                 )
             )
+            _ = profiler.receive(message: .context(core.context), from: core)
         }
 
         // Then
@@ -168,22 +173,22 @@ final class ContinuousProfilerTests: XCTestCase {
 
 // MARK: - Notifications
 
-extension ContinuousProfilerTests {
+extension DatadogProfilerTests {
     func testApplicationDidEnterBackground_stopsProfiler() {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
-        XCTAssertEqual(dd_profiler_start(), 1)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
-        // When
-        // Transition context to background while retaining foreground history
+        // When - transition context to background while retaining foreground history
         core.context = .mockWith(applicationStateHistory: .mockWith(
             initialState: .active,
             date: dateProvider.now.addingTimeInterval(-1),
             transitions: [(state: .background, date: dateProvider.now)]
         ))
-        notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        _ = profiler.receive(message: .context(core.context), from: core)
+        flushQueue()
 
         // Then
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
@@ -193,13 +198,14 @@ extension ContinuousProfilerTests {
     func testApplicationDidEnterBackground_doesNothing_whenAppWasNeverInForeground() {
         // Given
         let profiler = continuousProfiler()
-        XCTAssertEqual(dd_profiler_start(), 1)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         // App was only ever in background (e.g. UIScene based app)
         core.context = .mockWith(applicationStateHistory: .mockAppInBackground())
 
         // When
-        notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        _ = profiler.receive(message: .context(core.context), from: core)
+        flushQueue()
 
         // Then
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
@@ -209,8 +215,9 @@ extension ContinuousProfilerTests {
 
     func testApplicationDidEnterBackground_includesAccumulatedVitalsInProfile() throws {
         // Given
-        let profiler = continuousProfiler()
-        XCTAssertEqual(dd_profiler_start(), 1)
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         let startOperation = Vital.mockWith(id: .mockRandom(), name: "operation")
         let endOperation = Vital.mockWith(id: .mockRandom(), name: "operation", operationKey: startOperation.operationKey, stepType: .end)
@@ -218,8 +225,13 @@ extension ContinuousProfilerTests {
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)), from: core)
 
         // When
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
         waitForProfileWrite {
-            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+            _ = profiler.receive(message: .context(core.context), from: core)
         }
 
         // Then
@@ -234,15 +246,22 @@ extension ContinuousProfilerTests {
 
     func testApplicationDidEnterBackground_includesLongTasksInProfile() throws {
         // Given
-        let profiler = continuousProfiler()
-        XCTAssertEqual(dd_profiler_start(), 1)
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         let longTask = DurationEvent(id: .mockRandom(), start: 0, duration: 100)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
+        flushQueue()
 
         // When
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
         waitForProfileWrite {
-            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+            _ = profiler.receive(message: .context(core.context), from: core)
         }
 
         // Then
@@ -256,15 +275,21 @@ extension ContinuousProfilerTests {
 
     func testApplicationDidEnterBackground_includesAppHangsInProfile() throws {
         // Given
-        let profiler = continuousProfiler()
-        XCTAssertEqual(dd_profiler_start(), 1)
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
         XCTAssertTrue(profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core))
 
         // When
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
         waitForProfileWrite {
-            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+            _ = profiler.receive(message: .context(core.context), from: core)
         }
 
         // Then
@@ -276,17 +301,23 @@ extension ContinuousProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 }
-// MARK: - canWriteProfile
+// MARK: - Write Decisions
 
-extension ContinuousProfilerTests {
+extension DatadogProfilerTests {
     func testDoesNotWriteProfile_whenNoEventsAccumulated() {
         // Given
-        let profiler = continuousProfiler()
-        XCTAssertEqual(dd_profiler_start(), 1)
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         // When
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
         waitForProfileWrite(expectingWrite: false) {
-            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+            _ = profiler.receive(message: .context(core.context), from: core)
         }
 
         // Then
@@ -296,8 +327,9 @@ extension ContinuousProfilerTests {
 
     func testWritesProfile_whenRUMOperationsAccumulated() {
         // Given
-        let profiler = continuousProfiler()
-        XCTAssertEqual(dd_profiler_start(), 1)
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         let startOperation = Vital.mockWith(name: "operation")
         let endOperation = Vital.mockWith(name: "operation", operationKey: startOperation.operationKey, stepType: .end)
@@ -305,8 +337,13 @@ extension ContinuousProfilerTests {
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)), from: core)
 
         // When
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
         waitForProfileWrite {
-            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+            _ = profiler.receive(message: .context(core.context), from: core)
         }
 
         // Then
@@ -316,15 +353,22 @@ extension ContinuousProfilerTests {
 
     func testWritesProfile_whenLongTasksAccumulated() {
         // Given
-        let profiler = continuousProfiler()
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(dateProvider: dateProvider)
         let longTask = DurationEvent(id: .mockRandom(), start: 0, duration: 100)
-        XCTAssertEqual(dd_profiler_start(), 1)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
+        flushQueue()
 
         // When
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
         waitForProfileWrite {
-            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+            _ = profiler.receive(message: .context(core.context), from: core)
         }
 
         // Then
@@ -334,15 +378,22 @@ extension ContinuousProfilerTests {
 
     func testWritesProfile_whenAppHangsAccumulated() {
         // Given
-        let profiler = continuousProfiler()
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(dateProvider: dateProvider)
         let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
-        XCTAssertEqual(dd_profiler_start(), 1)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         _ = profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core)
+        flushQueue()
 
         // When
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
         waitForProfileWrite {
-            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+            _ = profiler.receive(message: .context(core.context), from: core)
         }
 
         // Then
@@ -352,14 +403,33 @@ extension ContinuousProfilerTests {
 
     func testApplicationWillEnterForeground_restartsProfilerAfterBackground() {
         // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-        dd_profiler_stop()
+        let dateProvider = DateProviderMock()
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        let profiler = continuousProfiler(dateProvider: dateProvider)
+
+        // Send background context to stop the profiler and record the state transition
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
+        _ = profiler.receive(message: .context(core.context), from: core)
+        flushQueue()
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
 
-        let profiler = continuousProfiler()
-
-        // When
-        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        // When - enter foreground
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-2),
+            transitions: [
+                (state: .background, date: dateProvider.now.addingTimeInterval(-1)),
+                (state: .inactive, date: dateProvider.now)
+            ]
+        ))
+        _ = profiler.receive(message: .context(core.context), from: core)
+        flushQueue()
 
         // Then
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
@@ -369,7 +439,7 @@ extension ContinuousProfilerTests {
 
 // MARK: - Custom Profiling
 
-extension ContinuousProfilerTests {
+extension DatadogProfilerTests {
     func testCustomProfiler_doesNotStartProfilerAtInit() {
         // Given
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
@@ -384,14 +454,14 @@ extension ContinuousProfilerTests {
 
     func testCustomProfiler_startsProfilerOnFirstRUMOperationStart() {
         // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-        dd_profiler_stop()
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
 
         let profiler = customProfiler()
 
         // When
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: .mockWith(stepType: .start))), from: core)
+        flushQueue()
 
         // Then
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING, "Custom profiler should start on first RUM operation")
@@ -400,13 +470,14 @@ extension ContinuousProfilerTests {
 
     func testCustomProfiler_doesNotRestartRunningProfilerOnOperation() {
         // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
         let profiler = customProfiler()
 
         // When
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: .mockWith(stepType: .start))), from: core)
+        flushQueue()
 
         // Then - profiler stays running without error
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
@@ -429,12 +500,18 @@ extension ContinuousProfilerTests {
 
     func testCustomProfiler_doesNotWriteProfile_whenNoEventsAccumulated() {
         // Given
-        let profiler = customProfiler()
-        XCTAssertEqual(dd_profiler_start(), 1)
+        let dateProvider = DateProviderMock()
+        let profiler = customProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
-        // When - background notification with no accumulated events
+        // When - background context with no accumulated events
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
         waitForProfileWrite(expectingWrite: false) {
-            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+            _ = profiler.receive(message: .context(core.context), from: core)
         }
 
         // Then
@@ -444,21 +521,107 @@ extension ContinuousProfilerTests {
 
     func testCustomProfiler_writesProfile_whenRUMOperationsAccumulated() {
         // Given
-        let profiler = customProfiler()
-        XCTAssertEqual(dd_profiler_start(), 1)
+        // Start dateProvider 8 seconds in the past so that after advancing by minProfileDuration+1,
+        // the resulting fireDate is still in the past and the timer fires immediately.
+        let initialDate = Date().addingTimeInterval(-(DatadogProfiler.Constants.minProfileDuration + 3))
+        let dateProvider = DateProviderMock(now: initialDate)
+        // Ensure core.context has an active state that falls within dateProvider.now's range
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground(since: initialDate.addingTimeInterval(-1)))
+        let profiler = customProfiler(dateProvider: dateProvider)
+        // Put profiler in NOT_STARTED state (fresh instance, never started) so the custom profiler can start it
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
 
-        let startOp: Vital = .mockAny()
-        let endOp: Vital = .mockWith(name: startOp.name, operationKey: startOp.operationKey, stepType: .end)
+        let startOp: Vital = .mockWith(stepType: .start)
+        // Custom profiler auto-starts on first .start operation
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOp)), from: core)
-        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOp)), from: core)
+        flushQueue()
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
-        // When
+        // Advance dateProvider by minProfileDuration+1 — the result is still in the past,
+        // so fireTimer(after: 0) sets a past fireDate and the timer fires immediately.
+        dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.minProfileDuration + 1)
+
+        let endOp: Vital = .mockWith(name: startOp.name, operationKey: startOp.operationKey, stepType: .end)
+
+        // When - operations complete, profiler stops and writes via timer (no background notification needed)
         waitForProfileWrite {
-            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+            _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOp)), from: core)
         }
 
         // Then
         XCTAssertFalse(core.metadata.isEmpty)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testCustomProfiler_includesVitalsInProfile_whenOperationsComplete() throws {
+        // Given
+        let initialDate = Date().addingTimeInterval(-(DatadogProfiler.Constants.minProfileDuration + 3))
+        let dateProvider = DateProviderMock(now: initialDate)
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground(since: initialDate.addingTimeInterval(-1)))
+        let profiler = customProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+
+        let startOp = Vital.mockWith(id: "start-id", name: "operation", stepType: .start)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOp)), from: core)
+        flushQueue()
+
+        dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.minProfileDuration + 1)
+
+        let endOp = Vital.mockWith(id: "end-id", name: startOp.name, operationKey: startOp.operationKey, stepType: .end)
+
+        // When
+        waitForProfileWrite {
+            _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOp)), from: core)
+        }
+
+        // Then
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
+        let vitals = try XCTUnwrap(json["vitals"] as? [[String: Any]])
+        let vitalIDs = vitals.compactMap { $0["id"] as? String }
+        XCTAssertTrue(vitalIDs.contains("start-id"))
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testCustomProfiler_doesNotStartProfiler_onEndOperationWithoutMatchingStart() {
+        // Given
+        let profiler = customProfiler()
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
+
+        let orphanEnd: Vital = .mockWith(stepType: .end)
+
+        // When
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: orphanEnd)), from: core)
+        flushQueue()
+
+        // Then - no matching start vital, so profiler should not have been started
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testCustomProfiler_respectsMinProfileDuration() {
+        // Given
+        let dateProvider = DateProviderMock(now: Date())
+        let profiler = customProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+
+        let startOp: Vital = .mockWith(stepType: .start)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOp)), from: core)
+        flushQueue()
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        // Operations complete immediately (well within minProfileDuration)
+        let endOp: Vital = .mockWith(name: startOp.name, operationKey: startOp.operationKey, stepType: .end)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOp)), from: core)
+        flushQueue()
+
+        // Then - profiler is still running because minProfileDuration has not elapsed yet
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
         withExtendedLifetime(profiler) {}
     }
 
@@ -466,7 +629,7 @@ extension ContinuousProfilerTests {
         // Given
         let dateProvider = DateProviderMock(now: Date())
         let profiler = customProfiler(dateProvider: dateProvider)
-        XCTAssertEqual(dd_profiler_start(), 1)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
 
         let startOp: Vital = .mockWith(date: dateProvider.now.addingTimeInterval(1))
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOp)), from: core)
@@ -474,6 +637,7 @@ extension ContinuousProfilerTests {
         // When - app launch vital received while operation is still recent
         let launchVital: Vital = .mockWith()
         _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: launchVital)), from: core)
+        flushQueue()
 
         // Then - profiler keeps running since operation is within cutoff window
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
@@ -484,17 +648,19 @@ extension ContinuousProfilerTests {
         // Given
         let dateProvider = DateProviderMock(now: Date())
         let profiler = customProfiler(dateProvider: dateProvider)
-        XCTAssertEqual(dd_profiler_start(), 1)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
 
         let startOp: Vital = .mockWith(stepType: .start)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOp)), from: core)
+        flushQueue()
 
         // Advance past customProfilingCutOffTime
-        dateProvider.now = dateProvider.now.addingTimeInterval(ContinuousProfiler.Constants.customProfilingCutOffTime + 1)
+        dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.customProfilingCutOffTime + 1)
 
         // When - app launch vital received after cutoff
         let launchVital = Vital.mockWith()
         _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: launchVital)), from: core)
+        flushQueue()
 
         // Then - profiler stops since no recent operations remain
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
@@ -503,12 +669,19 @@ extension ContinuousProfilerTests {
 
     func testCustomProfiler_applicationDidEnterBackground_stopsProfilerAndSendsProfile() {
         // Given
-        let profiler = customProfiler()
-        XCTAssertEqual(dd_profiler_start(), 1)
+        let dateProvider = DateProviderMock()
+        let profiler = customProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
         // When
-        notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
+        _ = profiler.receive(message: .context(core.context), from: core)
+        flushQueue()
 
         // Then
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
@@ -517,15 +690,22 @@ extension ContinuousProfilerTests {
 
     func testCustomProfiler_applicationDidEnterBackground_includesLongTasksInProfile() throws {
         // Given
-        let profiler = customProfiler()
-        XCTAssertEqual(dd_profiler_start(), 1)
+        let dateProvider = DateProviderMock()
+        let profiler = customProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         let longTask = DurationEvent(id: .mockRandom(), start: 0, duration: 100)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
+        flushQueue()
 
         // When
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
         waitForProfileWrite {
-            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+            _ = profiler.receive(message: .context(core.context), from: core)
         }
 
         // Then
@@ -539,15 +719,22 @@ extension ContinuousProfilerTests {
 
     func testCustomProfiler_applicationDidEnterBackground_includesAppHangsInProfile() throws {
         // Given
-        let profiler = customProfiler()
-        XCTAssertEqual(dd_profiler_start(), 1)
+        let dateProvider = DateProviderMock()
+        let profiler = customProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
         _ = profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core)
+        flushQueue()
 
         // When
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
         waitForProfileWrite {
-            notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+            _ = profiler.receive(message: .context(core.context), from: core)
         }
 
         // Then
@@ -561,40 +748,58 @@ extension ContinuousProfilerTests {
 
     func testCustomProfiler_applicationWillEnterForeground_doesNotRestartProfiler() {
         // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-        dd_profiler_stop()
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        let dateProvider = DateProviderMock()
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
 
-        let profiler = customProfiler()
+        let profiler = customProfiler(dateProvider: dateProvider)
 
-        // When
-        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        // Send background context to stop the profiler
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
+        _ = profiler.receive(message: .context(core.context), from: core)
+        flushQueue()
+
+        // When - enter foreground with no recent operations
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-2),
+            transitions: [
+                (state: .background, date: dateProvider.now.addingTimeInterval(-1)),
+                (state: .inactive, date: dateProvider.now)
+            ]
+        ))
+        _ = profiler.receive(message: .context(core.context), from: core)
+        flushQueue()
 
         // Then - custom profiler does not restart without recent operations (unlike continuous)
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
         withExtendedLifetime(profiler) {}
     }
 }
 
 // MARK: - Singleton Guard
 
-extension ContinuousProfilerTests {
+extension DatadogProfilerTests {
     func testSingletonGuard() {
         // When
         let profiler = continuousProfiler()
 
         // Then
-        XCTAssertTrue(ContinuousProfiler.isInstantiated)
+        XCTAssertTrue(DatadogProfiler.isInstantiated)
         XCTAssertNotNil(profiler)
     }
 
     func testSingletonGuard_secondInstanceIsIgnored() {
         // Given
         let first = continuousProfiler()
-        XCTAssertTrue(ContinuousProfiler.isInstantiated)
+        XCTAssertTrue(DatadogProfiler.isInstantiated)
 
         // When
-        let second = ContinuousProfiler(core: core, isContinuousProfiling: true, notificationCenter: notificationCenter)
+        let second = DatadogProfiler(core: core, isContinuousProfiling: true)
         XCTAssertNil(second)
 
         // Then - first still processes messages normally
@@ -606,17 +811,17 @@ extension ContinuousProfilerTests {
 
     func testSingletonGuard_instanceBecomesActiveAfterPreviousDeallocates() {
         // Given
-        var first: ContinuousProfiler? = continuousProfiler()
-        XCTAssertTrue(ContinuousProfiler.isInstantiated)
+        var first: DatadogProfiler? = continuousProfiler()
+        XCTAssertTrue(DatadogProfiler.isInstantiated)
         XCTAssertNotNil(first)
         first = nil
-        XCTAssertFalse(ContinuousProfiler.isInstantiated, "Singleton guard should be released after dealloc")
+        XCTAssertFalse(DatadogProfiler.isInstantiated, "Singleton guard should be released after dealloc")
 
         // When
         let second = continuousProfiler()
 
         // Then
-        XCTAssertTrue(ContinuousProfiler.isInstantiated)
+        XCTAssertTrue(DatadogProfiler.isInstantiated)
         XCTAssertEqual(dd_profiler_start(), 1)
         let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
         XCTAssertTrue(second.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core))
@@ -628,12 +833,12 @@ extension ContinuousProfilerTests {
         let iterations = 100
         let expectation = expectation(description: "All concurrent creations complete")
         expectation.expectedFulfillmentCount = iterations
-        var profilers: [ContinuousProfiler?] = []
+        var profilers: [DatadogProfiler?] = []
         let lock = NSLock()
 
         // When - many instances created concurrently
         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
-            let profiler = ContinuousProfiler(core: core, isContinuousProfiling: true, notificationCenter: notificationCenter)
+            let profiler = DatadogProfiler(core: core, isContinuousProfiling: true)
             lock.lock()
             profilers.append(profiler)
             lock.unlock()
@@ -643,13 +848,13 @@ extension ContinuousProfilerTests {
         // Then
         wait(for: [expectation], timeout: 1.0)
         XCTAssertEqual(profilers.compactMap { $0 }.count, 1, "Exactly one instance should have been created")
-        XCTAssertTrue(ContinuousProfiler.isInstantiated)
+        XCTAssertTrue(DatadogProfiler.isInstantiated)
     }
 }
 
 // MARK: - Private
 
-private extension ContinuousProfilerTests {
+private extension DatadogProfilerTests {
     func waitForProfileWrite(
         expectingWrite: Bool = true,
         timeout: TimeInterval = 0.1,
@@ -666,17 +871,21 @@ private extension ContinuousProfilerTests {
         waitForExpectations(timeout: timeout)
     }
 
+    func flushQueue() {
+        profilerQueue.sync {}
+    }
+
     func continuousProfiler(
         profilingConditions: ProfilingConditions = ProfilingConditions(),
         profilingInterval: TimeInterval = .infinity,
         dateProvider: DateProvider = DateProviderMock()
-    ) -> ContinuousProfiler {
-        ContinuousProfiler(
+    ) -> DatadogProfiler {
+        DatadogProfiler(
             core: core,
+            queue: profilerQueue,
             isContinuousProfiling: true,
             profilingConditions: profilingConditions,
             profilingInterval: profilingInterval,
-            notificationCenter: notificationCenter,
             dateProvider: dateProvider
         )! // swiftlint:disable:this force_unwrapping
     }
@@ -685,13 +894,13 @@ private extension ContinuousProfilerTests {
         profilingConditions: ProfilingConditions = ProfilingConditions(),
         profilingInterval: TimeInterval = .infinity,
         dateProvider: DateProvider = DateProviderMock()
-    ) -> ContinuousProfiler {
-        ContinuousProfiler(
+    ) -> DatadogProfiler {
+        DatadogProfiler(
             core: core,
+            queue: profilerQueue,
             isContinuousProfiling: false,
             profilingConditions: profilingConditions,
             profilingInterval: profilingInterval,
-            notificationCenter: notificationCenter,
             dateProvider: dateProvider
         )! // swiftlint:disable:this force_unwrapping
     }
