@@ -18,11 +18,11 @@ internal struct ProfilingConditions {
     }
 
     enum Constants {
-        /// Battery level above which Profiling can be performed.
+        /// Battery level above which Profiling can be performed. Range between 0 and 1.
         static let minBatteryLevel: Float = 0.1
     }
 
-    /// Battery level above which Profiling can be performed.
+    /// Battery level above which Profiling can be performed. Range between 0 and 1.
     private let minBatteryLevel: Float
     private let blockers: [Blocker]
 
