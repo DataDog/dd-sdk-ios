@@ -504,9 +504,19 @@ extension Telemetry {
         send(telemetry: .metric(MetricTelemetry(name: name, attributes: attributes, sampleRate: sampleRate)))
     }
 
-    /// Reports WebView tracking API usage.
-    public func trackWebView() {
-        send(telemetry: .usage(.init(event: .trackWebView, sampleRate: UsageTelemetry.defaultSampleRate)))
+    /// Collects a usage telemetry event.
+    ///
+    /// - Parameters:
+    ///   - event: The usage event to report.
+    ///   - sampleRate: The sample rate for this event, applied in addition to the telemetry sample rate (15% by default).
+    ///     Must be a value between `0` (reject all) and `100` (keep all).
+    ///
+    ///     Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
+    ///     and this event's sample rate is 15%, the effective sample rate for this event will be 3%.
+    ///
+    ///     This sample rate is applied in the telemetry receiver, after the event has been processed by the SDK core (tail-based sampling).
+    public func usage(event: UsageTelemetry.Event, sampleRate: SampleRate = UsageTelemetry.defaultSampleRate) {
+        send(telemetry: .usage(UsageTelemetry(event: event, sampleRate: sampleRate)))
     }
 }
 

@@ -162,7 +162,7 @@ public enum WebViewTracking {
             )
         )
 
-        core.telemetry.trackWebView()
+        core.telemetry.usage(event: .trackWebView)
     }
 
     /// Conversion matrix from global privacy level to fine-grained privaly levels.

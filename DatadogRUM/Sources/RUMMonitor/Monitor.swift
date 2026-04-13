@@ -466,7 +466,7 @@ extension Monitor: RUMMonitorProtocol {
     func startFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) started")
 
-        telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .start)))))
+        telemetry.usage(event: .addOperationStepVital(.init(actionType: .start)))
 
         process(
             command: RUMOperationStepVitalCommand(
@@ -484,7 +484,7 @@ extension Monitor: RUMMonitorProtocol {
     func succeedFeatureOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) successfully ended")
 
-        telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .succeed)))))
+        telemetry.usage(event: .addOperationStepVital(.init(actionType: .succeed)))
 
         process(
             command: RUMOperationStepVitalCommand(
@@ -502,7 +502,7 @@ extension Monitor: RUMMonitorProtocol {
     func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) unsuccessfully ended with the following failure reason: \(reason.rawValue)")
 
-        telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .fail)))))
+        telemetry.usage(event: .addOperationStepVital(.init(actionType: .fail)))
 
         process(
             command: RUMOperationStepVitalCommand(
