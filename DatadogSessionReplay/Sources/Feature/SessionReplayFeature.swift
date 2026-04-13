@@ -52,6 +52,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
             additionalNodeRecorders: configuration._additionalNodeRecorders,
+            core: core,
             featureFlags: configuration.featureFlags
         )
 

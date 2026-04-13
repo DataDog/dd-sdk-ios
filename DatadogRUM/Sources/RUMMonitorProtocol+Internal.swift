@@ -163,4 +163,23 @@ public struct DatadogInternalInterface {
             )
         )
     }
+
+    public func addAction(
+        at time: Date,
+        type: RUMActionType,
+        name: String,
+        heatmapAttributes: HeatmapAttributes?,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        monitor.process(
+            command: RUMAddUserActionCommand(
+                time: time,
+                attributes: attributes,
+                instrumentation: .manual,
+                actionType: type,
+                name: name,
+                heatmapAttributes: heatmapAttributes
+            )
+        )
+    }
 }

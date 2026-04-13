@@ -8,6 +8,7 @@
 import XCTest
 @_spi(Internal)
 import TestUtilities
+import DatadogInternal
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
@@ -19,7 +20,8 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
-            idsGenerator: NodeIDGenerator()
+            idsGenerator: NodeIDGenerator(),
+            core: PassthroughCoreMock()
         )
 
         // When
@@ -48,7 +50,8 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
-            idsGenerator: NodeIDGenerator()
+            idsGenerator: NodeIDGenerator(),
+            core: PassthroughCoreMock()
         )
 
         // When
@@ -63,7 +66,11 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let view = UIView(frame: .mockRandom())
         let randomRecorderContext: Recorder.Context = .mockRandom()
         let additionalNodeRecorder = SessionReplayNodeRecorderMock(resultForView: { _ in nil })
-        let builder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [additionalNodeRecorder], featureFlags: .allEnabled)
+        let builder = ViewTreeSnapshotBuilder(
+            additionalNodeRecorders: [additionalNodeRecorder],
+            core: PassthroughCoreMock(),
+            featureFlags: .allEnabled
+        )
 
         // When
         let snapshot = builder.createSnapshot(of: view, with: randomRecorderContext)
@@ -82,6 +89,50 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         XCTAssertEqual(queryContext.recorder.viewID, randomRecorderContext.viewID)
         XCTAssertEqual(queryContext.recorder.viewServerTimeOffset, randomRecorderContext.viewServerTimeOffset)
         XCTAssertEqual(queryContext.recorder.date, randomRecorderContext.date)
+    }
+
+    func testWhenCreatingSnapshot_itWritesHeatmapIdentifiersToRegistry() throws {
+        // Given
+        let view = UIView.mock(withFixture: .visible(.someAppearance))
+        let core = FeatureRegistrationCoreMock()
+        let registry = HeatmapIdentifierRegistryMock()
+        try core.register(heatmapIdentifierRegistry: registry)
+        let builder = ViewTreeSnapshotBuilder(
+            additionalNodeRecorders: [],
+            core: core,
+            featureFlags: .allEnabled
+        )
+        let context = Recorder.Context.mockWith(
+            rumContext: .mockWith(viewPath: "Home")
+        )
+
+        // When
+        _ = builder.createSnapshot(of: view, with: context)
+
+        // Then
+        XCTAssertFalse(registry.identifiers.isEmpty)
+    }
+
+    func testWhenCreatingSnapshot_withNoViewPath_itDoesNotWriteToRegistry() throws {
+        // Given
+        let view = UIView.mock(withFixture: .visible(.someAppearance))
+        let core = FeatureRegistrationCoreMock()
+        let registry = HeatmapIdentifierRegistryMock()
+        try core.register(heatmapIdentifierRegistry: registry)
+        let builder = ViewTreeSnapshotBuilder(
+            additionalNodeRecorders: [],
+            core: core,
+            featureFlags: .allEnabled
+        )
+        let context = Recorder.Context.mockWith(
+            rumContext: .mockWith(viewPath: nil)
+        )
+
+        // When
+        _ = builder.createSnapshot(of: view, with: context)
+
+        // Then
+        XCTAssertTrue(registry.identifiers.isEmpty)
     }
 }
 #endif

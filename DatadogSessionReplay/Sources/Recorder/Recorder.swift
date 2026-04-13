@@ -36,6 +36,8 @@ public class Recorder: Recording {
         let viewID: String
         /// Current view related server time offset
         let viewServerTimeOffset: TimeInterval?
+        /// Current RUM view path
+        let viewPath: String?
         /// The time of requesting this snapshot.
         let date: Date
         /// The telemetry instance to report to.
@@ -49,6 +51,7 @@ public class Recorder: Recording {
             sessionID: String,
             viewID: String,
             viewServerTimeOffset: TimeInterval?,
+            viewPath: String?,
             date: Date,
             telemetry: Telemetry
         ) {
@@ -59,6 +62,7 @@ public class Recorder: Recording {
             self.sessionID = sessionID
             self.viewID = viewID
             self.viewServerTimeOffset = viewServerTimeOffset
+            self.viewPath = viewPath
             self.date = date
             self.telemetry = telemetry
         }
@@ -76,14 +80,18 @@ public class Recorder: Recording {
     convenience init(
         snapshotProcessor: SnapshotProcessing,
         additionalNodeRecorders: [NodeRecorder],
+        core: DatadogCoreProtocol,
         featureFlags: SessionReplay.Configuration.FeatureFlags
     ) throws {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
             windowObserver: windowObserver,
             snapshotBuilder: ViewTreeSnapshotBuilder(
-                additionalNodeRecorders: additionalNodeRecorders,
-                featureFlags: featureFlags
+                viewTreeRecorder: ViewTreeRecorder(
+                    nodeRecorders: createDefaultNodeRecorders(featureFlags: featureFlags) + additionalNodeRecorders
+                ),
+                idsGenerator: NodeIDGenerator(),
+                core: core
             )
         )
         let touchSnapshotProducer = WindowTouchSnapshotProducer(windowObserver: windowObserver)

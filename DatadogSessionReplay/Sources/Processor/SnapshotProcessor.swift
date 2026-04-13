@@ -85,8 +85,10 @@ internal class SnapshotProcessor: SnapshotProcessing {
 
         // build wireframe from nodes
         var wireframes: [SRWireframe] = nodes.flatMap { node in
-            node.wireframesBuilder.buildWireframes(with: builder)
+            builder.heatmapIdentifier = node.heatmapIdentifier
+            return node.wireframesBuilder.buildWireframes(with: builder)
         }
+        builder.heatmapIdentifier = nil
 
         // build hidden webview wireframes and place them at the beginning
         wireframes = builder.hiddenWebViewWireframes() + wireframes
