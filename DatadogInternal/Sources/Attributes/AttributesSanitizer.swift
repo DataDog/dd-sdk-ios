@@ -72,19 +72,19 @@ public struct AttributesSanitizer {
 
     /// Truncates string attribute values exceeding `Constraints.maxAttributeValueLength`.
     public func sanitizeValues(for attributes: [String: Encodable]) -> [String: Encodable] {
-        return attributes.mapValues { value in
-            guard let stringValue = value as? String,
-                  stringValue.count > Constraints.maxAttributeValueLength else {
-                return value
+        return Dictionary(uniqueKeysWithValues: attributes.map { key, value in
+            let stringValue = (value as? String) ?? (value as? NSString).map(String.init)
+            guard let string = stringValue, string.count > Constraints.maxAttributeValueLength else {
+                return (key, value)
             }
             DD.logger.warn(
                 """
-                \(featureName) attribute value was truncated to \(Constraints.maxAttributeValueLength) characters \
-                to match Datadog constraints.
+                \(featureName) attribute '\(key)' value was truncated from \(string.count) to \
+                \(Constraints.maxAttributeValueLength) characters to match Datadog constraints.
                 """
             )
-            return String(stringValue.prefix(Constraints.maxAttributeValueLength))
-        }
+            return (key, String(string.prefix(Constraints.maxAttributeValueLength)))
+        })
     }
 
     // MARK: - Attributes count limitting

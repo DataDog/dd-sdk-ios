@@ -57,8 +57,8 @@ public typealias AttributeKey = String
 ///     }
 ///
 /// - Important
-/// Attributes in Datadog console can be nested up to 20 levels deep. String values exceeding 25,600
-/// characters are truncated by the SDK before sending, as the backend discards anything beyond that limit.
+/// Attributes in Datadog console can be nested up to 20 levels deep. If number of nested attribute levels
+/// defined as sum of key levels and value levels exceeds 20, the data may not be delivered.
 ///
 public typealias AttributeValue = Encodable
 

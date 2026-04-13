@@ -18,10 +18,10 @@ class RUMEventSanitizerTests: XCTestCase {
     func testWhenAttributeNameExceeds20NestedLevels_itIsEscapedByUnderscore() {
         func test<Event>(event: Event) where Event: RUMSanitizableEvent {
             var event = event
-            // RUM sanitizer uses prefixLevels=1, so effective depth = 1 + key dots.
-            // 18 dots (19 segments) — total depth 19 < 20, must NOT be escaped
+            // RUM sanitizer uses prefixLevels=1, so the dot counter starts at 1.
+            // 18 dots in key: counter peaks at 1+18=19 < 20, so must NOT be escaped.
             let keyUnchanged = "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s"
-            // 19 dots (20 segments) — total depth 20 >= 20, 19th dot must be escaped
+            // 19 dots in key: counter peaks at 1+19=20 >= 20, so 19th dot must be escaped.
             let keyToEscape = "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t"
             let expectedKeyEscaped = "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s_t"
 
