@@ -4,24 +4,21 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
-
 import XCTest
 import TestUtilities
 import DatadogInternal
-import SwiftUI
 @testable import DatadogRUM
 
 class RUMActionsHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
 
+    #if !os(watchOS)
     private func touchHandler(
         with uiKitPredicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate(),
         swiftUIPredicate: SwiftUIRUMActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
     ) -> RUMActionsHandler {
-        let handler =
-        RUMActionsHandler(
+        let handler = RUMActionsHandler(
             dateProvider: dateProvider,
             heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
             uiKitPredicate: uiKitPredicate,
@@ -52,8 +49,17 @@ class RUMActionsHandlerTests: XCTestCase {
         mockAppWindow = nil
         super.tearDown()
     }
+    #else
+    private func watchHandler() -> RUMActionsHandler {
+        let handler = RUMActionsHandler(dateProvider: dateProvider)
+        handler.publish(to: commandSubscriber)
+        return handler
+    }
+    #endif
 
-    // MARK: - Scenarios For Accepting Tap Events
+    // MARK: - UIKit Automatic Action Tracking
+
+    #if !os(watchOS)
 
     func testGivenUIKitViewWithAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction() {
         // Given
@@ -448,14 +454,20 @@ class RUMActionsHandlerTests: XCTestCase {
         XCTAssertNil(commandSubscriber.lastReceivedCommand)
     }
 
+    #endif // !os(watchOS)
+
     // MARK: - SwiftUI View Modifier Actions
 
     func testWhenSwiftUIViewModifierIsTapped_itSendsRUMAction() throws {
         // Given
+        #if os(watchOS)
+        let handler = watchHandler()
+        #else
         let handler = oneOf([
             { self.touchHandler() },
             { self.pressHandler() }
         ])
+        #endif
 
         // When
         let actionName: String = .mockRandom()
@@ -473,6 +485,8 @@ class RUMActionsHandlerTests: XCTestCase {
 }
 
 // MARK: - Helpers
+
+#if !os(watchOS)
 
 private extension UIView {
     func attached(to parent: UIView) -> UIView {
@@ -509,4 +523,4 @@ private class MockUIKitRUMActionsPredicate: UITouchRUMActionsPredicate & UIPress
     }
 }
 
-#endif
+#endif // !os(watchOS)
