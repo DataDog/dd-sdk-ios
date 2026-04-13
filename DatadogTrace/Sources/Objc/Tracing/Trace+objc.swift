@@ -51,6 +51,11 @@ public final class objc_TraceConfiguration: NSObject {
         set { swiftConfig.customEndpoint = newValue }
         get { swiftConfig.customEndpoint }
     }
+
+    public var statsComputationEnabled: Bool {
+        set { swiftConfig.statsComputationEnabled = newValue }
+        get { swiftConfig.statsComputationEnabled }
+    }
 }
 
 @objc(DDTraceFirstPartyHostsTracing)
