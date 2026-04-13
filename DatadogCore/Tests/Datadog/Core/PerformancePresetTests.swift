@@ -132,9 +132,9 @@ class PerformancePresetTests: XCTestCase {
                 "Upload delay boundaries must be consistent."
             )
             XCTAssertGreaterThan(
-                preset.maxUploadDelay,
-                preset.minUploadDelay,
-                "Upload delay boundaries must be consistent."
+                preset.maxBatchesPerUpload,
+                0,
+                "At least one batch must be processed per upload."
             )
             XCTAssertLessThanOrEqual(
                 preset.uploadDelayChangeRate,
