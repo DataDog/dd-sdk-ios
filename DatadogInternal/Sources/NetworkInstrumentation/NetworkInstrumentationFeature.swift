@@ -470,15 +470,15 @@ extension NetworkInstrumentationFeature {
 
             // Only notify handlers when the interception is first created, not when it's reused
             // This prevents double notifications when both automatic and registered delegate modes are enabled
-                if isNewInterception {
-                    self.handlers
-                        .forEach {
-                            $0.interceptionDidStart(
-                                interception: interception,
-                                capturedStates: instrumentationContexts.compactMap({ $0.capturedState })
-                            )
-                        }
-                }
+            if isNewInterception {
+                self.handlers
+                    .forEach {
+                        $0.interceptionDidStart(
+                            interception: interception,
+                            capturedStates: instrumentationContexts.compactMap({ $0.capturedState })
+                        )
+                    }
+            }
         }
     }
 

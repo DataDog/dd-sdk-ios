@@ -32,7 +32,9 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     ///         request.setValue(value, forHTTPHeaderField: field)
     ///     }
     ///
-    public private(set) var traceHeaderFields: [String: String] = [:]
+//    public private(set) var traceHeaderFields: [String: String] = [:]
+
+    public private(set) var traceHeaders: [String: TracePropagationHeaderValue] = [:]
 
     private let traceContextInjection: TraceContextInjection
 
@@ -62,28 +64,29 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
             return
         }
 
-        traceHeaderFields = [
-            TracingHTTPHeaders.samplingPriorityField: "\(traceContext.samplingPriority.rawValue)"
+        traceHeaders = [
+            TracingHTTPHeaders.samplingPriorityField: .string("\(traceContext.samplingPriority.rawValue)")
         ]
-        traceHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceContext.traceID.idLo)
-        traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(traceContext.spanID, representation: .decimal)
-        var tags = ["_dd.p.tid=\(traceContext.traceID.idHiHex)"]
+        traceHeaders[TracingHTTPHeaders.traceIDField] = .string(String(traceContext.traceID.idLo))
+        traceHeaders[TracingHTTPHeaders.parentSpanIDField] = .string(String(traceContext.spanID, representation: .decimal))
+        var tags = ["_dd.p.tid": traceContext.traceID.idHiHex]
         if traceContext.samplingPriority.isKept {
-            tags.append("_dd.p.dm=-\(traceContext.samplingDecisionMaker.rawValue)")
+            tags["_dd.p.dm"] = traceContext.samplingDecisionMaker.rawValue
         }
-        traceHeaderFields[TracingHTTPHeaders.tagsField] = tags.joined(separator: ",")
-        var baggageItems: [String] = []
+        traceHeaders[TracingHTTPHeaders.tagsField] = .keyValueList(.init(values: tags, keyValueSeparator: "=", keyValuePairSeparator: ","))
+
+        var baggageItems: [String: String] = [:]
         if let sessionId = traceContext.rumSessionId {
-            baggageItems.append("\(W3CHTTPHeaders.Constants.rumSessionBaggageKey)=\(sessionId)")
+            baggageItems[W3CHTTPHeaders.Constants.rumSessionBaggageKey] = sessionId
         }
         if let userId = traceContext.userId {
-            baggageItems.append("\(W3CHTTPHeaders.Constants.userBaggageKey)=\(userId)")
+            baggageItems[W3CHTTPHeaders.Constants.userBaggageKey] = userId
         }
         if let accountId = traceContext.accountId {
-            baggageItems.append("\(W3CHTTPHeaders.Constants.accountBaggageKey)=\(accountId)")
+            baggageItems[W3CHTTPHeaders.Constants.accountBaggageKey] = accountId
         }
         if baggageItems.isEmpty == false {
-            traceHeaderFields[W3CHTTPHeaders.baggage] = baggageItems.joined(separator: ",")
+            traceHeaders[W3CHTTPHeaders.baggage] = .keyValueList(.init(values: baggageItems, keyValueSeparator: "=", keyValuePairSeparator: ","))
         }
     }
 }

@@ -52,7 +52,9 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
     ///         request.setValue(value, forHTTPHeaderField: field)
     ///     }
     ///
-    public private(set) var traceHeaderFields: [String: String] = [:]
+//    public private(set) var traceHeaderFields: [String: String] = [:]
+
+    public var traceHeaders: [String : TracePropagationHeaderValue] = [:]
 
     /// Defines whether the trace context should be injected into all requests or only sampled ones.
     private let traceContextInjection: TraceContextInjection
@@ -93,23 +95,25 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
 
         switch injectEncoding {
         case .multiple:
-            traceHeaderFields = [
-                B3HTTPHeaders.Multiple.sampledField: sampled ? Constants.sampledValue : Constants.unsampledValue,
-                B3HTTPHeaders.Multiple.traceIDField: String(traceContext.traceID, representation: .hexadecimal32Chars),
-                B3HTTPHeaders.Multiple.spanIDField: String(traceContext.spanID, representation: .hexadecimal16Chars),
+            traceHeaders = [
+                B3HTTPHeaders.Multiple.sampledField: .string(sampled ? Constants.sampledValue : Constants.unsampledValue),
+                B3HTTPHeaders.Multiple.traceIDField: .string(String(traceContext.traceID, representation: .hexadecimal32Chars)),
+                B3HTTPHeaders.Multiple.spanIDField: .string(String(traceContext.spanID, representation: .hexadecimal16Chars)),
             ]
             if let parentSpanId = traceContext.parentSpanID.map({ String($0, representation: .hexadecimal16Chars) }) {
-                traceHeaderFields[B3HTTPHeaders.Multiple.parentSpanIDField] = parentSpanId
+                traceHeaders[B3HTTPHeaders.Multiple.parentSpanIDField] = .string(parentSpanId)
             }
         case .single:
-            traceHeaderFields[B3HTTPHeaders.Single.b3Field] = [
-                String(traceContext.traceID, representation: .hexadecimal32Chars),
-                String(traceContext.spanID, representation: .hexadecimal16Chars),
-                sampled ? Constants.sampledValue : Constants.unsampledValue,
-                traceContext.parentSpanID.map { String($0, representation: .hexadecimal16Chars) }
-            ]
-            .compactMap { $0 }
-            .joined(separator: Constants.b3Separator)
+            traceHeaders[B3HTTPHeaders.Single.b3Field] = .string(
+                [
+                    String(traceContext.traceID, representation: .hexadecimal32Chars),
+                    String(traceContext.spanID, representation: .hexadecimal16Chars),
+                    sampled ? Constants.sampledValue : Constants.unsampledValue,
+                    traceContext.parentSpanID.map { String($0, representation: .hexadecimal16Chars) }
+                ]
+                .compactMap { $0 }
+                .joined(separator: Constants.b3Separator)
+            )
         }
     }
 }

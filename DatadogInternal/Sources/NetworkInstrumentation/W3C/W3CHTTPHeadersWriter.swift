@@ -32,7 +32,9 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     ///         request.setValue(value, forHTTPHeaderField: field)
     ///     }
     ///
-    public private(set) var traceHeaderFields: [String: String] = [:]
+//    public private(set) var traceHeaderFields: [String: String] = [:]
+
+    public var traceHeaders: [String : TracePropagationHeaderValue] = [:]
 
     /// A dictionary containing the tracestate to be injected.
     /// This value will be merged with the tracestate from the trace context.
@@ -71,13 +73,15 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
             return
         }
 
-        traceHeaderFields[W3CHTTPHeaders.traceparent] = [
-            Constants.version,
-            String(traceContext.traceID, representation: .hexadecimal32Chars),
-            String(traceContext.spanID, representation: .hexadecimal16Chars),
-            sampled ? Constants.sampledValue : Constants.unsampledValue
-        ]
-        .joined(separator: Constants.separator)
+        traceHeaders[W3CHTTPHeaders.traceparent] = .string(
+            [
+                Constants.version,
+                String(traceContext.traceID, representation: .hexadecimal32Chars),
+                String(traceContext.spanID, representation: .hexadecimal16Chars),
+                sampled ? Constants.sampledValue : Constants.unsampledValue
+            ]
+            .joined(separator: Constants.separator)
+        )
 
         var tracestate: [String: String] = [
             Constants.sampling: "\(traceContext.samplingPriority.rawValue)",
@@ -99,20 +103,20 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
             .sorted()
             .joined(separator: Constants.tracestatePairSeparator)
 
-        traceHeaderFields[W3CHTTPHeaders.tracestate] = "\(Constants.dd)=\(ddtracestate)"
+        traceHeaders[W3CHTTPHeaders.tracestate] = .string("\(Constants.dd)=\(ddtracestate)")
 
-        var baggageItems: [String] = []
+        var baggageItems: [String: String] = [:]
         if let sessionId = traceContext.rumSessionId {
-            baggageItems.append("\(Constants.rumSessionBaggageKey)=\(sessionId)")
+            baggageItems[Constants.rumSessionBaggageKey] = sessionId
         }
         if let userId = traceContext.userId {
-            baggageItems.append("\(Constants.userBaggageKey)=\(userId)")
+            baggageItems[Constants.userBaggageKey] = userId
         }
         if let accountId = traceContext.accountId {
-            baggageItems.append("\(Constants.accountBaggageKey)=\(accountId)")
+            baggageItems[Constants.accountBaggageKey] = accountId
         }
         if !baggageItems.isEmpty {
-            traceHeaderFields[W3CHTTPHeaders.baggage] = baggageItems.joined(separator: ",")
+            traceHeaders[W3CHTTPHeaders.baggage] = .keyValueList(.init(values: baggageItems, keyValueSeparator: "=", keyValuePairSeparator: ","))
         }
     }
 }
