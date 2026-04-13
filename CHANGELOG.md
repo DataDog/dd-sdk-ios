@@ -4,6 +4,7 @@
 - [FEATURE] Add watchOS and visionOS support. See [#2817][]
 - [FEATURE] Add support for the FedRAMP-compatible `fed2.ddog-gov.com` site. See [#2827][]
 - [IMPROVEMENT] Rename RUM Operations APIs. See [#2802][]
+- [FIX] Fix blank SwiftUI `TabView` when Session Replay is enabled. See [#2837][]
 
 # 3.9.0 / 02-04-2026
 
