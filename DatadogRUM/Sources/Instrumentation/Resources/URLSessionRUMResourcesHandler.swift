@@ -40,6 +40,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         let hasGraphQLHeaders: Bool
     }
 
+    let id = UUID()
     /// The date provider
     let dateProvider: DateProvider
     /// Distributed Tracing
@@ -83,26 +84,28 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
     // MARK: - DatadogURLSessionHandler
 
-    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
-        let (modifiedRequest, traceContext, _) = distributedTracing?.modify(
+    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (RequestInstrumentationContext) {
+        let instrumentationContext = distributedTracing?.modify(
             request: request,
             headerTypes: headerTypes,
             networkContext: networkContext
-        ) ?? (request, nil, nil)
+        )
 
         // Note: DistributedTracing.modify() currently returns nil for captured state.
         // If this changes, we'll need to merge captured states instead of replacing.
-        let capturedState: URLSessionHandlerCapturedState? = modifiedRequest.hasGraphQLHeaders ? RUMURLSessionHandlerCapturedState(hasGraphQLHeaders: true) : nil
+        let capturedState: URLSessionHandlerCapturedState? = request.hasGraphQLHeaders ? RUMURLSessionHandlerCapturedState(hasGraphQLHeaders: true) : nil
 
-        return (modifiedRequest, traceContext, capturedState)
+        return RequestInstrumentationContext(injectedTrace: instrumentationContext?.injectedTrace, capturedState: capturedState)
     }
 
-    func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
+    func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
         let url = interception.request.url?.absoluteString ?? "unknown_url"
         interception.register(origin: "rum")
 
+        let instrumentationContext = interception.trace[id]
+
         // Check if GraphQL was detected in the captured states
-        if let capturedState = capturedStates.compactMap({ $0 as? RUMURLSessionHandlerCapturedState }).first,
+        if let capturedState = instrumentationContext?.capturedState as? RUMURLSessionHandlerCapturedState,
            capturedState.hasGraphQLHeaders {
             telemetry.send(telemetry: .usage(.init(
                 event: .addGraphQLRequest,
@@ -118,7 +121,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
                 url: url,
                 httpMethod: RUMMethod(httpMethod: interception.request.httpMethod),
                 kind: RUMResourceType(request: interception.request.unsafeOriginal),
-                spanContext: distributedTracing?.trace(from: interception)
+                spanContext: distributedTracing?.trace(from: instrumentationContext?.injectedTrace?.traceContext)
             )
         )
     }
@@ -143,7 +146,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
         // Extract GraphQL attributes from trace context
         var combinedAttributes = userAttributes
-        if let graphqlAttributes = interception.trace?.graphql {
+        if let graphqlAttributes = interception.trace[id]?.injectedTrace?.traceContext.graphql {
             if let operationName = graphqlAttributes.operationName {
                 combinedAttributes[CrossPlatformAttributes.graphqlOperationName] = operationName
             }
@@ -247,7 +250,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 }
 
 extension DistributedTracing {
-    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (RequestInstrumentationContext) {
         // Per RUM-15310: If there is an active span, and that span is sampled, we use it as the parent span,
         // and set everything in the RUM resource span to be consistent with it.
         // If we don't have an active span, or if we do have one, but it's not sampled, we ignore it. The
@@ -302,7 +305,7 @@ extension DistributedTracing {
 
         var request = request
         var hasSetAnyHeader = false
-        headerTypes.forEach {
+        let traceHeaders = TraceHeaders.merged(headerTypes.map {
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
@@ -330,31 +333,35 @@ extension DistributedTracing {
 
             writer.write(traceContext: injectedSpanContext)
 
-            writer.traceHeaderFields.forEach { field, value in
-                if field.lowercased() == W3CHTTPHeaders.baggage.lowercased() {
-                    // Handle baggage header merging
-                    if let existingValue = request.value(forHTTPHeaderField: field) {
-                        let mergedValue = BaggageHeaderMerger.merge(previousHeader: existingValue, with: value)
-                        request.setValue(mergedValue, forHTTPHeaderField: field)
-                    } else {
-                        request.setValue(value, forHTTPHeaderField: field)
-                    }
-                    hasSetAnyHeader = true
-                } else {
-                    // do not overwrite existing header
-                    if request.value(forHTTPHeaderField: field) == nil {
-                        hasSetAnyHeader = true
-                        request.setValue(value, forHTTPHeaderField: field)
-                    }
-                }
-            }
-        }
+            return writer.traceHeaders
 
-        return (request, (hasSetAnyHeader && injectedSpanContext.samplingPriority.isKept) ? injectedSpanContext : nil, nil)
+//            writer.traceHeaderFields.forEach { field, value in
+//                if field.lowercased() == W3CHTTPHeaders.baggage.lowercased() {
+//                    // Handle baggage header merging
+//                    if let existingValue = request.value(forHTTPHeaderField: field) {
+//                        let mergedValue = BaggageHeaderMerger.merge(previousHeader: existingValue, with: value)
+//                        request.setValue(mergedValue, forHTTPHeaderField: field)
+//                    } else {
+//                        request.setValue(value, forHTTPHeaderField: field)
+//                    }
+//                    hasSetAnyHeader = true
+//                } else {
+//                    // do not overwrite existing header
+//                    if request.value(forHTTPHeaderField: field) == nil {
+//                        hasSetAnyHeader = true
+//                        request.setValue(value, forHTTPHeaderField: field)
+//                    }
+//                }
+//            }
+        })
+
+        return RequestInstrumentationContext(
+            injectedTrace: (hasSetAnyHeader && injectedSpanContext.samplingPriority.isKept) ? .init(traceHeaders: traceHeaders, traceContext: injectedSpanContext) : nil,
+            capturedState: nil)
     }
 
-    fileprivate func trace(from interception: DatadogInternal.URLSessionTaskInterception) -> RUMSpanContext? {
-        return interception.trace.map {
+    fileprivate func trace(from traceContext: TraceContext?) -> RUMSpanContext? {
+        return traceContext.map {
             .init(
                 traceID: $0.traceID,
                 spanID: $0.spanID,

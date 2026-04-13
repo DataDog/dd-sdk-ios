@@ -10,14 +10,53 @@ import Foundation
 public protocol TracePropagationHeadersWriter {
     var traceHeaderFields: [String: String] { get }
 
-    var traceHeaders: [String: TracePropagationHeaderValue] { get }
+    var traceHeaders: TraceHeaders { get }
 
     func write(traceContext: TraceContext)
 }
 
 extension TracePropagationHeadersWriter {
     public var traceHeaderFields: [String: String] {
-        traceHeaders.mapValues { $0.description }
+        traceHeaders.headers.mapValues { $0.description }
+    }
+}
+
+public struct TraceHeaders: ExpressibleByDictionaryLiteral {
+    public typealias Key = String
+
+    public typealias Value = TracePropagationHeaderValue
+
+    public init(dictionaryLiteral elements: (String, TracePropagationHeaderValue)...) {
+        self.headers = Dictionary(elements, uniquingKeysWith: { lhs, rhs in rhs })
+    }
+
+    init(headers: [String: TracePropagationHeaderValue]) {
+        self.headers = headers
+    }
+
+    public var headers: [String: TracePropagationHeaderValue]
+
+    func merged(with other: TraceHeaders) -> TraceHeaders {
+        .init(
+            headers: headers.merging(other.headers) { lhs, rhs in
+                lhs.merged(with: rhs)
+            }
+        )
+    }
+
+    public static func merged(_ elements: [TraceHeaders]) -> TraceHeaders {
+        elements.reduce([:]) { partialResult, element in
+            partialResult.merged(with: element)
+        }
+    }
+
+    subscript(key: String) -> TracePropagationHeaderValue? {
+        get {
+            return headers[key]
+        }
+        set {
+            headers[key] = newValue
+        }
     }
 }
 
@@ -38,6 +77,14 @@ public struct TracePropagationKeyValuePairsHeaderValue: CustomStringConvertible 
             .map { pair in "\(pair.key)\(keyValueSeparator)\(pair.value)" }
             .joined(separator: keyValuePairSeparator)
     }
+
+    func merged(with other: TracePropagationKeyValuePairsHeaderValue) -> TracePropagationKeyValuePairsHeaderValue {
+        .init(
+            values: values.merging(other.values, uniquingKeysWith: { lhs, rhs in lhs }),
+            keyValueSeparator: keyValueSeparator,
+            keyValuePairSeparator: keyValuePairSeparator
+        )
+    }
 }
 
 public enum TracePropagationHeaderValue: CustomStringConvertible {
@@ -52,6 +99,14 @@ public enum TracePropagationHeaderValue: CustomStringConvertible {
             string.description
         case .keyValueList(let tracePropagationKeyValuePairsHeaderValue):
             tracePropagationKeyValuePairsHeaderValue.description
+        }
+    }
+
+    func merged(with other: TracePropagationHeaderValue) -> TracePropagationHeaderValue {
+        switch (self, other) {
+        case (.string(let string), _): self
+        case (.keyValueList(let lhs), .keyValueList(let rhs)): .keyValueList(lhs.merged(with: rhs))
+        case (.keyValueList(let lhs), _): self
         }
     }
 }

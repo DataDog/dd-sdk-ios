@@ -34,7 +34,7 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
 //    public private(set) var traceHeaderFields: [String: String] = [:]
 
-    public private(set) var traceHeaders: [String: TracePropagationHeaderValue] = [:]
+    public private(set) var traceHeaders: TraceHeaders = [:]
 
     private let traceContextInjection: TraceContextInjection
 

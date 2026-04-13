@@ -33,6 +33,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     /// Telemetry interface for tracking SDK usage
     let telemetry: Telemetry
 
+    let id = UUID()
+
     weak var tracer: DatadogTracer?
 
     /// Helper structure, used to collect elements for creating new contexts.
@@ -64,9 +66,9 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         self.telemetry = telemetry
     }
 
-    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> RequestInstrumentationContext {
         guard let tracer = tracer else {
-            return (request, nil, nil)
+            return .init(injectedTrace: nil, capturedState: nil)
         }
 
         // Use the current active span as parent if the propagation headers support it.
@@ -84,9 +86,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             accountId: contextReceiver.context.accountInfo?.id
         )
 
-        var request = request
         var hasSetAnyHeader = false
-        headerTypes.forEach {
+        let traceHeaders = TraceHeaders.merged(headerTypes.map {
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
@@ -110,14 +111,15 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
             writer.write(traceContext: injectedSpanContext)
 
-            writer.traceHeaderFields.forEach { field, value in
-                // do not overwrite existing header
-                if request.value(forHTTPHeaderField: field) == nil {
-                    hasSetAnyHeader = true
-                    request.setValue(value, forHTTPHeaderField: field)
-                }
-            }
-        }
+            return writer.traceHeaders
+//            writer.traceHeaderFields.forEach { field, value in
+//                // do not overwrite existing header
+//                if request.value(forHTTPHeaderField: field) == nil {
+//                    hasSetAnyHeader = true
+//                    request.setValue(value, forHTTPHeaderField: field)
+//                }
+//            }
+        })
 
         /*
          A note about how the active span context is registered: the order these three methods
@@ -154,14 +156,12 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             ? TracingURLSessionHandlerCapturedState(activeSpan: tracer.activeSpan, hasGraphQLHeaders: hasGraphQLHeaders)
             : nil
 
-        return (
-            request,
-            hasSetAnyHeader ? injectedSpanContext : nil,
-            capturedState
-        )
+        return RequestInstrumentationContext(
+            injectedTrace: hasSetAnyHeader ? .init(traceHeaders: traceHeaders, traceContext: injectedSpanContext) : nil,
+            capturedState: capturedState)
     }
 
-    func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
+    func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
         /*
          Read the comment inside the modify(…) method to know where the captured state comes from.
 
@@ -177,8 +177,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
          span is used.
          */
         // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
-        let capturedState = capturedStates.compactMap({ $0 as? TracingURLSessionHandlerCapturedState }).first
-
+        let capturedState = interception.trace[id]?.capturedState as? TracingURLSessionHandlerCapturedState
+        
         capturedState?.activeSpan.map {
             interception.register(activeSpanContext: $0.context)
         }
@@ -232,7 +232,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
          The following is/else block implements both cases.
          */
-        if let trace = interception.trace {
+        if let trace = interception.trace[id]?.injectedTrace?.traceContext {
             let context = DDSpanContext(
                 traceID: trace.traceID,
                 spanID: trace.spanID,

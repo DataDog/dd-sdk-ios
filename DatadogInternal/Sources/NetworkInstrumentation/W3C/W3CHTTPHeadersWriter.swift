@@ -34,7 +34,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
 //    public private(set) var traceHeaderFields: [String: String] = [:]
 
-    public var traceHeaders: [String : TracePropagationHeaderValue] = [:]
+    public var traceHeaders: TraceHeaders = [:]
 
     /// A dictionary containing the tracestate to be injected.
     /// This value will be merged with the tracestate from the trace context.

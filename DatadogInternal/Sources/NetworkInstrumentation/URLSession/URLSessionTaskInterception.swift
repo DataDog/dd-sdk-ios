@@ -54,7 +54,7 @@ public class URLSessionTaskInterception {
     public private(set) var completion: ResourceCompletion?
     /// Trace context injected to request headers. Can be `nil` if the trace was not sampled or if modifying
     /// request was not possible in `URLSession` swizzling on certain OS version.
-    public private(set) var trace: TraceContext?
+    public private(set) var trace: [DatadogURLSessionHandlerIdentifier: RequestInstrumentationContext] = [:]
     /// The Datadog origin of the Trace.
     ///
     /// Setting the value to 'rum' will indicate that the span is reported as a RUM Resource.
@@ -120,7 +120,7 @@ public class URLSessionTaskInterception {
         )
     }
 
-    public func register(trace: TraceContext) {
+    public func register(trace: [DatadogURLSessionHandlerIdentifier: RequestInstrumentationContext]) {
         self.trace = trace
     }
 

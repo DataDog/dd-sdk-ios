@@ -6,10 +6,14 @@
 
 import Foundation
 
+public typealias DatadogURLSessionHandlerIdentifier = UUID
+
 /// An interface for processing `URLSession` task interceptions.
 public protocol DatadogURLSessionHandler {
     /// The first party hosts configured for this handler.
     var firstPartyHosts: FirstPartyHosts { get }
+
+    var id: DatadogURLSessionHandlerIdentifier { get }
 
     /// Modifies the provided request by injecting trace headers.
     ///
@@ -19,14 +23,14 @@ public protocol DatadogURLSessionHandler {
     ///   - networkContext: The context around the network request
     /// - Returns: A tuple containing the modified request, the injected TraceContext and optional captured state.
     ///            If no trace is injected (e.g., due to sampling), the returned request remains unmodified, and the trace context will be `nil`.
-    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?)
+    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (RequestInstrumentationContext)
 
     /// Notifies the handler that the interception has started.
     ///
     /// - Parameters:
     ///   - interception: The URLSession task interception.
     ///   - capturedStates: Captured states optionally provided by the session handler.
-    func interceptionDidStart(interception: URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState])
+    func interceptionDidStart(interception: URLSessionTaskInterception)
 
     /// Notifies the handler that the interception has completed.
     ///

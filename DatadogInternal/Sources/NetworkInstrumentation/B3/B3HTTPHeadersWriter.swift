@@ -54,7 +54,7 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
 //    public private(set) var traceHeaderFields: [String: String] = [:]
 
-    public var traceHeaders: [String : TracePropagationHeaderValue] = [:]
+    public var traceHeaders: TraceHeaders = [:]
 
     /// Defines whether the trace context should be injected into all requests or only sampled ones.
     private let traceContextInjection: TraceContextInjection
