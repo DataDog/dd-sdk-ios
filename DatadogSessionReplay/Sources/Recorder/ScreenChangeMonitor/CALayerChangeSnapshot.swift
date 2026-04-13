@@ -23,13 +23,6 @@ internal struct CALayerChangeSnapshot: Equatable {
     func aspects(for layer: CALayer) -> CALayerChange.Aspect.Set? {
         changes[ObjectIdentifier(layer)]?.aspects
     }
-
-    func removingDeallocatedLayers() -> CALayerChangeSnapshot {
-        let changes = self.changes.filter {
-            $1.layer != nil
-        }
-        return CALayerChangeSnapshot(changes)
-    }
 }
 
 extension CALayerChangeSnapshot: Collection {

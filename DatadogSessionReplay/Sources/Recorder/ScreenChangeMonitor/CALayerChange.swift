@@ -34,6 +34,10 @@ internal struct CALayerChange: Equatable {
         }
     }
 
+    var isValid: Bool {
+        layer != nil
+    }
+
     weak var layer: CALayer?
     var aspects: Aspect.Set
 }

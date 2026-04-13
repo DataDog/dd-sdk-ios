@@ -12,17 +12,17 @@ import XCTest
 
 @MainActor
 final class ScreenChangeMonitorTests: XCTestCase {
-    private let testTimerScheduler = TestTimerScheduler(now: 0)
+    private let testTimer = TestRepeatingTimer()
     // swiftlint:disable:next implicitly_unwrapped_optional
-    private var screenChangeMonitor: ScreenChangeMonitor!
+    private var monitor: ScreenChangeMonitor!
     private var snapshots: [CALayerChangeSnapshot] = []
 
     override func setUp() async throws {
         try await super.setUp()
 
-        screenChangeMonitor = try ScreenChangeMonitor(
+        monitor = try ScreenChangeMonitor(
             minimumDeliveryInterval: 0.1,
-            timerScheduler: testTimerScheduler
+            timer: testTimer
         ) { [weak self] snapshot in
             self?.snapshots.append(snapshot)
         }
@@ -33,41 +33,76 @@ final class ScreenChangeMonitorTests: XCTestCase {
         super.tearDown()
     }
 
-    func testStartAndStop() {
+    func testDeliversSnapshotWhenTimerFires() {
         // given
         let layer = CALayer()
 
         // when
-        testTimerScheduler.advance(to: 0.01)
-        layer.display() // ignored
-        testTimerScheduler.advance(to: 1.00)
-
-        // then
-        XCTAssertEqual(snapshots.count, 0, "Should ignore layer changes before calling start()")
-
-        // when
-        screenChangeMonitor.start()
-
-        testTimerScheduler.advance(to: 1.01)
+        monitor.start()
         layer.display()
-        testTimerScheduler.advance(to: 1.20)
+        testTimer.tick()
 
         // then
         XCTAssertEqual(snapshots.count, 1)
         XCTAssertEqual(snapshots[0].aspects(for: layer), .display)
+    }
 
-        // given
-        snapshots.removeAll()
-
+    func testDoesNotDeliverWhenNoChangesOccurred() {
         // when
-        screenChangeMonitor.stop()
-
-        testTimerScheduler.advance(to: 2.00)
-        layer.display()
-        testTimerScheduler.advance(to: 3.00)
+        monitor.start()
+        testTimer.tick()
 
         // then
-        XCTAssertEqual(snapshots.count, 0, "Should ignore layer changes after calling stop()")
+        XCTAssertTrue(snapshots.isEmpty)
+    }
+
+    func testIgnoresChangesBeforeStart() {
+        // given
+        let layer = CALayer()
+
+        // when
+        layer.display()
+        testTimer.tick()
+
+        // then
+        XCTAssertTrue(snapshots.isEmpty)
+    }
+
+    func testIgnoresChangesAfterStop() {
+        // given
+        let layer = CALayer()
+
+        // when
+        monitor.start()
+        layer.display()
+        testTimer.tick()
+
+        // then
+        XCTAssertEqual(snapshots.count, 1)
+
+        // when
+        monitor.stop()
+        snapshots.removeAll()
+
+        layer.display()
+        testTimer.tick()
+
+        // then
+        XCTAssertTrue(snapshots.isEmpty)
+    }
+
+    func testStartsAndStopsTimer() {
+        // when
+        monitor.start()
+
+        // then
+        XCTAssertTrue(testTimer.isRunning)
+
+        // when
+        monitor.stop()
+
+        // then
+        XCTAssertFalse(testTimer.isRunning)
     }
 }
 #endif

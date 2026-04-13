@@ -12,28 +12,15 @@ import XCTest
 
 @MainActor
 final class CALayerChangeAggregatorTests: XCTestCase {
-    private let testTimerScheduler = TestTimerScheduler(now: 0)
     // swiftlint:disable:next implicitly_unwrapped_optional
     private var layerChangeAggregator: CALayerChangeAggregator!
-    private var snapshots: [CALayerChangeSnapshot] = []
 
     override func setUp() {
         super.setUp()
-
-        layerChangeAggregator = CALayerChangeAggregator(
-            minimumDeliveryInterval: 0.1,
-            timerScheduler: testTimerScheduler
-        ) { [weak self] snapshot in
-            self?.snapshots.append(snapshot)
-        }
+        layerChangeAggregator = CALayerChangeAggregator()
     }
 
-    override func tearDown() {
-        snapshots.removeAll()
-        super.tearDown()
-    }
-
-    func testCoalescesChangesAndDeliversAtMostOncePerInterval() {
+    func testAccumulatesAndMergesAspectsForSameLayer() {
         // given
         let layer = CALayer()
         let context = CGContext(
@@ -47,181 +34,67 @@ final class CALayerChangeAggregatorTests: XCTestCase {
         )!
 
         // when
-        layerChangeAggregator.start()
-
-        testTimerScheduler.advance(to: 0.016)
         layerChangeAggregator.layerDidDisplay(layer)
-
-        testTimerScheduler.advance(to: 0.032)
         layerChangeAggregator.layerDidDraw(layer, in: context)
         layerChangeAggregator.layerDidLayoutSublayers(layer)
 
         // then
-        XCTAssertEqual(snapshots.count, 0, "Should not have delivered a snapshot yet")
-
-        // when
-        testTimerScheduler.advance(to: 0.1)
-
-        // then
-        XCTAssertEqual(snapshots.count, 1)
+        let snapshot = layerChangeAggregator.takePendingChanges()
         XCTAssertEqual(
-            snapshots[0],
+            snapshot,
             CALayerChangeSnapshot(
                 [ObjectIdentifier(layer): CALayerChange(layer: layer, aspects: [.display, .draw, .layout])]
             )
         )
     }
 
-    func testDeliversImmediatelyWhenOutsideThrottleWindow() {
-        // given
-        let layer = CALayer()
-
-        // when
-        layerChangeAggregator.start()
-
-        testTimerScheduler.advance(to: 0.02)
-        layerChangeAggregator.layerDidDisplay(layer)
-
-        // then
-        XCTAssertEqual(snapshots.count, 0, "Should not have delivered a snapshot yet")
-
-        // when
-        testTimerScheduler.advance(to: 0.1)
-
-        // then
-        XCTAssertEqual(snapshots.count, 1)
-
-        // when
-        testTimerScheduler.advance(to: 0.5)
-        layerChangeAggregator.layerDidLayoutSublayers(layer)
-
-        // then
-        XCTAssertEqual(snapshots.count, 2)
-        XCTAssertEqual(
-            snapshots,
-            [
-                .init(
-                    [ObjectIdentifier(layer): CALayerChange(layer: layer, aspects: .display)]
-                ),
-                .init(
-                    [ObjectIdentifier(layer): CALayerChange(layer: layer, aspects: .layout)]
-                ),
-            ]
-        )
-    }
-
-    func testIgnoresChangesTriggeredWhileDelivering() {
-        // given
-        let layer = CALayer()
-        let reentrantLayer = CALayer()
-
-        layerChangeAggregator = CALayerChangeAggregator(
-            minimumDeliveryInterval: 0.1,
-            timerScheduler: testTimerScheduler
-        ) { [weak self] snapshot in
-            self?.snapshots.append(snapshot)
-            self?.layerChangeAggregator.layerDidLayoutSublayers(reentrantLayer)
-        }
-
-        // when
-        layerChangeAggregator.start()
-
-        testTimerScheduler.advance(to: 0.02)
-        layerChangeAggregator.layerDidDisplay(layer)
-
-        testTimerScheduler.advance(to: 0.1)
-
-        // then
-        XCTAssertEqual(snapshots.count, 1)
-        XCTAssertEqual(
-            snapshots[0],
-            CALayerChangeSnapshot(
-                [ObjectIdentifier(layer): CALayerChange(layer: layer, aspects: .display)]
-            )
-        )
-
-        // when
-        testTimerScheduler.advance(to: 0.5)
-
-        // then
-        XCTAssertEqual(snapshots.count, 1, "Should ignore changes triggered while delivering")
-    }
-
-    func testMergesChangesForMultipleLayersIndependently() {
+    func testTracksMultipleLayersIndependently() {
         // given
         let layerA = CALayer()
         let layerB = CALayer()
 
         // when
-        layerChangeAggregator.start()
-
-        testTimerScheduler.advance(to: 0.01)
         layerChangeAggregator.layerDidDisplay(layerA)
-
-        testTimerScheduler.advance(to: 0.02)
         layerChangeAggregator.layerDidLayoutSublayers(layerB)
 
-        testTimerScheduler.advance(to: 0.1)
-
         // then
-        XCTAssertEqual(snapshots.count, 1)
+        let snapshot = layerChangeAggregator.takePendingChanges()
         XCTAssertEqual(
-            snapshots[0],
+            snapshot,
             CALayerChangeSnapshot(
                 [
                     ObjectIdentifier(layerA): CALayerChange(layer: layerA, aspects: .display),
-                    ObjectIdentifier(layerB): CALayerChange(layer: layerB, aspects: .layout)
+                    ObjectIdentifier(layerB): CALayerChange(layer: layerB, aspects: .layout),
                 ]
             )
         )
     }
 
-    func testNoSnapshotsWhenNoChangesOccur() {
-        // when
-        layerChangeAggregator.start()
-        testTimerScheduler.advance(to: 10.0) // time passes, but no changes
-
-        // then
-        XCTAssertTrue(snapshots.isEmpty)
-    }
-
-    func testIgnoresChangesBeforeStartAndAfterStop() {
+    func testTakePendingChangesResetsState() {
         // given
         let layer = CALayer()
+        layerChangeAggregator.layerDidDisplay(layer)
 
         // when
-        testTimerScheduler.advance(to: 0.01)
-        layerChangeAggregator.layerDidDisplay(layer) // ignored
-        testTimerScheduler.advance(to: 1.0)
+        let firstSnapshot = layerChangeAggregator.takePendingChanges()
+        let secondSnapshot = layerChangeAggregator.takePendingChanges()
 
         // then
-        XCTAssertTrue(snapshots.isEmpty)
+        XCTAssertFalse(firstSnapshot.isEmpty)
+        XCTAssertTrue(secondSnapshot.isEmpty)
+    }
+
+    func testTakePendingChangesRemovesDeallocatedLayers() {
+        // given
+        var layer: CALayer? = CALayer()
+        layerChangeAggregator.layerDidDisplay(layer!)
+        layer = nil
 
         // when
-        layerChangeAggregator.start()
-
-        testTimerScheduler.advance(to: 1.01)
-        layerChangeAggregator.layerDidDisplay(layer) // accepted and delivered
-        testTimerScheduler.advance(to: 1.1)
+        let snapshot = layerChangeAggregator.takePendingChanges()
 
         // then
-        XCTAssertEqual(snapshots.count, 1)
-
-        // when
-        layerChangeAggregator.stop()
-
-        testTimerScheduler.advance(to: 2.000)
-        layerChangeAggregator.layerDidLayoutSublayers(layer) // ignored
-        testTimerScheduler.advance(to: 2.500)
-
-        // then
-        XCTAssertEqual(snapshots.count, 1)
-        XCTAssertEqual(
-            snapshots[0],
-            CALayerChangeSnapshot(
-                [ObjectIdentifier(layer): CALayerChange(layer: layer, aspects: .display)]
-            )
-        )
+        XCTAssertTrue(snapshot.isEmpty)
     }
 }
 #endif

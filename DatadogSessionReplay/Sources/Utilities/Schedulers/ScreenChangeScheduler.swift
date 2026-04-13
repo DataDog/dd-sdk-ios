@@ -22,7 +22,7 @@ internal final class ScreenChangeScheduler: Scheduler {
 
     private let minimumInterval: TimeInterval
     private let telemetry: Telemetry
-    private let timerScheduler: any TimerScheduler
+    private let timer: any RepeatingTimer
 
     private var monitor: ScreenChangeMonitor?
     private var operations: [() -> Void] = []
@@ -30,11 +30,11 @@ internal final class ScreenChangeScheduler: Scheduler {
     init(
         minimumInterval: TimeInterval,
         telemetry: Telemetry,
-        timerScheduler: any TimerScheduler = .dispatchSource
+        timer: any RepeatingTimer = .dispatchSource
     ) {
         self.minimumInterval = minimumInterval
         self.telemetry = telemetry
-        self.timerScheduler = timerScheduler
+        self.timer = timer
     }
 
     func schedule(operation: @escaping () -> Void) {
@@ -52,7 +52,7 @@ internal final class ScreenChangeScheduler: Scheduler {
             do {
                 let monitor = try ScreenChangeMonitor(
                     minimumDeliveryInterval: self.minimumInterval,
-                    timerScheduler: self.timerScheduler
+                    timer: self.timer
                 ) { [weak self] snapshot in
                     self?.screenDidChange(snapshot)
                 }
