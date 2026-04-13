@@ -1154,6 +1154,9 @@
 		D2C1A50829C4C4CB00946C31 /* TracingURLSessionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25BADA029C1EF3000112069 /* TracingURLSessionHandler.swift */; };
 		D2C1A50929C4C4CB00946C31 /* SpanEventEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A8A424509FAA00DA608C /* SpanEventEncoder.swift */; };
 		D2C1A50A29C4C4CB00946C31 /* TraceFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2546C0329AF55AA0054E00B /* TraceFeature.swift */; };
+		E7CSS00129C4D5A800000001 /* ClientStatsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS00429C4D5A800000004 /* ClientStatsFeature.swift */; };
+		E7CSS00229C4D5A800000002 /* StatsRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS00529C4D5A800000005 /* StatsRequestBuilder.swift */; };
+		E7CSS00329C4D5A800000003 /* ClientStatsFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS00629C4D5A800000006 /* ClientStatsFeatureTests.swift */; };
 		D2C1A50B29C4C4CB00946C31 /* SpanEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A8A524509FAA00DA608C /* SpanEventBuilder.swift */; };
 		D2C1A50C29C4C4CB00946C31 /* DDNoOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87924509A0C00DA608C /* DDNoOps.swift */; };
 		D2C1A50D29C4C4CB00946C31 /* SpanTagsReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614872762485067300E3EBDB /* SpanTagsReducer.swift */; };
@@ -2789,6 +2792,9 @@
 		D253EE982B98B3690010B589 /* ViewCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewCacheTests.swift; sourceTree = "<group>"; };
 		D2546BF029AF4F550054E00B /* DatadogTracer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogTracer.swift; sourceTree = "<group>"; };
 		D2546C0329AF55AA0054E00B /* TraceFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceFeature.swift; sourceTree = "<group>"; };
+		E7CSS00429C4D5A800000004 /* ClientStatsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientStatsFeature.swift; sourceTree = "<group>"; };
+		E7CSS00529C4D5A800000005 /* StatsRequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsRequestBuilder.swift; sourceTree = "<group>"; };
+		E7CSS00629C4D5A800000006 /* ClientStatsFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientStatsFeatureTests.swift; sourceTree = "<group>"; };
 		D2546C0729AF55E90054E00B /* RequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestBuilder.swift; sourceTree = "<group>"; };
 		D2546C0A29AF56270054E00B /* MessageReceivers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageReceivers.swift; sourceTree = "<group>"; };
 		D2552AF42BBC47D900A45725 /* WebEventIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebEventIntegrationTests.swift; sourceTree = "<group>"; };
@@ -6206,6 +6212,8 @@
 				D2546C0329AF55AA0054E00B /* TraceFeature.swift */,
 				D2546C0729AF55E90054E00B /* RequestBuilder.swift */,
 				D2546C0A29AF56270054E00B /* MessageReceivers.swift */,
+				E7CSS00429C4D5A800000004 /* ClientStatsFeature.swift */,
+				E7CSS00529C4D5A800000005 /* StatsRequestBuilder.swift */,
 			);
 			path = Feature;
 			sourceTree = "<group>";
@@ -6258,6 +6266,7 @@
 				61E45BD02450F64100F2C652 /* Span */,
 				61C5A89924509C1100DA608C /* Utils */,
 				619CE7602A458D66005588CB /* TraceTests.swift */,
+				E7CSS00629C4D5A800000006 /* ClientStatsFeatureTests.swift */,
 			);
 			name = DatadogTraceTests;
 			path = ../DatadogTrace/Tests;
@@ -8689,6 +8698,8 @@
 				3CFF5D492B555F4F00FC483A /* OTelTracerProvider.swift in Sources */,
 				D2C1A4FA29C4C4CB00946C31 /* SpanSanitizer.swift in Sources */,
 				D2C1A50A29C4C4CB00946C31 /* TraceFeature.swift in Sources */,
+				E7CSS00129C4D5A800000001 /* ClientStatsFeature.swift in Sources */,
+				E7CSS00229C4D5A800000002 /* StatsRequestBuilder.swift in Sources */,
 				D2C1A50829C4C4CB00946C31 /* TracingURLSessionHandler.swift in Sources */,
 				D2C1A50529C4C4CB00946C31 /* DatadogTracer.swift in Sources */,
 			);
@@ -8710,6 +8721,7 @@
 				D2C1A51C29C4C75700946C31 /* ContextMessageReceiverTests.swift in Sources */,
 				3C6C7FFD2B459AF6006F5CBC /* OTelSpanTests.swift in Sources */,
 				619CE7612A458D66005588CB /* TraceTests.swift in Sources */,
+				E7CSS00329C4D5A800000003 /* ClientStatsFeatureTests.swift in Sources */,
 				615192D02BD6B7C90005A782 /* DatadogTracer+InjectAndExtract.swift in Sources */,
 				D2C1A52029C4C75700946C31 /* DDSpanTests.swift in Sources */,
 				3C5D636C2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift in Sources */,
