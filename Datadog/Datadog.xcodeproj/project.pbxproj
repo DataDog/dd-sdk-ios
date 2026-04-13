@@ -56,6 +56,12 @@
 		116656D62EB501D3004248E8 /* ProfilingRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116656D42EB501C2004248E8 /* ProfilingRUMIntegrationTests.swift */; };
 		116656D72EB504A8004248E8 /* DatadogProfiling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D229FFA72E3BC6D4009CCD62 /* DatadogProfiling.framework */; platformFilters = (ios, tvos, xros, ); };
 		116656E12EB504F1004248E8 /* DatadogFlags.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; };
+		1166C5A12F76EBCD008E34BC /* ProfilingOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C5A02F76EBC1008E34BC /* ProfilingOptions.swift */; };
+		1166C5A22F76EBCD008E34BC /* ProfilingOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C5A02F76EBC1008E34BC /* ProfilingOptions.swift */; };
+		1166C5A42F76EC0B008E34BC /* OperationOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C5A32F76EC05008E34BC /* OperationOptions.swift */; };
+		1166C5A52F76EC0B008E34BC /* OperationOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C5A32F76EC05008E34BC /* OperationOptions.swift */; };
+		1166C5AA2F76ED7A008E34BC /* ProfilingOptions+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C5A92F76ED6F008E34BC /* ProfilingOptions+objc.swift */; };
+		1166C5AB2F76ED7A008E34BC /* ProfilingOptions+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C5A92F76ED6F008E34BC /* ProfilingOptions+objc.swift */; };
 		116F84062CFDD06700705755 /* SampleRateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116F84052CFDD06700705755 /* SampleRateTests.swift */; };
 		117ADDD92EAA8A90008BD9D8 /* StartupTypeHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ADDD82EAA8A90008BD9D8 /* StartupTypeHandlerTests.swift */; };
 		117E52222D91A61A00A8E930 /* DatadogSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */; platformFilter = ios; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -1787,6 +1793,9 @@
 		116506132E95339B00FD815C /* AppStateManagerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManagerMock.swift; sourceTree = "<group>"; };
 		116506162E9535A500FD815C /* WatchdogTerminationMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationMocks.swift; sourceTree = "<group>"; };
 		116656D42EB501C2004248E8 /* ProfilingRUMIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingRUMIntegrationTests.swift; sourceTree = "<group>"; };
+		1166C5A02F76EBC1008E34BC /* ProfilingOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingOptions.swift; sourceTree = "<group>"; };
+		1166C5A32F76EC05008E34BC /* OperationOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationOptions.swift; sourceTree = "<group>"; };
+		1166C5A92F76ED6F008E34BC /* ProfilingOptions+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProfilingOptions+objc.swift"; sourceTree = "<group>"; };
 		116F84052CFDD06700705755 /* SampleRateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleRateTests.swift; sourceTree = "<group>"; };
 		117ADDD82EAA8A90008BD9D8 /* StartupTypeHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTypeHandlerTests.swift; sourceTree = "<group>"; };
 		118246772D90416A00E3D16F /* DirectoriesStub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoriesStub.swift; sourceTree = "<group>"; };
@@ -5224,6 +5233,9 @@
 			isa = PBXGroup;
 			children = (
 				5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */,
+				111C13842F83E53600960ED9 /* OperationMessage.swift */,
+				1166C5A32F76EC05008E34BC /* OperationOptions.swift */,
+				D2E8A8E62DCBBA5100CF7C63 /* RUMCoreContext.swift */,
 				D28FB6952DB7D3F000CD76D0 /* RUMDataModels.swift */,
 				D2D9A9DB2DBFD507005DB31D /* RUMPayloadMessages.swift */,
 				D2E8A8E62DCBBA5100CF7C63 /* RUMCoreContext.swift */,
@@ -6248,6 +6260,8 @@
 		D27465732E78679700C47FE2 /* Profiling */ = {
 			isa = PBXGroup;
 			children = (
+				1166C5A92F76ED6F008E34BC /* ProfilingOptions+objc.swift */,
+				1166C5A02F76EBC1008E34BC /* ProfilingOptions.swift */,
 				D27465742E7867B700C47FE2 /* ProfilingContext.swift */,
 				D274657F2E7B1C4D00C47FE2 /* ProfilingMessages.swift */,
 			);
@@ -8377,12 +8391,14 @@
 				D23039FA298D5236001A1FA3 /* Telemetry.swift in Sources */,
 				D23039FC298D5236001A1FA3 /* DataFormat.swift in Sources */,
 				D2160CED29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift in Sources */,
+				1166C5A52F76EC0B008E34BC /* OperationOptions.swift in Sources */,
 				09A936A02F0EB989000B6379 /* SamplingMechanismType.swift in Sources */,
 				09A936A12F0EB989000B6379 /* SamplingPriority.swift in Sources */,
 				09A936A22F0EB989000B6379 /* SpanContext.swift in Sources */,
 				D2160C9E29C0DE5700FAA9A5 /* TracingHeaderType.swift in Sources */,
 				D23039F5298D5236001A1FA3 /* AnyEncodable.swift in Sources */,
 				D2303A00298D5236001A1FA3 /* DatadogExtended.swift in Sources */,
+				1166C5AA2F76ED7A008E34BC /* ProfilingOptions+objc.swift in Sources */,
 				D233E7CF2E4627B100E7CFDE /* MultipartFormData.swift in Sources */,
 				D23039E6298D5236001A1FA3 /* Sysctl.swift in Sources */,
 				D28FB6962DB7D3F000CD76D0 /* RUMDataModels.swift in Sources */,
@@ -8412,6 +8428,7 @@
 				D2303A02298D5236001A1FA3 /* ReadWriteLock.swift in Sources */,
 				618032042D6F1214007027E3 /* Assert.swift in Sources */,
 				D2EBEE2429BA160F00B15732 /* W3CHTTPHeadersReader.swift in Sources */,
+				1166C5A22F76EBCD008E34BC /* ProfilingOptions.swift in Sources */,
 				A7FA98CE2BA1A6930018D6B5 /* MethodCalledMetric.swift in Sources */,
 				D27465762E7867B700C47FE2 /* ProfilingContext.swift in Sources */,
 				D23039E8298D5236001A1FA3 /* DatadogContext.swift in Sources */,
