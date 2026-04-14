@@ -86,40 +86,43 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             accountId: contextReceiver.context.accountInfo?.id
         )
 
-        var hasSetAnyHeader = false
-        let traceHeaders = TraceHeaders.merged(headerTypes.map {
-            let writer: TracePropagationHeadersWriter
-            switch $0 {
-            case .datadog:
-                writer = HTTPHeadersWriter(traceContextInjection: traceContextInjection)
-            case .b3:
-                writer = B3HTTPHeadersWriter(
-                    injectEncoding: .single,
-                    traceContextInjection: traceContextInjection
-                )
-            case .b3multi:
-                writer = B3HTTPHeadersWriter(
-                    injectEncoding: .multiple,
-                    traceContextInjection: traceContextInjection
-                )
-            case .tracecontext:
-                writer = W3CHTTPHeadersWriter(
-                    tracestate: [:],
-                    traceContextInjection: traceContextInjection
-                )
-            }
+        let traceHeaders = TraceHeaders
+            .merged(headerTypes.map {
+                let writer: TracePropagationHeadersWriter
+                switch $0 {
+                case .datadog:
+                    writer = HTTPHeadersWriter(traceContextInjection: traceContextInjection)
+                case .b3:
+                    writer = B3HTTPHeadersWriter(
+                        injectEncoding: .single,
+                        traceContextInjection: traceContextInjection
+                    )
+                case .b3multi:
+                    writer = B3HTTPHeadersWriter(
+                        injectEncoding: .multiple,
+                        traceContextInjection: traceContextInjection
+                    )
+                case .tracecontext:
+                    writer = W3CHTTPHeadersWriter(
+                        tracestate: [:],
+                        traceContextInjection: traceContextInjection
+                    )
+                }
 
-            writer.write(traceContext: injectedSpanContext)
+                writer.write(traceContext: injectedSpanContext)
 
-            return writer.traceHeaders
-//            writer.traceHeaderFields.forEach { field, value in
-//                // do not overwrite existing header
-//                if request.value(forHTTPHeaderField: field) == nil {
-//                    hasSetAnyHeader = true
-//                    request.setValue(value, forHTTPHeaderField: field)
-//                }
-//            }
-        })
+                return writer.traceHeaders
+                //            writer.traceHeaderFields.forEach { field, value in
+                //                // do not overwrite existing header
+                //                if request.value(forHTTPHeaderField: field) == nil {
+                //                    hasSetAnyHeader = true
+                //                    request.setValue(value, forHTTPHeaderField: field)
+                //                }
+                //            }
+            })
+            .filtered(by: request)
+        
+        let hasSetAnyHeader = !traceHeaders.isEmpty
 
         /*
          A note about how the active span context is registered: the order these three methods
@@ -178,7 +181,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
          */
         // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
         let capturedState = interception.trace[id]?.capturedState as? TracingURLSessionHandlerCapturedState
-        
+
         capturedState?.activeSpan.map {
             interception.register(activeSpanContext: $0.context)
         }

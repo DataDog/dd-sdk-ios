@@ -71,7 +71,7 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
         traceHeaders[TracingHTTPHeaders.parentSpanIDField] = .string(String(traceContext.spanID, representation: .decimal))
         var tags = ["_dd.p.tid": traceContext.traceID.idHiHex]
         if traceContext.samplingPriority.isKept {
-            tags["_dd.p.dm"] = traceContext.samplingDecisionMaker.rawValue
+            tags["_dd.p.dm"] = "-\(traceContext.samplingDecisionMaker.rawValue)"
         }
         traceHeaders[TracingHTTPHeaders.tagsField] = .keyValueList(.init(values: tags, keyValueSeparator: "=", keyValuePairSeparator: ","))
 

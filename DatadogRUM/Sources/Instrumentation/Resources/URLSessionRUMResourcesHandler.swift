@@ -303,15 +303,14 @@ extension DistributedTracing {
             graphql: graphql
         )
 
-        var request = request
-        var hasSetAnyHeader = false
         let traceHeaders = TraceHeaders.merged(headerTypes.map {
+            var addOriginHeader = false
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
                 writer = HTTPHeadersWriter(traceContextInjection: traceContextInjection)
                 // To make sure the generated traces from RUM don’t affect APM Index Spans counts.
-                request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
+                addOriginHeader = true
             case .b3:
                 writer = B3HTTPHeadersWriter(
                     injectEncoding: .single,
@@ -333,7 +332,12 @@ extension DistributedTracing {
 
             writer.write(traceContext: injectedSpanContext)
 
-            return writer.traceHeaders
+            var result = writer.traceHeaders
+            if addOriginHeader {
+                result[TracingHTTPHeaders.originField] = .string("rum")
+            }
+
+            return result
 
 //            writer.traceHeaderFields.forEach { field, value in
 //                if field.lowercased() == W3CHTTPHeaders.baggage.lowercased() {
@@ -353,7 +357,9 @@ extension DistributedTracing {
 //                    }
 //                }
 //            }
-        })
+        }).filtered(by: request)
+
+        let hasSetAnyHeader = !traceHeaders.isEmpty
 
         return RequestInstrumentationContext(
             injectedTrace: (hasSetAnyHeader && injectedSpanContext.samplingPriority.isKept) ? .init(traceHeaders: traceHeaders, traceContext: injectedSpanContext) : nil,

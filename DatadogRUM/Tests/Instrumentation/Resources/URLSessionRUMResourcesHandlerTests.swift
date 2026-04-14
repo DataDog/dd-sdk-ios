@@ -45,7 +45,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.datadog],
             networkContext: NetworkContext(
@@ -56,14 +56,16 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "100")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a,_dd.p.dm=-1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "100")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "session.id=abcdef01-2345-6789-abcd-ef0123456789")
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
 
-        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.originField]?.description, "rum")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.traceIDField]?.description, "100")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.tagsField]?.description, "_dd.p.tid=a,_dd.p.dm=-1")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.parentSpanIDField]?.description, "100")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.samplingPriorityField]?.description, "1")
+        XCTAssertEqual(traceHeaders[W3CHTTPHeaders.baggage]?.description, "session.id=abcdef01-2345-6789-abcd-ef0123456789")
+
+        let injectedTraceContext = try XCTUnwrap(instrumentationContext.injectedTrace?.traceContext, "It must return injected trace context")
         XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
         XCTAssertEqual(injectedTraceContext.spanID, 100)
         XCTAssertNil(injectedTraceContext.parentSpanID)
@@ -86,7 +88,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.b3],
             networkContext: NetworkContext(
@@ -97,10 +99,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-1")
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
 
-        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+        XCTAssertNil(traceHeaders[TracingHTTPHeaders.originField])
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Single.b3Field]?.description, "000000000000000a0000000000000064-0000000000000064-1")
+
+        let injectedTraceContext = try XCTUnwrap(instrumentationContext.injectedTrace?.traceContext, "It must return injected trace context")
         XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
         XCTAssertEqual(injectedTraceContext.spanID, 100)
         XCTAssertNil(injectedTraceContext.parentSpanID)
@@ -123,7 +127,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.b3multi],
             networkContext: NetworkContext(
@@ -134,13 +138,15 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
-        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "1")
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
 
-        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+        XCTAssertNil(traceHeaders[TracingHTTPHeaders.originField])
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.traceIDField]?.description, "000000000000000a0000000000000064")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.spanIDField]?.description, "0000000000000064")
+        XCTAssertNil(traceHeaders[B3HTTPHeaders.Multiple.parentSpanIDField])
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.sampledField]?.description, "1")
+
+        let injectedTraceContext = try XCTUnwrap(instrumentationContext.injectedTrace?.traceContext, "It must return injected trace context")
         XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
         XCTAssertEqual(injectedTraceContext.spanID, 100)
         XCTAssertNil(injectedTraceContext.parentSpanID)
@@ -163,7 +169,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.tracecontext],
             networkContext: NetworkContext(
@@ -174,10 +180,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-01")
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
 
-        let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
+        XCTAssertNil(traceHeaders[TracingHTTPHeaders.originField])
+        XCTAssertEqual(traceHeaders[W3CHTTPHeaders.traceparent]?.description, "00-000000000000000a0000000000000064-0000000000000064-01")
+
+        let injectedTraceContext = try XCTUnwrap(instrumentationContext.injectedTrace?.traceContext, "It must return injected trace context")
         XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
         XCTAssertEqual(injectedTraceContext.spanID, 100)
         XCTAssertNil(injectedTraceContext.parentSpanID)
@@ -200,7 +208,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.datadog],
             networkContext: NetworkContext(
@@ -211,12 +219,14 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField))
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
 
-        XCTAssertNil(traceContext, "It must return no trace context")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.originField]?.description, "rum")
+        XCTAssertNil(traceHeaders[TracingHTTPHeaders.traceIDField])
+        XCTAssertNil(traceHeaders[TracingHTTPHeaders.parentSpanIDField])
+        XCTAssertNil(traceHeaders[TracingHTTPHeaders.samplingPriorityField])
+
+        XCTAssertNil(instrumentationContext.injectedTrace?.traceContext, "It must return no trace context")
     }
 
     func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3TraceHeaders() throws {
@@ -232,7 +242,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.b3],
             networkContext: NetworkContext(
@@ -243,10 +253,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-0")
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
 
-        XCTAssertNil(traceContext, "It must return no trace context")
+        XCTAssertNil(traceHeaders[TracingHTTPHeaders.originField])
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Single.b3Field]?.description, "000000000000000a0000000000000064-0000000000000064-0")
+
+        XCTAssertNil(instrumentationContext.injectedTrace?.traceContext, "It must return no trace context")
     }
 
     func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3MultiTraceHeaders() throws {
@@ -262,7 +274,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.b3multi],
             networkContext: NetworkContext(
@@ -273,13 +285,15 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
-        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "0")
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
 
-        XCTAssertNil(traceContext, "It must return no trace context")
+        XCTAssertNil(traceHeaders[TracingHTTPHeaders.originField])
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.traceIDField]?.description, "000000000000000a0000000000000064")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.spanIDField]?.description, "0000000000000064")
+        XCTAssertNil(traceHeaders[B3HTTPHeaders.Multiple.parentSpanIDField])
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.sampledField]?.description, "0")
+
+        XCTAssertNil(instrumentationContext.injectedTrace?.traceContext, "It must return no trace context")
     }
 
     func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectW3CTraceHeaders() throws {
@@ -295,7 +309,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // When
-        let (request, traceContext, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [.tracecontext],
             networkContext: NetworkContext(
@@ -306,10 +320,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-00")
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
 
-        XCTAssertNil(traceContext, "It must return no trace context")
+        XCTAssertNil(traceHeaders[TracingHTTPHeaders.originField])
+        XCTAssertEqual(traceHeaders[W3CHTTPHeaders.traceparent]?.description, "00-000000000000000a0000000000000064-0000000000000064-00")
+
+        XCTAssertNil(instrumentationContext.injectedTrace?.traceContext, "It must return no trace context")
     }
 
     func testGivenFirstPartyInterceptionAndShouldSetBaggageHeaderAndBaggageHeaderValuesToSet_withSampledTrace_itDoesNotOverwriteTraceHeadersExceptBaggage() throws {
@@ -340,7 +356,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let initialBaggageHeaderValue = "custom=12"
         orgRequest.setValue(initialBaggageHeaderValue, forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
-        let (request, _, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: orgRequest,
             headerTypes: [
                 .datadog,
@@ -358,18 +374,20 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "custom")
-        XCTAssertNotEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), initialBaggageHeaderValue)
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
+
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.traceIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.tagsField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.parentSpanIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.samplingPriorityField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.traceIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.spanIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.parentSpanIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.sampledField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Single.b3Field]?.description, "custom")
+        XCTAssertEqual(traceHeaders[W3CHTTPHeaders.traceparent]?.description, "custom")
+        XCTAssertEqual(traceHeaders[W3CHTTPHeaders.tracestate]?.description, "custom")
+        XCTAssertNotEqual(traceHeaders[W3CHTTPHeaders.baggage]?.description, initialBaggageHeaderValue)
     }
 
     func testGivenFirstPartyInterceptionAndShouldNotSetBaggageHeaderAndBaggageHeaderValuesToSet_withSampledTrace_itDoesNotOverwriteTraceHeaders() throws {
@@ -399,7 +417,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.tracestate)
         orgRequest.setValue("custom=12", forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
-        let (request, traceContext, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: orgRequest,
             headerTypes: [
                 .b3,
@@ -415,20 +433,22 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "custom=12")
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
 
-        XCTAssertNil(traceContext, "It must return no trace context")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.traceIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.tagsField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.parentSpanIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.samplingPriorityField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.traceIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.spanIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.parentSpanIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.sampledField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Single.b3Field]?.description, "custom")
+        XCTAssertEqual(traceHeaders[W3CHTTPHeaders.traceparent]?.description, "custom")
+        XCTAssertEqual(traceHeaders[W3CHTTPHeaders.tracestate]?.description, "custom")
+        XCTAssertEqual(traceHeaders[W3CHTTPHeaders.baggage]?.description, "custom=12")
+
+        XCTAssertNil(instrumentationContext.injectedTrace?.traceContext, "It must return no trace context")
     }
 
     func testGivenFirstPartyInterceptionAndShouldSetBaggageHeaderAndBaggageHeaderValuesEmpty_withSampledTrace_itDoesNotOverwriteTraceHeaders() throws {
@@ -458,7 +478,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         orgRequest.setValue("custom", forHTTPHeaderField: W3CHTTPHeaders.tracestate)
         orgRequest.setValue("custom=12", forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
-        let (request, traceContext, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: orgRequest,
             headerTypes: [
                 .b3,
@@ -471,20 +491,22 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "custom")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "custom=12")
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
 
-        XCTAssertNil(traceContext, "It must return no trace context")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.traceIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.tagsField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.parentSpanIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[TracingHTTPHeaders.samplingPriorityField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.traceIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.spanIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.parentSpanIDField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Multiple.sampledField]?.description, "custom")
+        XCTAssertEqual(traceHeaders[B3HTTPHeaders.Single.b3Field]?.description, "custom")
+        XCTAssertEqual(traceHeaders[W3CHTTPHeaders.traceparent]?.description, "custom")
+        XCTAssertEqual(traceHeaders[W3CHTTPHeaders.tracestate]?.description, "custom")
+        XCTAssertEqual(traceHeaders[W3CHTTPHeaders.baggage]?.description, "custom=12")
+
+        XCTAssertNil(instrumentationContext.injectedTrace?.traceContext, "It must return no trace context")
     }
 
     func testGivenTaskInterceptionWithNoSpanContext_whenInterceptionStarts_itStartsRUMResource() throws {
@@ -500,7 +522,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNil(taskInterception.trace)
 
         // When
-        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
+        handler.interceptionDidStart(interception: taskInterception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -532,7 +554,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .mockRandom())
-        taskInterception.register(trace: TraceContext(
+
+        let traceContext = TraceContext(
             traceID: 100,
             spanID: 200,
             parentSpanID: nil,
@@ -540,11 +563,22 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             samplingPriority: .mockAny(),
             samplingDecisionMaker: .mockAny(),
             rumSessionId: .mockAny()
-        ))
+        )
+        taskInterception.register(
+            trace: [
+                handler.id:  RequestInstrumentationContext(
+                    injectedTrace: .init(
+                        traceHeaders: [:],
+                        traceContext: traceContext),
+                    capturedState: nil
+                )
+            ]
+        )
+
         XCTAssertNotNil(taskInterception.trace)
 
         // When
-        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
+        handler.interceptionDidStart(interception: taskInterception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -759,7 +793,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
         let request: URLRequest = .mockWith(httpMethod: "GET")
-        let (modifiedRequest, _, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: request,
             headerTypes: [.datadog, .tracecontext, .b3, .b3multi],
             networkContext: NetworkContext(
@@ -770,8 +804,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
+
         XCTAssertEqual(
-            modifiedRequest.allHTTPHeaderFields,
+            traceHeaders.headers.mapValues { $0.description },
             [
                 "tracestate": "dd=o:rum;p:0000000000000064;s:1;t.dm:-1",
                 "traceparent": "00-000000000000000a0000000000000064-0000000000000064-01",
@@ -807,7 +843,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         request.setValue("custom.key=custom.value,another.key=another.value", forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
         // When
-        let (modifiedRequest, _, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: request,
             headerTypes: [.datadog],
             networkContext: NetworkContext(
@@ -818,8 +854,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
+
         // Then
-        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        let baggageHeader = traceHeaders[W3CHTTPHeaders.baggage]?.description
         XCTAssertNotNil(baggageHeader)
 
         // Verify that both existing and new baggage values are present
@@ -844,7 +882,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         request.setValue("custom.key=custom.value,session.id=old.session.id", forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
         // When
-        let (modifiedRequest, _, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: request,
             headerTypes: [.tracecontext],
             networkContext: NetworkContext(
@@ -855,8 +893,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
+
         // Then
-        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        let baggageHeader = traceHeaders[W3CHTTPHeaders.baggage]?.description
         XCTAssertNotNil(baggageHeader)
 
         // Verify that existing custom key is preserved
@@ -883,7 +923,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         request.setValue(" toto=1,car= Dacia Sandero ,session.id = 2,testProp=1; testProp2=4;prop3 ", forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
         // When
-        let (modifiedRequest, _, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: request,
             headerTypes: [.tracecontext],
             networkContext: NetworkContext(
@@ -896,8 +936,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
+
         // Then
-        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        let baggageHeader = traceHeaders[W3CHTTPHeaders.baggage]?.description
         XCTAssertNotNil(baggageHeader)
 
         // Parse the result to verify merging behavior
@@ -934,7 +976,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let request = URLRequest.mockWith(url: "https://www.example.com")
 
         // When
-        let (modifiedRequest, _, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: request,
             headerTypes: [.tracecontext],
             networkContext: NetworkContext(
@@ -945,8 +987,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
+
         // Then
-        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        let baggageHeader = traceHeaders[W3CHTTPHeaders.baggage]?.description
         XCTAssertNotNil(baggageHeader)
         XCTAssertEqual(baggageHeader, "session.id=abcdef01-2345-6789-abcd-ef0123456789")
     }
@@ -967,7 +1011,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         request.setValue("custom.key=custom.value", forHTTPHeaderField: W3CHTTPHeaders.baggage)
 
         // When
-        let (modifiedRequest, _, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: request,
             headerTypes: [.datadog, .tracecontext], // Both inject baggage headers
             networkContext: NetworkContext(
@@ -978,8 +1022,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             )
         )
 
+        let traceHeaders = try XCTUnwrap(instrumentationContext.injectedTrace?.traceHeaders, "It must have trace headers.")
+
         // Then
-        let baggageHeader = modifiedRequest.value(forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        let baggageHeader = traceHeaders[W3CHTTPHeaders.baggage]?.description
         XCTAssertNotNil(baggageHeader)
 
         // Verify that session.id appears only once (not duplicated)
@@ -1012,7 +1058,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         mockRequest.setValue("query GetUser($userId: ID!) { user(id: $userId) { name } }", forHTTPHeaderField: ExpectedGraphQLHeaders.payload)
 
         // When
-        let (_, traceContext, _) = handler.modify(
+        let instrumentationContext = handler.modify(
             request: mockRequest,
             headerTypes: [.datadog],
             networkContext: NetworkContext(
@@ -1024,7 +1070,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         // Then
-        let graphqlAttributes = try XCTUnwrap(traceContext?.graphql, "GraphQL attributes must be extracted into TraceContext")
+        let graphqlAttributes = try XCTUnwrap(instrumentationContext.injectedTrace?.traceContext.graphql, "GraphQL attributes must be extracted into TraceContext")
         XCTAssertEqual(graphqlAttributes.operationName, "GetUser")
         XCTAssertEqual(graphqlAttributes.operationType, "query")
         XCTAssertEqual(graphqlAttributes.variables, "{\"userId\":\"123\"}")
@@ -1062,7 +1108,16 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 payload: "query GetUser($userId: ID!) { user(id: $userId) { name } }"
             )
         )
-        taskInterception.register(trace: traceContext)
+        taskInterception.register(
+            trace: [
+                handler.id: RequestInstrumentationContext(
+                    injectedTrace: .init(
+                        traceHeaders: [:],
+                        traceContext: traceContext),
+                    capturedState: nil
+                )
+            ]
+        )
 
         let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
         taskInterception.register(response: response, error: nil)
@@ -1109,7 +1164,16 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 operationType: "mutation"
             )
         )
-        taskInterception.register(trace: traceContext)
+        taskInterception.register(
+            trace: [
+                handler.id: RequestInstrumentationContext(
+                    injectedTrace: .init(
+                        traceHeaders: [:],
+                        traceContext: traceContext),
+                    capturedState: nil
+                )
+            ]
+        )
 
         let taskError = NSError(domain: "network", code: -1, userInfo: [NSLocalizedDescriptionKey: "Connection failed"])
         taskInterception.register(response: nil, error: taskError)
@@ -1143,7 +1207,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // When - Make multiple requests with the same session ID
         var samplingDecisions: [SamplingPriority] = []
         for _ in 1...10 {
-            let (_, traceContext, _) = handler.modify(
+            let instrumentationContext = handler.modify(
                 request: .mockWith(url: "https://www.example.com"),
                 headerTypes: [.datadog],
                 networkContext: NetworkContext(
@@ -1153,7 +1217,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                     )
                 )
             )
-            samplingDecisions.append(traceContext?.samplingPriority ?? .autoDrop)
+            samplingDecisions.append(instrumentationContext.injectedTrace?.traceContext.samplingPriority ?? .autoDrop)
         }
 
         // Then - All sampling decisions should be the same

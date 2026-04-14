@@ -384,13 +384,18 @@ extension NetworkInstrumentationFeature {
         let networkContext = self.networkContextProvider.currentNetworkContext
         var request = request
 
-        // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
-        var instrumentationContexts: [DatadogURLSessionHandlerIdentifier: RequestInstrumentationContext] = [:] // each handler can inject distinct instrumentation context
+        // each handler can inject distinct instrumentation context
+        var instrumentationContexts: [DatadogURLSessionHandlerIdentifier: RequestInstrumentationContext] = [:]
+
         for handler in handlers {
             instrumentationContexts[handler.id] = handler.modify(request: request, headerTypes: headerTypes, networkContext: networkContext)
         }
 
-        // TODO: Add headers to request
+        let mergedHeaders = TraceHeaders.merged(instrumentationContexts.values.compactMap { $0.injectedTrace?.traceHeaders })
+
+        mergedHeaders.headers.forEach {
+            request.addValue($0.value.description, forHTTPHeaderField: $0.key)
+        }
 
         // Remove GraphQL headers before returning the modified request
         request = removeGraphQLHeadersFromRequest(request)

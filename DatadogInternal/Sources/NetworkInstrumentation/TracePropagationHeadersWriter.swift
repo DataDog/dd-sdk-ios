@@ -26,6 +26,12 @@ public struct TraceHeaders: ExpressibleByDictionaryLiteral {
 
     public typealias Value = TracePropagationHeaderValue
 
+    public static func merged(_ elements: [TraceHeaders]) -> TraceHeaders {
+        elements.reduce([:]) { partialResult, element in
+            partialResult.merged(with: element)
+        }
+    }
+
     public init(dictionaryLiteral elements: (String, TracePropagationHeaderValue)...) {
         self.headers = Dictionary(elements, uniquingKeysWith: { lhs, rhs in rhs })
     }
@@ -44,18 +50,30 @@ public struct TraceHeaders: ExpressibleByDictionaryLiteral {
         )
     }
 
-    public static func merged(_ elements: [TraceHeaders]) -> TraceHeaders {
-        elements.reduce([:]) { partialResult, element in
-            partialResult.merged(with: element)
-        }
+    public func filtered(by request: URLRequest) -> TraceHeaders {
+        return TraceHeaders(
+            headers: headers.filter { key, _ in
+                request.value(forHTTPHeaderField: key) == nil
+            }
+        )
     }
 
-    subscript(key: String) -> TracePropagationHeaderValue? {
+    public var isEmpty: Bool {
+        headers.isEmpty
+    }
+
+    public subscript(key: String) -> TracePropagationHeaderValue? {
         get {
             return headers[key]
         }
         set {
             headers[key] = newValue
+        }
+    }
+
+    public subscript(string key: String) -> String? {
+        get {
+            return headers[key]?.description
         }
     }
 }
@@ -104,9 +122,9 @@ public enum TracePropagationHeaderValue: CustomStringConvertible {
 
     func merged(with other: TracePropagationHeaderValue) -> TracePropagationHeaderValue {
         switch (self, other) {
-        case (.string(let string), _): self
+        case (.string, _): self
         case (.keyValueList(let lhs), .keyValueList(let rhs)): .keyValueList(lhs.merged(with: rhs))
-        case (.keyValueList(let lhs), _): self
+        case (.keyValueList, _): self
         }
     }
 }

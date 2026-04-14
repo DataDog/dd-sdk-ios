@@ -129,9 +129,10 @@ extension URLSession {
 }
 
 public final class URLSessionHandlerMock: DatadogURLSessionHandler {
+    public let id = UUID()
+
     public var firstPartyHosts: FirstPartyHosts
 
-    public var modifiedRequest: URLRequest?
     public var injectedTraceContext: TraceContext?
     public var shouldInterceptRequest: ((URLRequest) -> Bool)?
 
@@ -155,12 +156,16 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
         interceptions.values.first { $0.request.url == url }
     }
 
-    public func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+    public func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: DatadogInternal.NetworkContext?) -> RequestInstrumentationContext {
         onRequestMutation?(request, headerTypes, networkContext)
-        return (modifiedRequest ?? request, injectedTraceContext, nil)
+
+        return RequestInstrumentationContext(
+            injectedTrace: injectedTraceContext.map { .init(traceHeaders: [:], traceContext: $0) },
+            capturedState: nil
+        )
     }
 
-    public func interceptionDidStart(interception: URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
+    public func interceptionDidStart(interception: URLSessionTaskInterception) {
         onInterceptionDidStart?(interception)
         interceptions[interception.identifier] = interception
     }

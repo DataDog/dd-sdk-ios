@@ -10,7 +10,7 @@ import DatadogInternal
 @testable import DatadogTrace
 
 private class MockWriter: OTFormatWriter, TracePropagationHeadersWriter {
-    var traceHeaderFields: [String: String] = [:]
+    let traceHeaders: DatadogInternal.TraceHeaders = [:]
     var injectedTraceContext: TraceContext?
     func write(traceContext: TraceContext) { injectedTraceContext = traceContext }
 }
