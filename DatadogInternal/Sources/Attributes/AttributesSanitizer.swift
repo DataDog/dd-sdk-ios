@@ -73,8 +73,8 @@ public struct AttributesSanitizer {
     /// Truncates string attribute values exceeding `Constraints.maxAttributeValueLength`.
     public func sanitizeValues(for attributes: [String: Encodable]) -> [String: Encodable] {
         return Dictionary(uniqueKeysWithValues: attributes.map { key, value in
-            let stringValue = (value as? String) ?? (value as? NSString).map(String.init)
-            guard let string = stringValue, string.count > Constraints.maxAttributeValueLength else {
+            guard let string = value.dd.decode(String.self),
+                  string.count > Constraints.maxAttributeValueLength else {
                 return (key, value)
             }
             DD.logger.warn(
