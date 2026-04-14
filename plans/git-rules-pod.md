@@ -19,7 +19,6 @@
 - **Single-line commit message**, starting with a **verb** in the imperative form.
 - **No JIRA prefix** — there are no individual tickets during the pod.
 - **No co-author lines** — Barbora is the sole commit author.
-- **No signed commits required** — skip GPG/SSH signing for speed.
 - Commit frequently — small, logical units of work. The agent should commit after each completed task or meaningful step.
 - No description lines unless explicitly requested.
 
