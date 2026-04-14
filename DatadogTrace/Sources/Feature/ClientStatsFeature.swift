@@ -13,7 +13,7 @@ import DatadogInternal
 /// Registered as a separate `DatadogRemoteFeature` alongside `TraceFeature`
 /// so that it has its own storage and upload pipeline.
 internal final class ClientStatsFeature: DatadogRemoteFeature {
-    static let name = "client-stats"
+    static let name = "tracing-client-stats"
 
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver

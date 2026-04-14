@@ -100,6 +100,6 @@ class ClientStatsFeatureTests: XCTestCase {
     // MARK: - Feature Name
 
     func testFeatureName() {
-        XCTAssertEqual(ClientStatsFeature.name, "client-stats")
+        XCTAssertEqual(ClientStatsFeature.name, "tracing-client-stats")
     }
 }
