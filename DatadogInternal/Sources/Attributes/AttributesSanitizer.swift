@@ -11,7 +11,7 @@ public struct AttributesSanitizer {
     public struct Constraints {
         /// Maximum number of nested levels in attribute name. E.g. `person.address.street` has 3 levels.
         /// If attribute name exceeds this number, extra levels are escaped by using `_` character (`one.two.(...).nine.ten_eleven_twelve`).
-        public static let maxNestedLevelsInAttributeName: Int = 20
+        public static let maxNestedLevelsInAttributeName: Int = 10
         /// Maximum number of attributes in log.
         /// If this number is exceeded, extra attributes will be ignored.
         public static let maxNumberOfAttributes: Int = 256
@@ -31,11 +31,11 @@ public struct AttributesSanitizer {
     /// Attribute keys can only have `Constants.maxNestedLevelsInAttributeName` levels.
     /// Extra levels are escaped with "_", e.g.:
     ///
-    ///     a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.u
+    ///     one.two.three.four.five.six.seven.eight.nine.ten.eleven
     ///
     /// becomes:
     ///
-    ///     a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t_u
+    ///     one.two.three.four.five.six.seven.eight_nine_ten_eleven
     ///
     public func sanitizeKeys<Value>(for attributes: [String: Value], prefixLevels: Int = 0) -> [String: Value] {
         let sanitizedAttributes: [(String, Value)] = attributes.map { key, value in
