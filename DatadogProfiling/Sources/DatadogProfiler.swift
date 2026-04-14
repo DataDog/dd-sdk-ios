@@ -38,7 +38,7 @@ internal final class DatadogProfiler: ProfilingHandler {
 
     /// The queue used to synchronize the profiling data and the writes.
     private let queue: DispatchQueue
-    private let isContinuousProfiling: Bool
+    private let profilingSamplerProvider: ProfilingSamplerProvider
     private let profilingConditions: ProfilingConditions
     private let profilingInterval: TimeInterval
     private var timer: DispatchSourceTimer?
@@ -61,11 +61,12 @@ internal final class DatadogProfiler: ProfilingHandler {
     private var longTasks: [DurationEvent] = []
     private var previousCustomProfilingStartDate: Date
     private var hasConditionsToProfile = true
+    private var previousAppState: AppState?
 
     init?(
         core: DatadogCoreProtocol,
+        profilingSamplerProvider: ProfilingSamplerProvider,
         queue: DispatchQueue = DatadogProfiler.defaultQueue,
-        isContinuousProfiling: Bool = true,
         operation: ProfilingOperation = .continuousProfiling,
         telemetryController: ProfilingTelemetryController = .init(),
         profilingConditions: ProfilingConditions = .init(),
@@ -84,7 +85,7 @@ internal final class DatadogProfiler: ProfilingHandler {
 
         self.featureScope = core.scope(for: ProfilerFeature.self)
         self.queue = queue
-        self.isContinuousProfiling = isContinuousProfiling
+        self.profilingSamplerProvider = profilingSamplerProvider
         self.operation = operation
         self.telemetryController = telemetryController
         self.profilingConditions = profilingConditions
@@ -93,7 +94,7 @@ internal final class DatadogProfiler: ProfilingHandler {
         self.dateProvider = dateProvider
         self.previousCustomProfilingStartDate = dateProvider.now
 
-        if isContinuousProfiling {
+        if profilingSamplerProvider.isContinuousProfilingConfigured {
             startTimer()
         }
     }
@@ -175,22 +176,27 @@ private extension DatadogProfiler {
             guard let self else {
                 return
             }
-            // Check, based on the context, if the profiler has conditions to profile
-            hasConditionsToProfile = profilingConditions.canProfileApplication(with: context)
 
-            if context.applicationStateHistory.currentState == .background {
+            let previousConditions = hasConditionsToProfile
+            hasConditionsToProfile = profilingConditions.canProfileApplication(with: context)
+            let currentAppState = context.applicationStateHistory.currentState
+            defer { previousAppState = currentAppState }
+
+            if currentAppState == .background {
                 // Updates the profiler state if the app was or is about to have foreground time
                 guard context.applicationStateHistory
                     .containsState(during: context.launchInfo.processLaunchDate...dateProvider.now, where: { $0 == .active }) else {
                     return
                 }
 
-                updateProfilerState(canProfile: hasConditionsToProfile && (isContinuousProfiling || canExtendCustomProfiling()))
                 sendProfile()
-            } else {
+                updateProfilerState(canProfile: shouldKeepProfilerRunning())
+            }
+            // If the conditions are the same, ignore the update profiler state
+            else if currentAppState != previousAppState || hasConditionsToProfile != previousConditions {
                 switch ProfilingContext.Status.current {
                 case .running, .stopped:
-                    updateProfilerState(canProfile: hasConditionsToProfile && (isContinuousProfiling || canExtendCustomProfiling()))
+                    updateProfilerState(canProfile: shouldKeepProfilerRunning())
                 default:
                     break
                 }
@@ -209,7 +215,7 @@ private extension DatadogProfiler {
             currentRUMVitals = currentRUMVitals.ongoingOperations()
             hangs.removeAll()
             longTasks.removeAll()
-            updateProfilerState(canProfile: hasConditionsToProfile && (isContinuousProfiling || canExtendCustomProfiling()))
+            updateProfilerState(canProfile: shouldKeepProfilerRunning())
         }
     }
 
@@ -222,13 +228,8 @@ private extension DatadogProfiler {
 
             switch message.operation.stepType {
             case .start:
-                // Start profiler if it is a custom profiler and the operations have started
-                if currentRUMVitals.isEmpty && isContinuousProfiling == false {
-                    startTimer()
-                    updateProfilerState(canProfile: hasConditionsToProfile)
-                }
-
                 currentRUMVitals[message.operation.key] = message.operation
+                updateProfilerState(canProfile: shouldKeepProfilerRunning())
             case .end:
                 if var startVital = currentRUMVitals[message.operation.key] {
                     // Add duration to vital to help Profiling backend label correctly the samples of this vital
@@ -237,7 +238,7 @@ private extension DatadogProfiler {
                     currentRUMVitals[message.operation.key] = startVital
 
                     // Stop profiler if it is a custom profiler and the operations have completed
-                    if currentRUMVitals.didCompleteOperations() && isContinuousProfiling == false {
+                    if currentRUMVitals.didCompleteOperations() && profilingSamplerProvider.isContinuousProfilingConfigured == false {
                         let customProfilingDuration = dateProvider.now.timeIntervalSince(previousCustomProfilingStartDate)
                         let fireInterval = customProfilingDuration < Constants.minProfileDuration ? Constants.minProfileDuration - customProfilingDuration : 0
                         fireTimer(after: fireInterval)
@@ -261,14 +262,12 @@ private extension DatadogProfiler {
     }
 
     func updateProfilerAndSendProfile() {
-        updateProfilerState(canProfile: hasConditionsToProfile && (isContinuousProfiling || canExtendCustomProfiling()))
+        updateProfilerState(canProfile: shouldKeepProfilerRunning())
         sendProfile()
     }
 
     func updateProfilerState(canProfile: Bool) {
-        let profilingContext = updateProfilingContext()
-
-        switch profilingContext.status {
+        switch ProfilingContext.Status.current {
         case .stopped:
             if canProfile {
                 dd_profiler_start()
@@ -294,7 +293,7 @@ private extension DatadogProfiler {
         }
 
         defer { dd_pprof_destroy(profile) }
-        if canWriteProfile() {
+        if canWriteProfile {
             write(
                 profile: profile,
                 rumVitals: Array(self.currentRUMVitals.values),
@@ -305,14 +304,30 @@ private extension DatadogProfiler {
         }
     }
 
-    func canWriteProfile() -> Bool {
-        currentRUMVitals.count > 0
-        || hangs.isEmpty == false
-        || longTasks.isEmpty == false
+    var canWriteProfile: Bool {
+        // At least Custom Profiling is running
+        self.currentRUMVitals.count > 0
+        // Continuous Profiling is sampled in and there are events of interest
+        || (profilingSamplerProvider.continuousProfilingSampled == true && (hangs.count > 0 || longTasks.count > 0))
+    }
+
+    func shouldKeepProfilerRunning() -> Bool {
+        if profilingSamplerProvider.isContinuousProfilingConfigured {
+            switch profilingSamplerProvider.continuousProfilingSampled {
+            case true?: // It is Continuous Profiling running
+                return hasConditionsToProfile
+            case false?: // It is Custom Profiling running
+                return hasConditionsToProfile && currentRUMVitals.ongoingOperations().isEmpty == false
+            case .none: // Waiting for RUM context info
+                return hasConditionsToProfile
+            }
+        } else { // It is Custom Profiling running
+            return hasConditionsToProfile && canExtendCustomProfiling()
+        }
     }
 
     func canExtendCustomProfiling() -> Bool {
-        currentRUMVitals.contains {
+        currentRUMVitals.ongoingOperations().contains {
             dateProvider.now.timeIntervalSince($1.date) < Constants.customProfilingCutOffTime
         }
     }
