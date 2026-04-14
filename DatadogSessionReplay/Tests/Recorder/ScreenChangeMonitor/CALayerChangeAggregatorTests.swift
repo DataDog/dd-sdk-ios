@@ -72,7 +72,7 @@ final class CALayerChangeAggregatorTests: XCTestCase {
         )
     }
 
-    func testDeliversImmediatelyWhenOutsideThrottleWindow() {
+    func testDefersDeliveryWhenOutsideThrottleWindow() {
         // given
         let layer = CALayer()
 
@@ -96,6 +96,12 @@ final class CALayerChangeAggregatorTests: XCTestCase {
         layerChangeAggregator.layerDidLayoutSublayers(layer)
 
         // then
+        XCTAssertEqual(snapshots.count, 1, "Should not deliver synchronously from the layer callback")
+
+        // when
+        testTimerScheduler.advance(to: 0.5)
+
+        // then
         XCTAssertEqual(snapshots.count, 2)
         XCTAssertEqual(
             snapshots,
@@ -106,6 +112,34 @@ final class CALayerChangeAggregatorTests: XCTestCase {
                 .init(
                     [ObjectIdentifier(layer): CALayerChange(layer: layer, aspects: .layout)]
                 ),
+            ]
+        )
+    }
+
+    func testMergesChangesRecordedBeforeDeferredDeliveryRuns() {
+        // given
+        let layer = CALayer()
+
+        // when
+        layerChangeAggregator.start()
+
+        testTimerScheduler.advance(to: 0.5)
+        layerChangeAggregator.layerDidDisplay(layer)
+        layerChangeAggregator.layerDidLayoutSublayers(layer)
+
+        // then
+        XCTAssertTrue(snapshots.isEmpty, "Should defer delivery until the scheduled task runs")
+
+        // when
+        testTimerScheduler.advance(to: 0.5)
+
+        // then
+        XCTAssertEqual(
+            snapshots,
+            [
+                .init(
+                    [ObjectIdentifier(layer): CALayerChange(layer: layer, aspects: [.display, .layout])]
+                )
             ]
         )
     }
