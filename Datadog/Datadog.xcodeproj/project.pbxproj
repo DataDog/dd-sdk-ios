@@ -54,6 +54,8 @@
 		115F480C2E0BFE11006FAB07 /* DeterministicSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115F480A2E0BFE02006FAB07 /* DeterministicSamplerTests.swift */; };
 		116232382F866ACF00F20ABC /* OperationMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118848522F6C4E0C008D2919 /* OperationMessage.swift */; };
 		1162323A2F866B4000F20ABC /* MockThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2182E40E34A00BA4113 /* MockThread.swift */; };
+		1162323E2F87D8FC00F20ABC /* ProfilingContextMessageReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1162323D2F87D8F600F20ABC /* ProfilingContextMessageReceiver.swift */; };
+		116232402F87FA6F00F20ABC /* ProfilingSamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1162323F2F87FA5D00F20ABC /* ProfilingSamplerProvider.swift */; };
 		116506142E9533A700FD815C /* AppStateManagerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116506132E95339B00FD815C /* AppStateManagerMock.swift */; };
 		116506172E9535A500FD815C /* WatchdogTerminationMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116506162E9535A500FD815C /* WatchdogTerminationMocks.swift */; };
 		116656D62EB501D3004248E8 /* ProfilingRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116656D42EB501C2004248E8 /* ProfilingRUMIntegrationTests.swift */; };
@@ -187,6 +189,7 @@
 		1188485A2F6C50EC008D2919 /* ProfilingHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118848592F6C50EC008D2919 /* ProfilingHandler.swift */; };
 		118848602F6C5122008D2919 /* ProfilingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188485E2F6C5122008D2919 /* ProfilingOperation.swift */; };
 		1188486C2F717DDE008D2919 /* DatadogProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188486A2F717DD8008D2919 /* DatadogProfiler.swift */; };
+		1188486C2F717DDE008D2919 /* ContinuousProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188486A2F717DD8008D2919 /* ContinuousProfiler.swift */; };
 		1188486F2F717EEF008D2919 /* ProfilingConditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188486D2F717EE5008D2919 /* ProfilingConditions.swift */; };
 		118AAE082EBBB7F10018E745 /* dd_profiler_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 118AAE052EBBB74D0018E745 /* dd_profiler_testing.h */; };
 		118ACA3C2EEED247004E7F20 /* AppLaunchMetricController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA3A2EEED247004E7F20 /* AppLaunchMetricController.swift */; };
@@ -1822,6 +1825,8 @@
 		115792EB2F4608A200AEE829 /* BinaryImageResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryImageResolverTests.swift; sourceTree = "<group>"; };
 		115793092F51F05100AEE829 /* binary_image_resolver_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = binary_image_resolver_testing.h; sourceTree = "<group>"; };
 		115F480A2E0BFE02006FAB07 /* DeterministicSamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSamplerTests.swift; sourceTree = "<group>"; };
+		1162323D2F87D8F600F20ABC /* ProfilingContextMessageReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingContextMessageReceiver.swift; sourceTree = "<group>"; };
+		1162323F2F87FA5D00F20ABC /* ProfilingSamplerProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingSamplerProvider.swift; sourceTree = "<group>"; };
 		116506132E95339B00FD815C /* AppStateManagerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManagerMock.swift; sourceTree = "<group>"; };
 		116506162E9535A500FD815C /* WatchdogTerminationMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationMocks.swift; sourceTree = "<group>"; };
 		116656D42EB501C2004248E8 /* ProfilingRUMIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingRUMIntegrationTests.swift; sourceTree = "<group>"; };
@@ -5563,25 +5568,25 @@
 		61E8C5062B28896100E709B4 /* RUM */ = {
 			isa = PBXGroup;
 			children = (
-				D26152332F433BBA0054EB7D /* UIApplicationSwizzlerTests.swift */,
-				6119DDC52DD24A9600DA80F9 /* RUMSessionTestsBase.swift */,
-				6119DDC32DD24A9600DA80F9 /* RUMSessionStartInForegroundTests.swift */,
-				6119DDC22DD24A9600DA80F9 /* RUMSessionStartInBackgroundTests.swift */,
-				6119DDC62DD24A9600DA80F9 /* RUMSessionTimeOutTests.swift */,
-				6119DDC42DD24A9600DA80F9 /* RUMSessionStopTests.swift */,
-				6119DDC72DD24A9600DA80F9 /* RUMSessionWithNoViewTests.swift */,
-				61536ABD2DF0A0D100B06D7D /* RUMSessionTrackingTests.swift */,
 				A757AE8F2D3815AC00C772FA /* AnonymousIdentifierTests.swift */,
 				6167E6DC2B811A8300C3CA2D /* AppHangsMonitoringTests.swift */,
+				D2AB895D2F71780900040F58 /* DeterministicSamplingIntegrationTests.swift */,
 				1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */,
+				D26152302F432C990054EB7D /* RUMDebuggingTests.swift */,
+				094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */,
+				6119DDC22DD24A9600DA80F9 /* RUMSessionStartInBackgroundTests.swift */,
+				6119DDC32DD24A9600DA80F9 /* RUMSessionStartInForegroundTests.swift */,
+				6119DDC42DD24A9600DA80F9 /* RUMSessionStopTests.swift */,
+				6119DDC52DD24A9600DA80F9 /* RUMSessionTestsBase.swift */,
+				6119DDC62DD24A9600DA80F9 /* RUMSessionTimeOutTests.swift */,
+				61536ABD2DF0A0D100B06D7D /* RUMSessionTrackingTests.swift */,
+				6119DDC72DD24A9600DA80F9 /* RUMSessionWithNoViewTests.swift */,
 				11BA765C2D7F0EE40058C21C /* RUMViewHitchesIntegrationTests.swift */,
+				D26152332F433BBA0054EB7D /* UIApplicationSwizzlerTests.swift */,
 				6105C5022CF8D5AB00C4C5EE /* ViewLoadingMetricsTests.swift */,
 				3CA00B062C2AE52400E6FE01 /* WatchdogTerminationsMonitoringTests.swift */,
 				D2552AF42BBC47D900A45725 /* WebEventIntegrationTests.swift */,
-				D26152302F432C990054EB7D /* RUMDebuggingTests.swift */,
 				61DCC84C2C05D4E500CB59E5 /* SDKMetrics */,
-				D2AB895D2F71780900040F58 /* DeterministicSamplingIntegrationTests.swift */,
-				094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -6588,11 +6593,15 @@
 			children = (
 				D274657A2E7B199A00C47FE2 /* AppLaunchProfiler.swift */,
 				1188486A2F717DD8008D2919 /* DatadogProfiler.swift */,
+				1188486A2F717DD8008D2919 /* ContinuousProfiler.swift */,
 				D233E7C22E4625D400E7CFDE /* ProfileEvent.swift */,
 				D233E7CA2E46264500E7CFDE /* ProfilerFeature.swift */,
 				D233E7C12E4625D400E7CFDE /* Profiling.swift */,
 				110DD1B02EEB6BB5002F3B8B /* ProfilingConfiguration.swift */,
 				118848592F6C50EC008D2919 /* ProfilingHandler.swift */,
+				1162323D2F87D8F600F20ABC /* ProfilingContextMessageReceiver.swift */,
+				118848592F6C50EC008D2919 /* ProfilingHandler.swift */,
+				1162323F2F87FA5D00F20ABC /* ProfilingSamplerProvider.swift */,
 				D233E7C32E4625D400E7CFDE /* RequestBuilder.swift */,
 				1126B2512EBAB22600A74226 /* PrivacyInfo.xcprivacy */,
 				D229FF5B2E3BA298009CCD62 /* Mach */,
@@ -8459,6 +8468,8 @@
 				D233E8022E4B653F00E7CFDE /* dd_pprof.cpp in Sources */,
 				D233E7C62E4625D400E7CFDE /* Profiling.swift in Sources */,
 				11C4E5922F571F86002196F4 /* ProfileAttachments.swift in Sources */,
+				1162323E2F87D8FC00F20ABC /* ProfilingContextMessageReceiver.swift in Sources */,
+				116232402F87FA6F00F20ABC /* ProfilingSamplerProvider.swift in Sources */,
 				1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */,
 				D2D0E1F22E3CE59700BA4113 /* dd_profiler.cpp in Sources */,
 				D233E7EE2E4B588000E7CFDE /* profile.pb-c.c in Sources */,
@@ -9048,6 +9059,7 @@
 				D2E937352E535B6400FECA76 /* ProfileMocks.swift in Sources */,
 				1166C5952F748138008E34BC /* DDProfilerTests.swift in Sources */,
 				D2E937322E53368E00FECA76 /* ProfileCxxTests.swift in Sources */,
+				D261523B2F43872A0054EB7D /* MockThread.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
