@@ -188,7 +188,7 @@ class LogSanitizerTests: XCTestCase {
     }
 
     func testWhenNSStringAttributeValueExceeds25600Characters_itIsTruncated() {
-        let longValue = NSString(string: String(repeating: "a", count: 25_601))
+        let longValue = AnyEncodable(NSString(string: String(repeating: "a", count: 25_601)))
         let log = LogEvent.mockWith(
             attributes: .mockWith(userAttributes: ["key": longValue])
         )
