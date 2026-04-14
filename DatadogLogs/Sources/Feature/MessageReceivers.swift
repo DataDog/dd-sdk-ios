@@ -96,6 +96,13 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
                 event[LogEvent.Attributes.RUM.actionID] = rum.userActionID
             }
 
+            // Add native anonymous_id to the event's usr object
+            if let anonymousId = context.userInfo?.anonymousId {
+                var usr = event[LogEvent.Attributes.User.key] as? [String: Any] ?? [:]
+                usr[LogEvent.Attributes.User.anonymousId] = anonymousId
+                event[LogEvent.Attributes.User.key] = usr
+            }
+
             writer.write(value: AnyEncodable(event))
         }
 
