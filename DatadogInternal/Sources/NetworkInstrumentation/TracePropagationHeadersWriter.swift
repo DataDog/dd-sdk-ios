@@ -168,18 +168,22 @@ public enum TracePropagationHeaderValue: CustomStringConvertible {
         let values: [String: String]
         let configuration: Configuration
 
-        init(values: [String : String], configuration: Configuration) {
+        init(values: [String: String], configuration: Configuration) {
             self.values = values
             self.configuration = configuration
         }
 
         init?(fromHeaderValue headerValue: String, configuration: Configuration) {
             let trimmedValue = headerValue.trimmingCharacters(in: .whitespaces)
-            guard trimmedValue.isEmpty == false else { return nil }
+            guard trimmedValue.isEmpty == false else {
+                return nil
+            }
             let pairs = trimmedValue.split(separator: configuration.keyValuePairSeparator)
             let parsedPairs: [(String, String)] = pairs.compactMap {
                 let elements = $0.split(separator: configuration.keyValueSeparator, maxSplits: 1)
-                guard elements.count == 2 else { return nil }
+                guard elements.count == 2 else {
+                    return nil
+                }
                 return (
                     String(elements[0].trimmingCharacters(in: .whitespaces)),
                     String(elements[1].trimmingCharacters(in: .whitespaces))
@@ -201,7 +205,7 @@ public enum TracePropagationHeaderValue: CustomStringConvertible {
 
         func merged(with other: KeyValuePairs) -> KeyValuePairs {
             .init(
-                values: values.merging(other.values, uniquingKeysWith: { lhs, rhs in lhs }),
+                values: values.merging(other.values, uniquingKeysWith: { lhs, rhs in rhs }),
                 configuration: configuration
             )
         }

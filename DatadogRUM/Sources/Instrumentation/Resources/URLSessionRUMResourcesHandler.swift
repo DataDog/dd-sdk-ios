@@ -95,7 +95,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         // If this changes, we'll need to merge captured states instead of replacing.
         let capturedState: URLSessionHandlerCapturedState? = request.hasGraphQLHeaders ? RUMURLSessionHandlerCapturedState(hasGraphQLHeaders: true) : nil
 
-        return RequestInstrumentationContext(injectedTrace: instrumentationContext?.injectedTrace, capturedState: capturedState)
+        return RequestInstrumentationContext(traceHeaders: instrumentationContext?.traceHeaders, traceContext: instrumentationContext?.traceContext, capturedState: capturedState)
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
@@ -121,7 +121,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
                 url: url,
                 httpMethod: RUMMethod(httpMethod: interception.request.httpMethod),
                 kind: RUMResourceType(request: interception.request.unsafeOriginal),
-                spanContext: distributedTracing?.trace(from: instrumentationContext?.injectedTrace?.traceContext)
+                spanContext: distributedTracing?.trace(from: instrumentationContext?.traceContext)
             )
         )
     }
@@ -146,7 +146,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
         // Extract GraphQL attributes from trace context
         var combinedAttributes = userAttributes
-        if let graphqlAttributes = interception.trace[id]?.injectedTrace?.traceContext.graphql {
+        if let graphqlAttributes = interception.trace[id]?.traceContext?.graphql {
             if let operationName = graphqlAttributes.operationName {
                 combinedAttributes[CrossPlatformAttributes.graphqlOperationName] = operationName
             }
@@ -303,8 +303,9 @@ extension DistributedTracing {
             graphql: graphql
         )
 
-        let traceHeaders = TraceHeaders.merged(headerTypes.map {
-            var addOriginHeader = false
+        var addOriginHeader = false
+
+        var traceHeaders = TraceHeaders.merged(headerTypes.map {
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
@@ -332,12 +333,7 @@ extension DistributedTracing {
 
             writer.write(traceContext: injectedSpanContext)
 
-            var result = writer.traceHeaders
-            if addOriginHeader {
-                result[TracingHTTPHeaders.originField] = .string("rum")
-            }
-
-            return result
+            return writer.traceHeaders
 
 //            writer.traceHeaderFields.forEach { field, value in
 //                if field.lowercased() == W3CHTTPHeaders.baggage.lowercased() {
@@ -359,10 +355,15 @@ extension DistributedTracing {
 //            }
         }).filtered(by: request)
 
+        if addOriginHeader {
+            traceHeaders[TracingHTTPHeaders.originField] = .string("rum")
+        }
+
         let hasSetAnyHeader = !traceHeaders.isEmpty
 
         return RequestInstrumentationContext(
-            injectedTrace: (hasSetAnyHeader && injectedSpanContext.samplingPriority.isKept) ? .init(traceHeaders: traceHeaders, traceContext: injectedSpanContext) : nil,
+            traceHeaders: hasSetAnyHeader ? traceHeaders: nil,
+            traceContext: (hasSetAnyHeader && injectedSpanContext.samplingPriority.isKept) ? injectedSpanContext : nil,
             capturedState: nil)
     }
 

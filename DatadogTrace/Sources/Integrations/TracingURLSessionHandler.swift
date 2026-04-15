@@ -68,7 +68,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
     func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> RequestInstrumentationContext {
         guard let tracer = tracer else {
-            return .init(injectedTrace: nil, capturedState: nil)
+            return RequestInstrumentationContext(traceHeaders: nil, traceContext: nil, capturedState: nil)
         }
 
         // Use the current active span as parent if the propagation headers support it.
@@ -160,8 +160,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             : nil
 
         return RequestInstrumentationContext(
-            injectedTrace: hasSetAnyHeader ? .init(traceHeaders: traceHeaders, traceContext: injectedSpanContext) : nil,
-            capturedState: capturedState)
+            traceHeaders: hasSetAnyHeader ? traceHeaders : nil,
+            traceContext: hasSetAnyHeader ? injectedSpanContext : nil,
+            capturedState: capturedState
+        )
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
@@ -235,7 +237,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
          The following is/else block implements both cases.
          */
-        if let trace = interception.trace[id]?.injectedTrace?.traceContext {
+        if let trace = interception.trace[id]?.traceContext {
             let context = DDSpanContext(
                 traceID: trace.traceID,
                 spanID: trace.spanID,

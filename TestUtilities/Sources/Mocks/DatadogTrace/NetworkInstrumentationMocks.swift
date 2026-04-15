@@ -160,7 +160,8 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
         onRequestMutation?(request, headerTypes, networkContext)
 
         return RequestInstrumentationContext(
-            injectedTrace: injectedTraceContext.map { .init(traceHeaders: [:], traceContext: $0) },
+            traceHeaders: [:],
+            traceContext: injectedTraceContext,
             capturedState: nil
         )
     }

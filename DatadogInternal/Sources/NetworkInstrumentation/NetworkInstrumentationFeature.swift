@@ -391,7 +391,7 @@ extension NetworkInstrumentationFeature {
             instrumentationContexts[handler.id] = handler.modify(request: request, headerTypes: headerTypes, networkContext: networkContext)
         }
 
-        let mergedHeaders = TraceHeaders.merged(instrumentationContexts.values.compactMap { $0.injectedTrace?.traceHeaders })
+        let mergedHeaders = TraceHeaders.merged(instrumentationContexts.values.compactMap { $0.traceHeaders })
 
         mergedHeaders.write(to: &request)
 
@@ -643,22 +643,15 @@ extension NetworkInstrumentationFeature: Flushable {
 /// Helper structure that optionally contains a trace context and captured state, used to pass this
 /// information between calls.
 public struct RequestInstrumentationContext {
-    public struct InjectedTrace {
-        public let traceHeaders: TraceHeaders
-        public let traceContext: TraceContext
+    public let traceHeaders: TraceHeaders?
 
-        public init(traceHeaders: TraceHeaders, traceContext: TraceContext) {
-            self.traceHeaders = traceHeaders
-            self.traceContext = traceContext
-        }
-    }
-
-    public let injectedTrace: InjectedTrace?
+    public let traceContext: TraceContext?
 
     public let capturedState: URLSessionHandlerCapturedState?
 
-    public init(injectedTrace: InjectedTrace?, capturedState: URLSessionHandlerCapturedState?) {
-        self.injectedTrace = injectedTrace
+    public init(traceHeaders: TraceHeaders?, traceContext: TraceContext?, capturedState: URLSessionHandlerCapturedState?) {
+        self.traceHeaders = traceHeaders
+        self.traceContext = traceContext
         self.capturedState = capturedState
     }
 }
