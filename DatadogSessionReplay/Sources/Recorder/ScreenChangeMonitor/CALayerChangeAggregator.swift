@@ -80,22 +80,26 @@ internal final class CALayerChangeAggregator {
     private func scheduleDeliveryIfNeeded() {
         let now = timerScheduler.now
 
-        // This should not happen with the current start()/stop() semantics, it is purely defensive.
         guard let last = lastDeliveryTime else {
             lastDeliveryTime = now
-            scheduleDelivery(after: minimumDeliveryInterval)
+            if scheduledDelivery == nil {
+                scheduleDelivery(after: minimumDeliveryInterval)
+            }
+            return
+        }
+
+        // Always defer delivery off the layer callback stack. If the throttle window
+        // already elapsed, schedule a zero-delay one-shot delivery. Otherwise schedule
+        // for the remaining time. Keep at most one pending delivery so subsequent
+        // changes are coalesced into the same snapshot
+
+        guard scheduledDelivery == nil else {
             return
         }
 
         let elapsed = now - last
-
-        // If the window elapsed, deliver immediately. Otherwise schedule a one-shot
-        // delivery for the remaining time (if not already scheduled).
-        if elapsed >= minimumDeliveryInterval {
-            deliverPendingChanges(now)
-        } else if scheduledDelivery == nil {
-            scheduleDelivery(after: minimumDeliveryInterval - elapsed)
-        }
+        let delay = max(0, minimumDeliveryInterval - elapsed)
+        scheduleDelivery(after: delay)
     }
 
     private func scheduleDelivery(after delay: TimeInterval) {
