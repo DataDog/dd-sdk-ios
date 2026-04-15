@@ -1,6 +1,6 @@
 # Unreleased
 
-- [IMPROVEMENT] Skip malformed RUM attributes individually instead of dropping the entire event, and log clear error messages. See [#xxx][]
+- [IMPROVEMENT] Skip malformed RUM attributes individually instead of dropping the entire event, and log clear error messages. See [#2844][]
 - [FEATURE] Add Mobile Heatmaps support. See [#2829][]
 - [FEATURE] Add watchOS and visionOS support. See [#2817][]
 - [FEATURE] Add support for the FedRAMP-compatible `fed2.ddog-gov.com` site. See [#2827][]
@@ -1117,7 +1117,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2817]: https://github.com/DataDog/dd-sdk-ios/pull/2817
 [#2827]: https://github.com/DataDog/dd-sdk-ios/pull/2827
 [#2829]: https://github.com/DataDog/dd-sdk-ios/pull/2829
-[#xxx]: https://github.com/DataDog/dd-sdk-ios/pull/xxx
+[#2844]: https://github.com/DataDog/dd-sdk-ios/pull/2844
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
