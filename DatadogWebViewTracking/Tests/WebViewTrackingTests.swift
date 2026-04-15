@@ -250,7 +250,7 @@ class WebViewTrackingTests: XCTestCase {
                     XCTAssertEqual(try? matcher.value("error"), ["origin": "console"])
                     XCTAssertEqual(try? matcher.value("session_id"), "0110cab4-7471-480e-aa4e-7ce039ced355")
                     logMessageExpectation.fulfill()
-                case .context:
+                case .context, .telemetry:
                     break
                 default:
                     XCTFail("Unexpected message received: \(message)")
@@ -302,7 +302,7 @@ class WebViewTrackingTests: XCTestCase {
                     let matcher = JSONObjectMatcher(object: event)
                     XCTAssertEqual(try? matcher.value("view.id"), "64308fd4-83f9-48cb-b3e1-1e91f6721230")
                     rumMessageExpectation.fulfill()
-                case .context:
+                case .context, .telemetry:
                     break
                 default:
                     XCTFail("Unexpected message received: \(message)")
@@ -395,7 +395,7 @@ class WebViewTrackingTests: XCTestCase {
                     XCTAssertEqual(try? matcher.value("date"), 1_635_932_927_012)
                     XCTAssertEqual(try? matcher.value("slotId"), String(webView.hash))
                     recordMessageExpectation.fulfill()
-                case .context:
+                case .context, .telemetry:
                     break
                 default:
                     XCTFail("Unexpected message received: \(message)")
@@ -424,6 +424,89 @@ class WebViewTrackingTests: XCTestCase {
 
         messageHandler?.userContentController(controller, didReceive: webLogMessage)
         waitForExpectations(timeout: 1)
+    }
+
+    func testItSendsTrackWebViewUsageTelemetry() throws {
+        // Given
+        var capturedUsage: UsageTelemetry?
+        let core = PassthroughCoreMock(
+            messageReceiver: FeatureMessageReceiverMock { message in
+                if case .telemetry(.usage(let usage)) = message {
+                    capturedUsage = usage
+                }
+            }
+        )
+        let controller = DDUserContentController()
+
+        // When
+        try WebViewTracking.enableOrThrow(
+            tracking: controller,
+            hosts: [],
+            hostsSanitizer: HostsSanitizerMock(),
+            logsSampleRate: 100,
+            in: core
+        )
+
+        // Then
+        let usage = try XCTUnwrap(capturedUsage, "Expected a usage telemetry event to be sent")
+        XCTAssertEqual(usage.sampleRate, UsageTelemetry.defaultSampleRate)
+        guard case .trackWebView = usage.event else {
+            XCTFail("Expected .trackWebView usage event")
+            return
+        }
+    }
+
+    func testItSendsTrackWebViewUsageTelemetryOnlyOnce() throws {
+        // Given
+        var trackWebViewUsageCount = 0
+        let core = PassthroughCoreMock(
+            messageReceiver: FeatureMessageReceiverMock { message in
+                if case .telemetry(.usage(let usage)) = message, case .trackWebView = usage.event {
+                    trackWebViewUsageCount += 1
+                }
+            }
+        )
+        let controller = DDUserContentController()
+
+        // When - enable is called multiple times on the same controller
+        try (0..<3).forEach { _ in
+            try WebViewTracking.enableOrThrow(
+                tracking: controller,
+                hosts: [],
+                hostsSanitizer: HostsSanitizerMock(),
+                logsSampleRate: 100,
+                in: core
+            )
+        }
+
+        // Then
+        XCTAssertEqual(trackWebViewUsageCount, 1)
+    }
+
+    func testItSendsTrackWebViewUsageTelemetryAgainAfterDisable() throws {
+        // Given
+        var trackWebViewUsageCount = 0
+        let core = PassthroughCoreMock(
+            messageReceiver: FeatureMessageReceiverMock { message in
+                if case .telemetry(.usage(let usage)) = message, case .trackWebView = usage.event {
+                    trackWebViewUsageCount += 1
+                }
+            }
+        )
+        let controller = DDUserContentController()
+        let configuration = WKWebViewConfiguration()
+        configuration.userContentController = controller
+        let webview = WKWebView(frame: .zero, configuration: configuration)
+
+        // When
+        WebViewTracking.enable(webView: webview, in: core)
+        XCTAssertEqual(trackWebViewUsageCount, 1)
+
+        WebViewTracking.disable(webView: webview)
+        WebViewTracking.enable(webView: webview, in: core)
+
+        // Then - disable clears user scripts so the duplicate guard passes again on re-enable
+        XCTAssertEqual(trackWebViewUsageCount, 2)
     }
 }
 

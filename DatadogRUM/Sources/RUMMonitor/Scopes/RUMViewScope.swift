@@ -372,13 +372,13 @@ extension RUMViewScope {
             viewLoadingTime = time
             needsViewUpdate = true
             DD.logger.debug("View loading time \(time)ns added to the view \(viewName)")
-            dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: false, noView: false, overwritten: false)))))
+            dependencies.telemetry.usage(event: .addViewLoadingTime(.init(noActiveView: false, noView: false, overwritten: false)))
         } else if command.overwrite {
             let time = command.time.timeIntervalSince(viewStartTime)
             viewLoadingTime = time
             needsViewUpdate = true
             DD.logger.warn("View loading time already exists for the view \(viewName). Replacing the existing \(String(describing: viewLoadingTime))ns with the new \(time)ns loading time.")
-            dependencies.telemetry.send(telemetry: .usage(.init(event: .addViewLoadingTime(.init(noActiveView: false, noView: false, overwritten: true)))))
+            dependencies.telemetry.usage(event: .addViewLoadingTime(.init(noActiveView: false, noView: false, overwritten: true)))
         }
     }
 
