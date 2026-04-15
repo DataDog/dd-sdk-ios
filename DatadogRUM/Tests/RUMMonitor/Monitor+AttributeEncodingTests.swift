@@ -45,7 +45,7 @@ class Monitor_AttributeEncodingTests: XCTestCase {
         // Then
         let viewEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
         let jsonData = try JSONEncoder().encode(viewEvent)
-        let json = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: jsonData) as? [String: Any], "Expected encoded RUM view event JSON to be a dictionary")
         let context = json["context"] as? [String: Any]
 
         XCTAssertEqual(context?["valid"] as? String, "test", "Valid attribute should be present in the event")
@@ -75,7 +75,7 @@ class Monitor_AttributeEncodingTests: XCTestCase {
 
         let viewEvent = try XCTUnwrap(viewEvents.first)
         let jsonData = try JSONEncoder().encode(viewEvent)
-        let json = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: jsonData) as? [String: Any], "Expected encoded RUM view event JSON to be a dictionary")
 
         XCTAssertNil((json["context"] as? [String: Any])?["invalid1"])
         XCTAssertNil((json["context"] as? [String: Any])?["invalid2"])
@@ -107,7 +107,7 @@ class Monitor_AttributeEncodingTests: XCTestCase {
         // Then
         let viewEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
         let jsonData = try JSONEncoder().encode(viewEvent)
-        let json = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: jsonData) as? [String: Any], "Expected encoded RUM view event JSON to be a dictionary")
         let usr = json["usr"] as? [String: Any]
 
         XCTAssertEqual(usr?["valid_info"] as? String, "test", "Valid user info attribute should be present")
@@ -140,7 +140,7 @@ class Monitor_AttributeEncodingTests: XCTestCase {
         // Then
         let viewEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
         let jsonData = try JSONEncoder().encode(viewEvent)
-        let json = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: jsonData) as? [String: Any], "Expected encoded RUM view event JSON to be a dictionary")
         let account = json["account"] as? [String: Any]
 
         XCTAssertEqual(account?["valid_plan"] as? String, "enterprise", "Valid account info attribute should be present")
@@ -169,7 +169,7 @@ class Monitor_AttributeEncodingTests: XCTestCase {
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
         let viewWithFlags = try XCTUnwrap(viewEvents.last(where: { $0.view.name == "TestView" }))
         let jsonData = try JSONEncoder().encode(viewWithFlags)
-        let json = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: jsonData) as? [String: Any], "Expected encoded RUM view event JSON to be a dictionary")
         let featureFlags = json["feature_flags"] as? [String: Any]
 
         XCTAssertEqual(featureFlags?["valid_flag"] as? String, "enabled", "Valid feature flag should be present")
