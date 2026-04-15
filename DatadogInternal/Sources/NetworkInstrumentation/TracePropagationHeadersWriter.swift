@@ -159,10 +159,12 @@ public struct TraceHeaders: ExpressibleByDictionaryLiteral {
 public enum TracePropagationHeaderValue: CustomStringConvertible {
     public struct KeyValuePairs: CustomStringConvertible {
         public struct Configuration {
+            let prefix: String?
             let keyValueSeparator: Character
-            let keyValuePairSeparator: Character
+            let pairSeparator: Character
 
-            static let commaSeparatedPairs = Configuration(keyValueSeparator: "=", keyValuePairSeparator: ",")
+            static let commaSeparatedPairs = Configuration(prefix: nil, keyValueSeparator: "=", pairSeparator: ",")
+            static let tracestate = Configuration(prefix: "\(W3CHTTPHeaders.Constants.dd)=", keyValueSeparator: ":", pairSeparator: ";")
         }
 
         let values: [String: String]
@@ -174,11 +176,20 @@ public enum TracePropagationHeaderValue: CustomStringConvertible {
         }
 
         init?(fromHeaderValue headerValue: String, configuration: Configuration) {
-            let trimmedValue = headerValue.trimmingCharacters(in: .whitespaces)
-            guard trimmedValue.isEmpty == false else {
+            let trimmedPrefixedValue = Substring(headerValue.trimmingCharacters(in: .whitespaces))
+            guard trimmedPrefixedValue.isEmpty == false else {
                 return nil
             }
-            let pairs = trimmedValue.split(separator: configuration.keyValuePairSeparator)
+            let trimmedValue: Substring
+            if let prefix = configuration.prefix {
+                guard trimmedPrefixedValue.starts(with: prefix) else {
+                    return nil
+                }
+                trimmedValue = trimmedPrefixedValue[(trimmedPrefixedValue.index(trimmedPrefixedValue.startIndex, offsetBy: prefix.count))..<trimmedPrefixedValue.endIndex]
+            } else {
+                trimmedValue = trimmedPrefixedValue
+            }
+            let pairs = trimmedValue.split(separator: configuration.pairSeparator)
             let parsedPairs: [(String, String)] = pairs.compactMap {
                 let elements = $0.split(separator: configuration.keyValueSeparator, maxSplits: 1)
                 guard elements.count == 2 else {
@@ -197,10 +208,10 @@ public enum TracePropagationHeaderValue: CustomStringConvertible {
         }
 
         public var description: String {
-            values
+            (configuration.prefix ?? "") + values
                 .sorted { lhs, rhs in lhs.key < rhs.key }
                 .map { pair in "\(pair.key)\(configuration.keyValueSeparator)\(pair.value)" }
-                .joined(separator: String(configuration.keyValuePairSeparator))
+                .joined(separator: String(configuration.pairSeparator))
         }
 
         func merged(with other: KeyValuePairs) -> KeyValuePairs {

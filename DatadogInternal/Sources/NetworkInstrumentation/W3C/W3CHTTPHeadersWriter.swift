@@ -98,12 +98,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
             return new
         }
 
-        let ddtracestate = tracestate
-            .map { "\($0.key)\(Constants.tracestateKeyValueSeparator)\($0.value)" }
-            .sorted()
-            .joined(separator: Constants.tracestatePairSeparator)
-
-        traceHeaders[W3CHTTPHeaders.tracestate] = .string("\(Constants.dd)=\(ddtracestate)")
+        traceHeaders[W3CHTTPHeaders.tracestate] = .keyValueList(.init(values: tracestate, configuration: .tracestate))
 
         var baggageItems: [String: String] = [:]
         if let sessionId = traceContext.rumSessionId {
