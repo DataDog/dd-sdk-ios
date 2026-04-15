@@ -216,6 +216,29 @@ struct HeatmapIdentifierComputationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips heatmap computation when heatmapCache is nil")
+    func heatmapsDisabled() {
+        // Given
+        let view = UIView(frame: .init(x: 0, y: 0, width: 100, height: 100))
+
+        let recorder = ViewTreeRecorder(
+            nodeRecorders: [UIViewRecorder(identifier: UUID())],
+            bundleIdentifier: "com.example.app"
+        )
+        let context = ViewTreeRecordingContext.mockWith(
+            recorder: .mockWith(rumContext: .mockWith(viewPath: "Home")),
+            coordinateSpace: view,
+            heatmapCache: nil
+        )
+
+        // When
+        let nodes = recorder.record(view, in: context)
+
+        // Then
+        #expect(nodes.first?.heatmapIdentifier == nil)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Wireframes have nil permanentId when no heatmap identifier")
     func wireframeNoPermanentId() {
         // Given

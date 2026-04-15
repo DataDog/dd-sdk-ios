@@ -59,8 +59,9 @@ internal struct ViewTreeRecorder {
             context.clip = frame.intersection(context.clip)
         }
 
-        // Compute the heatmap identifier
-        let heatmapIdentifier = context.recorder.viewPath.map { viewPath in
+        // Compute the heatmap identifier when heatmaps are enabled
+        let heatmapIdentifier: HeatmapIdentifier?
+        if let heatmapCache = context.heatmapCache, let viewPath = context.recorder.viewPath {
             let component: String
             if let accessibilityIdentifier = view.accessibilityIdentifier, !accessibilityIdentifier.isEmpty {
                 component = accessibilityIdentifier
@@ -69,14 +70,15 @@ internal struct ViewTreeRecorder {
             }
             context.nodePath.append(component)
 
-            let heatmapIdentifier = HeatmapIdentifier(
+            let identifier = HeatmapIdentifier(
                 elementPath: context.nodePath,
                 screenName: viewPath,
                 bundleIdentifier: bundleIdentifier() ?? "unknown"
             )
-
-            context.heatmapCache.identifiers[ObjectIdentifier(view)] = heatmapIdentifier
-            return heatmapIdentifier
+            heatmapCache.identifiers[ObjectIdentifier(view)] = identifier
+            heatmapIdentifier = identifier
+        } else {
+            heatmapIdentifier = nil
         }
 
         let attributes = ViewAttributes(view: view, frame: frame, clip: context.clip, overrides: overrides)

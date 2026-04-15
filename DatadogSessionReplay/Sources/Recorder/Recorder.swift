@@ -91,7 +91,8 @@ public class Recorder: Recording {
                     nodeRecorders: createDefaultNodeRecorders(featureFlags: featureFlags) + additionalNodeRecorders
                 ),
                 idsGenerator: NodeIDGenerator(),
-                core: core
+                core: core,
+                featureFlags: featureFlags
             )
         )
         let touchSnapshotProducer = WindowTouchSnapshotProducer(windowObserver: windowObserver)

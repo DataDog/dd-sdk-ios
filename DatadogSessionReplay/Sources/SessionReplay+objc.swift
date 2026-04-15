@@ -103,9 +103,10 @@ public final class objc_SessionReplayConfiguration: NSObject {
     }
 
     /// Feature flags to preview features in Session Replay.
-    /// 
+    ///
     /// Available flags:
     /// - `swiftui`: `false` by default.
+    /// - `heatmaps`: `false` by default.
     @objc public var featureFlags: [String: Bool] {
         set { _swift.featureFlags = newValue.dd.featureFlags }
         get { _swift.featureFlags.dd.featureFlags }
