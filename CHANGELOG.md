@@ -5,6 +5,7 @@
 
 # 3.10.0 / 16-04-2026
 
+- [FEATURE] Add `redactedStatusCodes` to `Trace.Configuration.URLSessionTracking` to configure which HTTP status codes have their resource URL replaced with the status code string in spans. Defaults to `[404]` for backward compatibility. See [#2845][]
 - [FEATURE] Add Mobile Heatmaps support. See [#2829][]
 - [FEATURE] Add watchOS and visionOS support. See [#2817][]
 - [FEATURE] Add support for the FedRAMP-compatible `fed2.ddog-gov.com` site. See [#2827][]

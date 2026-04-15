@@ -33,7 +33,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     /// Telemetry interface for tracking SDK usage
     let telemetry: Telemetry
     /// HTTP status codes whose `resource.name` span tag will be replaced with the status code string.
-    /// Defaults to `URLSessionTracking.defaultRedactedStatusCodes` for backward compatibility.
+    /// Defaults to `Trace.Configuration.URLSessionTracking.defaultRedactedStatusCodes` for backward compatibility.
     let redactedStatusCodes: Set<Int>
 
     weak var tracer: DatadogTracer?
