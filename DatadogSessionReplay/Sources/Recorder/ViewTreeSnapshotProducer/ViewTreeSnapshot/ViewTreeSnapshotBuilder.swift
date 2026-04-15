@@ -21,6 +21,8 @@ internal struct ViewTreeSnapshotBuilder {
     let idsGenerator: NodeIDGenerator
     /// A weak core reference.
     weak var core: DatadogCoreProtocol?
+    /// Feature flags for Session Replay.
+    let featureFlags: SessionReplay.Configuration.FeatureFlags
     /// The webviews cache.
     let webViewCache: NSHashTable<WKWebView> = .weakObjects()
 
@@ -32,7 +34,7 @@ internal struct ViewTreeSnapshotBuilder {
     /// are computed relatively to the `rootView` (e.g. the `x` and `y` position of all descendant nodes  is given
     /// as its position in the root, no matter of nesting level).
     func createSnapshot(of rootView: UIView, with recorderContext: Recorder.Context) -> ViewTreeSnapshot {
-        let heatmapCache = HeatmapCache()
+        let heatmapCache: HeatmapCache? = featureFlags[.heatmaps] ? HeatmapCache() : nil
         let context = ViewTreeRecordingContext(
             recorder: recorderContext,
             coordinateSpace: rootView,
@@ -49,7 +51,9 @@ internal struct ViewTreeSnapshotBuilder {
             nodes: nodes,
             webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash))
         )
-        core?.heatmapIdentifierRegistry?.setHeatmapIdentifiers(heatmapCache.identifiers)
+        if let heatmapCache {
+            core?.heatmapIdentifierRegistry?.setHeatmapIdentifiers(heatmapCache.identifiers)
+        }
         return snapshot
     }
 }
@@ -65,7 +69,8 @@ extension ViewTreeSnapshotBuilder {
                 nodeRecorders: createDefaultNodeRecorders(featureFlags: featureFlags) + additionalNodeRecorders
             ),
             idsGenerator: NodeIDGenerator(),
-            core: core
+            core: core,
+            featureFlags: featureFlags
         )
     }
 }

@@ -26,8 +26,8 @@ public struct SessionReplayViewTreeRecordingContext {
     var viewControllerContext: ViewControllerContext = .init()
     /// Webviews caching.
     let webViewCache: NSHashTable<WKWebView>
-    /// Heatmaps caching
-    let heatmapCache: HeatmapCache
+    /// Heatmaps caching. When `nil`, heatmap identifier computation is skipped.
+    let heatmapCache: HeatmapCache?
     /// The clipping rect to apply to wireframes.
     var clip: CGRect
     /// The path components from the root to the current node, used for heatmap identifier computation.

@@ -21,7 +21,8 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
             idsGenerator: NodeIDGenerator(),
-            core: PassthroughCoreMock()
+            core: PassthroughCoreMock(),
+            featureFlags: .allEnabled
         )
 
         // When
@@ -51,7 +52,8 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
             idsGenerator: NodeIDGenerator(),
-            core: PassthroughCoreMock()
+            core: PassthroughCoreMock(),
+            featureFlags: .allEnabled
         )
 
         // When
@@ -126,6 +128,28 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         )
         let context = Recorder.Context.mockWith(
             rumContext: .mockWith(viewPath: nil)
+        )
+
+        // When
+        _ = builder.createSnapshot(of: view, with: context)
+
+        // Then
+        XCTAssertTrue(registry.identifiers.isEmpty)
+    }
+
+    func testWhenCreatingSnapshot_withHeatmapsFlagDisabled_itDoesNotWriteToRegistry() throws {
+        // Given
+        let view = UIView.mock(withFixture: .visible(.someAppearance))
+        let core = FeatureRegistrationCoreMock()
+        let registry = HeatmapIdentifierRegistryMock()
+        try core.register(heatmapIdentifierRegistry: registry)
+        let builder = ViewTreeSnapshotBuilder(
+            additionalNodeRecorders: [],
+            core: core,
+            featureFlags: .defaults
+        )
+        let context = Recorder.Context.mockWith(
+            rumContext: .mockWith(viewPath: "Home")
         )
 
         // When

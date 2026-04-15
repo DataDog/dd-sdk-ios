@@ -383,7 +383,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator(),
         webViewCache: NSHashTable<WKWebView> = .weakObjects(),
-        heatmapCache: HeatmapCache = .init(),
+        heatmapCache: HeatmapCache? = .init(),
         clip: CGRect? = nil
     ) -> ViewTreeRecordingContext {
         return .init(
