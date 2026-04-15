@@ -848,7 +848,109 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertTrue(span.isError)
         XCTAssertEqual(span.tags[OTTags.httpStatusCode], "404")
-        XCTAssertEqual(span.resource, "404", "404 responses should have resource set to '404'")
+        // resource.name redaction is tested separately in "Redacted Status Codes" section below
+    }
+
+    // MARK: - Redacted Status Codes
+
+    func testGivenAutomaticModeInterception_with404Error_andDefaultRedactedCodes_itRedactsResourceUrl() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // Given – default redactedStatusCodes = [404]
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .maxSampleRate)),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry(),
+            redactedStatusCodes: [404]
+        )
+        let interception = URLSessionTaskInterception(
+            request: .mockWith(url: URL(string: "https://www.example.com/resource")!),
+            isFirstParty: true,
+            trackingMode: .automatic
+        )
+        interception.register(response: .mockResponseWith(statusCode: 404), error: nil)
+        interception.register(startDate: .mockDecember15th2019At10AMUTC())
+        interception.register(endDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.2))
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        // Then
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertEqual(span.resource, "404")
+    }
+
+    func testGivenAutomaticModeInterception_with404Error_andEmptyRedactedCodes_itPreservesResourceUrl() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // Given – empty set disables all redaction
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .maxSampleRate)),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry(),
+            redactedStatusCodes: []
+        )
+        let interception = URLSessionTaskInterception(
+            request: .mockWith(url: URL(string: "https://www.example.com/resource")!),
+            isFirstParty: true,
+            trackingMode: .automatic
+        )
+        interception.register(response: .mockResponseWith(statusCode: 404), error: nil)
+        interception.register(startDate: .mockDecember15th2019At10AMUTC())
+        interception.register(endDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.2))
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        // Then
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertEqual(span.resource, "https://www.example.com/resource")
+    }
+
+    func testGivenAutomaticModeInterception_with500Error_andCustomRedactedCodes_itRedactsResourceUrl() throws {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // Given – custom set includes 500
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .maxSampleRate)),
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry(),
+            redactedStatusCodes: [404, 500]
+        )
+        let interception = URLSessionTaskInterception(
+            request: .mockWith(url: URL(string: "https://www.example.com/resource")!),
+            isFirstParty: true,
+            trackingMode: .automatic
+        )
+        interception.register(response: .mockResponseWith(statusCode: 500), error: nil)
+        interception.register(startDate: .mockDecember15th2019At10AMUTC())
+        interception.register(endDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.2))
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        // Then
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertEqual(span.resource, "500")
+        XCTAssertFalse(span.isError, "5xx responses are not client errors and should not set the error flag")
     }
 
     private func assert(capturedState: URLSessionHandlerCapturedState?, has span: OTSpan?) {

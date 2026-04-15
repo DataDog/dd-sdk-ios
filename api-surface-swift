@@ -318,7 +318,9 @@ public enum Trace
             public enum FirstPartyHostsTracing
                 case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
                 case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
-            public init(firstPartyHostsTracing: FirstPartyHostsTracing)
+            public static let defaultRedactedStatusCodes: Set<Int> = [404]
+            public var redactedStatusCodes: Set<Int>
+            public init(firstPartyHostsTracing: FirstPartyHostsTracing,redactedStatusCodes: Set<Int> = defaultRedactedStatusCodes)
         public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: Encodable]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
 public enum SpanTags
     public static let resource = "resource.name"

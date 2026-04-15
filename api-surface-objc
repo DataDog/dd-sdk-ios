@@ -333,6 +333,7 @@ public final class objc_TraceFirstPartyHostsTracing: NSObject
 public final class objc_TraceURLSessionTracking: NSObject
     public init(firstPartyHostsTracing: objc_TraceFirstPartyHostsTracing)
     public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_TraceFirstPartyHostsTracing)
+    public func setRedactedStatusCodes(_ codes: [NSNumber])
 public final class objc_Trace: NSObject
     public static func enable(with configuration: objc_TraceConfiguration)
 public final class objc_Tracer: NSObject, objc_OTTracer
