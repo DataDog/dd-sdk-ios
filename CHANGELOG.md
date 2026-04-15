@@ -1,12 +1,13 @@
 # Unreleased
 
-# 3.9.1 / 15-04-2026
-
-- [FIX] Prevent Session Replay capture from running on the swizzled `CALayer` layout call stack, avoiding AttributeGraph cycles and other errors. See [#2840][]
 - [FEATURE] Add Mobile Heatmaps support. See [#2829][]
 - [FEATURE] Add watchOS and visionOS support. See [#2817][]
 - [FEATURE] Add support for the FedRAMP-compatible `fed2.ddog-gov.com` site. See [#2827][]
 - [IMPROVEMENT] Rename RUM Operations APIs. See [#2802][]
+
+# 3.9.1 / 15-04-2026
+
+- [FIX] Prevent Session Replay capture from running on the swizzled `CALayer` layout call stack, avoiding AttributeGraph cycles and other errors. See [#2840][]
 
 # 3.9.0 / 02-04-2026
 
