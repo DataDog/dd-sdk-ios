@@ -857,15 +857,14 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let expectation = expectation(description: "Send span")
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
-        // Given – default redactedStatusCodes = [404]
+        // Given – no redactedStatusCodes passed, exercises the handler default ([404])
         let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .maxSampleRate)),
             samplingRate: .maxSampleRate,
             firstPartyHosts: .init(["www.example.com": [.datadog]]),
             traceContextInjection: .all,
-            telemetry: NOPTelemetry(),
-            redactedStatusCodes: [404]
+            telemetry: NOPTelemetry()
         )
         let interception = URLSessionTaskInterception(
             request: .mockWith(url: URL(string: "https://www.example.com/resource")!),

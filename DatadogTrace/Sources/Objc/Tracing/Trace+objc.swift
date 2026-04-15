@@ -95,7 +95,7 @@ public final class objc_TraceURLSessionTracking: NSObject {
     }
 
     public func setRedactedStatusCodes(_ codes: [NSNumber]) {
-        swiftConfig.redactedStatusCodes = Set(codes.map { $0.intValue })
+        swiftConfig.redactedStatusCodes = Set(codes.map { Int(truncating: $0) })
     }
 }
 
