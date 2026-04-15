@@ -116,7 +116,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
             baggageItems[Constants.accountBaggageKey] = accountId
         }
         if !baggageItems.isEmpty {
-            traceHeaders[W3CHTTPHeaders.baggage] = .keyValueList(.init(values: baggageItems, keyValueSeparator: "=", keyValuePairSeparator: ","))
+            traceHeaders[W3CHTTPHeaders.baggage] = .keyValueList(.init(values: baggageItems, configuration: .commaSeparatedPairs))
         }
     }
 }

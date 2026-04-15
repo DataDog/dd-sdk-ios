@@ -73,7 +73,7 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
         if traceContext.samplingPriority.isKept {
             tags["_dd.p.dm"] = "-\(traceContext.samplingDecisionMaker.rawValue)"
         }
-        traceHeaders[TracingHTTPHeaders.tagsField] = .keyValueList(.init(values: tags, keyValueSeparator: "=", keyValuePairSeparator: ","))
+        traceHeaders[TracingHTTPHeaders.tagsField] = .keyValueList(.init(values: tags, configuration: .commaSeparatedPairs))
 
         var baggageItems: [String: String] = [:]
         if let sessionId = traceContext.rumSessionId {
@@ -86,7 +86,7 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
             baggageItems[W3CHTTPHeaders.Constants.accountBaggageKey] = accountId
         }
         if baggageItems.isEmpty == false {
-            traceHeaders[W3CHTTPHeaders.baggage] = .keyValueList(.init(values: baggageItems, keyValueSeparator: "=", keyValuePairSeparator: ","))
+            traceHeaders[W3CHTTPHeaders.baggage] = .keyValueList(.init(values: baggageItems, configuration: .commaSeparatedPairs))
         }
     }
 }

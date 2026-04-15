@@ -393,9 +393,7 @@ extension NetworkInstrumentationFeature {
 
         let mergedHeaders = TraceHeaders.merged(instrumentationContexts.values.compactMap { $0.injectedTrace?.traceHeaders })
 
-        mergedHeaders.headers.forEach {
-            request.addValue($0.value.description, forHTTPHeaderField: $0.key)
-        }
+        mergedHeaders.write(to: &request)
 
         // Remove GraphQL headers before returning the modified request
         request = removeGraphQLHeadersFromRequest(request)
