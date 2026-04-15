@@ -12,6 +12,8 @@ import DatadogInternal
 @_spi(objc)
 @testable import DatadogCore
 
+#if !os(watchOS)
+
 class UIKitRUMViewsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcPredicate() {
         class MockPredicate: objc_UIKitRUMViewsPredicate {
@@ -96,14 +98,6 @@ class DDRUMUserActionTypeTests: XCTestCase {
     }
 }
 
-class DDRUMFeatureOperationFailureReasonTests: XCTestCase {
-    func testMappingToSwiftRUMFeatureOperationFailureReason() {
-        XCTAssertEqual(objc_RUMFeatureOperationFailureReason.error.swiftType, .error)
-        XCTAssertEqual(objc_RUMFeatureOperationFailureReason.abandoned.swiftType, .abandoned)
-        XCTAssertEqual(objc_RUMFeatureOperationFailureReason.other.swiftType, .other)
-    }
-}
-
 class SwiftUIRUMViewsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcPredicate() {
         class MockPredicate: objc_SwiftUIRUMViewsPredicate {
@@ -139,6 +133,16 @@ class SwiftUIRUMActionsPredicateBridgeTests: XCTestCase {
         _ = predicateBridge.rumAction(with: "Button")
 
         XCTAssertTrue(objcPredicate.didCallRUMAction)
+    }
+}
+
+#endif
+
+class DDRUMFeatureOperationFailureReasonTests: XCTestCase {
+    func testMappingToSwiftRUMFeatureOperationFailureReason() {
+        XCTAssertEqual(objc_RUMFeatureOperationFailureReason.error.swiftType, .error)
+        XCTAssertEqual(objc_RUMFeatureOperationFailureReason.abandoned.swiftType, .abandoned)
+        XCTAssertEqual(objc_RUMFeatureOperationFailureReason.other.swiftType, .other)
     }
 }
 
@@ -256,16 +260,16 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingViewAttributes() throws {
         RUM.enable(with: config)
-        let viewController = mockView
+        let view: String = .mockRandom()
         let objcRUMMonitor = objc_RUMMonitor.shared()
 
-        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: ["view-attribute3": "foobar"])
+        objcRUMMonitor.startView(key: view, name: .mockAny(), attributes: ["view-attribute3": "foobar"])
 
         objcRUMMonitor.addViewAttribute(forKey: "view-attribute1", value: "foo")
         objcRUMMonitor.addViewAttribute(forKey: "view-attribute2", value: "bar")
         objcRUMMonitor.removeViewAttribute(forKey: "view-attribute2")
 
-        objcRUMMonitor.stopView(viewController: viewController, attributes: [:])
+        objcRUMMonitor.stopView(key: view, attributes: [:])
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
@@ -281,10 +285,10 @@ class DDRUMMonitorTests: XCTestCase {
 
     func testSendingMultipleViewAttributes() throws {
         RUM.enable(with: config)
-        let viewController = mockView
+        let view: String = .mockRandom()
         let objcRUMMonitor = objc_RUMMonitor.shared()
 
-        objcRUMMonitor.startView(viewController: viewController, name: .mockAny(), attributes: [:])
+        objcRUMMonitor.startView(key: view, name: .mockAny(), attributes: [:])
 
         objcRUMMonitor.addViewAttributes(
             [
@@ -297,7 +301,7 @@ class DDRUMMonitorTests: XCTestCase {
         )
         objcRUMMonitor.removeViewAttributes(forKeys: ["view-attribute2", "view-attribute5"])
 
-        objcRUMMonitor.stopView(viewController: viewController, attributes: [:])
+        objcRUMMonitor.stopView(key: view, attributes: [:])
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
@@ -317,10 +321,8 @@ class DDRUMMonitorTests: XCTestCase {
         RUM.enable(with: config)
 
         let objcRUMMonitor = objc_RUMMonitor.shared()
-        let mockView = createMockView(viewControllerClassName: "FirstViewController")
-
-        objcRUMMonitor.startView(viewController: mockView, name: "FirstView", attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.stopView(viewController: mockView, attributes: ["event-attribute2": "foo2"])
+        objcRUMMonitor.startView(key: "view1", name: "FirstView", attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.stopView(key: "view1", attributes: ["event-attribute2": "foo2"])
         objcRUMMonitor.startView(key: "view2", name: "SecondView", attributes: ["event-attribute1": "bar1"])
         objcRUMMonitor.addViewLoadingTime(overwrite: true)
         objcRUMMonitor.reportAppFullyDisplayed()
@@ -339,9 +341,9 @@ class DDRUMMonitorTests: XCTestCase {
         let event4: RUMViewEvent = try viewEvents[3].model()
         let event5: RUMViewEvent = try viewEvents[4].model()
         XCTAssertEqual(event1.view.name, "FirstView")
-        XCTAssertEqual(event1.view.url, "FirstViewController")
+        XCTAssertEqual(event1.view.url, "view1")
         XCTAssertEqual(event2.view.name, "FirstView")
-        XCTAssertEqual(event2.view.url, "FirstViewController")
+        XCTAssertEqual(event2.view.url, "view1")
         XCTAssertEqual(event3.view.name, "SecondView")
         XCTAssertEqual(event3.view.url, "view2")
         XCTAssertEqual(event4.view.name, "SecondView")
@@ -359,9 +361,9 @@ class DDRUMMonitorTests: XCTestCase {
         RUM.enable(with: config)
         let objcRUMMonitor = objc_RUMMonitor.shared()
 
-        objcRUMMonitor.startView(viewController: mockView, name: "SomeView", attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.startView(key: "some-view", name: "SomeView", attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.addTiming(name: "timing")
-        objcRUMMonitor.stopView(viewController: mockView, attributes: ["event-attribute2": "foo2"])
+        objcRUMMonitor.stopView(key: "some-view", attributes: ["event-attribute2": "foo2"])
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
@@ -388,7 +390,7 @@ class DDRUMMonitorTests: XCTestCase {
         RUM.enable(with: config)
         let objcRUMMonitor = objc_RUMMonitor.shared()
 
-        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
+        objcRUMMonitor.startView(key: .mockAny(), name: .mockAny(), attributes: [:])
 
         objcRUMMonitor.startResource(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.addResourceMetrics(
@@ -439,7 +441,7 @@ class DDRUMMonitorTests: XCTestCase {
         RUM.enable(with: config)
         let objcRUMMonitor = objc_RUMMonitor.shared()
 
-        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
+        objcRUMMonitor.startView(key: .mockAny(), name: .mockAny(), attributes: [:])
 
         let request: URLRequest = .mockAny()
         let error = ErrorMock("error details")
@@ -509,7 +511,7 @@ class DDRUMMonitorTests: XCTestCase {
         RUM.enable(with: config)
         let objcRUMMonitor = objc_RUMMonitor.shared()
 
-        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
+        objcRUMMonitor.startView(key: .mockAny(), name: .mockAny(), attributes: [:])
 
         objcRUMMonitor.addAction(type: .tap, name: "tap action", attributes: ["event-attribute1": "foo1"])
 
@@ -541,7 +543,7 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.addAttribute(forKey: "global-attribute2", value: "foo2")
         objcRUMMonitor.removeAttribute(forKey: "global-attribute2")
 
-        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.startView(key: .mockAny(), name: .mockAny(), attributes: ["event-attribute1": "foo1"])
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
@@ -562,7 +564,7 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.addAttributes(["global-attribute1": "foo1", "global-attribute2": "foo2", "global-attribute3": 2, "global-attribute4": true])
         objcRUMMonitor.removeAttribute(forKey: "global-attribute2")
 
-        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
+        objcRUMMonitor.startView(key: .mockAny(), name: .mockAny(), attributes: [:])
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 

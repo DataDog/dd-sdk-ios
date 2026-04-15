@@ -681,6 +681,8 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
 
     let actionType: RUMActionType
     let name: String
+    /// Heatmap information for this action, if available.
+    var heatmapAttributes: HeatmapAttributes?
     let missedEventType: SessionEndedMetric.MissedEventType? = .action
 }
 

@@ -16,9 +16,3 @@ updates:
   
     cooldown:
       default-days: 2
-  - package-ecosystem: "pip"
-    directory: "/tools/issue_handler"
-    patterns: ["*"]
-    multi-ecosystem-group: "repo-dependencies"
-    cooldown:
-      default-days: 2

@@ -127,10 +127,10 @@ class AppLaunchHandlerTests: XCTestCase {
 
     func testTaskPolicyRole() {
         let handler = AppLaunchHandler()
-        #if os(tvOS)
+        #if os(tvOS) || os(watchOS)
         XCTAssertEqual(handler.taskPolicyRole, __dd_private_TASK_POLICY_UNAVAILABLE)
         #else
-        XCTAssertEqual(handler.taskPolicyRole, Int(TASK_FOREGROUND_APPLICATION.rawValue))
+        XCTAssertEqual(handler.taskPolicyRole, Int(TASK_UNSPECIFIED.rawValue)) // TASK_UNSPECIFIED == 0 as no app is attached to the test target
         #endif
     }
 

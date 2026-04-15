@@ -28,7 +28,8 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
                 "RUMSessionPrecondition",
                 "RUMTelemetryDevice",
                 "RUMTelemetryOperatingSystem",
-                "RUMAccount"
+                "RUMAccount",
+                "RUMGraphql"
             ]
         )
     }
@@ -149,6 +150,10 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
 
         if fixedName == "Account" {
             fixedName = "RUMAccount"
+        }
+
+        if fixedName == "Graphql" {
+            fixedName = "RUMGraphql"
         }
 
         return fixedName

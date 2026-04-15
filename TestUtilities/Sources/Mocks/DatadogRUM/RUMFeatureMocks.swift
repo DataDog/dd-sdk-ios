@@ -5,7 +5,9 @@
  */
 
 import Foundation
+#if !os(watchOS)
 import UIKit
+#endif
 import DatadogInternal
 
 @testable import DatadogRUM
@@ -24,6 +26,72 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
         return config
     }
 
+    #if os(watchOS)
+    public static func mockWith(
+        applicationID: String = .mockAny(),
+        sessionSampleRate: SampleRate = .maxSampleRate,
+        urlSessionTracking: URLSessionTracking? = nil,
+        trackFrustrations: Bool = .mockAny(),
+        trackBackgroundEvents: Bool = .mockAny(),
+        longTaskThreshold: TimeInterval? = 0.1,
+        appHangThreshold: TimeInterval? = nil,
+        trackWatchdogTerminations: Bool = .mockAny(),
+        vitalsUpdateFrequency: VitalsFrequency? = .average,
+        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
+        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
+        viewEventMapper: RUM.ViewEventMapper? = nil,
+        resourceEventMapper: RUM.ResourceEventMapper? = nil,
+        actionEventMapper: RUM.ActionEventMapper? = nil,
+        errorEventMapper: RUM.ErrorEventMapper? = nil,
+        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
+        onSessionStart: RUM.SessionListener? = nil,
+        customEndpoint: URL? = .mockAny(),
+        trackAnonymousUser: Bool = .mockAny(),
+        trackSlowFrames: Bool = .mockAny(),
+        telemetrySampleRate: SampleRate = 0
+    ) -> RUM.Configuration {
+        .init(
+            applicationID: applicationID,
+            sessionSampleRate: sessionSampleRate,
+            urlSessionTracking: urlSessionTracking,
+            trackFrustrations: trackFrustrations,
+            trackBackgroundEvents: trackBackgroundEvents,
+            longTaskThreshold: longTaskThreshold,
+            appHangThreshold: appHangThreshold,
+            trackWatchdogTerminations: trackWatchdogTerminations,
+            vitalsUpdateFrequency: vitalsUpdateFrequency,
+            networkSettledResourcePredicate: networkSettledResourcePredicate,
+            nextViewActionPredicate: nextViewActionPredicate,
+            viewEventMapper: viewEventMapper,
+            resourceEventMapper: resourceEventMapper,
+            actionEventMapper: actionEventMapper,
+            errorEventMapper: errorEventMapper,
+            longTaskEventMapper: longTaskEventMapper,
+            onSessionStart: onSessionStart,
+            customEndpoint: customEndpoint,
+            trackAnonymousUser: trackAnonymousUser,
+            trackSlowFrames: trackSlowFrames,
+            telemetrySampleRate: telemetrySampleRate
+        )
+    }
+
+    public static func mockRandom() -> RUM.Configuration {
+        .mockWith(
+            applicationID: .mockRandom(),
+            sessionSampleRate: .mockRandom(min: 0, max: 100),
+            trackFrustrations: .mockRandom(),
+            trackBackgroundEvents: .mockRandom(),
+            longTaskThreshold: .mockRandom(),
+            appHangThreshold: .mockRandom(),
+            trackWatchdogTerminations: .mockRandom(),
+            vitalsUpdateFrequency: [VitalsFrequency.frequent, .average, .rare].randomElement(),
+            customEndpoint: .mockRandom(),
+            trackAnonymousUser: .mockRandom(),
+            trackSlowFrames: .mockRandom(),
+            telemetrySampleRate: .mockRandom(min: 0, max: 100)
+        )
+    }
+    #else
     public static func mockWith(
         applicationID: String = .mockAny(),
         sessionSampleRate: SampleRate = .maxSampleRate,
@@ -97,6 +165,7 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             telemetrySampleRate: .mockRandom(min: 0, max: 100)
         )
     }
+    #endif
 }
 
 extension WebViewEventReceiver: AnyMockable {
@@ -210,11 +279,17 @@ extension RUMEventsMapper {
 // MARK: - RUMCommand Mocks
 
 /// Holds the `mockView` object so it can be weakly referenced by `RUMViewScope` mocks.
+#if !os(watchOS)
 public let mockView: UIViewController = createMockViewInWindow()
+#endif
 
 extension ViewIdentifier {
     public static func mockViewIdentifier() -> ViewIdentifier {
+        #if os(watchOS)
+        ViewIdentifier("mockView")
+        #else
         ViewIdentifier(mockView)
+        #endif
     }
 
     public static func mockRandomString() -> ViewIdentifier {
@@ -777,7 +852,8 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:],
         instrumentation: InstrumentationType = .manual,
         actionType: RUMActionType = .tap,
-        name: String = .mockAny()
+        name: String = .mockAny(),
+        heatmapAttributes: HeatmapAttributes? = nil
     ) -> RUMAddUserActionCommand {
         return RUMAddUserActionCommand(
             time: time,
@@ -785,7 +861,8 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
             attributes: attributes,
             instrumentation: instrumentation,
             actionType: actionType,
-            name: name
+            name: name,
+            heatmapAttributes: heatmapAttributes
         )
     }
 }
@@ -1208,34 +1285,6 @@ extension RUMSessionScope {
     // swiftlint:enable function_default_parameter_at_end
 }
 
-private let mockWindow = UIWindow(frame: .zero)
-
-public func createMockViewInWindow() -> UIViewController {
-    let viewController = UIViewController()
-    mockWindow.rootViewController = viewController
-    mockWindow.makeKeyAndVisible()
-    return viewController
-}
-
-/// Creates an instance of `UIViewController` subclass with a given name.
-public func createMockView(viewControllerClassName: String) -> UIViewController {
-    var theClass: AnyClass! // swiftlint:disable:this implicitly_unwrapped_optional
-
-    if let existingClass = objc_lookUpClass(viewControllerClassName) {
-        theClass = existingClass
-    } else {
-        let newClass: AnyClass = objc_allocateClassPair(UIViewController.classForCoder(), viewControllerClassName, 0)!
-        objc_registerClassPair(newClass)
-        theClass = newClass
-    }
-
-    let viewController = UIViewController()
-    object_setClass(viewController, theClass)
-    mockWindow.rootViewController = viewController
-    mockWindow.makeKeyAndVisible()
-    return viewController
-}
-
 extension RUMViewScope {
     public static func mockAny() -> RUMViewScope {
         return mockWith()
@@ -1318,7 +1367,7 @@ extension RUMUserActionScope {
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies = .mockAny(),
         name: String = .mockAny(),
-        actionType: RUMActionType = [.tap, .scroll, .swipe, .custom].randomElement()!,
+        actionType: RUMActionType = .custom,
         attributes: [AttributeKey: AttributeValue] = [:],
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
@@ -1337,12 +1386,43 @@ extension RUMUserActionScope {
                 serverTimeOffset: serverTimeOffset,
                 isContinuous: isContinuous,
                 instrumentation: instrumentation,
+                heatmapAttributes: nil,
                 interactionToNextViewMetric: interactionToNextViewMetric,
                 onActionEventSent: onActionEventSent
         )
     }
     // swiftlint:enable function_default_parameter_at_end
 }
+
+#if !os(watchOS)
+private let mockWindow = UIWindow(frame: .zero)
+
+public func createMockViewInWindow() -> UIViewController {
+    let viewController = UIViewController()
+    mockWindow.rootViewController = viewController
+    mockWindow.makeKeyAndVisible()
+    return viewController
+}
+
+/// Creates an instance of `UIViewController` subclass with a given name.
+public func createMockView(viewControllerClassName: String) -> UIViewController {
+    var theClass: AnyClass! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    if let existingClass = objc_lookUpClass(viewControllerClassName) {
+        theClass = existingClass
+    } else {
+        let newClass: AnyClass = objc_allocateClassPair(UIViewController.classForCoder(), viewControllerClassName, 0)!
+        objc_registerClassPair(newClass)
+        theClass = newClass
+    }
+
+    let viewController = UIViewController()
+    object_setClass(viewController, theClass)
+    mockWindow.rootViewController = viewController
+    mockWindow.makeKeyAndVisible()
+    return viewController
+}
+#endif
 
 public class RUMContextProviderMock: RUMContextProvider {
     public init(context: RUMContext = .mockAny(), attributes: [AttributeKey: AttributeValue] = [:]) {
@@ -1368,6 +1448,7 @@ public class RUMCommandSubscriberMock: RUMCommandSubscriber {
     }
 }
 
+#if !os(watchOS)
 public class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate {
     public var resultByViewController: [UIViewController: RUMView] = [:]
     public var result: RUMView?
@@ -1496,6 +1577,7 @@ public class ContinuousVitalReaderMock: ContinuousVitalReader {
         }
     }
 }
+#endif
 
 extension TelemetryReceiver: AnyMockable {
     public static func mockAny() -> Self { .mockWith() }
@@ -1738,7 +1820,7 @@ extension RUMAddCurrentViewAppHangCommand: AnyMockable, RandomMockable {
     }
 }
 
-extension RUMCoreContext: RandomMockable {
+extension RUMCoreContext: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
         .mockWith()
     }
@@ -1749,14 +1831,17 @@ extension RUMCoreContext: RandomMockable {
         sessionSampleRate: SampleRate = .maxSampleRate,
         viewID: String? = .mockAny(),
         userActionID: String? = nil,
-        serverTimeOffset: TimeInterval = .mockAny()
+        serverTimeOffset: TimeInterval = .mockAny(),
+        viewPath: String? = .mockAny()
     ) -> Self {
         .init(
             applicationID: applicationID,
             sessionID: sessionID.uuidString.lowercased(),
             sessionSampler: DeterministicSampler(uuid: sessionID, samplingRate: sessionSampleRate),
             viewID: viewID,
-            viewServerTimeOffset: serverTimeOffset
+            userActionID: userActionID,
+            viewServerTimeOffset: serverTimeOffset,
+            viewPath: viewPath
         )
     }
 
@@ -1766,7 +1851,8 @@ extension RUMCoreContext: RandomMockable {
             sessionID: .mockRandom(),
             viewID: .mockRandom(),
             userActionID: .mockRandom(),
-            serverTimeOffset: .mockRandom()
+            serverTimeOffset: .mockRandom(),
+            viewPath: .mockRandom()
         )
     }
 }
@@ -1822,6 +1908,7 @@ extension RUMResourceScope {
 
 // MARK: - Auto Instrumentation Mocks
 
+#if !os(watchOS)
 public class UIKitPredicateWithTrackingMock: UIKitRUMViewsPredicate {
     public var numberOfCalls: Int
 
@@ -1886,3 +1973,4 @@ public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate {
         return resultByName[componentName] ?? result
     }
 }
+#endif

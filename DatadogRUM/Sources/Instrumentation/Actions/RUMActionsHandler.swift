@@ -4,27 +4,35 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import UIKit
 import DatadogInternal
 
+#if !os(watchOS)
+import UIKit
+#endif
+
 internal protocol RUMActionsHandling: RUMCommandPublisher {
+    #if !os(watchOS)
     /// Tracks RUM actions automatically for UIKit and SwiftUI by responding to `UIApplication.sendEvent(application:event:)` being called.
     func notify_sendEvent(application: UIApplication, event: UIEvent)
-    /// Tracks RUM actions manually with SwiftUI view modifers by being notified from `RUMTapActionModifier`.
+    #endif
+    /// Tracks RUM actions manually with SwiftUI view modifiers by being notified from `RUMTapActionModifier`.
     func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable])
 }
 
 internal final class RUMActionsHandler: RUMActionsHandling {
-    /// Factory that processes `UIEvents` and creates RUM action commands.
-    /// It is `nil` when both UIKit and SwiftUI automatic instrumentations are not enabled.
-    private let eventCommandsFactory: UIEventCommandFactory?
     private let dateProvider: DateProvider
 
     weak var subscriber: RUMCommandSubscriber?
 
+    #if !os(watchOS)
+    /// Factory that processes `UIEvents` and creates RUM action commands.
+    /// It is `nil` when both UIKit and SwiftUI automatic instrumentations are not enabled.
+    private let eventCommandsFactory: UIEventCommandFactory?
+
     /// Convenience initializer for iOS
     convenience init(
         dateProvider: DateProvider,
+        heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
         uiKitPredicate: UITouchRUMActionsPredicate?,
         swiftUIPredicate: SwiftUIRUMActionsPredicate?,
         swiftUIDetector: SwiftUIComponentDetector?
@@ -38,6 +46,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
             dateProvider: dateProvider,
             eventCommandsFactory: UITouchCommandFactory(
                 dateProvider: dateProvider,
+                heatmapIdentifierRegistry: heatmapIdentifierRegistry,
                 uiKitPredicate: uiKitPredicate,
                 swiftUIPredicate: swiftUIPredicate,
                 swiftUIDetector: swiftUIDetector
@@ -69,18 +78,21 @@ internal final class RUMActionsHandler: RUMActionsHandling {
         )
     }
 
-    init(
-        dateProvider: DateProvider,
-        eventCommandsFactory: UIEventCommandFactory?
-    ) {
+    init(dateProvider: DateProvider, eventCommandsFactory: UIEventCommandFactory?) {
         self.eventCommandsFactory = eventCommandsFactory
         self.dateProvider = dateProvider
     }
+    #else
+    init(dateProvider: DateProvider) {
+        self.dateProvider = dateProvider
+    }
+    #endif
 
     func publish(to subscriber: RUMCommandSubscriber) {
         self.subscriber = subscriber
     }
 
+    #if !os(watchOS)
     /// Tracks RUM actions automatically for UIKit and SwiftUI in response to `UIApplication.sendEvent(application:event:)` event.
     func notify_sendEvent(application: UIApplication, event: UIEvent) {
         guard let command = eventCommandsFactory?.command(from: event) else {
@@ -99,6 +111,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
 
         subscriber.process(command: command)
     }
+    #endif
 
     /// Tracks manually instrumented SwiftUI actions via `.trackRUMTapAction()` view modifier,
     /// in response to `SwiftUI.TapGesture.onEnded` event.
