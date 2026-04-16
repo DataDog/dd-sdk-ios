@@ -260,4 +260,102 @@ class WebViewLogReceiverTests: XCTestCase {
         XCTAssertNil(log["user_action.id"])
         XCTAssertTrue(telemetryReceiver.messages.isEmpty)
     }
+
+    // MARK: - Anonymous ID Propagation
+
+    func testWhenAnonymousIdIsAvailable_itAddsAnonymousIdAndPreservesExistingWebUsrFields() throws {
+        // Given
+        let messageReceiver = WebViewLogReceiver()
+        let fakeAnonymousId: String = .mockRandom()
+        let webUsrId: String = .mockRandom()
+        let webUsrName: String = .mockRandom()
+
+        let expectation = expectation(description: "Send log")
+        let core = PassthroughCoreMock(
+            context: .mockWith(
+                userInfo: UserInfo(anonymousId: fakeAnonymousId)
+            )
+        )
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // When
+        XCTAssert(
+            messageReceiver.receive(
+                message: .webview(.log([
+                    "test": "value",
+                    "usr": ["id": webUsrId, "name": webUsrName]
+                ])),
+                from: core
+            )
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let log = try XCTUnwrap(core.events(ofType: AnyEncodable.self).first?.value as? [String: Any])
+        let usr = try XCTUnwrap(log["usr"] as? [String: Any])
+        XCTAssertEqual(usr["id"] as? String, webUsrId)
+        XCTAssertEqual(usr["name"] as? String, webUsrName)
+        XCTAssertEqual(usr["anonymous_id"] as? String, fakeAnonymousId)
+    }
+
+    func testWhenBrowserAlreadySetAnonymousId_itOverwritesWithNativeValue() throws {
+        // Given
+        let messageReceiver = WebViewLogReceiver()
+        let nativeAnonymousId: String = .mockRandom()
+        let browserAnonymousId: String = .mockRandom()
+
+        let expectation = expectation(description: "Send log")
+        let core = PassthroughCoreMock(
+            context: .mockWith(
+                userInfo: UserInfo(anonymousId: nativeAnonymousId)
+            )
+        )
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // When
+        XCTAssert(
+            messageReceiver.receive(
+                message: .webview(.log([
+                    "test": "value",
+                    "usr": ["anonymous_id": browserAnonymousId]
+                ])),
+                from: core
+            )
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let log = try XCTUnwrap(core.events(ofType: AnyEncodable.self).first?.value as? [String: Any])
+        let usr = try XCTUnwrap(log["usr"] as? [String: Any])
+        XCTAssertEqual(usr["anonymous_id"] as? String, nativeAnonymousId)
+    }
+
+    func testWhenAnonymousIdIsAvailable_andNoUsrSet_itAddsAnonymousId() throws {
+        // Given
+        let messageReceiver = WebViewLogReceiver()
+        let fakeAnonymousId: String = .mockRandom()
+
+        let expectation = expectation(description: "Send log")
+        let core = PassthroughCoreMock(
+            context: .mockWith(
+                userInfo: UserInfo(anonymousId: fakeAnonymousId)
+            )
+        )
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // When
+        XCTAssert(
+            messageReceiver.receive(
+                message: .webview(.log(["test": "value"])),
+                from: core
+            )
+        )
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let log = try XCTUnwrap(core.events(ofType: AnyEncodable.self).first?.value as? [String: Any])
+        let usr = try XCTUnwrap(log["usr"] as? [String: Any])
+        XCTAssertEqual(usr["anonymous_id"] as? String, fakeAnonymousId)
+        XCTAssertEqual(usr.count, 1, "usr should only contain anonymous_id")
+    }
 }

@@ -45,6 +45,14 @@ public struct LogEvent: Encodable {
             static let spanID = "dd.span_id"
         }
 
+        /// User attribute keys propagated from the native SDK to webview events.
+        internal enum User {
+            /// Key referencing the usr object.
+            static let key = "usr"
+            /// Key referencing the anonymous user ID.
+            static let anonymousId = "anonymous_id"
+        }
+
         /// Log custom attributes, They are subject for sanitization.
         public var userAttributes: [String: Encodable]
         /// Log attributes added internally by the SDK. They are not a subject for sanitization.

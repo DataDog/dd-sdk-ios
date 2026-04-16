@@ -123,6 +123,13 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 event["_dd"] = dd
             }
 
+            // Add native anonymous_id to the event's usr object
+            if let anonymousId = context.userInfo?.anonymousId {
+                var usr = event["usr"] as? JSON ?? [:]
+                usr["anonymous_id"] = anonymousId
+                event["usr"] = usr
+            }
+
             writer.write(value: AnyEncodable(event))
         }
     }
