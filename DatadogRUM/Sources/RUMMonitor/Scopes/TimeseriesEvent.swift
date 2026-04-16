@@ -23,7 +23,7 @@ internal struct TimeseriesEventBuilder {
     ///   - service: Service name from DatadogContext
     ///   - version: App version from DatadogContext
     /// - Returns: Array of RUMTimeseriesEvent (multiple if samples exceed batchSize)
-    /// - Note: Event start/end are in milliseconds; data point timestamps are in nanoseconds
+    /// - Note: Event start/end and data point timestamps are all in nanoseconds
     static func createEvents(
         from samples: [(timestamp: Int64, footprint: UInt64)],
         sessionID: RUMUUID,
@@ -50,16 +50,16 @@ internal struct TimeseriesEventBuilder {
             )
         }
 
-        // Get start/end in milliseconds from original samples (not converted data points)
-        let startMs = batchSamples.first!.timestamp
-        let endMs = batchSamples.last!.timestamp
+        // Convert start/end to nanoseconds (schema standard, matches data point timestamps)
+        let startNs = batchSamples.first!.timestamp * 1_000_000 // ms → ns
+        let endNs = batchSamples.last!.timestamp * 1_000_000   // ms → ns
 
         let timeseries = RUMTimeseriesEvent.Timeseries(
             data: dataPoints,
-            end: endMs,  // milliseconds (RUM common schema)
+            end: endNs,
             id: UUID().uuidString.lowercased(),
             name: .memoryUsage,
-            start: startMs  // milliseconds (RUM common schema)
+            start: startNs
         )
 
         let event = RUMTimeseriesEvent(
