@@ -32,7 +32,7 @@ internal final class ProfilingSamplerProvider: @unchecked Sendable {
     let isContinuousProfilingConfigured: Bool
 
     init(continuousSampleRate: SampleRate) {
-        self.continuousSampleRate = continuousSampleRate.normalized
+        self.continuousSampleRate = continuousSampleRate.normalizedSampleRate
         self.continuousProfilingSampled = nil
         self.isContinuousProfilingConfigured = continuousSampleRate > 0
     }
