@@ -1271,6 +1271,7 @@ public enum SessionReplay
     public typealias FeatureFlags = [FeatureFlag: Bool]
     public enum FeatureFlag: String
         case swiftui
+        case heatmaps
         case screenChangeScheduling
 [?] extension SessionReplay.Configuration.FeatureFlags
     public static var defaults: Self
