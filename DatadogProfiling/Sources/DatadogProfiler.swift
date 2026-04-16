@@ -41,6 +41,7 @@ internal final class DatadogProfiler: ProfilingHandler {
     private let profilingSamplerProvider: ProfilingSamplerProvider
     private let profilingConditions: ProfilingConditions
     private let profilingInterval: TimeInterval
+    private let minProfileDuration: TimeInterval
     private var timer: DispatchSourceTimer?
 
     let operation: ProfilingOperation
@@ -62,6 +63,10 @@ internal final class DatadogProfiler: ProfilingHandler {
     private var previousCustomProfilingStartDate: Date
     private var hasConditionsToProfile = true
     private var previousAppState: AppState?
+    /// Allows continuous profiling to temporarily run while waiting for the first
+    /// RUM-linked sampling decision. The grace is consumed on the first timer cycle
+    /// or when the app backgrounds before a decision is received.
+    private var isContinuousProfilingGraceAvailable: Bool
 
     init?(
         core: DatadogCoreProtocol,
@@ -71,6 +76,7 @@ internal final class DatadogProfiler: ProfilingHandler {
         telemetryController: ProfilingTelemetryController = .init(),
         profilingConditions: ProfilingConditions = .init(),
         profilingInterval: TimeInterval = Constants.maxProfileDuration,
+        minProfileDuration: TimeInterval = Constants.minProfileDuration,
         encoder: JSONEncoder = JSONEncoder(),
         dateProvider: DateProvider = SystemDateProvider()
     ) {
@@ -90,9 +96,11 @@ internal final class DatadogProfiler: ProfilingHandler {
         self.telemetryController = telemetryController
         self.profilingConditions = profilingConditions
         self.profilingInterval = profilingInterval
+        self.minProfileDuration = minProfileDuration
         self.encoder = encoder
         self.dateProvider = dateProvider
         self.previousCustomProfilingStartDate = dateProvider.now
+        self.isContinuousProfilingGraceAvailable = profilingSamplerProvider.isContinuousProfilingConfigured
 
         if profilingSamplerProvider.isContinuousProfilingConfigured {
             startTimer()
@@ -189,13 +197,17 @@ private extension DatadogProfiler {
                     return
                 }
 
+                if profilingSamplerProvider.continuousProfilingSampled == nil {
+                    isContinuousProfilingGraceAvailable = false
+                }
+
                 sendProfile()
                 updateProfilerState(canProfile: shouldKeepProfilerRunning())
             }
             // If the conditions are the same, ignore the update profiler state
             else if currentAppState != previousAppState || hasConditionsToProfile != previousConditions {
                 switch ProfilingContext.Status.current {
-                case .running, .stopped:
+                case .running, .stopped, .unknown:
                     updateProfilerState(canProfile: shouldKeepProfilerRunning())
                 default:
                     break
@@ -237,10 +249,10 @@ private extension DatadogProfiler {
                     startVital.duration = duration.dd.toInt64Nanoseconds
                     currentRUMVitals[message.operation.key] = startVital
 
-                    // Stop profiler if it is a custom profiler and the operations have completed
-                    if currentRUMVitals.didCompleteOperations() && profilingSamplerProvider.isContinuousProfilingConfigured == false {
+                    // If profiling is effectively running in custom mode, trigger timer when the last operation completes.
+                    if currentRUMVitals.didCompleteOperations() && isCustomProfiling {
                         let customProfilingDuration = dateProvider.now.timeIntervalSince(previousCustomProfilingStartDate)
-                        let fireInterval = customProfilingDuration < Constants.minProfileDuration ? Constants.minProfileDuration - customProfilingDuration : 0
+                        let fireInterval = customProfilingDuration < minProfileDuration ? minProfileDuration - customProfilingDuration : 0
                         fireTimer(after: fireInterval)
                     }
                 }
@@ -262,13 +274,14 @@ private extension DatadogProfiler {
     }
 
     func updateProfilerAndSendProfile() {
+        isContinuousProfilingGraceAvailable = false
         updateProfilerState(canProfile: shouldKeepProfilerRunning())
         sendProfile()
     }
 
     func updateProfilerState(canProfile: Bool) {
         switch ProfilingContext.Status.current {
-        case .stopped:
+        case .stopped, .unknown: // When `.unknown` status, mostly profiler NOT_CREATED, it will try to start the profiler
             if canProfile {
                 dd_profiler_start()
                 previousCustomProfilingStartDate = dateProvider.now
@@ -314,16 +327,21 @@ private extension DatadogProfiler {
     func shouldKeepProfilerRunning() -> Bool {
         if profilingSamplerProvider.isContinuousProfilingConfigured {
             switch profilingSamplerProvider.continuousProfilingSampled {
-            case true?: // It is Continuous Profiling running
+            case true: // It is Continuous Profiling running
                 return hasConditionsToProfile
-            case false?: // It is Custom Profiling running
+            case false: // It is Custom Profiling running
                 return hasConditionsToProfile && currentRUMVitals.ongoingOperations().isEmpty == false
             case .none: // Waiting for RUM context info
-                return hasConditionsToProfile
+                return hasConditionsToProfile && isContinuousProfilingGraceAvailable
             }
         } else { // It is Custom Profiling running
             return hasConditionsToProfile && canExtendCustomProfiling()
         }
+    }
+
+    var isCustomProfiling: Bool {
+        profilingSamplerProvider.isContinuousProfilingConfigured == false
+            || profilingSamplerProvider.continuousProfilingSampled == false
     }
 
     func canExtendCustomProfiling() -> Bool {
