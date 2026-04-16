@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import TestUtilities
 @testable import DatadogRUM
@@ -178,3 +180,5 @@ final class DisplayLinkerTests: XCTestCase {
         }
     }
 }
+
+#endif

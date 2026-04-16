@@ -104,10 +104,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         // Check if GraphQL was detected in the captured states
         if let capturedState = capturedStates.compactMap({ $0 as? RUMURLSessionHandlerCapturedState }).first,
            capturedState.hasGraphQLHeaders {
-            telemetry.send(telemetry: .usage(.init(
-                event: .addGraphQLRequest,
-                sampleRate: UsageTelemetry.defaultSampleRate
-            )))
+            telemetry.usage(event: .addGraphQLRequest)
         }
 
         subscriber?.process(

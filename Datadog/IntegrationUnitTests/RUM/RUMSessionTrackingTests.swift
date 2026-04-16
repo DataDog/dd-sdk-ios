@@ -25,6 +25,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
     /// User launch in `UIApplicationDelegate`-based app.
     private var userLaunchWithAppDelegate: AppRunner.ProcessLaunchType { .userLaunchInAppDelegateBasedApp(processLaunchDate: processLaunchDate) }
 
+    #if !os(watchOS)
     private func simulateUserSession(in run: AppRun) -> AppRun {
         // Track app launch events within "ApplicationLaunch" view:
         var run = run
@@ -39,7 +40,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
             .and(.trackResource(after: dt, duration: dt))
             .and(.trackTwoLongTasks(after1: dt, after2: dt))
 
-        // Switch to "SecondView" and track events::
+        // Switch to "SecondView" and track events:
         run = run
             .and(.startAutomaticView(after: 0, viewController: createMockView(viewControllerClassName: "SecondView")))
             .and(.trackTwoActions(after1: dt, after2: dt))
@@ -112,8 +113,12 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
 
         XCTAssertTrue(views.isEmpty)
     }
+    #endif
 
     func testGivenUserLaunch_whenTrackingUserSession() throws {
+        #if os(watchOS)
+        throw XCTSkip("UIKit view instrumentation is not available on watchOS")
+        #else
         // Given
         // - BET disabled
         let givens = [
@@ -140,6 +145,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
                 expectBackgroundView: given == givens[2] || given == givens[3]
             )
         }
+        #endif
     }
 
     // MARK: - Prewarming & Background Launch → track background session
@@ -186,8 +192,10 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
     @available(tvOS, unavailable)
     private var osPrewarmLaunch: AppRunner.ProcessLaunchType { .osPrewarm(processLaunchDate: processLaunchDate, runtimeLoadDate: runtimeLoadDate) }
 
-    @available(tvOS, unavailable)
     func testGivenPrewarmedLaunch_whenTrackingBackgroundSession() throws {
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
+        #else
         // Given
         // - BET disabled
         let given = enableRUM(osPrewarmLaunch)
@@ -198,10 +206,13 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         // Then
         let sessions = try when.then()
         XCTAssertTrue(sessions.isEmpty)
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenPrewarmedLaunch_andBETEnabled_whenTrackingBackgroundSession() throws {
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
+        #else
         // Given
         // - BET enabled
         let given = enableRUM(osPrewarmLaunch) { $0.trackBackgroundEvents = true }
@@ -210,6 +221,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
 
         let session = try when.then().takeSingle()
         assertBackgroundSession(session: session, expectedSessionPrecondition: .prewarm)
+        #endif
     }
 
     private var backgroundLaunch: AppRunner.ProcessLaunchType { .backgroundLaunch(processLaunchDate: processLaunchDate) }
@@ -257,7 +269,12 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         // Move to foreground, start "FirstView" and track events:
         run = run
             .and(.appBecomesActive(after: 0))
-            .and(.startAutomaticView(after: 0, viewController: createMockView(viewControllerClassName: "FirstView")))
+        #if os(watchOS)
+        run = run.and(.startManualView(after: 0, viewName: "FirstView", viewKey: "FirstView"))
+        #else
+        run = run.and(.startAutomaticView(after: 0, viewController: createMockView(viewControllerClassName: "FirstView")))
+        #endif
+        run = run
             .and(.trackResource(after: dt, duration: dt))
             .and(.trackTwoLongTasks(after1: dt, after2: dt))
 
@@ -302,8 +319,10 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         XCTAssertEqual(view.longTaskEvents.count, 2)
     }
 
-    @available(tvOS, unavailable)
     func testGivenPrewarmedLaunch_andSuspendedBackgroundSession_whenItGetsResumedByUserSession() throws {
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS or watchOS")
+        #else
         // Given
         // - BET disabled
         let given = enableRUM(osPrewarmLaunch) { $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate() }
@@ -314,10 +333,13 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         // Then
         let userSession = try when.then().takeSingle()
         assertResumedUserSession(session: userSession, expectedSessionPrecondition: .inactivityTimeout)
+        #endif
     }
 
-    @available(tvOS, unavailable)
     func testGivenPrewarmedLaunch_andBETEnabled_andSuspendedBackgroundSession_whenItGetsResumedByUserSession() throws {
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS or watchOS")
+        #else
         // Given
         // - BET enabled
         let given = enableRUM(osPrewarmLaunch) {
@@ -332,12 +354,18 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         let (backgroundSession, userSession) = try when.then().takeTwo()
         assertSuspendedBackgroundSession(session: backgroundSession, expectedSessionPrecondition: .prewarm)
         assertResumedUserSession(session: userSession, expectedSessionPrecondition: .inactivityTimeout)
+        #endif
     }
 
     func testGivenBackgroundLaunch_andSuspendedBackgroundSession_whenItGetsResumedByUserSession() throws {
         // Given
         // - BET disabled
+        // On watchOS, UIKit view instrumentation is not available — use plain RUM config.
+        #if os(watchOS)
+        let given = enableRUM(backgroundLaunch)
+        #else
         let given = enableRUM(backgroundLaunch) { $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate() }
+        #endif
 
         // When
         let when = simulateSuspendedBackgroundSessionResumedByUser(in: given)
@@ -350,10 +378,15 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
     func testGivenBackgroundLaunch_andBETEnabled_andSuspendedBackgroundSession_whenItGetsResumedByUserSession() throws {
         // Given
         // - BET enabled
+        // On watchOS, UIKit view instrumentation is not available — use plain RUM config.
+        #if os(watchOS)
+        let given = enableRUM(backgroundLaunch) { $0.trackBackgroundEvents = true }
+        #else
         let given = enableRUM(backgroundLaunch) {
             $0.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
             $0.trackBackgroundEvents = true
         }
+        #endif
 
         // When
         let when = simulateSuspendedBackgroundSessionResumedByUser(in: given)

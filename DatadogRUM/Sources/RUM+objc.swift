@@ -9,6 +9,7 @@ import UIKit
 @_spi(objc)
 import DatadogInternal
 
+#if !os(watchOS)
 internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
     let objcPredicate: objc_UIKitRUMViewsPredicate
 
@@ -156,6 +157,7 @@ public protocol objc_UIPressRUMActionsPredicate: AnyObject {
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
     func rumAction(press type: UIPress.PressType, targetView: UIView) -> objc_RUMAction?
 }
+#endif
 
 @objc(DDRUMErrorSource)
 @_spi(objc)
@@ -422,6 +424,7 @@ public class objc_RUMConfiguration: NSObject {
         get { swiftConfig.telemetrySampleRate }
     }
 
+    #if !os(watchOS)
     public var uiKitViewsPredicate: objc_UIKitRUMViewsPredicate? {
         set { swiftConfig.uiKitViewsPredicate = newValue.map { UIKitRUMViewsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.uiKitViewsPredicate as? UIKitRUMViewsPredicateBridge)?.objcPredicate  }
@@ -441,6 +444,12 @@ public class objc_RUMConfiguration: NSObject {
         set { swiftConfig.swiftUIActionsPredicate = newValue.map { SwiftUIRUMActionsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.swiftUIActionsPredicate as? SwiftUIRUMActionsPredicateBridge)?.objcPredicate }
     }
+
+    public var trackMemoryWarnings: Bool {
+        set { swiftConfig.trackMemoryWarnings = newValue }
+        get { swiftConfig.trackMemoryWarnings }
+    }
+    #endif
 
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking) {
         swiftConfig.urlSessionTracking = tracking.swiftConfig
@@ -525,11 +534,6 @@ public class objc_RUMConfiguration: NSObject {
         set { swiftConfig.trackAnonymousUser = newValue }
         get { swiftConfig.trackAnonymousUser }
     }
-
-    public var trackMemoryWarnings: Bool {
-        set { swiftConfig.trackMemoryWarnings = newValue }
-        get { swiftConfig.trackMemoryWarnings }
-    }
 }
 
 @objc(DDRUM)
@@ -587,6 +591,7 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.removeViewAttributes(forKeys: keys)
     }
 
+    #if !os(watchOS)
     public func startView(
         viewController: UIViewController,
         name: String?,
@@ -601,6 +606,7 @@ public class objc_RUMMonitor: NSObject {
     ) {
         swiftRUMMonitor.stopView(viewController: viewController, attributes: attributes.dd.swiftAttributes)
     }
+    #endif
 
     public func startView(
         key: String,
@@ -766,34 +772,68 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.addFeatureFlagEvaluation(name: name, value: AnyEncodable(value))
     }
 
+    public func startOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [String: Any],
+        options: objc_OperationOptions?
+    ) {
+        swiftRUMMonitor.startOperation(
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes.dd.swiftAttributes,
+            options: options?.swiftType
+        )
+    }
+
+    @available(*, deprecated, renamed: "startOperation(name:operationKey:attributes:options:)", message: "Use startOperation(name:operationKey:attributes:options:) instead.")
     public func startFeatureOperation(
         name: String,
         operationKey: String?,
         attributes: [String: Any]
     ) {
-        swiftRUMMonitor.startFeatureOperation(name: name, operationKey: operationKey, attributes: attributes.dd.swiftAttributes)
+        startOperation(name: name, operationKey: operationKey, attributes: attributes, options: nil)
     }
 
+    public func succeedOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.succeedOperation(name: name, operationKey: operationKey, attributes: attributes.dd.swiftAttributes)
+    }
+
+    @available(*, deprecated, renamed: "succeedOperation(name:operationKey:attributes:)", message: "Use succeedOperation(name:operationKey:attributes:) instead.")
     public func succeedFeatureOperation(
         name: String,
         operationKey: String?,
         attributes: [String: Any]
     ) {
-        swiftRUMMonitor.succeedFeatureOperation(name: name, operationKey: operationKey, attributes: attributes.dd.swiftAttributes)
+        succeedOperation(name: name, operationKey: operationKey, attributes: attributes)
     }
 
+    public func failOperation(
+        name: String,
+        operationKey: String?,
+        reason: objc_RUMFeatureOperationFailureReason,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.failOperation(
+            name: name,
+            operationKey: operationKey,
+            reason: reason.swiftType,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
+
+    @available(*, deprecated, renamed: "failOperation(name:operationKey:reason:attributes:)", message: "Use failOperation(name:operationKey:reason:attributes:) instead.")
     public func failFeatureOperation(
         name: String,
         operationKey: String?,
         reason: objc_RUMFeatureOperationFailureReason,
         attributes: [String: Any]
     ) {
-        swiftRUMMonitor.failFeatureOperation(
-            name: name,
-            operationKey: operationKey,
-            reason: reason.swiftType,
-            attributes: attributes.dd.swiftAttributes
-        )
+        failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
     }
 
     public var debug: Bool {

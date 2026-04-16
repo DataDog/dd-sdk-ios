@@ -34,6 +34,7 @@ internal final class RUMViewsHandler {
     /// The current date provider.
     private let dateProvider: DateProvider
 
+    #if !os(watchOS)
     /// `UIKit` view predicate. `nil` if `UIKit` auto-instrumentations is
     /// disabled.
     private let uiKitPredicate: UIKitRUMViewsPredicate?
@@ -45,10 +46,11 @@ internal final class RUMViewsHandler {
     /// `SwiftUI` view name extractor.
     /// Extracts `SwiftUI` view name from view hierarchy.
     private let swiftUIViewNameExtractor: SwiftUIViewNameExtractor?
+    #endif
 
-    /// The notification center where this handler observes following `UIApplication` notifications:
-    /// - `.didEnterBackgroundNotification`
-    /// - `.willEnterForegroundNotification`
+    /// The notification center where this handler observes app lifecycle notifications:
+    /// - `.didEnterBackground`
+    /// - `.willEnterForeground`
     private weak var notificationCenter: NotificationCenter?
 
     /// The RUM Command subscriber responsible for processing
@@ -64,6 +66,7 @@ internal final class RUMViewsHandler {
     /// if the last item disappears.
     private var stack: [View] = []
 
+    #if !os(watchOS)
     /// Creates a new `SwiftUI.View` handler to publish RUM view commands.
     /// - Parameters:
     ///   - dateProvider: The current date provider.
@@ -87,26 +90,51 @@ internal final class RUMViewsHandler {
         notificationCenter.addObserver(
             self,
             selector: #selector(applicationDidEnterBackground),
-            name: UIApplication.didEnterBackgroundNotification,
+            name: ApplicationNotifications.didEnterBackground,
             object: nil
         )
         notificationCenter.addObserver(
             self,
             selector: #selector(applicationWillEnterForeground),
-            name: UIApplication.willEnterForegroundNotification,
+            name: ApplicationNotifications.willEnterForeground,
             object: nil
         )
     }
 
+    #else
+    /// Creates a new `SwiftUI.View` handler to publish RUM view commands on watchOS.
+    /// - Parameters:
+    ///   - dateProvider: The current date provider.
+    ///   - notificationCenter: The notification center where this handler
+    ///     observes app lifecycle notifications.
+    init(dateProvider: DateProvider, notificationCenter: NotificationCenter) {
+        self.dateProvider = dateProvider
+        self.notificationCenter = notificationCenter
+
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(applicationDidEnterBackground),
+            name: ApplicationNotifications.didEnterBackground,
+            object: nil
+        )
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(applicationWillEnterForeground),
+            name: ApplicationNotifications.willEnterForeground,
+            object: nil
+        )
+    }
+    #endif
+
     deinit {
         notificationCenter?.removeObserver(
             self,
-            name: UIApplication.didEnterBackgroundNotification,
+            name: ApplicationNotifications.didEnterBackground,
             object: nil
         )
         notificationCenter?.removeObserver(
             self,
-            name: UIApplication.willEnterForegroundNotification,
+            name: ApplicationNotifications.willEnterForeground,
             object: nil
         )
     }
@@ -225,6 +253,7 @@ internal final class RUMViewsHandler {
 }
 
 // MARK: - UIViewControllerHandler
+#if !os(watchOS)
 extension RUMViewsHandler: UIViewControllerHandler {
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
         let identity = ViewIdentifier(viewController)
@@ -265,6 +294,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
         remove(identity: ViewIdentifier(viewController))
     }
 }
+#endif
 
 // MARK: - SwiftUIViewHandler
 extension RUMViewsHandler: SwiftUIViewHandler {

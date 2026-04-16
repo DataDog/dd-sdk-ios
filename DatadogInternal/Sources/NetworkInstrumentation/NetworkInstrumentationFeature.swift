@@ -107,6 +107,15 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 }
 
+                #if os(watchOS)
+                // Skip internal OS task wrappers. On watchOS, a single user-created task results
+                // in multiple internal URLSessionTask wrapper objects sharing the same taskIdentifier.
+                // Internal wrappers have `_internalDelegateWrapper` set; the user-facing task does not.
+                if task.dd.isInternalTask {
+                    return
+                }
+                #endif
+
                 // Determine if this swizzler should intercept this task based on the configuration
                 guard shouldInterceptTask(task, for: configuration) else {
                     return

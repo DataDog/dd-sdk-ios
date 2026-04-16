@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(tvOS)
+#if os(iOS) || os(visionOS)
 
 import UIKit
 

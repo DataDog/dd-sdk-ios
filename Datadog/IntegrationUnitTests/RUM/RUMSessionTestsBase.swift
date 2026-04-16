@@ -50,8 +50,10 @@ class RUMSessionTestsBase: XCTestCase {
     let manualViewName = "ManualView"
     /// Name of an automatically tracked view.
     let automaticViewName = "AutomaticView"
+    #if !os(watchOS)
     /// Mock instance representing the automatic view.
     lazy var automaticView = createMockView(viewControllerClassName: automaticViewName)
+    #endif
 
     /// Session timeout duration due to user inactivity.
     let sessionTimeoutDuration = RUMSessionScope.Constants.sessionTimeoutDuration
@@ -69,11 +71,14 @@ class RUMSessionTestsBase: XCTestCase {
             .and(.appDisplaysFirstFrame())
     }
 
-    /// Starts `"user_app_launch"` session with `ApplicationLaunch` view succeeded by automatic view started
-    /// when app becames ACTIVE.
+    #if !os(watchOS)
+    /// Starts `"user_app_launch"` session with `ApplicationLaunch` view succeeded by automatic (UIKit-instrumented)
+    /// view started when app becomes ACTIVE.
     /// ```
     /// [FG:ApplicationLaunch] --> [FG:AutomaticView]
     /// ```
+    /// - Note: UIKit view instrumentation is not available on watchOS. Use `userSessionWithManualView` instead
+    ///   when the test does not rely on UIKit-specific behavior (e.g. automatic view restart on foreground transition).
     func userSessionWithAutomaticView(rumSetup: AppRunner.RUMSetup? = nil) -> AppRun {
         let view = createMockView(viewControllerClassName: automaticViewName)
         return userSession { rumConfig in
@@ -83,6 +88,7 @@ class RUMSessionTestsBase: XCTestCase {
         }
         .and(.startAutomaticView(after: 0, viewController: view))
     }
+    #endif
 
     /// Starts `"user_app_launch"` session with `ApplicationLaunch` view succeeded by manual view started
     /// when app becames ACTIVE.

@@ -16,6 +16,9 @@ class KSCrashBacktraceTests: XCTestCase {
     // MARK: - Current Thread Tests
 
     func testCurrentThreadStackContainsTestFrames() throws {
+        #if os(watchOS)
+        throw XCTSkip("Backtrace generation is not supported on watchOS (thread_get_state unavailable)")
+        #endif
         // Given
         let backtrace = KSCrashBacktrace()
         let currentThreadID = Thread.currentThreadID
@@ -47,6 +50,9 @@ class KSCrashBacktraceTests: XCTestCase {
     // MARK: - Other Thread Tests
 
     func testGenerateBacktraceForBackgroundThread() throws {
+        #if os(watchOS)
+        throw XCTSkip("Backtrace generation is not supported on watchOS (thread_get_state unavailable)")
+        #endif
         // Given
         let backtrace = KSCrashBacktrace()
         let expectation = XCTestExpectation(description: "Background thread backtrace")
@@ -112,5 +118,25 @@ class KSCrashBacktraceTests: XCTestCase {
 
         // Then
         XCTAssertNil(report, "Should return nil for invalid thread ID")
+    }
+
+    // MARK: - watchOS Tests
+
+    /// On watchOS, `thread_get_state` is not available, so KSCrash cannot capture machine context
+    /// for non-crashing threads. `generateBacktrace` must return `nil` unconditionally to prevent
+    /// reporting corrupt or empty backtraces.
+    func testGenerateBacktraceReturnsNilOnWatchOS() throws {
+        #if !os(watchOS)
+        throw XCTSkip("This test verifies watchOS-specific behavior")
+        #else
+        // Given
+        let backtrace = KSCrashBacktrace()
+
+        // When
+        let report = try backtrace.generateBacktrace(threadID: Thread.currentThreadID)
+
+        // Then
+        XCTAssertNil(report, "generateBacktrace should return nil on watchOS")
+        #endif
     }
 }

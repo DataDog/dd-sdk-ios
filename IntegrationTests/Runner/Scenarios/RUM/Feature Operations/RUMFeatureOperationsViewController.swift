@@ -28,13 +28,13 @@ final class RUMFeatureOperationsViewController: UIViewController {
     // MARK: - Login Flow Operations
 
     @IBAction func didTapStartLoginFlowButton(_ sender: Any) {
-        rumMonitor.startFeatureOperation(
+        rumMonitor.startOperation(
             name: Operation.login()
         )
     }
 
     @IBAction func didTapSucceedLoginFlowButton(_ sender: Any) {
-        rumMonitor.succeedFeatureOperation(
+        rumMonitor.succeedOperation(
             name: Operation.login(),
             attributes: [
                 "user_type": "new_user"
@@ -43,7 +43,7 @@ final class RUMFeatureOperationsViewController: UIViewController {
     }
 
     @IBAction func didTapFailLoginFlowButton(_ sender: Any) {
-        rumMonitor.failFeatureOperation(
+        rumMonitor.failOperation(
             name: Operation.login(),
             reason: .error,
             attributes: [
@@ -56,19 +56,19 @@ final class RUMFeatureOperationsViewController: UIViewController {
 
     @IBAction func didTapStartParallelOperationsButton(_ sender: Any) {
         // Start multiple photo upload operations with different keys
-        rumMonitor.startFeatureOperation(
+        rumMonitor.startOperation(
             name: Operation.photoUpload(),
             operationKey: Operation.Key.photo1(),
             attributes: ["photo_id": "IMG_001", "size": "2.5MB"]
         )
 
-        rumMonitor.startFeatureOperation(
+        rumMonitor.startOperation(
             name: Operation.photoUpload(),
             operationKey: Operation.Key.photo2(),
             attributes: ["photo_id": "IMG_002", "size": "1.8MB"]
         )
 
-        rumMonitor.startFeatureOperation(
+        rumMonitor.startOperation(
             name: Operation.photoUpload(),
             operationKey: Operation.Key.photo3(),
             attributes: ["photo_id": "IMG_003", "size": "3.2MB"]
@@ -77,17 +77,17 @@ final class RUMFeatureOperationsViewController: UIViewController {
 
     @IBAction func didTapSucceedParallelOperationsButton(_ sender: Any) {
         // Succeed all photo upload operations
-        rumMonitor.succeedFeatureOperation(
+        rumMonitor.succeedOperation(
             name: Operation.photoUpload(),
             operationKey: Operation.Key.photo1()
         )
 
-        rumMonitor.succeedFeatureOperation(
+        rumMonitor.succeedOperation(
             name: Operation.photoUpload(),
             operationKey: Operation.Key.photo2()
         )
 
-        rumMonitor.succeedFeatureOperation(
+        rumMonitor.succeedOperation(
             name: Operation.photoUpload(),
             operationKey: Operation.Key.photo3()
         )
@@ -95,19 +95,19 @@ final class RUMFeatureOperationsViewController: UIViewController {
 
     @IBAction func didTapFailParallelOperationsButton(_ sender: Any) {
         // Fail all photo upload operations
-        rumMonitor.failFeatureOperation(
+        rumMonitor.failOperation(
             name: Operation.photoUpload(),
             operationKey: Operation.Key.photo1(),
             reason: .error
         )
 
-        rumMonitor.failFeatureOperation(
+        rumMonitor.failOperation(
             name: Operation.photoUpload(),
             operationKey: Operation.Key.photo2(),
             reason: .abandoned
         )
 
-        rumMonitor.failFeatureOperation(
+        rumMonitor.failOperation(
             name: Operation.photoUpload(),
             operationKey: Operation.Key.photo3(),
             reason: .other

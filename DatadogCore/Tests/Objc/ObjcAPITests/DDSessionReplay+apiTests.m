@@ -6,6 +6,8 @@
 
 #import <XCTest/XCTest.h>
 
+#if TARGET_OS_IOS
+
 @import DatadogSessionReplay;
 
 @interface DDSessionReplay_apiTests : XCTestCase
@@ -88,3 +90,5 @@
     XCTAssertNil(view.ddSessionReplayPrivacyOverrides.hide);
 }
 @end
+
+#endif

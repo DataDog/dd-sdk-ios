@@ -64,7 +64,7 @@ class WireframesBuilderTests: XCTestCase {
     func testBuildingImageWireframe_ItCreatesAResource() throws {
         let id: WireframeID = .mockRandom()
         let resource: MockResource = .mockRandom()
-        let frame: CGRect = .mockRandom()
+        let frame: CGRect = .mockRandom(minWidth: 3, minHeight: 3)
         let clip = frame.insetBy(dx: 1, dy: 1)
         let builder = WireframesBuilder()
 
