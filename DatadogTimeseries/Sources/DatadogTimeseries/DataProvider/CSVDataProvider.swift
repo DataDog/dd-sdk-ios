@@ -1,10 +1,10 @@
 import Foundation
 
-class CSVDataProvider: DataProvider {
+public class CSVDataProvider: DataProvider {
     private var samples: [Sample]
     private var index: Int = 0
 
-    init(csvContent: String, metric: TimeseriesName) {
+    public init(csvContent: String, metric: TimeseriesName) {
         var parsed: [Sample] = []
         let lines = csvContent.components(separatedBy: "\n")
 
@@ -25,7 +25,7 @@ class CSVDataProvider: DataProvider {
         self.samples = parsed
     }
 
-    func read() -> Sample? {
+    public func read() -> Sample? {
         guard index < samples.count else { return nil }
         let sample = samples[index]
         index += 1
