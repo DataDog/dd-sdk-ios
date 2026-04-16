@@ -429,7 +429,7 @@ Build Artifacts:
   before_script:
     - *export_MAKE_release_params
   script:
-    - ./tools/runner-setup.sh --xcode "$XCODE" --ssh
+    - ./tools/runner-setup.sh --datadog-ci --xcode "$XCODE" --ssh
     - make env-check
     - make clean
     - make release-build release-validate
