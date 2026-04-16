@@ -140,7 +140,7 @@ internal class MemoryTimeseriesCollector {
     /// Phase 02.1 validation checklist (RUM common schema):
     /// - [ ] Root-level RUM common fields: date, application, session, _dd, source
     /// - [ ] Nested timeseries object: id, start, end, name, data
-    /// - [ ] snake_case keys: data_point_value, format_version
+    /// - [ ] snake_case keys: data_point, format_version
     /// - [ ] _dd.format_version = 2
     /// - [ ] Timestamps are nanoseconds (16+ digits) in data points
     /// - [ ] No view field (session-scoped)
@@ -378,9 +378,9 @@ internal class MemoryTimeseriesCollector {
             let lastTimestamp = ts.data.last?.timestamp ?? 0
             let durationMs = (lastTimestamp - firstTimestamp) / 1_000_000 // ns → ms
 
-            let firstValue = ts.data.first?.dataPointValue ?? 0
-            let lastValue = ts.data.last?.dataPointValue ?? 0
-            let avgValue = ts.data.map { $0.dataPointValue }.reduce(0, +) / Double(dataCount)
+            let firstValue = ts.data.first?.dataPoint ?? 0
+            let lastValue = ts.data.last?.dataPoint ?? 0
+            let avgValue = ts.data.map { $0.dataPoint }.reduce(0, +) / Double(dataCount)
 
             DD.logger.debug("""
                 Timeseries Event [\(index + 1)/\(events.count)]:
@@ -404,7 +404,7 @@ internal class MemoryTimeseriesCollector {
                 let samplePoints = ts.data.prefix(3)
                 DD.logger.debug("""
                   Sample data points:
-                  \(samplePoints.map { "  [\($0.timestamp)]: \(Int($0.dataPointValue)) bytes" }.joined(separator: "\n"))
+                  \(samplePoints.map { "  [\($0.timestamp)]: \(Int($0.dataPoint)) bytes" }.joined(separator: "\n"))
                   """)
             }
         }

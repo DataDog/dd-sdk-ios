@@ -45,7 +45,7 @@ internal struct TimeseriesEventBuilder {
         // Convert to data points (milliseconds → nanoseconds)
         let dataPoints = batchSamples.map { sample in
             RUMTimeseriesEvent.Timeseries.DataPoint(
-                dataPointValue: Double(sample.footprint),
+                dataPoint: Double(sample.footprint),
                 timestamp: sample.timestamp * 1_000_000 // ms → ns
             )
         }

@@ -11821,26 +11821,26 @@ public struct RUMTimeseriesEvent: RUMDataModel {
         /// Single data point with timestamp and value
         public struct DataPoint: Codable {
             /// Metric value
-            public let dataPointValue: Double
+            public let dataPoint: Double
 
             /// Timestamp in nanoseconds from epoch (UTC)
             public let timestamp: Int64
 
             public enum CodingKeys: String, CodingKey {
-                case dataPointValue = "data_point_value"
+                case dataPoint = "data_point"
                 case timestamp = "timestamp"
             }
 
             /// Single data point with timestamp and value
             ///
             /// - Parameters:
-            ///   - dataPointValue: Metric value
+            ///   - dataPoint: Metric value
             ///   - timestamp: Timestamp in nanoseconds from epoch (UTC)
             public init(
-                dataPointValue: Double,
+                dataPoint: Double,
                 timestamp: Int64
             ) {
-                self.dataPointValue = dataPointValue
+                self.dataPoint = dataPoint
                 self.timestamp = timestamp
             }
         }

@@ -333,7 +333,7 @@ internal func sendTestOptionA(
 }
 
 /// Sends Option B test events to the writer: one event with alternating Double/String data points.
-/// Option B encodes data points as { "data_point_value": <double|string> } (flat, mixed types).
+/// Option B encodes data points as { "data_point": <double|string> } (flat, mixed types).
 ///
 /// - Parameters:
 ///   - sessionID: RUM session identifier
