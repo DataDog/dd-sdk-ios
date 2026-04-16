@@ -16,6 +16,11 @@ let package = Package(
             dependencies: [],
             path: "Sources/DatadogTimeseries"
         ),
+        .executableTarget(
+            name: "DatadogTimeseriesRunner",
+            dependencies: ["DatadogTimeseries"],
+            path: "Sources/DatadogTimeseriesRunner"
+        ),
         .testTarget(
             name: "DatadogTimeseriesTests",
             dependencies: ["DatadogTimeseries"],
