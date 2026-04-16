@@ -1122,7 +1122,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2840]: https://github.com/DataDog/dd-sdk-ios/pull/2840
 [#2817]: https://github.com/DataDog/dd-sdk-ios/pull/2817
 [#2827]: https://github.com/DataDog/dd-sdk-ios/pull/2827
-[#2929]: https://github.com/DataDog/dd-sdk-ios/pull/2829
+[#2829]: https://github.com/DataDog/dd-sdk-ios/pull/2829
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
