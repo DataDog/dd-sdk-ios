@@ -1,12 +1,14 @@
 # Unreleased
 
+- [FIX] Propagate native `anonymous_id` to WebView RUM and Log events. See [#2847][]
+
 # 3.10.0 / 16-04-2026
 
 - [FEATURE] Add Mobile Heatmaps support. See [#2829][]
 - [FEATURE] Add watchOS and visionOS support. See [#2817][]
 - [FEATURE] Add support for the FedRAMP-compatible `fed2.ddog-gov.com` site. See [#2827][]
 - [IMPROVEMENT] Rename RUM Operations APIs. See [#2802][]
-- [FIX] Propagate native `anonymous_id` to WebView RUM and Log events. See [#2847][]
+
 
 # 3.9.1 / 16-04-2026
 
