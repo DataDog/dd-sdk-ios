@@ -1,10 +1,19 @@
 import Foundation
 
-struct TimeseriesConfig {
-    let applicationId: String
-    let sessionId: String
-    let sessionType: String
-    let source: String
-    let service: String?
-    let version: String?
+public struct TimeseriesConfig {
+    public let applicationId: String
+    public let sessionId: String
+    public let sessionType: String
+    public let source: String
+    public let service: String?
+    public let version: String?
+
+    public init(applicationId: String, sessionId: String, sessionType: String, source: String, service: String?, version: String?) {
+        self.applicationId = applicationId
+        self.sessionId = sessionId
+        self.sessionType = sessionType
+        self.source = source
+        self.service = service
+        self.version = version
+    }
 }
