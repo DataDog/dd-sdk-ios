@@ -11,7 +11,7 @@ import DatadogInternal
 @objcMembers
 @_spi(objc)
 public final class objc_DatadogSite: NSObject {
-    internal let sdkSite: DatadogSite
+    internal let sdkSite: DatadogSite?
 
     internal init(sdkSite: DatadogSite?) {
         self.sdkSite = sdkSite
@@ -42,20 +42,23 @@ public enum objc_BatchSize: Int {
     case small
     case medium
     case large
+    case none
 
-    internal var swiftType: Datadog.Configuration.BatchSize {
+    internal var swiftType: Datadog.Configuration.BatchSize? {
         switch self {
         case .small: return .small
         case .medium: return .medium
         case .large: return .large
+        case .none: return nil
         }
     }
 
-    internal init(swiftType: Datadog.Configuration.BatchSize) {
+    internal init(swiftType: Datadog.Configuration.BatchSize?) {
         switch swiftType {
         case .small: self = .small
         case .medium: self = .medium
         case .large: self = .large
+        case .none: self = .none
         }
     }
 }
@@ -171,14 +174,14 @@ public final class objc_Configuration: NSObject {
     internal var sdkConfiguration: Datadog.Configuration
 
     /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
-    public var clientToken: String {
+    public var clientToken: String? {
         get { sdkConfiguration.clientToken }
         set { sdkConfiguration.clientToken = newValue }
     }
 
     /// The environment name which will be sent to Datadog. This can be used
     /// To filter events on different environments (e.g. "staging" or "production").
-    public var env: String {
+    public var env: String? {
         get { sdkConfiguration.env }
         set { sdkConfiguration.env = newValue }
     }
@@ -186,9 +189,9 @@ public final class objc_Configuration: NSObject {
     /// The Datadog server site where data is sent.
     ///
     /// Default value is `.us1`.
-    public var site: objc_DatadogSite {
+    public var site: objc_DatadogSite? {
         get { objc_DatadogSite(sdkSite: sdkConfiguration.site) }
-        set { sdkConfiguration.site = newValue.sdkSite }
+        set { sdkConfiguration.site = newValue?.sdkSite }
     }
 
     /// The service name associated with data send to Datadog.
@@ -212,24 +215,24 @@ public final class objc_Configuration: NSObject {
     /// This value impacts the size and number of requests performed by the SDK.
     ///
     /// `.medium` by default.
-    public var batchSize: objc_BatchSize {
+    public var batchSize: objc_BatchSize? {
         get { objc_BatchSize(swiftType: sdkConfiguration.batchSize) }
-        set { sdkConfiguration.batchSize = newValue.swiftType }
+        set { sdkConfiguration.batchSize = newValue?.swiftType }
     }
 
     /// The preferred frequency of uploading data to Datadog servers.
     /// This value impacts the frequency of performing network requests by the SDK.
     ///
     /// `.average` by default.
-    public var uploadFrequency: objc_UploadFrequency {
+    public var uploadFrequency: objc_UploadFrequency? {
         get { objc_UploadFrequency(swiftType: sdkConfiguration.uploadFrequency) }
-        set { sdkConfiguration.uploadFrequency = newValue.swiftType }
+        set { sdkConfiguration.uploadFrequency = newValue?.swiftType }
     }
 
     /// 
-    public var batchProcessingLevel: objc_BatchProcessingLevel {
+    public var batchProcessingLevel: objc_BatchProcessingLevel? {
         get { objc_BatchProcessingLevel(swiftType: sdkConfiguration.batchProcessingLevel) }
-        set { sdkConfiguration.batchProcessingLevel = newValue.swiftType }
+        set { sdkConfiguration.batchProcessingLevel = newValue?.swiftType }
     }
 
     /// Proxy configuration attributes.
@@ -274,7 +277,7 @@ public final class objc_Configuration: NSObject {
     /// Tasks are normally stopped when there's nothing to upload or when encountering any upload blocker such us no internet connection or low battery.
     ///
     /// `false` by default.
-    public var backgroundTasksEnabled: Bool {
+    public var backgroundTasksEnabled: Bool? {
         get { sdkConfiguration.backgroundTasksEnabled }
         set { sdkConfiguration.backgroundTasksEnabled = newValue }
     }

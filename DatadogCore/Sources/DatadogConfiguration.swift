@@ -17,7 +17,7 @@ extension Datadog {
     public struct Configuration {
         /// Defines the Datadog SDK policy when batching data together before uploading it to Datadog servers.
         /// Smaller batches mean smaller but more network requests, whereas larger batches mean fewer but larger network requests.
-        public enum BatchSize: CaseIterable {
+        public enum BatchSize: String, Decodable,CaseIterable {
             /// Prefer small sized data batches.
             case small
             /// Prefer medium sized data batches.
@@ -27,7 +27,7 @@ extension Datadog {
         }
 
         /// Defines the frequency at which Datadog SDK will try to upload data batches.
-        public enum UploadFrequency: CaseIterable {
+        public enum UploadFrequency: String, Decodable, CaseIterable {
             /// Try to upload batched data frequently.
             case frequent
             /// Try to upload batched data with a medium frequency.
@@ -37,7 +37,7 @@ extension Datadog {
         }
 
         /// Defines the maximum amount of batches processed sequentially without a delay within one reading/uploading cycle.
-        public enum BatchProcessingLevel: CaseIterable {
+        public enum BatchProcessingLevel: String, Decodable, CaseIterable {
             case low
             case medium
             case high
@@ -55,16 +55,16 @@ extension Datadog {
         }
 
         /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
-        public var clientToken: String
+        public var clientToken: String?
 
         /// The environment name which will be sent to Datadog. This can be used
         /// To filter events on different environments (e.g. "staging" or "production").
-        public var env: String
+        public var env: String?
 
         /// The Datadog server site where data is sent.
         ///
         /// Default value is `.us1`.
-        public var site: DatadogSite
+        public var site: DatadogSite?
 
         /// The service name associated with data send to Datadog.
         ///
@@ -81,13 +81,13 @@ extension Datadog {
         /// This value impacts the size and number of requests performed by the SDK.
         ///
         /// `.medium` by default.
-        public var batchSize: BatchSize
+        public var batchSize: BatchSize?
 
         /// The preferred frequency of uploading data to Datadog servers.
         /// This value impacts the frequency of performing network requests by the SDK.
         ///
         /// `.average` by default.
-        public var uploadFrequency: UploadFrequency
+        public var uploadFrequency: UploadFrequency?
 
         /// Proxy configuration attributes.
         /// This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
@@ -113,7 +113,7 @@ extension Datadog {
         /// Batch provessing level, defining the maximum number of batches processed sequencially without a delay within one reading/uploading cycle.
         ///
         /// `.medium` by default.
-        public var batchProcessingLevel: BatchProcessingLevel
+        public var batchProcessingLevel: BatchProcessingLevel?
 
         /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
         /// are utilized to perform background uploads. It may extend the amount of time the app is operating in background by 30 seconds.
@@ -121,7 +121,7 @@ extension Datadog {
         /// Tasks are normally stopped when there's nothing to upload or when encountering any upload blocker such us no internet connection or low battery.
         ///
         /// `false` by default.
-        public var backgroundTasksEnabled: Bool
+        public var backgroundTasksEnabled: Bool?
 
         /// Creates a Datadog SDK Configuration object.
         ///
@@ -170,19 +170,19 @@ extension Datadog {
         ///                                 any upload blocker such us no internet connection or low battery.
         ///                                 By default it's set to `false`.
         public init(
-            clientToken: String,
-            env: String,
-            site: DatadogSite = .us1,
+            clientToken: String? = nil,
+            env: String? = nil,
+            site: DatadogSite? = nil,
             service: String? = nil,
             version: String? = nil,
             bundle: Bundle = .main,
             batchSize: BatchSize = .medium,
-            uploadFrequency: UploadFrequency = .average,
+            uploadFrequency: UploadFrequency? = nil,
             proxyConfiguration: [AnyHashable: Any]? = nil,
             encryption: DataEncryption? = nil,
             serverDateProvider: ServerDateProvider? = nil,
-            batchProcessingLevel: BatchProcessingLevel = .medium,
-            backgroundTasksEnabled: Bool = false
+            batchProcessingLevel: BatchProcessingLevel? = nil,
+            backgroundTasksEnabled: Bool? = nil
         ) {
             self.clientToken = clientToken
             self.env = env

@@ -135,42 +135,46 @@ extension SessionReplay.Configuration.FeatureFlags {
 
 internal struct ConfigurationFile: Decodable {
     let replaySampleRate: Float
-    let defaultPrivacyLevel: SessionReplayPrivacyLevel?
+    let textAndInputPrivacyLevel: TextAndInputPrivacyLevel?
+    let imagePrivacyLevel: ImagePrivacyLevel?
     let customEndpoint: URL?
 
     enum CodingKeys: String, CodingKey {
         case replaySampleRate = "sample_rate"
-        case defaultPrivacyLevel = "privacy_level"
+        case textAndInputPrivacyLevel = "text_and_input_privacy_level"
+        case imagePrivacyLevel = "image_privacy_level"
         case customEndpoint = "custom_endpoint"
     }
 }
 
 internal struct InternalConfiguration {
-    let sampleRate: Float
-    let defaultPrivacyLevel: SessionReplayPrivacyLevel
+    let replaySampleRate: Float
+    let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
+    let imagePrivacyLevel: ImagePrivacyLevel
+    let touchPrivacyLevel: TouchPrivacyLevel
     let startRecordingImmediately: Bool
     let customEndpoint: URL?
     let debugSDK: Bool
-    let additionalNodeRecorders: [NodeRecorder]
+    let _additionalNodeRecorders: [NodeRecorder]
+    let featureFlags: SessionReplay.Configuration.FeatureFlags
 }
 
 extension InternalConfiguration {
     init(configuration: SessionReplay.Configuration, file: ConfigurationFile?, process: ProcessInfo = .processInfo) throws {
-        guard let sampleRate = configuration.replaySampleRate ?? file?.replaySampleRate else {
+        guard let replaySampleRate = configuration.replaySampleRate ?? file?.replaySampleRate else {
             throw ProgrammerError(description: "Missing Session Replay sample rate")
         }
 
-        guard let defaultPrivacyLevel = configuration.defaultPrivacyLevel ?? file?.defaultPrivacyLevel else {
-            throw ProgrammerError(description: "Missing Session Replay privacy lvel")
-        }
-
         self.init(
-            sampleRate: sampleRate,
-            defaultPrivacyLevel: defaultPrivacyLevel,
+            replaySampleRate: replaySampleRate,
+            textAndInputPrivacyLevel: configuration.textAndInputPrivacyLevel,
+            imagePrivacyLevel: configuration.imagePrivacyLevel,
+            touchPrivacyLevel: configuration.touchPrivacyLevel,
             startRecordingImmediately: configuration.startRecordingImmediately ?? true,
             customEndpoint: configuration.customEndpoint ?? file?.customEndpoint,
             debugSDK: configuration.debugSDK ?? process.arguments.contains(LaunchArguments.Debug),
-            additionalNodeRecorders: configuration._additionalNodeRecorders
+            _additionalNodeRecorders: configuration._additionalNodeRecorders,
+            featureFlags: configuration.featureFlags
         )
     }
 }

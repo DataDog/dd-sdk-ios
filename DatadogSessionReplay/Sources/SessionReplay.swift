@@ -84,7 +84,7 @@ public enum SessionReplay {
             )
         }
 
-        guard configuration.sampleRate > 0 else {
+        guard configuration.replaySampleRate > 0 else {
             return
         }
 

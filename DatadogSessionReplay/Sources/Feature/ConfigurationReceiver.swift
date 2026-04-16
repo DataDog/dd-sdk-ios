@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import DatadogInternal
 
@@ -17,10 +18,11 @@ internal class ConfigurationReceiver: FeatureMessageReceiver {
             return false
         }
 
-        if let privacy = config.defaultPrivacyLevel {
-            sr.recordingCoordinator.privacy = privacy
+        if let textAndInput = config.textAndInputPrivacyLevel, let image = config.imagePrivacyLevel {
+            sr.recordingCoordinator.updatePrivacy(textAndInput: textAndInput, image: image)
         }
 
         return true
     }
 }
+#endif

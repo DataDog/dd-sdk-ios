@@ -111,8 +111,9 @@ internal final class RemoteConfiguration: Configuration {
     ///   - key: The configuration key.
     /// - Returns: The configuration object if available.
     func property<T>(_ type: T.Type, forKey key: String) -> T? where T: Decodable {
-        let decoder = AnyDecoder()
-        return try? decoder.decode(type, from: properties[key])
+//        let decoder = AnyDecoder()
+//        return try? decoder.decode(type, from: properties[key])
+        return nil
     }
 }
 

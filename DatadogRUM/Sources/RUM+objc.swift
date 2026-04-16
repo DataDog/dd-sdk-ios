@@ -410,16 +410,16 @@ public class objc_RUMConfiguration: NSObject {
         swiftConfig = .init(applicationID: applicationID)
     }
 
-    public var applicationID: String {
+    public var applicationID: String? {
         swiftConfig.applicationID
     }
 
-    public var sessionSampleRate: Float {
+    public var sessionSampleRate: Float? {
         set { swiftConfig.sessionSampleRate = newValue }
         get { swiftConfig.sessionSampleRate }
     }
 
-    public var telemetrySampleRate: Float {
+    public var telemetrySampleRate: Float? {
         set { swiftConfig.telemetrySampleRate = newValue }
         get { swiftConfig.telemetrySampleRate }
     }
@@ -447,7 +447,7 @@ public class objc_RUMConfiguration: NSObject {
 
     public var trackMemoryWarnings: Bool {
         set { swiftConfig.trackMemoryWarnings = newValue }
-        get { swiftConfig.trackMemoryWarnings }
+        get { swiftConfig.trackMemoryWarnings ?? false }
     }
     #endif
 
@@ -457,17 +457,17 @@ public class objc_RUMConfiguration: NSObject {
 
     public var trackFrustrations: Bool {
         set { swiftConfig.trackFrustrations = newValue }
-        get { swiftConfig.trackFrustrations }
+        get { swiftConfig.trackFrustrations ?? false }
     }
 
     public var trackBackgroundEvents: Bool {
         set { swiftConfig.trackBackgroundEvents = newValue }
-        get { swiftConfig.trackBackgroundEvents }
+        get { swiftConfig.trackBackgroundEvents ?? false }
     }
 
     public var trackWatchdogTerminations: Bool {
         set { swiftConfig.trackWatchdogTerminations = newValue }
-        get { swiftConfig.trackWatchdogTerminations }
+        get { swiftConfig.trackWatchdogTerminations ?? false }
     }
 
     public var longTaskThreshold: TimeInterval {
@@ -532,7 +532,7 @@ public class objc_RUMConfiguration: NSObject {
 
     public var trackAnonymousUser: Bool {
         set { swiftConfig.trackAnonymousUser = newValue }
-        get { swiftConfig.trackAnonymousUser }
+        get { swiftConfig.trackAnonymousUser ?? false }
     }
 }
 

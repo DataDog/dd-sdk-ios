@@ -16,8 +16,8 @@ internal class RecordingCoordinator {
     let recorder: Recording
     let scheduler: Scheduler
     let replaySampleRate: SampleRate
-    let textAndInputPrivacy: TextAndInputPrivacyLevel
-    let imagePrivacy: ImagePrivacyLevel
+    var textAndInputPrivacy: TextAndInputPrivacyLevel
+    var imagePrivacy: ImagePrivacyLevel
     let touchPrivacy: TouchPrivacyLevel
     let srContextPublisher: SRContextPublisher
 
@@ -70,6 +70,14 @@ internal class RecordingCoordinator {
 
         // Observe changes in the RUM context.
         rumContextObserver.observe(on: scheduler.queue) { [weak self] in self?.onRUMContextChanged(rumContext: $0) }
+    }
+
+    /// Updates the privacy levels for the ongoing recording.
+    func updatePrivacy(textAndInput: TextAndInputPrivacyLevel, image: ImagePrivacyLevel) {
+        scheduler.queue.run { [weak self] in
+            self?.textAndInputPrivacy = textAndInput
+            self?.imagePrivacy = image
+        }
     }
 
     /// Enables recording based on user request.

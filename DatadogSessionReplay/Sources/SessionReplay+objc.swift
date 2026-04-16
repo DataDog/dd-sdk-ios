@@ -26,7 +26,7 @@ public final class objc_SessionReplay: NSObject {
     ///   - configuration: Configuration of the feature.
     @objc
     public static func enable(with configuration: objc_SessionReplayConfiguration? = nil) {
-        SessionReplay.enable(with: configuration._swift)
+        SessionReplay.enable(with: configuration?._swift ?? .init())
     }
 
     /// Starts the recording manually.
@@ -91,7 +91,7 @@ public final class objc_SessionReplayConfiguration: NSObject {
     /// Default: `true`.
     @objc public var startRecordingImmediately: Bool {
         set { _swift.startRecordingImmediately = newValue }
-        get { _swift.startRecordingImmediately }
+        get { _swift.startRecordingImmediately ?? true }
     }
 
     /// Custom server url for sending replay data.

@@ -208,7 +208,7 @@ extension RUM {
         ///
         /// Default: The default predicate, `TimeBasedTNSResourcePredicate`, calculates TNS using all resources that start within **100ms** of the view start.
         /// This time threshold can be customized by providing a custom predicate or adjusting the threshold in the default predicate.
-        public var networkSettledResourcePredicate: NetworkSettledResourcePredicate
+        public var networkSettledResourcePredicate: NetworkSettledResourcePredicate?
 
         /// The predicate used to classify the "last interaction" for the Interaction-to-Next-View (INV) metric.
         ///
@@ -294,7 +294,7 @@ extension RUM {
         /// originating from the same user/device without collecting personal data.
         ///
         /// Default: `true`.
-        public var trackAnonymousUser: Bool
+        public var trackAnonymousUser: Bool?
 
         #if !os(watchOS)
         /// Enables the collection of memory warnings.
@@ -302,7 +302,7 @@ extension RUM {
         /// When enabled, all the memory warnings are reported as RUM Errors.
         ///
         /// Default: `true`.
-        public var trackMemoryWarnings: Bool
+        public var trackMemoryWarnings: Bool?
         #endif
 
         /// Enables the collection of slow frames (view hitches).
@@ -310,21 +310,21 @@ extension RUM {
         /// When enabled, captured view hitches are attached to the corresponding RUM view.
         ///
         /// Default: `true`.
-        public var trackSlowFrames: Bool
+        public var trackSlowFrames: Bool?
 
         /// The sampling rate for SDK internal telemetry utilized by Datadog.
         /// This telemetry is used to monitor the internal workings of the entire Datadog iOS SDK.
         ///
         /// It must be a number between 0.0 and 100.0, where 0 means no telemetry will be sent,
         /// and 100 means all telemetry will be uploaded. The default value is 20.0.
-        public var telemetrySampleRate: SampleRate
+        public var telemetrySampleRate: SampleRate?
 
         /// Determines whether accessibility data should be collected and included in RUM view events.
         ///
         /// When enabled, the SDK will collect accessibility settings and include them in view events.
         ///
         /// Default: `false`.
-        public var collectAccessibility: Bool
+        public var collectAccessibility: Bool?
 
         /// Feature flags to preview features in RUM.
         public var featureFlags: FeatureFlags
@@ -390,25 +390,25 @@ extension RUM {
         // MARK: - Internal
 
         /// An extra sampling rate for configuration telemetry events. It is applied on top of the value configured in public `telemetrySampleRate`.
-        internal var configurationTelemetrySampleRate: SampleRate = 20.0
+        internal var configurationTelemetrySampleRate: SampleRate? = nil
         /// Sample rate for "view ended" metric in telemetry.
         internal var viewEndedSampleRate = ViewEndedController.defaultSampleRate
         /// Sample rate for "session ended" metric in telemetry.
         internal var sessionEndedSampleRate = SessionEndedMetricController.defaultSampleRate
 
-        internal var uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
+        internal var uuidGenerator: RUMUUIDGenerator? = nil
 
-        internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
-        internal var spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator()
+        internal var traceIDGenerator: TraceIDGenerator? = nil
+        internal var spanIDGenerator: SpanIDGenerator? = nil
 
         /// The provider of the current date.
-        internal var dateProvider: DateProvider = SystemDateProvider()
+        internal var dateProvider: DateProvider? = nil
         /// The provider of the current media uptime.
         internal var mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider()
         /// The main queue, subject to App Hangs monitoring.
         internal var mainQueue: DispatchQueue?
         /// Identifier of the current process, used to check if fatal App Hang originated in a previous process instance.
-        internal var processID: UUID = currentProcessID
+        internal var processID: UUID? = nil
         /// The default notification center used for subscribing to app lifecycle events and system notifications.
         internal var notificationCenter: NotificationCenter = .default
         /// The factory to create the frame info provider. Defaults to the `CADisplayLink`.
@@ -418,14 +418,68 @@ extension RUM {
         /// The bundle object that contains the current executable.
         internal var bundle: Bundle = .main
 
-        internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
-        internal var debugViews: Bool = ProcessInfo.processInfo.arguments.contains("DD_DEBUG_RUM")
-        internal var ciTestExecutionID: String? = ProcessInfo.processInfo.environment["CI_VISIBILITY_TEST_EXECUTION_ID"]
-        internal var syntheticsTestId: String? = ProcessInfo.processInfo.environment["_dd.synthetics.test_id"]
-        internal var syntheticsResultId: String? = ProcessInfo.processInfo.environment["_dd.synthetics.result_id"]
+        internal var debugSDK: Bool? = nil
+        internal var debugViews: Bool? = nil
+        internal var ciTestExecutionID: String? = nil
+        internal var syntheticsTestId: String? = nil
+        internal var syntheticsResultId: String? = nil
         internal var syntheticsEnvironment: Bool { syntheticsTestId != nil || syntheticsResultId != nil }
         internal var sessionTypeOverride: String? = ProcessInfo.processInfo.environment["DD_SESSION_TYPE"]
     }
+}
+
+internal struct InternalConfiguration {
+    let applicationID: String
+    let sessionSampleRate: Float
+    #if !os(watchOS)
+    let uiKitViewsPredicate: UIKitRUMViewsPredicate?
+    let uiKitActionsPredicate: UIKitRUMActionsPredicate?
+    #endif
+    let urlSessionTracking: RUM.Configuration.URLSessionTracking?
+    let trackFrustrations: Bool
+    let trackBackgroundEvents: Bool
+    let trackWatchdogTerminations: Bool
+    let longTaskThreshold: TimeInterval?
+    let appHangThreshold: TimeInterval?
+    let vitalsUpdateFrequency: RUM.Configuration.VitalsFrequency?
+    let viewEventMapper: RUM.ViewEventMapper?
+    let resourceEventMapper: RUM.ResourceEventMapper?
+    let actionEventMapper: RUM.ActionEventMapper?
+    let errorEventMapper: RUM.ErrorEventMapper?
+    let longTaskEventMapper: RUM.LongTaskEventMapper?
+    let onSessionStart: RUM.SessionListener?
+    let customEndpoint: URL?
+    let telemetrySampleRate: Float
+    let configurationTelemetrySampleRate: Float
+    let uuidGenerator: RUMUUIDGenerator
+    let traceIDGenerator: TraceIDGenerator
+    let spanIDGenerator: SpanIDGenerator
+    let dateProvider: DateProvider
+    let mainQueue: DispatchQueue
+    let processID: UUID
+    let debugSDK: Bool
+    let debugViews: Bool
+    let ciTestExecutionID: String?
+    let syntheticsTestId: String?
+    let syntheticsResultId: String?
+    var syntheticsEnvironment: Bool { syntheticsTestId != nil || syntheticsResultId != nil }
+    let sessionEndedSampleRate: Float
+    let viewEndedSampleRate: Float
+    let bundle: Bundle
+    let networkSettledResourcePredicate: NetworkSettledResourcePredicate
+    let nextViewActionPredicate: NextViewActionPredicate?
+    let mediaTimeProvider: CACurrentMediaTimeProvider
+    let collectAccessibility: Bool
+    let notificationCenter: NotificationCenter
+    let trackSlowFrames: Bool
+    let sessionTypeOverride: String?
+    let trackAnonymousUser: Bool
+    #if !os(watchOS)
+    let swiftUIViewsPredicate: SwiftUIRUMViewsPredicate?
+    let swiftUIActionsPredicate: SwiftUIRUMActionsPredicate?
+    let frameInfoProviderFactory: (Any, Selector) -> FrameInfoProvider
+    let trackMemoryWarnings: Bool
+    #endif
 }
 
 extension RUM.Configuration.URLSessionTracking {
@@ -542,21 +596,21 @@ extension RUM.Configuration {
     ///   - `RUMMonitor.shared().addAction(type:name:attributes:)` for action tracking
     #if !os(watchOS)
     public init(
-        applicationID: String,
-        sessionSampleRate: SampleRate = .maxSampleRate,
+        applicationID: String? = nil,
+        sessionSampleRate: SampleRate? = nil,
         uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
         swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
-        trackFrustrations: Bool = true,
-        trackBackgroundEvents: Bool = false,
-        longTaskThreshold: TimeInterval? = 0.1,
+        trackFrustrations: Bool? = nil,
+        trackBackgroundEvents: Bool? = nil,
+        longTaskThreshold: TimeInterval? = nil,
         appHangThreshold: TimeInterval? = nil,
-        trackWatchdogTerminations: Bool = false,
-        vitalsUpdateFrequency: VitalsFrequency? = .average,
-        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
-        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
+        trackWatchdogTerminations: Bool? = nil,
+        vitalsUpdateFrequency: VitalsFrequency? = nil,
+        networkSettledResourcePredicate: NetworkSettledResourcePredicate? = nil,
+        nextViewActionPredicate: NextViewActionPredicate? = nil,
         viewEventMapper: RUM.ViewEventMapper? = nil,
         resourceEventMapper: RUM.ResourceEventMapper? = nil,
         actionEventMapper: RUM.ActionEventMapper? = nil,
@@ -564,11 +618,11 @@ extension RUM.Configuration {
         longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
-        trackAnonymousUser: Bool = true,
-        trackMemoryWarnings: Bool = true,
-        trackSlowFrames: Bool = true,
-        telemetrySampleRate: SampleRate = 20,
-        collectAccessibility: Bool = false,
+        trackAnonymousUser: Bool? = nil,
+        trackMemoryWarnings: Bool? = nil,
+        trackSlowFrames: Bool? = nil,
+        telemetrySampleRate: SampleRate? = nil,
+        collectAccessibility: Bool? = nil,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -602,17 +656,17 @@ extension RUM.Configuration {
     }
     #else
     public init(
-        applicationID: String,
-        sessionSampleRate: SampleRate = .maxSampleRate,
+        applicationID: String? = nil,
+        sessionSampleRate: SampleRate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
-        trackFrustrations: Bool = true,
-        trackBackgroundEvents: Bool = false,
-        longTaskThreshold: TimeInterval? = 0.1,
+        trackFrustrations: Bool? = nil,
+        trackBackgroundEvents: Bool? = nil,
+        longTaskThreshold: TimeInterval? = nil,
         appHangThreshold: TimeInterval? = nil,
-        trackWatchdogTerminations: Bool = false,
-        vitalsUpdateFrequency: VitalsFrequency? = .average,
-        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
-        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
+        trackWatchdogTerminations: Bool? = nil,
+        vitalsUpdateFrequency: VitalsFrequency? = nil,
+        networkSettledResourcePredicate: NetworkSettledResourcePredicate? = nil,
+        nextViewActionPredicate: NextViewActionPredicate? = nil,
         viewEventMapper: RUM.ViewEventMapper? = nil,
         resourceEventMapper: RUM.ResourceEventMapper? = nil,
         actionEventMapper: RUM.ActionEventMapper? = nil,
@@ -620,10 +674,10 @@ extension RUM.Configuration {
         longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
         onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
-        trackAnonymousUser: Bool = true,
-        trackSlowFrames: Bool = true,
-        telemetrySampleRate: SampleRate = 20,
-        collectAccessibility: Bool = false,
+        trackAnonymousUser: Bool? = nil,
+        trackSlowFrames: Bool? = nil,
+        telemetrySampleRate: SampleRate? = nil,
+        collectAccessibility: Bool? = nil,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -653,7 +707,7 @@ extension RUM.Configuration {
     #endif
 }
 
-xtension InternalConfiguration {
+extension InternalConfiguration {
     init(configuration: RUM.Configuration, file: ConfigurationFile?, process: ProcessInfo = .processInfo) throws {
         guard let applicationID = configuration.applicationID ?? file?.applicationID else {
             throw ProgrammerError(description: "Missing RUM application ID")
@@ -679,8 +733,7 @@ xtension InternalConfiguration {
             onSessionStart: configuration.onSessionStart,
             customEndpoint: configuration.customEndpoint ?? file?.customEndpoint,
             telemetrySampleRate: configuration.telemetrySampleRate ?? file?.telemetrySampleRate ?? 20,
-            configurationTelemetrySampleRate: configuration.configurationTelemetrySampleRate ?? 20, 
-            sessionEndedMetricSampleRate: configuration.sessionEndedMetricSampleRate ?? MetricTelemetry.defaultSampleRate,
+            configurationTelemetrySampleRate: configuration.configurationTelemetrySampleRate ?? 20,
             uuidGenerator: configuration.uuidGenerator ?? DefaultRUMUUIDGenerator(),
             traceIDGenerator: configuration.traceIDGenerator ?? DefaultTraceIDGenerator(),
             spanIDGenerator: configuration.spanIDGenerator ?? DefaultSpanIDGenerator(),
@@ -691,7 +744,22 @@ xtension InternalConfiguration {
             debugViews: configuration.debugViews ?? process.arguments.contains("DD_DEBUG_RUM"),
             ciTestExecutionID: configuration.ciTestExecutionID ?? process.environment["CI_VISIBILITY_TEST_EXECUTION_ID"],
             syntheticsTestId: configuration.syntheticsTestId ?? process.environment["_dd.synthetics.test_id"],
-            syntheticsResultId: configuration.syntheticsResultId ?? process.environment["_dd.synthetics.result_id"]
+            syntheticsResultId: configuration.syntheticsResultId ?? process.environment["_dd.synthetics.result_id"],
+            sessionEndedSampleRate: configuration.sessionEndedSampleRate,
+            viewEndedSampleRate: configuration.viewEndedSampleRate,
+            bundle: configuration.bundle,
+            networkSettledResourcePredicate: configuration.networkSettledResourcePredicate ?? TimeBasedTNSResourcePredicate(),
+            nextViewActionPredicate: configuration.nextViewActionPredicate,
+            mediaTimeProvider: configuration.mediaTimeProvider,
+            collectAccessibility: configuration.collectAccessibility ?? false,
+            notificationCenter: configuration.notificationCenter,
+            trackSlowFrames: configuration.trackSlowFrames ?? true,
+            sessionTypeOverride: configuration.sessionTypeOverride,
+            trackAnonymousUser: configuration.trackAnonymousUser ?? true,
+            swiftUIViewsPredicate: configuration.swiftUIViewsPredicate,
+            swiftUIActionsPredicate: configuration.swiftUIActionsPredicate,
+            frameInfoProviderFactory: configuration.frameInfoProviderFactory,
+            trackMemoryWarnings: configuration.trackMemoryWarnings ?? true
         )
     }
 }

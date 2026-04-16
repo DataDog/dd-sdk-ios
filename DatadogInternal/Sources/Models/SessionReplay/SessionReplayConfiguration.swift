@@ -25,7 +25,7 @@ public enum SessionReplayPrivacyLevel: String, Decodable {
 // MARK: Fine-Grained Privacy Levels
 
 /// Available privacy levels for text and input masking in Session Replay.
-public enum TextAndInputPrivacyLevel: String, CaseIterable {
+public enum TextAndInputPrivacyLevel: String, CaseIterable, Decodable {
     /// Show all texts except sensitive inputs, eg. password fields.
     case maskSensitiveInputs = "mask_sensitive_inputs"
 
@@ -37,7 +37,7 @@ public enum TextAndInputPrivacyLevel: String, CaseIterable {
 }
 
 /// Available privacy levels for image masking in the Session Replay.
-public enum ImagePrivacyLevel: String {
+public enum ImagePrivacyLevel: String, Decodable {
     /// Only SF Symbols and images loaded using UIImage(named:) that are bundled within the application will be recorded.
     case maskNonBundledOnly = "mask_non_bundled_only"
 
