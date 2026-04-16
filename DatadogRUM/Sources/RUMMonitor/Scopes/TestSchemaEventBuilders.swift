@@ -44,8 +44,8 @@ private struct TestOptionADataPoint: Encodable {
 
 // MARK: - Option B: Flat mixed-type value (same field, different JSON types)
 
-/// Data point for Option B: flat field that carries either Double or String.
-/// Encodes as { "data_point_value": <double|string>, "timestamp": <int64> }
+/// Data point for Option B: flat scalar field that carries either Double or String directly.
+/// Encodes as { "data_point": <double|string>, "timestamp": <int64> }
 private struct TestOptionBDataPoint: Encodable {
     enum Value {
         case number(Double)
@@ -59,13 +59,13 @@ private struct TestOptionBDataPoint: Encodable {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(timestamp, forKey: .timestamp)
         switch value {
-        case .number(let d): try c.encode(d, forKey: .dataPointValue)
-        case .string(let s): try c.encode(s, forKey: .dataPointValue)
+        case .number(let d): try c.encode(d, forKey: .dataPoint)
+        case .string(let s): try c.encode(s, forKey: .dataPoint)
         }
     }
 
     enum CodingKeys: String, CodingKey {
-        case dataPointValue = "data_point_value"
+        case dataPoint = "data_point"
         case timestamp
     }
 }
