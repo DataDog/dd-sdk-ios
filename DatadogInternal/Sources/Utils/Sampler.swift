@@ -28,7 +28,7 @@ public struct Sampler: Sampling {
     public let samplingRate: SampleRate
 
     public init(samplingRate: SampleRate) {
-        self.samplingRate = samplingRate.normalized
+        self.samplingRate = samplingRate.normalizedSampleRate
     }
 
     /// Based on the sampling rate, it returns random value deciding if an event should be "sampled" or not.
@@ -51,7 +51,7 @@ extension SampleRate {
     }
 
     /// Clamps the value between 0 and 100
-    public var normalized: Self {
+    public var normalizedSampleRate: Self {
         max(0, min(100, self))
     }
 }

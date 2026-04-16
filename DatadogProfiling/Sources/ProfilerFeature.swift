@@ -63,7 +63,8 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         if let datadogProfiler = DatadogProfiler(
             core: core,
             profilingSamplerProvider: profilingSamplerProvider,
-            telemetryController: telemetryController
+            telemetryController: telemetryController,
+            minProfileDuration: configuration.minProfileDuration
         ) {
             messageReceivers.append(datadogProfiler)
         }
