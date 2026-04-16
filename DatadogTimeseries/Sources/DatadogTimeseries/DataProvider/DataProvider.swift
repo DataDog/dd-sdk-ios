@@ -1,5 +1,5 @@
 import Foundation
 
-protocol DataProvider {
+public protocol DataProvider {
     func read() -> Sample?
 }
