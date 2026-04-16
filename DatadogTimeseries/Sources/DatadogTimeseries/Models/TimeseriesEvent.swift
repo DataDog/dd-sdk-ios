@@ -1,15 +1,15 @@
 import Foundation
 
-struct TimeseriesEvent: Codable {
-    let dd: DD
-    let application: Application
-    let date: Int64
-    let session: Session
-    let source: String
-    let type: String
-    let service: String?
-    let version: String?
-    let timeseries: Timeseries
+public struct TimeseriesEvent: Codable {
+    public let dd: DD
+    public let application: Application
+    public let date: Int64
+    public let session: Session
+    public let source: String
+    public let type: String
+    public let service: String?
+    public let version: String?
+    public let timeseries: Timeseries
 
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
@@ -23,34 +23,34 @@ struct TimeseriesEvent: Codable {
         case timeseries
     }
 
-    struct DD: Codable {
-        let formatVersion: Int
+    public struct DD: Codable {
+        public let formatVersion: Int
 
         enum CodingKeys: String, CodingKey {
             case formatVersion = "format_version"
         }
     }
 
-    struct Application: Codable {
-        let id: String
+    public struct Application: Codable {
+        public let id: String
     }
 
-    struct Session: Codable {
-        let id: String
-        let type: String
+    public struct Session: Codable {
+        public let id: String
+        public let type: String
     }
 
-    struct Timeseries: Codable {
-        let id: String
-        let name: TimeseriesName
-        let start: Int64
-        let end: Int64
-        let data: [DataPoint]
+    public struct Timeseries: Codable {
+        public let id: String
+        public let name: TimeseriesName
+        public let start: Int64
+        public let end: Int64
+        public let data: [DataPoint]
     }
 
-    struct DataPoint: Codable {
-        let timestamp: Int64
-        let dataPointValue: Double
+    public struct DataPoint: Codable {
+        public let timestamp: Int64
+        public let dataPointValue: Double
 
         enum CodingKeys: String, CodingKey {
             case timestamp
