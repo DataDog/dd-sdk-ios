@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import UIKit
+import DatadogInternal
 
 internal struct ViewTreeRecorder {
     /// An array of enabled node recorders.
@@ -14,10 +15,21 @@ internal struct ViewTreeRecorder {
     /// through `nodeRecorders` and stops on the one that recorded node semantics with highes importance.
     let nodeRecorders: [NodeRecorder]
 
+    /// The bundle identifier used for heatmap identifier computation
+    private let bundleIdentifier: () -> String?
+
+    init(
+        nodeRecorders: [NodeRecorder],
+        bundleIdentifier: @autoclosure @escaping () -> String? = Bundle.main.bundleIdentifier
+    ) {
+        self.nodeRecorders = nodeRecorders
+        self.bundleIdentifier = bundleIdentifier
+    }
+
     /// Creates `Nodes` for given view and its subtree hierarchy.
     func record(_ anyView: UIView, in context: ViewTreeRecordingContext) -> [Node] {
         var nodes: [Node] = []
-        recordRecursively(nodes: &nodes, view: anyView, context: context, overrides: anyView.dd._privacyOverrides)
+        recordRecursively(nodes: &nodes, view: anyView, typeIndex: 0, context: context, overrides: anyView.dd._privacyOverrides)
         return nodes
     }
 
@@ -26,6 +38,7 @@ internal struct ViewTreeRecorder {
     private func recordRecursively(
         nodes: inout [Node],
         view: UIView,
+        typeIndex: Int,
         context: ViewTreeRecordingContext,
         overrides: PrivacyOverrides?
     ) {
@@ -46,21 +59,67 @@ internal struct ViewTreeRecorder {
             context.clip = frame.intersection(context.clip)
         }
 
+        // Compute the heatmap identifier when heatmaps are enabled
+        let heatmapIdentifier: HeatmapIdentifier?
+        if let heatmapCache = context.heatmapCache, let viewPath = context.recorder.viewPath {
+            let component: String
+            if let accessibilityIdentifier = view.accessibilityIdentifier, !accessibilityIdentifier.isEmpty {
+                component = accessibilityIdentifier
+            } else {
+                component = "cls:\(String(describing: type(of: view)))#\(typeIndex)"
+            }
+            context.nodePath.append(component)
+
+            let identifier = HeatmapIdentifier(
+                elementPath: context.nodePath,
+                screenName: viewPath,
+                bundleIdentifier: bundleIdentifier() ?? "unknown"
+            )
+            heatmapCache.identifiers[ObjectIdentifier(view)] = identifier
+            heatmapIdentifier = identifier
+        } else {
+            heatmapIdentifier = nil
+        }
+
         let attributes = ViewAttributes(view: view, frame: frame, clip: context.clip, overrides: overrides)
         let semantics = nodeSemantics(for: view, with: attributes, in: context)
 
         if !semantics.nodes.isEmpty {
-            nodes.append(contentsOf: semantics.nodes)
+            nodes.append(
+                contentsOf: heatmapIdentifier.map { heatmapIdentifier in
+                    semantics.nodes.map {
+                        $0.withHeatmapIdentifier(heatmapIdentifier)
+                    }
+                } ?? semantics.nodes
+            )
         }
 
         switch semantics.subtreeStrategy {
         case .record:
-            for subview in view.subviews {
+            let typeIndices = self.typeIndices(for: view.subviews)
+            for (index, subview) in view.subviews.enumerated() {
                 let subviewOverrides = SessionReplayPrivacyOverrides.merge(subview.dd._privacyOverrides, with: overrides)
-                recordRecursively(nodes: &nodes, view: subview, context: context, overrides: subviewOverrides)
+                recordRecursively(
+                    nodes: &nodes,
+                    view: subview,
+                    typeIndex: typeIndices[index],
+                    context: context,
+                    overrides: subviewOverrides
+                )
             }
         case .ignore:
             break
+        }
+    }
+
+    /// Computes same type sibling indices for an array of subviews in a single O(N) pass.
+    private func typeIndices(for subviews: [UIView]) -> [Int] {
+        var typeCounts: [ObjectIdentifier: Int] = [:]
+        return subviews.map { subview in
+            let identifier = ObjectIdentifier(type(of: subview))
+            let index = typeCounts[identifier, default: 0]
+            typeCounts[identifier] = index + 1
+            return index
         }
     }
 
@@ -83,6 +142,14 @@ internal struct ViewTreeRecorder {
         }
 
         return semantics
+    }
+}
+
+extension Node {
+    fileprivate func withHeatmapIdentifier(_ heatmapIdentifier: HeatmapIdentifier) -> Self {
+        var node = self
+        node.heatmapIdentifier = heatmapIdentifier
+        return node
     }
 }
 #endif

@@ -125,9 +125,8 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
     }
 
     func testSwizzling_setState_unswizzleStopsInterception() throws {
-        let task1Expectation = self.expectation(description: "setState called for task1")
-        task1Expectation.expectedFulfillmentCount = 2 // At least Running and Completed
-        task1Expectation.assertForOverFulfill = false // Allow multiple setState calls with same state
+        let task1CompletedExpectation = self.expectation(description: "task1 reached completed state")
+        task1CompletedExpectation.assertForOverFulfill = false // Allow multiple setState calls with same state
 
         var interceptionCount = 0
 
@@ -135,9 +134,13 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         let swizzler = URLSessionTaskStateSwizzler()
 
         try swizzler.swizzle(
-            interceptSetState: { _, _ in
+            interceptSetState: { _, state in
                 interceptionCount += 1
-                task1Expectation.fulfill()
+                // Only fulfill once task1 has reached completed state, ensuring no more
+                // setState: calls are pending before we snapshot the count and unswizzle.
+                if state == URLSessionTask.State.completed.rawValue {
+                    task1CompletedExpectation.fulfill()
+                }
             }
         )
 
@@ -147,7 +150,7 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         let task1 = session.dataTask(with: url) { _, _, _ in }
         task1.resume()
 
-        wait(for: [task1Expectation], timeout: 3)
+        wait(for: [task1CompletedExpectation], timeout: 3)
         let countAfterTask1 = interceptionCount
         XCTAssertGreaterThanOrEqual(countAfterTask1, 2, "Task1 should have at least 2 state changes")
 

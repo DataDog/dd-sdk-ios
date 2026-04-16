@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import TestUtilities
 @testable import DatadogInternal
@@ -31,7 +33,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -63,7 +66,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -96,7 +100,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -128,7 +133,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -157,7 +163,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -189,7 +196,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -217,7 +225,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -245,7 +254,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -273,7 +283,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSAppExtension,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
 
         // Then
@@ -301,7 +312,8 @@ class RUMInstrumentationTests: XCTestCase {
             bundleType: .iOSApp,
             watchdogTermination: .mockRandom(),
             memoryWarningMonitor: .mockRandom(),
-            uuidGenerator: RUMUUIDGeneratorMock()
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
         )
         let subscriber = RUMCommandSubscriberMock()
 
@@ -328,3 +340,4 @@ internal func DDAssertActiveSwizzlings(_ expectedSwizzledSelectors: [String], fi
         }
     }
 }
+#endif

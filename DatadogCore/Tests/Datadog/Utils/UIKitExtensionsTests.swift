@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import UIKit
 @testable import DatadogRUM
@@ -16,11 +18,7 @@ class UIKitExtensionsTests: XCTestCase {
         let swiftViewController = CustomSwiftViewController()
         let objcViewController = CustomObjcViewController()
 
-        #if os(iOS)
-        XCTAssertEqual(swiftViewController.canonicalClassName, "DatadogCoreTests_iOS.CustomSwiftViewController")
-        #elseif os(tvOS)
-        XCTAssertEqual(swiftViewController.canonicalClassName, "DatadogCoreTests_tvOS.CustomSwiftViewController")
-        #endif
+        XCTAssertEqual(swiftViewController.canonicalClassName, "DatadogCoreTests.CustomSwiftViewController")
         XCTAssertEqual(objcViewController.canonicalClassName, "CustomObjcViewController")
     }
 
@@ -42,3 +40,5 @@ class UIKitExtensionsTests: XCTestCase {
         someNonUIKitClasses.forEach { XCTAssertFalse(Bundle(for: $0).dd.isUIKit) }
     }
 }
+
+#endif

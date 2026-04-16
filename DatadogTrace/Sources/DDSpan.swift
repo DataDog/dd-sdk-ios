@@ -130,14 +130,14 @@ internal final class DDSpan: OTSpan {
             activity.leave()
         }
         if self.ddContext.samplingDecision.samplingPriority.isKept {
-            sendSpan(finishTime: time, sampler: ddTracer.localTraceSampler)
+            sendSpan(finishTime: time)
         }
     }
 
     // MARK: - Writing SpanEvent
 
     /// Sends span event for given `DDSpan`.
-    private func sendSpan(finishTime: Date, sampler: Sampler) {
+    private func sendSpan(finishTime: Date) {
         eventWriter.spanWriteContext { context, writer in
             let event = self.eventBuilder.createSpanEvent(
                 context: context,

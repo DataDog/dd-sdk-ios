@@ -38,8 +38,7 @@ class DatadogTraceFeatureTests: XCTestCase {
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
         let randomBackgroundTasksEnabled: Bool = .mockRandom()
 
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
+        let httpClient = HTTPClientMock(responseCode: 200)
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -70,7 +69,6 @@ class DatadogTraceFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: randomBackgroundTasksEnabled
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         Trace.enable(with: .init(customEndpoint: randomUploadURL), in: core)
@@ -79,9 +77,12 @@ class DatadogTraceFeatureTests: XCTestCase {
         let tracer = Tracer.shared(in: core)
         let span = tracer.startSpan(operationName: .mockAny())
         span.finish()
+        core.flushAndTearDown()
 
         // Then
-        let request = server.waitAndReturnRequests(count: 1)[0]
+        let requests = httpClient.requestsSent()
+        XCTAssertEqual(requests.count, 1)
+        let request = try XCTUnwrap(requests.first)
         let requestURL = try XCTUnwrap(request.url)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertEqual(requestURL.host, randomUploadURL.host)
@@ -104,8 +105,7 @@ class DatadogTraceFeatureTests: XCTestCase {
     // MARK: - HTTP Payload
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
+        let httpClient = HTTPClientMock(responseCode: 200)
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -135,7 +135,6 @@ class DatadogTraceFeatureTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         // Given
         Trace.enable(in: core)
@@ -146,8 +145,11 @@ class DatadogTraceFeatureTests: XCTestCase {
         tracer.startSpan(operationName: "operation 1").finish()
         tracer.startSpan(operationName: "operation 2").finish()
         tracer.startSpan(operationName: "operation 3").finish()
+        core.flushAndTearDown()
 
-        let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
+        let requests = httpClient.requestsSent()
+        XCTAssertEqual(requests.count, 1)
+        let payload = try XCTUnwrap(requests.first?.decompressed().httpBody)
 
         // Expected payload format:
         // ```

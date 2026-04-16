@@ -28,6 +28,7 @@ public final class objc_DatadogSite: NSObject
     public static func ap1() -> objc_DatadogSite
     public static func ap2() -> objc_DatadogSite
     public static func us1_fed() -> objc_DatadogSite
+    public static func us2_fed() -> objc_DatadogSite
 public enum objc_BatchSize: Int
     case small
     case medium
@@ -369,6 +370,7 @@ public class objc_RUMActionEvent: NSObject
     public var source: objc_RUMActionEventSource
     public var stream: objc_RUMActionEventStream?
     public var synthetics: objc_RUMActionEventRUMSyntheticsTest?
+    public var tab: objc_RUMActionEventTAB?
     public var type: String
     public var usr: objc_RUMActionEventRUMUser?
     public var version: String?
@@ -396,6 +398,7 @@ public class objc_RUMActionEventDDActionPosition: NSObject
     public var x: NSNumber
     public var y: NSNumber
 public class objc_RUMActionEventDDActionTarget: NSObject
+    public var composedPathSelector: String?
     public var height: NSNumber?
     public var permanentId: String?
     public var selector: String?
@@ -508,6 +511,7 @@ public enum objc_RUMActionEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMActionEventContainerView: NSObject
     public var id: String
 public class objc_RUMActionEventRUMEventAttributes: NSObject
@@ -565,12 +569,16 @@ public enum objc_RUMActionEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMActionEventStream: NSObject
     public var id: String
 public class objc_RUMActionEventRUMSyntheticsTest: NSObject
     public var injected: NSNumber?
     public var resultId: String
     public var testId: String
+    public var syntheticsInfo: [String: Any]
+public class objc_RUMActionEventTAB: NSObject
+    public var id: String
 public class objc_RUMActionEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -609,6 +617,7 @@ public class objc_RUMErrorEvent: NSObject
     public var source: objc_RUMErrorEventSource
     public var stream: objc_RUMErrorEventStream?
     public var synthetics: objc_RUMErrorEventRUMSyntheticsTest?
+    public var tab: objc_RUMErrorEventTAB?
     public var type: String
     public var usr: objc_RUMErrorEventRUMUser?
     public var version: String?
@@ -617,13 +626,33 @@ public class objc_RUMErrorEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMErrorEventDDConfiguration?
     public var formatVersion: NSNumber
+    public var parentSpanId: String?
+    public var profiling: objc_RUMErrorEventDDProfiling?
+    public var rulePsr: NSNumber?
     public var sdkName: String?
     public var session: objc_RUMErrorEventDDSession?
+    public var spanId: String?
+    public var traceId: String?
 public class objc_RUMErrorEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
+public class objc_RUMErrorEventDDProfiling: NSObject
+    public var errorReason: objc_RUMErrorEventDDProfilingErrorReason
+    public var status: objc_RUMErrorEventDDProfilingStatus
+public enum objc_RUMErrorEventDDProfilingErrorReason: Int
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+public enum objc_RUMErrorEventDDProfilingStatus: Int
+    case none
+    case starting
+    case running
+    case stopped
+    case error
 public class objc_RUMErrorEventDDSession: NSObject
     public var plan: objc_RUMErrorEventDDSessionPlan
     public var sessionPrecondition: objc_RUMErrorEventDDSessionRUMSessionPrecondition
@@ -696,6 +725,7 @@ public enum objc_RUMErrorEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMErrorEventContainerView: NSObject
     public var id: String
 public class objc_RUMErrorEventRUMEventAttributes: NSObject
@@ -797,10 +827,34 @@ public class objc_RUMErrorEventErrorMeta: NSObject
     public var path: String?
     public var process: String?
 public class objc_RUMErrorEventErrorResource: NSObject
+    public var graphql: objc_RUMErrorEventErrorResourceRUMGraphql?
     public var method: objc_RUMErrorEventErrorResourceRUMMethod
     public var provider: objc_RUMErrorEventErrorResourceProvider?
     public var statusCode: NSNumber
     public var url: String
+public class objc_RUMErrorEventErrorResourceRUMGraphql: NSObject
+    public var errorCount: NSNumber?
+    public var errors: [objc_RUMErrorEventErrorResourceRUMGraphqlErrors]?
+    public var operationName: String?
+    public var operationType: objc_RUMErrorEventErrorResourceRUMGraphqlOperationType
+    public var payload: String?
+    public var variables: String?
+public class objc_RUMErrorEventErrorResourceRUMGraphqlErrors: NSObject
+    public var code: String?
+    public var locations: [objc_RUMErrorEventErrorResourceRUMGraphqlErrorsLocations]?
+    public var message: String
+    public var path: [objc_RUMErrorEventErrorResourceRUMGraphqlErrorsPath]?
+public class objc_RUMErrorEventErrorResourceRUMGraphqlErrorsLocations: NSObject
+    public var column: NSNumber
+    public var line: NSNumber
+public class objc_RUMErrorEventErrorResourceRUMGraphqlErrorsPath: NSObject
+    public var string: String?
+    public var integer: NSNumber?
+public enum objc_RUMErrorEventErrorResourceRUMGraphqlOperationType: Int
+    case none
+    case query
+    case mutation
+    case subscription
 public enum objc_RUMErrorEventErrorResourceRUMMethod: Int
     case post
     case get
@@ -851,6 +905,9 @@ public enum objc_RUMErrorEventErrorSourceType: Int
     case ndk
     case iosIl2cpp
     case ndkIl2cpp
+    case windows
+    case macos
+    case linux
 public class objc_RUMErrorEventErrorThreads: NSObject
     public var crashed: NSNumber
     public var name: String
@@ -884,12 +941,16 @@ public enum objc_RUMErrorEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMErrorEventStream: NSObject
     public var id: String
 public class objc_RUMErrorEventRUMSyntheticsTest: NSObject
     public var injected: NSNumber?
     public var resultId: String
     public var testId: String
+    public var syntheticsInfo: [String: Any]
+public class objc_RUMErrorEventTAB: NSObject
+    public var id: String
 public class objc_RUMErrorEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -926,6 +987,7 @@ public class objc_RUMLongTaskEvent: NSObject
     public var source: objc_RUMLongTaskEventSource
     public var stream: objc_RUMLongTaskEventStream?
     public var synthetics: objc_RUMLongTaskEventRUMSyntheticsTest?
+    public var tab: objc_RUMLongTaskEventTAB?
     public var type: String
     public var usr: objc_RUMLongTaskEventRUMUser?
     public var version: String?
@@ -1030,6 +1092,7 @@ public enum objc_RUMLongTaskEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMLongTaskEventContainerView: NSObject
     public var id: String
 public class objc_RUMLongTaskEventRUMEventAttributes: NSObject
@@ -1122,12 +1185,16 @@ public enum objc_RUMLongTaskEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMLongTaskEventStream: NSObject
     public var id: String
 public class objc_RUMLongTaskEventRUMSyntheticsTest: NSObject
     public var injected: NSNumber?
     public var resultId: String
     public var testId: String
+    public var syntheticsInfo: [String: Any]
+public class objc_RUMLongTaskEventTAB: NSObject
+    public var id: String
 public class objc_RUMLongTaskEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -1163,6 +1230,7 @@ public class objc_RUMResourceEvent: NSObject
     public var source: objc_RUMResourceEventSource
     public var stream: objc_RUMResourceEventStream?
     public var synthetics: objc_RUMResourceEventRUMSyntheticsTest?
+    public var tab: objc_RUMResourceEventTAB?
     public var type: String
     public var usr: objc_RUMResourceEventRUMUser?
     public var version: String?
@@ -1255,6 +1323,7 @@ public enum objc_RUMResourceEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMResourceEventContainerView: NSObject
     public var id: String
 public class objc_RUMResourceEventRUMEventAttributes: NSObject
@@ -1302,7 +1371,7 @@ public class objc_RUMResourceEventResource: NSObject
     public var duration: NSNumber?
     public var encodedBodySize: NSNumber?
     public var firstByte: objc_RUMResourceEventResourceFirstByte?
-    public var graphql: objc_RUMResourceEventResourceGraphql?
+    public var graphql: objc_RUMResourceEventResourceRUMGraphql?
     public var id: String?
     public var method: objc_RUMResourceEventResourceRUMMethod
     public var `protocol`: String?
@@ -1335,25 +1404,25 @@ public class objc_RUMResourceEventResourceDownload: NSObject
 public class objc_RUMResourceEventResourceFirstByte: NSObject
     public var duration: NSNumber
     public var start: NSNumber
-public class objc_RUMResourceEventResourceGraphql: NSObject
+public class objc_RUMResourceEventResourceRUMGraphql: NSObject
     public var errorCount: NSNumber?
-    public var errors: [objc_RUMResourceEventResourceGraphqlErrors]?
+    public var errors: [objc_RUMResourceEventResourceRUMGraphqlErrors]?
     public var operationName: String?
-    public var operationType: objc_RUMResourceEventResourceGraphqlOperationType
+    public var operationType: objc_RUMResourceEventResourceRUMGraphqlOperationType
     public var payload: String?
     public var variables: String?
-public class objc_RUMResourceEventResourceGraphqlErrors: NSObject
+public class objc_RUMResourceEventResourceRUMGraphqlErrors: NSObject
     public var code: String?
-    public var locations: [objc_RUMResourceEventResourceGraphqlErrorsLocations]?
+    public var locations: [objc_RUMResourceEventResourceRUMGraphqlErrorsLocations]?
     public var message: String
-    public var path: [objc_RUMResourceEventResourceGraphqlErrorsPath]?
-public class objc_RUMResourceEventResourceGraphqlErrorsLocations: NSObject
+    public var path: [objc_RUMResourceEventResourceRUMGraphqlErrorsPath]?
+public class objc_RUMResourceEventResourceRUMGraphqlErrorsLocations: NSObject
     public var column: NSNumber
     public var line: NSNumber
-public class objc_RUMResourceEventResourceGraphqlErrorsPath: NSObject
+public class objc_RUMResourceEventResourceRUMGraphqlErrorsPath: NSObject
     public var string: String?
     public var integer: NSNumber?
-public enum objc_RUMResourceEventResourceGraphqlOperationType: Int
+public enum objc_RUMResourceEventResourceRUMGraphqlOperationType: Int
     case none
     case query
     case mutation
@@ -1443,12 +1512,16 @@ public enum objc_RUMResourceEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMResourceEventStream: NSObject
     public var id: String
 public class objc_RUMResourceEventRUMSyntheticsTest: NSObject
     public var injected: NSNumber?
     public var resultId: String
     public var testId: String
+    public var syntheticsInfo: [String: Any]
+public class objc_RUMResourceEventTAB: NSObject
+    public var id: String
 public class objc_RUMResourceEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -1484,6 +1557,7 @@ public class objc_RUMViewEvent: NSObject
     public var source: objc_RUMViewEventSource
     public var stream: objc_RUMViewEventStream?
     public var synthetics: objc_RUMViewEventRUMSyntheticsTest?
+    public var tab: objc_RUMViewEventTAB?
     public var type: String
     public var usr: objc_RUMViewEventRUMUser?
     public var version: String?
@@ -1602,6 +1676,7 @@ public enum objc_RUMViewEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMViewEventContainerView: NSObject
     public var id: String
 public class objc_RUMViewEventRUMEventAttributes: NSObject
@@ -1675,6 +1750,7 @@ public enum objc_RUMViewEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMViewEventStream: NSObject
     public var bitrate: NSNumber?
     public var completionPercent: NSNumber?
@@ -1689,6 +1765,9 @@ public class objc_RUMViewEventRUMSyntheticsTest: NSObject
     public var injected: NSNumber?
     public var resultId: String
     public var testId: String
+    public var syntheticsInfo: [String: Any]
+public class objc_RUMViewEventTAB: NSObject
+    public var id: String
 public class objc_RUMViewEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -1851,7 +1930,7 @@ public class objc_RUMViewEventViewPerformanceINP: NSObject
 public class objc_RUMViewEventViewPerformanceINPSubParts: NSObject
     public var inputDelay: NSNumber
     public var presentationDelay: NSNumber
-    public var processingTime: NSNumber
+    public var processingDuration: NSNumber
 public class objc_RUMViewEventViewPerformanceLCP: NSObject
     public var resourceUrl: String?
     public var subParts: objc_RUMViewEventViewPerformanceLCPSubParts?
@@ -1864,6 +1943,383 @@ public class objc_RUMViewEventViewPerformanceLCPSubParts: NSObject
 public class objc_RUMViewEventViewResource: NSObject
     public var count: NSNumber
 public class objc_RUMViewEventViewSlowFrames: NSObject
+    public var duration: NSNumber
+    public var start: NSNumber
+public class objc_RUMViewUpdateEvent: NSObject
+    public internal(set) var swiftModel: RUMViewUpdateEvent
+    public init(swiftModel: RUMViewUpdateEvent)
+    public var dd: objc_RUMViewUpdateEventDD
+    public var account: objc_RUMViewUpdateEventRUMAccount?
+    public var application: objc_RUMViewUpdateEventApplication
+    public var buildId: String?
+    public var buildVersion: String?
+    public var ciTest: objc_RUMViewUpdateEventRUMCITest?
+    public var connectivity: objc_RUMViewUpdateEventRUMConnectivity?
+    public var container: objc_RUMViewUpdateEventContainer?
+    public var context: objc_RUMViewUpdateEventRUMEventAttributes?
+    public var date: NSNumber
+    public var ddtags: String?
+    public var device: objc_RUMViewUpdateEventDevice?
+    public var display: objc_RUMViewUpdateEventDisplay?
+    public var featureFlags: objc_RUMViewUpdateEventFeatureFlags?
+    public var os: objc_RUMViewUpdateEventOperatingSystem?
+    public var privacy: objc_RUMViewUpdateEventPrivacy?
+    public var service: String?
+    public var session: objc_RUMViewUpdateEventSession
+    public var source: objc_RUMViewUpdateEventSource
+    public var stream: objc_RUMViewUpdateEventStream?
+    public var synthetics: objc_RUMViewUpdateEventRUMSyntheticsTest?
+    public var tab: objc_RUMViewUpdateEventTAB?
+    public var type: String
+    public var usr: objc_RUMViewUpdateEventRUMUser?
+    public var version: String?
+    public var view: objc_RUMViewUpdateEventView
+public class objc_RUMViewUpdateEventDD: NSObject
+    public var browserSdkVersion: String?
+    public var configuration: objc_RUMViewUpdateEventDDConfiguration?
+    public var documentVersion: NSNumber
+    public var formatVersion: NSNumber
+    public var sdkName: String?
+    public var session: objc_RUMViewUpdateEventDDSession?
+public class objc_RUMViewUpdateEventDDConfiguration: NSObject
+    public var profilingSampleRate: NSNumber?
+    public var sessionReplaySampleRate: NSNumber?
+    public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
+public class objc_RUMViewUpdateEventDDSession: NSObject
+    public var plan: objc_RUMViewUpdateEventDDSessionPlan
+    public var sessionPrecondition: objc_RUMViewUpdateEventDDSessionRUMSessionPrecondition
+public enum objc_RUMViewUpdateEventDDSessionPlan: Int
+    case none
+    case plan1
+    case plan2
+public enum objc_RUMViewUpdateEventDDSessionRUMSessionPrecondition: Int
+    case none
+    case userAppLaunch
+    case inactivityTimeout
+    case maxDuration
+    case backgroundLaunch
+    case prewarm
+    case fromNonInteractiveSession
+    case explicitStop
+public class objc_RUMViewUpdateEventRUMAccount: NSObject
+    public var id: String
+    public var name: String?
+    public var accountInfo: [String: Any]
+public class objc_RUMViewUpdateEventApplication: NSObject
+    public var currentLocale: String?
+    public var id: String
+public class objc_RUMViewUpdateEventRUMCITest: NSObject
+    public var testExecutionId: String
+public class objc_RUMViewUpdateEventRUMConnectivity: NSObject
+    public var cellular: objc_RUMViewUpdateEventRUMConnectivityCellular?
+    public var effectiveType: objc_RUMViewUpdateEventRUMConnectivityEffectiveType
+    public var interfaces: [Int]?
+    public var status: objc_RUMViewUpdateEventRUMConnectivityStatus
+public class objc_RUMViewUpdateEventRUMConnectivityCellular: NSObject
+    public var carrierName: String?
+    public var technology: String?
+public enum objc_RUMViewUpdateEventRUMConnectivityEffectiveType: Int
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+public enum objc_RUMViewUpdateEventRUMConnectivityInterfaces: Int
+    case none
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case interfacesNone
+public enum objc_RUMViewUpdateEventRUMConnectivityStatus: Int
+    case connected
+    case notConnected
+    case maybe
+public class objc_RUMViewUpdateEventContainer: NSObject
+    public var source: objc_RUMViewUpdateEventContainerSource
+    public var view: objc_RUMViewUpdateEventContainerView
+public enum objc_RUMViewUpdateEventContainerSource: Int
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+    case electron
+    case rumCpp
+public class objc_RUMViewUpdateEventContainerView: NSObject
+    public var id: String
+public class objc_RUMViewUpdateEventRUMEventAttributes: NSObject
+    public var contextInfo: [String: Any]
+public class objc_RUMViewUpdateEventDevice: NSObject
+    public var architecture: String?
+    public var batteryLevel: NSNumber?
+    public var brand: String?
+    public var brightnessLevel: NSNumber?
+    public var isLowRam: NSNumber?
+    public var locale: String?
+    public var locales: [String]?
+    public var logicalCpuCount: NSNumber?
+    public var model: String?
+    public var name: String?
+    public var powerSavingMode: NSNumber?
+    public var timeZone: String?
+    public var totalRam: NSNumber?
+    public var type: objc_RUMViewUpdateEventDeviceDeviceType
+public enum objc_RUMViewUpdateEventDeviceDeviceType: Int
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
+public class objc_RUMViewUpdateEventDisplay: NSObject
+    public var scroll: objc_RUMViewUpdateEventDisplayScroll?
+    public var viewport: objc_RUMViewUpdateEventDisplayViewport?
+public class objc_RUMViewUpdateEventDisplayScroll: NSObject
+    public var maxDepth: NSNumber
+    public var maxDepthScrollTop: NSNumber
+    public var maxScrollHeight: NSNumber
+    public var maxScrollHeightTime: NSNumber
+public class objc_RUMViewUpdateEventDisplayViewport: NSObject
+    public var height: NSNumber
+    public var width: NSNumber
+public class objc_RUMViewUpdateEventFeatureFlags: NSObject
+    public var featureFlagsInfo: [String: Any]
+public class objc_RUMViewUpdateEventOperatingSystem: NSObject
+    public var build: String?
+    public var name: String
+    public var version: String
+    public var versionMajor: String
+public class objc_RUMViewUpdateEventPrivacy: NSObject
+    public var replayLevel: objc_RUMViewUpdateEventPrivacyReplayLevel
+public enum objc_RUMViewUpdateEventPrivacyReplayLevel: Int
+    case allow
+    case mask
+    case maskUserInput
+public class objc_RUMViewUpdateEventSession: NSObject
+    public var hasReplay: NSNumber?
+    public var id: String
+    public var isActive: NSNumber?
+    public var sampledForReplay: NSNumber?
+    public var type: objc_RUMViewUpdateEventSessionRUMSessionType
+public enum objc_RUMViewUpdateEventSessionRUMSessionType: Int
+    case user
+    case synthetics
+    case ciTest
+public enum objc_RUMViewUpdateEventSource: Int
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+    case electron
+    case rumCpp
+public class objc_RUMViewUpdateEventStream: NSObject
+    public var bitrate: NSNumber?
+    public var completionPercent: NSNumber?
+    public var duration: NSNumber?
+    public var format: String?
+    public var fps: NSNumber?
+    public var id: String
+    public var resolution: String?
+    public var timestamp: NSNumber?
+    public var watchTime: NSNumber?
+public class objc_RUMViewUpdateEventRUMSyntheticsTest: NSObject
+    public var injected: NSNumber?
+    public var resultId: String
+    public var testId: String
+    public var syntheticsInfo: [String: Any]
+public class objc_RUMViewUpdateEventTAB: NSObject
+    public var id: String
+public class objc_RUMViewUpdateEventRUMUser: NSObject
+    public var anonymousId: String?
+    public var email: String?
+    public var id: String?
+    public var name: String?
+    public var usrInfo: [String: Any]
+public class objc_RUMViewUpdateEventView: NSObject
+    public var accessibility: objc_RUMViewUpdateEventViewAccessibility?
+    public var action: objc_RUMViewUpdateEventViewAction?
+    public var cpuTicksCount: NSNumber?
+    public var cpuTicksPerSecond: NSNumber?
+    public var crash: objc_RUMViewUpdateEventViewCrash?
+    public var cumulativeLayoutShift: NSNumber?
+    public var cumulativeLayoutShiftTargetSelector: String?
+    public var cumulativeLayoutShiftTime: NSNumber?
+    public var customTimings: objc_RUMViewUpdateEventViewCustomTimings?
+    public var domComplete: NSNumber?
+    public var domContentLoaded: NSNumber?
+    public var domInteractive: NSNumber?
+    public var error: objc_RUMViewUpdateEventViewError?
+    public var firstByte: NSNumber?
+    public var firstContentfulPaint: NSNumber?
+    public var firstInputDelay: NSNumber?
+    public var firstInputTargetSelector: String?
+    public var firstInputTime: NSNumber?
+    public var flutterBuildTime: objc_RUMViewUpdateEventViewFlutterBuildTime?
+    public var flutterRasterTime: objc_RUMViewUpdateEventViewFlutterRasterTime?
+    public var freezeRate: NSNumber?
+    public var frozenFrame: objc_RUMViewUpdateEventViewFrozenFrame?
+    public var frustration: objc_RUMViewUpdateEventViewFrustration?
+    public var id: String
+    public var inForegroundPeriods: [objc_RUMViewUpdateEventViewInForegroundPeriods]?
+    public var interactionToNextPaint: NSNumber?
+    public var interactionToNextPaintTargetSelector: String?
+    public var interactionToNextPaintTime: NSNumber?
+    public var interactionToNextViewTime: NSNumber?
+    public var isActive: NSNumber?
+    public var isSlowRendered: NSNumber?
+    public var jsRefreshRate: objc_RUMViewUpdateEventViewJsRefreshRate?
+    public var largestContentfulPaint: NSNumber?
+    public var largestContentfulPaintTargetSelector: String?
+    public var loadEvent: NSNumber?
+    public var loadingTime: NSNumber?
+    public var loadingType: objc_RUMViewUpdateEventViewLoadingType
+    public var longTask: objc_RUMViewUpdateEventViewLongTask?
+    public var memoryAverage: NSNumber?
+    public var memoryMax: NSNumber?
+    public var name: String?
+    public var networkSettledTime: NSNumber?
+    public var performance: objc_RUMViewUpdateEventViewPerformance?
+    public var referrer: String?
+    public var refreshRateAverage: NSNumber?
+    public var refreshRateMin: NSNumber?
+    public var resource: objc_RUMViewUpdateEventViewResource?
+    public var slowFrames: [objc_RUMViewUpdateEventViewSlowFrames]?
+    public var slowFramesRate: NSNumber?
+    public var timeSpent: NSNumber?
+    public var url: String
+public class objc_RUMViewUpdateEventViewAccessibility: NSObject
+    public var assistiveSwitchEnabled: NSNumber?
+    public var assistiveTouchEnabled: NSNumber?
+    public var boldTextEnabled: NSNumber?
+    public var buttonShapesEnabled: NSNumber?
+    public var closedCaptioningEnabled: NSNumber?
+    public var grayscaleEnabled: NSNumber?
+    public var increaseContrastEnabled: NSNumber?
+    public var invertColorsEnabled: NSNumber?
+    public var monoAudioEnabled: NSNumber?
+    public var onOffSwitchLabelsEnabled: NSNumber?
+    public var reduceMotionEnabled: NSNumber?
+    public var reduceTransparencyEnabled: NSNumber?
+    public var reducedAnimationsEnabled: NSNumber?
+    public var rtlEnabled: NSNumber?
+    public var screenReaderEnabled: NSNumber?
+    public var shakeToUndoEnabled: NSNumber?
+    public var shouldDifferentiateWithoutColor: NSNumber?
+    public var singleAppModeEnabled: NSNumber?
+    public var speakScreenEnabled: NSNumber?
+    public var speakSelectionEnabled: NSNumber?
+    public var textSize: String?
+    public var videoAutoplayEnabled: NSNumber?
+public class objc_RUMViewUpdateEventViewAction: NSObject
+    public var count: NSNumber
+public class objc_RUMViewUpdateEventViewCrash: NSObject
+    public var count: NSNumber
+public class objc_RUMViewUpdateEventViewCustomTimings: NSObject
+    public var customTimingsInfo: [String: NSNumber]
+public class objc_RUMViewUpdateEventViewError: NSObject
+    public var count: NSNumber
+public class objc_RUMViewUpdateEventViewFlutterBuildTime: NSObject
+    public var average: NSNumber
+    public var max: NSNumber
+    public var metricMax: NSNumber?
+    public var min: NSNumber
+public class objc_RUMViewUpdateEventViewFlutterRasterTime: NSObject
+    public var average: NSNumber
+    public var max: NSNumber
+    public var metricMax: NSNumber?
+    public var min: NSNumber
+public class objc_RUMViewUpdateEventViewFrozenFrame: NSObject
+    public var count: NSNumber
+public class objc_RUMViewUpdateEventViewFrustration: NSObject
+    public var count: NSNumber
+public class objc_RUMViewUpdateEventViewInForegroundPeriods: NSObject
+    public var duration: NSNumber
+    public var start: NSNumber
+public class objc_RUMViewUpdateEventViewJsRefreshRate: NSObject
+    public var average: NSNumber
+    public var max: NSNumber
+    public var metricMax: NSNumber?
+    public var min: NSNumber
+public enum objc_RUMViewUpdateEventViewLoadingType: Int
+    case none
+    case initialLoad
+    case routeChange
+    case activityDisplay
+    case activityRedisplay
+    case fragmentDisplay
+    case fragmentRedisplay
+    case viewControllerDisplay
+    case viewControllerRedisplay
+public class objc_RUMViewUpdateEventViewLongTask: NSObject
+    public var count: NSNumber
+public class objc_RUMViewUpdateEventViewPerformance: NSObject
+    public var cls: objc_RUMViewUpdateEventViewPerformanceCLS?
+    public var fbc: objc_RUMViewUpdateEventViewPerformanceFBC?
+    public var fcp: objc_RUMViewUpdateEventViewPerformanceFCP?
+    public var fid: objc_RUMViewUpdateEventViewPerformanceFID?
+    public var inp: objc_RUMViewUpdateEventViewPerformanceINP?
+    public var lcp: objc_RUMViewUpdateEventViewPerformanceLCP?
+public class objc_RUMViewUpdateEventViewPerformanceCLS: NSObject
+    public var currentRect: objc_RUMViewUpdateEventViewPerformanceCLSCurrentRect?
+    public var previousRect: objc_RUMViewUpdateEventViewPerformanceCLSPreviousRect?
+    public var score: NSNumber
+    public var targetSelector: String?
+    public var timestamp: NSNumber?
+public class objc_RUMViewUpdateEventViewPerformanceCLSCurrentRect: NSObject
+    public var height: NSNumber
+    public var width: NSNumber
+    public var x: NSNumber
+    public var y: NSNumber
+public class objc_RUMViewUpdateEventViewPerformanceCLSPreviousRect: NSObject
+    public var height: NSNumber
+    public var width: NSNumber
+    public var x: NSNumber
+    public var y: NSNumber
+public class objc_RUMViewUpdateEventViewPerformanceFBC: NSObject
+    public var timestamp: NSNumber
+public class objc_RUMViewUpdateEventViewPerformanceFCP: NSObject
+    public var timestamp: NSNumber
+public class objc_RUMViewUpdateEventViewPerformanceFID: NSObject
+    public var duration: NSNumber
+    public var targetSelector: String?
+    public var timestamp: NSNumber
+public class objc_RUMViewUpdateEventViewPerformanceINP: NSObject
+    public var duration: NSNumber
+    public var subParts: objc_RUMViewUpdateEventViewPerformanceINPSubParts?
+    public var targetSelector: String?
+    public var timestamp: NSNumber?
+public class objc_RUMViewUpdateEventViewPerformanceINPSubParts: NSObject
+    public var inputDelay: NSNumber
+    public var presentationDelay: NSNumber
+    public var processingDuration: NSNumber
+public class objc_RUMViewUpdateEventViewPerformanceLCP: NSObject
+    public var resourceUrl: String?
+    public var subParts: objc_RUMViewUpdateEventViewPerformanceLCPSubParts?
+    public var targetSelector: String?
+    public var timestamp: NSNumber
+public class objc_RUMViewUpdateEventViewPerformanceLCPSubParts: NSObject
+    public var loadDelay: NSNumber
+    public var loadTime: NSNumber
+    public var renderDelay: NSNumber
+public class objc_RUMViewUpdateEventViewResource: NSObject
+    public var count: NSNumber
+public class objc_RUMViewUpdateEventViewSlowFrames: NSObject
     public var duration: NSNumber
     public var start: NSNumber
 public class objc_RUMVitalAppLaunchEvent: NSObject
@@ -1888,6 +2344,7 @@ public class objc_RUMVitalAppLaunchEvent: NSObject
     public var source: objc_RUMVitalAppLaunchEventSource
     public var stream: objc_RUMVitalAppLaunchEventStream?
     public var synthetics: objc_RUMVitalAppLaunchEventRUMSyntheticsTest?
+    public var tab: objc_RUMVitalAppLaunchEventTAB?
     public var type: String
     public var usr: objc_RUMVitalAppLaunchEventRUMUser?
     public var version: String?
@@ -1987,6 +2444,7 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMVitalAppLaunchEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalAppLaunchEventRUMEventAttributes: NSObject
@@ -2044,12 +2502,16 @@ public enum objc_RUMVitalAppLaunchEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMVitalAppLaunchEventStream: NSObject
     public var id: String
 public class objc_RUMVitalAppLaunchEventRUMSyntheticsTest: NSObject
     public var injected: NSNumber?
     public var resultId: String
     public var testId: String
+    public var syntheticsInfo: [String: Any]
+public class objc_RUMVitalAppLaunchEventTAB: NSObject
+    public var id: String
 public class objc_RUMVitalAppLaunchEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -2100,6 +2562,7 @@ public class objc_RUMVitalDurationEvent: NSObject
     public var source: objc_RUMVitalDurationEventSource
     public var stream: objc_RUMVitalDurationEventStream?
     public var synthetics: objc_RUMVitalDurationEventRUMSyntheticsTest?
+    public var tab: objc_RUMVitalDurationEventTAB?
     public var type: String
     public var usr: objc_RUMVitalDurationEventRUMUser?
     public var version: String?
@@ -2109,6 +2572,7 @@ public class objc_RUMVitalDurationEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMVitalDurationEventDDConfiguration?
     public var formatVersion: NSNumber
+    public var profiling: objc_RUMVitalDurationEventDDProfiling?
     public var sdkName: String?
     public var session: objc_RUMVitalDurationEventDDSession?
 public class objc_RUMVitalDurationEventDDConfiguration: NSObject
@@ -2116,6 +2580,21 @@ public class objc_RUMVitalDurationEventDDConfiguration: NSObject
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
+public class objc_RUMVitalDurationEventDDProfiling: NSObject
+    public var errorReason: objc_RUMVitalDurationEventDDProfilingErrorReason
+    public var status: objc_RUMVitalDurationEventDDProfilingStatus
+public enum objc_RUMVitalDurationEventDDProfilingErrorReason: Int
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+public enum objc_RUMVitalDurationEventDDProfilingStatus: Int
+    case none
+    case starting
+    case running
+    case stopped
+    case error
 public class objc_RUMVitalDurationEventDDSession: NSObject
     public var plan: objc_RUMVitalDurationEventDDSessionPlan
     public var sessionPrecondition: objc_RUMVitalDurationEventDDSessionRUMSessionPrecondition
@@ -2183,6 +2662,7 @@ public enum objc_RUMVitalDurationEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMVitalDurationEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalDurationEventRUMEventAttributes: NSObject
@@ -2240,12 +2720,16 @@ public enum objc_RUMVitalDurationEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMVitalDurationEventStream: NSObject
     public var id: String
 public class objc_RUMVitalDurationEventRUMSyntheticsTest: NSObject
     public var injected: NSNumber?
     public var resultId: String
     public var testId: String
+    public var syntheticsInfo: [String: Any]
+public class objc_RUMVitalDurationEventTAB: NSObject
+    public var id: String
 public class objc_RUMVitalDurationEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -2285,6 +2769,7 @@ public class objc_RUMVitalOperationStepEvent: NSObject
     public var source: objc_RUMVitalOperationStepEventSource
     public var stream: objc_RUMVitalOperationStepEventStream?
     public var synthetics: objc_RUMVitalOperationStepEventRUMSyntheticsTest?
+    public var tab: objc_RUMVitalOperationStepEventTAB?
     public var type: String
     public var usr: objc_RUMVitalOperationStepEventRUMUser?
     public var version: String?
@@ -2294,6 +2779,7 @@ public class objc_RUMVitalOperationStepEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMVitalOperationStepEventDDConfiguration?
     public var formatVersion: NSNumber
+    public var profiling: objc_RUMVitalOperationStepEventDDProfiling?
     public var sdkName: String?
     public var session: objc_RUMVitalOperationStepEventDDSession?
 public class objc_RUMVitalOperationStepEventDDConfiguration: NSObject
@@ -2301,6 +2787,21 @@ public class objc_RUMVitalOperationStepEventDDConfiguration: NSObject
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
+public class objc_RUMVitalOperationStepEventDDProfiling: NSObject
+    public var errorReason: objc_RUMVitalOperationStepEventDDProfilingErrorReason
+    public var status: objc_RUMVitalOperationStepEventDDProfilingStatus
+public enum objc_RUMVitalOperationStepEventDDProfilingErrorReason: Int
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+public enum objc_RUMVitalOperationStepEventDDProfilingStatus: Int
+    case none
+    case starting
+    case running
+    case stopped
+    case error
 public class objc_RUMVitalOperationStepEventDDSession: NSObject
     public var plan: objc_RUMVitalOperationStepEventDDSessionPlan
     public var sessionPrecondition: objc_RUMVitalOperationStepEventDDSessionRUMSessionPrecondition
@@ -2368,6 +2869,7 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMVitalOperationStepEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalOperationStepEventRUMEventAttributes: NSObject
@@ -2425,12 +2927,16 @@ public enum objc_RUMVitalOperationStepEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_RUMVitalOperationStepEventStream: NSObject
     public var id: String
 public class objc_RUMVitalOperationStepEventRUMSyntheticsTest: NSObject
     public var injected: NSNumber?
     public var resultId: String
     public var testId: String
+    public var syntheticsInfo: [String: Any]
+public class objc_RUMVitalOperationStepEventTAB: NSObject
+    public var id: String
 public class objc_RUMVitalOperationStepEventRUMUser: NSObject
     public var anonymousId: String?
     public var email: String?
@@ -2493,6 +2999,7 @@ public enum objc_TelemetryConfigurationEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_TelemetryConfigurationEventTelemetry: NSObject
     public var configuration: objc_TelemetryConfigurationEventTelemetryConfiguration
     public var device: objc_TelemetryConfigurationEventTelemetryRUMTelemetryDevice?
@@ -2681,6 +3188,7 @@ public enum objc_TelemetryDebugEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_TelemetryDebugEventTelemetry: NSObject
     public var device: objc_TelemetryDebugEventTelemetryRUMTelemetryDevice?
     public var message: String
@@ -2734,6 +3242,7 @@ public enum objc_TelemetryErrorEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
+    case rumCpp
 public class objc_TelemetryErrorEventTelemetry: NSObject
     public var device: objc_TelemetryErrorEventTelemetryRUMTelemetryDevice?
     public var error: objc_TelemetryErrorEventTelemetryError?
@@ -2854,6 +3363,7 @@ public class objc_RUMConfiguration: NSObject
     public var uiKitActionsPredicate: objc_UIKitRUMActionsPredicate?
     public var swiftUIViewsPredicate: objc_SwiftUIRUMViewsPredicate?
     public var swiftUIActionsPredicate: objc_SwiftUIRUMActionsPredicate?
+    public var trackMemoryWarnings: Bool
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking)
     public var trackFrustrations: Bool
     public var trackBackgroundEvents: Bool
@@ -2869,7 +3379,6 @@ public class objc_RUMConfiguration: NSObject
     public var onSessionStart: ((String, Bool) -> Void)?
     public var customEndpoint: URL?
     public var trackAnonymousUser: Bool
-    public var trackMemoryWarnings: Bool
 public class objc_RUM: NSObject
     public static func enable(with configuration: objc_RUMConfiguration)
 public class objc_RUMMonitor: NSObject
@@ -2905,8 +3414,11 @@ public class objc_RUMMonitor: NSObject
     public func removeAttribute(forKey key: String)
     public func removeAttributes(forKeys keys: [String])
     public func addFeatureFlagEvaluation(name: String, value: Any)
+    public func startOperation(name: String,operationKey: String?,attributes: [String: Any],options: objc_OperationOptions?)
     public func startFeatureOperation(name: String,operationKey: String?,attributes: [String: Any])
+    public func succeedOperation(name: String,operationKey: String?,attributes: [String: Any])
     public func succeedFeatureOperation(name: String,operationKey: String?,attributes: [String: Any])
+    public func failOperation(name: String,operationKey: String?,reason: objc_RUMFeatureOperationFailureReason,attributes: [String: Any])
     public func failFeatureOperation(name: String,operationKey: String?,reason: objc_RUMFeatureOperationFailureReason,attributes: [String: Any])
     public var debug: Bool
 [?] extension objc_RUMMonitor

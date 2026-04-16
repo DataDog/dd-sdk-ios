@@ -154,7 +154,7 @@ custom_rules:
     message: "Symbol name conflicts with one of Apple's Required Reason APIs. Use different name."
     severity: error
 
-excluded:
+excluded: 
   - ../../**/*/.build
 
 included:

@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import TestUtilities
 
@@ -23,3 +25,5 @@ class DDSwiftUIRUMViewsPredicateTests: XCTestCase {
         XCTAssertTrue(rumView!.attributes.isEmpty)
     }
 }
+
+#endif

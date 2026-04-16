@@ -18,7 +18,7 @@ internal protocol AppStateManaging {
 
 /// Manages the app state changes observed during application lifecycle events such as application start, resume and termination.
 internal final class AppStateManager: AppStateManaging {
-    private static let defaultQueue = DispatchQueue(
+    internal static let defaultQueue = DispatchQueue(
         label: "com.datadoghq.app-state-manager",
         qos: .utility
     )

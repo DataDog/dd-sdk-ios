@@ -108,6 +108,9 @@ extension SessionReplay.Configuration {
         /// SwiftUI Recording
         case swiftui
 
+        /// Heatmap identifier computation
+        case heatmaps
+
         @available(*, deprecated, message: "Screen change scheduling is now the default and always enabled. This flag has no effect.")
         case screenChangeScheduling
     }

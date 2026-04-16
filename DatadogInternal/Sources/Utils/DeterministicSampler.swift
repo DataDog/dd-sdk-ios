@@ -34,9 +34,10 @@ public struct DeterministicSampler: Sampling, Equatable, Sendable {
     ///     - `0.0` disables sampling entirely (no data is sampled).
     ///     - `100.0` enables full sampling (all data is sampled).
     public init(seed: UInt64, samplingRate: SampleRate) {
+        let normalizedSampleRate = samplingRate.normalized
         self.seed = seed
-        self.samplingRate = samplingRate
-        if samplingRate >= 100.0 {
+        self.samplingRate = normalizedSampleRate
+        if normalizedSampleRate == 100.0 {
             self.isSampled = true
         } else {
             // We use overflow multiplication to create a "randomized" hash based on the `seed`
@@ -64,7 +65,7 @@ public struct DeterministicSampler: Sampling, Equatable, Sendable {
     /// - Parameter childRate: The child feature's sampling rate (0.0–100.0).
     /// - Returns: A new sampler with `samplingRate.composed(with: childRate)` as its rate.
     public func combined(with childRate: SampleRate) -> DeterministicSampler {
-        DeterministicSampler(seed: seed, samplingRate: samplingRate.composed(with: childRate))
+        DeterministicSampler(seed: seed, samplingRate: samplingRate.composed(with: childRate.normalized))
     }
 }
 
@@ -83,10 +84,10 @@ extension DeterministicSampler {
     ///   - samplingRate: A percentage value between `0.0` and `100.0`.
     public init(uuid: UUID, samplingRate: SampleRate) {
         assert(MemoryLayout<UUID>.size == 16)
-        let seed = withUnsafePointer(to: uuid) { uuidPointer in
-            uuidPointer.withMemoryRebound(to: UInt64.self, capacity: 2) { pointer in
-                UInt64(bigEndian: pointer.successor().pointee) & 0x0000FFFFFFFFFFFF
-            }
+        let seed = withUnsafePointer(to: uuid.uuid) { uuidPointer in
+            let buffer = UnsafeRawBufferPointer(start: uuidPointer, count: MemoryLayout<UUID>.size)
+            let last8Bytes = buffer.loadUnaligned(fromByteOffset: 8, as: UInt64.self)
+            return UInt64(bigEndian: last8Bytes) & 0x0000FFFFFFFFFFFF
         }
         self.init(seed: seed, samplingRate: samplingRate)
     }

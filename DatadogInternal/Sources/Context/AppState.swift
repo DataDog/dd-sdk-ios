@@ -158,8 +158,7 @@ public struct DefaultAppStateProvider: AppStateProvider {
     ///
     /// **Note**: Must be called on the main thread.
     public var current: AppState {
-        let wkState = WKExtension.dd.shared.applicationState
-        return AppState(wkState)
+        return AppState(WKApplication.shared().applicationState)
     }
 }
 

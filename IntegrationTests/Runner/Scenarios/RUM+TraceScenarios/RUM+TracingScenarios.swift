@@ -41,7 +41,7 @@ class RUMAndTracingURLSessionBaseScenario: URLSessionBaseScenario, TestScenario 
                     hosts: [
                         customGETResourceURL.host!
                     ],
-                    sampleRate: 100
+                    sampleRate: 0
                 )
             )
         case .delegateWithAdditionalFirstPartyHosts:
