@@ -33,6 +33,7 @@ extension Profiling {
         // MARK: - Internal
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
+        internal var minProfileDuration: TimeInterval = DatadogProfiler.Constants.minProfileDuration
 
         /// Creates the Profiling configuration.
         /// - Parameters:
