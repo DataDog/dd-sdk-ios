@@ -716,6 +716,7 @@ extension RUMViewScope {
         if let appHangCommand = command as? RUMAddCurrentViewAppHangCommand {
             let appHang = DurationEvent(
                 id: errorId,
+                type: .error,
                 start: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds,
                 duration: appHangCommand.hangDuration.dd.toInt64Nanoseconds
             )
@@ -835,6 +836,7 @@ extension RUMViewScope {
 
         let longTask = DurationEvent(
             id: longTaskId,
+            type: .longTask,
             start: start.dd.toInt64Nanoseconds,
             duration: taskDurationInNs
         )
