@@ -56,16 +56,20 @@ extension ProfilingHandler {
             attributes[RUMCoreContext.IDs.longTaskID] = longTasks.map { $0.id }
         }
 
+        let rumEvents: [RUMEvent] = rumVitals.map(RUMEvent.vital)
+        + (hangs?.map(RUMEvent.hang) ?? [])
+        + (longTasks?.map(RUMEvent.longTask) ?? [])
+
         self.writeProfilingEvent(
             with: profile,
-            rumEvents: RUMEvents(vitals: rumVitals, hangs: hangs, longTasks: longTasks),
+            rumEvents: rumEvents,
             attributes: attributes
         )
     }
 
     private func writeProfilingEvent(
         with profile: OpaquePointer,
-        rumEvents: RUMEvents,
+        rumEvents: [RUMEvent],
         attributes: [AttributeKey: AttributeValue]
     ) {
         var data: UnsafeMutablePointer<UInt8>?

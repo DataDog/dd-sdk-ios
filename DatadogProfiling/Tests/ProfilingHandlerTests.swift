@@ -184,13 +184,52 @@ final class ProfilingHandlerTests: XCTestCase {
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
-        let vitalsFromJson = try XCTUnwrap(json["vitals"] as? [[String: Any]])
+        let vitalsFromJson = try typedRUMEvents(from: metadata)
+            .filter { $0["type"] as? String == "vital" }
         let vitalIDs = vitalsFromJson.compactMap { $0["id"] as? String }
         let vitalNames = vitalsFromJson.compactMap { $0["name"] as? String }
         XCTAssertEqual(vitalIDs, ["id1", "id2"])
         XCTAssertEqual(vitalNames, ["operation1", "operation2"])
+    }
+
+    func testWriteProfileAttachments_encodeTypedRumEventsForAllSupportedTypes() throws {
+        // Given
+        XCTAssertEqual(dd_profiler_start(), 1)
+        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        let vital = Vital.mockWith(id: "vital-id", name: "operation", duration: 60)
+        let longTask = DurationEvent(id: "long-task-id", type: .longTask, start: 20, duration: 30)
+        let hang = DurationEvent(id: "hang-id", type: .error, start: 40, duration: 50)
+
+        // When
+        handler.write(profile: profile, rumVitals: [vital], hangs: [hang], longTasks: [longTask])
+
+        // Then
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let rumEvents = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(rumEvents.count, 3)
+
+        let vitalEvent = try XCTUnwrap(rumEvents.first { $0["type"] as? String == "vital" })
+        XCTAssertEqual(vitalEvent["id"] as? String, vital.id)
+        XCTAssertEqual(vitalEvent["name"] as? String, vital.name)
+        XCTAssertNotNil(vitalEvent["start_ns"] as? NSNumber)
+        XCTAssertNotNil(vitalEvent["duration_ns"] as? NSNumber)
+
+        let longTaskEvent = try XCTUnwrap(rumEvents.first { $0["type"] as? String == "long_task" })
+        XCTAssertEqual(longTaskEvent["id"] as? String, longTask.id)
+        XCTAssertNil(longTaskEvent["name"])
+        XCTAssertEqual(longTaskEvent["start_ns"] as? NSNumber, NSNumber(value: longTask.start))
+        XCTAssertEqual(longTaskEvent["duration_ns"] as? NSNumber, NSNumber(value: longTask.duration))
+
+        let errorEvent = try XCTUnwrap(rumEvents.first { $0["type"] as? String == "error" })
+        XCTAssertEqual(errorEvent["id"] as? String, hang.id)
+        XCTAssertNil(errorEvent["name"])
+        XCTAssertEqual(errorEvent["start_ns"] as? NSNumber, NSNumber(value: hang.start))
+        XCTAssertEqual(errorEvent["duration_ns"] as? NSNumber, NSNumber(value: hang.duration))
+    }
+
+    private func typedRUMEvents(from metadata: ProfileAttachments) throws -> [[String: Any]] {
+        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
+        return try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [[String: Any]])
     }
 }
 
