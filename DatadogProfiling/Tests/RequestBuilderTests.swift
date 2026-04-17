@@ -25,7 +25,7 @@ class RequestBuilderTests: XCTestCase {
         additionalAttributes: mockRandomAttributes()
     )
 
-    let rumEvents: RUMEvents = .init(vitals: [.mockWith(operationKey: nil, stepType: nil)], hangs: nil, longTasks: nil)
+    let rumEvents: [RUMEvent] = [.vital(.mockWith(operationKey: nil, stepType: nil))]
     let pprof: Data = .mockRandom()
 
     private func mockEvent() throws -> Event {
@@ -177,13 +177,25 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(rumEventsFile.filename, "rum-mobile-events.json")
         XCTAssertEqual(rumEventsFile.mimeType, "application/json")
 
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsFile.data) as? [String: Any])
-        let vitals = try XCTUnwrap(json["vitals"] as? [[String: Any]])
+        let encodedRUMEvents = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsFile.data) as? [[String: Any]])
+        let vitals = encodedRUMEvents.filter { $0["type"] as? String == "vital" }
         let vitalIDs = vitals.compactMap { $0["id"] as? String }
         let vitalNames = vitals.compactMap { $0["name"] as? String }
+        let expectedVitalIDs = rumEvents.compactMap { event -> String? in
+            guard case .vital(let vital) = event else {
+                return nil
+            }
+            return vital.id
+        }
+        let expectedVitalNames = rumEvents.compactMap { event -> String? in
+            guard case .vital(let vital) = event else {
+                return nil
+            }
+            return vital.name
+        }
 
-        XCTAssertEqual(vitalIDs, rumEvents.vitals.map(\.id))
-        XCTAssertEqual(vitalNames, rumEvents.vitals.map(\.name))
+        XCTAssertEqual(vitalIDs, expectedVitalIDs)
+        XCTAssertEqual(vitalNames, expectedVitalNames)
     }
 
     func testWhenBatchDataHasMoreThanOneProfile() {
