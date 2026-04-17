@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogCrashReporting"
-  s.version      = "3.9.1"
+  s.version      = "3.10.0"
   s.summary      = "Official Datadog Crash Reporting SDK for iOS."
 
   s.homepage     = "https://www.datadoghq.com"
@@ -21,7 +21,6 @@ Pod::Spec.new do |s|
   s.visionos.deployment_target = '1.0'
 
   s.source = { :git => 'https://github.com/DataDog/dd-sdk-ios.git', :tag => s.version.to_s }
-  s.static_framework = true
 
   s.source_files = "DatadogCrashReporting/Sources/**/*.swift"
   s.dependency 'DatadogInternal', s.version.to_s
