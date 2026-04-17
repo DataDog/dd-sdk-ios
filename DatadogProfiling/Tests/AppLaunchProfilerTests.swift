@@ -365,10 +365,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
-        let vitals = try XCTUnwrap(json["vitals"] as? [[String: Any]])
-        let vitalIDs = vitals.compactMap { $0["id"] as? String }
+        let vitalIDs = try eventIDs(ofType: "vital", from: metadata)
         XCTAssertEqual(vitalIDs.count, 2)
         XCTAssertTrue(vitalIDs.contains("start-id"))
     }
@@ -389,10 +386,7 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
-        let vitals = try XCTUnwrap(json["vitals"] as? [[String: Any]])
-        let vitalIDs = vitals.compactMap { $0["id"] as? String }
+        let vitalIDs = try eventIDs(ofType: "vital", from: metadata)
         XCTAssertEqual(vitalIDs.count, 2)
         XCTAssertTrue(vitalIDs.contains("start-id"))
         XCTAssertFalse(vitalIDs.contains("orphan-id"))
@@ -476,6 +470,15 @@ final class AppLaunchProfilerTests: XCTestCase {
 
     private var appLaunchVital: Vital {
         .mockWith(stepType: nil)
+    }
+
+    private func eventIDs(ofType type: String, from metadata: ProfileAttachments) throws -> [String] {
+        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
+        let rumEvents = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [[String: Any]])
+
+        return rumEvents
+            .filter { $0["type"] as? String == type }
+            .compactMap { $0["id"] as? String }
     }
 }
 

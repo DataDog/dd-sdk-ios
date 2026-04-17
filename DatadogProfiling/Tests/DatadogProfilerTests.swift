@@ -76,7 +76,7 @@ final class DatadogProfilerTests: XCTestCase {
     func testReceiveLongTask() {
         // Given
         let profiler = continuousProfiler()
-        let longTask = DurationEvent(id: .mockRandom(), start: 0, duration: 100)
+        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
 
         // When
         let result = profiler.receive(
@@ -91,7 +91,7 @@ final class DatadogProfilerTests: XCTestCase {
     func testReceiveAppHang() {
         // Given
         let profiler = continuousProfiler()
-        let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
+        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
 
         // When
         let result = profiler.receive(
@@ -114,8 +114,8 @@ final class DatadogProfilerTests: XCTestCase {
             stepType: .end
         )
         let ongoingOperationStart = Vital.mockWith(name: "ongoing-operation", stepType: .start)
-        let hang = DurationEvent(id: "hang-id", start: 0, duration: 500)
-        let longTask = DurationEvent(id: "long-task-id", start: 0, duration: 100)
+        let hang = DurationEvent(id: "hang-id", type: .error, start: 0, duration: 500)
+        let longTask = DurationEvent(id: "long-task-id", type: .longTask, start: 0, duration: 100)
         let launchVital: Vital = .mockWith(stepType: nil)
 
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
@@ -159,15 +159,17 @@ final class DatadogProfilerTests: XCTestCase {
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
-        let vitals = try XCTUnwrap(json["vitals"] as? [[String: Any]])
-        let hangs = try XCTUnwrap(json["hangs"] as? [[String: Any]])
-        let longTasks = try XCTUnwrap(json["long_tasks"] as? [[String: Any]])
-        let vitalIDs = vitals.compactMap { $0["id"] as? String }
+        let rumEvents = try typedRUMEvents(from: metadata)
+        let vitalIDs = eventIDs(ofType: "vital", in: rumEvents)
         XCTAssertEqual(vitalIDs, [ongoingOperationStart.id], "Only ongoing operations should remain after TTID")
-        XCTAssertTrue(hangs.isEmpty, "App hangs handled by AppLaunchProfiler should not be re-attached")
-        XCTAssertTrue(longTasks.isEmpty, "Long tasks handled by AppLaunchProfiler should not be re-attached")
+        XCTAssertTrue(
+            eventIDs(ofType: "error", in: rumEvents).isEmpty,
+            "App hangs handled by AppLaunchProfiler should not be re-attached"
+        )
+        XCTAssertTrue(
+            eventIDs(ofType: "long_task", in: rumEvents).isEmpty,
+            "Long tasks handled by AppLaunchProfiler should not be re-attached"
+        )
     }
 }
 
@@ -236,10 +238,8 @@ extension DatadogProfilerTests {
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
-        let vitals = try XCTUnwrap(json["vitals"] as? [[String: Any]])
-        let vitalIDs = vitals.compactMap { $0["id"] as? String }
+        let rumEvents = try typedRUMEvents(from: metadata)
+        let vitalIDs = eventIDs(ofType: "vital", in: rumEvents)
         XCTAssertTrue(vitalIDs.contains(startOperation.id))
         withExtendedLifetime(profiler) {}
     }
@@ -250,7 +250,7 @@ extension DatadogProfilerTests {
         let profiler = continuousProfiler(dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
-        let longTask = DurationEvent(id: .mockRandom(), start: 0, duration: 100)
+        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
         flushQueue()
 
@@ -266,10 +266,8 @@ extension DatadogProfilerTests {
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
-        let longTasks = try XCTUnwrap(json["long_tasks"] as? [[String: Any]])
-        XCTAssertEqual(longTasks.compactMap { $0["id"] as? String }, [longTask.id])
+        let rumEvents = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(eventIDs(ofType: "long_task", in: rumEvents), [longTask.id])
         withExtendedLifetime(profiler) {}
     }
 
@@ -279,7 +277,7 @@ extension DatadogProfilerTests {
         let profiler = continuousProfiler(dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
-        let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
+        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
         XCTAssertTrue(profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core))
 
         // When
@@ -294,10 +292,8 @@ extension DatadogProfilerTests {
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
-        let hangs = try XCTUnwrap(json["hangs"] as? [[String: Any]])
-        XCTAssertEqual(hangs.compactMap { $0["id"] as? String }, [hang.id])
+        let rumEvents = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(eventIDs(ofType: "error", in: rumEvents), [hang.id])
         withExtendedLifetime(profiler) {}
     }
 }
@@ -355,7 +351,7 @@ extension DatadogProfilerTests {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
-        let longTask = DurationEvent(id: .mockRandom(), start: 0, duration: 100)
+        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
@@ -380,7 +376,7 @@ extension DatadogProfilerTests {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
-        let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
+        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
         _ = profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core)
@@ -487,8 +483,8 @@ extension DatadogProfilerTests {
     func testCustomProfiler_beforeReceivingAppLaunchVital() {
         // Given
         let profiler = customProfiler()
-        let longTask = DurationEvent(id: .mockRandom(), start: 0, duration: 100)
-        let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
+        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
+        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
         let operation: Vital = .mockWith(stepType: .start)
 
         // Then
@@ -578,10 +574,8 @@ extension DatadogProfilerTests {
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
-        let vitals = try XCTUnwrap(json["vitals"] as? [[String: Any]])
-        let vitalIDs = vitals.compactMap { $0["id"] as? String }
+        let rumEvents = try typedRUMEvents(from: metadata)
+        let vitalIDs = eventIDs(ofType: "vital", in: rumEvents)
         XCTAssertTrue(vitalIDs.contains("start-id"))
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
         withExtendedLifetime(profiler) {}
@@ -694,7 +688,7 @@ extension DatadogProfilerTests {
         let profiler = customProfiler(dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
-        let longTask = DurationEvent(id: .mockRandom(), start: 0, duration: 100)
+        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
         flushQueue()
 
@@ -710,10 +704,8 @@ extension DatadogProfilerTests {
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
-        let longTasks = try XCTUnwrap(json["long_tasks"] as? [[String: Any]])
-        XCTAssertEqual(longTasks.compactMap { $0["id"] as? String }, [longTask.id])
+        let rumEvents = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(eventIDs(ofType: "long_task", in: rumEvents), [longTask.id])
         withExtendedLifetime(profiler) {}
     }
 
@@ -723,7 +715,7 @@ extension DatadogProfilerTests {
         let profiler = customProfiler(dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
 
-        let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
+        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
         _ = profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core)
         flushQueue()
 
@@ -739,10 +731,8 @@ extension DatadogProfilerTests {
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [String: Any])
-        let hangs = try XCTUnwrap(json["hangs"] as? [[String: Any]])
-        XCTAssertEqual(hangs.compactMap { $0["id"] as? String }, [hang.id])
+        let rumEvents = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(eventIDs(ofType: "error", in: rumEvents), [hang.id])
         withExtendedLifetime(profiler) {}
     }
 
@@ -804,7 +794,7 @@ extension DatadogProfilerTests {
 
         // Then - first still processes messages normally
         XCTAssertEqual(dd_profiler_start(), 1)
-        let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
+        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
         XCTAssertTrue(first.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core))
         XCTAssertNotNil(first)
     }
@@ -823,7 +813,7 @@ extension DatadogProfilerTests {
         // Then
         XCTAssertTrue(DatadogProfiler.isInstantiated)
         XCTAssertEqual(dd_profiler_start(), 1)
-        let hang = DurationEvent(id: .mockRandom(), start: 0, duration: 500)
+        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
         XCTAssertTrue(second.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core))
         XCTAssertNotNil(second)
     }
@@ -873,6 +863,17 @@ private extension DatadogProfilerTests {
 
     func flushQueue() {
         profilerQueue.sync {}
+    }
+
+    func typedRUMEvents(from metadata: ProfileAttachments) throws -> [[String: Any]] {
+        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
+        return try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [[String: Any]])
+    }
+
+    func eventIDs(ofType type: String, in rumEvents: [[String: Any]]) -> [String] {
+        rumEvents
+            .filter { $0["type"] as? String == type }
+            .compactMap { $0["id"] as? String }
     }
 
     func continuousProfiler(
