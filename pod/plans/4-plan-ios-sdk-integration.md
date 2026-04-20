@@ -104,21 +104,19 @@ RUM event types in this SDK are **not hand-written**. The flow is:
 3. The generated struct conforms to `RUMDataModel` (which is `Codable`) and uses explicit `CodingKeys`
 4. `TimeseriesSessionCollector` uses this generated type when writing events
 
-**Blocking dependency:** The `rum-events-format` PR must be opened and merged, and `make rum-models-generate` must be run, before the collector can reference the final generated type. This is blocked until the backend confirms schema + the schema PR is reviewed.
-
-**For development on this branch (while blocked):** A temporary placeholder type `_TimeseriesEventPlaceholder` (prefixed `_`, internal only) lives in `DatadogRUM/Sources/Timeseries/` and is marked with `// FIXME(RUM-13949): replace with type generated from rum-events-format once schema is confirmed`. Once the schema is confirmed and the model is generated, this placeholder is deleted and its usages are replaced with the generated type.
+Since we work off a feature branch on `rum-events-format` (`bplasovska/timeseries`) without needing a merged PR, the generated type is available on the iOS branch from the start of Phase 2.
 
 ---
 
 ## Tasks
 
-### Phase 0 — rum-events-format schema (PREREQUISITE — blocked on backend)
+### Phase 0 — rum-events-format schema
 
-0. **Open a PR in `rum-events-format`** defining the `TimeseriesEvent` JSON Schema
+0. **Create branch `bplasovska/timeseries` on `rum-events-format`** and define the `TimeseriesEvent` JSON Schema there (no PR needed)
    - Schema C shape: `{ "_dd", "application", "session", "source", "type", "service", "version", "date", "timeseries": { "id", "name", "start", "end", "data": [{ "timestamp", "<metric_name>": value }] } }`
-   - Each metric gets its own data point schema (static keys, not dynamic): `memory_usage` event uses a `DataPoint` with `memory_usage: Double`; `cpu_usage` event uses a `DataPoint` with `cpu_usage: Double`
-   - Once merged: run `make rum-models-generate` → generated structs appear in `RUMDataModels.swift`
-   - **Then:** remove the placeholder from Phase 2 / Task 7 and replace with the generated types
+   - Each metric gets its own data point schema (static keys): `memory_usage` event uses a `DataPoint` with `memory_usage: Double`; `cpu_usage` event uses a `DataPoint` with `cpu_usage: Double`
+   - Run `make rum-models-generate GIT_REF=bplasovska/timeseries` on the iOS branch → generated structs appear in `RUMDataModels.swift`
+   - **No placeholder needed:** since we can generate from the branch immediately, skip the `_TimeseriesEventPlaceholder.swift` approach
 
 ### Phase 1 — Schema C in standalone package
 
@@ -137,49 +135,40 @@ RUM event types in this SDK are **not hand-written**. The flow is:
 
 ### Phase 2 — Timeseries infrastructure in DatadogRUM
 
-6. **Create `DatadogRUM/Sources/Timeseries/_TimeseriesEventPlaceholder.swift`**
-   - Temporary placeholder until Phase 0 is unblocked
-   - Contains `_TimeseriesRUMEvent: Encodable` — full event envelope mirroring the expected generated shape
-   - Fields: `_dd`, `application`, `session`, `source`, `type`, `service`, `version`, `date`, `timeseries`
-   - `timeseries`: `{ id, name, start, end, data: [DataPoint] }`
-   - `DataPoint` uses dynamic `CodingKey` encoding for Schema C (value under metric name)
-   - Marked with `// FIXME(RUM-13949): delete this file once type is generated from rum-events-format`
-
-7. **Create `DatadogRUM/Sources/Timeseries/TimeseriesSessionCollector.swift`**
+6. **Create `DatadogRUM/Sources/Timeseries/TimeseriesSessionCollector.swift`**
    - `TimeseriesSessionCollector` — manages two metric streams (memory + CPU)
    - `init(memoryReader:cpuReader:batchSize:writer:context:)`
    - `start()` — starts 1s Timer on a background DispatchQueue
    - `stop()` — invalidates timer, flushes remaining buffers
    - Timer handler: read both vitals, append to respective buffer, flush if at batch size
-   - `flush(metric:buffer:)` — builds event using `_TimeseriesRUMEvent` (placeholder), writes via `FeatureScope.eventWriteContext { _, writer in writer.write(value: event) }`
+   - `flush(metric:buffer:)` — builds event using the generated type from `RUMDataModels.swift`, writes via `FeatureScope.eventWriteContext { _, writer in writer.write(value: event) }`
    - Thread-safe: all buffer access on dedicated serial queue
 
 ### Phase 3 — Wire into RUM
 
-8. **Update `RUM.Configuration`** (`DatadogRUM/Sources/RUMConfiguration.swift`)
+7. **Update `RUM.Configuration`** (`DatadogRUM/Sources/RUMConfiguration.swift`)
     - Add `public var enableTimeseries: Bool = false`
 
-9. **Update `RUMScopeDependencies`** (`DatadogRUM/Sources/RUMMonitor/Scopes/RUMScopeDependencies.swift`)
+8. **Update `RUMScopeDependencies`** (`DatadogRUM/Sources/RUMMonitor/Scopes/RUMScopeDependencies.swift`)
     - Add `timeseriesCollector: TimeseriesSessionCollector?`
 
-10. **Update `RUMFeature.init`** (`DatadogRUM/Sources/Feature/RUMFeature.swift`)
+9. **Update `RUMFeature.init`** (`DatadogRUM/Sources/Feature/RUMFeature.swift`)
     - If `configuration.enableTimeseries && vitalsReaders != nil`:
       - Create `TimeseriesSessionCollector` with memory + CPU readers and the feature scope
       - Inject into `RUMScopeDependencies`
 
-11. **Update `RUMSessionScope`** (`DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift`)
+10. **Update `RUMSessionScope`** (`DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift`)
     - In `init`: call `dependencies.timeseriesCollector?.start(with: context)`
     - On session end: call `dependencies.timeseriesCollector?.stop()`
 
 ### Phase 4 — Tests
 
-12. **`DatadogTimeseriesTests`** (standalone package):
+11. **`DatadogTimeseriesTests`** (standalone package):
     - Update encoding tests to assert Schema C field names
     - Verify fixture JSON matches Schema C format
 
-13. **`DatadogRUMTests`** (SDK):
-    - `_TimeseriesEventPlaceholderTests` — Schema C encoding, dynamic field name (matches expected generated shape)
-    - `TimeseriesSessionCollectorTests` — batching, flush on stop, thread safety
+12. **`DatadogRUMTests`** (SDK):
+    - `TimeseriesSessionCollectorTests` — batching, flush on stop, thread safety, correct generated type used
     - `RUMSessionScopeTests` — collector started/stopped with session (mock collector)
 
 ---
@@ -188,7 +177,7 @@ RUM event types in this SDK are **not hand-written**. The flow is:
 
 - Deadband / Window filters (Plan 3 deferred)
 - Android integration (parallel track)
-- Merging rum-events-format schema PR (blocked on backend confirmation — tracked as Phase 0)
+- Merging the `bplasovska/timeseries` branch into rum-events-format main (no PR needed for this phase)
 - Per-session size limiting / data cap enforcement (experiments running in parallel)
 - Custom metrics beyond memory_usage and cpu_usage
 
@@ -198,9 +187,7 @@ RUM event types in this SDK are **not hand-written**. The flow is:
 
 | File | Purpose |
 |------|---------|
-| `DatadogRUM/Sources/Timeseries/_TimeseriesEventPlaceholder.swift` | Temporary placeholder event type (delete once generated from rum-events-format) |
 | `DatadogRUM/Sources/Timeseries/TimeseriesSessionCollector.swift` | Session-level collector (memory + CPU) |
-| `DatadogRUM/Tests/DatadogRUMTests/Timeseries/_TimeseriesEventPlaceholderTests.swift` | Schema C encoding tests for placeholder type |
 | `DatadogRUM/Tests/DatadogRUMTests/Timeseries/TimeseriesSessionCollectorTests.swift` | Collector tests |
 
 ## Files to modify
@@ -208,19 +195,12 @@ RUM event types in this SDK are **not hand-written**. The flow is:
 | File | Change |
 |------|--------|
 | `DatadogTimeseries/Sources/DatadogTimeseries/Models/TimeseriesEvent.swift` | Schema C DataPoint |
+| `DatadogInternal/Sources/Models/RUM/RUMDataModels.swift` | Generated — run `make rum-models-generate GIT_REF=bplasovska/timeseries` |
 | `DatadogRUM/Sources/RUMConfiguration.swift` | Add `enableTimeseries` flag |
 | `DatadogRUM/Sources/RUMMonitor/Scopes/RUMScopeDependencies.swift` | Add `timeseriesCollector` |
 | `DatadogRUM/Sources/Feature/RUMFeature.swift` | Create + inject collector |
 | `DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift` | Start/stop collector |
 | Fixture JSON files | Schema C format |
-
-## Post-schema-confirmation cleanup (Phase 0 unblocked)
-
-When `rum-events-format` PR merges and `make rum-models-generate` runs:
-1. Delete `DatadogRUM/Sources/Timeseries/_TimeseriesEventPlaceholder.swift`
-2. Delete `DatadogRUM/Tests/DatadogRUMTests/Timeseries/_TimeseriesEventPlaceholderTests.swift`
-3. Update `TimeseriesSessionCollector` to use the generated type from `RUMDataModels.swift`
-4. Update `TimeseriesSessionCollectorTests` to reference the generated type
 
 ---
 
