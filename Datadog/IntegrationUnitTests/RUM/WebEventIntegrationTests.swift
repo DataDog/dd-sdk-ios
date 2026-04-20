@@ -53,6 +53,10 @@ class WebEventIntegrationTests: XCTestCase {
             $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: randomUUID)
         }, in: core)
 
+        // Flush to ensure the AnonymousIdentifierManager has generated
+        // and propagated the anonymous ID to the context
+        core.flush()
+
         let body = """
         {
           "eventType": "view",
@@ -168,6 +172,9 @@ class WebEventIntegrationTests: XCTestCase {
               "document_version": 2,
               "drift": 0,
               "format_version": 2
+            },
+            "usr": {
+              "anonymous_id": "\(expectedUUID)"
             }
         }
         """

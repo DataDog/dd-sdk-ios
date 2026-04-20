@@ -13,7 +13,8 @@ import Foundation
 extension SessionReplay.Configuration.FeatureFlags {
     public static var allEnabled: Self {
         [
-            .swiftui: true
+            .swiftui: true,
+            .heatmaps: true,
         ]
     }
 }

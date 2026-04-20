@@ -188,10 +188,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         if interception.origin != "rum",
            let capturedState = capturedState,
            capturedState.hasGraphQLHeaders {
-            telemetry.send(telemetry: .usage(.init(
-                event: .addGraphQLRequest,
-                sampleRate: UsageTelemetry.defaultSampleRate
-            )))
+            telemetry.usage(event: .addGraphQLRequest)
         }
     }
 
