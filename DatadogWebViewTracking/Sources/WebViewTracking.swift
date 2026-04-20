@@ -133,6 +133,19 @@ public enum WebViewTracking {
             )
         } ?? .mask
 
+        let rum = core.feature(
+            named: RUMFeatureName,
+            type: RUMConfiguration.self
+        )
+
+        let isTraceSampled: String = rum.map {
+            switch $0.areFirstPartyHostsTraced {
+            case .some(true): "true"
+            case .some(false): "false"
+            case .none: "null"
+            }
+        } ?? "null"
+
         // Share native capabilities with Browser SDK
         let capabilities = sessionReplay != nil ? "\"records\"" : ""
 
@@ -150,6 +163,9 @@ public enum WebViewTracking {
             },
             getPrivacyLevel() {
                 return '\(privacyLevel.rawValue)'
+            },
+            getIsTraceSampled() {
+                return \(isTraceSampled)
             }
         }
         """

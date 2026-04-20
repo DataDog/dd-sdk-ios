@@ -9,7 +9,6 @@ import DatadogInternal
 import UIKit
 
 internal final class RUMFeature: DatadogRemoteFeature {
-    static let name = "rum"
 
     let requestBuilder: FeatureRequestBuilder
 
@@ -399,5 +398,16 @@ private extension RUM.Configuration.VitalsFrequency {
         case .average:  return 0.5
         case .rare:     return 1
         }
+    }
+}
+
+extension RUMFeature: RUMConfiguration {
+    var areFirstPartyHostsTraced: Bool? {
+        guard let activeSession = monitor.scopes.activeSession,
+              let firstPartyHostsSampleRate = configuration.urlSessionTracking?.firstPartyHostsTracing?.sampleRate else {
+            return nil
+        }
+
+        return activeSession.sampler.combined(with: firstPartyHostsSampleRate).isSampled
     }
 }
