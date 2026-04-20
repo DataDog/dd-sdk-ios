@@ -101,7 +101,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// Indicates whether the "ApplicationLaunch" view was active when the app entered the background.
     private var hadApplicationLaunchViewWhenEnteringBackground: Bool? = nil
     /// The reason why this session has ended or `nil` if it is still active.
-    private(set) var endReason: EndReason?
+    private(set) var endReason: EndReason? {
+        didSet { if endReason != nil { dependencies.timeseriesCollector?.stop() } }
+    }
 
     /// Counter to track the index of views in this session. Starts at 0 for the first view.
     private var nextViewIndex: Int = 0
@@ -168,6 +170,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         // Update fatal error context with recent RUM session state:
         dependencies.fatalErrorContext.sessionState = state
+
+        dependencies.timeseriesCollector?.start(
+            sessionID: sessionUUID.rawValue.uuidString.lowercased(),
+            applicationID: dependencies.rumApplicationID,
+            sessionType: dependencies.sessionType
+        )
     }
 
     /// Creates a new Session upon expiration of the previous one.
