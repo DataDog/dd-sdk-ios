@@ -271,7 +271,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 featureScope: featureScope,
                 dateProvider: configuration.dateProvider,
                 commandSubscriber: monitor,
-                viewCache: dependencies.viewCache
+                viewCache: dependencies.viewCache,
+                firstPartyHostSamplingRate: configuration.urlSessionTracking?.firstPartyHostsTracing?.sampleRate
             ),
             CrashReportReceiver(
                 featureScope: featureScope,

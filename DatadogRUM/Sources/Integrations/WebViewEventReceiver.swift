@@ -22,6 +22,8 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     /// The view cache containing ids of current and previous views.
     let viewCache: ViewCache
 
+    let firstPartyHostSamplingRate: SampleRate?
+
     /// Creates a new receiver.
     ///
     /// - Parameters:
@@ -31,12 +33,14 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         featureScope: FeatureScope,
         dateProvider: DateProvider,
         commandSubscriber: RUMCommandSubscriber,
-        viewCache: ViewCache
+        viewCache: ViewCache,
+        firstPartyHostSamplingRate: SampleRate?
     ) {
         self.featureScope = featureScope
         self.commandSubscriber = commandSubscriber
         self.dateProvider = dateProvider
         self.viewCache = viewCache
+        self.firstPartyHostSamplingRate = firstPartyHostSamplingRate
     }
 
     /// Writes a Browser RUM event to the core.
@@ -67,7 +71,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             )
         )
 
-        featureScope.eventWriteContext { context, writer in
+        featureScope.eventWriteContext { [firstPartyHostSamplingRate] context, writer in
             guard let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.isSampled else {
                 return // Drop event if RUM is not enabled or RUM session is not sampled
             }
@@ -117,10 +121,16 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 event["session"] = session
             }
 
-            if var dd = event["_dd"] as? JSON, context.hasReplay != true {
-                // Remove stats if native replay is disabled
-                dd["replay_stats"] = nil
-                event["_dd"] = dd
+            if var dd = event["_dd"] as? JSON {
+                if context.hasReplay != true {
+                    // Remove stats if native replay is disabled
+                    dd["replay_stats"] = nil
+                    event["_dd"] = dd
+                }
+                if let firstPartyHostSamplingRate, dd["rule_psr"] != nil {
+                    dd["rule_psr"] = firstPartyHostSamplingRate.percentageProportion
+                    event["_dd"] = dd
+                }
             }
 
             // Add native anonymous_id to the event's usr object
