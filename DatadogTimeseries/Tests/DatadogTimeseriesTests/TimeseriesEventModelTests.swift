@@ -18,8 +18,8 @@ final class TimeseriesEventModelTests: XCTestCase {
                 start: 1773055068831000000,
                 end: 1773055082916000000,
                 data: [
-                    TimeseriesEvent.DataPoint(timestamp: 1773055068831000000, dataPointValue: 38052032),
-                    TimeseriesEvent.DataPoint(timestamp: 1773055069917000000, dataPointValue: 37970112),
+                    TimeseriesEvent.DataPoint(timestamp: 1773055068831000000, dataPoint: ["memory_usage": 38052032]),
+                    TimeseriesEvent.DataPoint(timestamp: 1773055069917000000, dataPoint: ["memory_usage": 37970112]),
                 ]
             )
         )
@@ -57,7 +57,8 @@ final class TimeseriesEventModelTests: XCTestCase {
         let dataPoints = try XCTUnwrap(ts["data"] as? [[String: Any]])
         XCTAssertEqual(dataPoints.count, 2)
         XCTAssertEqual(dataPoints[0]["timestamp"] as? Int64, 1773055068831000000)
-        XCTAssertEqual(dataPoints[0]["data_point_value"] as? Double, 38052032)
+        let dp0 = try XCTUnwrap(dataPoints[0]["data_point"] as? [String: Any])
+        XCTAssertEqual(dp0["memory_usage"] as? Double, 38052032)
     }
 
     func testTimeseriesEventOmitsNilServiceAndVersion() throws {
@@ -76,7 +77,7 @@ final class TimeseriesEventModelTests: XCTestCase {
                 start: 1000000000,
                 end: 2000000000,
                 data: [
-                    TimeseriesEvent.DataPoint(timestamp: 1000000000, dataPointValue: 55.3),
+                    TimeseriesEvent.DataPoint(timestamp: 1000000000, dataPoint: ["cpu_usage": 55.3]),
                 ]
             )
         )
