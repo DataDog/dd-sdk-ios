@@ -142,6 +142,15 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     telemetry: core.telemetry
                 )
             },
+            timeseriesCollector: {
+                guard configuration.enableTimeseries, let vitalsReaders = configuration.vitalsUpdateFrequency.map({
+                    VitalsReaders(frequency: $0.timeInterval, telemetry: core.telemetry)
+                }) else { return nil }
+                return TimeseriesSessionCollector(
+                    memoryReader: vitalsReaders.memory,
+                    featureScope: featureScope
+                )
+            }(),
             accessibilityReader: accessibilityReader,
             onSessionStart: configuration.onSessionStart,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
