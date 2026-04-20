@@ -33,12 +33,15 @@ class LogsDataModels_objcTests: XCTestCase {
         XCTAssertEqual(swiftDevice.batteryLevel, objcDevice.batteryLevel)
         XCTAssertEqual(swiftDevice.brand, objcDevice.brand)
         XCTAssertEqual(swiftDevice.brightnessLevel, objcDevice.brightnessLevel)
+        XCTAssertEqual(swiftDevice.isLowRam, objcDevice.isLowRam)
         XCTAssertEqual(swiftDevice.locale, objcDevice.locale)
         XCTAssertEqual(swiftDevice.locales, objcDevice.locales)
+        XCTAssertEqual(swiftDevice.logicalCpuCount, objcDevice.logicalCpuCount)
         XCTAssertEqual(swiftDevice.model, objcDevice.model)
         XCTAssertEqual(swiftDevice.name, objcDevice.name)
         XCTAssertEqual(swiftDevice.powerSavingMode, objcDevice.powerSavingMode)
         XCTAssertEqual(swiftDevice.timeZone, objcDevice.timeZone)
+        XCTAssertEqual(swiftDevice.totalRam, objcDevice.totalRam)
         XCTAssertEqual(swiftDevice.type, objcDevice.type.toSwift)
     }
 }

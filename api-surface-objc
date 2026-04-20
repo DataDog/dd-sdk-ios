@@ -204,12 +204,15 @@ public class objc_LogEventDevice: NSObject
     public var batteryLevel: Double?
     public var brand: String?
     public var brightnessLevel: Double?
+    public var isLowRam: Bool?
     public var locale: String?
     public var locales: [String]?
+    public var logicalCpuCount: Double?
     public var model: String?
     public var name: String?
     public var powerSavingMode: Bool?
     public var timeZone: String?
+    public var totalRam: Double?
     public var type: objc_LogEventDeviceDeviceType
 public enum objc_LogEventDeviceDeviceType: Int
     case none

@@ -395,12 +395,20 @@ public class objc_LogEventDevice: NSObject {
         root.swiftModel.device.brightnessLevel
     }
 
+    public var isLowRam: Bool? {
+        root.swiftModel.device.isLowRam
+    }
+
     public var locale: String? {
         root.swiftModel.device.locale
     }
 
     public var locales: [String]? {
         root.swiftModel.device.locales
+    }
+
+    public var logicalCpuCount: Double? {
+        root.swiftModel.device.logicalCpuCount
     }
 
     public var model: String? {
@@ -417,6 +425,10 @@ public class objc_LogEventDevice: NSObject {
 
     public var timeZone: String? {
         root.swiftModel.device.timeZone
+    }
+
+    public var totalRam: Double? {
+        root.swiftModel.device.totalRam
     }
 
     public var type: objc_LogEventDeviceDeviceType {

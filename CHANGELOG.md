@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FIX] Propagate native `anonymous_id` to WebView RUM and Log events. See [#2847][]
+- [IMPROVEMENT] Add device properties `isLowRam`, `logicalCpuCount`, `totalRam` to the `LogEvent` Objective-C API. See [#2854][]
 
 # 3.10.0 / 16-04-2026
 
@@ -1127,6 +1128,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2827]: https://github.com/DataDog/dd-sdk-ios/pull/2827
 [#2829]: https://github.com/DataDog/dd-sdk-ios/pull/2829
 [#2847]: https://github.com/DataDog/dd-sdk-ios/pull/2847
+[#2854]: https://github.com/DataDog/dd-sdk-ios/pull/2854
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
