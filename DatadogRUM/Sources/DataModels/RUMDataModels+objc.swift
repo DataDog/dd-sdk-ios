@@ -6148,7 +6148,6 @@ public class objc_RUMResourceEventView: NSObject {
         get { root.swiftModel.view.url }
     }
 }
-
 @objc(DDRUMViewEvent)
 @objcMembers
 @_spi(objc)
@@ -15300,4 +15299,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/2e1fe49897be86e72c0c2f0c2ae052c0d5f826eb
+// Generated from https://github.com/DataDog/rum-events-format/tree/bc7b1ff5936caa0fc6fd3d190ac60273cf80c604
