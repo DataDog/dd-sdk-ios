@@ -46,6 +46,7 @@ internal struct RUMScopeDependencies {
     let firstFrameReader: RenderLoopReader
     let viewHitchesReaderFactory: () -> (RenderLoopReader & ViewHitchesModel)?
     let vitalsReaders: VitalsReaders?
+    let timeseriesCollector: TimeseriesCollecting?
     let accessibilityReader: AccessibilityReading?
     let onSessionUpdate: RUM.SessionUpdater
     let viewCache: ViewCache
@@ -88,6 +89,7 @@ internal struct RUMScopeDependencies {
         firstFrameReader: RenderLoopReader,
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)?,
         vitalsReaders: VitalsReaders?,
+        timeseriesCollector: TimeseriesCollecting? = nil,
         accessibilityReader: AccessibilityReading?,
         onSessionUpdate: @escaping RUM.SessionUpdater,
         viewCache: ViewCache,
@@ -117,6 +119,7 @@ internal struct RUMScopeDependencies {
         self.firstFrameReader = firstFrameReader
         self.viewHitchesReaderFactory = viewHitchesReaderFactory
         self.vitalsReaders = vitalsReaders
+        self.timeseriesCollector = timeseriesCollector
         self.accessibilityReader = accessibilityReader
         self.onSessionUpdate = onSessionUpdate
         self.viewCache = viewCache
