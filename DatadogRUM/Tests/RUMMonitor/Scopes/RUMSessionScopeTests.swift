@@ -706,4 +706,102 @@ class RUMSessionScopeTests: XCTestCase {
         // Then
         XCTAssertTrue(result)
     }
+
+    // MARK: - Timeseries collector lifecycle
+
+    func testWhenSessionScopeIsCreated_itStartsTimeseriesCollector() {
+        // Given
+        let collector = TimeseriesCollectorSpy()
+
+        // When
+        let _: RUMSessionScope = .mockWith(
+            parent: parent,
+            dependencies: .mockWith(timeseriesCollector: collector)
+        )
+
+        // Then
+        XCTAssertEqual(collector.startCallCount, 1)
+        XCTAssertEqual(collector.stopCallCount, 0)
+    }
+
+    func testWhenSessionExpiresDueToMaxDuration_itStopsTimeseriesCollector() {
+        // Given
+        let collector = TimeseriesCollectorSpy()
+        var currentTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: currentTime,
+            dependencies: .mockWith(timeseriesCollector: collector)
+        )
+
+        // When — push past the max session duration
+        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
+        _ = scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer)
+
+        // Then
+        XCTAssertEqual(collector.stopCallCount, 1)
+    }
+
+    func testWhenSessionExpiresDueToInactivity_itStopsTimeseriesCollector() {
+        // Given
+        let collector = TimeseriesCollectorSpy()
+        var currentTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: currentTime,
+            dependencies: .mockWith(timeseriesCollector: collector)
+        )
+
+        _ = scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer)
+
+        // When — push past the session inactivity timeout
+        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        _ = scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer)
+
+        // Then
+        XCTAssertEqual(collector.stopCallCount, 1)
+    }
+
+    func testWhenSessionScopeStartsNewSession_itStartsCollectorWithCorrectSessionID() {
+        // Given
+        let collector = TimeseriesCollectorSpy()
+        let applicationID = "test-app-id"
+
+        // When
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            dependencies: .mockWith(
+                rumApplicationID: applicationID,
+                timeseriesCollector: collector
+            )
+        )
+
+        // Then
+        XCTAssertEqual(collector.startCallCount, 1)
+        XCTAssertEqual(collector.lastStartedApplicationID, applicationID)
+        XCTAssertNotNil(collector.lastStartedSessionID, "Session ID should be set")
+        XCTAssertFalse(collector.lastStartedSessionID?.isEmpty ?? true)
+        XCTAssertEqual(collector.lastStartedSessionType, scope.context.sessionID != .nullUUID ? .user : .user)
+    }
+}
+
+// MARK: - Test Helpers
+
+private class TimeseriesCollectorSpy: TimeseriesCollecting {
+    var startCallCount = 0
+    var stopCallCount = 0
+    var lastStartedSessionID: String?
+    var lastStartedApplicationID: String?
+    var lastStartedSessionType: RUMSessionType?
+
+    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {
+        startCallCount += 1
+        lastStartedSessionID = sessionID
+        lastStartedApplicationID = applicationID
+        lastStartedSessionType = sessionType
+    }
+
+    func stop() {
+        stopCallCount += 1
+    }
 }
