@@ -192,6 +192,15 @@ Since we work off a feature branch on `rum-events-format` (`bplasovska/timeserie
 
 ---
 
+## Verification Strategy
+
+After each phase:
+1. **Unit tests** — `swift test --package-path DatadogTimeseries` (standalone) and `make test-ios SCHEME="DatadogRUM iOS"` (SDK)
+2. **Runner script** — after Schema C changes, run `DatadogTimeseriesRunner` against the fixture CSV and assert the output JSON matches the Schema C `data_point` nested shape
+3. **Linter** — `./tools/lint/run-linter.sh` after each new/modified file
+
+---
+
 ## What is NOT in scope
 
 - Deadband / Window filters (Plan 3 deferred)
