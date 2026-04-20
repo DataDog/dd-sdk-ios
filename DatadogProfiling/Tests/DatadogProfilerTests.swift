@@ -118,7 +118,7 @@ final class DatadogProfilerTests: XCTestCase {
         let longTask = DurationEvent(id: "long-task-id", type: .longTask, start: 0, duration: 100)
         let launchVital: Vital = .mockWith(stepType: nil)
 
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         _ = profiler.receive(
             message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: completedOperationStart)),
@@ -180,7 +180,7 @@ extension DatadogProfilerTests {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
         // When - transition context to background while retaining foreground history
@@ -200,7 +200,7 @@ extension DatadogProfilerTests {
     func testApplicationDidEnterBackground_doesNothing_whenAppWasNeverInForeground() {
         // Given
         let profiler = continuousProfiler()
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         // App was only ever in background (e.g. UIScene based app)
         core.context = .mockWith(applicationStateHistory: .mockAppInBackground())
@@ -219,7 +219,7 @@ extension DatadogProfilerTests {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         let startOperation = Vital.mockWith(id: .mockRandom(), name: "operation")
         let endOperation = Vital.mockWith(id: .mockRandom(), name: "operation", operationKey: startOperation.operationKey, stepType: .end)
@@ -267,7 +267,7 @@ extension DatadogProfilerTests {
             serverTimeOffset: serverTimeOffset
         )
 
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         _ = profiler.receive(
             message: .payload(
@@ -317,7 +317,7 @@ extension DatadogProfilerTests {
             deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
         )
         let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider, dateProvider: dateProvider)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
@@ -348,7 +348,7 @@ extension DatadogProfilerTests {
             deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
         )
         let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider, dateProvider: dateProvider)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
         XCTAssertTrue(profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core))
@@ -505,7 +505,7 @@ extension DatadogProfilerTests {
             operationKey: startOperation.operationKey,
             stepType: .end
         )
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)), from: core)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)), from: core)
@@ -544,7 +544,7 @@ extension DatadogProfilerTests {
             additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)]
         )
         shareCurrentContext(with: profiler)
-        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
 
         let startOperation = Vital.mockWith(stepType: .start, date: dateProvider.now)
@@ -585,7 +585,7 @@ extension DatadogProfilerTests {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         // When
         core.context = .mockWith(applicationStateHistory: .mockWith(
@@ -612,7 +612,7 @@ extension DatadogProfilerTests {
             profilingSamplerProvider: profilingSamplerProvider,
             profilingInterval: 0.05
         )
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         // When
         waitForProfileWrite(expectingWrite: false, timeout: 0.15) {}
@@ -627,7 +627,7 @@ extension DatadogProfilerTests {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         let startOperation = Vital.mockWith(name: "operation")
         let endOperation = Vital.mockWith(name: "operation", operationKey: startOperation.operationKey, stepType: .end)
@@ -654,7 +654,7 @@ extension DatadogProfilerTests {
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
         let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
 
@@ -678,7 +678,7 @@ extension DatadogProfilerTests {
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
         let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         _ = profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core)
         flushQueue()
@@ -708,7 +708,7 @@ extension DatadogProfilerTests {
         let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider, dateProvider: dateProvider)
         let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
         let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         _ = profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
@@ -740,7 +740,7 @@ extension DatadogProfilerTests {
             profilingSamplerProvider: profilingSamplerProvider,
             dateProvider: dateProvider
         )
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
         // Send background context to stop the profiler and record the state transition
@@ -821,7 +821,7 @@ extension DatadogProfilerTests {
 
     func testCustomProfiler_startsProfilerOnFirstRUMOperationStart() {
         // Given
-        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
 
         let dateProvider = DateProviderMock()
@@ -847,7 +847,7 @@ extension DatadogProfilerTests {
 
     func testCustomProfiler_doesNotRestartRunningProfilerOnOperation() {
         // Given
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
         let dateProvider = DateProviderMock()
@@ -889,7 +889,7 @@ extension DatadogProfilerTests {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = customProfiler(dateProvider: dateProvider)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         // When - background context with no accumulated events
         core.context = .mockWith(applicationStateHistory: .mockWith(
@@ -917,7 +917,7 @@ extension DatadogProfilerTests {
         let profiler = customProfiler(dateProvider: dateProvider)
         shareCurrentContext(with: profiler)
         // Put profiler in NOT_STARTED state (fresh instance, never started) so the custom profiler can start it
-        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
 
         let startOp: Vital = .mockWith(stepType: .start, date: dateProvider.now)
@@ -950,7 +950,7 @@ extension DatadogProfilerTests {
         core.context = .mockWith(applicationStateHistory: .mockAppInForeground(since: initialDate.addingTimeInterval(-1)))
         let profiler = customProfiler(dateProvider: dateProvider)
         shareCurrentContext(with: profiler)
-        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         let startOp = Vital.mockWith(id: "start-id", name: "operation", stepType: .start, date: dateProvider.now)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOp)), from: core)
@@ -977,7 +977,7 @@ extension DatadogProfilerTests {
     func testCustomProfiler_doesNotStartProfiler_onEndOperationWithoutMatchingStart() {
         // Given
         let profiler = customProfiler()
-        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
 
         let orphanEnd: Vital = .mockWith(stepType: .end)
@@ -996,7 +996,7 @@ extension DatadogProfilerTests {
         let dateProvider = DateProviderMock(now: Date())
         let profiler = customProfiler(dateProvider: dateProvider)
         shareCurrentContext(with: profiler)
-        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         let startOp: Vital = .mockWith(stepType: .start, date: dateProvider.now)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOp)), from: core)
@@ -1018,7 +1018,7 @@ extension DatadogProfilerTests {
         let dateProvider = DateProviderMock(now: Date())
         let profiler = customProfiler(dateProvider: dateProvider)
         shareCurrentContext(with: profiler)
-        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         let startOp: Vital = .mockWith(date: dateProvider.now.addingTimeInterval(1))
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOp)), from: core)
@@ -1038,7 +1038,7 @@ extension DatadogProfilerTests {
         let dateProvider = DateProviderMock(now: Date())
         let profiler = customProfiler(dateProvider: dateProvider)
         shareCurrentContext(with: profiler)
-        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         let startOp: Vital = .mockWith(stepType: .start, date: dateProvider.now)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOp)), from: core)
@@ -1061,7 +1061,7 @@ extension DatadogProfilerTests {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = customProfiler(dateProvider: dateProvider)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
         // When
@@ -1082,7 +1082,7 @@ extension DatadogProfilerTests {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = customProfiler(dateProvider: dateProvider)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         let startOperation = Vital.mockWith(name: "operation", date: dateProvider.now)
         let endOperation = Vital.mockWith(
@@ -1117,7 +1117,7 @@ extension DatadogProfilerTests {
         // Given
         let dateProvider = DateProviderMock()
         let profiler = customProfiler(dateProvider: dateProvider)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         let startOperation = Vital.mockWith(name: "operation", date: dateProvider.now)
         let endOperation = Vital.mockWith(
@@ -1151,7 +1151,7 @@ extension DatadogProfilerTests {
     func testCustomProfiler_applicationWillEnterForeground_doesNotRestartProfiler() {
         // Given
         let dateProvider = DateProviderMock()
-        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
 
         let profiler = customProfiler(dateProvider: dateProvider)
@@ -1278,7 +1278,7 @@ extension DatadogProfilerTests {
             dateProvider: dateProvider
         )
         let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
         flushQueue()
 
@@ -1319,7 +1319,7 @@ extension DatadogProfilerTests {
             profilingInterval: 0.05,
             telemetryController: telemetryController
         )
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         // When
         waitForProfileWrite(expectingWrite: false, timeout: 0.15) {}
@@ -1345,7 +1345,7 @@ extension DatadogProfilerTests {
         core.context = .mockWith(applicationStateHistory: .mockAppInForeground(since: initialDate.addingTimeInterval(-1)))
         let profiler = customProfiler(telemetryController: telemetryController, dateProvider: dateProvider)
         shareCurrentContext(with: profiler)
-        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         let startOperation = Vital.mockWith(stepType: .start, date: dateProvider.now)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)), from: core)

@@ -123,7 +123,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         let core = PassthroughCoreMock()
         let profiler = appLaunchProfiler
 
-        dd_profiler_start_testing(0.0, false, 5.seconds.dd.toInt64Nanoseconds) // 0% sample rate
+        dd_profiler_start_testing(0.0, false, 5.seconds.dd.toInt64Nanoseconds, 0) // 0% sample rate
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED, "Profiler should be sampled out")
 
         // When
@@ -138,7 +138,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         let core = PassthroughCoreMock()
         let profiler = appLaunchProfiler
 
-        dd_profiler_start_testing(100.0, true, 5.seconds.dd.toInt64Nanoseconds) // prewarming = true
+        dd_profiler_start_testing(100.0, true, 5.seconds.dd.toInt64Nanoseconds, 0) // prewarming = true
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_PREWARMED, "Profiler should be prewarmed")
 
         // When
@@ -227,7 +227,7 @@ final class AppLaunchProfilerTests: XCTestCase {
             serverTimeOffset: serverTimeOffset
         )
 
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         Thread.sleep(forTimeInterval: 0.05)
 
         // When
