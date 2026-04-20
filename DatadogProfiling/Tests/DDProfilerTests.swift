@@ -9,6 +9,7 @@ import XCTest
 import DatadogInternal
 // swiftlint:disable duplicate_imports
 import DatadogMachProfiler
+import DatadogMachProfiler.Pprof
 import DatadogMachProfiler.Testing
 // swiftlint:enable duplicate_imports
 
@@ -18,7 +19,7 @@ final class DDProfilerTests: XCTestCase {
         // `tearDown` leaves `g_dd_profiler` nil; without this, only the first test would match the
         // static constructor's state. Recreate with 0% sample rate so `auto_start` leaves `NOT_STARTED`.
         dd_profiler_destroy()
-        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
     }
 
     override func tearDown() {
@@ -39,22 +40,116 @@ final class DDProfilerTests: XCTestCase {
     }
 
     func testDDProfiler_startTesting_withZeroSampleRate_doesNotStart() {
-        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED, "Profiler should not start with zero sample rate")
     }
 
     func testDDProfiler_startTesting_withSampleRateAbove100_startsSuccessfully() {
-        dd_profiler_start_testing(150, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(150, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING, "Profiler should start successfully with sample rate above 100")
     }
 
     func testDDProfiler_startTesting_withCustomTimeout() {
-        dd_profiler_start_testing(100, false, 1.seconds.dd.toInt64Nanoseconds) // 1 second timeout
+        dd_profiler_start_testing(100, false, 1.seconds.dd.toInt64Nanoseconds, 0) // 1 second timeout
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING, "Profiler should start with custom timeout")
     }
 
+    func testDDProfiler_flushHarvestsPartialBatch() {
+        dd_profiler_start_testing(100, false, 1.seconds.dd.toInt64Nanoseconds, 0)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        for i in 0..<2_000 {
+            _ = sqrt(Double(i))
+            if i % 100 == 0 {
+                Thread.sleep(forTimeInterval: 0.002)
+            }
+        }
+
+        let profile = dd_profiler_flush_and_get_profile()
+        XCTAssertNotNil(profile, "Flush should harvest samples even when the active batch is not full")
+        if let profile {
+            XCTAssertGreaterThan(dd_pprof_sample_count(profile), 0, "Partial-batch flush should still return collected samples")
+            dd_pprof_destroy(profile)
+        }
+    }
+
+    func testDDProfiler_consumeDiagnostics_reportsDroppedBatchesAtHardLimit() {
+        dd_profiler_start_testing(100, false, 1.seconds.dd.toInt64Nanoseconds, 1)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        for i in 0..<2_000 {
+            _ = sqrt(Double(i))
+            if i % 100 == 0 {
+                Thread.sleep(forTimeInterval: 0.002)
+            }
+        }
+
+        let profile = dd_profiler_flush_and_get_profile()
+        if let profile {
+            dd_pprof_destroy(profile)
+        }
+
+        var diagnostics = dd_profiler_diagnostics_t()
+        dd_profiler_consume_diagnostics(&diagnostics)
+
+        XCTAssertGreaterThan(diagnostics.dropped_batch_count, 0, "Hard-limit drops should be reported")
+        XCTAssertGreaterThan(diagnostics.dropped_sample_count, 0, "Dropped samples should be counted")
+        XCTAssertGreaterThan(diagnostics.max_pending_bytes, 0, "Pending-byte high-water mark should be reported")
+
+        var secondRead = dd_profiler_diagnostics_t()
+        dd_profiler_consume_diagnostics(&secondRead)
+        XCTAssertEqual(secondRead.dropped_batch_count, 0, "Consuming diagnostics should reset batch drops")
+        XCTAssertEqual(secondRead.dropped_sample_count, 0, "Consuming diagnostics should reset sample drops")
+    }
+
+    func testDDProfiler_doesNotIncludeProfilerInternalThreadsInProfile() throws {
+        dd_profiler_start_testing(100, false, 1.seconds.dd.toInt64Nanoseconds, 0)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        for i in 0..<10_000 {
+            _ = sqrt(Double(i))
+            if i % 500 == 0 {
+                Thread.sleep(forTimeInterval: 0.002)
+            }
+        }
+
+        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        defer { dd_pprof_destroy(profile) }
+
+        var data: UnsafeMutablePointer<UInt8>?
+        let size = dd_pprof_serialize(profile, &data)
+        defer { dd_pprof_free_serialized_data(data) }
+
+        XCTAssertGreaterThan(size, 0, "Serialized profile should not be empty")
+
+        let unpackedProfile = try XCTUnwrap(perftools__profiles__profile__unpack(nil, size, data))
+        defer { perftools__profiles__profile__free_unpacked(unpackedProfile, nil) }
+
+        var threadNames: Set<String> = []
+        for i in 0..<unpackedProfile.pointee.n_sample {
+            let sample = try XCTUnwrap(unpackedProfile.pointee.sample[i])
+
+            for j in 0..<sample.pointee.n_label {
+                guard let label = sample.pointee.label?[j] else { continue }
+
+                let keyString = try XCTUnwrap(unpackedProfile.pointee.string_table[Int(label.pointee.key)])
+                if String(cString: keyString) != "thread name" {
+                    continue
+                }
+
+                let valueString = try XCTUnwrap(unpackedProfile.pointee.string_table[Int(label.pointee.str)])
+                threadNames.insert(String(cString: valueString))
+            }
+        }
+
+        XCTAssertFalse(
+            threadNames.contains(where: { $0.hasPrefix("com.datadoghq.profiler.") }),
+            "Profiler-owned threads should not appear in the harvested profile"
+        )
+    }
+
     func testDDProfiler_startTesting_withPrewarming_doesNotStart() {
-        dd_profiler_start_testing(100, true, 5.seconds.dd.toInt64Nanoseconds) // prewarming = true
+        dd_profiler_start_testing(100, true, 5.seconds.dd.toInt64Nanoseconds, 0) // prewarming = true
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_PREWARMED, "Profiler should not start when prewarming is active")
     }
 
@@ -183,7 +278,7 @@ final class DDProfilerTests: XCTestCase {
     }
 
     func testDDProfiler_statusCodes_prewarmed() {
-        dd_profiler_start_testing(100, true, 5.seconds.dd.toInt64Nanoseconds) // prewarming = true
+        dd_profiler_start_testing(100, true, 5.seconds.dd.toInt64Nanoseconds, 0) // prewarming = true
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_PREWARMED, "Should return PREWARMED status when prewarming is true")
     }
 

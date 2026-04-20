@@ -49,6 +49,9 @@ void dd_delete_profiling_defaults(void);
  *                   - Default: 5000000000ULL (5 seconds)
  *                   - Timeout checking occurs during sample processing
  *
+ * @param hard_limit_bytes Maximum queued batch memory before new batches are dropped
+ *                         - 0 uses the default production limit
+ *
  * @note Safe to call multiple times - destroys existing instance before creating new one
  * @note Check `dd_profiler_get_status()` for detailed status after calling
  * @note Designed for unit tests, integration tests, and development builds
@@ -58,7 +61,7 @@ void dd_delete_profiling_defaults(void);
  *
  * @see `dd_profiler_get_status()`, `dd_profiler_stop()`, `dd_profiler_get_profile()`
  */
-void dd_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns);
+void dd_profiler_start_testing(double sample_rate, bool is_prewarming, int64_t timeout_ns, uint64_t hard_limit_bytes);
 
 #ifdef __cplusplus
 }

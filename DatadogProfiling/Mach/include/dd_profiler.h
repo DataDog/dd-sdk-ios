@@ -182,6 +182,18 @@ typedef enum {
 } dd_profiler_status_t;
 
 /**
+ * Diagnostics for profiling aggregation pressure.
+ */
+typedef struct dd_profiler_diagnostics {
+    /** Number of sampled batches dropped since the last consume. */
+    uint64_t dropped_batch_count;
+    /** Number of sampled stack traces dropped since the last consume. */
+    uint64_t dropped_sample_count;
+    /** Maximum queued batch memory observed since the last consume. */
+    uint64_t max_pending_bytes;
+} dd_profiler_diagnostics_t;
+
+/**
  * Opaque handle to a dd profiler profile instance
  */
 #ifdef __cplusplus
@@ -199,6 +211,15 @@ typedef struct profile dd_profile_t;
  * @return Current profiler status code
  */
 dd_profiler_status_t dd_profiler_get_status(void);
+
+/**
+ * @brief Returns and resets profiling diagnostics accumulated since the last consume.
+ *
+ * If `out` is null, this function is a no-op.
+ *
+ * @param out Output diagnostics structure
+ */
+void dd_profiler_consume_diagnostics(dd_profiler_diagnostics_t* out);
 
 /**
  * @brief Stops profiling if it's currently running
@@ -234,8 +255,8 @@ dd_profile_t* dd_profiler_get_profile(void);
  * @brief Flushes the sampling buffer and retrieves the profile
  *
  * Requests a flush of pending samples, then atomically swaps the internal
- * profile with a fresh empty one. Sampling continues uninterrupted into the
- * new profile.
+ * profile with a fresh empty one in the aggregation stream. Sampling continues
+ * uninterrupted into the new profile.
  *
  * @return Typed handle to profile data, or NULL if:
  *         - Profiling was never started
