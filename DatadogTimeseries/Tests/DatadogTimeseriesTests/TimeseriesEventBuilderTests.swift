@@ -69,9 +69,9 @@ final class TimeseriesEventBuilderTests: XCTestCase {
         let event = builder.build(samples: samples, name: .memoryUsage, eventId: "id")
 
         XCTAssertEqual(event.timeseries.data[0].timestamp, 1000)
-        XCTAssertEqual(event.timeseries.data[0].dataPointValue, 42.5)
+        XCTAssertEqual(event.timeseries.data[0].dataPoint["memory_usage"], 42.5)
         XCTAssertEqual(event.timeseries.data[1].timestamp, 2000)
-        XCTAssertEqual(event.timeseries.data[1].dataPointValue, 99.9)
+        XCTAssertEqual(event.timeseries.data[1].dataPoint["memory_usage"], 99.9)
     }
 
     func testNilServiceAndVersion() {

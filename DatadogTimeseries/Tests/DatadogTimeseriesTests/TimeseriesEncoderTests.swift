@@ -21,9 +21,9 @@ final class TimeseriesEncoderTests: XCTestCase {
         let json = String(data: data, encoding: .utf8)!
 
         XCTAssertTrue(json.contains("\"format_version\""))
-        XCTAssertTrue(json.contains("\"data_point_value\""))
+        XCTAssertTrue(json.contains("\"data_point\""))
         XCTAssertFalse(json.contains("\"formatVersion\""))
-        XCTAssertFalse(json.contains("\"dataPointValue\""))
+        XCTAssertFalse(json.contains("\"dataPoint\""))
     }
 
     func testProducesValidJSON() throws {
@@ -62,7 +62,7 @@ final class TimeseriesEncoderTests: XCTestCase {
                 start: 1_000_000_000,
                 end: 2_000_000_000,
                 data: [
-                    TimeseriesEvent.DataPoint(timestamp: 1_000_000_000, dataPointValue: 42),
+                    TimeseriesEvent.DataPoint(timestamp: 1_000_000_000, dataPoint: ["memory_usage": 42]),
                 ]
             )
         )
