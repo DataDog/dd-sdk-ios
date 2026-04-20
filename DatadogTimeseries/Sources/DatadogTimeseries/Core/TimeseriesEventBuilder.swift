@@ -15,7 +15,7 @@ struct TimeseriesEventBuilder {
         let dataPoints = samples.map { sample in
             TimeseriesEvent.DataPoint(
                 timestamp: sample.timestamp,
-                dataPointValue: sample.value
+                dataPoint: [name.rawValue: sample.value]
             )
         }
 
