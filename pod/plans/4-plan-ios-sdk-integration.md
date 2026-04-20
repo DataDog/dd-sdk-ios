@@ -27,11 +27,15 @@ Marie's prototype (`feature/timeseries-prototype`) implements `MemoryTimeseriesC
 
 ## Decisions
 
-- **Schema C** — DataPoint encodes as `{ "timestamp": ..., "memory_usage": 42.0 }` or `{ "timestamp": ..., "cpu_usage": 5.2 }`. One named field per data point, named after the metric.
-- **No cross-package import** — `DatadogRUM` does not import `DatadogTimeseries`. Avoids SPM dependency between a standalone experimental package and the production SDK. Standalone package stays for demo/runner use only.
+- **Schema C** — DataPoint is `{ "timestamp": ..., "data_point": { "memory_max": ..., "memory_percent": ... } }`. Nested `data_point` object with named metric fields. Static `CodingKeys` — compatible with code generation.
+- **Two generated event types** — `RUMTimeseriesMemoryEvent` and `RUMTimeseriesCPUEvent` defined separately in rum-events-format, each with their own `DataPoint` struct.
+- **memory_percent computed at sampling time** — `VitalMemoryReader` returns bytes; collector divides by `ProcessInfo.processInfo.physicalMemory * 100` to get percent.
+- **No cross-package import** — `DatadogRUM` does not import `DatadogTimeseries`. Standalone package stays for demo/runner use only.
 - **PassThrough filter only** — no sampling for this integration. Deadband/Window deferred.
-- **Batch size: 30** — matches the standalone package default, ~30 seconds of data per event.
-- **Sampling interval: 1s** — reuse the existing `VitalInfoSampler` timer or a dedicated 1s timer.
+- **Batch size: 30** — ~30 seconds of data per event.
+- **Sampling interval: 1s** — dedicated `DispatchSourceTimer` (not reusing `VitalInfoSampler`, which runs at user-configured frequency).
+- **Collector lifetime: single reusable instance** — created in `RUMFeature.init`, `start()` resets all state (buffers, timer) cleanly per session.
+- **Session context injected at `start()`** — `RUMSessionScope` calls `collector.start(sessionID:applicationID:)` so the collector always has fresh context for the new session.
 - **Collection scope: session** — start on session start, stop on session end, flush remaining buffer.
 - **Opt-in via RUM config flag** — `RUM.Configuration.enableTimeseries: Bool = false`.
 - **Upload: existing RUM Writer** — no new storage scope or upload worker.
@@ -47,22 +51,37 @@ Marie's prototype (`feature/timeseries-prototype`) implements `MemoryTimeseriesC
 
 **After (Schema C):**
 ```json
-{ "timestamp": 1714000000000000000, "memory_usage": 38052032.0 }
-{ "timestamp": 1714000000000000000, "cpu_usage": 5.2 }
+{
+  "timestamp": 1776690660041000000,
+  "data_point": {
+    "memory_max": 115456128.5,
+    "memory_percent": 76.8
+  }
+}
 ```
 
-Implementation: `DataPoint` uses a dynamic `CodingKey` so the value field name comes from the metric:
+The value is wrapped in a nested `data_point` object with named metric fields. This uses **static `CodingKeys`** — fully compatible with code generation.
 
+**Memory data point fields:**
+- `memory_max` — raw bytes from `VitalMemoryReader.readVitalData()` (`phys_footprint`)
+- `memory_percent` — `memory_max / ProcessInfo.processInfo.physicalMemory * 100`
+
+**CPU data point fields (to confirm exact names with backend):**
+- `cpu_usage` — CPU percentage from `VitalCPUReader.readVitalData()`
+
+**Generated struct shape (from rum-events-format):**
 ```swift
-struct TimeseriesDataPoint: Encodable {
-    let timestamp: Int64
-    let metricName: String  // "memory_usage" or "cpu_usage"
-    let value: Double
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: DynamicCodingKey.self)
-        try container.encode(timestamp, forKey: .init("timestamp"))
-        try container.encode(value, forKey: .init(metricName))
+// RUMDataModels.swift (generated)
+public struct RUMTimeseriesMemoryEvent: RUMDataModel {
+    // ... envelope fields ...
+    public struct DataPoint: Codable {
+        public let timestamp: Int64
+        public let dataPoint: MemoryDataPoint
+        public struct MemoryDataPoint: Codable {
+            public let memoryMax: Double
+            public let memoryPercent: Double
+            // CodingKeys: memory_max, memory_percent
+        }
     }
 }
 ```
@@ -112,20 +131,20 @@ Since we work off a feature branch on `rum-events-format` (`bplasovska/timeserie
 
 ### Phase 0 — rum-events-format schema
 
-0. **Create branch `bplasovska/timeseries` on `rum-events-format`** and define the `TimeseriesEvent` JSON Schema there (no PR needed)
-   - Schema C shape: `{ "_dd", "application", "session", "source", "type", "service", "version", "date", "timeseries": { "id", "name", "start", "end", "data": [{ "timestamp", "<metric_name>": value }] } }`
-   - Each metric gets its own data point schema (static keys): `memory_usage` event uses a `DataPoint` with `memory_usage: Double`; `cpu_usage` event uses a `DataPoint` with `cpu_usage: Double`
+0. **Create branch `bplasovska/timeseries` on `rum-events-format`** and define two JSON Schemas there (no PR needed)
+   - **`RUMTimeseriesMemoryEvent`**: envelope + `timeseries.data: [{ timestamp, data_point: { memory_max: Double, memory_percent: Double } }]`
+   - **`RUMTimeseriesCPUEvent`**: envelope + `timeseries.data: [{ timestamp, data_point: { cpu_usage: Double } }]` (confirm exact CPU field names with backend)
+   - Both share the same envelope shape: `{ _dd, application, session, source, type, service, version, date, timeseries: { id, name, start, end, data } }`
    - Run `make rum-models-generate GIT_REF=bplasovska/timeseries` on the iOS branch → generated structs appear in `RUMDataModels.swift`
-   - **No placeholder needed:** since we can generate from the branch immediately, skip the `_TimeseriesEventPlaceholder.swift` approach
 
 ### Phase 1 — Schema C in standalone package
 
 1. **Update `TimeseriesEvent.DataPoint`** in `DatadogTimeseries/Sources/DatadogTimeseries/Models/TimeseriesEvent.swift`
-   - Replace `dataPointValue: Double` (CodingKey `data_point_value`) with dynamic encoding
-   - Add `DynamicCodingKey` helper
-   - `DataPoint` becomes `{ timestamp, metricName, value }` — encodes value under `metricName`
+   - Replace `dataPointValue: Double` (CodingKey `data_point_value`) with Schema C nested shape
+   - `DataPoint` becomes `{ timestamp: Int64, dataPoint: [String: Double] }` — encodes as `{ "timestamp": ..., "data_point": { "memory_max": ..., "memory_percent": ... } }`
+   - `dataPoint` is a `[String: Double]` dictionary (flexible for runner/demo use; the SDK uses generated typed structs)
 
-2. **Update `TimeseriesEventBuilder`** to pass the metric name when creating DataPoints
+2. **Update `TimeseriesEventBuilder`** to populate `dataPoint` dictionary with the correct metric keys per `TimeseriesName`
 
 3. **Update fixture files** (`expected_memory_batch1.json`, `expected_cpu_batch1.json`) to Schema C format
 
@@ -137,11 +156,11 @@ Since we work off a feature branch on `rum-events-format` (`bplasovska/timeserie
 
 6. **Create `DatadogRUM/Sources/Timeseries/TimeseriesSessionCollector.swift`**
    - `TimeseriesSessionCollector` — manages two metric streams (memory + CPU)
-   - `init(memoryReader:cpuReader:batchSize:writer:context:)`
-   - `start()` — starts 1s Timer on a background DispatchQueue
-   - `stop()` — invalidates timer, flushes remaining buffers
-   - Timer handler: read both vitals, append to respective buffer, flush if at batch size
-   - `flush(metric:buffer:)` — builds event using the generated type from `RUMDataModels.swift`, writes via `FeatureScope.eventWriteContext { _, writer in writer.write(value: event) }`
+   - `init(memoryReader:cpuReader:batchSize:featureScope:)`
+   - `start(sessionID:applicationID:)` — resets buffers, starts dedicated 1s `DispatchSourceTimer` on a background serial queue
+   - `stop()` — cancels timer, flushes remaining buffers for both metrics
+   - Timer handler: read both vitals; for memory compute `memory_percent = bytes / ProcessInfo.processInfo.physicalMemory * 100`; append to respective buffer; flush if buffer.count >= batchSize
+   - `flush(metric:buffer:)` — builds `RUMTimeseriesMemoryEvent` or `RUMTimeseriesCPUEvent` from `RUMDataModels.swift`, writes via `featureScope.eventWriteContext { _, writer in writer.write(value: event) }`
    - Thread-safe: all buffer access on dedicated serial queue
 
 ### Phase 3 — Wire into RUM
@@ -158,8 +177,8 @@ Since we work off a feature branch on `rum-events-format` (`bplasovska/timeserie
       - Inject into `RUMScopeDependencies`
 
 10. **Update `RUMSessionScope`** (`DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift`)
-    - In `init`: call `dependencies.timeseriesCollector?.start(with: context)`
-    - On session end: call `dependencies.timeseriesCollector?.stop()`
+    - In `init`: call `dependencies.timeseriesCollector?.start(sessionID: sessionUUID.toRUMDataFormat, applicationID: dependencies.rumApplicationID)`
+    - On session end (at the existing expiry/stop call site, following Marie's prototype pattern): call `dependencies.timeseriesCollector?.stop()`
 
 ### Phase 4 — Tests
 
