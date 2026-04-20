@@ -50,11 +50,11 @@ public struct TimeseriesEvent: Codable {
 
     public struct DataPoint: Codable {
         public let timestamp: Int64
-        public let dataPointValue: Double
+        public let dataPoint: [String: Double]
 
         enum CodingKeys: String, CodingKey {
             case timestamp
-            case dataPointValue = "data_point_value"
+            case dataPoint = "data_point"
         }
     }
 }
