@@ -36,6 +36,8 @@
 
 namespace dd::profiler {
 
+class binary_image_cache;
+
 /**
  * @brief Represents a deduplicated binary mapping in the profile
  * 
@@ -158,6 +160,18 @@ public:
      */
     void add_samples(const stack_trace_t* traces, size_t count);
 
+    /**
+     * @brief Process multiple stack traces and lazily resolve first-seen locations.
+     *
+     * Existing locations reuse their interned mapping and location IDs without
+     * re-resolving binary image data.
+     *
+     * @param traces Array of stack traces to process
+     * @param count Number of traces in the array
+     * @param image_cache Optional binary image cache used to resolve first-seen locations
+     */
+    void add_samples(const stack_trace_t* traces, size_t count, binary_image_cache* image_cache);
+
     /** @brief Get read-only access to deduplicated string table */
     const std::vector<std::string>& strings() const { return _strings; }
     
@@ -270,6 +284,8 @@ private:
     // Helper methods
     uint32_t intern_string(const std::string& str);
     uint32_t intern_frame(const stack_frame_t& frame);
+    // Resolves binary image data for first-seen locations before interning.
+    uint32_t intern_frame(const stack_frame_t& frame, binary_image_cache* image_cache);
     uint32_t intern_binary(const binary_image_t& image);
     uint32_t intern_location(const location_t& location);
 };

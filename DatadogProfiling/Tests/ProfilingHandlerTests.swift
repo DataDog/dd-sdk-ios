@@ -242,7 +242,7 @@ final class ProfilingHandlerTests: XCTestCase {
             serverTimeOffset: serverTimeOffset
         )
 
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         Thread.sleep(forTimeInterval: 0.05)
         let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
         let originalStart = dd_pprof_get_start_timestamp_s(profile)

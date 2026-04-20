@@ -5,6 +5,7 @@
  */
 
 #include "mach_sampling_profiler.h"
+#include "aggregation_worker.h"
 
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
@@ -19,6 +20,7 @@
 #include <mach/thread_act.h>
 #include <mach/thread_status.h>
 #include <mach/machine/thread_state.h>
+#include <new>
 
 // Address validation constants and macros
 //
@@ -336,13 +338,22 @@ namespace dd::profiler {
 mach_sampling_profiler::mach_sampling_profiler(
     const sampling_config_t* config,
     stack_trace_callback_t callback,
-    void* ctx)
-    : running(false)
+    void* ctx,
+    uint64_t hard_limit_bytes)
+    : should_sample(false)
     , config(SAMPLING_CONFIG_DEFAULT)
     , callback(callback)
     , ctx(ctx) {
     if (config) this->config = *config;
     sample_buffer.reserve(this->config.max_buffer_size);
+    worker.reset(new (std::nothrow) aggregation_worker(
+        this->config.max_buffer_size,
+        this->config.max_stack_depth,
+        callback,
+        ctx,
+        hard_limit_bytes,
+        this->config.qos_class
+    ));
 }
 
 /**
@@ -357,7 +368,12 @@ mach_sampling_profiler::~mach_sampling_profiler() {
  */
 void* mach_sampling_profiler::sampling_thread_entry(void* arg) {
     pthread_setname_np("com.datadoghq.profiler.sampling");
-    static_cast<mach_sampling_profiler*>(arg)->main();
+    auto* profiler = static_cast<mach_sampling_profiler*>(arg);
+    profiler->sampling_thread_mach.store(
+        pthread_mach_thread_np(pthread_self()),
+        std::memory_order_relaxed
+    );
+    profiler->main();
     return nullptr;
 }
 
@@ -369,8 +385,9 @@ void* mach_sampling_profiler::sampling_thread_entry(void* arg) {
  */
 bool mach_sampling_profiler::start_sampling() {
     std::lock_guard<std::mutex> lock(state_mutex);
-    
-    if (running) return false;
+
+    if (should_sample.load(std::memory_order_relaxed)
+        || has_sampling_thread.load(std::memory_order_relaxed)) return false;
 
     if (config.profile_current_thread_only) {
         target_thread = pthread_self();
@@ -378,48 +395,91 @@ bool mach_sampling_profiler::start_sampling() {
 
     // Clear any leftover data from previous runs
     sample_buffer.clear();
+    if (sample_buffer.capacity() < config.max_buffer_size) {
+        sample_buffer.reserve(config.max_buffer_size);
+    }
+    sampling_thread_mach.store(MACH_PORT_NULL, std::memory_order_relaxed);
 
     init_safe_read_handlers();
+    if (!worker || !worker->start()) {
+        return false;
+    }
 
-    running = true;
+    should_sample.store(true, std::memory_order_relaxed);
 
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_set_qos_class_np(&attr, config.qos_class, 0);
+    pthread_attr_t sampling_attr;
+    pthread_attr_init(&sampling_attr);
+    pthread_attr_set_qos_class_np(&sampling_attr, config.qos_class, 0);
 
-    pthread_create(&sampling_thread, &attr, sampling_thread_entry, this);
-    
-    pthread_attr_destroy(&attr);
-    return running;
+    int sampling_result = pthread_create(&sampling_thread, &sampling_attr, sampling_thread_entry, this);
+    pthread_attr_destroy(&sampling_attr);
+    if (sampling_result != 0) {
+        should_sample.store(false, std::memory_order_relaxed);
+        worker->stop();
+        return false;
+    }
+
+    has_sampling_thread.store(true, std::memory_order_release);
+    return true;
 }
 
 /**
  * Stops the sampling process.
  *
+ * If called from a thread owned by this profiler, this only requests an
+ * asynchronous stop. Full join and reset are performed later by another thread.
+ *
  */
 void mach_sampling_profiler::stop_sampling() {
-    // Avoid deadlock if the sampling thread triggers the stop when it reaches the timeout.
-    if (pthread_equal(pthread_self(), sampling_thread)) {
-        running = false;
+    if ((has_sampling_thread.load(std::memory_order_acquire) && pthread_equal(pthread_self(), sampling_thread))
+        || (worker && worker->is_worker_thread())) {
+        request_stop();
         return;
     }
 
     std::lock_guard<std::mutex> lock(state_mutex);
-    
-    if (!running) return;
-    running = false;
+    request_stop();
 
-    // Join while holding the lock to ensure the sampling thread
-    // completes its flush_buffer() before any new session can start
-    pthread_join(sampling_thread, nullptr);
+    // Join while holding the lock to ensure the previous session is fully drained
+    // before any new session can start.
+    if (has_sampling_thread.load(std::memory_order_acquire)) {
+        pthread_join(sampling_thread, nullptr);
+        sampling_thread_mach.store(MACH_PORT_NULL, std::memory_order_relaxed);
+        has_sampling_thread.store(false, std::memory_order_release);
+    }
+
+    if (worker) {
+        worker->stop();
+    }
 }
 
-void mach_sampling_profiler::request_flush() {
-    if (!running) return;
+void mach_sampling_profiler::request_flush(flush_action_t action, void* action_ctx) {
+    if (worker) {
+        worker->request_flush(action, action_ctx);
+    }
+}
 
-    std::unique_lock<std::mutex> lock(flush_mutex);
-    flush_requested = true;
-    flush_cv.wait(lock, [this] { return !flush_requested; });
+void mach_sampling_profiler::request_stop() {
+    should_sample.store(false, std::memory_order_relaxed);
+}
+
+void mach_sampling_profiler::consume_diagnostics(dd_profiler_diagnostics_t* out) {
+    if (worker) {
+        worker->consume_diagnostics(out);
+    } else if (out) {
+        out->dropped_batch_count = 0;
+        out->dropped_sample_count = 0;
+        out->max_pending_bytes = 0;
+    }
+}
+
+bool mach_sampling_profiler::is_profiler_internal_thread(thread_t thread) const {
+    const thread_t sampling_thread_id = sampling_thread_mach.load(std::memory_order_relaxed);
+    if (sampling_thread_id != MACH_PORT_NULL && thread == sampling_thread_id) {
+        return true;
+    }
+
+    return worker && worker->is_worker_thread(thread);
 }
 
 /**
@@ -451,9 +511,6 @@ void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_na
 
     if (trace.frame_count > 0) {
         sample_buffer.push_back(trace);
-        if (sample_buffer.size() >= config.max_buffer_size) {
-            flush_buffer();
-        }
     } else {
         stack_trace_destroy(&trace);
     }
@@ -463,22 +520,22 @@ void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_na
  * Main sampling loop that collects stack traces from threads.
  */
 void mach_sampling_profiler::main() {
-    while (running) {
-        // Check for flush request at safe point (no threads suspended)
-        if (flush_requested) {
-            flush_buffer();
-            {
-                std::lock_guard<std::mutex> lock(flush_mutex);
-                flush_requested = false;
-            }
-            flush_cv.notify_one();
-        }
+    while (should_sample.load(std::memory_order_relaxed)) {
+        // Check for flush request at a safe point (no threads suspended).
+        worker->service_pending_flush_request(sample_buffer);
 
         // Sampling interval in nanoseconds
         uint64_t interval_nanos = config.sampling_interval_nanos;
 
+        if (sample_buffer.size() >= config.max_buffer_size) {
+            worker->enqueue_active_buffer(sample_buffer);
+        }
+
         if (config.profile_current_thread_only) {
             sample_thread(pthread_mach_thread_np(target_thread), interval_nanos);
+            if (sample_buffer.size() >= config.max_buffer_size) {
+                worker->enqueue_active_buffer(sample_buffer);
+            }
         } else {
             thread_act_array_t threads = nullptr;
             mach_msg_type_number_t count = 0;
@@ -489,15 +546,19 @@ void mach_sampling_profiler::main() {
             }
 
             for (mach_msg_type_number_t i = 0; i < count; i++) {
-                if (!running) break;
+                if (!should_sample.load(std::memory_order_relaxed)) break;
 
                 // Stop sampling if we've reached the configured thread limit
                 if (config.max_thread_count != 0 && i > config.max_thread_count) break;
-                
-                // Skip the sampling thread itself
-                if (threads[i] == pthread_mach_thread_np(pthread_self())) continue;
+
+                // Skip profiler-owned threads to avoid self-noise in customer profiles.
+                if (is_profiler_internal_thread(threads[i])) continue;
                 
                 sample_thread(threads[i], interval_nanos);
+
+                if (sample_buffer.size() >= config.max_buffer_size) {
+                    worker->enqueue_active_buffer(sample_buffer);
+                }
             }
 
             // Clean up thread references
@@ -511,33 +572,9 @@ void mach_sampling_profiler::main() {
         // Sleep for the same interval we recorded
         std::this_thread::sleep_for(std::chrono::nanoseconds(interval_nanos));
     }
-    
-    // Flush any remaining samples
-    flush_buffer();
 
-    // Unblock waiters if sampling stops before servicing a pending flush request.
-    {
-        std::lock_guard<std::mutex> lock(flush_mutex);
-        flush_requested = false;
-    }
-    flush_cv.notify_all();
-}
-
-/**
- * Flushes the sample buffer by calling the callback with collected traces.
- */
-void mach_sampling_profiler::flush_buffer() {
-    if (sample_buffer.empty()) return;
-
-    // Deliver raw traces to the callback. Binary image resolution is the consumer's responsibility
-    callback(sample_buffer.data(), sample_buffer.size(), ctx);
-
-    // Free allocated frame memory and binary image data
-    for (auto& trace : sample_buffer) {
-        stack_trace_destroy(&trace);
-    }
-    
-    sample_buffer.clear();
+    // Final safe point: hand off any remaining samples and complete a pending flush.
+    worker->finish_producer(sample_buffer);
 }
 
 } // namespace dd::profiler
