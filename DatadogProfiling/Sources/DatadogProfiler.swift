@@ -327,9 +327,9 @@ private extension DatadogProfiler {
     func shouldKeepProfilerRunning() -> Bool {
         if profilingSamplerProvider.isContinuousProfilingConfigured {
             switch profilingSamplerProvider.continuousProfilingSampled {
-            case true: // It is Continuous Profiling running
+            case .some(true): // It is Continuous Profiling running
                 return hasConditionsToProfile
-            case false: // It is Custom Profiling running
+            case .some(false): // It is Custom Profiling running
                 return hasConditionsToProfile && currentRUMVitals.ongoingOperations().isEmpty == false
             case .none: // Waiting for RUM context info
                 return hasConditionsToProfile && isContinuousProfilingGraceAvailable
