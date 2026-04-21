@@ -1155,6 +1155,8 @@
 		D2C1A50829C4C4CB00946C31 /* TracingURLSessionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25BADA029C1EF3000112069 /* TracingURLSessionHandler.swift */; };
 		D2C1A50929C4C4CB00946C31 /* SpanEventEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A8A424509FAA00DA608C /* SpanEventEncoder.swift */; };
 		D2C1A50A29C4C4CB00946C31 /* TraceFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2546C0329AF55AA0054E00B /* TraceFeature.swift */; };
+		E7CSS01129C4D5A800000011 /* SpanSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS01429C4D5A800000014 /* SpanSnapshot.swift */; };
+		E7CSS01329C4D5A800000013 /* SpanSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS01629C4D5A800000016 /* SpanSnapshotTests.swift */; };
 		E7CSS00129C4D5A800000001 /* ClientStatsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS00429C4D5A800000004 /* ClientStatsFeature.swift */; };
 		E7CSS00229C4D5A800000002 /* StatsRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS00529C4D5A800000005 /* StatsRequestBuilder.swift */; };
 		E7CSS00329C4D5A800000003 /* ClientStatsFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS00629C4D5A800000006 /* ClientStatsFeatureTests.swift */; };
@@ -2797,6 +2799,8 @@
 		D253EE982B98B3690010B589 /* ViewCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewCacheTests.swift; sourceTree = "<group>"; };
 		D2546BF029AF4F550054E00B /* DatadogTracer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogTracer.swift; sourceTree = "<group>"; };
 		D2546C0329AF55AA0054E00B /* TraceFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceFeature.swift; sourceTree = "<group>"; };
+		E7CSS01429C4D5A800000014 /* SpanSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanSnapshot.swift; sourceTree = "<group>"; };
+		E7CSS01629C4D5A800000016 /* SpanSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanSnapshotTests.swift; sourceTree = "<group>"; };
 		E7CSS00429C4D5A800000004 /* ClientStatsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientStatsFeature.swift; sourceTree = "<group>"; };
 		E7CSS00529C4D5A800000005 /* StatsRequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsRequestBuilder.swift; sourceTree = "<group>"; };
 		E7CSS00629C4D5A800000006 /* ClientStatsFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientStatsFeatureTests.swift; sourceTree = "<group>"; };
@@ -5393,6 +5397,7 @@
 				61122ECD25B1B74500F9C7F5 /* SpanSanitizer.swift */,
 				614872762485067300E3EBDB /* SpanTagsReducer.swift */,
 				61CE58592B48174D00479510 /* SpanWriteContext.swift */,
+				E7CSS01429C4D5A800000014 /* SpanSnapshot.swift */,
 			);
 			path = Span;
 			sourceTree = "<group>";
@@ -5456,6 +5461,7 @@
 				61E45BD12450F65B00F2C652 /* SpanEventBuilderTests.swift */,
 				61122EE725B1C92500F9C7F5 /* SpanSanitizerTests.swift */,
 				618C0FBF2B482F6800266B38 /* SpanWriteContextTests.swift */,
+				E7CSS01629C4D5A800000016 /* SpanSnapshotTests.swift */,
 			);
 			path = Span;
 			sourceTree = "<group>";
@@ -8710,6 +8716,7 @@
 				D2C1A50A29C4C4CB00946C31 /* TraceFeature.swift in Sources */,
 				E7CSS00129C4D5A800000001 /* ClientStatsFeature.swift in Sources */,
 				E7CSS00229C4D5A800000002 /* StatsRequestBuilder.swift in Sources */,
+				E7CSS01129C4D5A800000011 /* SpanSnapshot.swift in Sources */,
 				D2C1A50829C4C4CB00946C31 /* TracingURLSessionHandler.swift in Sources */,
 				D2C1A50529C4C4CB00946C31 /* DatadogTracer.swift in Sources */,
 			);
@@ -8732,6 +8739,7 @@
 				3C6C7FFD2B459AF6006F5CBC /* OTelSpanTests.swift in Sources */,
 				619CE7612A458D66005588CB /* TraceTests.swift in Sources */,
 				E7CSS00329C4D5A800000003 /* ClientStatsFeatureTests.swift in Sources */,
+				E7CSS01329C4D5A800000013 /* SpanSnapshotTests.swift in Sources */,
 				615192D02BD6B7C90005A782 /* DatadogTracer+InjectAndExtract.swift in Sources */,
 				D2C1A52029C4C75700946C31 /* DDSpanTests.swift in Sources */,
 				3C5D636C2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift in Sources */,
