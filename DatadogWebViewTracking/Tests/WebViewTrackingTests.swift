@@ -42,6 +42,9 @@ class WebViewTrackingTests: XCTestCase {
             },
             getPrivacyLevel() {
                 return 'mask'
+            },
+            getIsTraceSampled() {
+                return null
             }
         }
         """)
@@ -94,6 +97,9 @@ class WebViewTrackingTests: XCTestCase {
             },
             getPrivacyLevel() {
                 return '\(privacyLevel.rawValue)'
+            },
+            getIsTraceSampled() {
+                return null
             }
         }
         """)

@@ -195,7 +195,8 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
             commandSubscriber: commandsSubscriberMock,
-            viewCache: ViewCache(dateProvider: SystemDateProvider())
+            viewCache: ViewCache(dateProvider: SystemDateProvider()),
+            firstPartyHostSamplingRate: nil
         )
 
         // When
@@ -214,7 +215,8 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: SystemDateProvider())
+            viewCache: ViewCache(dateProvider: SystemDateProvider()),
+            firstPartyHostSamplingRate: nil
         )
 
         // When
@@ -239,7 +241,8 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider)
+            viewCache: ViewCache(dateProvider: dateProvider),
+            firstPartyHostSamplingRate: nil
         )
 
         dateProvider.advance(bySeconds: 1)
@@ -288,7 +291,8 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: SystemDateProvider())
+            viewCache: ViewCache(dateProvider: SystemDateProvider()),
+            firstPartyHostSamplingRate: nil
         )
 
         // When
@@ -315,7 +319,8 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider)
+            viewCache: ViewCache(dateProvider: dateProvider),
+            firstPartyHostSamplingRate: nil
         )
 
         let containerViewID: String = .mockRandom()
@@ -397,7 +402,8 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider)
+            viewCache: ViewCache(dateProvider: dateProvider),
+            firstPartyHostSamplingRate: nil
         )
 
         let containerViewID: String = .mockRandom()
@@ -475,7 +481,8 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider)
+            viewCache: ViewCache(dateProvider: dateProvider),
+            firstPartyHostSamplingRate: nil
         )
 
         dateProvider.advance(bySeconds: 1)
@@ -527,7 +534,8 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider)
+            viewCache: ViewCache(dateProvider: dateProvider),
+            firstPartyHostSamplingRate: nil
         )
 
         dateProvider.advance(bySeconds: 1)
@@ -571,7 +579,8 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider)
+            viewCache: ViewCache(dateProvider: dateProvider),
+            firstPartyHostSamplingRate: nil
         )
 
         dateProvider.advance(bySeconds: 1)
