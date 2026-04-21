@@ -355,8 +355,8 @@ final class SwiftPrinterTests: XCTestCase {
             public func encode(to encoder: Encoder) throws {
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-                try context.forEach {
-                    try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+                context.forEach { name, value in
+                    dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
                 }
             }
 
@@ -469,8 +469,8 @@ final class SwiftPrinterTests: XCTestCase {
 
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-                try context.forEach {
-                    try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+                context.forEach { name, value in
+                    dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
                 }
             }
 
@@ -713,8 +713,8 @@ final class SwiftPrinterTests: XCTestCase {
             public func encode(to encoder: Encoder) throws {
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-                try context.forEach {
-                    try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+                context.forEach { name, value in
+                    dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
                 }
             }
 
@@ -740,6 +740,40 @@ final class SwiftPrinterTests: XCTestCase {
         """
 
         XCTAssertEqual(expected, actual)
+    }
+
+    func testPrintingSwiftStructWithDynamicCodingKeys_usesCorrectAttributeEncodingContext() throws {
+        func makeStruct(propertyName: String) throws -> String {
+            let `struct` = SwiftStruct(
+                name: "Foo",
+                comment: nil,
+                properties: [
+                    SwiftStruct.Property(
+                        name: propertyName,
+                        comment: nil,
+                        type: SwiftDictionary(value: SwiftEncodable()),
+                        isOptional: false,
+                        mutability: .immutable,
+                        defaultValue: nil,
+                        codingKey: .dynamic
+                    ),
+                ],
+                conformance: [codableProtocol]
+            )
+            return try SwiftPrinter().print(swiftTypes: [`struct`])
+        }
+
+        // usrInfo → .userInfo
+        XCTAssertTrue(try makeStruct(propertyName: "usrInfo").contains("context: .userInfo"))
+        // accountInfo → .accountInfo
+        XCTAssertTrue(try makeStruct(propertyName: "accountInfo").contains("context: .accountInfo"))
+        // telemetryInfo → .internal
+        XCTAssertTrue(try makeStruct(propertyName: "telemetryInfo").contains("context: .internal"))
+        // syntheticsInfo → .internal
+        XCTAssertTrue(try makeStruct(propertyName: "syntheticsInfo").contains("context: .internal"))
+        // anything else → .custom
+        XCTAssertTrue(try makeStruct(propertyName: "contextInfo").contains("context: .custom"))
+        XCTAssertTrue(try makeStruct(propertyName: "featureFlagsInfo").contains("context: .custom"))
     }
 
     func testPrintingSwiftStructWithMultiLineComments() throws {

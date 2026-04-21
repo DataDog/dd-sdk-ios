@@ -249,9 +249,17 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
                     value = "$1"
                 }
 
-                writeLine("try \(dynamicProperty.backtickName).forEach {") // dynamic properties are dictionaries
+                let context: String
+                switch dynamicProperty.name {
+                case "usrInfo":     context = ".userInfo"
+                case "accountInfo": context = ".accountInfo"
+                case "telemetryInfo", "syntheticsInfo": context = ".internal"
+                default:            context = ".custom"
+                }
+                let encodedValue = value.replacingOccurrences(of: "$1", with: "value")
+                writeLine("\(dynamicProperty.backtickName).forEach { name, value in") // dynamic properties are dictionaries
                 indentRight()
-                    writeLine("try dynamicContainer.encode(\(value), forKey: DynamicCodingKey($0))") // encode `value` (dictionary `key` is used as coding key)
+                    writeLine("dynamicContainer.encodeAttribute(\(encodedValue), forKey: DynamicCodingKey(name), attributeName: name, context: \(context))")
                 indentLeft()
                 writeLine("}")
             }
