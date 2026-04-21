@@ -135,7 +135,7 @@ public enum WebViewTracking {
 
         let rum = core.feature(
             named: RUMFeatureName,
-            type: RUMConfiguration.self
+            type: RUMFirstPartyHostsTracingDecisionProvider.self
         )
 
         let isTraceSampled: String = rum.map {

@@ -106,7 +106,7 @@ class WebViewTrackingTests: XCTestCase {
     }
 
     func testItAddsUserScriptWithFirstPartyHostTracing() throws {
-        struct RUMFeature: DatadogFeature, RUMConfiguration {
+        struct RUMFeature: DatadogFeature, RUMFirstPartyHostsTracingDecisionProvider {
             static let name = "rum"
             let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
             let areFirstPartyHostsTraced: Bool?

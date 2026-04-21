@@ -22,13 +22,17 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     /// The view cache containing ids of current and previous views.
     let viewCache: ViewCache
 
+    /// The sampling rate for RUM first party host sampling, if configured. `nil` otherwise.
     let firstPartyHostSamplingRate: SampleRate?
 
     /// Creates a new receiver.
     ///
     /// - Parameters:
+    ///   - featureScope: The feature scope.
     ///   - dateProvider: The date provider.
     ///   - commandSubscriber: Subscriber that can process a `RUMKeepSessionAliveCommand`.
+    ///   - viewCache: The RUM view cache.
+    ///   - firstPartyHostSamplingRate: The sampling rate for RUM first party host sampling, if configured. `nil` otherwise.
     init(
         featureScope: FeatureScope,
         dateProvider: DateProvider,

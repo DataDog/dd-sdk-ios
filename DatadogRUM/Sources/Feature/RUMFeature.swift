@@ -402,7 +402,7 @@ private extension RUM.Configuration.VitalsFrequency {
     }
 }
 
-extension RUMFeature: RUMConfiguration {
+extension RUMFeature: RUMFirstPartyHostsTracingDecisionProvider {
     var areFirstPartyHostsTraced: Bool? {
         guard let activeSession = monitor.scopes.activeSession,
               let firstPartyHostsSampleRate = configuration.urlSessionTracking?.firstPartyHostsTracing?.sampleRate else {
