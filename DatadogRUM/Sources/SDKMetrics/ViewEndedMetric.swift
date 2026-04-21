@@ -160,6 +160,13 @@ internal extension NetworkSettledResourcePredicate {
         switch self {
         case let timeBased as TimeBasedTNSResourcePredicate:
             return timeBased.threshold == TimeBasedTNSResourcePredicate.defaultThreshold ? .timeBasedDefault : .timeBasedCustom
+        case let objcBridge as NetworkSettledResourcePredicateBridge:
+            switch objcBridge.objcPredicate {
+            case let timeBased as objc_TimeBasedTNSResourcePredicate:
+                return timeBased.swiftPredicate.metricPredicateType
+            default:
+                return .custom
+            }
         default:
             return .custom
         }
@@ -171,6 +178,13 @@ internal extension NextViewActionPredicate {
         switch self {
         case let timeBased as TimeBasedINVActionPredicate:
             return timeBased.maxTimeToNextView == TimeBasedINVActionPredicate.defaultMaxTimeToNextView ? .timeBasedDefault : .timeBasedCustom
+        case let objcBridge as NextViewActionPredicateBridge:
+            switch objcBridge.objcPredicate {
+            case let timeBased as objc_TimeBasedINVActionPredicate:
+                return timeBased.swiftPredicate.metricPredicateType
+            default:
+                return .custom
+            }
         default:
             return .custom
         }

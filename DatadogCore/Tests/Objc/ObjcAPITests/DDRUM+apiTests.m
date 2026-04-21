@@ -8,6 +8,30 @@
 @import DatadogRUM;
 @import DatadogInternal;
 
+// MARK: - DDNetworkSettledResourcePredicate
+
+@interface CustomDDNetworkSettledResourcePredicate: NSObject
+@end
+
+@interface CustomDDNetworkSettledResourcePredicate () <DDNetworkSettledResourcePredicate>
+@end
+
+@implementation CustomDDNetworkSettledResourcePredicate
+- (BOOL)isInitialResourceFrom:(DDTNSResourceParams * _Nonnull)resourceParams { return YES; }
+@end
+
+// MARK: - DDNextViewActionPredicate
+
+@interface CustomDDNextViewActionPredicate: NSObject
+@end
+
+@interface CustomDDNextViewActionPredicate () <DDNextViewActionPredicate>
+@end
+
+@implementation CustomDDNextViewActionPredicate
+- (BOOL)isLastActionFrom:(DDINVActionParams * _Nonnull)actionParams { return YES; }
+@end
+
 #if !TARGET_OS_WATCH
 
 // MARK: - DDUIKitRUMViewsPredicate
@@ -67,6 +91,24 @@
     XCTAssertEqual(config.telemetrySampleRate, 20);
     config.telemetrySampleRate = 30;
     XCTAssertEqual(config.telemetrySampleRate, 30);
+
+    XCTAssertNotNil(config.networkSettledResourcePredicate);
+    CustomDDNetworkSettledResourcePredicate *tnsPredicate = [CustomDDNetworkSettledResourcePredicate new];
+    config.networkSettledResourcePredicate = tnsPredicate;
+    XCTAssertIdentical(config.networkSettledResourcePredicate, tnsPredicate);
+
+    DDTimeBasedTNSResourcePredicate *defaultTNSPredicate = [[DDTimeBasedTNSResourcePredicate alloc] initWithThreshold:0.2];
+    config.networkSettledResourcePredicate = defaultTNSPredicate;
+    XCTAssertNotNil(config.networkSettledResourcePredicate);
+
+    XCTAssertNotNil(config.nextViewActionPredicate);
+    CustomDDNextViewActionPredicate *invPredicate = [CustomDDNextViewActionPredicate new];
+    config.nextViewActionPredicate = invPredicate;
+    XCTAssertIdentical(config.nextViewActionPredicate, invPredicate);
+
+    DDTimeBasedINVActionPredicate *defaultINVPredicate = [[DDTimeBasedINVActionPredicate alloc] initWithMaxTimeToNextView:5.0];
+    config.nextViewActionPredicate = defaultINVPredicate;
+    XCTAssertNotNil(config.nextViewActionPredicate);
 
 #if !TARGET_OS_WATCH
     XCTAssertNil(config.uiKitViewsPredicate);
