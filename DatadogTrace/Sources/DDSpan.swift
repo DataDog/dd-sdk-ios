@@ -129,9 +129,62 @@ internal final class DDSpan: OTSpan {
             ddTracer.removeSpan(span: self)
             activity.leave()
         }
+
+        ddTracer.onSpanFinished?(createSnapshot(finishTime: time))
+
         if self.ddContext.samplingDecision.samplingPriority.isKept {
             sendSpan(finishTime: time)
         }
+    }
+
+    // MARK: - Snapshot
+
+    /// Creates a lightweight `SpanSnapshot` capturing the data needed for client-side stats.
+    /// Called before the sampling decision so that all spans contribute to stats.
+    private func createSnapshot(finishTime: Date) -> SpanSnapshot {
+        let tagsReducer = SpanTagsReducer(spanTags: tags, logFields: logFields)
+        let resolvedService = tagsReducer.extractedServiceName ?? eventBuilder.service ?? ""
+        let resolvedResource = tagsReducer.extractedResourceName ?? operationName
+        let resolvedOperationName = tagsReducer.extractedOperationName ?? operationName
+
+        let spanKind: String? = tags[SpanTags.kind] as? String ?? tags[OTTags.spanKind] as? String
+        let httpStatusCode = (tags[OTTags.httpStatusCode] as? Int).flatMap { UInt32(exactly: $0) } ?? 0
+        let isError = tagsReducer.extractedIsError ?? false
+        let isTopLevel = ddContext.parentSpanID == nil || (tags["_dd.top_level"] as? Int == 1)
+        let isMeasured = tags["_dd.measured"] as? Int == 1
+        let serviceSource: String = tags["_dd.svc_src"] as? String ?? ""
+
+        let peerTagKeys = [
+            "peer.service", "db.instance", "db.system",
+            "out.host", "net.peer.name", "server.address"
+        ]
+        var peerTags: [String: String] = [:]
+        for key in peerTagKeys {
+            if let value = tags[key] as? String, !value.isEmpty {
+                peerTags[key] = value
+            }
+        }
+
+        let startNanos = startTime.timeIntervalSince1970.toNanoseconds
+        let durationNanos = finishTime.timeIntervalSince(startTime).toNanoseconds
+
+        return SpanSnapshot(
+            traceID: ddContext.traceID,
+            spanID: ddContext.spanID,
+            parentSpanID: ddContext.parentSpanID,
+            service: resolvedService,
+            operationName: resolvedOperationName,
+            resource: resolvedResource,
+            spanKind: spanKind,
+            httpStatusCode: httpStatusCode,
+            isError: isError,
+            startTime: startNanos,
+            duration: durationNanos,
+            isTopLevel: isTopLevel,
+            isMeasured: isMeasured,
+            peerTags: peerTags,
+            serviceSource: serviceSource
+        )
     }
 
     // MARK: - Writing SpanEvent
