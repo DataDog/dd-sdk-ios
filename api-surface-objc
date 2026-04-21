@@ -3367,6 +3367,7 @@ public class objc_RUMConfiguration: NSObject
     public var swiftUIViewsPredicate: objc_SwiftUIRUMViewsPredicate?
     public var swiftUIActionsPredicate: objc_SwiftUIRUMActionsPredicate?
     public var trackMemoryWarnings: Bool
+    public var collectAccessibility: Bool
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking)
     public var trackFrustrations: Bool
     public var trackBackgroundEvents: Bool

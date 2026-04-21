@@ -160,6 +160,10 @@
     XCTAssertTrue(config.trackMemoryWarnings);
     config.trackMemoryWarnings = NO;
     XCTAssertFalse(config.trackMemoryWarnings);
+
+    XCTAssertFalse(config.collectAccessibility);
+    config.collectAccessibility = YES;
+    XCTAssertTrue(config.collectAccessibility);
 #endif
 }
 

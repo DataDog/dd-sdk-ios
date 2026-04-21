@@ -449,6 +449,11 @@ public class objc_RUMConfiguration: NSObject {
         set { swiftConfig.trackMemoryWarnings = newValue }
         get { swiftConfig.trackMemoryWarnings }
     }
+
+    public var collectAccessibility: Bool {
+        set { swiftConfig.collectAccessibility = newValue }
+        get { swiftConfig.collectAccessibility }
+    }
     #endif
 
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking) {
