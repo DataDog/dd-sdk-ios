@@ -189,7 +189,6 @@
 		1188485A2F6C50EC008D2919 /* ProfilingHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118848592F6C50EC008D2919 /* ProfilingHandler.swift */; };
 		118848602F6C5122008D2919 /* ProfilingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188485E2F6C5122008D2919 /* ProfilingOperation.swift */; };
 		1188486C2F717DDE008D2919 /* DatadogProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188486A2F717DD8008D2919 /* DatadogProfiler.swift */; };
-		1188486C2F717DDE008D2919 /* ContinuousProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188486A2F717DD8008D2919 /* ContinuousProfiler.swift */; };
 		1188486F2F717EEF008D2919 /* ProfilingConditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188486D2F717EE5008D2919 /* ProfilingConditions.swift */; };
 		118AAE082EBBB7F10018E745 /* dd_profiler_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 118AAE052EBBB74D0018E745 /* dd_profiler_testing.h */; };
 		118ACA3C2EEED247004E7F20 /* AppLaunchMetricController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA3A2EEED247004E7F20 /* AppLaunchMetricController.swift */; };
@@ -5329,17 +5328,13 @@
 			children = (
 				5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */,
 				1166C5A32F76EC05008E34BC /* OperationOptions.swift */,
-<<<<<<< HEAD
-=======
 				1166C5972F76D810008E34BC /* AppHangMessage.swift */,
 				D833FFC3D8CE4FF2BFD7348E /* DurationEvent.swift */,
 				1166C59A2F76D822008E34BC /* LongTaskMessage.swift */,
 				118848522F6C4E0C008D2919 /* OperationMessage.swift */,
 				D2E8A8E62DCBBA5100CF7C63 /* RUMCoreContext.swift */,
->>>>>>> ee017e38c (RUM-14250: Create distinct messages for RUM events)
 				D28FB6952DB7D3F000CD76D0 /* RUMDataModels.swift */,
 				D2D9A9DB2DBFD507005DB31D /* RUMPayloadMessages.swift */,
-				5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */,
 				1166C59D2F76D839008E34BC /* TTIDMessage.swift */,
 				11B8F3402F61DD7E00747321 /* Vital.swift */,
 			);
@@ -6593,14 +6588,12 @@
 			children = (
 				D274657A2E7B199A00C47FE2 /* AppLaunchProfiler.swift */,
 				1188486A2F717DD8008D2919 /* DatadogProfiler.swift */,
-				1188486A2F717DD8008D2919 /* ContinuousProfiler.swift */,
 				D233E7C22E4625D400E7CFDE /* ProfileEvent.swift */,
 				D233E7CA2E46264500E7CFDE /* ProfilerFeature.swift */,
 				D233E7C12E4625D400E7CFDE /* Profiling.swift */,
 				110DD1B02EEB6BB5002F3B8B /* ProfilingConfiguration.swift */,
 				118848592F6C50EC008D2919 /* ProfilingHandler.swift */,
 				1162323D2F87D8F600F20ABC /* ProfilingContextMessageReceiver.swift */,
-				118848592F6C50EC008D2919 /* ProfilingHandler.swift */,
 				1162323F2F87FA5D00F20ABC /* ProfilingSamplerProvider.swift */,
 				D233E7C32E4625D400E7CFDE /* RequestBuilder.swift */,
 				1126B2512EBAB22600A74226 /* PrivacyInfo.xcprivacy */,
