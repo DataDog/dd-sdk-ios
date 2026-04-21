@@ -32,6 +32,13 @@ class DDRUMConfigurationTests: XCTestCase {
     }
 
 #if !os(watchOS)
+    func testCollectAccessibility() {
+        let random: Bool = .mockRandom()
+        objc.collectAccessibility = random
+        XCTAssertEqual(objc.collectAccessibility, random)
+        XCTAssertEqual(swift.collectAccessibility, random)
+    }
+
     func testUIKitViewsPredicate() {
         class ObjcPredicate: objc_UIKitRUMViewsPredicate {
             func rumView(for viewController: UIViewController) -> objc_RUMView? { nil }
