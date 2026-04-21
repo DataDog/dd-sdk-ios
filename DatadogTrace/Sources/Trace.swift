@@ -48,6 +48,9 @@ public enum Trace {
         if configuration.statsComputationEnabled {
             let stats = ClientStatsFeature(core: core, configuration: configuration)
             try core.register(feature: stats)
+
+            // [CSS] Wire StatsConcentrator here to aggregate snapshots into
+            // time-bucketed stats payloads before writing to the stats feature scope.
         }
 
         // If `URLSession` tracking is configured, register `URLSessionHandler` to enable distributed tracing:
