@@ -12,7 +12,7 @@
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		093AC32A2F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
 		094B553F2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */; };
-		094BB2682F963AB50047C56A /* RUMConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094BB2672F963AB50047C56A /* RUMConfiguration.swift */; };
+		094BB2682F963AB50047C56A /* RUMFirstPartyHostsTracingDecisionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094BB2672F963AB50047C56A /* RUMFirstPartyHostsTracingDecisionProvider.swift */; };
 		095AE9582F7D4E9F00C332AE /* TracerSamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE9542F7D4E9F00C332AE /* TracerSamplerProvider.swift */; };
 		095AE9592F7D4E9F00C332AE /* SamplingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE9522F7D4E9F00C332AE /* SamplingDecision.swift */; };
 		095AE95A2F7D4E9F00C332AE /* SamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE9532F7D4E9F00C332AE /* SamplerProvider.swift */; };
@@ -1769,7 +1769,7 @@
 		0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensionsTests.swift; sourceTree = "<group>"; };
 		093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpanProvider.swift; sourceTree = "<group>"; };
 		094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceTraceIntegrationTests.swift; sourceTree = "<group>"; };
-		094BB2672F963AB50047C56A /* RUMConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMConfiguration.swift; sourceTree = "<group>"; };
+		094BB2672F963AB50047C56A /* RUMFirstPartyHostsTracingDecisionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFirstPartyHostsTracingDecisionProvider.swift; sourceTree = "<group>"; };
 		095AE9522F7D4E9F00C332AE /* SamplingDecision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingDecision.swift; sourceTree = "<group>"; };
 		095AE9532F7D4E9F00C332AE /* SamplerProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplerProvider.swift; sourceTree = "<group>"; };
 		095AE9542F7D4E9F00C332AE /* TracerSamplerProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerSamplerProvider.swift; sourceTree = "<group>"; };
@@ -5299,7 +5299,7 @@
 			isa = PBXGroup;
 			children = (
 				5BFDD7A82E28FDC9009A2CEE /* RUMWebViewContext.swift */,
-				094BB2672F963AB50047C56A /* RUMConfiguration.swift */,
+				094BB2672F963AB50047C56A /* RUMFirstPartyHostsTracingDecisionProvider.swift */,
 				1166C5A32F76EC05008E34BC /* OperationOptions.swift */,
 				D28FB6952DB7D3F000CD76D0 /* RUMDataModels.swift */,
 				D2D9A9DB2DBFD507005DB31D /* RUMPayloadMessages.swift */,
@@ -8507,7 +8507,7 @@
 				614A708E2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */,
 				D2160CF429C0EDFC00FAA9A5 /* UploadPerformancePreset.swift in Sources */,
 				D23039E1298D5236001A1FA3 /* AppState.swift in Sources */,
-				094BB2682F963AB50047C56A /* RUMConfiguration.swift in Sources */,
+				094BB2682F963AB50047C56A /* RUMFirstPartyHostsTracingDecisionProvider.swift in Sources */,
 				D2F448E22D43A3DC007BB995 /* CompletionHandler.swift in Sources */,
 				D2DE63532A30A7CA00441A54 /* CoreRegistry.swift in Sources */,
 				D2D748402DC24F1100C61353 /* Crash.swift in Sources */,

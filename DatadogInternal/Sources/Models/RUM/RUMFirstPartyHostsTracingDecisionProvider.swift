@@ -13,7 +13,7 @@ public protocol RUMFirstPartyHostsTracingDecisionProvider {
     /// Obtains the decision on sampling of requests to first party hosts.
     ///
     /// This is based on the active session ID and tracing sampling rate, if enabled. The returned values are:
-    /// * `true` if this both this session and first party host tracing are being sampled;
+    /// * `true` if both this session and first party host tracing are being sampled;
     /// * `false` if either this session or first party hosts tracing are not sampled, but first party hosts tracing is configured;
     /// * `nil` if there is no active session or if first party hosts tracing is not configured.
     var areFirstPartyHostsTraced: Bool? { get }
