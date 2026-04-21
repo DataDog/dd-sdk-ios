@@ -565,6 +565,141 @@ class WebViewEventReceiverTests: XCTestCase {
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
     }
 
+    // MARK: - First Party Host Sampling Rate (rule_psr)
+
+    func testGivenFirstPartyHostSamplingRate_whenReceivingTracedResourceEvent_itOverwritesRulePsr() throws {
+        // Given
+        let dateProvider = RelativeDateProvider()
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            additionalContext: [rumContext]
+        )
+
+        let nativeSamplingRate: SampleRate = 42.0
+
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider),
+            firstPartyHostSamplingRate: nativeSamplingRate
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let webEventMock: JSON = [
+            "type": "resource",
+            "_dd": [
+                "browser_sdk_version": "6.32.0",
+                "trace_id": "123456789",
+                "span_id": "987654321",
+                "rule_psr": 1.0
+            ] as [String: Any],
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date),
+        ]
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+
+        // Then
+        XCTAssertTrue(result)
+        XCTAssertEqual(featureScope.eventsWritten.count, 1)
+        let actualWebEventWritten = try XCTUnwrap((featureScope.eventsWritten.first as? AnyEncodable)?.value as?  [String: Any])
+        let actualDD = try XCTUnwrap(actualWebEventWritten["_dd"] as? [String: Any])
+        XCTAssertEqual(actualDD["rule_psr"] as? Float, Float(nativeSamplingRate.percentageProportion), "rule_psr must be overwritten with the native sampling rate")
+        XCTAssertEqual(actualDD["trace_id"] as? String, "123456789", "trace_id must be preserved")
+        XCTAssertEqual(actualDD["span_id"] as? String, "987654321", "span_id must be preserved")
+    }
+
+    func testGivenFirstPartyHostSamplingRate_whenReceivingResourceEventWithoutRulePsr_itDoesNotAddRulePsr() throws {
+        // Given
+        let dateProvider = RelativeDateProvider()
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            additionalContext: [rumContext]
+        )
+
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider),
+            firstPartyHostSamplingRate: 42.0
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let webEventMock: JSON = [
+            "type": "resource",
+            "_dd": [
+                "browser_sdk_version": "6.32.0"
+            ] as [String: Any],
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date),
+        ]
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+
+        // Then
+        XCTAssertTrue(result)
+        XCTAssertEqual(featureScope.eventsWritten.count, 1)
+        let actualWebEventWritten = try XCTUnwrap((featureScope.eventsWritten.first as? AnyEncodable)?.value as?  [String: Any])
+        let actualDD = try XCTUnwrap(actualWebEventWritten["_dd"] as? [String: Any])
+        XCTAssertNil(actualDD["rule_psr"], "rule_psr must not be added when it was not present in the original event")
+    }
+
+    func testGivenNoFirstPartyHostSamplingRate_whenReceivingTracedResourceEvent_itDoesNotModifyRulePsr() throws {
+        // Given
+        let dateProvider = RelativeDateProvider()
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            additionalContext: [rumContext]
+        )
+
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider),
+            firstPartyHostSamplingRate: nil
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let originalRulePsr = 1.0
+        let webEventMock: JSON = [
+            "type": "resource",
+            "_dd": [
+                "browser_sdk_version": "6.32.0",
+                "trace_id": "123456789",
+                "span_id": "987654321",
+                "rule_psr": originalRulePsr
+            ] as [String: Any],
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date),
+        ]
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+
+        // Then
+        XCTAssertTrue(result)
+        XCTAssertEqual(featureScope.eventsWritten.count, 1)
+        let actualWebEventWritten = try XCTUnwrap((featureScope.eventsWritten.first as? AnyEncodable)?.value as?  [String: Any])
+        let actualDD = try XCTUnwrap(actualWebEventWritten["_dd"] as? [String: Any])
+        XCTAssertEqual(actualDD["rule_psr"] as? Double, originalRulePsr, "rule_psr must not be modified when no native sampling rate is provided")
+    }
+
+    // MARK: - Anonymous ID Propagation
+
     func testGivenAnonymousIdAvailable_whenReceivingWebEventWithNoUsr_itAddsAnonymousId() throws {
         // Given
         let dateProvider = RelativeDateProvider()

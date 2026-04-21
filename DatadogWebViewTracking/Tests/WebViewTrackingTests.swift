@@ -105,6 +105,65 @@ class WebViewTrackingTests: XCTestCase {
         """)
     }
 
+    func testItAddsUserScriptWithFirstPartyHostTracing() throws {
+        struct RUMFeature: DatadogFeature, RUMConfiguration {
+            static let name = "rum"
+            let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+            let areFirstPartyHostsTraced: Bool?
+        }
+
+        struct TracingDecision {
+            let value: Bool?
+            let jsValue: String
+        }
+
+        let host: String = .mockRandom()
+        let tracingDecisions: [TracingDecision] = [
+            .init(value: true, jsValue: "true"),
+            .init(value: false, jsValue: "false"),
+            .init(value: nil, jsValue: "null")
+        ]
+        try tracingDecisions.forEach { tracingDecision in
+            let rum = RUMFeature(areFirstPartyHostsTraced: tracingDecision.value)
+            let mockSanitizer = HostsSanitizerMock()
+            let controller = DDUserContentController()
+
+            try WebViewTracking.enableOrThrow(
+                tracking: controller,
+                hosts: [host],
+                hostsSanitizer: mockSanitizer,
+                logsSampleRate: 30,
+                in: SingleFeatureCoreMock(feature: rum)
+            )
+
+            let script = try XCTUnwrap(controller.userScripts.last)
+            XCTAssertEqual(
+                script.source,
+            """
+            /* DatadogEventBridge */
+            window.DatadogEventBridge = {
+                send(msg) {
+                    window.webkit.messageHandlers.DatadogEventBridge.postMessage(msg)
+                },
+                getAllowedWebViewHosts() {
+                    return '["\(host)"]'
+                },
+                getCapabilities() {
+                    return '[]'
+                },
+                getPrivacyLevel() {
+                    return 'mask'
+                },
+                getIsTraceSampled() {
+                    return \(tracingDecision.jsValue)
+                }
+            }
+            """,
+                "Unexpected window.DatadogEventBridge code for tracing decision \(tracingDecision.jsValue)"
+            )
+        }
+    }
+
     func testItAddsUserScriptAndMessageHandler() throws {
         let mockSanitizer = HostsSanitizerMock()
         let controller = DDUserContentController()
