@@ -127,13 +127,13 @@ internal extension PerformancePreset {
         uploadDelayFactors: (initial: Double, min: Double, max: Double, changeRate: Double),
         maxBatchesPerUpload: Int
     ) {
-        self.maxFileSize = 5.MB.asUInt32()
+        self.maxFileSize = 5.MB.asUInt32() // matches the server's 5 MB per-batch limit
         self.maxDirectorySize = 512.MB.asUInt32()
         self.maxFileAgeForWrite = meanFileAge * 0.95 // 5% below the mean age
         self.minFileAgeForRead = meanFileAge * 1.05 //  5% above the mean age
         self.maxFileAgeForRead = 18.hours
-        self.maxObjectsInFile = 1_000
-        self.maxObjectSize = 1.MB.asUInt32()
+        self.maxObjectsInFile = 1_000 // updated from 500 to match the backend's documented 1,000 events-per-batch limit
+        self.maxObjectSize = 1.MB.asUInt32() // updated from 512 KB to match the backend's documented 1 MB per-event limit
         self.initialUploadDelay = minUploadDelay * uploadDelayFactors.initial
         self.minUploadDelay = minUploadDelay * uploadDelayFactors.min
         self.maxUploadDelay = minUploadDelay * uploadDelayFactors.max

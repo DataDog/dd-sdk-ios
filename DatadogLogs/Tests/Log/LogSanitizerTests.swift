@@ -175,7 +175,7 @@ class LogSanitizerTests: XCTestCase {
         }
     }
 
-    func testWhenAttributeValueExceeds25600Characters_itIsTruncated() {
+    func testWhenAttributeValueExceedsCharacterLimit_itIsTruncated() {
         let longValue = String(repeating: "a", count: 25_601)
         let log = LogEvent.mockWith(
             attributes: .mockWith(userAttributes: ["key": longValue])
@@ -187,7 +187,7 @@ class LogSanitizerTests: XCTestCase {
         XCTAssertEqual(value?.count, 25_600)
     }
 
-    func testWhenNSStringAttributeValueExceeds25600Characters_itIsTruncated() {
+    func testWhenNSStringAttributeValueExceedsCharacterLimit_itIsTruncated() {
         let longValue = AnyEncodable(NSString(string: String(repeating: "a", count: 25_601)))
         let log = LogEvent.mockWith(
             attributes: .mockWith(userAttributes: ["key": longValue])
@@ -209,6 +209,7 @@ class LogSanitizerTests: XCTestCase {
 
         let result = sanitized.attributes.userAttributes["key"] as? String
         XCTAssertEqual(result?.count, 25_600)
+        XCTAssertEqual(result, value)
     }
 
     // MARK: - Tags sanitization

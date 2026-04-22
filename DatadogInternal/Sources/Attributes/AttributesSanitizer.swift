@@ -15,8 +15,11 @@ public struct AttributesSanitizer {
         /// Maximum number of attributes in log.
         /// If this number is exceeded, extra attributes will be ignored.
         public static let maxNumberOfAttributes: Int = 256
-        /// Maximum length of a string attribute value.
-        /// Values exceeding this will be truncated. This matches the backend hard limit, anything beyond 25,600 chars is discarded server-side regardless of facet status.
+        /// Maximum length of a string attribute value, measured in Unicode grapheme clusters (Swift `String.count`).
+        /// Values exceeding this will be truncated. This matches the backend hard limit: anything beyond 25,600
+        /// characters is discarded server-side regardless of facet status. Note that the backend limit is defined
+        /// in characters, not UTF-8 bytes — for ASCII-only values the two are equivalent, but multi-byte characters
+        /// (e.g. emoji) may differ in byte count while still counting as a single character here.
         public static let maxAttributeValueLength: Int = 25_600
     }
 
