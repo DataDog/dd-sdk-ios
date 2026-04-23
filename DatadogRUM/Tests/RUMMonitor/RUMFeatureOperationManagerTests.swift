@@ -128,6 +128,8 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
     // MARK: - Edge Cases Tests
 
+    // Blank / empty names are rejected: the backend rejects them with its
+    // own non-empty precondition, so the SDK drops client-side to match.
     private let invalidNames = ["", " ", "\n", "\t", "   \n\t  "]
     func testProcess_OperationWithInvalidName_DoesNotCreateVitalEvent() {
         // Given
@@ -146,6 +148,81 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
         XCTAssertEqual(vitalEvents.count, 0)
+    }
+
+    // Names containing characters outside the schema facet-path set
+    // (letters / digits / - _ . @ $). All must be rejected at the API boundary.
+    private let invalidCharacterSetNames = [
+        "user login",     // space
+        "api/v1",         // slash
+        "checkout:step",  // colon
+        "a,b",            // comma
+        "a+b",            // plus
+        "login!",         // bang
+        "login\ttwo",     // tab
+        "ログイン",         // Unicode
+        "login🔐",         // emoji
+    ]
+
+    func testProcess_OperationWithNameOutsideSchemaCharacterSet_StillCreatesVitalEvent() {
+        // Names outside the schema facet-path set are warned about but still
+        // emitted — the backend is the source of truth on character-set policy,
+        // so client-side drop would force an SDK bump if the rule were relaxed.
+        for invalidName in invalidCharacterSetNames {
+            let command = RUMOperationStepVitalCommand.mockWith(name: invalidName)
+
+            // When
+            manager.process(
+                command,
+                context: mockContext,
+                writer: mockWriter,
+                activeView: .mockAny()
+            )
+        }
+
+        // Then — every event is emitted; the name is preserved verbatim.
+        let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(vitalEvents.count, invalidCharacterSetNames.count)
+        for (emitted, expected) in zip(vitalEvents, invalidCharacterSetNames) {
+            XCTAssertEqual(emitted.vital.name, expected)
+        }
+    }
+
+    func testProcess_OperationWithNameInSchemaCharacterSet_CreatesVitalEvent() {
+        // Given — exercises every allowed character class
+        let validNames = ["login", "step42", "login-v2", "user_login", "login.v2", "login@prod", "login$1", "LoginV2"]
+        for validName in validNames {
+            let command = RUMOperationStepVitalCommand.mockWith(name: validName)
+
+            // When
+            manager.process(
+                command,
+                context: mockContext,
+                writer: mockWriter,
+                activeView: .mockAny()
+            )
+        }
+
+        // Then
+        let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(vitalEvents.count, validNames.count)
+    }
+
+    func testProcess_OperationKeyOutsideNameCharacterSet_CreatesVitalEvent() {
+        // operation_key has no character-set restriction in the schema.
+        let command = RUMOperationStepVitalCommand.mockWith(name: "login", operationKey: "user foo / bar")
+
+        // When
+        manager.process(
+            command,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: .mockAny()
+        )
+
+        // Then
+        let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(vitalEvents.count, 1)
     }
 
     func testProcess_OperationWithInvalidOperationKey_DoesNotCreateVitalEvent() {
