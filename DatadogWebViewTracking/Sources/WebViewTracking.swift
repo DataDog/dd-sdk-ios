@@ -60,15 +60,24 @@ public enum WebViewTracking {
     /// Disables Datadog iOS SDK and Datadog Browser SDK integration.
     ///
     /// Removes Datadog's ScriptMessageHandler and UserScript from the caller.
-    /// - Note: This method **must** be called when the webview can be deinitialized.
+    /// - Note: This method **must** be called when the WebView can be deinitialized.
     /// 
-    /// - Parameter webView: The web-view to stop tracking.
-    public static func disable(webView: WKWebView) {
+    /// - Parameters:
+    ///   - webView: The web-view to stop tracking.
+    ///   - core: Datadog SDK core where the WebView was tracked.
+    public static func disable(webView: WKWebView, in core: DatadogCoreProtocol = CoreRegistry.default) {
         let controller = webView.configuration.userContentController
         controller.removeScriptMessageHandler(forName: DDScriptMessageHandler.name)
         let others = controller.userScripts.filter { !$0.source.starts(with: Self.jsCodePrefix) }
         controller.removeAllUserScripts()
         others.forEach(controller.addUserScript)
+        do {
+            try runOnMainThreadSync {
+                try WebViewSessionRolloverHandler.unregister(webView: webView, from: core)
+            }
+        } catch let error {
+            consolePrint("\(error)", .error)
+        }
     }
 
     // MARK: Internal

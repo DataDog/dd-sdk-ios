@@ -214,7 +214,7 @@ class WebViewTrackingTests: XCTestCase {
         let controller = DDUserContentController()
         config.userContentController = controller
         let webView = WKWebView(frame: .zero, configuration: config)
-        webView.loadHTMLString("<html><body>Hello world</body></html>", baseURL: URL(string: "https://shopist.io"))
+        webView.loadHTMLString("<html><body>Hello world</body></html>", baseURL: URL(string: "http://localhost"))
 
         try WebViewTracking.enableOrThrow(
             tracking: webView,
@@ -227,7 +227,7 @@ class WebViewTrackingTests: XCTestCase {
         let ex1 = XCTestExpectation(description: "For sessionUUID1, getIsTraceSampled() should return false")
         let ex2 = XCTestExpectation(description: "For sessionUUID2, getIsTraceSampled() should return true")
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
                 guard let boolResult = result as? Bool else {
                     XCTFail("For sessionUUID1, expected a boolean result, got \(String(describing: result))")
@@ -270,7 +270,7 @@ class WebViewTrackingTests: XCTestCase {
             }
         }
 
-        wait(for: [ex1, ex2], timeout: 5.0)
+        wait(for: [ex1, ex2], timeout: 3.0)
     }
 
     func testItAddsUserScriptAndMessageHandler() throws {
