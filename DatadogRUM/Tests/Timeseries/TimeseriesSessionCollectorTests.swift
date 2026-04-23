@@ -212,6 +212,82 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(lastEvent.session.id, "session-2")
     }
 
+    // MARK: - Delta compression
+
+    func testWhenDeltaCompressionEnabled_itWritesDeltaShapedEvent() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 3,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            enableDeltaCompression: true
+        )
+
+        // When
+        let expectation = self.expectation(description: "delta memory batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-delta", applicationID: "app-delta", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then — written events are AnyEncodable (not RUMTimeseriesMemoryEvent)
+        XCTAssertTrue(
+            featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty,
+            "Delta mode should not write typed RUMTimeseriesMemoryEvent"
+        )
+
+        let rawEvents = featureScope.eventsWritten
+        XCTAssertFalse(rawEvents.isEmpty, "Expected at least one delta event to be written")
+
+        guard let anyEncodable = rawEvents.first as? AnyEncodable else {
+            XCTFail("Expected AnyEncodable event, got \(type(of: rawEvents.first))")
+            return
+        }
+
+        let jsonData = try! JSONEncoder().encode(anyEncodable)
+        let dict = try! XCTUnwrap(try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
+        let tsDict = try! XCTUnwrap(dict["timeseries"] as? [String: Any])
+        let dataDict = try! XCTUnwrap(tsDict["data"] as? [String: Any])
+
+        XCTAssertNotNil(dataDict["precision"], "Delta payload must contain 'precision'")
+        XCTAssertNotNil(dataDict["ts"], "Delta payload must contain 'ts'")
+        XCTAssertNotNil(dataDict["memory_max"], "Delta payload must contain 'memory_max'")
+        XCTAssertNotNil(dataDict["memory_percent"], "Delta payload must contain 'memory_percent'")
+    }
+
+    func testWhenDeltaCompressionEnabled_singleSampleBatchIsDropped() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // large batch — won't auto-flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            enableDeltaCompression: true
+        )
+
+        // When — collect exactly one sample then stop
+        let expectation = self.expectation(description: "one sample collected")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-single", applicationID: "app-single", sessionType: .user)
+        waitForExpectations(timeout: 2)
+
+        let stopExpectation = self.expectation(description: "stop completed")
+        collector.stop()
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { stopExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // Then — single-sample batches are dropped by DeltaEncoder
+        XCTAssertTrue(featureScope.eventsWritten.isEmpty, "Single-sample batch must be dropped in delta mode")
+    }
+
     // MARK: - Timeseries range
 
     func testTimestampsAreMonotonicallyIncreasing() {
