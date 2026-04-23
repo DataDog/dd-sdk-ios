@@ -176,8 +176,9 @@ internal class RUMFeatureOperationManager {
     /// (which `CharacterSet.alphanumerics` would pull in) do not mask
     /// non-conforming names — e.g. `ログイン` is all Unicode "Letter, other"
     /// and must still trigger the warning.
-    private static let validOperationNameCharacters: CharacterSet =
-        CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.@$-")
+    private static let validOperationNameCharacters = CharacterSet(
+        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.@$-"
+    )
 
     /// Validates the operation name.
     ///
