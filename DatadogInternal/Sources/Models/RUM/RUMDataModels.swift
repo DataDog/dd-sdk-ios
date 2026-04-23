@@ -214,8 +214,8 @@ extension RUMAccount {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try accountInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        accountInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .accountInfo)
         }
     }
 
@@ -2608,8 +2608,8 @@ extension RUMErrorEvent.FeatureFlags {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try featureFlagsInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        featureFlagsInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
         }
     }
 
@@ -2643,8 +2643,8 @@ extension RUMEventAttributes {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try contextInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        contextInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
         }
     }
 
@@ -4889,8 +4889,8 @@ extension RUMResourceEvent.Resource.Request.Headers {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try headersInfo.forEach {
-            try dynamicContainer.encode($1, forKey: DynamicCodingKey($0))
+        headersInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(value, forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
         }
     }
 
@@ -4909,8 +4909,8 @@ extension RUMResourceEvent.Resource.Response.Headers {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try headersInfo.forEach {
-            try dynamicContainer.encode($1, forKey: DynamicCodingKey($0))
+        headersInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(value, forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
         }
     }
 
@@ -4992,8 +4992,8 @@ extension RUMSyntheticsTest {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try syntheticsInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        syntheticsInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .internal)
         }
     }
 
@@ -5161,8 +5161,8 @@ extension RUMUser {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try usrInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        usrInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .userInfo)
         }
     }
 
@@ -7387,8 +7387,8 @@ extension RUMViewEvent.FeatureFlags {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try featureFlagsInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        featureFlagsInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
         }
     }
 
@@ -7407,8 +7407,8 @@ extension RUMViewEvent.View.CustomTimings {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try customTimingsInfo.forEach {
-            try dynamicContainer.encode($1, forKey: DynamicCodingKey($0))
+        customTimingsInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(value, forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
         }
     }
 
@@ -9418,8 +9418,8 @@ extension RUMViewUpdateEvent.FeatureFlags {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try featureFlagsInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        featureFlagsInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
         }
     }
 
@@ -9438,8 +9438,8 @@ extension RUMViewUpdateEvent.View.CustomTimings {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try customTimingsInfo.forEach {
-            try dynamicContainer.encode($1, forKey: DynamicCodingKey($0))
+        customTimingsInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(value, forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
         }
     }
 
@@ -12710,8 +12710,8 @@ extension TelemetryConfigurationEvent.Telemetry {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try telemetryInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        telemetryInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .internal)
         }
     }
 
@@ -12741,8 +12741,8 @@ extension TelemetryConfigurationEvent.Telemetry.Configuration.Plugins {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try pluginsInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        pluginsInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
         }
     }
 
@@ -13028,8 +13028,8 @@ extension TelemetryDebugEvent.Telemetry {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try telemetryInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        telemetryInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .internal)
         }
     }
 
@@ -13352,8 +13352,8 @@ extension TelemetryErrorEvent.Telemetry {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try telemetryInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        telemetryInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .internal)
         }
     }
 
@@ -14351,8 +14351,8 @@ extension TelemetryUsageEvent.Telemetry {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try telemetryInfo.forEach {
-            try dynamicContainer.encode(AnyEncodable($1), forKey: DynamicCodingKey($0))
+        telemetryInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .internal)
         }
     }
 
@@ -14374,4 +14374,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ea41a41f19117b04ed9a06977fdeb8f7a90319e3
+// Generated from https://github.com/DataDog/rum-events-format/tree/0ca44bb75f6d0d02df73ecdfb0e71ea8eeb3e2e4

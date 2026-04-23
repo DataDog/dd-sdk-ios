@@ -37,9 +37,8 @@ public struct AccountInfo: Codable {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        try extraInfo.forEach {
-            let key = DynamicCodingKey($0)
-            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        extraInfo.forEach { name, value in
+            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .accountInfo)
         }
     }
 

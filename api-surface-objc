@@ -204,12 +204,15 @@ public class objc_LogEventDevice: NSObject
     public var batteryLevel: Double?
     public var brand: String?
     public var brightnessLevel: Double?
+    public var isLowRam: Bool?
     public var locale: String?
     public var locales: [String]?
+    public var logicalCpuCount: Double?
     public var model: String?
     public var name: String?
     public var powerSavingMode: Bool?
     public var timeZone: String?
+    public var totalRam: Double?
     public var type: objc_LogEventDeviceDeviceType
 public enum objc_LogEventDeviceDeviceType: Int
     case none
@@ -3364,6 +3367,7 @@ public class objc_RUMConfiguration: NSObject
     public var swiftUIViewsPredicate: objc_SwiftUIRUMViewsPredicate?
     public var swiftUIActionsPredicate: objc_SwiftUIRUMActionsPredicate?
     public var trackMemoryWarnings: Bool
+    public var collectAccessibility: Bool
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking)
     public var trackFrustrations: Bool
     public var trackBackgroundEvents: Bool
