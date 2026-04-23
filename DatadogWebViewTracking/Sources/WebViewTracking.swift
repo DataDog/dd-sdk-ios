@@ -45,7 +45,7 @@ public enum WebViewTracking {
             // the entire initialization flow is synchronized on the main thread.
             try runOnMainThreadSync {
                 try enableOrThrow(
-                    tracking: webView.configuration.userContentController,
+                    tracking: webView,
                     hosts: hosts,
                     hostsSanitizer: HostsSanitizer(),
                     logsSampleRate: logsSampleRate,
@@ -75,8 +75,9 @@ public enum WebViewTracking {
 
     static let jsCodePrefix = "/* DatadogEventBridge */"
 
+    @MainActor
     static func enableOrThrow(
-        tracking controller: WKUserContentController,
+        tracking webView: WKWebView,
         hosts: Set<String>,
         hostsSanitizer: HostsSanitizing,
         logsSampleRate: Float,
@@ -88,11 +89,14 @@ public enum WebViewTracking {
             )
         }
 
+        let controller = webView.configuration.userContentController
         let isTracking = controller.userScripts.contains { $0.source.starts(with: Self.jsCodePrefix) }
         guard !isTracking else {
             DD.logger.warn("`startTrackingDatadogEvents(core:hosts:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
             return
-       }
+        }
+
+        try WebViewSessionRolloverHandler.register(webView: webView, in: core)
 
         let bridgeName = DDScriptMessageHandler.name
 
@@ -133,19 +137,6 @@ public enum WebViewTracking {
             )
         } ?? .mask
 
-        let rum = core.feature(
-            named: RUMFeatureName,
-            type: RUMFirstPartyHostsTracingDecisionProvider.self
-        )
-
-        let isTraceSampled: String = rum.map {
-            switch $0.areFirstPartyHostsTraced {
-            case .some(true): "true"
-            case .some(false): "false"
-            case .none: "null"
-            }
-        } ?? "null"
-
         // Share native capabilities with Browser SDK
         let capabilities = sessionReplay != nil ? "\"records\"" : ""
 
@@ -165,7 +156,7 @@ public enum WebViewTracking {
                 return '\(privacyLevel.rawValue)'
             },
             getIsTraceSampled() {
-                return \(isTraceSampled)
+                return \(WebViewSessionRolloverHandler.isTraceSampledStringValue(for: core))
             }
         }
         """

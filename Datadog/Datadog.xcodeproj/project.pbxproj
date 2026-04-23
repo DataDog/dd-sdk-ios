@@ -13,6 +13,7 @@
 		093AC32A2F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
 		094B553F2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */; };
 		094BB2682F963AB50047C56A /* RUMFirstPartyHostsTracingDecisionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094BB2672F963AB50047C56A /* RUMFirstPartyHostsTracingDecisionProvider.swift */; };
+		094BB26A2F98F93C0047C56A /* WebViewTrackingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094BB2692F98F93C0047C56A /* WebViewTrackingFeature.swift */; };
 		095AE9582F7D4E9F00C332AE /* TracerSamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE9542F7D4E9F00C332AE /* TracerSamplerProvider.swift */; };
 		095AE9592F7D4E9F00C332AE /* SamplingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE9522F7D4E9F00C332AE /* SamplingDecision.swift */; };
 		095AE95A2F7D4E9F00C332AE /* SamplerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE9532F7D4E9F00C332AE /* SamplerProvider.swift */; };
@@ -1770,6 +1771,7 @@
 		093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpanProvider.swift; sourceTree = "<group>"; };
 		094B553E2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceTraceIntegrationTests.swift; sourceTree = "<group>"; };
 		094BB2672F963AB50047C56A /* RUMFirstPartyHostsTracingDecisionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFirstPartyHostsTracingDecisionProvider.swift; sourceTree = "<group>"; };
+		094BB2692F98F93C0047C56A /* WebViewTrackingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewTrackingFeature.swift; sourceTree = "<group>"; };
 		095AE9522F7D4E9F00C332AE /* SamplingDecision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingDecision.swift; sourceTree = "<group>"; };
 		095AE9532F7D4E9F00C332AE /* SamplerProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplerProvider.swift; sourceTree = "<group>"; };
 		095AE9542F7D4E9F00C332AE /* TracerSamplerProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerSamplerProvider.swift; sourceTree = "<group>"; };
@@ -3660,6 +3662,7 @@
 				3C85D41429F7C59C00AFF894 /* WebViewTracking.swift */,
 				D29732462A5C108700827599 /* DDScriptMessageHandler.swift */,
 				D29732472A5C108700827599 /* MessageEmitter.swift */,
+				094BB2692F98F93C0047C56A /* WebViewTrackingFeature.swift */,
 			);
 			name = DatadogWebViewTracking;
 			path = ../DatadogWebViewTracking/Sources;
@@ -7799,6 +7802,7 @@
 				D297324B2A5C108700827599 /* MessageEmitter.swift in Sources */,
 				6174D6042BFB9AB600EC7469 /* WebViewTracking+objc.swift in Sources */,
 				D29732492A5C108700827599 /* DDScriptMessageHandler.swift in Sources */,
+				094BB26A2F98F93C0047C56A /* WebViewTrackingFeature.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

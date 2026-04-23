@@ -10,17 +10,22 @@ import XCTest
 import WebKit
 import TestUtilities
 import DatadogInternal
+@testable import DatadogRUM
 @testable import DatadogWebViewTracking
 
+@MainActor
 class WebViewTrackingTests: XCTestCase {
     func testItAddsUserScript() throws {
         let mockSanitizer = HostsSanitizerMock()
+        let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
 
         let host: String = .mockRandom()
 
         try WebViewTracking.enableOrThrow(
-            tracking: controller,
+            tracking: webView,
             hosts: [host],
             hostsSanitizer: mockSanitizer,
             logsSampleRate: 30,
@@ -60,7 +65,10 @@ class WebViewTrackingTests: XCTestCase {
         }
 
         let mockSanitizer = HostsSanitizerMock()
+        let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
 
         let host: String = .mockRandom()
         let sr = SessionReplayFeature(
@@ -74,12 +82,15 @@ class WebViewTrackingTests: XCTestCase {
             touchPrivacy: sr.touchPrivacyLevel
         )
 
+        let core = FeatureRegistrationCoreMock()
+        try core.register(feature: sr)
+
         try WebViewTracking.enableOrThrow(
-            tracking: controller,
+            tracking: webView,
             hosts: [host],
             hostsSanitizer: mockSanitizer,
             logsSampleRate: 30,
-            in: SingleFeatureCoreMock(feature: sr)
+            in: core
         )
 
         let script = try XCTUnwrap(controller.userScripts.last)
@@ -110,6 +121,7 @@ class WebViewTrackingTests: XCTestCase {
             static let name = "rum"
             let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
             let areFirstPartyHostsTraced: Bool?
+            let sessionID: UUID?
         }
 
         struct TracingDecision {
@@ -124,19 +136,25 @@ class WebViewTrackingTests: XCTestCase {
             .init(value: nil, jsValue: "null")
         ]
         try tracingDecisions.forEach { tracingDecision in
-            let rum = RUMFeature(areFirstPartyHostsTraced: tracingDecision.value)
+            let rum = RUMFeature(areFirstPartyHostsTraced: tracingDecision.value, sessionID: UUID())
             let mockSanitizer = HostsSanitizerMock()
+            let config = WKWebViewConfiguration()
             let controller = DDUserContentController()
+            config.userContentController = controller
+            let webView = WKWebView(frame: .zero, configuration: config)
+
+            let core = FeatureRegistrationCoreMock()
+            try core.register(feature: rum)
 
             try WebViewTracking.enableOrThrow(
-                tracking: controller,
+                tracking: webView,
                 hosts: [host],
                 hostsSanitizer: mockSanitizer,
                 logsSampleRate: 30,
-                in: SingleFeatureCoreMock(feature: rum)
+                in: core
             )
 
-            let script = try XCTUnwrap(controller.userScripts.last)
+            let script = try XCTUnwrap(controller.userScripts.last, "No userScripts when tracing decision is \(tracingDecision)")
             XCTAssertEqual(
                 script.source,
             """
@@ -164,14 +182,108 @@ class WebViewTrackingTests: XCTestCase {
         }
     }
 
+    func testItChangesBridgeDecisionOnSessionRollover() throws {
+        // Given
+        // This session ID is not sampled at 50%, but it is sampled at 60%:
+        let sessionUUID1 = RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!)
+        // This session ID is not sampled at 36%, but it is sampled at 37%:
+        let sessionUUID2 = RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a5221003fa41")!)
+
+        let uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionUUID1)
+
+        let core = DatadogCoreProxy(
+            context: .mockWith(
+                env: "test",
+                version: "1.0.0",
+                serverTimeOffset: 0
+            )
+        )
+        defer { try? core.flushAndTearDown() }
+
+        RUM.enable(
+            with: .mockWith(applicationID: "test-app-id") {
+                $0.uuidGenerator = uuidGenerator
+                $0.urlSessionTracking = .init(
+                    firstPartyHostsTracing: .trace(hosts: ["localhost"], sampleRate: 40)
+                )
+            },
+            in: core
+        )
+
+        let config = WKWebViewConfiguration()
+        let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.loadHTMLString("<html><body>Hello world</body></html>", baseURL: URL(string: "https://shopist.io"))
+
+        try WebViewTracking.enableOrThrow(
+            tracking: webView,
+            hosts: ["localhost"],
+            hostsSanitizer: HostsSanitizerMock(),
+            logsSampleRate: 100,
+            in: core
+        )
+
+        let ex1 = XCTestExpectation(description: "For sessionUUID1, getIsTraceSampled() should return false")
+        let ex2 = XCTestExpectation(description: "For sessionUUID2, getIsTraceSampled() should return true")
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
+                guard let boolResult = result as? Bool else {
+                    XCTFail("For sessionUUID1, expected a boolean result, got \(String(describing: result))")
+                    return
+                }
+                guard error == nil else {
+                    XCTFail("For sessionUUID1, expected no error but got \(String(describing: error))")
+                    return
+                }
+                XCTAssert(boolResult == false, "sessionUUID1 should be NOT sampling")
+                ex1.fulfill()
+            }
+
+            // Start initial session by starting a view
+            RUMMonitor.shared(in: core).startView(key: "view-1")
+            core.flush()
+
+            // When — stop the session and change the UUID for the next one
+            RUMMonitor.shared(in: core).stopSession()
+            core.flush()
+            uuidGenerator.uuid = sessionUUID2
+
+            // Trigger a new session by starting a new view (user interaction after stop)
+            RUMMonitor.shared(in: core).startView(key: "view-2")
+            core.flush()
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
+                    guard let boolResult = result as? Bool else {
+                        XCTFail("For sessionUUID2, expected a boolean result, got \(String(describing: result))")
+                        return
+                    }
+                    guard error == nil else {
+                        XCTFail("For sessionUUID2, expected no error but got \(String(describing: error))")
+                        return
+                    }
+                    XCTAssert(boolResult == true, "sessionUUID2 should be sampling")
+                    ex2.fulfill()
+                }
+            }
+        }
+
+        wait(for: [ex1, ex2], timeout: 5.0)
+    }
+
     func testItAddsUserScriptAndMessageHandler() throws {
         let mockSanitizer = HostsSanitizerMock()
+        let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
 
         let initialUserScriptCount = controller.userScripts.count
 
         try WebViewTracking.enableOrThrow(
-            tracking: controller,
+            tracking: webView,
             hosts: ["datadoghq.com"],
             hostsSanitizer: mockSanitizer,
             logsSampleRate: 30,
@@ -195,14 +307,17 @@ class WebViewTrackingTests: XCTestCase {
         defer { dd.reset() }
 
         let mockSanitizer = HostsSanitizerMock()
+        let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
 
         let initialUserScriptCount = controller.userScripts.count
 
         let multipleTimes = Int.random(in: 1...5)
         try (0..<multipleTimes).forEach { _ in
             try WebViewTracking.enableOrThrow(
-                tracking: controller,
+                tracking: webView,
                 hosts: ["datadoghq.com"],
                 hostsSanitizer: mockSanitizer,
                 logsSampleRate: 100,
@@ -323,9 +438,12 @@ class WebViewTrackingTests: XCTestCase {
             }
         )
 
+        let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
         try WebViewTracking.enableOrThrow(
-            tracking: controller,
+            tracking: webView,
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
             logsSampleRate: 100,
@@ -375,9 +493,12 @@ class WebViewTrackingTests: XCTestCase {
             }
         )
 
+        let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
         try WebViewTracking.enableOrThrow(
-            tracking: controller,
+            tracking: webView,
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
             logsSampleRate: 100,
@@ -448,8 +569,10 @@ class WebViewTrackingTests: XCTestCase {
 
     func testSendingWebRecordEvent() throws {
         let recordMessageExpectation = expectation(description: "Record message received")
-        let webView = WKWebView()
+        let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
 
         let core = PassthroughCoreMock(
             messageReceiver: FeatureMessageReceiverMock { message in
@@ -469,7 +592,7 @@ class WebViewTrackingTests: XCTestCase {
         )
 
         try WebViewTracking.enableOrThrow(
-            tracking: controller,
+            tracking: webView,
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
             logsSampleRate: 100,
@@ -501,11 +624,14 @@ class WebViewTrackingTests: XCTestCase {
                 }
             }
         )
+        let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
 
         // When
         try WebViewTracking.enableOrThrow(
-            tracking: controller,
+            tracking: webView,
             hosts: [],
             hostsSanitizer: HostsSanitizerMock(),
             logsSampleRate: 100,
@@ -531,12 +657,15 @@ class WebViewTrackingTests: XCTestCase {
                 }
             }
         )
+        let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
 
         // When - enable is called multiple times on the same controller
         try (0..<3).forEach { _ in
             try WebViewTracking.enableOrThrow(
-                tracking: controller,
+                tracking: webView,
                 hosts: [],
                 hostsSanitizer: HostsSanitizerMock(),
                 logsSampleRate: 100,
