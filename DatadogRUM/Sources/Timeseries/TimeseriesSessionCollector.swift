@@ -22,6 +22,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let samplingInterval: TimeInterval
     private let featureScope: FeatureScope
     private let totalRAM: Double
+    private let enableDeltaCompression: Bool
 
     private var memoryBuffer: [RUMTimeseriesMemoryEvent.Timeseries.Data] = []
     private var cpuBuffer: [RUMTimeseriesCpuEvent.Timeseries.Data] = []
@@ -38,7 +39,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         featureScope: FeatureScope,
         batchSize: Int = 30,
         samplingInterval: TimeInterval = 1,
-        cpuUsageProvider: (() -> Double?)? = nil
+        cpuUsageProvider: (() -> Double?)? = nil,
+        enableDeltaCompression: Bool = false
     ) {
         self.memoryReader = memoryReader
         self.batchSize = batchSize
@@ -46,6 +48,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         self.featureScope = featureScope
         self.totalRAM = Double(ProcessInfo.processInfo.physicalMemory)
         self.cpuUsageProvider = cpuUsageProvider ?? { TimeseriesSessionCollector.processCPU() }
+        self.enableDeltaCompression = enableDeltaCompression
     }
 
     /// Per-process CPU as a percentage (0–100+), summed across all app threads.
@@ -161,6 +164,44 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
 
+        if enableDeltaCompression {
+            guard let deltaData = DeltaEncoder.encodeMemory(batch) else {
+                return
+            }
+            featureScope.eventWriteContext { context, writer in
+                let event = RUMTimeseriesMemoryEvent(
+                    dd: .init(),
+                    application: .init(id: applicationID),
+                    date: start / 1_000_000,
+                    service: context.service,
+                    session: .init(id: sessionID, type: sessionType),
+                    source: .ios,
+                    timeseries: .init(
+                        data: batch,
+                        end: end,
+                        id: eventID,
+                        name: "memory",
+                        start: start
+                    ),
+                    version: context.version
+                )
+                if let eventData = try? JSONEncoder().encode(event),
+                   var dict = try? JSONSerialization.jsonObject(with: eventData) as? [String: Any],
+                   var ts = dict["timeseries"] as? [String: Any] {
+                    ts["data"] = deltaData
+                    dict["timeseries"] = ts
+                    #if DEBUG
+                    let normalBytes = eventData.count
+                    let deltaBytes = (try? JSONSerialization.data(withJSONObject: dict))?.count ?? 0
+                    let ratio = Double(normalBytes) / max(Double(deltaBytes), 1)
+                    print(String(format: "[Timeseries] delta flush: signal=memory normal=%dB delta=%dB ratio=%.1fx", normalBytes, deltaBytes, ratio))
+                    #endif
+                    writer.write(value: AnyEncodable(dict))
+                }
+            }
+            return
+        }
+
         featureScope.eventWriteContext { context, writer in
             let event = RUMTimeseriesMemoryEvent(
                 dd: .init(),
@@ -194,6 +235,44 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
+
+        if enableDeltaCompression {
+            guard let deltaData = DeltaEncoder.encodeCPU(batch) else {
+                return
+            }
+            featureScope.eventWriteContext { context, writer in
+                let event = RUMTimeseriesCpuEvent(
+                    dd: .init(),
+                    application: .init(id: applicationID),
+                    date: start / 1_000_000,
+                    service: context.service,
+                    session: .init(id: sessionID, type: sessionType),
+                    source: .ios,
+                    timeseries: .init(
+                        data: batch,
+                        end: end,
+                        id: eventID,
+                        name: "cpu",
+                        start: start
+                    ),
+                    version: context.version
+                )
+                if let eventData = try? JSONEncoder().encode(event),
+                   var dict = try? JSONSerialization.jsonObject(with: eventData) as? [String: Any],
+                   var ts = dict["timeseries"] as? [String: Any] {
+                    ts["data"] = deltaData
+                    dict["timeseries"] = ts
+                    #if DEBUG
+                    let normalBytes = eventData.count
+                    let deltaBytes = (try? JSONSerialization.data(withJSONObject: dict))?.count ?? 0
+                    let ratio = Double(normalBytes) / max(Double(deltaBytes), 1)
+                    print(String(format: "[Timeseries] delta flush: signal=cpu normal=%dB delta=%dB ratio=%.1fx", normalBytes, deltaBytes, ratio))
+                    #endif
+                    writer.write(value: AnyEncodable(dict))
+                }
+            }
+            return
+        }
 
         featureScope.eventWriteContext { context, writer in
             let event = RUMTimeseriesCpuEvent(
