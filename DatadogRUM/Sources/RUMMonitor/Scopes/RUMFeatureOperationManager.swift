@@ -157,30 +157,61 @@ internal class RUMFeatureOperationManager {
     /// Validates the `name` and `operationKey` of the command
     private func validateCommand(_ command: RUMOperationStepVitalCommand) -> Bool {
         // Validate name (required)
-        guard validateString(command.name, stepType: command.stepType) else {
+        guard validateName(command.name, stepType: command.stepType) else {
             return false
         }
 
         // Validate operationKey if present (optional)
         if let operationKey = command.operationKey,
-           !validateString(operationKey, stepType: command.stepType) {
+           !validateOperationKey(operationKey, stepType: command.stepType) {
             return false
         }
 
         return true
     }
 
-    /// Validates the string is not empty
-    // or contains only whitespace/line breaks
-    private func validateString(_ value: String, stepType: RUMVitalOperationStepEvent.Vital.StepType) -> Bool {
+    /// ASCII character set accepted by the backend for `vital.name`, matching
+    /// the server-side regex `[\w.@$-]` (letters, digits, `_`, `.`, `@`, `$`,
+    /// `-`). Built explicitly from ASCII so that Unicode-aware categories
+    /// (which `CharacterSet.alphanumerics` would pull in) do not mask
+    /// non-conforming names — e.g. `ログイン` is all Unicode "Letter, other"
+    /// and must still trigger the warning.
+    private static let validOperationNameCharacters: CharacterSet =
+        CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.@$-")
+
+    /// Validates the operation name.
+    ///
+    /// Blank / empty names are rejected (the backend rejects them with its
+    /// own non-empty precondition before evaluating the character-set regex).
+    /// Names that fail the backend's `[\w.@$-]*` character-set regex trigger
+    /// a developer warning but the event is still emitted — the backend is
+    /// the source of truth on character-set policy, so client-side drop
+    /// would force an SDK bump if that policy is ever relaxed.
+    private func validateName(_ value: String, stepType: RUMVitalOperationStepEvent.Vital.StepType) -> Bool {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmed.isEmpty else {
-            DD.logger.error("Operation `name` and `operationKey` cannot be empty or contain only whitespace/line breaks. \(stepType) command will be ignored.")
+            DD.logger.error("Operation `name` cannot be empty or contain only whitespace/line breaks. \(stepType) command will be ignored.")
             return false
         }
 
-        // Backend takes care of sanitizing user inputs
+        if !value.unicodeScalars.allSatisfy(Self.validOperationNameCharacters.contains) {
+            DD.logger.warn("Operation `name` '\(value)' does not match the backend-accepted pattern [\\w.@$-]* (letters, digits, _ . @ $ -). The \(stepType) command will still be emitted and may be rejected by the backend.")
+        }
+
+        return true
+    }
+
+    /// Validates the operation key: non-blank. The schema does not restrict
+    /// the character set for `operation_key`.
+    private func validateOperationKey(_ value: String, stepType: RUMVitalOperationStepEvent.Vital.StepType) -> Bool {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmed.isEmpty else {
+            DD.logger.error("Operation `operationKey`, when provided, cannot be empty or contain only whitespace/line breaks. \(stepType) command will be ignored.")
+            return false
+        }
+
         return true
     }
 
