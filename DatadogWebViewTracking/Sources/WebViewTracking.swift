@@ -325,8 +325,7 @@ public enum WebViewTracking {
     ///
     /// - Returns: The string ready to be injected in the bridge as explained above.
     static func isTraceSampledStringValue(for core: DatadogCoreProtocol, sessionSampler: DeterministicSampler?) -> String {
-        guard let rum = core.feature(named: RUMFeatureName, type: RUMSessionSamplerProvider.self),
-              let sessionSampler = rum.rumSessionSampler,
+        guard let sessionSampler,
               let networkInstrumentation = core.feature(named: NetworkInstrumentationFeatureName, type: DistributedTracingSampleRateProvider.self),
               let distributedTracingSampleRate = networkInstrumentation.distributedTracingSampleRate else {
             return "null"
