@@ -138,9 +138,21 @@ public enum WebViewTracking {
         core.telemetry.usage(event: .trackWebView)
     }
 
-    static func injectUserScript(on webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements, isTraceSampled: String) {
+    /// Injects the Javascript bridge code in the WebView user scripts.
+    ///
+    /// - Important: This function does not check if the script is already there and should be called *only* when
+    /// we know it's not. Make sure to test for this situation, or guarantee it wont happen, before calling this function.
+    ///
+    /// - Parameters:
+    ///   - webView: The WebView where the script will be injected into.
+    ///   - core: The core where the WebView is instrumented.
+    ///   - elements: The elements used to generate the injected script.
+    ///   - isTraceSampled: The trace sampling decision, already in String form. This should *always* be the output
+    ///   of ``WebViewTracking/isTraceSampledStringValue(for:)``.
+    @MainActor
+    private static func injectUserScript(on webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements, isTraceSampled: String) {
         let bridgeName = DDScriptMessageHandler.name
-        
+
         // WebKit installs message handlers with the given name format below
         // We inject a user script to forward `window.{bridgeName}` to WebKit's format
         let webkitMethodName = "window.webkit.messageHandlers.\(bridgeName).postMessage"
@@ -191,9 +203,29 @@ public enum WebViewTracking {
         )
     }
 
-    // returns: true if the view was re-instrumeted correctly, false if it should be unregistered
+    /// Updates this WebView instrumentation on session rollovers.
+    ///
+    /// Two things need to be done on session rollovers:
+    /// * Update the script stored in `userScripts` with the new decision. This guarantees that any new pages loaded
+    /// in the WebView will have the updated bridge and thus the updated sampling decision.
+    /// * Run a bit of JavaScript code to update the bridge on the currently loaded page. This guarantees the current page
+    /// gets the most up to date decision as well.
+    ///
+    /// - Parameters:
+    ///   - webView: The WebView whose instrumentation should be updated.
+    ///   - core: The core where the WebView is instrumented.
+    ///   - elements: The elements used to generate the injected script.
+    ///   - isTraceSampled: The trace sampling decision, already in String form. This should *always* be the output
+    ///   of ``WebViewTracking/isTraceSampledStringValue(for:)``.
+    ///
+    /// - Returns: `true` if the view was instrumented before (and therefore was re-instrumented correctly), `false`
+    /// if the view was not instrumented and should be unregistered from the `WebViewSessionRolloverHandler`.
+    /// Note that if the view was instrumented before, this function always returns `true`, it cannot fail instrumentation in
+    /// that situation. Therefore, `false` guarantees the view wasn't instrumented. It's possible views are registered in
+    /// `WebViewSessionRolloverHandler` and not instrumented in the rare situation where
+    ///  ``WebViewTracking/disable(webView:in:)`` was called on the wrong core.
     @MainActor
-    static func updateUserScript(of webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements, isTraceSampled: String) -> Bool {
+    static func update(_ webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements, isTraceSampled: String) -> Bool {
         let controller = webView.configuration.userContentController
 
         // Remove our script
@@ -203,7 +235,7 @@ public enum WebViewTracking {
             // This may happen in the rare situation the WebView was registered in a specific, non
             // default core, and WebViewTracking.disable(…) was called without specifying the
             // correct core.
-            // To avoid future calls, we unregister it.
+            // To avoid future calls, return false so it can be unregistered.
 
             return false
         }
@@ -226,6 +258,32 @@ public enum WebViewTracking {
         return true
     }
 
+    /// Obtains the trace sampling decision for the given core, in `String` form ready to be used in the injected scripts.
+    ///
+    /// This is the decision if requests should be traced. The decision is positive if:
+    /// * RUM is enabled, and the decision to sample the current session is positive; and
+    /// * `urlSessionTracking.firstPartyHostsTracing` is configured in `RUM.Configuration`; and
+    /// * The sampling decision for `firstPartyHostsTracing` is positive.
+    ///
+    /// Note the hosts configured in RUM's `urlSessionTracking.firstPartyHostsTracing` do not need to
+    /// match the ones being tracked by a WebView. The sampling decision is the same regardless.
+    ///
+    /// The returned values are the following strings:
+    /// * `true` if the sampling decision is positive as explained above.
+    /// * `false` if the sampling decision is negative. This happens if RUM is enabled but sampled out, _or_ if
+    /// `urlSessionTracking.firstPartyHostsTracing` is configured but sampled out.
+    /// * `null` if no sampling decision was made. This happens if RUM is not configured, _or_ if
+    /// `urlSessionTracking.firstPartyHostsTracing` is not configured.
+    ///
+    /// Note that `false` is not returned if either of the conditions for `null` happen. The goal of `null` is allowing
+    /// the Browser SDK to make its own sampling decision according to its own configuration, since the iOS side was
+    /// not configured to do so.
+    ///
+    /// - Parameters:
+    ///   - core: The core used for the instrumentation. Make sure this is consistent with the core used to instrument
+    ///   the view, since the sampling decision can be different in multiple cores.
+    ///
+    /// - Returns: The string ready to be injected in the bridge as explained above.
     static func isTraceSampledStringValue(for core: DatadogCoreProtocol) -> String {
         let rum = core.feature(
             named: RUMFeatureName,
