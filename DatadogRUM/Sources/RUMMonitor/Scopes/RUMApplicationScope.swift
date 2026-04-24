@@ -43,7 +43,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Ensures the fallback to `launchReasonResolver` is logged only once when `launchReason` is unexpectedly `.uncertain` on iOS.
     private var didLogFallbackToResolver = false
 
-    init(dependencies: RUMScopeDependencies) {
+    private let onSessionUpdate: (DeterministicSampler?) -> Void
+
+    init(dependencies: RUMScopeDependencies, onSessionUpdate: @escaping (DeterministicSampler?) -> Void) {
         self.dependencies = dependencies
 
         self.context = RUMContext(
@@ -55,6 +57,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             activeViewName: nil,
             activeUserActionID: nil
         )
+
+        self.onSessionUpdate = onSessionUpdate
     }
 
     // MARK: - RUMContextProvider
@@ -321,6 +325,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope) {
         let sessionID = sessionScope.sessionUUID.rawValue.uuidString
         let isDiscarded = !sessionScope.sampler.isSampled
+        onSessionUpdate(sessionScope.sampler)
         dependencies.onSessionStart?(sessionID, isDiscarded)
     }
 

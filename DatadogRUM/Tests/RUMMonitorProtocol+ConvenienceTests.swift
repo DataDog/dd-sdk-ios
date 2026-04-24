@@ -18,7 +18,8 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
         // Given
         let monitor = Monitor(
             dependencies: .mockAny(),
-            dateProvider: SystemDateProvider()
+            dateProvider: SystemDateProvider(),
+            onSessionUpdate: { _ in }
         )
 
         // When & Then (no crash)

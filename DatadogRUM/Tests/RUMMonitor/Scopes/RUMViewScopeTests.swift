@@ -32,7 +32,8 @@ class RUMViewScopeTests: XCTestCase {
 
     func testDefaultContext() {
         let applicationScope = RUMApplicationScope(
-            dependencies: .mockWith(rumApplicationID: "rum-123")
+            dependencies: .mockWith(rumApplicationID: "rum-123"),
+            onSessionUpdate: { _ in }
         )
 
         let sessionScope: RUMSessionScope = .mockWith(parent: applicationScope)
@@ -61,7 +62,8 @@ class RUMViewScopeTests: XCTestCase {
 
     func testContextWhenViewHasAnActiveUserAction() {
         let applicationScope = RUMApplicationScope(
-            dependencies: .mockWith(rumApplicationID: "rum-123")
+            dependencies: .mockWith(rumApplicationID: "rum-123"),
+            onSessionUpdate: { _ in }
         )
         let sessionScope: RUMSessionScope = .mockWith(parent: applicationScope)
 

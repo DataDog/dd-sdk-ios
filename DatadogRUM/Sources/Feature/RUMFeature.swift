@@ -8,7 +8,9 @@ import Foundation
 import DatadogInternal
 import UIKit
 
-internal final class RUMFeature: DatadogRemoteFeature {
+internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider {
+    static var name: String { RUMFeatureName }
+
     let requestBuilder: FeatureRequestBuilder
 
     let messageReceiver: FeatureMessageReceiver
@@ -20,6 +22,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
     let configuration: RUM.Configuration
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
+
+    /// Used by WebViewTracking to obtain the RUM session sampler synchronously.
+    @ReadWriteLock
+    var rumSessionSampler: DeterministicSampler?
 
     /// Overrides the max file age.
     let performanceOverride: PerformancePresetOverride? = PerformancePresetOverride(
@@ -187,7 +193,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
         self.monitor = Monitor(
             dependencies: dependencies,
-            dateProvider: configuration.dateProvider
+            dateProvider: configuration.dateProvider,
+            onSessionUpdate: { [_rumSessionSampler] sampler in
+                _rumSessionSampler.mutate { $0 = sampler }
+            }
         )
 
         if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {
@@ -398,11 +407,5 @@ private extension RUM.Configuration.VitalsFrequency {
         case .average:  return 0.5
         case .rare:     return 1
         }
-    }
-}
-
-extension RUMFeature: RUMSessionSamplerProvider {
-    var rumSessionSampler: DeterministicSampler? {
-        monitor.scopes.activeSession?.sampler
     }
 }

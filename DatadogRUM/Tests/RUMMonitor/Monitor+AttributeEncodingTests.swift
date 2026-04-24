@@ -22,7 +22,8 @@ class Monitor_AttributeEncodingTests: XCTestCase {
     override func setUp() {
         monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
-            dateProvider: SystemDateProvider()
+            dateProvider: SystemDateProvider(),
+            onSessionUpdate: { _ in }
         )
     }
 

@@ -18,7 +18,7 @@ class RUMApplicationScopeTests: XCTestCase {
         dependencies: RUMScopeDependencies,
         sdkContext: DatadogContext = .mockWith(sdkInitDate: Date())
     ) -> RUMApplicationScope {
-        let scope = RUMApplicationScope(dependencies: dependencies)
+        let scope = RUMApplicationScope(dependencies: dependencies, onSessionUpdate: { _ in })
         // Always receive `RUMSDKInitCommand` as the very first command (see: `Monitor.notifySDKInit()`)
         let initCommand = RUMSDKInitCommand(time: sdkContext.sdkInitDate, globalAttributes: [:])
         _ = scope.process(command: initCommand, context: sdkContext, writer: writer)
