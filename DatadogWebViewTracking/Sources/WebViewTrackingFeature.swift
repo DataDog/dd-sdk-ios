@@ -22,8 +22,11 @@ internal struct WebViewTrackingFeature: @MainActor DatadogFeature {
     let sessionRolloverHandler: WebViewSessionRolloverHandler
 
     /// Creates a new `WebViewTrackingFeature`.
-    init() {
-        self.sessionRolloverHandler = WebViewSessionRolloverHandler()
+    ///
+    /// - Parameters:
+    ///   - core: The core where this feature will be registered in.
+    private init(core: DatadogCoreProtocol) {
+        self.sessionRolloverHandler = WebViewSessionRolloverHandler(core: core)
         self.messageReceiver = WebViewTrackingMessageReceiver(sessionRolloverHandler: sessionRolloverHandler)
     }
 
@@ -44,14 +47,16 @@ internal struct WebViewTrackingFeature: @MainActor DatadogFeature {
             return feature
         }
 
-        let feature = WebViewTrackingFeature()
+        let feature = WebViewTrackingFeature(core: core)
         try core.register(feature: feature)
         return feature
     }
 }
 
+/// Message receiver for the ``WebViewTrackingFeature``.
 internal class WebViewTrackingMessageReceiver: FeatureMessageReceiver {
-    weak var sessionRolloverHandler: WebViewSessionRolloverHandler?
+    /// The feature's ``WebViewSessionRolloverHandler``,
+    private weak var sessionRolloverHandler: WebViewSessionRolloverHandler?
 
     /// Stores the previous trace sampling decision (in string form). This should *always* be the output
     /// of ``WebViewTracking/isTraceSampledStringValue(for:)``.
@@ -60,6 +65,12 @@ internal class WebViewTrackingMessageReceiver: FeatureMessageReceiver {
     /// between each call.
     private var previousIsTraceSampled: String?
 
+    /// Creates a new message receiver with the given rollover handler.
+    ///
+    /// - Parameters:
+    ///    - sessionRolloverHandler: The rollover handler for the same feature that will own this
+    ///    message receiver. The caller is responsible for passing the correct instance of
+    ///    ``WebViewSessionRolloverHandler``.
     init(sessionRolloverHandler: WebViewSessionRolloverHandler?) {
         self.sessionRolloverHandler = sessionRolloverHandler
     }
@@ -82,10 +93,7 @@ internal class WebViewTrackingMessageReceiver: FeatureMessageReceiver {
                 // causes locks when other functions, like core.flush(), are called.
                 // To avoid this, we queue asynchronously.
                 DispatchQueue.main.async { [sessionRolloverHandler] in
-                    sessionRolloverHandler?.updateViews(
-                        in: core,
-                        isTraceSampled: newIsTraceSampled
-                    )
+                    sessionRolloverHandler?.updateViews(isTraceSampled: newIsTraceSampled)
                 }
             }
             return true

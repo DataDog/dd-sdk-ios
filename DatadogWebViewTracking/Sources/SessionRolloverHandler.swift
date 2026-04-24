@@ -21,6 +21,16 @@ import WebKit
 @MainActor
 internal class WebViewSessionRolloverHandler {
 #if canImport(WebKit)
+    /// The core that owns this handler.
+    private weak var core: DatadogCoreProtocol?
+
+    /// Creates a new RUM session rollover handler.
+    ///
+    /// - Parameters:
+    ///   - core: The core that owns this handler.
+    init(core: DatadogCoreProtocol) {
+        self.core = core
+    }
 
     /// Keeps track of the currently instrumented WebViews that are tracked by the core than owns this handler.
     ///
@@ -34,11 +44,9 @@ internal class WebViewSessionRolloverHandler {
     /// Updates the views tracked by this handler with the new sampling decision.
     ///
     /// - Parameters:
-    ///    - core: The core where the WebViews tracked by this handler are instrumented. The caller is
-    ///    responsible for making sure the correct core is passed in here.
     ///    - isTraceSampled: The trace sampling decision, already in String form. This should *always* be the output
     ///    of ``WebViewTracking/isTraceSampledStringValue(for:)``.
-    func updateViews(in core: DatadogCoreProtocol, isTraceSampled: String) {
+    func updateViews(isTraceSampled: String) {
         /*
          A note on the implementation: because the NSMapTable is kind of ancient,
          this code is a bit grotesque. Two important notes for future maintainers:
@@ -65,6 +73,8 @@ internal class WebViewSessionRolloverHandler {
 
          to actually happen (this was verified with manual testing).
          */
+        guard let core else { return }
+
         var activeWebViewsToUnregister = Set<WKWebView>()
         let webViewEnumerator = activeWebViews.keyEnumerator()
 
