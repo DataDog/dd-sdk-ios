@@ -117,10 +117,10 @@ class WebViewTrackingTests: XCTestCase {
     }
 
     func testItAddsUserScriptWithFirstPartyHostTracing() throws {
-        struct RUMFeature: DatadogFeature, RUMFirstPartyHostsTracingDecisionProvider {
+        struct RUMFeature: DatadogFeature, RUMSessionSamplerProvider {
             static let name = "rum"
             let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
-            let areFirstPartyHostsTraced: Bool?
+            let rumSessionSampler: DeterministicSampler?
             let sessionID: UUID?
         }
 
@@ -136,15 +136,30 @@ class WebViewTrackingTests: XCTestCase {
             .init(value: nil, jsValue: "null")
         ]
         try tracingDecisions.forEach { tracingDecision in
-            let rum = RUMFeature(areFirstPartyHostsTraced: tracingDecision.value, sessionID: UUID())
             let mockSanitizer = HostsSanitizerMock()
             let config = WKWebViewConfiguration()
             let controller = DDUserContentController()
             config.userContentController = controller
             let webView = WKWebView(frame: .zero, configuration: config)
 
-            let core = FeatureRegistrationCoreMock()
-            try core.register(feature: rum)
+            let core = DatadogCoreProxy(
+                context: .mockWith(
+                    env: "test",
+                    version: "1.0.0",
+                    serverTimeOffset: 0
+                )
+            )
+            RUM.enable(
+                with: .mockWith(applicationID: "test-app-id") {
+                    $0.sessionSampleRate = tracingDecision.value.map { $0 ? 100 : 0 } ?? 100
+                    // This session ID is not sampled at 50%, but it is sampled at 60%:
+                    $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!))
+                    $0.urlSessionTracking = tracingDecision.value.map { _ in
+                        .init(firstPartyHostsTracing: .trace(hosts: ["localhost"], sampleRate: 60))
+                    }
+                },
+                in: core
+            )
 
             try WebViewTracking.enableOrThrow(
                 tracking: webView,

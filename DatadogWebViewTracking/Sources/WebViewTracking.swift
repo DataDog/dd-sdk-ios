@@ -285,18 +285,16 @@ public enum WebViewTracking {
     ///
     /// - Returns: The string ready to be injected in the bridge as explained above.
     static func isTraceSampledStringValue(for core: DatadogCoreProtocol) -> String {
-        let rum = core.feature(
-            named: RUMFeatureName,
-            type: RUMFirstPartyHostsTracingDecisionProvider.self
-        )
+        guard let rum = core.feature(named: RUMFeatureName, type: RUMSessionSamplerProvider.self),
+              let sessionSampler = rum.rumSessionSampler,
+              let networkInstrumentation = core.feature(named: NetworkInstrumentationFeatureName, type: DistributedTracingSampleRateProvider.self),
+              let distributedTracingSampleRate = networkInstrumentation.distributedTracingSampleRate else {
+            return "null"
+        }
 
-        return rum.map {
-            switch $0.areFirstPartyHostsTraced {
-            case .some(true): "true"
-            case .some(false): "false"
-            case .none: "null"
-            }
-        } ?? "null"
+        let isSampled = sessionSampler.combined(with: distributedTracingSampleRate).isSampled
+
+        return isSampled ? "true" : "false"
     }
 
     /// Conversion matrix from global privacy level to fine-grained privaly levels.

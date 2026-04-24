@@ -401,13 +401,8 @@ private extension RUM.Configuration.VitalsFrequency {
     }
 }
 
-extension RUMFeature: RUMFirstPartyHostsTracingDecisionProvider {
-    var areFirstPartyHostsTraced: Bool? {
-        guard let activeSession = monitor.scopes.activeSession,
-              let firstPartyHostsSampleRate = configuration.urlSessionTracking?.firstPartyHostsTracing?.sampleRate else {
-            return nil
-        }
-
-        return activeSession.sampler.combined(with: firstPartyHostsSampleRate).isSampled
+extension RUMFeature: RUMSessionSamplerProvider {
+    var rumSessionSampler: DeterministicSampler? {
+        monitor.scopes.activeSession?.sampler
     }
 }

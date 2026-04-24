@@ -52,3 +52,9 @@ extension DatadogCoreProtocol {
         try register(feature: feature)
     }
 }
+
+/// Implemented by handlers that support distributed tracing.
+public protocol DatadogURLSessionHandlerSupportingDistributedTracing: DatadogURLSessionHandler {
+    /// The currently configured distributed tracing sample rate. `nil` if distributed tracing (first part hosts tracing) is not configured.
+    var distributedTracingSampleRate: SampleRate? { get }
+}
