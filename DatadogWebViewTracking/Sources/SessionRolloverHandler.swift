@@ -73,7 +73,9 @@ internal class WebViewSessionRolloverHandler {
 
          to actually happen (this was verified with manual testing).
          */
-        guard let core else { return }
+        guard let core else {
+            return
+        }
 
         var activeWebViewsToUnregister = Set<WKWebView>()
         let webViewEnumerator = activeWebViews.keyEnumerator()
@@ -151,7 +153,6 @@ internal class WebViewSessionRolloverHandler {
     }
 #endif
 }
-
 
 /// Data provided by the user that is necessary to create the injected JavaScript bridge.
 ///
