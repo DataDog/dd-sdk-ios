@@ -9,7 +9,6 @@ import DatadogInternal
 import UIKit
 
 internal final class RUMFeature: DatadogRemoteFeature {
-
     let requestBuilder: FeatureRequestBuilder
 
     let messageReceiver: FeatureMessageReceiver

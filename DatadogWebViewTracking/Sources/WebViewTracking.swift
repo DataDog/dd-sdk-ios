@@ -61,7 +61,7 @@ public enum WebViewTracking {
     ///
     /// Removes Datadog's ScriptMessageHandler and UserScript from the caller.
     /// - Note: This method **must** be called when the WebView can be deinitialized.
-    /// 
+    ///
     /// - Parameters:
     ///   - webView: The web-view to stop tracking.
     ///   - core: Datadog SDK core where the WebView was tracked.
@@ -105,8 +105,6 @@ public enum WebViewTracking {
             return
         }
 
-        try WebViewSessionRolloverHandler.register(webView: webView, in: core)
-
         let bridgeName = DDScriptMessageHandler.name
 
         let messageHandler = DDScriptMessageHandler(
@@ -120,9 +118,6 @@ public enum WebViewTracking {
         controller.removeScriptMessageHandler(forName: bridgeName)
         controller.add(messageHandler, name: bridgeName)
 
-        // WebKit installs message handlers with the given name format below
-        // We inject a user script to forward `window.{bridgeName}` to WebKit's format
-        let webkitMethodName = "window.webkit.messageHandlers.\(bridgeName).postMessage"
         // `WKScriptMessageHandlerWithReply` returns `Promise` and `browser-sdk` expects immediate values.
         // We inject a user script to return `allowedWebViewHosts` instead of using `WKScriptMessageHandlerWithReply`
         let sanitizedHosts = hostsSanitizer.sanitized(
@@ -132,6 +127,23 @@ public enum WebViewTracking {
         let allowedWebViewHostsString = sanitizedHosts
             .map { return "\"\($0)\"" }
             .joined(separator: ",")
+
+        let elements = WebViewTrackingElements(allowedWebViewHostsString: allowedWebViewHostsString)
+        let isTraceSampled = WebViewTracking.isTraceSampledStringValue(for: core)
+
+        try WebViewSessionRolloverHandler.register(webView: webView, in: core, using: elements)
+
+        injectUserScript(on: webView, in: core, using: elements, isTraceSampled: isTraceSampled)
+
+        core.telemetry.usage(event: .trackWebView)
+    }
+
+    static func injectUserScript(on webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements, isTraceSampled: String) {
+        let bridgeName = DDScriptMessageHandler.name
+        
+        // WebKit installs message handlers with the given name format below
+        // We inject a user script to forward `window.{bridgeName}` to WebKit's format
+        let webkitMethodName = "window.webkit.messageHandlers.\(bridgeName).postMessage"
 
         let sessionReplay = core.feature(
             named: SessionReplayFeatureName,
@@ -156,7 +168,7 @@ public enum WebViewTracking {
                 \(webkitMethodName)(msg)
             },
             getAllowedWebViewHosts() {
-                return '[\(allowedWebViewHostsString)]'
+                return '[\(elements.allowedWebViewHostsString)]'
             },
             getCapabilities() {
                 return '[\(capabilities)]'
@@ -165,20 +177,68 @@ public enum WebViewTracking {
                 return '\(privacyLevel.rawValue)'
             },
             getIsTraceSampled() {
-                return \(WebViewSessionRolloverHandler.isTraceSampledStringValue(for: core))
+                return \(Self.isTraceSampledStringValue(for: core))
             }
         }
         """
 
-        controller.addUserScript(
+        webView.configuration.userContentController.addUserScript(
             WKUserScript(
                 source: js,
                 injectionTime: .atDocumentStart,
                 forMainFrameOnly: false
             )
         )
+    }
 
-        core.telemetry.usage(event: .trackWebView)
+    // returns: true if the view was re-instrumeted correctly, false if it should be unregistered
+    @MainActor
+    static func updateUserScript(of webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements, isTraceSampled: String) -> Bool {
+        let controller = webView.configuration.userContentController
+
+        // Remove our script
+        let others = controller.userScripts.filter { !$0.source.starts(with: Self.jsCodePrefix) }
+        guard others.count != controller.userScripts.count else {
+            // If this happens, the view is not instrumented any more, but we still think it is.
+            // This may happen in the rare situation the WebView was registered in a specific, non
+            // default core, and WebViewTracking.disable(…) was called without specifying the
+            // correct core.
+            // To avoid future calls, we unregister it.
+
+            return false
+        }
+        controller.removeAllUserScripts()
+        others.forEach(controller.addUserScript)
+
+        // Re-insert updated script
+        injectUserScript(on: webView, in: core, using: elements, isTraceSampled: isTraceSampled)
+
+        // Run code to update the current page
+        let js =
+        """
+        if (window.\(DDScriptMessageHandler.name)) {
+            window.\(DDScriptMessageHandler.name).getIsTraceSampled = () => \(isTraceSampled)
+        }
+        """
+
+        webView.evaluateJavaScript(js)
+
+        return true
+    }
+
+    static func isTraceSampledStringValue(for core: DatadogCoreProtocol) -> String {
+        let rum = core.feature(
+            named: RUMFeatureName,
+            type: RUMFirstPartyHostsTracingDecisionProvider.self
+        )
+
+        return rum.map {
+            switch $0.areFirstPartyHostsTraced {
+            case .some(true): "true"
+            case .some(false): "false"
+            case .none: "null"
+            }
+        } ?? "null"
     }
 
     /// Conversion matrix from global privacy level to fine-grained privaly levels.

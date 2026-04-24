@@ -182,6 +182,7 @@ class WebViewTrackingTests: XCTestCase {
         }
     }
 
+    @available(iOS 15.0, *)
     func testItChangesBridgeDecisionOnSessionRollover() throws {
         // Given
         // This session ID is not sampled at 50%, but it is sampled at 60%:
@@ -214,7 +215,7 @@ class WebViewTrackingTests: XCTestCase {
         let controller = DDUserContentController()
         config.userContentController = controller
         let webView = WKWebView(frame: .zero, configuration: config)
-        webView.loadHTMLString("<html><body>Hello world</body></html>", baseURL: URL(string: "http://localhost"))
+        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
 
         try WebViewTracking.enableOrThrow(
             tracking: webView,
@@ -226,19 +227,24 @@ class WebViewTrackingTests: XCTestCase {
 
         let ex1 = XCTestExpectation(description: "For sessionUUID1, getIsTraceSampled() should return false")
         let ex2 = XCTestExpectation(description: "For sessionUUID2, getIsTraceSampled() should return true")
+        let ex3 = XCTestExpectation(description: "For sessionUUID2, getIsTraceSampled() should return true after loading a different page")
+
+        func assertResult(_ result: Any?, error: (any Error)?, shouldSample: Bool, description: String, expectation: XCTestExpectation) {
+            defer { expectation.fulfill() }
+            guard let boolResult = result as? Bool else {
+                XCTFail("For \(description), expected a boolean result, got \(String(describing: result))")
+                return
+            }
+            guard error == nil else {
+                XCTFail("For \(description), expected no error but got \(String(describing: error))")
+                return
+            }
+            XCTAssert(boolResult == shouldSample, "\(description) should be\(shouldSample ? "" : " NOT") sampling")
+        }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
-                guard let boolResult = result as? Bool else {
-                    XCTFail("For sessionUUID1, expected a boolean result, got \(String(describing: result))")
-                    return
-                }
-                guard error == nil else {
-                    XCTFail("For sessionUUID1, expected no error but got \(String(describing: error))")
-                    return
-                }
-                XCTAssert(boolResult == false, "sessionUUID1 should be NOT sampling")
-                ex1.fulfill()
+                assertResult(result, error: error, shouldSample: false, description: "sessionUUID1", expectation: ex1)
             }
 
             // Start initial session by starting a view
@@ -256,21 +262,20 @@ class WebViewTrackingTests: XCTestCase {
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
-                    guard let boolResult = result as? Bool else {
-                        XCTFail("For sessionUUID2, expected a boolean result, got \(String(describing: result))")
-                        return
+                    assertResult(result, error: error, shouldSample: true, description: "sessionUUID2", expectation: ex2)
+                }
+
+                webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.htmk")!), responseHTML: "<html><body>About us</body></html>")
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
+                        assertResult(result, error: error, shouldSample: true, description: "sessionUUID2 after loading a new page", expectation: ex3)
                     }
-                    guard error == nil else {
-                        XCTFail("For sessionUUID2, expected no error but got \(String(describing: error))")
-                        return
-                    }
-                    XCTAssert(boolResult == true, "sessionUUID2 should be sampling")
-                    ex2.fulfill()
                 }
             }
         }
 
-        wait(for: [ex1, ex2], timeout: 3.0)
+        wait(for: [ex1, ex2, ex3], timeout: 4.0)
     }
 
     func testItAddsUserScriptAndMessageHandler() throws {
