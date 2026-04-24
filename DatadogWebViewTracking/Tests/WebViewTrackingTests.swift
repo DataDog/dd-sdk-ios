@@ -149,6 +149,7 @@ class WebViewTrackingTests: XCTestCase {
                     serverTimeOffset: 0
                 )
             )
+
             RUM.enable(
                 with: .mockWith(applicationID: "test-app-id") {
                     $0.sessionSampleRate = tracingDecision.value.map { $0 ? 100 : 0 } ?? 100
@@ -160,6 +161,9 @@ class WebViewTrackingTests: XCTestCase {
                 },
                 in: core
             )
+
+            // Necessary for RUM to set the session sampler in the feature, since it's an async process.
+            Thread.sleep(forTimeInterval: 0.1)
 
             try WebViewTracking.enableOrThrow(
                 tracking: webView,
@@ -225,6 +229,9 @@ class WebViewTrackingTests: XCTestCase {
             },
             in: core
         )
+
+        // Necessary for RUM to set the session sampler in the feature, since it's an async process.
+        Thread.sleep(forTimeInterval: 0.1)
 
         let config = WKWebViewConfiguration()
         let controller = DDUserContentController()

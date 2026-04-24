@@ -17,4 +17,3 @@ public protocol RUMSessionSamplerProvider {
 public extension DatadogFeature where Self: RUMSessionSamplerProvider {
     static var name: String { RUMFeatureName }
 }
-

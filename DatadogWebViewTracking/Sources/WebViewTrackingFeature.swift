@@ -78,24 +78,25 @@ internal class WebViewTrackingMessageReceiver: FeatureMessageReceiver {
     func receive(message: DatadogInternal.FeatureMessage, from core: any DatadogInternal.DatadogCoreProtocol) -> Bool {
         switch message {
         case .context(let context):
-            context.additionalContext(ofType: RUMCoreContext.self).map { context in
-                // Run this on the current queue to avoid queueing work on the
-                // main queue if it's not necessary.
-                // Since we have the guarantee message broadcasting is serialized
-                // by a queue, we don't need to lock `previousIsTraceSampled`.
-                let newIsTraceSampled = WebViewTracking.isTraceSampledStringValue(for: core)
-                guard previousIsTraceSampled != newIsTraceSampled else {
-                    return
-                }
-                self.previousIsTraceSampled = newIsTraceSampled
+            let sessionSampler = context.additionalContext(ofType: RUMCoreContext.self)?.sessionSampler
 
-                // Running the following call synchronously on the main queue
-                // causes locks when other functions, like core.flush(), are called.
-                // To avoid this, we queue asynchronously.
-                DispatchQueue.main.async { [sessionRolloverHandler] in
-                    sessionRolloverHandler?.updateViews(isTraceSampled: newIsTraceSampled)
-                }
+            // Run this on the current queue to avoid queueing work on the
+            // main queue if it's not necessary.
+            // Since we have the guarantee message broadcasting is serialized
+            // by a queue, we don't need to lock `previousIsTraceSampled`.
+            let newIsTraceSampled = WebViewTracking.isTraceSampledStringValue(for: core, sessionSampler: sessionSampler)
+            guard previousIsTraceSampled != newIsTraceSampled else {
+                return true
             }
+            self.previousIsTraceSampled = newIsTraceSampled
+
+            // Running the following call synchronously on the main queue
+            // causes locks when other functions, like core.flush(), are called.
+            // To avoid this, we queue asynchronously.
+            DispatchQueue.main.async { [sessionRolloverHandler] in
+                sessionRolloverHandler?.updateViews(isTraceSampled: newIsTraceSampled)
+            }
+
             return true
         default:
             return false

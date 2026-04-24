@@ -17,7 +17,11 @@ public protocol DistributedTracingSampleRateProvider {
 
 extension NetworkInstrumentationFeature: DistributedTracingSampleRateProvider {
     var distributedTracingSampleRate: SampleRate? {
-        guard let urlSessionHandler = handlers.first as? DatadogURLSessionHandlerSupportingDistributedTracing else {
+        guard let urlSessionHandler = handlers
+            .lazy
+            .compactMap({ $0 as? DatadogURLSessionHandlerSupportingDistributedTracing })
+            .first
+        else {
             return nil
         }
         return urlSessionHandler.distributedTracingSampleRate
