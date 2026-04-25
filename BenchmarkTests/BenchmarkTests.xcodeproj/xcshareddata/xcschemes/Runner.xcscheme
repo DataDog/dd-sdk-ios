@@ -58,7 +58,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "BENCHMARK_SCENARIO"
-            value = "logsHeavyTraffic"
+            value = "profiling"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
