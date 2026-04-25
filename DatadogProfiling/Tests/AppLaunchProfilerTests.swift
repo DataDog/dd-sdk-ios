@@ -495,14 +495,80 @@ final class AppLaunchProfilerTests: XCTestCase {
         wait(for: [expectation], timeout: 0.1)
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0, "Not all AppLaunchProfilers have deallocated")
     }
+}
 
-    private var appLaunchProfiler: AppLaunchProfiler {
+// MARK: - Telemetry
+
+extension AppLaunchProfilerTests {
+    func testReceive_withValidProfileData_sendsProfilingSessionMetric() throws {
+        // Given
+        let telemetry = TelemetryMock()
+        let core = PassthroughCoreMock(context: .mockWith(
+            launchInfo: .mockWith(launchReason: .backgroundLaunch)
+        ))
+        let profiler = appLaunchProfiler(
+            core: core,
+            telemetryController: ProfilingTelemetryController(telemetry: telemetry)
+        )
+        _ = profiler.receive(message: .context(core.context), from: core)
+
+        XCTAssertEqual(dd_profiler_start(), 1)
+        Thread.sleep(forTimeInterval: 0.05)
+
+        // When
+        _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: appLaunchVital)), from: core)
+
+        // Then
+        let metric = try lastProfilingSessionMetric(from: telemetry)
+        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.applicationLaunch.rawValue)
+        XCTAssertEqual(metric.appStartInfo, "background_launch")
+        XCTAssertNotNil(metric.duration)
+        XCTAssertNotNil(metric.fileSize)
+        XCTAssertEqual(metric.stoppedReason, ProfilingContext.Status.StopReason.manual.rawValue)
+        XCTAssertNil(metric.errorCode)
+        XCTAssertNil(metric.errorMessage)
+
+        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
+        XCTAssertEqual(metricTelemetry.sampleRate, 20)
+    }
+
+    func testReceive_withoutStoredProfile_sendsNoProfileMetric() throws {
+        // Given
+        let telemetry = TelemetryMock()
+        let core = PassthroughCoreMock(context: .mockWith(
+            launchInfo: .mockWith(launchReason: .userLaunch)
+        ))
+        let profiler = appLaunchProfiler(
+            core: core,
+            telemetryController: ProfilingTelemetryController(telemetry: telemetry)
+        )
+        _ = profiler.receive(message: .context(core.context), from: core)
+
+        // When
+        _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: appLaunchVital)), from: core)
+
+        // Then
+        let metric = try lastProfilingSessionMetric(from: telemetry)
+        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.applicationLaunch.rawValue)
+        XCTAssertEqual(metric.appStartInfo, "user_launch")
+        XCTAssertNil(metric.duration)
+        XCTAssertNil(metric.fileSize)
+        XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.noProfileErrorMessage)
+        XCTAssertNotNil(metric.errorCode)
+    }
+}
+
+// MARK: - Private
+
+private extension AppLaunchProfilerTests {
+    var appLaunchProfiler: AppLaunchProfiler {
         appLaunchProfiler()
     }
 
-    private func appLaunchProfiler(
+    func appLaunchProfiler(
         core: DatadogCoreProtocol = PassthroughCoreMock(),
-        isContinuousProfiling: Bool = false
+        isContinuousProfiling: Bool = false,
+        telemetryController: ProfilingTelemetryController = .init()
     ) -> AppLaunchProfiler {
         let profilingSamplerProvider = ProfilingSamplerProvider(
             continuousSampleRate: isContinuousProfiling ? .maxSampleRate : 0
@@ -510,19 +576,20 @@ final class AppLaunchProfilerTests: XCTestCase {
 
         return AppLaunchProfiler(
             core: core,
-            profilingSamplerProvider: profilingSamplerProvider
+            profilingSamplerProvider: profilingSamplerProvider,
+            telemetryController: telemetryController
         )
     }
 
-    private var startOperationVital: Vital {
+    var startOperationVital: Vital {
         .mockWith(stepType: .start)
     }
 
-    private var appLaunchVital: Vital {
+    var appLaunchVital: Vital {
         .mockWith(stepType: nil)
     }
 
-    private func eventIDs(ofType type: String, from metadata: ProfileAttachments) throws -> [String] {
+    func eventIDs(ofType type: String, from metadata: ProfileAttachments) throws -> [String] {
         let rumEvents = try rumEvents(from: metadata)
 
         return rumEvents
@@ -530,9 +597,14 @@ final class AppLaunchProfilerTests: XCTestCase {
             .compactMap { $0["id"] as? String }
     }
 
-    private func rumEvents(from metadata: ProfileAttachments) throws -> [[String: Any]] {
+    func rumEvents(from metadata: ProfileAttachments) throws -> [[String: Any]] {
         let rumEventsData = try XCTUnwrap(metadata.rumEvents)
         return try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [[String: Any]])
+    }
+
+    func lastProfilingSessionMetric(from telemetry: TelemetryMock) throws -> ProfilingSessionMetric.Attributes {
+        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
+        return try XCTUnwrap(metricTelemetry.attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes)
     }
 }
 
