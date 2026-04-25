@@ -8,6 +8,11 @@ import Foundation
 import DatadogInternal
 
 public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
+    private struct DeferredEventWriteContext {
+        let bypassConsent: Bool
+        let block: (DatadogContext, Writer) -> Void
+    }
+
     private struct EventWriterMock: Writer {
         weak var scope: FeatureScopeMock?
         let bypassConsent: Bool
@@ -24,18 +29,37 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     private var events: [(event: Encodable, metadata: Encodable?, bypassConsent: Bool)] = []
     @ReadWriteLock
     private var messages: [FeatureMessage] = []
+    @ReadWriteLock
+    private var deferredEventWriteContexts: [DeferredEventWriteContext] = []
+    private let shouldDeferEventWriteContext: Bool
     public let dataStore: DataStore
 
     public init(
         context: DatadogContext = .mockAny(),
-        dataStore: DataStore = DataStoreMock()
+        dataStore: DataStore = DataStoreMock(),
+        deferEventWriteContext: Bool = false
     ) {
         self.contextMock = context
         self.dataStore = dataStore
+        self.shouldDeferEventWriteContext = deferEventWriteContext
     }
 
     public func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
-        block(contextMock, EventWriterMock(scope: self, bypassConsent: bypassConsent))
+        guard shouldDeferEventWriteContext else {
+            block(contextMock, EventWriterMock(scope: self, bypassConsent: bypassConsent))
+            return
+        }
+
+        deferredEventWriteContexts.append(.init(bypassConsent: bypassConsent, block: block))
+    }
+
+    public func flushDeferredEventWriteContexts() {
+        let deferredEventWriteContexts = self.deferredEventWriteContexts
+        self.deferredEventWriteContexts.removeAll()
+
+        deferredEventWriteContexts.forEach {
+            $0.block(contextMock, EventWriterMock(scope: self, bypassConsent: $0.bypassConsent))
+        }
     }
 
     public func context(_ block: @escaping (DatadogContext) -> Void) {

@@ -79,16 +79,18 @@ extension ProfilingHandler {
         var data: UnsafeMutablePointer<UInt8>?
         let start = dd_pprof_get_start_timestamp_s(profile)
         let end = dd_pprof_get_end_timestamp_s(profile)
+        let durationNs = (end - start).dd.toInt64Nanoseconds
         let size = dd_pprof_serialize(profile, &data)
 
         guard let data else {
-            // RUM-14251: Add telemetry for custom and continuous profiling
-            telemetryController.send(metric: AppLaunchMetric.noData)
+            telemetryController.sendNoData(durationNs: durationNs, for: operation)
             return
         }
 
-        let pprof = Data(bytes: data, count: size)
+        let pprof = Data(bytes: data, count: Int(clamping: size))
         dd_pprof_free_serialized_data(data)
+
+        let operation = self.operation
 
         featureScope.eventWriteContext { context, writer in
             let event = ProfileEvent(
@@ -120,6 +122,11 @@ extension ProfilingHandler {
             let rumEventsData = try? encoder.encode(rumEvents)
             let attachments = ProfileAttachments(pprof: pprof, rumEvents: rumEventsData)
             writer.write(value: event, metadata: attachments)
+            self.telemetryController.sendProfile(
+                durationNs: durationNs,
+                fileSize: Int64(clamping: size),
+                for: operation
+            )
         }
     }
 

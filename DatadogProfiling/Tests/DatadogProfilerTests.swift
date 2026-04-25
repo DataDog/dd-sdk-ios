@@ -1260,6 +1260,122 @@ extension DatadogProfilerTests {
     }
 }
 
+// MARK: - Telemetry
+
+extension DatadogProfilerTests {
+    func testContinuousProfiler_sendsProfilingSessionMetric_whenProfileIsWritten() throws {
+        // Given
+        let telemetry = TelemetryMock()
+        let telemetryController = ProfilingTelemetryController(telemetry: telemetry)
+        let dateProvider = DateProviderMock()
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        profilingSamplerProvider.updateWith(
+            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
+        )
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            telemetryController: telemetryController,
+            dateProvider: dateProvider
+        )
+        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
+        flushQueue()
+
+        // When
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
+        waitForProfileWrite {
+            _ = profiler.receive(message: .context(core.context), from: core)
+        }
+
+        // Then
+        let metric = try firstProfilingSessionMetric(from: telemetry)
+        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.continuous.rawValue)
+        XCTAssertEqual(metric.cycleIndex, 0)
+        XCTAssertNotNil(metric.duration)
+        XCTAssertNotNil(metric.fileSize)
+        XCTAssertNil(metric.errorCode)
+        XCTAssertNil(metric.errorMessage)
+
+        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
+        XCTAssertEqual(metricTelemetry.sampleRate, 20)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testContinuousProfiler_sendsProfilingSessionMetric_whenProfileIsNotWritten() throws {
+        // Given
+        let telemetry = TelemetryMock()
+        let telemetryController = ProfilingTelemetryController(telemetry: telemetry)
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        profilingSamplerProvider.updateWith(
+            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
+        )
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            profilingInterval: 0.05,
+            telemetryController: telemetryController
+        )
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+
+        // When
+        waitForProfileWrite(expectingWrite: false, timeout: 0.15) {}
+
+        // Then
+        let metric = try firstProfilingSessionMetric(from: telemetry)
+        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.continuous.rawValue)
+        XCTAssertEqual(metric.cycleIndex, 0)
+        XCTAssertNil(metric.duration)
+        XCTAssertNil(metric.fileSize)
+        XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.profileNotWrittenErrorMessage)
+        XCTAssertNil(metric.errorCode)
+        XCTAssertTrue(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testCustomProfiler_sendsProfilingSessionMetric_whenProfileIsWritten() throws {
+        // Given
+        let telemetry = TelemetryMock()
+        let telemetryController = ProfilingTelemetryController(telemetry: telemetry)
+        let initialDate = Date().addingTimeInterval(-(DatadogProfiler.Constants.minProfileDuration + 3))
+        let dateProvider = DateProviderMock(now: initialDate)
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground(since: initialDate.addingTimeInterval(-1)))
+        let profiler = customProfiler(telemetryController: telemetryController, dateProvider: dateProvider)
+        shareCurrentContext(with: profiler)
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds)
+
+        let startOperation = Vital.mockWith(stepType: .start, date: dateProvider.now)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)), from: core)
+        flushQueue()
+
+        dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.minProfileDuration + 1)
+        let endOperation = Vital.mockWith(
+            name: startOperation.name,
+            operationKey: startOperation.operationKey,
+            stepType: .end
+        )
+
+        // When
+        waitForProfileWrite {
+            _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)), from: core)
+        }
+
+        // Then
+        let metric = try lastProfilingSessionMetric(from: telemetry)
+        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.rumOperation.rawValue)
+        XCTAssertNil(metric.cycleIndex)
+        XCTAssertNotNil(metric.duration)
+        XCTAssertNotNil(metric.fileSize)
+        XCTAssertEqual(metric.stoppedReason, ProfilingContext.Status.StopReason.manual.rawValue)
+        XCTAssertNil(metric.errorCode)
+        XCTAssertNil(metric.errorMessage)
+        withExtendedLifetime(profiler) {}
+    }
+}
+
 // MARK: - Private
 
 private extension DatadogProfilerTests {
@@ -1298,12 +1414,14 @@ private extension DatadogProfilerTests {
         profilingSamplerProvider: ProfilingSamplerProvider = ProfilingSamplerProvider(continuousSampleRate: .maxSampleRate),
         profilingConditions: ProfilingConditions = ProfilingConditions(),
         profilingInterval: TimeInterval = .infinity,
+        telemetryController: ProfilingTelemetryController = .init(),
         dateProvider: DateProvider = DateProviderMock()
     ) -> DatadogProfiler {
         DatadogProfiler(
             core: core,
             profilingSamplerProvider: profilingSamplerProvider,
             queue: profilerQueue,
+            telemetryController: telemetryController,
             profilingConditions: profilingConditions,
             profilingInterval: profilingInterval,
             dateProvider: dateProvider
@@ -1313,12 +1431,14 @@ private extension DatadogProfilerTests {
     func customProfiler(
         profilingConditions: ProfilingConditions = ProfilingConditions(),
         profilingInterval: TimeInterval = .infinity,
+        telemetryController: ProfilingTelemetryController = .init(),
         dateProvider: DateProvider = DateProviderMock()
     ) -> DatadogProfiler {
         DatadogProfiler(
             core: core,
             profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: false),
             queue: profilerQueue,
+            telemetryController: telemetryController,
             profilingConditions: profilingConditions,
             profilingInterval: profilingInterval,
             dateProvider: dateProvider
@@ -1332,6 +1452,16 @@ private extension DatadogProfilerTests {
     func shareCurrentContext(with profiler: DatadogProfiler) {
         _ = profiler.receive(message: .context(core.context), from: core)
         flushQueue()
+    }
+
+    func lastProfilingSessionMetric(from telemetry: TelemetryMock) throws -> ProfilingSessionMetric.Attributes {
+        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
+        return try XCTUnwrap(metricTelemetry.attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes)
+    }
+
+    func firstProfilingSessionMetric(from telemetry: TelemetryMock) throws -> ProfilingSessionMetric.Attributes {
+        let metricTelemetry = try XCTUnwrap(telemetry.messages.firstMetric(named: ProfilingSessionMetric.Constants.name))
+        return try XCTUnwrap(metricTelemetry.attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes)
     }
 
     func connectMessageReceiver(
