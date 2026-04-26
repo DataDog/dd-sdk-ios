@@ -33,6 +33,8 @@ internal final class AppLaunchProfiler: ProfilingHandler {
 
     @ReadWriteLock
     private(set) var attributes: [AttributeKey: AttributeValue] = [:]
+    // Interval between device and server time.
+    private(set) var currentServerTimeOffset: TimeInterval = .zero
     private var currentRUMVitals: [String: Vital] = [:]
     private var hasProcessedAppLaunch: Bool = false
 
@@ -66,6 +68,8 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
         if case let .payload(message as TTIDMessage) = message {
             hasProcessedAppLaunch = true
             attributes = message.attributes
+            currentServerTimeOffset = message.ttid.serverTimeOffset
+            dd_profiler_set_server_time_offset_ns(message.ttid.serverTimeOffset.dd.toInt64Nanoseconds)
 
             if profilingSamplerProvider.isContinuousProfilingConfigured == false
                 && self.currentRUMVitals.didCompleteOperations() {

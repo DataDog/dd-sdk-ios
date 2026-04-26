@@ -212,6 +212,42 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertTrue(event.end >= event.start, "End timestamp should be >= start timestamp")
     }
 
+    func testReceive_withTTIDMessage_correctsAttachedVitalTimestampWithServerTimeOffset() throws {
+        // Given
+        let core = PassthroughCoreMock()
+        let profiler = appLaunchProfiler(core: core, isContinuousProfiling: false)
+        let serverTimeOffset: TimeInterval = 2
+        let launchDate = Date(timeIntervalSince1970: 10)
+        let launchVital = Vital.mockWith(
+            id: "launch-vital-id",
+            name: "launch-vital-name",
+            operationKey: nil,
+            stepType: nil,
+            date: launchDate,
+            serverTimeOffset: serverTimeOffset
+        )
+
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        Thread.sleep(forTimeInterval: 0.05)
+
+        // When
+        _ = profiler.receive(
+            message: .payload(
+                TTIDMessage(
+                    attributes: mockRandomAttributes(),
+                    ttid: launchVital
+                )
+            ),
+            from: core
+        )
+
+        // Then
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let vitals = try rumEvents(from: metadata).filter { $0["type"] as? String == "vital" }
+        let start = try XCTUnwrap(vitals.first?["start_ns"] as? Int64)
+        XCTAssertEqual(start, launchDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds)
+    }
+
     // MARK: - Status Mapping Tests
 
     func testProfilingContextStatus_mapsCorrectlyFromDDProfilerStatus() {
@@ -487,12 +523,16 @@ final class AppLaunchProfilerTests: XCTestCase {
     }
 
     private func eventIDs(ofType type: String, from metadata: ProfileAttachments) throws -> [String] {
-        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
-        let rumEvents = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [[String: Any]])
+        let rumEvents = try rumEvents(from: metadata)
 
         return rumEvents
             .filter { $0["type"] as? String == type }
             .compactMap { $0["id"] as? String }
+    }
+
+    private func rumEvents(from metadata: ProfileAttachments) throws -> [[String: Any]] {
+        let rumEventsData = try XCTUnwrap(metadata.rumEvents)
+        return try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [[String: Any]])
     }
 }
 

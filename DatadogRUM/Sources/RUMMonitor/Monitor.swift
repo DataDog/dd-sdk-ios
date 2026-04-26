@@ -467,12 +467,18 @@ extension Monitor: RUMMonitorProtocol {
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .start)))
         telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .start)))))
+
+        var serverTimeOffset: TimeInterval = .zero
+        if let viewScope = self.applicationScope.activeSession?.viewScopes.last {
+            serverTimeOffset = viewScope.serverTimeOffset
+        }
         let vital = Vital(
             id: rumUUIDGenerator.generateUnique().toRUMDataFormat,
             name: name,
             operationKey: operationKey,
             stepType: .start,
-            date: dateProvider.now
+            date: dateProvider.now,
+            serverTimeOffset: serverTimeOffset
         )
 
         if let options = options as? ProfilingOptions,

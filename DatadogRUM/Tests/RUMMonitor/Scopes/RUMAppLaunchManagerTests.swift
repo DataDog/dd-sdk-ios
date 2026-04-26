@@ -92,6 +92,40 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertNotNil(event.version)
     }
 
+    func testTTIDCommand_appliesServerTimeOffsetToAppLaunchEventAndProfilerMessage() throws {
+        // Given
+        let featureScope = FeatureScopeMock()
+        mockDependencies = .mockWith(featureScope: featureScope, appStateManager: appStateManager)
+        manager = RUMAppLaunchManager(
+            parent: mockParent,
+            dependencies: mockDependencies,
+            telemetryController: .init()
+        )
+        mockContext.serverTimeOffset = 2
+        let command: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1)
+        )
+
+        // When
+        manager.process(command, context: mockContext, writer: mockWriter)
+
+        // Then
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).first)
+        XCTAssertEqual(
+            event.date,
+            mockContext.launchInfo.processLaunchDate
+                .addingTimeInterval(mockContext.serverTimeOffset)
+                .timeIntervalSince1970
+                .dd
+                .toInt64Milliseconds
+        )
+
+        let message = try XCTUnwrap(
+            featureScope.messagesSent().compactMap { $0.asPayload as? TTIDMessage }.first
+        )
+        XCTAssertEqual(message.ttid.serverTimeOffset, mockContext.serverTimeOffset)
+    }
+
     func testTTIDCommand_createsAppLaunchVitalEventForPreWarmingLaunches() throws {
         // Given
         let processLaunchDate = Date()
