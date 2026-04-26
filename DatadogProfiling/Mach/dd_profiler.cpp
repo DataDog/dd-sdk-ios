@@ -234,6 +234,18 @@ public:
     }
 
     /**
+     * Sets the server time offset on the active profile and stores it for
+     * profiles created after future flushes.
+     */
+    void set_server_time_offset_ns(int64_t offset_ns) {
+        std::lock_guard<std::mutex> lock(profile_mutex);
+        server_time_offset_ns = offset_ns;
+        if (profile) {
+            profile->set_server_time_offset_ns(offset_ns);
+        }
+    }
+
+    /**
      * Flushes the sampling buffer and returns the profile, swapping in a fresh one.
      *
      * @return The harvested profile, or nullptr if no profile exists.
@@ -246,6 +258,7 @@ public:
 
         dd::profiler::profile* harvested = profile;
         profile = new dd::profiler::profile(sampling_interval_ns);
+        profile->set_server_time_offset_ns(server_time_offset_ns);
         return harvested;
     }
 
@@ -269,6 +282,7 @@ private:
             status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
             return false;
         }
+        profile->set_server_time_offset_ns(server_time_offset_ns);
 
         sampling_config_t config = SAMPLING_CONFIG_DEFAULT;
         config.sampling_interval_nanos = sampling_interval_ns;
@@ -291,6 +305,7 @@ private:
     bool is_prewarming = false;
     int64_t timeout_ns = DD_PROFILER_TIMEOUT_NS;
     uint64_t sampling_interval_ns = SAMPLING_CONFIG_DEFAULT_INTERVAL_NANOS;
+    int64_t server_time_offset_ns = 0;
 
     /**
      * Mutex protecting the profile pointer.
@@ -385,6 +400,11 @@ dd_profile_t* dd_profiler_get_profile(void) {
 dd_profile_t* dd_profiler_flush_and_get_profile(void) {
     std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
     return g_dd_profiler ? reinterpret_cast<dd_profile_t*>(g_dd_profiler->flush_and_get_profile()) : nullptr;
+}
+
+void dd_profiler_set_server_time_offset_ns(int64_t offset_ns) {
+    std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
+    if (g_dd_profiler) g_dd_profiler->set_server_time_offset_ns(offset_ns);
 }
 
 void dd_profiler_destroy(void) {

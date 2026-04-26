@@ -83,6 +83,7 @@ std::string uuid_string(const uuid_t uuid) {
 profile::profile(uint64_t sampling_interval_ns) 
     : _sampling_interval_ns(sampling_interval_ns)
     , _epoch_offset(uptime_epoch_offset())
+    , _server_time_offset_ns(0)
     , _start_timestamp(0)
     , _end_timestamp(0) {
     
@@ -106,7 +107,11 @@ profile::profile(uint64_t sampling_interval_ns)
  * @return Epoch time in nanoseconds
  */
 int64_t profile::uptime_ns_to_epoch_ns(uint64_t uptime_ns) const {
-    return static_cast<int64_t>(uptime_ns) + _epoch_offset;
+    return static_cast<int64_t>(uptime_ns) + _epoch_offset + _server_time_offset_ns;
+}
+
+void profile::set_server_time_offset_ns(int64_t offset_ns) {
+    _server_time_offset_ns = offset_ns;
 }
 
 /**
@@ -121,7 +126,7 @@ int64_t profile::uptime_ns_to_epoch_ns(uint64_t uptime_ns) const {
  * 
  * **Processing Steps:**
  * 1. Convert stack frames to deduplicated location IDs
- * 2. Create timestamp labels for each sample
+ * 2. Create labels for each sample
  * 3. Store sample values (sampling intervals)
  * 4. Add completed samples to the profile
  */
@@ -140,17 +145,9 @@ void profile::add_samples(const stack_trace_t* traces, size_t count) {
             location_ids.push_back(location_id);
         }
         
-        // Create labels with timestamp, tid, and thread name
+        // Create labels with tid and thread name. Timestamp label is written during serialization.
         std::vector<label_t> labels;
-        labels.reserve(3);
-        
-        // Add timestamp label (convert uptime nanoseconds to epoch)
-        label_t timestamp_label{};
-        timestamp_label.key_id = _end_timestamp_ns_str_id;
-        timestamp_label.str_id = 0;
-        timestamp_label.num = uptime_ns_to_epoch_ns(trace.timestamp);
-        timestamp_label.num_unit_id = _nanoseconds_str_id;
-        labels.push_back(timestamp_label);
+        labels.reserve(2);
         
         // Add thread ID label
         label_t thread_label{};
@@ -173,6 +170,7 @@ void profile::add_samples(const stack_trace_t* traces, size_t count) {
         // Create sample
         sample_t sample;
         sample.location_ids = std::move(location_ids);
+        sample.timestamp_uptime_ns = trace.timestamp;
         sample.labels = std::move(labels);
         sample.values = {static_cast<int64_t>(trace.sampling_interval_nanos)};
         
@@ -274,4 +272,3 @@ uint32_t profile::intern_location(const location_t& location) {
 } // namespace dd::profiler
 
 #endif // __APPLE__ && !TARGET_OS_WATCH
-

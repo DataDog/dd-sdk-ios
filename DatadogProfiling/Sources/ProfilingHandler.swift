@@ -19,6 +19,7 @@ internal import DatadogMachProfiler
 
 internal protocol ProfilingHandler {
     var attributes: [AttributeKey: AttributeValue] { get }
+    var currentServerTimeOffset: TimeInterval { get }
     var operation: ProfilingOperation { get }
 
     var featureScope: FeatureScope { get }
@@ -44,8 +45,8 @@ extension ProfilingHandler {
         var attributes = self.attributes
 
         if rumVitals.isEmpty == false {
-            attributes[RUMCoreContext.IDs.vitalID] = rumVitals.map { $0.id }
-            attributes[RUMCoreContext.IDs.vitalLabel] = rumVitals.map { $0.name }
+            attributes[RUMCoreContext.IDs.vitalID] = rumVitals.map(\.id)
+            attributes[RUMCoreContext.IDs.vitalLabel] = rumVitals.map(\.name)
         }
 
         if let hangs {
@@ -72,6 +73,9 @@ extension ProfilingHandler {
         rumEvents: [RUMEvent],
         attributes: [AttributeKey: AttributeValue]
     ) {
+        let timeOffsetInNanoseconds = currentServerTimeOffset.dd.toInt64Nanoseconds
+        dd_pprof_set_server_time_offset_ns(profile, timeOffsetInNanoseconds)
+
         var data: UnsafeMutablePointer<UInt8>?
         let start = dd_pprof_get_start_timestamp_s(profile)
         let end = dd_pprof_get_end_timestamp_s(profile)

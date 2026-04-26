@@ -86,7 +86,7 @@ void perftools_profiles_profile_add_mappings(const std::vector<mapping_t>& mappi
 void perftools_profiles_profile_add_locations(const std::vector<location_t>& locations, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
 
 /** @brief Convert sample data to protobuf format */
-void perftools_profiles_profile_add_samples(const std::vector<sample_t>& samples, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
+void perftools_profiles_profile_add_samples(const profile& prof, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
 
 /**
  * @brief Pack profile data into pprof protobuf binary format
@@ -121,7 +121,7 @@ size_t profile_pprof_pack(const profile& prof, uint8_t** data) {
     perftools_profiles_profile_set_period(prof.wall_time_str_id(), prof.nanoseconds_str_id(), static_cast<int64_t>(prof.sampling_interval_ns()), pprof, &profile_allocator);
     perftools_profiles_profile_add_mappings(prof.mappings(), pprof, &profile_allocator);
     perftools_profiles_profile_add_locations(prof.locations(), pprof, &profile_allocator);
-    perftools_profiles_profile_add_samples(prof.samples(), pprof, &profile_allocator);
+    perftools_profiles_profile_add_samples(prof, pprof, &profile_allocator);
     
     // Calculate required buffer size and serialize to binary format
     size_t packed_size = perftools__profiles__profile__get_packed_size(pprof);
@@ -248,7 +248,8 @@ void perftools_profiles_profile_add_locations(const std::vector<location_t>& loc
     }
 }
 
-void perftools_profiles_profile_add_samples(const std::vector<sample_t>& samples, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
+void perftools_profiles_profile_add_samples(const profile& prof, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
+    const auto& samples = prof.samples();
     pprof->n_sample = samples.size();
     if (pprof->n_sample == 0) return;
     
@@ -282,22 +283,31 @@ void perftools_profiles_profile_add_samples(const std::vector<sample_t>& samples
         }
         
         // Set labels
-        sample->n_label = src_sample.labels.size();
-        if (sample->n_label > 0) {
-            sample->label = static_cast<Perftools__Profiles__Label**>(
-                pb_alloc(allocator, sample->n_label * sizeof(Perftools__Profiles__Label*))
+        sample->n_label = src_sample.labels.size() + 1;
+        sample->label = static_cast<Perftools__Profiles__Label**>(
+            pb_alloc(allocator, sample->n_label * sizeof(Perftools__Profiles__Label*))
+        );
+
+        auto* timestamp_label = static_cast<Perftools__Profiles__Label*>(
+            pb_alloc(allocator, sizeof(Perftools__Profiles__Label))
+        );
+        perftools__profiles__label__init(timestamp_label);
+        timestamp_label->key = prof.end_timestamp_ns_str_id();
+        timestamp_label->str = 0;
+        timestamp_label->num = prof.epoch_timestamp_ns(src_sample.timestamp_uptime_ns);
+        timestamp_label->num_unit = prof.nanoseconds_str_id();
+        sample->label[0] = timestamp_label;
+
+        for (size_t i = 0; i < src_sample.labels.size(); ++i) {
+            auto* label = static_cast<Perftools__Profiles__Label*>(
+                pb_alloc(allocator, sizeof(Perftools__Profiles__Label))
             );
-            for (size_t i = 0; i < src_sample.labels.size(); ++i) {
-                auto* label = static_cast<Perftools__Profiles__Label*>(
-                    pb_alloc(allocator, sizeof(Perftools__Profiles__Label))
-                );
-                perftools__profiles__label__init(label);
-                label->key = src_sample.labels[i].key_id;
-                label->str = src_sample.labels[i].str_id;
-                label->num = src_sample.labels[i].num;
-                label->num_unit = src_sample.labels[i].num_unit_id;
-                sample->label[i] = label;
-            }
+            perftools__profiles__label__init(label);
+            label->key = src_sample.labels[i].key_id;
+            label->str = src_sample.labels[i].str_id;
+            label->num = src_sample.labels[i].num;
+            label->num_unit = src_sample.labels[i].num_unit_id;
+            sample->label[i + 1] = label;
         }
         
         pprof->sample[sample_idx] = sample;

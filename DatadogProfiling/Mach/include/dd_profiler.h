@@ -244,6 +244,16 @@ dd_profile_t* dd_profiler_get_profile(void);
 dd_profile_t* dd_profiler_flush_and_get_profile(void);
 
 /**
+ * @brief Sets the server time correction used for exported profile timestamps.
+ *
+ * The latest value is applied to the active profile and to future profiles
+ * created after flushing.
+ *
+ * @param offset_ns Server time offset in nanoseconds
+ */
+void dd_profiler_set_server_time_offset_ns(int64_t offset_ns);
+
+/**
  * @brief Destroys the dd profiler data and frees all associated memory
  *
  * This function should be called when the profile data is no longer needed

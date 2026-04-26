@@ -276,6 +276,36 @@ final class ProfileCxxTests: XCTestCase {
         perftools__profiles__profile__free_unpacked(unpackedProfile, nil)
     }
 
+    func testProfileSerialization_withServerTimeOffset_appliesOffsetWithoutMutatingSamples() throws {
+        // Given
+        let profile = dd_pprof_create(10_000_000)
+        defer { dd_pprof_destroy(profile) }
+        XCTAssertNotNil(profile)
+
+        let stackTrace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        stackTrace.pointee = .mockWith(
+            tid: 1,
+            addresses: [0x100001000],
+            timestamp: 1_000_000_000
+        )
+        defer { dd_free(stackTrace) }
+
+        dd_pprof_add_samples(profile, stackTrace, 1)
+        let originalStart = dd_pprof_get_start_timestamp_s(profile)
+
+        // When
+        dd_pprof_set_server_time_offset_ns(profile, 2_000_000_000)
+        let firstTimestamp = try firstSerializedSampleEndTimestampSeconds(from: profile)
+
+        dd_pprof_set_server_time_offset_ns(profile, 3_000_000_000)
+        let secondTimestamp = try firstSerializedSampleEndTimestampSeconds(from: profile)
+
+        // Then
+        XCTAssertEqual(dd_pprof_get_start_timestamp_s(profile), originalStart + 3, accuracy: 0.001)
+        XCTAssertEqual(firstTimestamp, originalStart + 2, accuracy: 0.001)
+        XCTAssertEqual(secondTimestamp, originalStart + 3, accuracy: 0.001)
+    }
+
     func testProfileSerialization_withNilProfile_returnsZero() {
         // When
         var data: UnsafeMutablePointer<UInt8>?
@@ -341,6 +371,33 @@ final class ProfileCxxTests: XCTestCase {
         XCTAssertGreaterThan(unpackedProfile.pointee.n_location, 0, "Should have locations")
         XCTAssertGreaterThan(unpackedProfile.pointee.n_mapping, 0, "Should have mappings")
         XCTAssertEqual(unpackedProfile.pointee.n_sample_type, 1, "Should have one sample type")
+    }
+
+    private func firstSerializedSampleEndTimestampSeconds(from profile: OpaquePointer?) throws -> TimeInterval {
+        var data: UnsafeMutablePointer<UInt8>?
+        let size = dd_pprof_serialize(profile, &data)
+        defer { dd_pprof_free_serialized_data(data) }
+
+        let unpackedProfile = try XCTUnwrap(perftools__profiles__profile__unpack(nil, size, data))
+        defer { perftools__profiles__profile__free_unpacked(unpackedProfile, nil) }
+
+        let sample = try XCTUnwrap(unpackedProfile.pointee.sample[0])
+        var timestamp: TimeInterval?
+
+        for index in 0..<sample.pointee.n_label {
+            guard let label = sample.pointee.label?[index],
+                  let key = unpackedProfile.pointee.string_table[Int(label.pointee.key)]
+            else {
+                continue
+            }
+
+            if String(cString: key) == "end_timestamp_ns" {
+                timestamp = TimeInterval(label.pointee.num) / 1_000_000_000
+                break
+            }
+        }
+
+        return try XCTUnwrap(timestamp)
     }
 }
 ///  Deallocates a stack_trace_t and its subsequent frames
