@@ -74,6 +74,7 @@ private extension RUMAppLaunchManager {
                 id: ttidVitalId,
                 name: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric.ttid.name,
                 date: context.launchInfo.processLaunchDate,
+                serverTimeOffset: context.serverTimeOffset,
                 duration: ttid.dd.toInt64Nanoseconds
             ),
             activeView: activeView
@@ -199,7 +200,9 @@ private extension RUMAppLaunchManager {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: RUMEventAttributes(contextInfo: attributes),
-            date: context.launchInfo.processLaunchDate.timeIntervalSince1970.dd.toInt64Milliseconds,
+            date: context.launchInfo.processLaunchDate
+                .addingTimeInterval(context.serverTimeOffset)
+                .timeIntervalSince1970.dd.toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             os: context.os,

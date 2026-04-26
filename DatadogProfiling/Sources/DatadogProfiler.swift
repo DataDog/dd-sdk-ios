@@ -54,6 +54,8 @@ internal final class DatadogProfiler: ProfilingHandler {
     private(set) var attributes: [String: AttributeValue] = [:]
     @ReadWriteLock
     private var hasReceivedAppLaunchVital = false
+    // Interval between device and server time.
+    private(set) var currentServerTimeOffset: TimeInterval = .zero
     // Ongoing RUM Operations to attach to profiles.
     private var currentRUMVitals: [String: Vital] = [:]
     // App hangs to attach to profiles.
@@ -180,11 +182,14 @@ private extension DatadogProfiler {
 
 private extension DatadogProfiler {
     func handle(context: DatadogContext) {
+        dd_profiler_set_server_time_offset_ns(context.serverTimeOffset.dd.toInt64Nanoseconds)
+
         queue.async { [weak self] in
             guard let self else {
                 return
             }
 
+            currentServerTimeOffset = context.serverTimeOffset
             let previousConditions = hasConditionsToProfile
             hasConditionsToProfile = profilingConditions.canProfileApplication(with: context)
             let currentAppState = context.applicationStateHistory.currentState
