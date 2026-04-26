@@ -24,6 +24,7 @@ final class ProfilingHandlerTests: XCTestCase {
         core = PassthroughCoreMock()
         handler = ProfilingHandlerMock(
             attributes: [:],
+            currentServerTimeOffset: .zero,
             operation: .appLaunch,
             featureScope: core.scope(for: ProfilerFeature.self),
             telemetryController: .init(),
@@ -227,6 +228,40 @@ final class ProfilingHandlerTests: XCTestCase {
         XCTAssertEqual(errorEvent["duration_ns"] as? NSNumber, NSNumber(value: hang.duration))
     }
 
+    func testWrite_withServerTimeOffset_updatesExportedProfileDatesAndRumVitalTimestamps() throws {
+        // Given
+        let serverTimeOffset: TimeInterval = 2
+        let vitalDate = Date(timeIntervalSince1970: 10)
+        handler.currentServerTimeOffset = serverTimeOffset
+        let vital = Vital.mockWith(
+            id: "vital-id",
+            name: "vital-name",
+            operationKey: nil,
+            stepType: nil,
+            date: vitalDate,
+            serverTimeOffset: serverTimeOffset
+        )
+
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        Thread.sleep(forTimeInterval: 0.05)
+        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        let originalStart = dd_pprof_get_start_timestamp_s(profile)
+        let originalEnd = dd_pprof_get_end_timestamp_s(profile)
+
+        // When
+        handler.write(profile: profile, rumVitals: [vital])
+
+        // Then
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(event.start.timeIntervalSince1970, originalStart + serverTimeOffset, accuracy: 0.001)
+        XCTAssertEqual(event.end.timeIntervalSince1970, originalEnd + serverTimeOffset, accuracy: 0.001)
+
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let vitalsFromJson = try typedRUMEvents(from: metadata).filter { $0["type"] as? String == "vital" }
+        let start = try XCTUnwrap(vitalsFromJson.first?["start_ns"] as? Int64)
+        XCTAssertEqual(start, vitalDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds)
+    }
+
     private func typedRUMEvents(from metadata: ProfileAttachments) throws -> [[String: Any]] {
         let rumEventsData = try XCTUnwrap(metadata.rumEvents)
         return try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [[String: Any]])
@@ -235,6 +270,7 @@ final class ProfilingHandlerTests: XCTestCase {
 
 private struct ProfilingHandlerMock: ProfilingHandler {
     var attributes: [AttributeKey: AttributeValue]
+    var currentServerTimeOffset: TimeInterval
     var operation: ProfilingOperation
     var featureScope: FeatureScope
     var telemetryController: ProfilingTelemetryController
