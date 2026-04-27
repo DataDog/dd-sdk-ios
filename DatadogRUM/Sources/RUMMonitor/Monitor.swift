@@ -110,6 +110,7 @@ internal class Monitor: RUMCommandSubscriber {
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
     private let telemetry: Telemetry
+    private let onSessionUpdate: (DeterministicSampler?) -> Void
 
     init(
         dependencies: RUMScopeDependencies,
@@ -117,11 +118,12 @@ internal class Monitor: RUMCommandSubscriber {
         onSessionUpdate: @escaping (DeterministicSampler?) -> Void
     ) {
         self.featureScope = dependencies.featureScope
-        self.scopes = RUMApplicationScope(dependencies: dependencies, onSessionUpdate: onSessionUpdate)
+        self.scopes = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
         self.fatalErrorContext = dependencies.fatalErrorContext
         self.rumUUIDGenerator = dependencies.rumUUIDGenerator
         self.telemetry = dependencies.telemetry
+        self.onSessionUpdate = onSessionUpdate
     }
 
     func process(command: RUMCommand) {
@@ -136,6 +138,8 @@ internal class Monitor: RUMCommandSubscriber {
             let transformedCommand = self.transform(command: command)
 
             _ = self.scopes.process(command: transformedCommand, context: context, writer: writer)
+
+            self.onSessionUpdate(self.scopes.activeSession?.sampler)
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.scopes)

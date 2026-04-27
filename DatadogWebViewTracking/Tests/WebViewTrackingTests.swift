@@ -163,7 +163,7 @@ class WebViewTrackingTests: XCTestCase {
             )
 
             // Necessary for RUM to set the session sampler in the feature, since it's an async process.
-            Thread.sleep(forTimeInterval: 0.1)
+            Thread.sleep(forTimeInterval: 0.5)
 
             try WebViewTracking.enableOrThrow(
                 tracking: webView,
