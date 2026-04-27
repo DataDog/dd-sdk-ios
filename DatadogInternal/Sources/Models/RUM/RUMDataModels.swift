@@ -5705,6 +5705,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
         /// Wire-shape discriminator for the data field
         public let schema: String = "object-v2"
 
+
         /// Timestamp of the first sample in nanoseconds from epoch
         public let start: Int64
 
@@ -5782,6 +5783,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
                 }
             }
         }
+
     }
 
     /// View properties
@@ -6301,6 +6303,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
 
         /// Wire-shape discriminator for the data field
         public let schema: String = "object-v2"
+
 
         /// Timestamp of the first sample in nanoseconds from epoch
         public let start: Int64

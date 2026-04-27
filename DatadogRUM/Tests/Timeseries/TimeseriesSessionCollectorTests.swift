@@ -212,9 +212,9 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(lastEvent.session.id, "session-2")
     }
 
-    // MARK: - Delta compression
+    // MARK: - Dual-flush (object + delta)
 
-    func testWhenDeltaCompressionEnabled_itWritesDeltaShapedEvent() {
+    func testFlushWritesBothObjectAndDeltaEventsForMemory() {
         // Given
         memoryReader.vitalData = 1_000_000
         let collector = TimeseriesSessionCollector(
@@ -222,45 +222,82 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 3,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            enableDeltaCompression: true
+            cpuUsageProvider: { nil }
         )
 
         // When
-        let expectation = self.expectation(description: "delta memory batch written")
+        let expectation = self.expectation(description: "memory batch written")
         expectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
-        collector.start(sessionID: "session-delta", applicationID: "app-delta", sessionType: .user)
+        collector.start(sessionID: "session-dual", applicationID: "app-dual", sessionType: .user)
         waitForExpectations(timeout: 2)
         collector.stop()
 
-        // Then — written events are AnyEncodable (not RUMTimeseriesMemoryEvent)
-        XCTAssertTrue(
-            featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty,
-            "Delta mode should not write typed RUMTimeseriesMemoryEvent"
-        )
+        // Then — both a typed object event and an AnyEncodable delta event are written
+        let typedEvents = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(typedEvents.isEmpty, "Expected object-schema memory events")
+        XCTAssertEqual(typedEvents[0].timeseries.schema, .object)
 
         let rawEvents = featureScope.eventsWritten
-        XCTAssertFalse(rawEvents.isEmpty, "Expected at least one delta event to be written")
+        let anyEncodableEvents = rawEvents.compactMap { $0 as? AnyEncodable }
+        XCTAssertFalse(anyEncodableEvents.isEmpty, "Expected delta-schema AnyEncodable event")
 
-        guard let anyEncodable = rawEvents.first as? AnyEncodable else {
-            XCTFail("Expected AnyEncodable event, got \(type(of: rawEvents.first))")
-            return
-        }
-
-        let jsonData = try! JSONEncoder().encode(anyEncodable)
+        let jsonData = try! JSONEncoder().encode(anyEncodableEvents[0])
         let dict = try! XCTUnwrap(try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
         let tsDict = try! XCTUnwrap(dict["timeseries"] as? [String: Any])
-        let dataDict = try! XCTUnwrap(tsDict["data"] as? [String: Any])
 
+        XCTAssertEqual(tsDict["schema"] as? String, "delta-object")
+
+        let dataDict = try! XCTUnwrap(tsDict["data"] as? [String: Any])
         XCTAssertNotNil(dataDict["precision"], "Delta payload must contain 'precision'")
         XCTAssertNotNil(dataDict["ts"], "Delta payload must contain 'ts'")
         XCTAssertNotNil(dataDict["memory_max"], "Delta payload must contain 'memory_max'")
         XCTAssertNotNil(dataDict["memory_percent"], "Delta payload must contain 'memory_percent'")
     }
 
-    func testWhenDeltaCompressionEnabled_singleSampleBatchIsDropped() {
+    func testFlushWritesBothObjectAndDeltaEventsForCPU() {
+        // Given
+        memoryReader.vitalData = nil
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 3,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { 50.0 }
+        )
+
+        // When
+        let expectation = self.expectation(description: "cpu batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-dual-cpu", applicationID: "app-dual", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then — both a typed object event and an AnyEncodable delta event are written
+        let typedEvents = featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)
+        XCTAssertFalse(typedEvents.isEmpty, "Expected object-schema CPU events")
+        XCTAssertEqual(typedEvents[0].timeseries.schema, .object)
+
+        let rawEvents = featureScope.eventsWritten
+        let anyEncodableEvents = rawEvents.compactMap { $0 as? AnyEncodable }
+        XCTAssertFalse(anyEncodableEvents.isEmpty, "Expected delta-schema AnyEncodable event")
+
+        let jsonData = try! JSONEncoder().encode(anyEncodableEvents[0])
+        let dict = try! XCTUnwrap(try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
+        let tsDict = try! XCTUnwrap(dict["timeseries"] as? [String: Any])
+
+        XCTAssertEqual(tsDict["schema"] as? String, "delta-scalar")
+
+        let dataDict = try! XCTUnwrap(tsDict["data"] as? [String: Any])
+        XCTAssertNotNil(dataDict["precision"], "Delta payload must contain 'precision'")
+        XCTAssertNotNil(dataDict["ts"], "Delta payload must contain 'ts'")
+        XCTAssertNotNil(dataDict["value"], "Delta payload must contain 'value'")
+    }
+
+    func testSingleSampleBatchWritesObjectEventButNoDeltaEvent() {
         // Given
         memoryReader.vitalData = 1_000_000
         let collector = TimeseriesSessionCollector(
@@ -268,8 +305,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 100, // large batch — won't auto-flush
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            enableDeltaCompression: true
+            cpuUsageProvider: { nil }
         )
 
         // When — collect exactly one sample then stop
@@ -284,8 +320,13 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { stopExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
-        // Then — single-sample batches are dropped by DeltaEncoder
-        XCTAssertTrue(featureScope.eventsWritten.isEmpty, "Single-sample batch must be dropped in delta mode")
+        // Then — object event is written, but DeltaEncoder requires >1 samples so no delta event
+        XCTAssertFalse(
+            featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty,
+            "Object-schema event should be written even for a single sample"
+        )
+        let anyEncodableEvents = featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }
+        XCTAssertTrue(anyEncodableEvents.isEmpty, "Delta event must not be written for a single-sample batch")
     }
 
     // MARK: - Timeseries range

@@ -6370,10 +6370,6 @@ public class objc_RUMTimeseriesCpuEventDDConfiguration: NSObject {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
     }
 
-    public var sessionReplayExperimentalFeatures: [String]? {
-        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
-    }
-
     public var sessionReplaySampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
@@ -7293,10 +7289,6 @@ public class objc_RUMTimeseriesMemoryEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
-    }
-
-    public var sessionReplayExperimentalFeatures: [String]? {
-        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
