@@ -24,9 +24,7 @@ internal struct FlagsDataStore {
     }
 
     func flagsData(forClientNamed clientName: String, callback: @escaping (FlagsData?) -> Void) {
-        // Use a safe wrapper to guarantee the callback is always invoked,
-        // even if the underlying DataStore doesn't call it (e.g., NOPDataStore).
-        safeDataStoreValue(forKey: clientName) { result in
+        featureScope.dataStore.value(forKey: clientName) { result in
             guard let data = result.data() else {
                 callback(nil)
                 return
@@ -41,19 +39,6 @@ internal struct FlagsDataStore {
                 callback(nil)
             }
         }
-    }
-
-    /// Wraps `DataStore.value(forKey:callback:)` to guarantee the callback
-    /// is always invoked, even if the underlying implementation doesn't call it.
-    ///
-    /// `NOPDataStore` never invokes callbacks, so we short-circuit for that case.
-    private func safeDataStoreValue(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
-        let dataStore = featureScope.dataStore
-        if dataStore is NOPDataStore {
-            callback(.noValue)
-            return
-        }
-        dataStore.value(forKey: key, callback: callback)
     }
 
     func removeFlagsData(forClientNamed clientName: String) {
