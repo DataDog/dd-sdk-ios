@@ -177,15 +177,13 @@ extension WebViewEventReceiver: AnyMockable {
         featureScope: FeatureScope = NOPFeatureScope(),
         dateProvider: DateProvider = SystemDateProvider(),
         commandSubscriber: RUMCommandSubscriber = RUMCommandSubscriberMock(),
-        viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
-        firstPartyHostSamplingRate: SampleRate? = nil
+        viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider())
     ) -> Self {
         .init(
             featureScope: featureScope,
             dateProvider: dateProvider,
             commandSubscriber: commandSubscriber,
             viewCache: viewCache,
-            firstPartyHostSamplingRate: firstPartyHostSamplingRate
         )
     }
 }

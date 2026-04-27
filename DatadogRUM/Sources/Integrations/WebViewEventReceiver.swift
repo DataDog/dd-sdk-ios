@@ -22,9 +22,6 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     /// The view cache containing ids of current and previous views.
     let viewCache: ViewCache
 
-    /// The sampling rate for RUM first party host sampling, if configured. `nil` otherwise.
-    let firstPartyHostSamplingRate: SampleRate?
-
     /// Creates a new receiver.
     ///
     /// - Parameters:
@@ -38,13 +35,11 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         dateProvider: DateProvider,
         commandSubscriber: RUMCommandSubscriber,
         viewCache: ViewCache,
-        firstPartyHostSamplingRate: SampleRate?
     ) {
         self.featureScope = featureScope
         self.commandSubscriber = commandSubscriber
         self.dateProvider = dateProvider
         self.viewCache = viewCache
-        self.firstPartyHostSamplingRate = firstPartyHostSamplingRate
     }
 
     /// Writes a Browser RUM event to the core.
@@ -57,7 +52,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
         case let .webview(.rum(event)):
-            receive(rum: event)
+            receive(rum: event, core: core)
         case let .webview(.telemetry(event)):
             receive(telemetry: event)
         default:
@@ -67,7 +62,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         return true
     }
 
-    private func receive(rum event: JSON) {
+    private func receive(rum event: JSON, core: DatadogCoreProtocol) {
         commandSubscriber.process(
             command: RUMKeepSessionAliveCommand(
                 time: dateProvider.now,
@@ -75,7 +70,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             )
         )
 
-        featureScope.eventWriteContext { [firstPartyHostSamplingRate] context, writer in
+        featureScope.eventWriteContext { context, writer in
             guard let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.isSampled else {
                 return // Drop event if RUM is not enabled or RUM session is not sampled
             }
@@ -131,8 +126,13 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                     dd["replay_stats"] = nil
                     event["_dd"] = dd
                 }
-                if let firstPartyHostSamplingRate, dd["rule_psr"] != nil {
-                    dd["rule_psr"] = firstPartyHostSamplingRate.percentageProportion
+                if dd["rule_psr"] != nil,
+                   let networkInstrumentation = core.feature(
+                    named: NetworkInstrumentationFeatureName,
+                    type: DistributedTracingSampleRateProvider.self
+                   ),
+                   let distributedTracingSampleRate = networkInstrumentation.distributedTracingSampleRate {
+                    dd["rule_psr"] = distributedTracingSampleRate.percentageProportion
                     event["_dd"] = dd
                 }
             }

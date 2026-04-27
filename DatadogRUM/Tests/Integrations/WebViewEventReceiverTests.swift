@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
+@testable import DatadogCore
 
 class WebViewEventReceiverTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
@@ -195,8 +196,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
             commandSubscriber: commandsSubscriberMock,
-            viewCache: ViewCache(dateProvider: SystemDateProvider()),
-            firstPartyHostSamplingRate: nil
+            viewCache: ViewCache(dateProvider: SystemDateProvider())
         )
 
         // When
@@ -215,8 +215,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: SystemDateProvider()),
-            firstPartyHostSamplingRate: nil
+            viewCache: ViewCache(dateProvider: SystemDateProvider())
         )
 
         // When
@@ -241,8 +240,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider),
-            firstPartyHostSamplingRate: nil
+            viewCache: ViewCache(dateProvider: dateProvider)
         )
 
         dateProvider.advance(bySeconds: 1)
@@ -291,8 +289,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: SystemDateProvider()),
-            firstPartyHostSamplingRate: nil
+            viewCache: ViewCache(dateProvider: SystemDateProvider())
         )
 
         // When
@@ -319,8 +316,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider),
-            firstPartyHostSamplingRate: nil
+            viewCache: ViewCache(dateProvider: dateProvider)
         )
 
         let containerViewID: String = .mockRandom()
@@ -402,8 +398,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider),
-            firstPartyHostSamplingRate: nil
+            viewCache: ViewCache(dateProvider: dateProvider)
         )
 
         let containerViewID: String = .mockRandom()
@@ -481,8 +476,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider),
-            firstPartyHostSamplingRate: nil
+            viewCache: ViewCache(dateProvider: dateProvider)
         )
 
         dateProvider.advance(bySeconds: 1)
@@ -534,8 +528,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider),
-            firstPartyHostSamplingRate: nil
+            viewCache: ViewCache(dateProvider: dateProvider)
         )
 
         dateProvider.advance(bySeconds: 1)
@@ -570,19 +563,39 @@ class WebViewEventReceiverTests: XCTestCase {
     func testGivenFirstPartyHostSamplingRate_whenReceivingTracedResourceEvent_itOverwritesRulePsr() throws {
         // Given
         let dateProvider = RelativeDateProvider()
-        let rumContext: RUMCoreContext = .mockRandom()
-        featureScope.contextMock = .mockWith(
-            additionalContext: [rumContext]
+        // This session ID is not sampled at 50%, but it is sampled at 60%:
+        let sessionUUID = RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!)
+        let uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionUUID)
+
+        let core = DatadogCoreProxy(
+            context: .mockWith(
+                env: "test",
+                version: "1.0.0",
+                serverTimeOffset: 0
+            )
+        )
+        defer { try? core.flushAndTearDown() }
+
+        let nativeSamplingRate: SampleRate = 75.0
+
+        RUM.enable(
+            with: .mockWith(applicationID: "test-app-id") {
+                $0.uuidGenerator = uuidGenerator
+                $0.urlSessionTracking = .init(
+                    firstPartyHostsTracing: .trace(hosts: ["localhost"], sampleRate: nativeSamplingRate)
+                )
+            },
+            in: core
         )
 
-        let nativeSamplingRate: SampleRate = 42.0
+        // Necessary for RUM to set the session sampler in the feature, since it's an async process.
+        Thread.sleep(forTimeInterval: 0.1)
 
         let receiver = WebViewEventReceiver(
-            featureScope: featureScope,
+            featureScope: core.scope(for: RUMFeature.self),
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider),
-            firstPartyHostSamplingRate: nativeSamplingRate
+            viewCache: ViewCache(dateProvider: dateProvider)
         )
 
         dateProvider.advance(bySeconds: 1)
@@ -602,12 +615,12 @@ class WebViewEventReceiverTests: XCTestCase {
         ]
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: core)
 
         // Then
         XCTAssertTrue(result)
-        XCTAssertEqual(featureScope.eventsWritten.count, 1)
-        let actualWebEventWritten = try XCTUnwrap((featureScope.eventsWritten.first as? AnyEncodable)?.value as?  [String: Any])
+        let events = core.waitAndReturnEvents(ofFeature: "rum", ofType: AnyEncodable.self)
+        let actualWebEventWritten = try XCTUnwrap((events.first)?.value as? [String: Any])
         let actualDD = try XCTUnwrap(actualWebEventWritten["_dd"] as? [String: Any])
         XCTAssertEqual(actualDD["rule_psr"] as? Float, Float(nativeSamplingRate.percentageProportion), "rule_psr must be overwritten with the native sampling rate")
         XCTAssertEqual(actualDD["trace_id"] as? String, "123456789", "trace_id must be preserved")
@@ -616,18 +629,41 @@ class WebViewEventReceiverTests: XCTestCase {
 
     func testGivenFirstPartyHostSamplingRate_whenReceivingResourceEventWithoutRulePsr_itDoesNotAddRulePsr() throws {
         // Given
+        // Given
         let dateProvider = RelativeDateProvider()
-        let rumContext: RUMCoreContext = .mockRandom()
-        featureScope.contextMock = .mockWith(
-            additionalContext: [rumContext]
+        // This session ID is not sampled at 50%, but it is sampled at 60%:
+        let sessionUUID = RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!)
+        let uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionUUID)
+
+        let core = DatadogCoreProxy(
+            context: .mockWith(
+                env: "test",
+                version: "1.0.0",
+                serverTimeOffset: 0
+            )
+        )
+        defer { try? core.flushAndTearDown() }
+
+        let nativeSamplingRate: SampleRate = 75.0
+
+        RUM.enable(
+            with: .mockWith(applicationID: "test-app-id") {
+                $0.uuidGenerator = uuidGenerator
+                $0.urlSessionTracking = .init(
+                    firstPartyHostsTracing: .trace(hosts: ["localhost"], sampleRate: nativeSamplingRate)
+                )
+            },
+            in: core
         )
 
+        // Necessary for RUM to set the session sampler in the feature, since it's an async process.
+        Thread.sleep(forTimeInterval: 0.1)
+
         let receiver = WebViewEventReceiver(
-            featureScope: featureScope,
+            featureScope: core.scope(for: RUMFeature.self),
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider),
-            firstPartyHostSamplingRate: 42.0
+            viewCache: ViewCache(dateProvider: dateProvider)
         )
 
         dateProvider.advance(bySeconds: 1)
@@ -644,35 +680,54 @@ class WebViewEventReceiverTests: XCTestCase {
         ]
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: core)
 
         // Then
         XCTAssertTrue(result)
-        XCTAssertEqual(featureScope.eventsWritten.count, 1)
-        let actualWebEventWritten = try XCTUnwrap((featureScope.eventsWritten.first as? AnyEncodable)?.value as?  [String: Any])
+        let events = core.waitAndReturnEvents(ofFeature: "rum", ofType: AnyEncodable.self)
+        let actualWebEventWritten = try XCTUnwrap((events.first)?.value as? [String: Any])
         let actualDD = try XCTUnwrap(actualWebEventWritten["_dd"] as? [String: Any])
-        XCTAssertNil(actualDD["rule_psr"], "rule_psr must not be added when it was not present in the original event")
+        XCTAssertNil(actualDD["rule_psr"], "rule_psr should not have been created")
+        XCTAssertNil(actualDD["trace_id"])
+        XCTAssertNil(actualDD["span_id"])
     }
 
     func testGivenNoFirstPartyHostSamplingRate_whenReceivingTracedResourceEvent_itDoesNotModifyRulePsr() throws {
         // Given
         let dateProvider = RelativeDateProvider()
-        let rumContext: RUMCoreContext = .mockRandom()
-        featureScope.contextMock = .mockWith(
-            additionalContext: [rumContext]
+        // This session ID is not sampled at 50%, but it is sampled at 60%:
+        let sessionUUID = RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!)
+        let uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionUUID)
+
+        let core = DatadogCoreProxy(
+            context: .mockWith(
+                env: "test",
+                version: "1.0.0",
+                serverTimeOffset: 0
+            )
+        )
+        defer { try? core.flushAndTearDown() }
+
+        RUM.enable(
+            with: .mockWith(applicationID: "test-app-id") {
+                $0.uuidGenerator = uuidGenerator
+            },
+            in: core
         )
 
+        // Necessary for RUM to set the session sampler in the feature, since it's an async process.
+        Thread.sleep(forTimeInterval: 1.0)
+
         let receiver = WebViewEventReceiver(
-            featureScope: featureScope,
+            featureScope: core.scope(for: RUMFeature.self),
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider),
-            firstPartyHostSamplingRate: nil
+            viewCache: ViewCache(dateProvider: dateProvider)
         )
 
         dateProvider.advance(bySeconds: 1)
         let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
-        let originalRulePsr = 1.0
+        let originalRulePsr: Float = 1.0
         let webEventMock: JSON = [
             "type": "resource",
             "_dd": [
@@ -692,10 +747,12 @@ class WebViewEventReceiverTests: XCTestCase {
 
         // Then
         XCTAssertTrue(result)
-        XCTAssertEqual(featureScope.eventsWritten.count, 1)
-        let actualWebEventWritten = try XCTUnwrap((featureScope.eventsWritten.first as? AnyEncodable)?.value as?  [String: Any])
+        let events = core.waitAndReturnEvents(ofFeature: "rum", ofType: AnyEncodable.self)
+        let actualWebEventWritten = try XCTUnwrap((events.first)?.value as? [String: Any])
         let actualDD = try XCTUnwrap(actualWebEventWritten["_dd"] as? [String: Any])
-        XCTAssertEqual(actualDD["rule_psr"] as? Double, originalRulePsr, "rule_psr must not be modified when no native sampling rate is provided")
+        XCTAssertEqual(actualDD["rule_psr"] as? Float, originalRulePsr, "rule_psr must be overwritten")
+        XCTAssertEqual(actualDD["trace_id"] as? String, "123456789", "trace_id must be preserved")
+        XCTAssertEqual(actualDD["span_id"] as? String, "987654321", "span_id must be preserved")
     }
 
     // MARK: - Anonymous ID Propagation
@@ -714,8 +771,7 @@ class WebViewEventReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: dateProvider),
-            firstPartyHostSamplingRate: nil
+            viewCache: ViewCache(dateProvider: dateProvider)
         )
 
         dateProvider.advance(bySeconds: 1)
