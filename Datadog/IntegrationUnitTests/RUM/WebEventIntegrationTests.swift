@@ -10,10 +10,12 @@ import XCTest
 
 import DatadogInternal
 import TestUtilities
+import WebKit
 
 @testable import DatadogRUM
 @testable import DatadogWebViewTracking
 
+@MainActor
 class WebEventIntegrationTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var controller: WKUserContentControllerMock! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -27,10 +29,13 @@ class WebEventIntegrationTests: XCTestCase {
             )
         )
 
+        let config = WKWebViewConfiguration()
         controller = WKUserContentControllerMock()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
 
         try WebViewTracking.enableOrThrow(
-            tracking: controller,
+            tracking: webView,
             hosts: [],
             hostsSanitizer: HostsSanitizer(),
             logsSampleRate: 100,
@@ -38,7 +43,7 @@ class WebEventIntegrationTests: XCTestCase {
         )
     }
 
-        override func tearDownWithError() throws {
+    override func tearDownWithError() throws {
         try core.flushAndTearDown()
         core = nil
         controller = nil

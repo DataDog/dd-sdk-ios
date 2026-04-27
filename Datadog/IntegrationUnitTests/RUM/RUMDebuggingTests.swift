@@ -19,7 +19,8 @@ class RUMDebuggingTests: XCTestCase {
 
         // when
         let applicationScope = RUMApplicationScope(
-            dependencies: .mockWith(rumApplicationID: "rum-123")
+            dependencies: .mockWith(rumApplicationID: "rum-123"),
+            onSessionUpdate: { _ in }
         )
         _ = applicationScope.process(
             command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier(), name: "FirstView"),
@@ -53,7 +54,8 @@ class RUMDebuggingTests: XCTestCase {
 
         // when
         let applicationScope = RUMApplicationScope(
-            dependencies: .mockWith(rumApplicationID: "rum-123")
+            dependencies: .mockWith(rumApplicationID: "rum-123"),
+            onSessionUpdate: { _ in }
         )
         _ = applicationScope.process(
             command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier(), name: "FirstView"),
