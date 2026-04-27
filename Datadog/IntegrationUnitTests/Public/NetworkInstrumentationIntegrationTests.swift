@@ -89,53 +89,6 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         try XCTAssertEqual(matcher2.spanID(), .init(rawValue: 101))
     }
 
-    func testResourceAttributesProvider_givenURLSessionDataTaskRequest() {
-        core = DatadogCoreProxy(
-            context: .mockWith(
-                env: "test",
-                version: "1.1.1",
-                serverTimeOffset: 123
-            )
-        )
-
-        let providerExpectation = expectation(description: "provider called")
-        var providerDataCount = 0
-        RUM.enable(
-            with: .init(
-                applicationID: .mockAny(),
-                urlSessionTracking: .init(
-                    resourceAttributesProvider: { req, resp, data, err in
-                        providerDataCount = data?.count ?? 0
-                        providerExpectation.fulfill()
-                        return [:]
-                    }
-                )
-            ),
-            in: core
-        )
-
-        URLSessionInstrumentation.enableDurationBreakdown(
-            with: .init(
-                delegateClass: InstrumentedSessionDelegate.self
-            ),
-            in: core
-        )
-
-        let session = URLSession(
-            configuration: .ephemeral,
-            delegate: InstrumentedSessionDelegate(),
-            delegateQueue: nil
-        )
-        var request = URLRequest(url: .mockAny())
-        request.httpMethod = "GET"
-
-        let task = session.dataTask(with: request)
-        task.resume()
-
-        wait(for: [providerExpectation], timeout: 10)
-        XCTAssertTrue(providerDataCount > 0, "Data should be available with registered delegate")
-    }
-
     func testResourceAttributesProvider_givenURLSessionDataTaskRequestWithCompletionHandler() {
         core = DatadogCoreProxy(
             context: .mockWith(
@@ -189,6 +142,188 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         XCTAssertEqual(providerInfo?.resp, taskInfo?.resp)
         XCTAssertEqual(providerInfo?.data, taskInfo?.data, "Data should be available with completion handler")
         XCTAssertEqual(providerInfo?.err as? NSError, taskInfo?.err as? NSError)
+    }
+
+    // MARK: - Automatic mode
+
+    func testAutomaticMode_resourceAttributesProvider_withCompletionHandler() {
+        // Verifies that automatic mode passes response data to the provider for completion-handler tasks.
+        core = DatadogCoreProxy(context: .mockWith(env: "test", version: "1.1.1", serverTimeOffset: 123))
+
+        let providerExpectation = expectation(description: "provider called")
+        var providerData: Data?
+
+        RUM.enable(
+            with: .init(
+                applicationID: .mockAny(),
+                urlSessionTracking: .init(
+                    resourceAttributesProvider: { _, _, data, _ in
+                        providerData = data
+                        providerExpectation.fulfill()
+                        return [:]
+                    }
+                )
+            ),
+            in: core
+        )
+        // No URLSessionInstrumentation.enableDurationBreakdown — automatic mode only
+
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let session = server.getInterceptedURLSession() // no registered delegate
+        let taskExpectation = expectation(description: "task completed")
+
+        let task = session.dataTask(with: URLRequest.mockAny()) { _, _, _ in
+            taskExpectation.fulfill()
+        }
+        task.resume()
+
+        wait(for: [providerExpectation, taskExpectation], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 1)
+
+        XCTAssertEqual(providerData?.count, 10, "Automatic mode must pass response data to provider for completion-handler tasks")
+    }
+
+    @available(iOS 16, tvOS 16, *)
+    func testAutomaticMode_resourceAttributesProvider_asyncAwait_dataIsNil() async {
+        // Documents the known limitation: async/await tasks return data directly to the caller,
+        // bypassing all swizzled hooks, so data is always nil in the provider.
+        core = DatadogCoreProxy(context: .mockWith(env: "test", version: "1.1.1", serverTimeOffset: 123))
+
+        let providerExpectation = expectation(description: "provider called")
+        var providerData: Data? = .mockAny() // initialize non-nil to confirm it is overwritten with nil
+
+        RUM.enable(
+            with: .init(
+                applicationID: .mockAny(),
+                urlSessionTracking: .init(
+                    resourceAttributesProvider: { _, _, data, _ in
+                        providerData = data
+                        providerExpectation.fulfill()
+                        return [:]
+                    }
+                )
+            ),
+            in: core
+        )
+
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+        let session = server.getInterceptedURLSession()
+
+        _ = try? await session.data(from: URL.mockAny())
+
+        await dd_fulfillment(for: [providerExpectation], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 1)
+
+        XCTAssertNil(providerData, "Async/await tasks return data directly to the caller — the provider cannot capture it")
+    }
+
+    func testAutomaticMode_traceEmitsSpan() throws {
+        // Verifies that Trace creates a span for URLSession requests in automatic mode,
+        // without requiring `URLSessionInstrumentation.enableDurationBreakdown`.
+        // setUp already called Trace.enable with urlSessionTracking for www.example.com.
+
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let session = server.getInterceptedURLSession() // no registered delegate — automatic mode only
+        let taskExpectation = expectation(description: "task completed")
+
+        let task = session.dataTask(with: URLRequest.mockAny()) { _, _, _ in
+            taskExpectation.fulfill()
+        }
+        task.resume()
+
+        wait(for: [taskExpectation], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 1)
+
+        let matchers = try core.waitAndReturnSpanMatchers()
+        let networkSpan = try XCTUnwrap(
+            matchers.first(where: { (try? $0.operationName()) == "urlsession.request" }),
+            "Trace must emit a urlsession.request span in automatic mode"
+        )
+        try XCTAssertEqual(networkSpan.operationName(), "urlsession.request")
+    }
+
+    // MARK: - Dual mode
+
+    func testDualMode_doesNotDoubleTrackRequest_withRegisteredDelegate() throws {
+        // Verifies that enabling both automatic mode (via RUM) and metrics mode (via enableDurationBreakdown)
+        // does not cause a single request with a registered delegate to be tracked twice.
+        core = DatadogCoreProxy(context: .mockWith(env: "test", version: "1.1.1", serverTimeOffset: 123))
+
+        let providerExpectation = expectation(description: "provider called once")
+        providerExpectation.assertForOverFulfill = true
+
+        RUM.enable(
+            with: .init(
+                applicationID: .mockAny(),
+                urlSessionTracking: .init(
+                    resourceAttributesProvider: { _, _, _, _ in
+                        providerExpectation.fulfill()
+                        return [:]
+                    }
+                )
+            ),
+            in: core
+        )
+        URLSessionInstrumentation.enableDurationBreakdown(
+            with: .init(delegateClass: SessionDataDelegateMock.self),
+            in: core
+        )
+
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let session = server.getInterceptedURLSession(delegate: SessionDataDelegateMock())
+        let taskExpectation = expectation(description: "task completed")
+
+        let task = session.dataTask(with: URLRequest.mockAny()) { _, _, _ in
+            taskExpectation.fulfill()
+        }
+        task.resume()
+
+        wait(for: [providerExpectation, taskExpectation], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 1)
+
+        let resourceMatchers = try core.waitAndReturnRUMEventMatchers().filter { (try? $0.eventType()) == "resource" }
+        XCTAssertEqual(resourceMatchers.count, 1, "Request must be tracked exactly once — both modes must not double-report the same task")
+    }
+
+    func testDualMode_resourceAttributesProvider_registeredDelegateWithoutCompletionHandler() {
+        // Verifies that metrics mode captures response data via the delegate's didReceive callback
+        // even when the task has no completion handler.
+        core = DatadogCoreProxy(context: .mockWith(env: "test", version: "1.1.1", serverTimeOffset: 123))
+
+        let providerExpectation = expectation(description: "provider called")
+        var providerData: Data?
+
+        RUM.enable(
+            with: .init(
+                applicationID: .mockAny(),
+                urlSessionTracking: .init(
+                    resourceAttributesProvider: { _, _, data, _ in
+                        providerData = data
+                        providerExpectation.fulfill()
+                        return [:]
+                    }
+                )
+            ),
+            in: core
+        )
+        URLSessionInstrumentation.enableDurationBreakdown(
+            with: .init(delegateClass: SessionDataDelegateMock.self),
+            in: core
+        )
+
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let session = server.getInterceptedURLSession(delegate: SessionDataDelegateMock())
+
+        // No completion handler — data is captured via the delegate's didReceive callback
+        session.dataTask(with: URLRequest.mockAny()).resume()
+
+        wait(for: [providerExpectation], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 1)
+
+        XCTAssertEqual(providerData?.count, 10, "Metrics mode must capture response data via delegate didReceive for tasks without completion handlers")
     }
 
     private class InstrumentedSessionDelegate: NSObject, URLSessionDataDelegate {}
