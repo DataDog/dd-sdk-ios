@@ -101,7 +101,7 @@ internal enum DeltaEncoder {
         return [
             "precision": precision,
             "ts": ts,
-            "cpu_usage": cpuUsage
+            "value": cpuUsage
         ]
     }
 }
