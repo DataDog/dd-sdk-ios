@@ -81,8 +81,8 @@ class DeltaEncoderTests: XCTestCase {
         let ts = try! XCTUnwrap(result["ts"] as? [Int64])
         XCTAssertEqual(ts, [1_000_000_000, 1_000_000_000, 1_000_000_000])
 
-        // cpu_usage: 42.5*10000=425_000, (43.0-42.5)*10000=5_000, (42.0-43.0)*10000=-10_000
-        let cpuUsage = try! XCTUnwrap(result["cpu_usage"] as? [Int64])
+        // value: 42.5*10000=425_000, (43.0-42.5)*10000=5_000, (42.0-43.0)*10000=-10_000
+        let cpuUsage = try! XCTUnwrap(result["value"] as? [Int64])
         XCTAssertEqual(cpuUsage, [425_000, 5_000, -10_000])
     }
 }

@@ -5264,6 +5264,9 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
         /// Name identifying the timeseries metric
         public let name: String
 
+        /// Wire-shape discriminator for the data field
+        public let schema: Schema
+
         /// Timestamp of the first sample in nanoseconds from epoch
         public let start: Int64
 
@@ -5272,6 +5275,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
             case end = "end"
             case id = "id"
             case name = "name"
+            case schema = "schema"
             case start = "start"
         }
 
@@ -5282,18 +5286,21 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
         ///   - end: Timestamp of the last sample in nanoseconds from epoch
         ///   - id: UUID of the timeseries batch
         ///   - name: Name identifying the timeseries metric
+        ///   - schema: Wire-shape discriminator for the data field
         ///   - start: Timestamp of the first sample in nanoseconds from epoch
         public init(
             data: [Data],
             end: Int64,
             id: String,
             name: String,
+            schema: Schema,
             start: Int64
         ) {
             self.data = data
             self.end = end
             self.id = id
             self.name = name
+            self.schema = schema
             self.start = start
         }
 
@@ -5342,6 +5349,12 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
                     self.cpuUsage = cpuUsage
                 }
             }
+        }
+
+        /// Wire-shape discriminator for the data field
+        public enum Schema: String, Codable {
+            case object = "object"
+            case deltaScalar = "delta-scalar"
         }
     }
 }
@@ -5506,6 +5519,9 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
         /// Name identifying the timeseries metric
         public let name: String
 
+        /// Wire-shape discriminator for the data field
+        public let schema: Schema
+
         /// Timestamp of the first sample in nanoseconds from epoch
         public let start: Int64
 
@@ -5514,6 +5530,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
             case end = "end"
             case id = "id"
             case name = "name"
+            case schema = "schema"
             case start = "start"
         }
 
@@ -5524,18 +5541,21 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
         ///   - end: Timestamp of the last sample in nanoseconds from epoch
         ///   - id: UUID of the timeseries batch
         ///   - name: Name identifying the timeseries metric
+        ///   - schema: Wire-shape discriminator for the data field
         ///   - start: Timestamp of the first sample in nanoseconds from epoch
         public init(
             data: [Data],
             end: Int64,
             id: String,
             name: String,
+            schema: Schema,
             start: Int64
         ) {
             self.data = data
             self.end = end
             self.id = id
             self.name = name
+            self.schema = schema
             self.start = start
         }
 
@@ -5591,6 +5611,12 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
                     self.memoryPercent = memoryPercent
                 }
             }
+        }
+
+        /// Wire-shape discriminator for the data field
+        public enum Schema: String, Codable {
+            case object = "object"
+            case deltaObject = "delta-object"
         }
     }
 }
@@ -14865,4 +14891,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/bc7b1ff5936caa0fc6fd3d190ac60273cf80c604
+// Generated from https://github.com/DataDog/rum-events-format/tree/e6e26ff3a738130481c33ca08b30ffcc55e3f6e1
