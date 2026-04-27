@@ -201,6 +201,19 @@ class WebViewTrackingTests: XCTestCase {
         }
     }
 
+    private func assertJSEvaluateResult(_ result: Any?, error: (any Error)?, shouldSample: Bool, description: String, expectation: XCTestExpectation) {
+        defer { expectation.fulfill() }
+        guard let boolResult = result as? Bool else {
+            XCTFail("For \(description), expected a boolean result, got \(String(describing: result))")
+            return
+        }
+        guard error == nil else {
+            XCTFail("For \(description), expected no error but got \(String(describing: error))")
+            return
+        }
+        XCTAssert(boolResult == shouldSample, "\(description) should be\(shouldSample ? "" : " NOT") sampling")
+    }
+
     @available(iOS 15.0, *)
     func testItChangesBridgeDecisionOnSessionRollover() throws {
         // Given
@@ -251,22 +264,9 @@ class WebViewTrackingTests: XCTestCase {
         let ex2 = XCTestExpectation(description: "For sessionUUID2, getIsTraceSampled() should return true")
         let ex3 = XCTestExpectation(description: "For sessionUUID2, getIsTraceSampled() should return true after loading a different page")
 
-        func assertResult(_ result: Any?, error: (any Error)?, shouldSample: Bool, description: String, expectation: XCTestExpectation) {
-            defer { expectation.fulfill() }
-            guard let boolResult = result as? Bool else {
-                XCTFail("For \(description), expected a boolean result, got \(String(describing: result))")
-                return
-            }
-            guard error == nil else {
-                XCTFail("For \(description), expected no error but got \(String(describing: error))")
-                return
-            }
-            XCTAssert(boolResult == shouldSample, "\(description) should be\(shouldSample ? "" : " NOT") sampling")
-        }
-
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
-                assertResult(result, error: error, shouldSample: false, description: "sessionUUID1", expectation: ex1)
+                self.assertJSEvaluateResult(result, error: error, shouldSample: false, description: "sessionUUID1", expectation: ex1)
             }
 
             // Start initial session by starting a view
@@ -284,20 +284,100 @@ class WebViewTrackingTests: XCTestCase {
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
-                    assertResult(result, error: error, shouldSample: true, description: "sessionUUID2", expectation: ex2)
+                    self.assertJSEvaluateResult(result, error: error, shouldSample: true, description: "sessionUUID2", expectation: ex2)
                 }
 
                 webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.htmk")!), responseHTML: "<html><body>About us</body></html>")
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
-                        assertResult(result, error: error, shouldSample: true, description: "sessionUUID2 after loading a new page", expectation: ex3)
+                        self.assertJSEvaluateResult(result, error: error, shouldSample: true, description: "sessionUUID2 after loading a new page", expectation: ex3)
                     }
                 }
             }
         }
 
         wait(for: [ex1, ex2, ex3], timeout: 4.0)
+    }
+
+    @available(iOS 15.0, *)
+    func testItSetsBridgeDecisionToNullOnSessionStop() throws {
+        // Given
+        // This session ID is not sampled at 50%, but it is sampled at 60%:
+        let sessionUUID = RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!)
+        let uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionUUID)
+
+        let core = DatadogCoreProxy(
+            context: .mockWith(
+                env: "test",
+                version: "1.0.0",
+                serverTimeOffset: 0
+            )
+        )
+        defer { try? core.flushAndTearDown() }
+
+        RUM.enable(
+            with: .mockWith(applicationID: "test-app-id") {
+                $0.uuidGenerator = uuidGenerator
+                $0.urlSessionTracking = .init(
+                    firstPartyHostsTracing: .trace(hosts: ["localhost"], sampleRate: 60)
+                )
+            },
+            in: core
+        )
+
+        // Necessary for RUM to set the session sampler in the feature, since it's an async process.
+        Thread.sleep(forTimeInterval: 0.1)
+
+        let config = WKWebViewConfiguration()
+        let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
+
+        try WebViewTracking.enableOrThrow(
+            tracking: webView,
+            hosts: ["localhost"],
+            hostsSanitizer: HostsSanitizerMock(),
+            logsSampleRate: 100,
+            in: core
+        )
+
+        let ex1 = XCTestExpectation(description: "For active session, getIsTraceSampled() should return false")
+        let ex2 = XCTestExpectation(description: "After stopSession, getIsTraceSampled() should return null")
+
+        func assertNullResult(_ result: Any?, error: (any Error)?, description: String, expectation: XCTestExpectation) {
+            defer { expectation.fulfill() }
+            guard error == nil else {
+                XCTFail("For \(description), expected no error but got \(String(describing: error))")
+                return
+            }
+            XCTAssertTrue(result is NSNull || result == nil, "For \(description), expected null but got \(String(describing: result))")
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            // Start a session
+            RUMMonitor.shared(in: core).startView(key: "view-1")
+            core.flush()
+
+            webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
+                self.assertJSEvaluateResult(result, error: error, shouldSample: true, description: "active session", expectation: ex1)
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                // Stop the session
+                RUMMonitor.shared(in: core).stopSession()
+                core.flush()
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
+                        assertNullResult(result, error: error, description: "after stopSession", expectation: ex2)
+                    }
+                }
+            }
+        }
+
+        wait(for: [ex1, ex2], timeout: 5.0)
     }
 
     func testItAddsUserScriptAndMessageHandler() throws {
