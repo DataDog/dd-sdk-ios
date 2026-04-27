@@ -15,11 +15,11 @@ public struct AttributesSanitizer {
         /// Maximum number of attributes in log.
         /// If this number is exceeded, extra attributes will be ignored.
         public static let maxNumberOfAttributes: Int = 256
-        /// Maximum length of a string attribute value, measured in Unicode grapheme clusters (Swift `String.count`).
-        /// Values exceeding this will be truncated. This matches the backend hard limit: anything beyond 25,600
-        /// characters is discarded server-side regardless of facet status. Note that the backend limit is defined
-        /// in characters, not UTF-8 bytes — for ASCII-only values the two are equivalent, but multi-byte characters
-        /// (e.g. emoji) may differ in byte count while still counting as a single character here.
+        /// Maximum length of a string attribute value, measured in UTF-16 code units (Swift `String.utf16.count`).
+        /// Values exceeding this will be truncated. This matches the backend hard limit — the backend measures
+        /// length using Java's `String.length()`, which counts UTF-16 code units. For ASCII and most accented
+        /// characters this is equivalent to Swift's `String.count`, but emoji may differ
+        /// (e.g. 👩🏻 = 1 grapheme cluster but 4 UTF-16 code units).
         public static let maxAttributeValueLength: Int = 25_600
     }
 
@@ -77,16 +77,23 @@ public struct AttributesSanitizer {
     public func sanitizeValues(for attributes: [String: Encodable]) -> [String: Encodable] {
         return Dictionary(uniqueKeysWithValues: attributes.map { key, value in
             guard let string = value.dd.decode(String.self),
-                  string.count > Constraints.maxAttributeValueLength else {
+                  string.utf16.count > Constraints.maxAttributeValueLength else {
                 return (key, value)
             }
             DD.logger.warn(
                 """
-                \(featureName) attribute '\(key)' value was truncated from \(string.count) to \
-                \(Constraints.maxAttributeValueLength) characters to match Datadog constraints.
+                \(featureName) attribute '\(key)' value was truncated from \(string.utf16.count) to \
+                \(Constraints.maxAttributeValueLength) UTF-16 code units to match Datadog constraints.
                 """
             )
-            return (key, String(string.prefix(Constraints.maxAttributeValueLength)))
+            var utf16Count = 0
+            let truncated = string.prefix(while: { char in
+                let newCount = utf16Count + char.utf16.count
+                guard newCount <= Constraints.maxAttributeValueLength else { return false }
+                utf16Count = newCount
+                return true
+            })
+            return (key, String(truncated))
         })
     }
 
