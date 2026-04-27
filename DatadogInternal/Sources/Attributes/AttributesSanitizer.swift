@@ -89,7 +89,9 @@ public struct AttributesSanitizer {
             var utf16Count = 0
             let truncated = string.prefix(while: { char in
                 let newCount = utf16Count + char.utf16.count
-                guard newCount <= Constraints.maxAttributeValueLength else { return false }
+                guard newCount <= Constraints.maxAttributeValueLength else {
+                    return false
+                }
                 utf16Count = newCount
                 return true
             })
