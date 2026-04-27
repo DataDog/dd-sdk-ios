@@ -31,6 +31,46 @@ class DDRUMConfigurationTests: XCTestCase {
         XCTAssertEqual(swift.telemetrySampleRate, 30)
     }
 
+    func testNetworkSettledResourcePredicate() {
+        class ObjcPredicate: objc_NetworkSettledResourcePredicate {
+            func isInitialResource(from resourceParams: objc_TNSResourceParams) -> Bool { return true }
+        }
+        let predicate = ObjcPredicate()
+        objc.networkSettledResourcePredicate = predicate
+        XCTAssertIdentical(objc.networkSettledResourcePredicate, predicate)
+        XCTAssertTrue(swift.networkSettledResourcePredicate is NetworkSettledResourcePredicateBridge)
+    }
+
+    func testNextViewActionPredicate() {
+        class ObjcPredicate: objc_NextViewActionPredicate {
+            func isLastAction(from actionParams: objc_INVActionParams) -> Bool { return true }
+        }
+        let predicate = ObjcPredicate()
+        objc.nextViewActionPredicate = predicate
+        XCTAssertIdentical(objc.nextViewActionPredicate, predicate)
+        XCTAssertTrue(swift.nextViewActionPredicate is NextViewActionPredicateBridge)
+    }
+
+    func testNextViewActionPredicateDisable() {
+        class ObjcPredicate: objc_NextViewActionPredicate {
+            func isLastAction(from actionParams: objc_INVActionParams) -> Bool { return true }
+        }
+        objc.nextViewActionPredicate = ObjcPredicate()
+        XCTAssertNotNil(objc.nextViewActionPredicate)
+
+        objc.nextViewActionPredicate = nil
+        XCTAssertNil(objc.nextViewActionPredicate)
+        XCTAssertNil(swift.nextViewActionPredicate)
+    }
+
+#if !os(watchOS)
+    func testCollectAccessibility() {
+        let random: Bool = .mockRandom()
+        objc.collectAccessibility = random
+        XCTAssertEqual(objc.collectAccessibility, random)
+        XCTAssertEqual(swift.collectAccessibility, random)
+    }
+
     func testUIKitViewsPredicate() {
         class ObjcPredicate: objc_UIKitRUMViewsPredicate {
             func rumView(for viewController: UIViewController) -> objc_RUMView? { nil }
@@ -51,6 +91,7 @@ class DDRUMConfigurationTests: XCTestCase {
         XCTAssertIdentical(objc.uiKitActionsPredicate, predicate)
         XCTAssertNotNil(swift.uiKitActionsPredicate)
     }
+#endif
 
     func testSetDDRUMURLSessionTrackingWithFirstPartyHosts() {
         let tracking = objc_URLSessionTracking()

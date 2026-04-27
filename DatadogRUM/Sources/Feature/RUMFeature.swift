@@ -79,12 +79,21 @@ internal final class RUMFeature: DatadogRemoteFeature {
             watchdogTermination = monitor
         }
 
+        var renderLoopObserver: RenderLoopObserver? = nil
         var accessibilityReader: AccessibilityReading? = nil
-        if  #available(iOS 13.0, tvOS 13.0, *), configuration.collectAccessibility {
+
+        let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
+
+        #if !os(watchOS)
+        if #available(iOS 13.0, tvOS 13.0, *), configuration.collectAccessibility {
              accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenter)
         }
 
-        let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
+        renderLoopObserver = DisplayLinker(
+            notificationCenter: configuration.notificationCenter,
+            frameInfoProviderFactory: configuration.frameInfoProviderFactory
+        )
+        #endif
 
         let distributedTracing: (FirstPartyHosts, SampleRate)? = {
             switch configuration.urlSessionTracking?.firstPartyHostsTracing {
@@ -120,10 +129,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     return nil
                 }
             }(),
-            renderLoopObserver: DisplayLinker(
-                notificationCenter: configuration.notificationCenter,
-                frameInfoProviderFactory: configuration.frameInfoProviderFactory
-            ),
+            renderLoopObserver: renderLoopObserver,
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
                 configuration.trackSlowFrames
@@ -193,6 +199,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         firstFrameReader.publish(to: monitor)
         dependencies.renderLoopObserver?.register(firstFrameReader)
 
+        #if !os(watchOS)
         var memoryWarningMonitor: MemoryWarningMonitor?
         if configuration.trackMemoryWarnings {
             let memoryWarningReporter = MemoryWarningReporter()
@@ -201,6 +208,9 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 notificationCenter: configuration.notificationCenter
             )
         }
+
+        let heatmapIdentifierStore = HeatmapIdentifierStore()
+        try core.register(heatmapIdentifierRegistry: heatmapIdentifierStore)
 
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
@@ -219,8 +229,26 @@ internal final class RUMFeature: DatadogRemoteFeature {
             bundleType: bundleType,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: memoryWarningMonitor,
+            uuidGenerator: configuration.uuidGenerator,
+            heatmapIdentifierRegistry: heatmapIdentifierStore
+        )
+        #else
+        self.instrumentation = RUMInstrumentation(
+            featureScope: featureScope,
+            longTaskThreshold: configuration.longTaskThreshold,
+            appHangThreshold: configuration.appHangThreshold,
+            mainQueue: configuration.mainQueue,
+            dateProvider: configuration.dateProvider,
+            backtraceReporter: core.backtraceReporter,
+            fatalErrorContext: dependencies.fatalErrorContext,
+            processID: configuration.processID,
+            notificationCenter: configuration.notificationCenter,
+            bundleType: bundleType,
+            watchdogTermination: watchdogTermination,
+            memoryWarningMonitor: nil,
             uuidGenerator: configuration.uuidGenerator
         )
+        #endif
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
             eventsFilter: RUMViewEventsFilter(telemetry: core.telemetry),
@@ -281,29 +309,68 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
 
         // Send configuration telemetry:
+        #if !os(watchOS)
+        let swiftUIViewTrackingEnabled = configuration.swiftUIViewsPredicate != nil
+        let swiftUIActionTrackingEnabled = configuration.swiftUIActionsPredicate != nil
+        let trackNativeViews = configuration.uiKitViewsPredicate != nil
+        let trackUserInteractions = configuration.uiKitActionsPredicate != nil
+        #else
+        let swiftUIViewTrackingEnabled = false
+        let swiftUIActionTrackingEnabled = false
+        let trackNativeViews = false
+        let trackUserInteractions = false
+        #endif
 
         core.telemetry.configuration(
             appHangThreshold: configuration.appHangThreshold?.dd.toInt64Milliseconds,
-            invTimeThresholdMs: (configuration.nextViewActionPredicate as? TimeBasedINVActionPredicate)?.maxTimeToNextView.dd.toInt64Milliseconds,
+            invTimeThresholdMs: configuration.nextViewActionPredicate?.invTimeThresholdMs,
             mobileVitalsUpdatePeriod: configuration.vitalsUpdateFrequency?.timeInterval.dd.toInt64Milliseconds,
             sessionSampleRate: Int64.ddWithNoOverflow(configuration.debugSDK ? 100 : configuration.sessionSampleRate),
             telemetrySampleRate: Int64.ddWithNoOverflow(configuration.debugSDK ? 100 : configuration.telemetrySampleRate),
-            tnsTimeThresholdMs: (configuration.networkSettledResourcePredicate as? TimeBasedTNSResourcePredicate)?.threshold.dd.toInt64Milliseconds,
+            tnsTimeThresholdMs: configuration.networkSettledResourcePredicate.tnsTimeThresholdMs,
             traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64.ddWithNoOverflow($0.sampleRate) },
-            swiftUIViewTrackingEnabled: configuration.swiftUIViewsPredicate != nil,
-            swiftUIActionTrackingEnabled: configuration.swiftUIActionsPredicate != nil,
+            swiftUIViewTrackingEnabled: swiftUIViewTrackingEnabled,
+            swiftUIActionTrackingEnabled: swiftUIActionTrackingEnabled,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             trackLongTask: configuration.longTaskThreshold != nil,
             trackNativeLongTasks: configuration.longTaskThreshold != nil,
-            trackNativeViews: configuration.uiKitViewsPredicate != nil,
+            trackNativeViews: trackNativeViews,
             trackNetworkRequests: configuration.urlSessionTracking != nil,
-            trackUserInteractions: configuration.uiKitActionsPredicate != nil,
+            trackUserInteractions: trackUserInteractions,
             useFirstPartyHosts: configuration.urlSessionTracking?.firstPartyHostsTracing != nil
         )
 
         // Manage anonymous identifier depending on the configuration.
         anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: configuration.trackAnonymousUser)
+    }
+}
+
+private extension NetworkSettledResourcePredicate {
+    var tnsTimeThresholdMs: Int64? {
+        switch self {
+        case let timeBased as TimeBasedTNSResourcePredicate:
+            return timeBased.threshold.dd.toInt64Milliseconds
+        case let objcBridge as NetworkSettledResourcePredicateBridge:
+            return (objcBridge.objcPredicate as? objc_TimeBasedTNSResourcePredicate)?
+                .swiftPredicate.tnsTimeThresholdMs
+        default:
+            return nil
+        }
+    }
+}
+
+private extension NextViewActionPredicate {
+    var invTimeThresholdMs: Int64? {
+        switch self {
+        case let timeBased as TimeBasedINVActionPredicate:
+            return timeBased.maxTimeToNextView.dd.toInt64Milliseconds
+        case let objcBridge as NextViewActionPredicateBridge:
+            return (objcBridge.objcPredicate as? objc_TimeBasedINVActionPredicate)?
+                .swiftPredicate.invTimeThresholdMs
+        default:
+            return nil
+        }
     }
 }
 

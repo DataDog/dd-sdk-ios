@@ -32,10 +32,11 @@ DOGFOODED_BRANCH="$(current_git_branch)"
 DOGFOODED_COMMIT="$(current_git_commit)"
 DOGFOODED_COMMIT_SHORT="$(current_git_commit_short)"
 DOGFOODING_BRANCH_NAME="dogfooding-$DOGFOODED_COMMIT_SHORT" # the name of the branch to create in dependent repo
+EXPECTED_DOGFOODED_BRANCH="dogfooding"
 
-if [[ "$DOGFOODED_BRANCH" != "develop" ]]; then
+if [[ "$DOGFOODED_BRANCH" != "$EXPECTED_DOGFOODED_BRANCH" ]]; then
     DRY_RUN=1
-    echo_warn "DOGFOODED_BRANCH is not 'develop'. Enforcing DRY_RUN=1."
+    echo_warn "DOGFOODED_BRANCH is not '$EXPECTED_DOGFOODED_BRANCH'. Enforcing DRY_RUN=1."
 fi
 
 echo_info "▸ PWD = '$(pwd)'"

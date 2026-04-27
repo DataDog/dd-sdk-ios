@@ -48,6 +48,7 @@ class URLSessionClientTests: XCTestCase {
         server.waitFor(requestsCompletion: 1)
     }
 
+    #if !os(watchOS)
     func testWhenProxyConfigurationIsSet_itUsesProxyConfiguration() {
         let proxyConfiguration: [AnyHashable: Any] = [
             kCFNetworkProxiesHTTPEnable: true,
@@ -70,4 +71,5 @@ class URLSessionClientTests: XCTestCase {
             "Basic cHJveHl1c2VyOnByb3h5cGFzcw==" // Base64.encode(proxyuser:proxypass)
         )
     }
+    #endif
 }

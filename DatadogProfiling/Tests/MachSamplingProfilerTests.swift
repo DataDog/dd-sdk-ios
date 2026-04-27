@@ -151,7 +151,7 @@ final class MachSamplingProfilerTests: XCTestCase {
             XCTAssertNotNil(profiler)
             XCTAssertEqual(profiler_start(profiler), 1)
 
-            Thread.sleep(forTimeInterval: 0.001)
+            Thread.sleep(forTimeInterval: 0.002)
 
             profiler_stop(profiler)
             profiler_destroy(profiler)

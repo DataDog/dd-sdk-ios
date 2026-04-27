@@ -10,7 +10,7 @@ import DatadogRUM
 final class RUMFeatureOperationsNextViewController: UIViewController {
 
     @IBAction func didTapSucceedLoginFlowButton(_ sender: Any) {
-        rumMonitor.succeedFeatureOperation(
+        rumMonitor.succeedOperation(
             name: Operation.login()
         )
     }

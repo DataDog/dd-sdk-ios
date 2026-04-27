@@ -32,6 +32,7 @@ class DirectoriesTests: XCTestCase {
             ("abcdef", .ap1, "e7f8dbbceb3cb6c93d74a8fc6ba9c6a43c05c00b792b65b183f62edb98709c79"),
             ("abcdef", .ap2, "2ec0ea56fdf0f78ddfdfc8bc1e03e8ea28814817e0dae3433f2da5038ccad17c"),
             ("abcdef", .us1_fed, "2a69100a36ae68ad3b081daa4c254fcade6b804ec71eda9109b7ec4b8317940b"),
+            ("abcdef", .us2_fed, "4d781adc6d7c642064e0d1bdba5b565ff6a90785f6838928bfd01d99cf948df2"),
             ("ghijkl", .us1, "158931c9e9576ef6ed1576721227d29e641e3f0ec2083e4bff280684f6b7ca94"),
             ("ghijkl", .us3, "e098808a9b0e3695f6b876ff677e50aaf98034606369abeabd5df45bbe8bb739"),
             ("ghijkl", .us5, "6212ba431e02e4da2da2f36a5fe9d26b4c33641a63be75c22e81196acfde7d91"),
@@ -39,6 +40,7 @@ class DirectoriesTests: XCTestCase {
             ("ghijkl", .ap1, "396717396bd53c4019640e9b6f6f1848f10fa95752c497d3a93de88e2600d550"),
             ("ghijkl", .ap2, "904bd45213241e69c07b3918f39b1330f08cbbd2c828eeeff53fd4ed189a4a08"),
             ("ghijkl", .us1_fed, "1585291b515c607624ed20935382bde4438ffac64f190b20a064eb6c1b734c6b"),
+            ("ghijkl", .us2_fed, "319adab00cc08408ac1ee87f72297595797d17ba95f1c2865f249770e4780f3c"),
         ]
 
         // When

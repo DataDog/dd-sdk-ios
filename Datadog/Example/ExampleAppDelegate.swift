@@ -26,7 +26,7 @@ var otelTracer: OpenTelemetryApi.Tracer {
 
 final class DummySessionDataDelegate: NSObject, URLSessionDataDelegate {}
 
-@UIApplicationMain
+@main
 class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
@@ -120,14 +120,15 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         #endif
 
         // Launch initial screen depending on the launch configuration
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         let storyboard = UIStoryboard(name: "Main iOS", bundle: nil)
         launch(storyboard: storyboard)
         #endif
 
-        #if !os(tvOS)
+        #if os(iOS)
         // Instantiate location monitor if the Example app is run in interactive mode. This will
         // enable background location tracking if it was started in previous session.
+        // Note: Background location monitoring is iOS-only (not available on tvOS or visionOS).
         if Environment.isRunningInteractive() {
             backgroundLocationMonitor = BackgroundLocationMonitor(rum: rumMonitor)
         }
@@ -145,7 +146,11 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
 
     func launch(storyboard: UIStoryboard) {
         if window == nil {
+            #if os(visionOS)
+            window = UIWindow()
+            #else
             window = UIWindow(frame: UIScreen.main.bounds)
+            #endif
             window?.makeKeyAndVisible()
         }
         window?.rootViewController = storyboard.instantiateInitialViewController()!

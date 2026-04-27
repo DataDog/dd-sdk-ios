@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import UIKit
 import TestUtilities
@@ -624,3 +626,5 @@ private class SwiftUIViewMock: UIView {
         return overrideIsSwiftUIView ?? true
     }
 }
+
+#endif

@@ -18,9 +18,10 @@ class ContextSharingTransformerTests: XCTestCase {
         core = DatadogCoreProxy()
     }
 
-    override func tearDown() {
+    override func tearDownWithError() throws {
+        try core.flushAndTearDown()
         core = nil
-        super.tearDown()
+        try super.tearDownWithError()
     }
 
     func testReceiveContextMessage_transformsToSharedContext() throws {
@@ -50,31 +51,27 @@ class ContextSharingTransformerTests: XCTestCase {
     func testPublish_callsReceiverImmediately() throws {
         // Given
         let transformer = ContextSharingTransformer()
-        let expectation = expectation(description: "receiver is called")
+        var receiverCalled = false
         var receivedContext: SharedContext?
 
         // When
         transformer.publish { context in
+            receiverCalled = true
             receivedContext = context
-            expectation.fulfill()
         }
 
-        // Then
-        waitForExpectations(timeout: 0)
+        // Then - receiver must be called synchronously within `publish`
+        XCTAssertTrue(receiverCalled)
         XCTAssertNil(receivedContext) // Initially nil
     }
 
     func testPublish_callsReceiverOnContextUpdate() throws {
         // Given
         let transformer = ContextSharingTransformer()
-        let expectation = expectation(description: "receiver is called with new context")
-        expectation.expectedFulfillmentCount = 2 // Initial nil + update
-
         var receivedContexts: [SharedContext?] = []
 
         transformer.publish { context in
             receivedContexts.append(context)
-            expectation.fulfill()
         }
 
         // When
@@ -85,7 +82,6 @@ class ContextSharingTransformerTests: XCTestCase {
         _ = transformer.receive(message: message, from: core)
 
         // Then
-        waitForExpectations(timeout: 1)
         XCTAssertEqual(receivedContexts.count, 2)
         XCTAssertNil(receivedContexts[0])
         XCTAssertEqual(receivedContexts[1]?.userId, "user-456")
@@ -95,16 +91,10 @@ class ContextSharingTransformerTests: XCTestCase {
     func testCancel_removesReceiver() throws {
         // Given
         let transformer = ContextSharingTransformer()
-        let expectation = expectation(description: "receiver is not called after cancel")
-        expectation.isInverted = true
-
         var callCount = 0
 
         transformer.publish { _ in
             callCount += 1
-            if callCount > 1 {
-                expectation.fulfill()
-            }
         }
 
         // When
@@ -114,8 +104,7 @@ class ContextSharingTransformerTests: XCTestCase {
         let message = FeatureMessage.context(context)
         _ = transformer.receive(message: message, from: core)
 
-        // Then
-        waitForExpectations(timeout: 0.5)
-        XCTAssertEqual(callCount, 1) // Only initial call
+        // Then - receiver must not be called after cancel
+        XCTAssertEqual(callCount, 1) // Only initial call from publish
     }
 }

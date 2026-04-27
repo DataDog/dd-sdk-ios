@@ -6,7 +6,7 @@
 
 import XCTest
 
-#if !os(tvOS)
+#if !os(tvOS) && !os(watchOS)
 
 import DatadogInternal
 import TestUtilities
@@ -98,6 +98,10 @@ class WebLogIntegrationTests: XCTestCase {
             $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: randomUUID)
         }, in: core)
 
+        // Flush to ensure the AnonymousIdentifierManager has generated
+        // and propagated the anonymous ID to the context
+        core.flush()
+
         let body = """
         {
             "eventType": "log",
@@ -136,6 +140,9 @@ class WebLogIntegrationTests: XCTestCase {
                 "referrer": "",
                 "url": "https://datadoghq.dev/browser-sdk-test-playground"
             },
+            "usr": {
+                "anonymous_id": "\(expectedUUID)"
+            }
         }
         """
         )

@@ -10,8 +10,8 @@ import DatadogInternal
 @testable import TestUtilities
 
 // Extension to make Path conform to Equatable for testing
-extension RUMResourceEvent.Resource.Graphql.Errors.Path: Equatable {
-    public static func == (lhs: RUMResourceEvent.Resource.Graphql.Errors.Path, rhs: RUMResourceEvent.Resource.Graphql.Errors.Path) -> Bool {
+extension RUMGraphql.Errors.Path: Equatable {
+    public static func == (lhs: RUMGraphql.Errors.Path, rhs: RUMGraphql.Errors.Path) -> Bool {
         switch (lhs, rhs) {
         case (.string(let lhsValue), .string(let rhsValue)):
             return lhsValue == rhsValue
@@ -1958,5 +1958,476 @@ class RUMResourceScopeTests: XCTestCase {
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
         XCTAssertNil(event.resource.request)
         XCTAssertNil(event.resource.response)
+    }
+
+    func testGivenStartedResourceWithSpanContext_whenResourceLoadingEndsWithError_itSendsErrorEventWithTraceContext() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            spanContext: .init(
+                traceID: .init(idLo: 100),
+                spanID: .init(rawValue: 200),
+                parentSpanID: .init(rawValue: 300),
+                samplingRate: 0.42
+            )
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/resource/1",
+                    time: .mockDecember15th2019At10AMUTC(),
+                    error: ErrorMock("network issue"),
+                    source: .network,
+                    httpStatusCode: 500,
+                    globalAttributes: [:],
+                    attributes: [:]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.dd.traceId, "64") // hex of 100 (idLo: 100)
+        XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.dd.parentSpanId, "300")
+        XCTAssertEqual(event.dd.rulePsr, 0.42)
+    }
+
+    func testGivenResourceWithGraphQLAttributes_whenResourceLoadingEndsWithError_itSendsErrorEventWithGraphQL() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/graphql",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/graphql",
+            httpMethod: .post
+        )
+
+        let graphQLErrorsJSON = """
+        [
+          {
+            "message": "Book not found",
+            "locations": [{ "line": 2, "column": 7 }],
+            "path": ["library", "book"],
+            "extensions": { "code": "NOT_FOUND" }
+          }
+        ]
+        """
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/graphql",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    error: ErrorMock("graphql error"),
+                    source: .network,
+                    httpStatusCode: 200,
+                    globalAttributes: [:],
+                    attributes: [
+                        CrossPlatformAttributes.graphqlOperationType: "query",
+                        CrossPlatformAttributes.graphqlOperationName: "GetBook",
+                        CrossPlatformAttributes.graphqlPayload: "{ library { book } }",
+                        CrossPlatformAttributes.graphqlVariables: "{\"bookId\": \"123\"}",
+                        CrossPlatformAttributes.graphqlErrors: graphQLErrorsJSON
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        let graphql = try XCTUnwrap(event.error.resource?.graphql)
+        XCTAssertEqual(graphql.operationType, .query)
+        XCTAssertEqual(graphql.operationName, "GetBook")
+        XCTAssertEqual(graphql.payload, "{ library { book } }")
+        XCTAssertEqual(graphql.variables, "{\"bookId\": \"123\"}")
+        XCTAssertEqual(graphql.errorCount, 1)
+        let errors = try XCTUnwrap(graphql.errors)
+        XCTAssertEqual(errors.count, 1)
+        XCTAssertEqual(errors[0].message, "Book not found")
+        XCTAssertEqual(errors[0].code, "NOT_FOUND")
+        let locations = try XCTUnwrap(errors[0].locations)
+        XCTAssertEqual(locations.count, 1)
+        XCTAssertEqual(locations[0].line, 2)
+        XCTAssertEqual(locations[0].column, 7)
+        let path = try XCTUnwrap(errors[0].path)
+        XCTAssertEqual(path.count, 2)
+        XCTAssertEqual(path[0], .string(value: "library"))
+        XCTAssertEqual(path[1], .string(value: "book"))
+    }
+
+    func testGivenResourceWithInvalidGraphQLJSON_whenResourceLoadingEndsWithError_itHandlesGracefully() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/graphql",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/graphql",
+            httpMethod: .post
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/graphql",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    error: ErrorMock("graphql error"),
+                    source: .network,
+                    httpStatusCode: 200,
+                    globalAttributes: [:],
+                    attributes: [
+                        CrossPlatformAttributes.graphqlOperationType: "query",
+                        CrossPlatformAttributes.graphqlErrors: "{ invalid json }"
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        let graphql = try XCTUnwrap(event.error.resource?.graphql)
+        XCTAssertNil(graphql.errors)
+        XCTAssertNil(graphql.errorCount)
+    }
+
+    func testGivenResourceWithEmptyGraphQLErrorsArray_whenResourceLoadingEndsWithError_itDoesNotSetErrors() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/graphql",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/graphql",
+            httpMethod: .post
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/graphql",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    error: ErrorMock("graphql error"),
+                    source: .network,
+                    httpStatusCode: 200,
+                    globalAttributes: [:],
+                    attributes: [
+                        CrossPlatformAttributes.graphqlOperationType: "query",
+                        CrossPlatformAttributes.graphqlErrors: "[]"
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        let graphql = try XCTUnwrap(event.error.resource?.graphql)
+        XCTAssertNil(graphql.errors)
+        XCTAssertNil(graphql.errorCount)
+    }
+
+    func testGivenResourceWithMultipleGraphQLErrors_whenResourceLoadingEndsWithError_itParsesAllErrorsCorrectly() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/graphql",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/graphql",
+            httpMethod: .post
+        )
+
+        let graphQLErrorsJSON = """
+        [
+          {
+            "message": "Book not found",
+            "locations": [
+              { "line": 2, "column": 7 },
+              { "line": 5, "column": 12 }
+            ],
+            "path": ["library", "book"],
+            "extensions": { "code": "NOT_FOUND" }
+          },
+          {
+            "message": "Unauthorized access to user profile",
+            "locations": [{ "line": 10, "column": 3 }],
+            "path": ["user", "profile"],
+            "extensions": { "code": "UNAUTHORIZED" }
+          },
+          {
+            "message": "Index out of bounds",
+            "path": ["users", 0, "name"]
+          }
+        ]
+        """
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/graphql",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    error: ErrorMock("graphql error"),
+                    source: .network,
+                    httpStatusCode: 200,
+                    globalAttributes: [:],
+                    attributes: [
+                        CrossPlatformAttributes.graphqlOperationType: "query",
+                        CrossPlatformAttributes.graphqlErrors: graphQLErrorsJSON
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        let graphql = try XCTUnwrap(event.error.resource?.graphql)
+        XCTAssertEqual(graphql.errorCount, 3)
+
+        let errors = try XCTUnwrap(graphql.errors)
+        XCTAssertEqual(errors.count, 3)
+
+        let error1 = errors[0]
+        XCTAssertEqual(error1.message, "Book not found")
+        XCTAssertEqual(error1.code, "NOT_FOUND")
+        let locations1 = try XCTUnwrap(error1.locations)
+        XCTAssertEqual(locations1.count, 2)
+        XCTAssertEqual(locations1[0].line, 2)
+        XCTAssertEqual(locations1[0].column, 7)
+        XCTAssertEqual(locations1[1].line, 5)
+        XCTAssertEqual(locations1[1].column, 12)
+        let path1 = try XCTUnwrap(error1.path)
+        XCTAssertEqual(path1.count, 2)
+        XCTAssertEqual(path1[0], .string(value: "library"))
+        XCTAssertEqual(path1[1], .string(value: "book"))
+
+        let error2 = errors[1]
+        XCTAssertEqual(error2.message, "Unauthorized access to user profile")
+        XCTAssertEqual(error2.code, "UNAUTHORIZED")
+        let locations2 = try XCTUnwrap(error2.locations)
+        XCTAssertEqual(locations2.count, 1)
+        XCTAssertEqual(locations2[0].line, 10)
+        XCTAssertEqual(locations2[0].column, 3)
+        let path2 = try XCTUnwrap(error2.path)
+        XCTAssertEqual(path2.count, 2)
+        XCTAssertEqual(path2[0], .string(value: "user"))
+        XCTAssertEqual(path2[1], .string(value: "profile"))
+
+        let error3 = errors[2]
+        XCTAssertEqual(error3.message, "Index out of bounds")
+        XCTAssertNil(error3.code)
+        let path3 = try XCTUnwrap(error3.path)
+        XCTAssertEqual(path3.count, 3)
+        XCTAssertEqual(path3[0], .string(value: "users"))
+        XCTAssertEqual(path3[1], .integer(value: 0))
+        XCTAssertEqual(path3[2], .string(value: "name"))
+    }
+
+    func testGivenResourceWithCrossPlatformTraceAttributes_whenResourceLoadingEndsWithError_itSendsErrorEventWithTraceContext() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            spanContext: nil
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/resource/1",
+                    time: .mockDecember15th2019At10AMUTC(),
+                    error: ErrorMock("network issue"),
+                    source: .network,
+                    httpStatusCode: 500,
+                    globalAttributes: [:],
+                    attributes: [
+                        CrossPlatformAttributes.traceID: "1a2b3c",
+                        CrossPlatformAttributes.spanID: "12345678901",
+                        CrossPlatformAttributes.parentSpanID: "9999",
+                        CrossPlatformAttributes.rulePSR: 0.5
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then - traceId is stored as-is (hex string), spanId is stored as-is (decimal string)
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.dd.traceId, "1a2b3c")
+        XCTAssertEqual(event.dd.spanId, "12345678901")
+        XCTAssertEqual(event.dd.parentSpanId, "9999")
+        XCTAssertEqual(event.dd.rulePsr, 0.5)
+    }
+
+    func testGivenResourceWithMutationGraphQLOperationType_whenResourceLoadingEndsWithError_itSendsErrorEventWithGraphQL() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/graphql",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/graphql",
+            httpMethod: .post
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/graphql",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    error: ErrorMock("graphql error"),
+                    source: .network,
+                    httpStatusCode: 200,
+                    globalAttributes: [:],
+                    attributes: [
+                        CrossPlatformAttributes.graphqlOperationType: "mutation",
+                        CrossPlatformAttributes.graphqlOperationName: "CreateBook"
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        let graphql = try XCTUnwrap(event.error.resource?.graphql)
+        XCTAssertEqual(graphql.operationType, .mutation)
+        XCTAssertEqual(graphql.operationName, "CreateBook")
+    }
+
+    func testGivenResourceWithUnrecognizedGraphQLOperationType_whenResourceLoadingEndsWithError_itDoesNotSetGraphQL() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/graphql",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/graphql",
+            httpMethod: .post
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/graphql",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    error: ErrorMock("graphql error"),
+                    source: .network,
+                    httpStatusCode: 200,
+                    globalAttributes: [:],
+                    attributes: [
+                        CrossPlatformAttributes.graphqlOperationType: "subscribe",
+                        CrossPlatformAttributes.graphqlOperationName: "OnBookAdded"
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertNil(event.error.resource?.graphql)
+    }
+
+    func testGivenResourceWithNoGraphQLOperationType_whenResourceLoadingEndsWithError_itDoesNotSetGraphQL() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/graphql",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/graphql",
+            httpMethod: .post
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/graphql",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    error: ErrorMock("graphql error"),
+                    source: .network,
+                    httpStatusCode: 200,
+                    globalAttributes: [:],
+                    attributes: [
+                        CrossPlatformAttributes.graphqlOperationName: "GetBook"
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertNil(event.error.resource?.graphql)
+    }
+
+    func testGivenResourceWithSpanContextAndCrossPlatformAttributes_whenResourceLoadingEndsWithError_itPrefersAttributesOverSpanContext() throws {
+        // Given - spanContext is set, but cross-platform attributes will also be provided
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            spanContext: .init(
+                traceID: .init(idLo: 999),
+                spanID: .init(rawValue: 888),
+                parentSpanID: nil,
+                samplingRate: 0.1
+            )
+        )
+
+        // When - cross-platform attributes are provided alongside spanContext
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/resource/1",
+                    time: .mockDecember15th2019At10AMUTC(),
+                    error: ErrorMock("network issue"),
+                    source: .network,
+                    httpStatusCode: 500,
+                    globalAttributes: [:],
+                    attributes: [
+                        CrossPlatformAttributes.traceID: "aabbcc",
+                        CrossPlatformAttributes.spanID: "42",
+                        CrossPlatformAttributes.rulePSR: 0.9
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then - cross-platform attributes take precedence over spanContext
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.dd.traceId, "aabbcc")
+        XCTAssertEqual(event.dd.spanId, "42")
+        XCTAssertEqual(event.dd.rulePsr, 0.9)
     }
 }

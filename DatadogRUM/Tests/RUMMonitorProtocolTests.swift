@@ -29,8 +29,6 @@ class NOPMonitorTests: XCTestCase {
         noop.addViewAttributes(mockRandomAttributes())
         noop.removeViewAttribute(forKey: .mockAny())
         noop.removeViewAttributes(forKeys: .mockAny())
-        noop.startView(viewController: mockView)
-        noop.stopView(viewController: mockView)
         noop.startView(key: "view-key")
         noop.stopView(key: "view-key")
         noop.addTiming(name: .mockAny())
@@ -49,15 +47,15 @@ class NOPMonitorTests: XCTestCase {
         noop.startAction(type: .click, name: .mockAny())
         noop.stopAction(type: .click)
         noop.addFeatureFlagEvaluation(name: .mockAny(), value: String.mockAny())
-        noop.startFeatureOperation(name: .mockAny())
-        noop.succeedFeatureOperation(name: .mockAny())
-        noop.failFeatureOperation(name: .mockAny(), reason: .mockAny())
+        noop.startOperation(name: .mockAny())
+        noop.succeedOperation(name: .mockAny())
+        noop.failOperation(name: .mockAny(), reason: .mockAny())
 
         noop.debug = .mockRandom()
         _ = noop.debug
 
         // Then
-        XCTAssertEqual(dd.logger.criticalLogs.count, 35)
+        XCTAssertEqual(dd.logger.criticalLogs.count, 33)
         let actualMessages = dd.logger.criticalLogs.map { $0.message }
         let expectedMessages = [
             "addAttribute(forKey:value:)",
@@ -70,8 +68,6 @@ class NOPMonitorTests: XCTestCase {
             "addViewAttributes(_:)",
             "removeViewAttribute(forKey:)",
             "removeViewAttributes(forKeys:)",
-            "startView(viewController:name:attributes:)",
-            "stopView(viewController:attributes:)",
             "startView(key:name:attributes:)",
             "stopView(key:attributes:)",
             "addTiming(name:)",
@@ -90,9 +86,9 @@ class NOPMonitorTests: XCTestCase {
             "startAction(type:name:attributes:)",
             "stopAction(type:name:attributes:)",
             "addFeatureFlagEvaluation(name:value:)",
-            "startFeatureOperation(name:operationKey:attributes:)",
-            "succeedFeatureOperation(name:operationKey:attributes:)",
-            "failFeatureOperation(name:operationKey:reason:attributes:)",
+            "startOperation(name:operationKey:attributes:options:)",
+            "succeedOperation(name:operationKey:attributes:)",
+            "failOperation(name:operationKey:reason:attributes:)",
             "debug",
             "debug",
         ].map { method in

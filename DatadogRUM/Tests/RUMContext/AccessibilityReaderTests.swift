@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+ #if !os(watchOS)
+
 @testable import DatadogRUM
 @testable import TestUtilities
 import XCTest
@@ -52,6 +54,7 @@ final class AccessibilityReaderTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    #if !os(watchOS)
     func testRegistersAllObservers() {
         // Given
         let mockNotificationCenter = MockNotificationCenter()
@@ -92,6 +95,7 @@ final class AccessibilityReaderTests: XCTestCase {
         XCTAssertTrue(observerNames.contains(UIAccessibility.buttonShapesEnabledStatusDidChangeNotification))
         XCTAssertTrue(observerNames.contains(UIAccessibility.prefersCrossFadeTransitionsStatusDidChange))
     }
+    #endif
 
     @MainActor
     func testAccessibilityReaderProtocolConformance() {
@@ -206,3 +210,5 @@ final class AccessibilityReaderTests: XCTestCase {
         XCTAssertNil(rumDifferences)
     }
 }
+
+#endif

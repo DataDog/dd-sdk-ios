@@ -6,6 +6,7 @@
 
 #import <XCTest/XCTest.h>
 @import DatadogRUM;
+@import DatadogInternal;
 
 @interface DDRUMMonitor_apiTests : XCTestCase
 @end
@@ -18,6 +19,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-value"
 
+#if !TARGET_OS_WATCH
 - (void)testDDRUMViewAPI {
     DDRUMView *view = [[DDRUMView alloc] initWithName:@"abc" attributes:@{@"foo": @"bar"}];
     XCTAssertEqual(view.name, @"abc");
@@ -29,6 +31,7 @@
     XCTAssertEqual(action.name, @"abc");
     XCTAssertNotNil(action.attributes[@"foo"]); // TODO: RUMM-1583 assert with `XCTAssertEqual`
 }
+#endif
 
 - (void)testDDRUMErrorSourceAPI {
     DDRUMErrorSourceSource; DDRUMErrorSourceNetwork; DDRUMErrorSourceWebview; DDRUMErrorSourceConsole; DDRUMErrorSourceCustom;
@@ -54,8 +57,6 @@
 }
 
 - (void)testDDRUMMonitorAPI {
-    UIViewController *anyVC = [UIViewController new];
-
     DDRUMMonitor *monitor = [DDRUMMonitor shared];
     [monitor currentSessionIDWithCompletion:^(NSString * _Nullable sessionID) {}];
     [monitor stopSession];
@@ -65,8 +66,8 @@
     [monitor addViewAttributes:@{@"string": @"value", @"integer": @1, @"boolean": @true}];
     [monitor removeViewAttributeForKey:@"key"];
     [monitor removeViewAttributesForKeys:@[@"string",@"integer",@"boolean"]];
-    [monitor startViewWithViewController:anyVC name:@"" attributes:@{}];
-    [monitor stopViewWithViewController:anyVC attributes:@{}];
+    [monitor startViewWithKey:@"view" name:@"" attributes:@{}];
+    [monitor stopViewWithKey:@"view" attributes:@{}];
     [monitor startViewWithKey:@"" name:nil attributes:@{}];
     [monitor stopViewWithKey:@"" attributes:@{}];
     [monitor addViewLoadingTimeWithOverwrite:YES];
@@ -92,9 +93,10 @@
     [monitor addAttributes:@{@"string": @"value", @"integer": @1, @"boolean": @true}];
     [monitor removeAttributesForKeys:@[@"string",@"integer",@"boolean"]];
     [monitor addFeatureFlagEvaluationWithName: @"name" value: @"value"];
-    [monitor startFeatureOperationWithName:@"test_flow" operationKey:@"operation_1" attributes:@{}];
-    [monitor succeedFeatureOperationWithName:@"test_flow" operationKey:@"operation_1" attributes:@{}];
-    [monitor failFeatureOperationWithName:@"test_flow" operationKey:@"operation_1" reason:DDRUMFeatureOperationFailureReasonError attributes:@{}];
+    DDProfilingOptions * options = [[DDProfilingOptions alloc] initWithSampleRate: 100.0];
+    [monitor startOperationWithName:@"test_flow" operationKey:@"operation_1" attributes:@{} options: options];
+    [monitor succeedOperationWithName:@"test_flow" operationKey:@"operation_1" attributes:@{}];
+    [monitor failOperationWithName:@"test_flow" operationKey:@"operation_1" reason:DDRUMFeatureOperationFailureReasonError attributes:@{}];
 
     [monitor _internal_sync_addError:[NSError errorWithDomain:NSCocoaErrorDomain code:-100 userInfo:nil]
                               source:DDRUMErrorSourceCustom attributes:@{}];

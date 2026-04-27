@@ -1,10 +1,28 @@
 # Unreleased
 
 - [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
+- [IMPROVEMENT] Skip malformed RUM attributes individually instead of dropping the entire event, and log clear error messages. See [#2844][]
+- [FIX] Propagate native `anonymous_id` to WebView RUM and Log events. See [#2847][]
+- [IMPROVEMENT] Add device properties `isLowRam`, `logicalCpuCount`, `totalRam` to the `LogEvent` Objective-C API. See [#2854][]
+- [IMPROVEMENT] Add `collectAccessibility` property to the Objective-C API of RUM configuration. See [#2855][]
+- [IMPROVEMENT] Add Objective-C APIs for `networkSettledResourcePredicate` and `nextViewActionPredicate` of RUM configuration. See [#2856][]
+
+# 3.10.0 / 16-04-2026
+
+- [FEATURE] Add Mobile Heatmaps support. See [#2829][]
+- [FEATURE] Add watchOS and visionOS support. See [#2817][]
+- [FEATURE] Add support for the FedRAMP-compatible `fed2.ddog-gov.com` site. See [#2827][]
+- [IMPROVEMENT] Rename RUM Operations APIs. See [#2802][]
+
+
+# 3.9.1 / 16-04-2026
+
+- [FIX] Prevent Session Replay capture from running on the swizzled `CALayer` layout call stack, avoiding AttributeGraph cycles and other errors. See [#2840][]
 
 # 3.9.0 / 02-04-2026
 
 - [IMPROVEMENT] Add `NWPath.linkQuality` to network info attached to Logs and Traces on supported platforms. See [#2751][]
+- [IMPROVEMENT] RUM sessions, distributed traces, and Session Replay now use Knuth deterministic sampling seeded from the session UUID, maximizing the probability that a sampled session retains its traces and replay for full observability correlation. See [#2714][]
 - [IMPROVEMENT] Trace now uses deterministic sampling for custom spans, based on the RUM session ID when available. See [#2794][]
 - [FIX] Fix stack overflow crash when RUM scroll tracking is used alongside third-party delegate proxy libraries (e.g. RxSwift). See [#2791][]
 - [FIX] When there is an active span, RUM session tracking uses it as the basis for the resource parent span and sampling decision. Starting in this release, if the active span is not sampled, session tracking falls back to making its own sampling decision based on the RUM session tracking sampling rate. See [#2807][]
@@ -1101,13 +1119,24 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2761]: https://github.com/DataDog/dd-sdk-ios/pull/2761
 [#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
 [#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
+[#2714]: https://github.com/DataDog/dd-sdk-ios/pull/2714
 [#2751]: https://github.com/DataDog/dd-sdk-ios/pull/2751
 [#2773]: https://github.com/DataDog/dd-sdk-ios/pull/2773
 [#2776]: https://github.com/DataDog/dd-sdk-ios/pull/2776
 [#2791]: https://github.com/DataDog/dd-sdk-ios/pull/2791
 [#2719]: https://github.com/DataDog/dd-sdk-ios/pull/2719
 [#2794]: https://github.com/DataDog/dd-sdk-ios/pull/2794
+[#2802]: https://github.com/DataDog/dd-sdk-ios/pull/2802
 [#2807]: https://github.com/DataDog/dd-sdk-ios/pull/2807
+[#2840]: https://github.com/DataDog/dd-sdk-ios/pull/2840
+[#2817]: https://github.com/DataDog/dd-sdk-ios/pull/2817
+[#2827]: https://github.com/DataDog/dd-sdk-ios/pull/2827
+[#2829]: https://github.com/DataDog/dd-sdk-ios/pull/2829
+[#2844]: https://github.com/DataDog/dd-sdk-ios/pull/2844
+[#2847]: https://github.com/DataDog/dd-sdk-ios/pull/2847
+[#2854]: https://github.com/DataDog/dd-sdk-ios/pull/2854
+[#2855]: https://github.com/DataDog/dd-sdk-ios/pull/2855
+[#2856]: https://github.com/DataDog/dd-sdk-ios/pull/2856
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

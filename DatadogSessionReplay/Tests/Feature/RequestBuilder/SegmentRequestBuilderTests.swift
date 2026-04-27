@@ -53,6 +53,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         XCTAssertEqual(try url(for: .ap1), "https://browser-intake-ap1-datadoghq.com/api/v2/replay")
         XCTAssertEqual(try url(for: .ap2), "https://browser-intake-ap2-datadoghq.com/api/v2/replay")
         XCTAssertEqual(try url(for: .us1_fed), "https://browser-intake-ddog-gov.com/api/v2/replay")
+        XCTAssertEqual(try url(for: .us2_fed), "https://browser-intake-fed2-ddog-gov.com/api/v2/replay")
     }
 
     func testItSetsCustomIntakeURL() {
@@ -75,6 +76,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         XCTAssertEqual(try url(for: .ap1), expectedURL)
         XCTAssertEqual(try url(for: .ap2), expectedURL)
         XCTAssertEqual(try url(for: .us1_fed), expectedURL)
+        XCTAssertEqual(try url(for: .us2_fed), expectedURL)
     }
 
     func testItSetsQueryParameters() throws {
@@ -86,7 +88,7 @@ class SegmentRequestBuilderTests: XCTestCase {
         let request = try builder.request(for: mockEvents, with: context, execution: .mockWith(previousResponseCode: nil, attempt: 0))
 
         // Then
-        XCTAssertEqual(request.url!.query, "ddtags=retry_count:1")
+        XCTAssertNil(request.url!.query)
     }
 
     func testItSetsHTTPHeaders() throws {
@@ -258,6 +260,32 @@ class SegmentRequestBuilderTests: XCTestCase {
                 """
             )
         )
+    }
+
+    func testItSetsRetryQueryParameters() throws {
+        // Given
+        let randomAttempt: UInt = .mockRandom(min: 1, max: 10)
+        let randomStatus: Int = .mockRandom()
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let execution: ExecutionContext = .mockWith(previousResponseCode: randomStatus, attempt: randomAttempt)
+
+        // When
+        let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: execution)
+
+        // Then
+        XCTAssertEqual(request.url!.query, "ddtags=retry_count:\(randomAttempt),retry_after:\(randomStatus)")
+    }
+
+    func testItSetsRetryQueryParametersOnNetworkErrorRetry() throws {
+        // Given
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let execution: ExecutionContext = .mockWith(previousResponseCode: nil, attempt: 1) // network error retry has no response code
+
+        // When
+        let request = try builder.request(for: mockEvents, with: .mockRandom(), execution: execution)
+
+        // Then
+        XCTAssertEqual(request.url!.query, "ddtags=retry_count:1") // no retry_after without response code
     }
 }
 #endif

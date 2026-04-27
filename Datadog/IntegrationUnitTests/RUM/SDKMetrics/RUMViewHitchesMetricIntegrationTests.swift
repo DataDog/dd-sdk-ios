@@ -82,6 +82,7 @@ final class RUMViewHitchesMetricIntegrationTests: XCTestCase {
         XCTAssertEqual(attributes[2].viewDuration, 2_000_000_000)
     }
 
+    #if !os(watchOS)
     func testViewHitchesCollectedForTelemetry() throws {
         RUM.enable(with: rumConfig, in: core)
 
@@ -116,6 +117,7 @@ final class RUMViewHitchesMetricIntegrationTests: XCTestCase {
         // View1 has Slow Frames
         XCTAssertGreaterThan(attributes[1].slowFrames.count, 0)
     }
+    #endif
 }
 
 // MARK: - Helpers

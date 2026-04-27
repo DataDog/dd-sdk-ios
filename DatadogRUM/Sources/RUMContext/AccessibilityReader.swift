@@ -13,6 +13,7 @@ internal protocol AccessibilityReading {
     var state: AccessibilityInfo { get }
 }
 
+#if !os(watchOS)
 @available(iOS 13.0, tvOS 13.0, *)
 internal final class AccessibilityReader: AccessibilityReading {
     @ReadWriteLock
@@ -264,3 +265,5 @@ internal final class AccessibilityReader: AccessibilityReading {
         return state
     }
 }
+
+#endif

@@ -993,4 +993,84 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(trackedAction.viewID, parent.context.activeViewID)
         XCTAssertEqual(metric.trackedActions.count, 1)
     }
+
+    // MARK: - Heatmap Attributes
+
+    func testGivenHeatmapAttributes_whenActionCompletes_itPopulatesDDAction() throws {
+        let scope = RUMViewScope.mockWith(
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            attributes: [:],
+            startTime: Date()
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddUserActionCommand.mockWith(
+                    heatmapAttributes: HeatmapAttributes(
+                        identifier: .init(rawValue: "abc123"),
+                        size: .init(width: 100, height: 50),
+                        location: .init(x: 10, y: 20)
+                    )
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let actionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertEqual(actionEvent.dd.action?.target?.permanentId, "abc123")
+        XCTAssertEqual(actionEvent.dd.action?.target?.width, 100)
+        XCTAssertEqual(actionEvent.dd.action?.target?.height, 50)
+        XCTAssertEqual(actionEvent.dd.action?.position?.x, 10)
+        XCTAssertEqual(actionEvent.dd.action?.position?.y, 20)
+    }
+
+    func testGivenNoHeatmapAttributes_whenActionCompletes_itLeavesDDActionNil() throws {
+        let scope = RUMViewScope.mockWith(
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            attributes: [:],
+            startTime: Date()
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddUserActionCommand.mockWith(),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let actionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
+        XCTAssertNil(actionEvent.dd.action)
+    }
 }
