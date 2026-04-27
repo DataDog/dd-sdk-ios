@@ -29,7 +29,7 @@ class MonitorTests: XCTestCase {
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
             dateProvider: DateProviderMock(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
 
         // When
@@ -50,7 +50,7 @@ class MonitorTests: XCTestCase {
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope, samplingRate: 0),
             dateProvider: DateProviderMock(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
 
         // When
@@ -72,7 +72,7 @@ class MonitorTests: XCTestCase {
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
             dateProvider: DateProviderMock(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
         monitor.startView(viewController: vc)
 
@@ -89,7 +89,7 @@ class MonitorTests: XCTestCase {
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
             dateProvider: DateProviderMock(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
         monitor.startView(viewController: vc, name: "Some View")
 
@@ -106,7 +106,7 @@ class MonitorTests: XCTestCase {
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
             dateProvider: SystemDateProvider(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
         monitor.notifySDKInit()
 
@@ -127,7 +127,7 @@ class MonitorTests: XCTestCase {
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
             dateProvider: SystemDateProvider(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
         monitor.notifySDKInit()
 
@@ -145,7 +145,7 @@ class MonitorTests: XCTestCase {
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
             dateProvider: SystemDateProvider(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
         monitor.notifySDKInit()
 
@@ -166,7 +166,7 @@ class MonitorTests: XCTestCase {
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
             dateProvider: SystemDateProvider(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
         monitor.notifySDKInit()
         monitor.startView(key: "ActiveView")
@@ -187,7 +187,7 @@ class MonitorTests: XCTestCase {
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
             dateProvider: SystemDateProvider(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
         monitor.notifySDKInit()
         monitor.startView(key: "InactiveView")
@@ -206,7 +206,7 @@ class MonitorTests: XCTestCase {
         let monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
             dateProvider: SystemDateProvider(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
         monitor.notifySDKInit()
         monitor.startView(key: "ActiveView")

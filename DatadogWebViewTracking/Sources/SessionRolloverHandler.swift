@@ -56,7 +56,7 @@ internal class WebViewSessionRolloverHandler {
          be unregistered, if any, in a set, and delete them after the fact.
 
          - NSMapTable.dictionaryRepresentation() cannot be used because it throws an
-         exception it requires the map Key type to implement NSCopying and WKWebView
+         exception, since it requires the map Key type to implement NSCopying and WKWebView
          does not. This hints at another reason to not use dictionaryRepresentation:
          it creates an entire copy of the dictionary, which is wasteful.
 

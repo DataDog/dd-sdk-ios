@@ -18,7 +18,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
             dateProvider: SystemDateProvider(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
     }
 
@@ -570,7 +570,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
             dateProvider: SystemDateProvider(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
         monitor.notifySDKInit()
 
@@ -589,7 +589,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
             dateProvider: SystemDateProvider(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
         monitor.notifySDKInit()
 
@@ -610,7 +610,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
             dateProvider: SystemDateProvider(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
         monitor.notifySDKInit()
 
@@ -632,7 +632,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
             dateProvider: SystemDateProvider(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
         monitor.notifySDKInit()
 

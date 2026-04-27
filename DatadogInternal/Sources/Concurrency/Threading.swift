@@ -12,7 +12,7 @@ import Foundation
 /// - Throws: Whatever the closure itself might throw.
 public func runOnMainThreadSync<T>(_ block: @MainActor () throws -> T) rethrows -> T {
     if Thread.isMainThread {
-        if #available(iOS 13.0, *) {
+        if #available(iOS 13.0, tvOS 13.0, *) {
             return try MainActor.assumeIsolated {
                 return try block()
             }

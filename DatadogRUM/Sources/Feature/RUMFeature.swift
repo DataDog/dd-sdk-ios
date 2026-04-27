@@ -194,7 +194,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         self.monitor = Monitor(
             dependencies: dependencies,
             dateProvider: configuration.dateProvider,
-            onSessionUpdate: { [_rumSessionSampler] sampler in
+            onActiveSessionUpdate: { [_rumSessionSampler] sampler in
                 _rumSessionSampler.mutate { $0 = sampler }
             }
         )

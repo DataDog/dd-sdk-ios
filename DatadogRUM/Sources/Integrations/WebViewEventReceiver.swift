@@ -29,12 +29,11 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     ///   - dateProvider: The date provider.
     ///   - commandSubscriber: Subscriber that can process a `RUMKeepSessionAliveCommand`.
     ///   - viewCache: The RUM view cache.
-    ///   - firstPartyHostSamplingRate: The sampling rate for RUM first party host sampling, if configured. `nil` otherwise.
     init(
         featureScope: FeatureScope,
         dateProvider: DateProvider,
         commandSubscriber: RUMCommandSubscriber,
-        viewCache: ViewCache,
+        viewCache: ViewCache
     ) {
         self.featureScope = featureScope
         self.commandSubscriber = commandSubscriber
