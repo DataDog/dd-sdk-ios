@@ -21,6 +21,8 @@ internal struct SpanSnapshot: Encodable, Sendable {
     var service: String
     let operationName: String
     let resource: String
+    /// Span type (e.g. `"custom"`, `"http"`, `"web"`).
+    let type: String
     let spanKind: String?
     let httpStatusCode: UInt32
     let isError: Bool
