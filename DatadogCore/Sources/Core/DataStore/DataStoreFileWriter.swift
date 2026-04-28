@@ -26,7 +26,7 @@ internal struct DataStoreFileWriter {
             throw DataStoreFileWritingError.failedToEncodeVersion(error)
         }
         do {
-            try encoded.append(dataBlock.serialize(maxLength: maxTLVDataLength))
+            try encoded.append(dataBlock.serialize(maxLength: maxDataStoreTLVDataLength))
         } catch let error {
             throw DataStoreFileWritingError.failedToEncodeData(error)
         }
