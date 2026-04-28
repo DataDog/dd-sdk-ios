@@ -183,7 +183,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         XCTAssertEqual(providerData?.count, 10, "Automatic mode must pass response data to provider for completion-handler tasks")
     }
 
-    @available(iOS 16, tvOS 16, *)
+    @available(iOS 16, tvOS 16, watchOS 8, *)
     func testAutomaticMode_resourceAttributesProvider_asyncAwait_dataIsNil() async {
         // Documents the known limitation: async/await tasks return data directly to the caller,
         // bypassing all swizzled hooks, so data is always nil in the provider.
