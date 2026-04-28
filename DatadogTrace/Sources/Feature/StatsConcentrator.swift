@@ -275,14 +275,14 @@ internal final class StatsConcentrator: @unchecked Sendable {
             for key in keysToRemove {
                 buckets.removeValue(forKey: key)
             }
-        }
 
-        let aligned = Self.alignTimestamp(now, bucketDuration: bucketDuration)
-        let offset = UInt64(bufferLen - 1) * bucketDuration
-        let newOldestTs = aligned >= offset ? aligned - offset : 0
-        _oldestTs.mutate { oldest in
-            if newOldestTs > oldest {
-                oldest = newOldestTs
+            let aligned = Self.alignTimestamp(now, bucketDuration: self.bucketDuration)
+            let offset = UInt64(self.bufferLen - 1) * self.bucketDuration
+            let newOldestTs = aligned >= offset ? aligned - offset : 0
+            self._oldestTs.mutate { oldest in
+                if newOldestTs > oldest {
+                    oldest = newOldestTs
+                }
             }
         }
 
