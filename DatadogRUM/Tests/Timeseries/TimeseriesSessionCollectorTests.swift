@@ -212,9 +212,9 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(lastEvent.session.id, "session-2")
     }
 
-    // MARK: - Dual-flush (object + delta)
+    // MARK: - Schema coin flip
 
-    func testFlushWritesBothObjectAndDeltaEventsForMemory() {
+    func testWhenDeltaCompressionSampled_itWritesDeltaEventForMemory() {
         // Given
         memoryReader.vitalData = 1_000_000
         let collector = TimeseriesSessionCollector(
@@ -222,41 +222,63 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 3,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil }
+            cpuUsageProvider: { nil },
+            compressionSampler: { true }
         )
 
-        // When
         let expectation = self.expectation(description: "memory batch written")
         expectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
-        collector.start(sessionID: "session-dual", applicationID: "app-dual", sessionType: .user)
+        collector.start(sessionID: "session-delta", applicationID: "app-delta", sessionType: .user)
         waitForExpectations(timeout: 2)
         collector.stop()
 
-        // Then — both a typed object event and an AnyEncodable delta event are written
+        // Then — AnyEncodable delta-object event written, no typed object event
         let typedEvents = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
-        XCTAssertFalse(typedEvents.isEmpty, "Expected object-schema memory events")
-        XCTAssertEqual(typedEvents[0].timeseries.schema, .object)
+        XCTAssertTrue(typedEvents.isEmpty, "Object-schema typed event must not be written when delta is sampled")
 
-        let rawEvents = featureScope.eventsWritten
-        let anyEncodableEvents = rawEvents.compactMap { $0 as? AnyEncodable }
+        let anyEncodableEvents = featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }
         XCTAssertFalse(anyEncodableEvents.isEmpty, "Expected delta-schema AnyEncodable event")
 
         let jsonData = try! JSONEncoder().encode(anyEncodableEvents[0])
         let dict = try! XCTUnwrap(try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
         let tsDict = try! XCTUnwrap(dict["timeseries"] as? [String: Any])
-
         XCTAssertEqual(tsDict["schema"] as? String, "delta-object")
-
         let dataDict = try! XCTUnwrap(tsDict["data"] as? [String: Any])
-        XCTAssertNotNil(dataDict["precision"], "Delta payload must contain 'precision'")
-        XCTAssertNotNil(dataDict["ts"], "Delta payload must contain 'ts'")
-        XCTAssertNotNil(dataDict["memory_max"], "Delta payload must contain 'memory_max'")
-        XCTAssertNotNil(dataDict["memory_percent"], "Delta payload must contain 'memory_percent'")
+        XCTAssertNotNil(dataDict["ts"])
+        XCTAssertNotNil(dataDict["memory_max"])
+        XCTAssertNotNil(dataDict["memory_percent"])
     }
 
-    func testFlushWritesBothObjectAndDeltaEventsForCPU() {
+    func testWhenObjectSchemaSampled_itWritesObjectEventForMemory() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 3,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            compressionSampler: { false }
+        )
+
+        let expectation = self.expectation(description: "memory batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-object", applicationID: "app-object", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then — typed object event written, no AnyEncodable delta event
+        let typedEvents = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(typedEvents.isEmpty, "Expected object-schema typed memory event")
+        XCTAssertEqual(typedEvents[0].timeseries.schema, .object)
+        XCTAssertTrue(featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }.isEmpty)
+    }
+
+    func testWhenDeltaCompressionSampled_itWritesDeltaEventForCPU() {
         // Given
         memoryReader.vitalData = nil
         let collector = TimeseriesSessionCollector(
@@ -264,55 +286,76 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 3,
             samplingInterval: 0.05,
-            cpuUsageProvider: { 50.0 }
+            cpuUsageProvider: { 50.0 },
+            compressionSampler: { true }
         )
 
-        // When
         let expectation = self.expectation(description: "cpu batch written")
         expectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
-        collector.start(sessionID: "session-dual-cpu", applicationID: "app-dual", sessionType: .user)
+        collector.start(sessionID: "session-delta-cpu", applicationID: "app-delta", sessionType: .user)
         waitForExpectations(timeout: 2)
         collector.stop()
 
-        // Then — both a typed object event and an AnyEncodable delta event are written
+        // Then — AnyEncodable delta-scalar event written, no typed object event
         let typedEvents = featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)
-        XCTAssertFalse(typedEvents.isEmpty, "Expected object-schema CPU events")
-        XCTAssertEqual(typedEvents[0].timeseries.schema, .object)
+        XCTAssertTrue(typedEvents.isEmpty, "Object-schema typed event must not be written when delta is sampled")
 
-        let rawEvents = featureScope.eventsWritten
-        let anyEncodableEvents = rawEvents.compactMap { $0 as? AnyEncodable }
+        let anyEncodableEvents = featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }
         XCTAssertFalse(anyEncodableEvents.isEmpty, "Expected delta-schema AnyEncodable event")
 
         let jsonData = try! JSONEncoder().encode(anyEncodableEvents[0])
         let dict = try! XCTUnwrap(try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
         let tsDict = try! XCTUnwrap(dict["timeseries"] as? [String: Any])
-
         XCTAssertEqual(tsDict["schema"] as? String, "delta-scalar")
-
         let dataDict = try! XCTUnwrap(tsDict["data"] as? [String: Any])
-        XCTAssertNotNil(dataDict["precision"], "Delta payload must contain 'precision'")
-        XCTAssertNotNil(dataDict["ts"], "Delta payload must contain 'ts'")
-        XCTAssertNotNil(dataDict["value"], "Delta payload must contain 'value'")
+        XCTAssertNotNil(dataDict["ts"])
+        XCTAssertNotNil(dataDict["value"])
     }
 
-    func testSingleSampleBatchWritesObjectEventButNoDeltaEvent() {
+    func testWhenObjectSchemaSampled_itWritesObjectEventForCPU() {
         // Given
+        memoryReader.vitalData = nil
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 3,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { 50.0 },
+            compressionSampler: { false }
+        )
+
+        let expectation = self.expectation(description: "cpu batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-object-cpu", applicationID: "app-object", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then — typed object event written, no AnyEncodable delta event
+        let typedEvents = featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)
+        XCTAssertFalse(typedEvents.isEmpty, "Expected object-schema typed CPU event")
+        XCTAssertEqual(typedEvents[0].timeseries.schema, .object)
+        XCTAssertTrue(featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }.isEmpty)
+    }
+
+    func testWhenDeltaCompressionSampledWithSingleSample_itFallsBackToObjectEvent() {
+        // Given — delta sampled but only 1 sample: DeltaEncoder returns nil, falls back to object
         memoryReader.vitalData = 1_000_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
-            batchSize: 100, // large batch — won't auto-flush
+            batchSize: 100,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil }
+            cpuUsageProvider: { nil },
+            compressionSampler: { true }
         )
 
-        // When — collect exactly one sample then stop
         let expectation = self.expectation(description: "one sample collected")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { expectation.fulfill() }
-
-        collector.start(sessionID: "session-single", applicationID: "app-single", sessionType: .user)
+        collector.start(sessionID: "session-fallback", applicationID: "app-fallback", sessionType: .user)
         waitForExpectations(timeout: 2)
 
         let stopExpectation = self.expectation(description: "stop completed")
@@ -320,13 +363,9 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { stopExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
-        // Then — object event is written, but DeltaEncoder requires >1 samples so no delta event
-        XCTAssertFalse(
-            featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty,
-            "Object-schema event should be written even for a single sample"
-        )
-        let anyEncodableEvents = featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }
-        XCTAssertTrue(anyEncodableEvents.isEmpty, "Delta event must not be written for a single-sample batch")
+        // Then — falls back to object event, no AnyEncodable
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
+        XCTAssertTrue(featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }.isEmpty)
     }
 
     // MARK: - Timeseries range
