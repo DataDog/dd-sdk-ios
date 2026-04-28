@@ -173,10 +173,10 @@ internal final class StatsConcentrator: @unchecked Sendable {
     private var oldestTs: UInt64
 
     init(
+        now: Nanoseconds,
         bucketDuration: Nanoseconds = StatsConcentrator.defaultBucketDuration,
         bufferLen: Int = StatsConcentrator.defaultBufferLen,
-        peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys,
-        now: Nanoseconds
+        peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys
     ) {
         self.bucketDuration = bucketDuration
         self.bufferLen = bufferLen
