@@ -1147,7 +1147,6 @@ extension RUMScopeDependencies {
         firstFrameReader: RenderLoopReader = FirstFrameReader(dateProvider: DateProviderMock(), mediaTimeProvider: MediaTimeProviderMock()),
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)? = { ViewHitchesMock.mockAny() },
         vitalsReaders: VitalsReaders? = nil,
-        timeseriesCollector: TimeseriesCollecting? = nil,
         accessibilityReader: AccessibilityReading? = nil,
         onSessionUpdate: @escaping RUM.SessionUpdater = mockNoOpSessionUpdater(),
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
@@ -1164,7 +1163,8 @@ extension RUMScopeDependencies {
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = {
             INVMetric(predicate: TimeBasedINVActionPredicate())
         },
-        sessionType: RUMSessionType? = nil
+        sessionType: RUMSessionType? = nil,
+        timeseriesCollector: TimeseriesCollecting? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -1184,7 +1184,6 @@ extension RUMScopeDependencies {
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: viewHitchesReaderFactory,
             vitalsReaders: vitalsReaders,
-            timeseriesCollector: timeseriesCollector,
             accessibilityReader: accessibilityReader,
             onSessionUpdate: onSessionUpdate,
             viewCache: viewCache,
@@ -1195,7 +1194,8 @@ extension RUMScopeDependencies {
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
-            sessionType: sessionType
+            sessionType: sessionType,
+            timeseriesCollector: timeseriesCollector
         )
     }
 
