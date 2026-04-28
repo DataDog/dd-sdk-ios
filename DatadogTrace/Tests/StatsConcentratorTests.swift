@@ -19,10 +19,10 @@ class StatsConcentratorTests: XCTestCase {
         peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys
     ) -> StatsConcentrator {
         return StatsConcentrator(
+            now: now,
             bucketDuration: bucketDuration,
             bufferLen: bufferLen,
-            peerTagKeys: peerTagKeys,
-            now: now
+            peerTagKeys: peerTagKeys
         )
     }
 
