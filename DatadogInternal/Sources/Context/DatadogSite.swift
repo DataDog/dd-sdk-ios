@@ -29,7 +29,7 @@ public enum DatadogSite: String {
     /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
     case us1_fed
     /// US based servers, FedRAMP compatible.
-    /// Sends data to [fed2.ddog-gov.com](https://fed2.ddog-gov.com/).
+    /// Sends data to [us2.ddog-gov.com](https://us2.ddog-gov.com/).
     case us2_fed
 }
 
@@ -44,7 +44,7 @@ extension DatadogSite {
         case .ap1: return URL(string: "https://browser-intake-ap1-datadoghq.com/")!
         case .ap2: return URL(string: "https://browser-intake-ap2-datadoghq.com/")!
         case .us1_fed: return URL(string: "https://browser-intake-ddog-gov.com/")!
-        case .us2_fed: return URL(string: "https://browser-intake-fed2-ddog-gov.com/")!
+        case .us2_fed: return URL(string: "https://browser-intake-us2-ddog-gov.com/")!
         // swiftlint:enable force_unwrapping
         }
     }

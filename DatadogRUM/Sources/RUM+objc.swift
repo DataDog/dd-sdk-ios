@@ -159,6 +159,141 @@ public protocol objc_UIPressRUMActionsPredicate: AnyObject {
 }
 #endif
 
+// MARK: - NetworkSettledResourcePredicate
+
+@objc(DDTNSResourceParams)
+@objcMembers
+@_spi(objc)
+public class objc_TNSResourceParams: NSObject {
+    /// The URL of the resource.
+    public let url: String
+
+    /// The time elapsed from when the view started to when the resource started.
+    public let timeSinceViewStart: TimeInterval
+
+    /// The name of the view in which the resource is tracked.
+    public let viewName: String
+
+    internal init(swiftParams: TNSResourceParams) {
+        self.url = swiftParams.url
+        self.timeSinceViewStart = swiftParams.timeSinceViewStart
+        self.viewName = swiftParams.viewName
+    }
+}
+
+@objc(DDNetworkSettledResourcePredicate)
+@_spi(objc)
+public protocol objc_NetworkSettledResourcePredicate: AnyObject {
+    /// Determines if the provided resource should be included in the TNS metric calculation.
+    ///
+    /// - Parameter resourceParams: The parameters of the resource.
+    /// - Returns: `true` if the resource qualifies for TNS metric calculation, `false` otherwise.
+    func isInitialResource(from resourceParams: objc_TNSResourceParams) -> Bool
+}
+
+internal struct NetworkSettledResourcePredicateBridge: NetworkSettledResourcePredicate {
+    let objcPredicate: objc_NetworkSettledResourcePredicate
+
+    func isInitialResource(from resourceParams: TNSResourceParams) -> Bool {
+        objcPredicate.isInitialResource(from: objc_TNSResourceParams(swiftParams: resourceParams))
+    }
+}
+
+@objc(DDTimeBasedTNSResourcePredicate)
+@objcMembers
+@_spi(objc)
+public class objc_TimeBasedTNSResourcePredicate: NSObject, objc_NetworkSettledResourcePredicate {
+    /// The default value of the threshold.
+    public static let defaultThreshold: TimeInterval = 0.1 // aligned with TimeBasedTNSResourcePredicate
+
+    internal let swiftPredicate: TimeBasedTNSResourcePredicate
+
+    /// Initializes a new predicate with a specified time threshold.
+    ///
+    /// - Parameter threshold: The time threshold (in seconds) used to classify resources. The default value is 0.1 seconds.
+    public init(threshold: TimeInterval = objc_TimeBasedTNSResourcePredicate.defaultThreshold) {
+        swiftPredicate = TimeBasedTNSResourcePredicate(threshold: threshold)
+    }
+
+    public func isInitialResource(from resourceParams: objc_TNSResourceParams) -> Bool {
+        swiftPredicate.isInitialResource(from: TNSResourceParams(
+            url: resourceParams.url,
+            timeSinceViewStart: resourceParams.timeSinceViewStart,
+            viewName: resourceParams.viewName
+        ))
+    }
+}
+
+// MARK: - NextViewActionPredicate
+
+@objc(DDINVActionParams)
+@objcMembers
+@_spi(objc)
+public class objc_INVActionParams: NSObject {
+    /// The type of the action (e.g., tap, swipe, click).
+    public let type: objc_RUMActionType
+
+    /// The name of the action.
+    public let name: String
+
+    /// The time elapsed between this action and the start of the next view.
+    public let timeToNextView: TimeInterval
+
+    /// The name of the next view.
+    public let nextViewName: String
+
+    internal init(swiftParams: INVActionParams) {
+        self.type = objc_RUMActionType(swiftType: swiftParams.type)
+        self.name = swiftParams.name
+        self.timeToNextView = swiftParams.timeToNextView
+        self.nextViewName = swiftParams.nextViewName
+    }
+}
+
+@objc(DDNextViewActionPredicate)
+@_spi(objc)
+public protocol objc_NextViewActionPredicate: AnyObject {
+    /// Determines whether the provided action should be classified as the "last interaction" in the previous view for INV calculation.
+    ///
+    /// - Parameter actionParams: The parameters of the action (type, name, time to next view, and next view name).
+    /// - Returns: `true` if this action is the "last interaction" for INV, `false` otherwise.
+    func isLastAction(from actionParams: objc_INVActionParams) -> Bool
+}
+
+internal struct NextViewActionPredicateBridge: NextViewActionPredicate {
+    let objcPredicate: objc_NextViewActionPredicate
+
+    func isLastAction(from actionParams: INVActionParams) -> Bool {
+        objcPredicate.isLastAction(from: objc_INVActionParams(swiftParams: actionParams))
+    }
+}
+
+@objc(DDTimeBasedINVActionPredicate)
+@objcMembers
+@_spi(objc)
+public class objc_TimeBasedINVActionPredicate: NSObject, objc_NextViewActionPredicate {
+    /// The default maximum time interval for considering an action as the "last interaction."
+    public static let defaultMaxTimeToNextView: TimeInterval = 3 // aligned with TimeBasedINVActionPredicate
+
+    internal let swiftPredicate: TimeBasedINVActionPredicate
+
+    /// Initializes a new predicate with a specified maximum time interval.
+    ///
+    /// - Parameter maxTimeToNextView: The maximum time interval (in seconds) from the action to the next view's start. The default value is 3 seconds.
+    public init(maxTimeToNextView: TimeInterval = objc_TimeBasedINVActionPredicate.defaultMaxTimeToNextView) {
+        swiftPredicate = TimeBasedINVActionPredicate(maxTimeToNextView: maxTimeToNextView)
+    }
+
+    public func isLastAction(from actionParams: objc_INVActionParams) -> Bool {
+        swiftPredicate.isLastAction(from: INVActionParams(
+            type: actionParams.type.swiftType,
+            name: actionParams.name,
+            timeToNextView: actionParams.timeToNextView,
+            nextViewName: actionParams.nextViewName
+        ))
+    }
+}
+
 @objc(DDRUMErrorSource)
 @_spi(objc)
 public enum objc_RUMErrorSource: Int {
@@ -192,6 +327,7 @@ public enum objc_RUMActionType: Int {
     case scroll
     case swipe
     case custom
+    case click
 
     internal var swiftType: RUMActionType {
         switch self {
@@ -199,7 +335,18 @@ public enum objc_RUMActionType: Int {
         case .scroll: return .scroll
         case .swipe: return .swipe
         case .custom: return .custom
+        case .click: return .click
         default: return .custom
+        }
+    }
+
+    internal init(swiftType: RUMActionType) {
+        switch swiftType {
+        case .tap: self = .tap
+        case .click: self = .click
+        case .scroll: self = .scroll
+        case .swipe: self = .swipe
+        case .custom: self = .custom
         }
     }
 }
@@ -407,7 +554,11 @@ public class objc_RUMConfiguration: NSObject {
     internal var swiftConfig: DatadogRUM.RUM.Configuration
 
     public init(applicationID: String) {
-        swiftConfig = .init(applicationID: applicationID)
+        swiftConfig = .init(
+            applicationID: applicationID,
+            networkSettledResourcePredicate: NetworkSettledResourcePredicateBridge(objcPredicate: objc_TimeBasedTNSResourcePredicate()),
+            nextViewActionPredicate: NextViewActionPredicateBridge(objcPredicate: objc_TimeBasedINVActionPredicate())
+        )
     }
 
     public var applicationID: String {
@@ -449,7 +600,22 @@ public class objc_RUMConfiguration: NSObject {
         set { swiftConfig.trackMemoryWarnings = newValue }
         get { swiftConfig.trackMemoryWarnings }
     }
+
+    public var collectAccessibility: Bool {
+        set { swiftConfig.collectAccessibility = newValue }
+        get { swiftConfig.collectAccessibility }
+    }
     #endif
+
+    public var networkSettledResourcePredicate: objc_NetworkSettledResourcePredicate {
+        set { swiftConfig.networkSettledResourcePredicate = NetworkSettledResourcePredicateBridge(objcPredicate: newValue) }
+        get { (swiftConfig.networkSettledResourcePredicate as? NetworkSettledResourcePredicateBridge)?.objcPredicate ?? objc_TimeBasedTNSResourcePredicate() }
+    }
+
+    public var nextViewActionPredicate: objc_NextViewActionPredicate? {
+        set { swiftConfig.nextViewActionPredicate = newValue.map { NextViewActionPredicateBridge(objcPredicate: $0) } }
+        get { (swiftConfig.nextViewActionPredicate as? NextViewActionPredicateBridge)?.objcPredicate }
+    }
 
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking) {
         swiftConfig.urlSessionTracking = tracking.swiftConfig

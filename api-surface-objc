@@ -3299,6 +3299,27 @@ public protocol objc_UITouchRUMActionsPredicate: AnyObject
     func rumAction(targetView: UIView) -> objc_RUMAction?
 public protocol objc_UIPressRUMActionsPredicate: AnyObject
     func rumAction(press type: UIPress.PressType, targetView: UIView) -> objc_RUMAction?
+public class objc_TNSResourceParams: NSObject
+    public let url: String
+    public let timeSinceViewStart: TimeInterval
+    public let viewName: String
+public protocol objc_NetworkSettledResourcePredicate: AnyObject
+    func isInitialResource(from resourceParams: objc_TNSResourceParams) -> Bool
+public class objc_TimeBasedTNSResourcePredicate: NSObject, objc_NetworkSettledResourcePredicate
+    public static let defaultThreshold: TimeInterval = 0.1
+    public init(threshold: TimeInterval = objc_TimeBasedTNSResourcePredicate.defaultThreshold)
+    public func isInitialResource(from resourceParams: objc_TNSResourceParams) -> Bool
+public class objc_INVActionParams: NSObject
+    public let type: objc_RUMActionType
+    public let name: String
+    public let timeToNextView: TimeInterval
+    public let nextViewName: String
+public protocol objc_NextViewActionPredicate: AnyObject
+    func isLastAction(from actionParams: objc_INVActionParams) -> Bool
+public class objc_TimeBasedINVActionPredicate: NSObject, objc_NextViewActionPredicate
+    public static let defaultMaxTimeToNextView: TimeInterval = 3
+    public init(maxTimeToNextView: TimeInterval = objc_TimeBasedINVActionPredicate.defaultMaxTimeToNextView)
+    public func isLastAction(from actionParams: objc_INVActionParams) -> Bool
 public enum objc_RUMErrorSource: Int
     case source
     case network
@@ -3310,6 +3331,7 @@ public enum objc_RUMActionType: Int
     case scroll
     case swipe
     case custom
+    case click
 public enum objc_ResourceType: Int
     case image
     case xhr
@@ -3368,6 +3390,9 @@ public class objc_RUMConfiguration: NSObject
     public var swiftUIViewsPredicate: objc_SwiftUIRUMViewsPredicate?
     public var swiftUIActionsPredicate: objc_SwiftUIRUMActionsPredicate?
     public var trackMemoryWarnings: Bool
+    public var collectAccessibility: Bool
+    public var networkSettledResourcePredicate: objc_NetworkSettledResourcePredicate
+    public var nextViewActionPredicate: objc_NextViewActionPredicate?
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking)
     public var trackFrustrations: Bool
     public var trackBackgroundEvents: Bool

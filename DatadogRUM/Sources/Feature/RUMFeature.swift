@@ -323,11 +323,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
         core.telemetry.configuration(
             appHangThreshold: configuration.appHangThreshold?.dd.toInt64Milliseconds,
-            invTimeThresholdMs: (configuration.nextViewActionPredicate as? TimeBasedINVActionPredicate)?.maxTimeToNextView.dd.toInt64Milliseconds,
+            invTimeThresholdMs: configuration.nextViewActionPredicate?.invTimeThresholdMs,
             mobileVitalsUpdatePeriod: configuration.vitalsUpdateFrequency?.timeInterval.dd.toInt64Milliseconds,
             sessionSampleRate: Int64.ddWithNoOverflow(configuration.debugSDK ? 100 : configuration.sessionSampleRate),
             telemetrySampleRate: Int64.ddWithNoOverflow(configuration.debugSDK ? 100 : configuration.telemetrySampleRate),
-            tnsTimeThresholdMs: (configuration.networkSettledResourcePredicate as? TimeBasedTNSResourcePredicate)?.threshold.dd.toInt64Milliseconds,
+            tnsTimeThresholdMs: configuration.networkSettledResourcePredicate.tnsTimeThresholdMs,
             traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64.ddWithNoOverflow($0.sampleRate) },
             swiftUIViewTrackingEnabled: swiftUIViewTrackingEnabled,
             swiftUIActionTrackingEnabled: swiftUIActionTrackingEnabled,
@@ -343,6 +343,34 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
         // Manage anonymous identifier depending on the configuration.
         anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: configuration.trackAnonymousUser)
+    }
+}
+
+private extension NetworkSettledResourcePredicate {
+    var tnsTimeThresholdMs: Int64? {
+        switch self {
+        case let timeBased as TimeBasedTNSResourcePredicate:
+            return timeBased.threshold.dd.toInt64Milliseconds
+        case let objcBridge as NetworkSettledResourcePredicateBridge:
+            return (objcBridge.objcPredicate as? objc_TimeBasedTNSResourcePredicate)?
+                .swiftPredicate.tnsTimeThresholdMs
+        default:
+            return nil
+        }
+    }
+}
+
+private extension NextViewActionPredicate {
+    var invTimeThresholdMs: Int64? {
+        switch self {
+        case let timeBased as TimeBasedINVActionPredicate:
+            return timeBased.maxTimeToNextView.dd.toInt64Milliseconds
+        case let objcBridge as NextViewActionPredicateBridge:
+            return (objcBridge.objcPredicate as? objc_TimeBasedINVActionPredicate)?
+                .swiftPredicate.invTimeThresholdMs
+        default:
+            return nil
+        }
     }
 }
 

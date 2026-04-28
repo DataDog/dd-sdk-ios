@@ -1,7 +1,11 @@
 # Unreleased
 
+- [IMPROVEMENT] Skip malformed RUM attributes individually instead of dropping the entire event, and log clear error messages. See [#2844][]
 - [FIX] Propagate native `anonymous_id` to WebView RUM and Log events. See [#2847][]
 - [IMPROVEMENT] Add device properties `isLowRam`, `logicalCpuCount`, `totalRam` to the `LogEvent` Objective-C API. See [#2854][]
+- [IMPROVEMENT] Add `collectAccessibility` property to the Objective-C API of RUM configuration. See [#2855][]
+- [IMPROVEMENT] Add Objective-C APIs for `networkSettledResourcePredicate` and `nextViewActionPredicate` of RUM configuration. See [#2856][]
+- [FIX] Fix `us2_fed` intake hostname. See [#2866][]
 
 # 3.10.0 / 16-04-2026
 
@@ -1128,9 +1132,13 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2817]: https://github.com/DataDog/dd-sdk-ios/pull/2817
 [#2827]: https://github.com/DataDog/dd-sdk-ios/pull/2827
 [#2829]: https://github.com/DataDog/dd-sdk-ios/pull/2829
+[#2844]: https://github.com/DataDog/dd-sdk-ios/pull/2844
 [#2847]: https://github.com/DataDog/dd-sdk-ios/pull/2847
 [#2854]: https://github.com/DataDog/dd-sdk-ios/pull/2854
 [#2845]: https://github.com/DataDog/dd-sdk-ios/pull/2845
+[#2855]: https://github.com/DataDog/dd-sdk-ios/pull/2855
+[#2856]: https://github.com/DataDog/dd-sdk-ios/pull/2856
+[#2866]: https://github.com/DataDog/dd-sdk-ios/pull/2866
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
