@@ -948,6 +948,7 @@ extension RUMOperationStepVitalCommand: AnyMockable, RandomMockable {
         operationKey: String? = .mockAny(),
         stepType: RUMVitalOperationStepEvent.Vital.StepType = .mockAny(),
         failureReason: RUMFeatureOperationFailureReason = .mockAny(),
+        options: OperationOptions? = nil,
         time: Date = .mockAny(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:]
@@ -958,6 +959,7 @@ extension RUMOperationStepVitalCommand: AnyMockable, RandomMockable {
             operationKey: operationKey,
             stepType: stepType,
             failureReason: failureReason,
+            options: options,
             time: time,
             globalAttributes: globalAttributes,
             attributes: attributes
