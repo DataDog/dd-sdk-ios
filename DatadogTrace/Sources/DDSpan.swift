@@ -172,8 +172,10 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
             }
         }
 
-        let startNanos = startTime.timeIntervalSince1970.toNanoseconds
-        let durationNanos = finishTime.timeIntervalSince(startTime).toNanoseconds
+        let startNanos = startTime.timeIntervalSince1970.dd.toNanoseconds
+        let durationNanos = finishTime.timeIntervalSince(startTime).dd.toNanoseconds
+
+        let spanType = tags["span.type"] as? String ?? "custom"
 
         return SpanSnapshot(
             traceID: ddContext.traceID,
@@ -182,6 +184,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
             service: resolvedService,
             operationName: resolvedOperationName,
             resource: resolvedResource,
+            type: spanType,
             spanKind: spanKind,
             httpStatusCode: httpStatusCode,
             isError: isError,
