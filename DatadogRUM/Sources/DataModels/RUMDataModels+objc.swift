@@ -6261,9 +6261,9 @@ public class objc_RUMTimeseriesCpuEventTimeseriesData: NSObject {
 @objcMembers
 @_spi(objc)
 public class objc_RUMTimeseriesCpuEventTimeseriesDataDataPoint: NSObject {
-    internal let root: objc_RUMTimeseriesCpuEventTimeseriesData
+    internal let root: objc_RUMTimeseriesCpuEvent
 
-    internal init(root: objc_RUMTimeseriesCpuEventTimeseriesData) {
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
         self.root = root
     }
 
@@ -6518,9 +6518,9 @@ public class objc_RUMTimeseriesMemoryEventTimeseriesData: NSObject {
 @objcMembers
 @_spi(objc)
 public class objc_RUMTimeseriesMemoryEventTimeseriesDataDataPoint: NSObject {
-    internal let root: objc_RUMTimeseriesMemoryEventTimeseriesData
+    internal let root: objc_RUMTimeseriesMemoryEvent
 
-    internal init(root: objc_RUMTimeseriesMemoryEventTimeseriesData) {
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
         self.root = root
     }
 
