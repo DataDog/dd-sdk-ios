@@ -16,11 +16,12 @@ internal protocol TimeseriesCollecting: AnyObject {
 /// Collects memory and CPU samples at 1s intervals during a RUM session and flushes them
 /// as `RUMTimeseriesMemoryEvent` / `RUMTimeseriesCpuEvent` batches via the RUM feature scope.
 ///
-/// Each flush sends two events per metric: one with `schema: .object` (full array) and one with
-/// the delta-compressed schema (`schema: .deltaObject` for memory, `schema: .deltaScalar` for CPU).
+/// At session start a coin is flipped: 50% of sessions send full-array `object` schema events,
+/// 50% send delta-compressed events (`delta-object` for memory, `delta-scalar` for CPU).
 internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let memoryReader: SamplingBasedVitalReader
     private let cpuUsageProvider: () -> Double?
+    private let compressionSampler: () -> Bool
     private let batchSize: Int
     private let samplingInterval: TimeInterval
     private let featureScope: FeatureScope
@@ -31,6 +32,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionID: String = ""
     private var applicationID: String = ""
     private var sessionType: RUMSessionType = .user
+    private var useDeltaCompression: Bool = false
     private var timer: DispatchSourceTimer?
 
     /// All buffer mutations and timer events run on this queue.
@@ -41,7 +43,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         featureScope: FeatureScope,
         batchSize: Int = 30,
         samplingInterval: TimeInterval = 1,
-        cpuUsageProvider: (() -> Double?)? = nil
+        cpuUsageProvider: (() -> Double?)? = nil,
+        compressionSampler: @escaping () -> Bool = { Bool.random() }
     ) {
         self.memoryReader = memoryReader
         self.batchSize = batchSize
@@ -49,6 +52,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         self.featureScope = featureScope
         self.totalRAM = Double(ProcessInfo.processInfo.physicalMemory)
         self.cpuUsageProvider = cpuUsageProvider ?? { TimeseriesSessionCollector.processCPU() }
+        self.compressionSampler = compressionSampler
     }
 
     /// Per-process CPU as a percentage (0–100+), summed across all app threads.
@@ -88,7 +92,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         return total
     }
 
-    /// Resets state and starts a 1s sampling timer for the new session.
+    /// Resets state, flips the compression coin, and starts a 1s sampling timer for the new session.
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {
         queue.async { [weak self] in
             guard let self = self else {
@@ -97,6 +101,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.sessionID = sessionID
             self.applicationID = applicationID
             self.sessionType = sessionType
+            self.useDeltaCompression = self.compressionSampler()
             self.memoryBuffer = []
             self.cpuBuffer = []
 
@@ -163,9 +168,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
+        let useDelta = self.useDeltaCompression
 
         featureScope.eventWriteContext { context, writer in
-            // object schema — full array of data points
             let objectEvent = RUMTimeseriesMemoryEvent(
                 dd: .init(),
                 application: .init(id: applicationID),
@@ -183,10 +188,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 ),
                 version: context.version
             )
-            writer.write(value: objectEvent)
 
-            // delta-object schema — columnar delta-compressed payload
-            if let deltaData = DeltaEncoder.encodeMemory(batch),
+            if useDelta,
+               let deltaData = DeltaEncoder.encodeMemory(batch),
                let eventData = try? JSONEncoder().encode(objectEvent),
                var dict = try? JSONSerialization.jsonObject(with: eventData) as? [String: Any],
                var ts = dict["timeseries"] as? [String: Any] {
@@ -194,6 +198,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 ts["data"] = deltaData
                 dict["timeseries"] = ts
                 writer.write(value: AnyEncodable(dict))
+            } else {
+                writer.write(value: objectEvent)
             }
         }
     }
@@ -210,9 +216,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
+        let useDelta = self.useDeltaCompression
 
         featureScope.eventWriteContext { context, writer in
-            // object schema — full array of data points
             let objectEvent = RUMTimeseriesCpuEvent(
                 dd: .init(),
                 application: .init(id: applicationID),
@@ -230,10 +236,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 ),
                 version: context.version
             )
-            writer.write(value: objectEvent)
 
-            // delta-scalar schema — columnar delta-compressed payload
-            if let deltaData = DeltaEncoder.encodeCPU(batch),
+            if useDelta,
+               let deltaData = DeltaEncoder.encodeCPU(batch),
                let eventData = try? JSONEncoder().encode(objectEvent),
                var dict = try? JSONSerialization.jsonObject(with: eventData) as? [String: Any],
                var ts = dict["timeseries"] as? [String: Any] {
@@ -241,6 +246,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 ts["data"] = deltaData
                 dict["timeseries"] = ts
                 writer.write(value: AnyEncodable(dict))
+            } else {
+                writer.write(value: objectEvent)
             }
         }
     }
