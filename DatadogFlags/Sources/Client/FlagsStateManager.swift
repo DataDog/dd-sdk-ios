@@ -105,9 +105,15 @@ private struct WeakListener {
 /// A no-op observable that always reports a fixed state.
 /// Used for fallback clients where state management is not needed.
 internal final class NOPStateObservable: FlagsStateObservable {
+    /// Shared instance for the `notReady` state.
+    static let notReady = NOPStateObservable(state: .notReady)
+
+    /// Shared instance for the `error` state.
+    static let error = NOPStateObservable(state: .error)
+
     let currentState: FlagsClientState
 
-    init(state: FlagsClientState) {
+    private init(state: FlagsClientState) {
         self.currentState = state
     }
 

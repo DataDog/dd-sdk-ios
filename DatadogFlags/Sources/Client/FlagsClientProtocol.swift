@@ -81,10 +81,10 @@ extension FlagsClientProtocol {
     /// Default state observable for backward compatibility with external conformers.
     ///
     /// External implementations of ``FlagsClientProtocol`` that don't provide their own
-    /// state management will receive this default implementation, which returns a no-op
-    /// observable in the ``FlagsClientState/notReady`` state.
+    /// state management will receive this default implementation, which returns a shared
+    /// no-op observable in the ``FlagsClientState/notReady`` state.
     public var state: FlagsStateObservable {
-        NOPStateObservable(state: .notReady)
+        NOPStateObservable.notReady
     }
 }
 
