@@ -102,4 +102,72 @@ class ClientStatsFeatureTests: XCTestCase {
     func testFeatureName() {
         XCTAssertEqual(ClientStatsFeature.name, "tracing-client-stats")
     }
+
+    func testWhenStatsComputationEnabledWithCustomDateProvider_thenStatsFeatureUsesItForFlushTiming() throws {
+        let core = FeatureRegistrationPassthroughCoreMock()
+        let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+
+        config.statsComputationEnabled = true
+        config.dateProvider = dateProvider
+
+        Trace.enable(with: config, in: core)
+
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        stats.concentrator.add(SpanSnapshot.mockWith(
+            startTime: 20_000_000_000,
+            duration: 5_000_000_000,
+            isTopLevel: true
+        ))
+
+        stats.flushStats(force: false)
+
+        XCTAssertTrue(core.exportedBuckets.isEmpty)
+    }
+}
+
+private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
+    private let writer = FileWriterMock()
+    private let contextValue: DatadogContext
+    private var registeredFeatures: [DatadogFeature] = []
+
+    init(context: DatadogContext = .mockAny()) {
+        self.contextValue = context
+    }
+
+    func register<T>(feature: T) throws where T: DatadogFeature {
+        registeredFeatures.append(feature)
+    }
+
+    func feature<T>(named name: String, type: T.Type) -> T? {
+        registeredFeatures.first { $0 is T } as? T
+    }
+
+    func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature {
+        self
+    }
+
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { }
+
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
+
+    func mostRecentModifiedFileAt(before: Date) throws -> Date? {
+        nil
+    }
+
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+        block(contextValue, writer)
+    }
+
+    func context(_ block: @escaping (DatadogContext) -> Void) {
+        block(contextValue)
+    }
+
+    var dataStore: DataStore { NOPDataStore() }
+    var telemetry: Telemetry { NOPTelemetry() }
+
+    func set(anonymousId: String?) { }
+
+    var exportedBuckets: [ExportedBucket] {
+        writer.events(ofType: ExportedBucket.self)
+    }
 }
