@@ -55,7 +55,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private let applicationState: RUMApplicationState
     /// Feature Operation manager for processing Feature Operation commands.
     private lazy var featureOperationManager: RUMFeatureOperationManager = {
-        RUMFeatureOperationManager(parent: self, dependencies: dependencies)
+        RUMFeatureOperationManager(parent: self, dependencies: dependencies, sessionSampler: sampler)
     }()
     /// App launch manager to process TTID and TTFD commands.
     private lazy var appLaunchManager: RUMAppLaunchManager = {

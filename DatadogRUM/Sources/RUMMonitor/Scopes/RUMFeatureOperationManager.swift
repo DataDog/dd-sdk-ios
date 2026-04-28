@@ -35,12 +35,14 @@ internal class RUMFeatureOperationManager {
 
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
+    private let sessionSampler: DeterministicSampler
 
     // MARK: - Initialization
 
-    init(parent: RUMContextProvider, dependencies: RUMScopeDependencies) {
+    init(parent: RUMContextProvider, dependencies: RUMScopeDependencies, sessionSampler: DeterministicSampler) {
         self.parent = parent
         self.dependencies = dependencies
+        self.sessionSampler = sessionSampler
     }
 
     // MARK: - Public Interface
@@ -96,6 +98,21 @@ internal class RUMFeatureOperationManager {
             profiling = .init(errorReason: profilingContext.error, status: profilingContext.profilingStatus)
         }
 
+        if shouldSendOperationMessage(for: command) {
+            let message = OperationMessage(
+                attributes: parent.rumContextAttributes,
+                operation: Vital(
+                    id: command.vitalId,
+                    name: command.name,
+                    operationKey: command.operationKey,
+                    stepType: command.stepType,
+                    date: command.time,
+                    serverTimeOffset: context.serverTimeOffset
+                )
+            )
+            dependencies.featureScope.send(message: .payload(message))
+        }
+
         let vitalEvent = RUMVitalOperationStepEvent(
             dd: .init(profiling: profiling),
             account: .init(context: context),
@@ -129,6 +146,20 @@ internal class RUMFeatureOperationManager {
         )
 
         writer.write(value: vitalEvent)
+    }
+
+    private func shouldSendOperationMessage(for command: RUMOperationStepVitalCommand) -> Bool {
+        switch command.stepType {
+        case .start:
+            guard let options = command.options as? ProfilingOptions else {
+                return false
+            }
+            return sessionSampler.combined(with: options.sampleRate).sample()
+        case .end:
+            return true
+        case .update, .retry:
+            return false
+        }
     }
 
     private func trackOperationStart(name: String, operationKey: String?, lookupKey: String) {
