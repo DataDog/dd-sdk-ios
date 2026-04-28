@@ -89,7 +89,6 @@ internal struct RUMScopeDependencies {
         firstFrameReader: RenderLoopReader,
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)?,
         vitalsReaders: VitalsReaders?,
-        timeseriesCollector: TimeseriesCollecting? = nil,
         accessibilityReader: AccessibilityReading?,
         onSessionStart: RUM.SessionListener?,
         viewCache: ViewCache,
@@ -100,7 +99,8 @@ internal struct RUMScopeDependencies {
         watchdogTermination: WatchdogTerminationMonitor?,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking,
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?,
-        sessionType: RUMSessionType?
+        sessionType: RUMSessionType?,
+        timeseriesCollector: TimeseriesCollecting? = nil
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID
