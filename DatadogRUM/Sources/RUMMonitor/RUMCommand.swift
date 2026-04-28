@@ -756,6 +756,8 @@ internal struct RUMOperationStepVitalCommand: RUMCommand {
     var stepType: RUMVitalOperationStepEvent.Vital.StepType
     /// The reason for failure, if applicable
     var failureReason: RUMVitalOperationStepEvent.Vital.FailureReason?
+    /// Additional options for this operation.
+    var options: OperationOptions? = nil
     // Common properties
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
