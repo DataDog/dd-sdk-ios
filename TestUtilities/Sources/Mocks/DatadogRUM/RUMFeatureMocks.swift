@@ -1557,6 +1557,7 @@ public class RUMActionsHandlerMock: RUMActionsHandling {
         onViewModifierTapped?(actionName, actionAttributes)
     }
 }
+#endif
 
 public class SamplingBasedVitalReaderMock: SamplingBasedVitalReader {
     public var vitalData: Double?
@@ -1589,7 +1590,6 @@ public class ContinuousVitalReaderMock: ContinuousVitalReader {
         }
     }
 }
-#endif
 
 extension TelemetryReceiver: AnyMockable {
     public static func mockAny() -> Self { .mockWith() }
