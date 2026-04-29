@@ -221,7 +221,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                 startPrecondition = .userAppLaunch // UISceneDelegate-based apps always start in background
             case .backgroundLaunch, .prewarming:
                 startPrecondition = preconditionForNewBackgroundSession(context: context)
-            default:
+            @unknown default:
                 dependencies.telemetry.error("Creating initial session in background with unexpected launch reason: \(context.launchInfo.launchReason)")
             }
         } else {
@@ -247,7 +247,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogContext, writer: Writer) -> RUMSessionScope {
         var startPrecondition: RUMSessionPrecondition? = nil
 
-        // If the launch reason is uncertain (e.g. on tvOS), the background check falls through to the end-reason logic.
+        // If no background-session precondition can be derived for the current context, fall through to the end-reason logic.
         if context.applicationStateHistory.currentState == .background,
            let backgroundPrecondition = preconditionForNewBackgroundSession(context: context) {
             startPrecondition = backgroundPrecondition
@@ -283,7 +283,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         var startPrecondition: RUMSessionPrecondition? = nil
 
-        // If the launch reason is uncertain (e.g. on tvOS), the background check falls through to the end-reason logic.
+        // If no background-session precondition can be derived for the current context, fall through to the end-reason logic.
         if context.applicationStateHistory.currentState == .background,
            let backgroundPrecondition = preconditionForNewBackgroundSession(context: context) {
             startPrecondition = backgroundPrecondition
@@ -370,7 +370,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         case .userLaunch:
             // Normal: a user-launched process went to background. Caller uses end-reason-based precondition.
             return nil
-        default:
+        @unknown default:
             dependencies.telemetry.error(
                 "Starting session in background with unexpected launch reason: \(context.launchInfo.launchReason)"
             )
