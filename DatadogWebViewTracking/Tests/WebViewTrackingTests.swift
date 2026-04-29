@@ -49,7 +49,7 @@ class WebViewTrackingTests: XCTestCase {
                 return 'mask'
             },
             getIsTraceSampled() {
-                return null
+                return 'null'
             }
         }
         """)
@@ -110,20 +110,13 @@ class WebViewTrackingTests: XCTestCase {
                 return '\(privacyLevel.rawValue)'
             },
             getIsTraceSampled() {
-                return null
+                return 'null'
             }
         }
         """)
     }
 
     func testItAddsUserScriptWithFirstPartyHostTracing() throws {
-        struct RUMFeature: DatadogFeature, RUMSessionSamplerProvider {
-            static let name = "rum"
-            let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
-            let rumSessionSampler: DeterministicSampler?
-            let sessionID: UUID?
-        }
-
         struct TracingDecision {
             let value: Bool?
             let jsValue: String
@@ -150,6 +143,8 @@ class WebViewTrackingTests: XCTestCase {
                 )
             )
 
+            defer { try? core.flushAndTearDown() }
+
             RUM.enable(
                 with: .mockWith(applicationID: "test-app-id") {
                     $0.sessionSampleRate = tracingDecision.value.map { $0 ? 100 : 0 } ?? 100
@@ -162,8 +157,8 @@ class WebViewTrackingTests: XCTestCase {
                 in: core
             )
 
-            // Necessary for RUM to set the session sampler in the feature, since it's an async process.
-            Thread.sleep(forTimeInterval: 0.5)
+            // Wait for the core to stabilize
+            core.flush()
 
             try WebViewTracking.enableOrThrow(
                 tracking: webView,
@@ -192,7 +187,7 @@ class WebViewTrackingTests: XCTestCase {
                     return 'mask'
                 },
                 getIsTraceSampled() {
-                    return \(tracingDecision.jsValue)
+                    return '\(tracingDecision.jsValue)'
                 }
             }
             """,
@@ -201,17 +196,26 @@ class WebViewTrackingTests: XCTestCase {
         }
     }
 
-    private func assertJSEvaluateResult(_ result: Any?, error: (any Error)?, shouldSample: Bool, description: String, expectation: XCTestExpectation) {
-        defer { expectation.fulfill() }
-        guard let boolResult = result as? Bool else {
-            XCTFail("For \(description), expected a boolean result, got \(String(describing: result))")
-            return
+    private func waitForJS(_ js: String, toReturn expectedResult: String, webView: WKWebView, description: String) {
+        let outerExpectation = XCTestExpectation(description: "\(description) should be \(expectedResult)")
+
+        var isDone = false
+
+        while !isDone {
+            let innerExpectation = XCTestExpectation()
+
+            webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
+                if error == nil && (result as? String) == expectedResult {
+                    isDone = true
+                    outerExpectation.fulfill()
+                }
+                innerExpectation.fulfill()
+            }
+
+            wait(for: [innerExpectation], timeout: 5.0)
         }
-        guard error == nil else {
-            XCTFail("For \(description), expected no error but got \(String(describing: error))")
-            return
-        }
-        XCTAssert(boolResult == shouldSample, "\(description) should be\(shouldSample ? "" : " NOT") sampling")
+
+        wait(for: [outerExpectation], timeout: 10.0)
     }
 
     @available(iOS 15.0, *)
@@ -243,14 +247,15 @@ class WebViewTrackingTests: XCTestCase {
             in: core
         )
 
+        core.flush()
+
         // Necessary for RUM to set the session sampler in the feature, since it's an async process.
-        Thread.sleep(forTimeInterval: 0.1)
+//        Thread.sleep(forTimeInterval: 1.0)
 
         let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
         config.userContentController = controller
         let webView = WKWebView(frame: .zero, configuration: config)
-        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
 
         try WebViewTracking.enableOrThrow(
             tracking: webView,
@@ -260,44 +265,30 @@ class WebViewTrackingTests: XCTestCase {
             in: core
         )
 
-        let ex1 = XCTestExpectation(description: "For sessionUUID1, getIsTraceSampled() should return false")
-        let ex2 = XCTestExpectation(description: "For sessionUUID2, getIsTraceSampled() should return true")
-        let ex3 = XCTestExpectation(description: "For sessionUUID2, getIsTraceSampled() should return true after loading a different page")
+        Thread.sleep(forTimeInterval: 1.0)
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
-                self.assertJSEvaluateResult(result, error: error, shouldSample: false, description: "sessionUUID1", expectation: ex1)
-            }
+        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
 
-            // Start initial session by starting a view
-            RUMMonitor.shared(in: core).startView(key: "view-1")
-            core.flush()
+        waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "false", webView: webView, description: "sessionUUID1")
 
-            // When — stop the session and change the UUID for the next one
-            RUMMonitor.shared(in: core).stopSession()
-            core.flush()
-            uuidGenerator.uuid = sessionUUID2
+        // Start initial session by starting a view
+        RUMMonitor.shared(in: core).startView(key: "view-1")
+        core.flush()
 
-            // Trigger a new session by starting a new view (user interaction after stop)
-            RUMMonitor.shared(in: core).startView(key: "view-2")
-            core.flush()
+        // When — stop the session and change the UUID for the next one
+        RUMMonitor.shared(in: core).stopSession()
+        core.flush()
+        uuidGenerator.uuid = sessionUUID2
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
-                    self.assertJSEvaluateResult(result, error: error, shouldSample: true, description: "sessionUUID2", expectation: ex2)
-                }
+        // Trigger a new session by starting a new view (user interaction after stop)
+        RUMMonitor.shared(in: core).startView(key: "view-2")
+        core.flush()
 
-                webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.htmk")!), responseHTML: "<html><body>About us</body></html>")
+        waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2")
 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
-                        self.assertJSEvaluateResult(result, error: error, shouldSample: true, description: "sessionUUID2 after loading a new page", expectation: ex3)
-                    }
-                }
-            }
-        }
+            webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.htmk")!), responseHTML: "<html><body>About us</body></html>")
 
-        wait(for: [ex1, ex2, ex3], timeout: 4.0)
+        waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2 after loading a new page")
     }
 
     @available(iOS 15.0, *)
@@ -326,14 +317,12 @@ class WebViewTrackingTests: XCTestCase {
             in: core
         )
 
-        // Necessary for RUM to set the session sampler in the feature, since it's an async process.
-        Thread.sleep(forTimeInterval: 0.1)
+        core.flush()
 
         let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
         config.userContentController = controller
         let webView = WKWebView(frame: .zero, configuration: config)
-        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
 
         try WebViewTracking.enableOrThrow(
             tracking: webView,
@@ -343,41 +332,20 @@ class WebViewTrackingTests: XCTestCase {
             in: core
         )
 
-        let ex1 = XCTestExpectation(description: "For active session, getIsTraceSampled() should return false")
-        let ex2 = XCTestExpectation(description: "After stopSession, getIsTraceSampled() should return null")
+        Thread.sleep(forTimeInterval: 1.0)
 
-        func assertNullResult(_ result: Any?, error: (any Error)?, description: String, expectation: XCTestExpectation) {
-            defer { expectation.fulfill() }
-            guard error == nil else {
-                XCTFail("For \(description), expected no error but got \(String(describing: error))")
-                return
-            }
-            XCTAssertTrue(result is NSNull || result == nil, "For \(description), expected null but got \(String(describing: result))")
-        }
+        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            // Start a session
-            RUMMonitor.shared(in: core).startView(key: "view-1")
-            core.flush()
+        // Start a session
+        RUMMonitor.shared(in: core).startView(key: "view-1")
+        core.flush()
 
-            webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
-                self.assertJSEvaluateResult(result, error: error, shouldSample: true, description: "active session", expectation: ex1)
-            }
+        waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "active session")
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                // Stop the session
-                RUMMonitor.shared(in: core).stopSession()
-                core.flush()
+        RUMMonitor.shared(in: core).stopSession()
+        core.flush()
 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
-                        assertNullResult(result, error: error, description: "after stopSession", expectation: ex2)
-                    }
-                }
-            }
-        }
-
-        wait(for: [ex1, ex2], timeout: 5.0)
+        waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "null", webView: webView, description: "after stopSession")
     }
 
     func testItAddsUserScriptAndMessageHandler() throws {

@@ -17,7 +17,7 @@ class RUMMonitorProtocol_InternalTests: XCTestCase {
         monitor = Monitor(
             dependencies: .mockAny(),
             dateProvider: SystemDateProvider(),
-            onSessionUpdate: { _ in }
+            onActiveSessionUpdate: { _ in }
         )
 
         // Then

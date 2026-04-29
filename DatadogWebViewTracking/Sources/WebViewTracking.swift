@@ -189,7 +189,7 @@ public enum WebViewTracking {
                 return '\(privacyLevel.rawValue)'
             },
             getIsTraceSampled() {
-                return \(isTraceSampled)
+                return '\(isTraceSampled)'
             }
         }
         """
@@ -249,7 +249,7 @@ public enum WebViewTracking {
         let js =
         """
         if (window.\(DDScriptMessageHandler.name)) {
-            window.\(DDScriptMessageHandler.name).getIsTraceSampled = () => \(isTraceSampled)
+            window.\(DDScriptMessageHandler.name).getIsTraceSampled = () => '\(isTraceSampled)'
         }
         """
 

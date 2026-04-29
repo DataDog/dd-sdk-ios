@@ -20,7 +20,7 @@ class ErrorMessageReceiverTests: XCTestCase {
             monitor: Monitor(
                 dependencies: .mockWith(featureScope: featureScope),
                 dateProvider: SystemDateProvider(),
-                onSessionUpdate: { _ in }
+                onActiveSessionUpdate: { _ in }
             )
         )
     }
