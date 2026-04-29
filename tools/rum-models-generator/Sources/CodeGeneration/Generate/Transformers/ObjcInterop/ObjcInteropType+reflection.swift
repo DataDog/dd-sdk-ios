@@ -11,13 +11,13 @@ import Foundation
 // swiftlint:disable force_cast
 
 internal protocol ObjcInteropReflectable {
-    var objcRootClass: ObjcInteropRootClass { get }
+    var objcRootClass: ObjcInteropReflectable { get }
     var objcTypeName: String { get }
     var swiftTypeName: String { get }
 }
 
 extension ObjcInteropRootClass: ObjcInteropReflectable {
-    var objcRootClass: ObjcInteropRootClass { self }
+    var objcRootClass: ObjcInteropReflectable { self }
     var objcTypeName: String { bridgedSwiftStruct.name }
     var swiftTypeName: String { bridgedSwiftStruct.name }
 }
@@ -27,7 +27,12 @@ extension ObjcInteropTransitiveNestedClass: ObjcInteropReflectable {
         return parentProperty.owner
     }
 
-    var objcRootClass: ObjcInteropRootClass {
+    var objcRootClass: ObjcInteropReflectable {
+        // ObjcInteropNestedClass (array items) own their swiftModel and act as a local root.
+        // Stop here instead of walking up to the top-level event.
+        if let nestedParent = parentClass as? ObjcInteropNestedClass {
+            return nestedParent
+        }
         return (parentClass as! ObjcInteropReflectable).objcRootClass
     }
 
@@ -48,7 +53,7 @@ extension ObjcInteropNestedClass: ObjcInteropReflectable {
         return parentProperty.owner
     }
 
-    var objcRootClass: ObjcInteropRootClass {
+    var objcRootClass: ObjcInteropReflectable {
         return (parentClass as! ObjcInteropReflectable).objcRootClass
     }
 
@@ -66,7 +71,7 @@ extension ObjcInteropNestedEnum: ObjcInteropReflectable {
         return parentProperty.owner
     }
 
-    var objcRootClass: ObjcInteropRootClass {
+    var objcRootClass: ObjcInteropReflectable {
         return (parentClass as! ObjcInteropReflectable).objcRootClass
     }
 
@@ -87,7 +92,7 @@ extension ObjcInteropAssociatedTypeEnum: ObjcInteropReflectable {
         return parentProperty.owner
     }
 
-    var objcRootClass: ObjcInteropRootClass {
+    var objcRootClass: ObjcInteropReflectable {
         return (parentClass as! ObjcInteropReflectable).objcRootClass
     }
 
