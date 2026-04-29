@@ -58,7 +58,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "BENCHMARK_SCENARIO"
-            value = "profiling"
+            value = "continuousProfiling"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

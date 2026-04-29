@@ -30,7 +30,7 @@ struct ProfilingScenario: Scenario {
             )
         )
 
-        RUMMonitor.shared().addAttribute(forKey: "scenario", value: "Profiling")
+        RUMMonitor.shared().addAttribute(forKey: "scenario", value: "ContinuousProfiling")
 
         Profiling.enable(with: .init(applicationLaunchSampleRate: .maxSampleRate, continuousSampleRate: .maxSampleRate))
     }
