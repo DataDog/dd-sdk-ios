@@ -12,8 +12,7 @@ import WebKit
 /// The WebView Tracking feature.
 ///
 /// The feature exists so it can be notified when a RUM session rolls over, and update tracked WebViews accordingly.
-@MainActor
-internal struct WebViewTrackingFeature: @MainActor DatadogFeature {
+internal struct WebViewTrackingFeature: DatadogFeature {
     static var name: String { "web-view-tracking" }
 
     let messageReceiver: FeatureMessageReceiver
@@ -25,6 +24,7 @@ internal struct WebViewTrackingFeature: @MainActor DatadogFeature {
     ///
     /// - Parameters:
     ///   - core: The core where this feature will be registered in.
+    @MainActor
     private init(core: DatadogCoreProtocol) {
         self.sessionRolloverHandler = WebViewSessionRolloverHandler(core: core)
         self.messageReceiver = WebViewTrackingMessageReceiver(sessionRolloverHandler: sessionRolloverHandler)
@@ -42,6 +42,7 @@ internal struct WebViewTrackingFeature: @MainActor DatadogFeature {
     /// it does not exist yet.
     ///
     /// - throws: If a problem happens registering a newly created feature.
+    @MainActor
     static func obtainOrRegisterFeature(in core: DatadogCoreProtocol) throws -> WebViewTrackingFeature {
         if let feature = core.feature(named: name, type: WebViewTrackingFeature.self) {
             return feature
