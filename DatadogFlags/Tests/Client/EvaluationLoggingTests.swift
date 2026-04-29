@@ -148,7 +148,7 @@ class EvaluationLoggingTests: XCTestCase {
         let evaluationLogger = EvaluationLoggerMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
-                state: nil // No context set - provider not ready
+                flagsData: nil // No context set - provider not ready
             ),
             exposureLogger: ExposureLoggerMock(),
             evaluationLogger: evaluationLogger,
@@ -172,7 +172,7 @@ class EvaluationLoggingTests: XCTestCase {
         let evaluationLogger = EvaluationLoggerMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
-                state: .init(
+                flagsData: .init(
                     flags: [:], // No flags
                     context: .init(targetingKey: "user-123", attributes: [:]),
                     date: .mockAny()
@@ -200,7 +200,7 @@ class EvaluationLoggingTests: XCTestCase {
         let evaluationLogger = EvaluationLoggerMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
-                state: .init(
+                flagsData: .init(
                     flags: [
                         "string-flag": .init(
                             allocationKey: "alloc-1",
@@ -237,7 +237,7 @@ class EvaluationLoggingTests: XCTestCase {
         let evaluationLogger = EvaluationLoggerMock()
         let client = FlagsClient(
             repository: FlagsRepositoryMock(
-                state: .init(
+                flagsData: .init(
                     flags: [:],
                     context: .init(targetingKey: "user-123", attributes: [:]),
                     date: .mockAny()

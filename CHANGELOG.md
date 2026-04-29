@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
 - [IMPROVEMENT] Skip malformed RUM attributes individually instead of dropping the entire event, and log clear error messages. See [#2844][]
 - [FIX] Propagate native `anonymous_id` to WebView RUM and Log events. See [#2847][]
 - [IMPROVEMENT] Add device properties `isLowRam`, `logicalCpuCount`, `totalRam` to the `LogEvent` Objective-C API. See [#2854][]
@@ -1124,6 +1125,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2773]: https://github.com/DataDog/dd-sdk-ios/pull/2773
 [#2776]: https://github.com/DataDog/dd-sdk-ios/pull/2776
 [#2791]: https://github.com/DataDog/dd-sdk-ios/pull/2791
+[#2719]: https://github.com/DataDog/dd-sdk-ios/pull/2719
 [#2794]: https://github.com/DataDog/dd-sdk-ios/pull/2794
 [#2802]: https://github.com/DataDog/dd-sdk-ios/pull/2802
 [#2807]: https://github.com/DataDog/dd-sdk-ios/pull/2807
