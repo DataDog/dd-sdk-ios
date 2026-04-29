@@ -23,7 +23,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil }
+            cpuUsageProvider: { nil },
+            compressionSampler: { false }
         )
 
         // When
@@ -58,7 +59,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { 42.5 }
+            cpuUsageProvider: { 42.5 },
+            compressionSampler: { false }
         )
 
         // When
@@ -94,7 +96,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 100, // large batch — won't auto-flush
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil }
+            cpuUsageProvider: { nil },
+            compressionSampler: { false }
         )
 
         // When — let a few samples accumulate then stop
@@ -126,7 +129,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 100,
             samplingInterval: 0.05,
-            cpuUsageProvider: { 10.0 }
+            cpuUsageProvider: { 10.0 },
+            compressionSampler: { false }
         )
 
         let expectation = self.expectation(description: "samples collected")
@@ -183,7 +187,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 100,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil }
+            cpuUsageProvider: { nil },
+            compressionSampler: { false }
         )
 
         // First session
@@ -378,7 +383,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 3,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil }
+            cpuUsageProvider: { nil },
+            compressionSampler: { false }
         )
 
         let expectation = self.expectation(description: "first batch written")
