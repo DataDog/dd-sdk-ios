@@ -283,32 +283,24 @@ void perftools_profiles_profile_add_samples(const profile& prof, Perftools__Prof
         }
         
         // Set labels
-        sample->n_label = src_sample.labels.size() + 1;
+        sample->n_label = prof.label_count(src_sample);
         sample->label = static_cast<Perftools__Profiles__Label**>(
             pb_alloc(allocator, sample->n_label * sizeof(Perftools__Profiles__Label*))
         );
 
-        auto* timestamp_label = static_cast<Perftools__Profiles__Label*>(
-            pb_alloc(allocator, sizeof(Perftools__Profiles__Label))
-        );
-        perftools__profiles__label__init(timestamp_label);
-        timestamp_label->key = prof.end_timestamp_ns_str_id();
-        timestamp_label->str = 0;
-        timestamp_label->num = prof.epoch_timestamp_ns(src_sample.timestamp_uptime_ns);
-        timestamp_label->num_unit = prof.nanoseconds_str_id();
-        sample->label[0] = timestamp_label;
-
-        for (size_t i = 0; i < src_sample.labels.size(); ++i) {
+        size_t label_idx = 0;
+        prof.for_each_label(src_sample, [&](const label_t& src_label) {
             auto* label = static_cast<Perftools__Profiles__Label*>(
                 pb_alloc(allocator, sizeof(Perftools__Profiles__Label))
             );
             perftools__profiles__label__init(label);
-            label->key = src_sample.labels[i].key_id;
-            label->str = src_sample.labels[i].str_id;
-            label->num = src_sample.labels[i].num;
-            label->num_unit = src_sample.labels[i].num_unit_id;
-            sample->label[i + 1] = label;
-        }
+            label->key = src_label.key_id;
+            label->str = src_label.str_id;
+            label->num = src_label.num;
+            label->num_unit = src_label.num_unit_id;
+            sample->label[label_idx] = label;
+            label_idx += 1;
+        });
         
         pprof->sample[sample_idx] = sample;
     }
