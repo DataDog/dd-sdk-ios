@@ -98,6 +98,14 @@ double dd_pprof_get_start_timestamp_s(dd_pprof_t* profile);
  */
 double dd_pprof_get_end_timestamp_s(dd_pprof_t* profile);
 
+/**
+ * Set the server time correction used for exported timestamps.
+ *
+ * @param profile Pointer to the profile
+ * @param offset_ns Server time offset in nanoseconds
+ */
+void dd_pprof_set_server_time_offset_ns(dd_pprof_t* profile, int64_t offset_ns);
+
 #ifdef __cplusplus
 }
 #endif

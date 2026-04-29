@@ -466,29 +466,16 @@ extension Monitor: RUMMonitorProtocol {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) started")
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .start)))
-        telemetry.send(telemetry: .usage(.init(event: .addOperationStepVital(.init(actionType: .start)))))
-        let vital = Vital(
-            id: rumUUIDGenerator.generateUnique().toRUMDataFormat,
-            name: name,
-            operationKey: operationKey,
-            stepType: .start,
-            date: dateProvider.now
-        )
-
-        if let options = options as? ProfilingOptions,
-           applicationScope.activeSession?.sampler.combined(with: options.sampleRate).sample() ?? false {
-            let attributes = applicationScope.activeSession?.rumContextAttributes ?? applicationScope.rumContextAttributes
-            featureScope.send(message: .payload(OperationMessage(attributes: attributes, operation: vital)))
-        }
 
         process(
             command: RUMOperationStepVitalCommand(
-                vitalId: vital.id,
-                name: vital.name,
+                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: name,
                 operationKey: operationKey,
                 stepType: .start,
                 failureReason: nil,
-                time: vital.date,
+                options: options,
+                time: dateProvider.now,
                 attributes: attributes
             )
         )
@@ -503,25 +490,14 @@ extension Monitor: RUMMonitorProtocol {
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .succeed)))
 
-        let vital = Vital(
-            id: rumUUIDGenerator.generateUnique().toRUMDataFormat,
-            name: name,
-            operationKey: operationKey,
-            stepType: .end,
-            date: dateProvider.now
-        )
-
-        let attributes = applicationScope.activeSession?.rumContextAttributes ?? applicationScope.rumContextAttributes
-        featureScope.send(message: .payload(OperationMessage(attributes: attributes, operation: vital)))
-
         process(
             command: RUMOperationStepVitalCommand(
-                vitalId: vital.id,
-                name: vital.name,
+                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: name,
                 operationKey: operationKey,
                 stepType: .end,
                 failureReason: nil,
-                time: vital.date,
+                time: dateProvider.now,
                 attributes: attributes
             )
         )
@@ -536,25 +512,14 @@ extension Monitor: RUMMonitorProtocol {
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .fail)))
 
-        let vital = Vital(
-            id: rumUUIDGenerator.generateUnique().toRUMDataFormat,
-            name: name,
-            operationKey: operationKey,
-            stepType: .end,
-            date: dateProvider.now
-        )
-
-        let attributes = applicationScope.activeSession?.rumContextAttributes ?? applicationScope.rumContextAttributes
-        featureScope.send(message: .payload(OperationMessage(attributes: attributes, operation: vital)))
-
         process(
             command: RUMOperationStepVitalCommand(
-                vitalId: vital.id,
-                name: vital.name,
+                vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: name,
                 operationKey: operationKey,
                 stepType: .end,
                 failureReason: reason,
-                time: vital.date,
+                time: dateProvider.now,
                 attributes: attributes
             )
         )

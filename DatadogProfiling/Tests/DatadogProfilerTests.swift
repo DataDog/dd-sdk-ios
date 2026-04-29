@@ -244,6 +244,71 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
+    func testApplicationDidEnterBackground_correctsAttachedVitalTimestampWithServerTimeOffset() throws {
+        // Given
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(dateProvider: dateProvider)
+        let serverTimeOffset: TimeInterval = 2
+        let startDate = Date(timeIntervalSince1970: 10)
+        let startOperation = Vital.mockWith(
+            id: "operation-id",
+            name: "operation",
+            operationKey: "key",
+            stepType: .start,
+            date: startDate,
+            serverTimeOffset: serverTimeOffset
+        )
+        let endOperation = Vital.mockWith(
+            id: "operation-end-id",
+            name: "operation",
+            operationKey: startOperation.operationKey,
+            stepType: .end,
+            date: startDate.addingTimeInterval(1),
+            serverTimeOffset: serverTimeOffset
+        )
+
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+
+        _ = profiler.receive(
+            message: .payload(
+                OperationMessage(
+                    attributes: mockRandomAttributes(),
+                    operation: startOperation
+                )
+            ),
+            from: core
+        )
+        _ = profiler.receive(
+            message: .payload(
+                OperationMessage(
+                    attributes: mockRandomAttributes(),
+                    operation: endOperation
+                )
+            ),
+            from: core
+        )
+
+        // When
+        core.context = .mockWith(
+            serverTimeOffset: serverTimeOffset,
+            applicationStateHistory: .mockWith(
+                initialState: .active,
+                date: dateProvider.now.addingTimeInterval(-1),
+                transitions: [(state: .background, date: dateProvider.now)]
+            )
+        )
+        waitForProfileWrite {
+            _ = profiler.receive(message: .context(core.context), from: core)
+        }
+
+        // Then
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let vitals = try typedRUMEvents(from: metadata).filter { $0["type"] as? String == "vital" }
+        let start = try XCTUnwrap(vitals.first?["start_ns"] as? Int64)
+        XCTAssertEqual(start, startDate.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds)
+        withExtendedLifetime(profiler) {}
+    }
+
     func testApplicationDidEnterBackground_includesLongTasksInProfile() throws {
         // Given
         let dateProvider = DateProviderMock()

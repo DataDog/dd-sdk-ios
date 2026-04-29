@@ -74,6 +74,11 @@ double dd_pprof_get_end_timestamp_s(dd_pprof_t* profile) {
     return static_cast<double>(timestamp) / 1e9; // to seconds
 }
 
+void dd_pprof_set_server_time_offset_ns(dd_pprof_t* profile, int64_t offset_ns) {
+    if (!profile) return;
+    reinterpret_cast<dd::profiler::profile*>(profile)->set_server_time_offset_ns(offset_ns);
+}
+
 size_t dd_pprof_sample_count(dd_pprof_t* profile) {
     if (!profile) return 0;
     return reinterpret_cast<dd::profiler::profile*>(profile)->samples().size();

@@ -26,6 +26,8 @@ public struct Vital: Encodable, Equatable {
     public let stepType: RUMVitalOperationStepEvent.Vital.StepType?
     /// Date when the vital was created
     public let date: Date
+    /// Interval between device and server time.
+    public let serverTimeOffset: TimeInterval
     /// Duration of the vital in nanoseconds
     public var duration: Int64?
     /// Key identifier of the vital
@@ -37,6 +39,7 @@ public struct Vital: Encodable, Equatable {
         operationKey: String? = nil,
         stepType: RUMVitalOperationStepEvent.Vital.StepType? = nil,
         date: Date = Date(),
+        serverTimeOffset: TimeInterval = .zero,
         duration: Int64? = nil
     ) {
         self.id = id
@@ -44,6 +47,7 @@ public struct Vital: Encodable, Equatable {
         self.operationKey = operationKey
         self.stepType = stepType
         self.date = date
+        self.serverTimeOffset = serverTimeOffset
         self.duration = duration
         self.key = "\(name)-\(operationKey ?? "")"
     }
@@ -53,7 +57,7 @@ public struct Vital: Encodable, Equatable {
         try container.encode(id, forKey: .id)
         try container.encode(type, forKey: .type)
         try container.encode(name, forKey: .name)
-        let start = date.timeIntervalSince1970.dd.toInt64Nanoseconds
+        let start = date.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds
         try container.encode(start, forKey: .start)
         try container.encodeIfPresent(duration, forKey: .duration)
     }
