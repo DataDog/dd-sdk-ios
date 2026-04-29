@@ -58,6 +58,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// Per-process CPU as a percentage (0–100+), summed across all app threads.
     /// Separated into a static so it can be called from the init closure without capturing self.
     private static func processCPU() -> Double? {
+        #if os(watchOS)
+        return nil
+        #else
         var threadsList: thread_act_array_t?
         var threadsCount = mach_msg_type_number_t()
         let kr = withUnsafeMutablePointer(to: &threadsList) {
@@ -90,6 +93,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             total += Double(info.cpu_usage) / Double(TH_USAGE_SCALE) * 100.0
         }
         return total
+        #endif
     }
 
     /// Resets state, flips the compression coin, and starts a 1s sampling timer for the new session.
