@@ -247,7 +247,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogContext, writer: Writer) -> RUMSessionScope {
         var startPrecondition: RUMSessionPrecondition? = nil
 
-        // If no background-session precondition can be derived for the current context, fall through to the end-reason logic.
+        // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
         if context.applicationStateHistory.currentState == .background,
            let backgroundPrecondition = preconditionForNewBackgroundSession(context: context) {
             startPrecondition = backgroundPrecondition
@@ -283,7 +283,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         var startPrecondition: RUMSessionPrecondition? = nil
 
-        // If no background-session precondition can be derived for the current context, fall through to the end-reason logic.
+        // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
         if context.applicationStateHistory.currentState == .background,
            let backgroundPrecondition = preconditionForNewBackgroundSession(context: context) {
             startPrecondition = backgroundPrecondition
