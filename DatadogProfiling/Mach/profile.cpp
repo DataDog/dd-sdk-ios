@@ -110,10 +110,6 @@ int64_t profile::uptime_ns_to_epoch_ns(uint64_t uptime_ns) const {
     return static_cast<int64_t>(uptime_ns) + _epoch_offset + _server_time_offset_ns;
 }
 
-void profile::set_server_time_offset_ns(int64_t offset_ns) {
-    _server_time_offset_ns = offset_ns;
-}
-
 /**
  * @brief Process multiple stack traces into deduplicated samples
  * 
@@ -145,7 +141,7 @@ void profile::add_samples(const stack_trace_t* traces, size_t count) {
             location_ids.push_back(location_id);
         }
         
-        // Create labels with tid and thread name. Timestamp label is written during serialization.
+        // Create labels with tid and thread name. Timestamp labels are derived during serialization.
         std::vector<label_t> labels;
         labels.reserve(2);
         
