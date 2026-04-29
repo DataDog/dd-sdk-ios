@@ -497,6 +497,7 @@ class RUMApplicationScopeTests: XCTestCase {
         // When
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
         let backgroundContext: DatadogContext = .mockWith(
+            sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
                 launchReason: .backgroundLaunch,
                 processLaunchDate: .mockDecember15th2019At10AMUTC()
@@ -536,6 +537,7 @@ class RUMApplicationScopeTests: XCTestCase {
         // When - advance past maxDuration without triggering inactivity timeout, then send in background
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
         let backgroundContext: DatadogContext = .mockWith(
+            sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
                 launchReason: .backgroundLaunch,
                 processLaunchDate: .mockDecember15th2019At10AMUTC()
@@ -567,6 +569,7 @@ class RUMApplicationScopeTests: XCTestCase {
         // When
         currentTime.addTimeInterval(1)
         let backgroundContext: DatadogContext = .mockWith(
+            sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
                 launchReason: .backgroundLaunch,
                 processLaunchDate: .mockDecember15th2019At10AMUTC()
@@ -595,6 +598,7 @@ class RUMApplicationScopeTests: XCTestCase {
         // When
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
         let backgroundContext: DatadogContext = .mockWith(
+            sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
                 launchReason: .prewarming,
                 processLaunchDate: .mockDecember15th2019At10AMUTC()
@@ -626,6 +630,7 @@ class RUMApplicationScopeTests: XCTestCase {
         // When
         currentTime.addTimeInterval(1)
         let backgroundContext: DatadogContext = .mockWith(
+            sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
                 launchReason: .prewarming,
                 processLaunchDate: .mockDecember15th2019At10AMUTC()
@@ -658,6 +663,7 @@ class RUMApplicationScopeTests: XCTestCase {
         // When - session times out while app is in background
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
         let backgroundContext: DatadogContext = .mockWith(
+            sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
                 launchReason: .userLaunch,
                 processLaunchDate: .mockDecember15th2019At10AMUTC()
