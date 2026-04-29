@@ -217,9 +217,10 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         if context.applicationStateHistory.currentState == .background {
             switch context.launchInfo.launchReason {
-            case .userLaunch:       startPrecondition = .userAppLaunch // UISceneDelegate-based apps always start in background
-            case .backgroundLaunch: startPrecondition = .backgroundLaunch
-            case .prewarming:       startPrecondition = .prewarm
+            case .userLaunch:
+                startPrecondition = .userAppLaunch // UISceneDelegate-based apps always start in background
+            case .backgroundLaunch, .prewarming:
+                startPrecondition = preconditionForNewBackgroundSession(context: context)
             default:
                 dependencies.telemetry.error("Creating initial session in background with unexpected launch reason: \(context.launchInfo.launchReason)")
             }
@@ -246,12 +247,16 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogContext, writer: Writer) -> RUMSessionScope {
         var startPrecondition: RUMSessionPrecondition? = nil
 
-        if lastSessionEndReason == .timeOut {
+        // If the launch reason is uncertain (e.g. on tvOS), the background check falls through to the end-reason logic.
+        if context.applicationStateHistory.currentState == .background,
+           let backgroundPrecondition = preconditionForNewBackgroundSession(context: context) {
+            startPrecondition = backgroundPrecondition
+        } else if lastSessionEndReason == .timeOut {
             startPrecondition = .inactivityTimeout
         } else if lastSessionEndReason == .maxDuration {
             startPrecondition = .maxDuration
         } else {
-            dependencies.telemetry.error("Failed to determine session precondition for REFRESHED session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
+            dependencies.telemetry.error("Failed to determine session precondition for REFRESHED session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown")")
         }
 
         let refreshingInForeground = context.applicationStateHistory.currentState == .active
@@ -278,14 +283,18 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         var startPrecondition: RUMSessionPrecondition? = nil
 
-        if lastSessionEndReason == .stopAPI {
+        // If the launch reason is uncertain (e.g. on tvOS), the background check falls through to the end-reason logic.
+        if context.applicationStateHistory.currentState == .background,
+           let backgroundPrecondition = preconditionForNewBackgroundSession(context: context) {
+            startPrecondition = backgroundPrecondition
+        } else if lastSessionEndReason == .stopAPI {
             startPrecondition = .explicitStop
         } else if lastSessionEndReason == .timeOut {
             startPrecondition = .inactivityTimeout
         } else if lastSessionEndReason == .maxDuration {
             startPrecondition = .maxDuration
         } else {
-            dependencies.telemetry.error("Failed to determine session precondition for NEW session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
+            dependencies.telemetry.error("Failed to determine session precondition for NEW session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown")")
         }
 
         if didCreateInitialSessionCount > 0 { // Sanity check
@@ -350,5 +359,22 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             context: context,
             writer: writer
         )
+    }
+    
+    private func preconditionForNewBackgroundSession(context: DatadogContext) -> RUMSessionPrecondition? {
+        switch context.launchInfo.launchReason {
+        case .backgroundLaunch:
+            return .backgroundLaunch
+        case .prewarming:
+            return .prewarm
+        case .userLaunch:
+            // Normal: a user-launched process went to background. Caller uses end-reason-based precondition.
+            return nil
+        default:
+            dependencies.telemetry.error(
+                "Starting session in background with unexpected launch reason: \(context.launchInfo.launchReason)"
+            )
+            return nil
+        }
     }
 }
