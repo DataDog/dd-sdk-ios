@@ -179,11 +179,23 @@ public:
     /** @brief Get cached string ID for "nanoseconds" */
     uint32_t nanoseconds_str_id() const { return _nanoseconds_str_id; }
 
-    /** @brief Get cached string ID for "end_timestamp_ns" */
-    uint32_t end_timestamp_ns_str_id() const { return _end_timestamp_ns_str_id; }
+    /** @brief Number of labels exported for the sample */
+    size_t label_count(const sample_t& sample) const { return sample.labels.size() + 1; }
 
-    /** @brief Convert uptime nanoseconds to server-corrected epoch nanoseconds */
-    int64_t epoch_timestamp_ns(uint64_t uptime_ns) const { return uptime_ns_to_epoch_ns(uptime_ns); }
+    /** @brief Visit labels exported for the sample */
+    template <typename LabelVisitor>
+    void for_each_label(const sample_t& sample, LabelVisitor&& visitor) const {
+        label_t timestamp_label{};
+        timestamp_label.key_id = _end_timestamp_ns_str_id;
+        timestamp_label.str_id = 0;
+        timestamp_label.num = uptime_ns_to_epoch_ns(sample.timestamp_uptime_ns);
+        timestamp_label.num_unit_id = _nanoseconds_str_id;
+        visitor(timestamp_label);
+
+        for (const auto& label : sample.labels) {
+            visitor(label);
+        }
+    }
 
     /** @brief Get profile start timestamp (uptime nanoseconds converted to epoch) */
     int64_t start_timestamp() const { return uptime_ns_to_epoch_ns(_start_timestamp); };
@@ -195,7 +207,7 @@ public:
      * @brief Set the server time correction used for exported timestamps.
      * @param offset_ns Server time offset in nanoseconds
      */
-    void set_server_time_offset_ns(int64_t offset_ns);
+    void set_server_time_offset_ns(int64_t offset_ns) { _server_time_offset_ns = offset_ns; };
 
 private:
     /** @brief Deduplicated string table (index 0 is always empty string) */
