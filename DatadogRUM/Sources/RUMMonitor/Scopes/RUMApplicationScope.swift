@@ -360,7 +360,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             writer: writer
         )
     }
-    
+
     private func preconditionForNewBackgroundSession(context: DatadogContext) -> RUMSessionPrecondition? {
         switch context.launchInfo.launchReason {
         case .backgroundLaunch:
