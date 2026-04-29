@@ -27,7 +27,7 @@ public struct Vital: Encodable, Equatable {
     /// Date when the vital was created
     public let date: Date
     /// Interval between device and server time.
-    public var serverTimeOffset: TimeInterval
+    public let serverTimeOffset: TimeInterval
     /// Duration of the vital in nanoseconds
     public var duration: Int64?
     /// Key identifier of the vital
