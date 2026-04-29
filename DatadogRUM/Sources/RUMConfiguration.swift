@@ -655,6 +655,7 @@ extension RUM.Configuration {
         trackSlowFrames: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
+        enableTimeseries: Bool = false,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -679,6 +680,7 @@ extension RUM.Configuration {
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
+        self.enableTimeseries = enableTimeseries
         self.featureFlags = featureFlags
     }
     #endif
