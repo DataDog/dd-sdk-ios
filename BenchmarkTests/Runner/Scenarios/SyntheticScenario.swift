@@ -19,7 +19,7 @@ internal struct SyntheticScenario: Scenario {
         case trace
         case rumManual
         case rumAuto
-        case profiling
+        case continuousProfiling
     }
     /// The scenario's name.
     let name: Name
@@ -82,7 +82,7 @@ internal struct SyntheticScenario: Scenario {
             _scenario = RUMManualScenario()
         case .rumAuto:
             _scenario = RUMAutoScenario()
-        case .profiling:
+        case .continuousProfiling:
             _scenario = ProfilingScenario()
         }
 

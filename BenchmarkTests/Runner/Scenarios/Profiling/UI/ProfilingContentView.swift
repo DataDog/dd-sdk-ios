@@ -222,24 +222,20 @@ private extension ProfilingContentView {
     func sendOperation(using configuration: ProfilingConfiguration) async {
         let trimmedName = configuration.operationName.trimmingCharacters(in: .whitespacesAndNewlines)
         let name = trimmedName.isEmpty ? "benchmark.operation" : trimmedName
-        let attributes: [String: Encodable] = [
-            "scenario": "Profiling"
-        ]
 
         rumMonitor.startOperation(
             name: name,
-            attributes: attributes,
             options: ProfilingOptions(sampleRate: .maxSampleRate)
         )
 
-        await Task.detached(priority: .userInitiated) {
-            runHighProcessingBlock(for: configuration.operationDuration)
+        _ = await Task.detached(priority: .userInitiated) {
+            await runHighProcessingBlock(for: configuration.operationDuration)
         }.value
 
         if configuration.shouldFailOperation {
-            rumMonitor.failOperation(name: name, reason: .other, attributes: attributes)
+            rumMonitor.failOperation(name: name, reason: .other)
         } else {
-            rumMonitor.succeedOperation(name: name, attributes: attributes)
+            rumMonitor.succeedOperation(name: name)
         }
 
         recordSignal(
