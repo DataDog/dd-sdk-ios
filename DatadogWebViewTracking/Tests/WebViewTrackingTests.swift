@@ -204,7 +204,7 @@ class WebViewTrackingTests: XCTestCase {
         while !isDone {
             let innerExpectation = XCTestExpectation()
 
-            webView.evaluateJavaScript("window.DatadogEventBridge.getIsTraceSampled()") { result, error in
+            webView.evaluateJavaScript(js) { result, error in
                 if error == nil && (result as? String) == expectedResult {
                     isDone = true
                     outerExpectation.fulfill()
@@ -289,6 +289,89 @@ class WebViewTrackingTests: XCTestCase {
             webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.htmk")!), responseHTML: "<html><body>About us</body></html>")
 
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2 after loading a new page")
+    }
+
+    @available(iOS 15.0, *)
+    func testItChangesBridgeDecisionOnSessionRolloverInIframes() throws {
+        // Given
+        // This session ID is not sampled at 50%, but it is sampled at 60%:
+        let sessionUUID1 = RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!)
+        // This session ID is not sampled at 36%, but it is sampled at 37%:
+        let sessionUUID2 = RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a5221003fa41")!)
+
+        let uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionUUID1)
+
+        let core = DatadogCoreProxy(
+            context: .mockWith(
+                env: "test",
+                version: "1.0.0",
+                serverTimeOffset: 0
+            )
+        )
+        defer { try? core.flushAndTearDown() }
+
+        RUM.enable(
+            with: .mockWith(applicationID: "test-app-id") {
+                $0.uuidGenerator = uuidGenerator
+                $0.urlSessionTracking = .init(
+                    firstPartyHostsTracing: .trace(hosts: ["localhost"], sampleRate: 40)
+                )
+            },
+            in: core
+        )
+
+        core.flush()
+
+        let config = WKWebViewConfiguration()
+        let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
+
+        try WebViewTracking.enableOrThrow(
+            tracking: webView,
+            hosts: ["localhost"],
+            hostsSanitizer: HostsSanitizerMock(),
+            logsSampleRate: 100,
+            in: core
+        )
+
+        Thread.sleep(forTimeInterval: 1.0)
+
+        // Load a page containing a same-origin iframe
+        let html = """
+        <html><body>
+            Main page
+            <iframe srcdoc="<html><body>Hello from iframe</body></html>"></iframe>
+        </body></html>
+        """
+        webView.loadSimulatedRequest(
+            URLRequest(url: URL(string: "http://localhost")!),
+            responseHTML: html
+        )
+
+        let mainJS = "window.DatadogEventBridge.getIsTraceSampled()"
+        let iframeJS = "window.frames[0].DatadogEventBridge.getIsTraceSampled()"
+
+        // Verify both main frame and iframe have the initial decision (not sampled at 40%)
+        waitForJS(mainJS, toReturn: "false", webView: webView, description: "main frame sessionUUID1")
+        waitForJS(iframeJS, toReturn: "false", webView: webView, description: "iframe sessionUUID1")
+
+        // Start initial session
+        RUMMonitor.shared(in: core).startView(key: "view-1")
+        core.flush()
+
+        // Stop the session and change the UUID for the next one
+        RUMMonitor.shared(in: core).stopSession()
+        core.flush()
+        uuidGenerator.uuid = sessionUUID2
+
+        // Trigger a new session
+        RUMMonitor.shared(in: core).startView(key: "view-2")
+        core.flush()
+
+        // Verify both main frame and iframe updated to the new decision (sampled at 40% with UUID2)
+        waitForJS(mainJS, toReturn: "true", webView: webView, description: "main frame sessionUUID2")
+        waitForJS(iframeJS, toReturn: "true", webView: webView, description: "iframe sessionUUID2")
     }
 
     @available(iOS 15.0, *)

@@ -251,6 +251,15 @@ public enum WebViewTracking {
         if (window.\(DDScriptMessageHandler.name)) {
             window.\(DDScriptMessageHandler.name).getIsTraceSampled = () => '\(isTraceSampled)'
         }
+        try {
+            for (var i = 0; i < window.frames.length; i++) {
+                try {
+                    if (window.frames[i].\(DDScriptMessageHandler.name)) {
+                        window.frames[i].\(DDScriptMessageHandler.name).getIsTraceSampled = () => '\(isTraceSampled)';
+                    }
+                } catch(e) {}
+            }
+        } catch(e) {}
         """
 
         webView.evaluateJavaScript(js)
