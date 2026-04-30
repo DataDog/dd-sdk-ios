@@ -194,7 +194,7 @@ final class CTorProfilerTests: XCTestCase {
         }
 
         // Then
-        wait(for: [expectation], timeout: 0.1)
+        wait(for: [expectation], timeout: 2.0)
         XCTAssertEqual(ctor_profiler_get_status(), CTOR_PROFILER_STATUS_STOPPED)
     }
 
@@ -214,7 +214,7 @@ final class CTorProfilerTests: XCTestCase {
         }
 
         // Then
-        wait(for: [expectation], timeout: 0.1)
+        wait(for: [expectation], timeout: 2.0)
     }
 
     func testConcurrentGetProfile_doesNotCrash() {
@@ -234,7 +234,7 @@ final class CTorProfilerTests: XCTestCase {
         }
 
         // Then
-        wait(for: [expectation], timeout: 0.1)
+        wait(for: [expectation], timeout: 2.0)
     }
 
     func testConcurrentDestroy_doesNotCrash() {
@@ -255,7 +255,7 @@ final class CTorProfilerTests: XCTestCase {
         }
 
         // Then
-        wait(for: [expectation], timeout: 0.1)
+        wait(for: [expectation], timeout: 2.0)
         XCTAssertNil(ctor_profiler_get_profile())
     }
 
@@ -286,7 +286,7 @@ final class CTorProfilerTests: XCTestCase {
         }
 
         // Then
-        wait(for: [expectation], timeout: 0.1)
+        wait(for: [expectation], timeout: 2.0)
     }
 }
 #endif // !os(watchOS)

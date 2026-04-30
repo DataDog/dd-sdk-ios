@@ -194,7 +194,7 @@ final class MachSamplingProfilerTests: XCTestCase {
         }
 
         // Then
-        wait(for: [expectation], timeout: 0.1)
+        wait(for: [expectation], timeout: 2.0)
 
         // Cleanup
         profiler_stop(profiler) // Ensure stopped

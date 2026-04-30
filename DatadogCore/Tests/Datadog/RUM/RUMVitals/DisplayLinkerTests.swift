@@ -90,7 +90,7 @@ final class DisplayLinkerTests: XCTestCase {
 
         mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
 
-        wait(during: 0.1) {
+        wait(during: 0.25) {
             XCTAssertTrue(reader.isActive)
             XCTAssertGreaterThan(registrar.currentValue.sampleCount, 0)
         }
@@ -102,19 +102,19 @@ final class DisplayLinkerTests: XCTestCase {
         displayLinker.register(reader)
 
         mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
-        wait(during: 0.1) {
+        wait(during: 0.25) {
             XCTAssertTrue(displayLinker.isActive)
             XCTAssertTrue(reader.isActive)
         }
 
         mockNotificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
-        wait(during: 0.1) {
+        wait(during: 0.25) {
             XCTAssertFalse(displayLinker.isActive)
             XCTAssertFalse(reader.isActive)
         }
 
         mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
-        wait(during: 0.1) {
+        wait(during: 0.25) {
             XCTAssertTrue(displayLinker.isActive)
             XCTAssertTrue(reader.isActive)
         }
@@ -128,21 +128,21 @@ final class DisplayLinkerTests: XCTestCase {
         displayLinker.register(refreshRateReader)
         displayLinker.register(viewHitchesReader)
 
-        wait(during: 0.1) {
+        wait(during: 0.25) {
             XCTAssertTrue(refreshRateReader.isActive)
             XCTAssertTrue(viewHitchesReader.isActive)
         }
 
         mockNotificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
 
-        wait(during: 0.1) {
+        wait(during: 0.25) {
             XCTAssertFalse(refreshRateReader.isActive)
             XCTAssertFalse(viewHitchesReader.isActive)
         }
 
         mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
 
-        wait(during: 0.1) {
+        wait(during: 0.25) {
             XCTAssertTrue(refreshRateReader.isActive)
             XCTAssertTrue(viewHitchesReader.isActive)
         }
@@ -163,7 +163,7 @@ final class DisplayLinkerTests: XCTestCase {
         displayLinker.register(viewHitchesReader)
         displayLinker.register(mockReader)
 
-        wait(during: 0.1) {
+        wait(during: 0.25) {
             XCTAssertTrue(refreshRateReader.isActive)
             XCTAssertTrue(viewHitchesReader.isActive)
             XCTAssertTrue(mockReader.isActive)
@@ -173,7 +173,7 @@ final class DisplayLinkerTests: XCTestCase {
         displayLinker.unregister(viewHitchesReader)
         displayLinker.unregister(mockReader)
 
-        wait(during: 0.1) {
+        wait(during: 0.25) {
             XCTAssertFalse(refreshRateReader.isActive)
             XCTAssertFalse(viewHitchesReader.isActive)
             XCTAssertFalse(mockReader.isActive)

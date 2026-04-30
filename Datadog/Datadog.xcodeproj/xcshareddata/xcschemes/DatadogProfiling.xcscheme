@@ -196,6 +196,7 @@
       </CodeCoverageTargets>
       <Testables>
          <TestableReference
+            randomExecutionOrdering = "YES"
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"

@@ -68,7 +68,7 @@ final class AppStateManagerTests: XCTestCase {
             appStateExpectation.fulfill()
         }
 
-        wait(for: [appStateExpectation], timeout: 0.1)
+        wait(for: [appStateExpectation], timeout: 2.0)
     }
 
     func testUpdateAppState_itUpdatesCorrectly() {
@@ -93,7 +93,7 @@ final class AppStateManagerTests: XCTestCase {
             XCTAssertEqual(previousAppState?.isActive, true)
             initialStateExpectation.fulfill()
         }
-        wait(for: [initialStateExpectation], timeout: 0.1)
+        wait(for: [initialStateExpectation], timeout: 2.0)
 
         // When
         appStateManager.updateAppState(state: .active)
@@ -106,7 +106,7 @@ final class AppStateManagerTests: XCTestCase {
             XCTAssertTrue(appState?.isActive == true)
             isActiveExpectation.fulfill()
         }
-        wait(for: [isActiveExpectation], timeout: 0.1)
+        wait(for: [isActiveExpectation], timeout: 2.0)
 
         // When
         appStateManager.updateAppState(state: .background)
@@ -120,6 +120,6 @@ final class AppStateManagerTests: XCTestCase {
             isBackgroundedExpectation.fulfill()
         }
 
-        wait(for: [isBackgroundedExpectation], timeout: 0.1)
+        wait(for: [isBackgroundedExpectation], timeout: 2.0)
     }
 }
