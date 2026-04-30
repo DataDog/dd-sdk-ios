@@ -337,11 +337,11 @@ class WebViewTrackingTests: XCTestCase {
 
         Thread.sleep(forTimeInterval: 1.0)
 
-        // Load a page containing a same-origin iframe
+        // Load a page containing a same-origin iframe with a nested iframe
         let html = """
         <html><body>
             Main page
-            <iframe srcdoc="<html><body>Hello from iframe</body></html>"></iframe>
+            <iframe srcdoc="<html><body>Outer iframe<iframe srcdoc='<html><body>Nested iframe</body></html>'></iframe></body></html>"></iframe>
         </body></html>
         """
         webView.loadSimulatedRequest(
@@ -351,10 +351,12 @@ class WebViewTrackingTests: XCTestCase {
 
         let mainJS = "window.DatadogEventBridge.getIsTraceSampled()"
         let iframeJS = "window.frames[0].DatadogEventBridge.getIsTraceSampled()"
+        let nestedIframeJS = "window.frames[0].frames[0].DatadogEventBridge.getIsTraceSampled()"
 
-        // Verify both main frame and iframe have the initial decision (not sampled at 40%)
+        // Verify all frames have the initial decision (not sampled at 40%)
         waitForJS(mainJS, toReturn: "false", webView: webView, description: "main frame sessionUUID1")
         waitForJS(iframeJS, toReturn: "false", webView: webView, description: "iframe sessionUUID1")
+        waitForJS(nestedIframeJS, toReturn: "false", webView: webView, description: "nested iframe sessionUUID1")
 
         // Start initial session
         RUMMonitor.shared(in: core).startView(key: "view-1")
@@ -369,9 +371,10 @@ class WebViewTrackingTests: XCTestCase {
         RUMMonitor.shared(in: core).startView(key: "view-2")
         core.flush()
 
-        // Verify both main frame and iframe updated to the new decision (sampled at 40% with UUID2)
+        // Verify all frames updated to the new decision (sampled at 40% with UUID2)
         waitForJS(mainJS, toReturn: "true", webView: webView, description: "main frame sessionUUID2")
         waitForJS(iframeJS, toReturn: "true", webView: webView, description: "iframe sessionUUID2")
+        waitForJS(nestedIframeJS, toReturn: "true", webView: webView, description: "nested iframe sessionUUID2")
     }
 
     @available(iOS 15.0, *)

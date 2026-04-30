@@ -245,21 +245,20 @@ public enum WebViewTracking {
         // Re-insert updated script
         injectUserScript(on: webView, in: core, using: elements, isTraceSampled: isTraceSampled)
 
-        // Run code to update the current page
+        // Run code to update the current page. This script updates the main page, iFrames and nested
+        // iFrames without defining a new top level function.
         let js =
         """
-        if (window.\(DDScriptMessageHandler.name)) {
-            window.\(DDScriptMessageHandler.name).getIsTraceSampled = () => '\(isTraceSampled)'
-        }
-        try {
-            for (var i = 0; i < window.frames.length; i++) {
-                try {
-                    if (window.frames[i].\(DDScriptMessageHandler.name)) {
-                        window.frames[i].\(DDScriptMessageHandler.name).getIsTraceSampled = () => '\(isTraceSampled)';
-                    }
-                } catch(e) {}
-            }
-        } catch(e) {}
+        (function updateBridge(win) {
+            try {
+                if (win.\(DDScriptMessageHandler.name)) {
+                    win.\(DDScriptMessageHandler.name).getIsTraceSampled = () => '\(isTraceSampled)';
+                }
+                for (var i = 0; i < win.frames.length; i++) {
+                    updateBridge(win.frames[i]);
+                }
+            } catch(e) {}
+        })(window);
         """
 
         webView.evaluateJavaScript(js)
