@@ -37,7 +37,7 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
 
         // When
         let session = URLSession(configuration: .ephemeral)
-        let url = URL(string: "https://www.datadoghq.com/")!
+        let url = URL(string: "https://localhost:1")!
         let task = session.dataTask(with: url) { _, _, _ in }
         task.resume()
 
@@ -104,6 +104,7 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         )
 
         // When - Cancel task to trigger cancellation
+        // Use a real remote URL: the task must be in-flight when cancel() is called
         let session = URLSession(configuration: .ephemeral)
         let url = URL(string: "https://www.datadoghq.com/")!
         let task = session.dataTask(with: url) { _, _, _ in }
@@ -146,7 +147,7 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
 
         // When - First task is intercepted
         let session = URLSession(configuration: .ephemeral)
-        let url = URL(string: "https://www.datadoghq.com/")!
+        let url = URL(string: "https://localhost:1")!
         let task1 = session.dataTask(with: url) { _, _, _ in }
         task1.resume()
 
@@ -188,8 +189,10 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         )
 
         // When - Use async/await API
+        // Use localhost:1 to get an immediate connection refusal — fast, network-independent,
+        // and URLSession still transitions the task through .running → .completed.
         let session = URLSession(configuration: .ephemeral)
-        let url = URL(string: "https://www.datadoghq.com/")!
+        let url = URL(string: "https://localhost:1")!
 
         Task {
             _ = try? await session.data(from: url)
@@ -224,7 +227,7 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
 
         // When - Create task without delegate and without completion handler
         let session = URLSession(configuration: .ephemeral)
-        let url = URL(string: "https://www.datadoghq.com/")!
+        let url = URL(string: "https://localhost:1")!
         let task = session.dataTask(with: url)
         task.resume()
 
