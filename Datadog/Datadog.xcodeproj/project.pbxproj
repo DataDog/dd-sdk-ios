@@ -818,6 +818,7 @@
 		D2160CA229C0DE5700FAA9A5 /* NetworkInstrumentationFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160C9829C0DE5700FAA9A5 /* NetworkInstrumentationFeature.swift */; };
 		D2160CC529C0DED100FAA9A5 /* URLSessionTaskInterception.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CC129C0DED100FAA9A5 /* URLSessionTaskInterception.swift */; };
 		D2160CD429C0DF6700FAA9A5 /* NetworkInstrumentationFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CCD29C0DF6700FAA9A5 /* NetworkInstrumentationFeatureTests.swift */; };
+		RUMS5870AA0000000000001 /* RUMS5870Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = RUMS5870AA0000000000002 /* RUMS5870Tests.swift */; };
 		D2160CD829C0DF6700FAA9A5 /* FirstPartyHostsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CCF29C0DF6700FAA9A5 /* FirstPartyHostsTests.swift */; };
 		D2160CDC29C0DF6700FAA9A5 /* HostsSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CD129C0DF6700FAA9A5 /* HostsSanitizerTests.swift */; };
 		D2160CDE29C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CD229C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift */; };
@@ -2667,6 +2668,7 @@
 		D2160C9829C0DE5700FAA9A5 /* NetworkInstrumentationFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkInstrumentationFeature.swift; sourceTree = "<group>"; };
 		D2160CC129C0DED100FAA9A5 /* URLSessionTaskInterception.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLSessionTaskInterception.swift; sourceTree = "<group>"; };
 		D2160CCD29C0DF6700FAA9A5 /* NetworkInstrumentationFeatureTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkInstrumentationFeatureTests.swift; sourceTree = "<group>"; };
+		RUMS5870AA0000000000002 /* RUMS5870Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMS5870Tests.swift; sourceTree = "<group>"; };
 		D2160CCF29C0DF6700FAA9A5 /* FirstPartyHostsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirstPartyHostsTests.swift; sourceTree = "<group>"; };
 		D2160CD129C0DF6700FAA9A5 /* HostsSanitizerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HostsSanitizerTests.swift; sourceTree = "<group>"; };
 		D2160CD229C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLSessionTaskInterceptionTests.swift; sourceTree = "<group>"; };
@@ -6659,6 +6661,7 @@
 			isa = PBXGroup;
 			children = (
 				D2160CCD29C0DF6700FAA9A5 /* NetworkInstrumentationFeatureTests.swift */,
+				RUMS5870AA0000000000002 /* RUMS5870Tests.swift */,
 				D2160CCF29C0DF6700FAA9A5 /* FirstPartyHostsTests.swift */,
 				D2160CD129C0DF6700FAA9A5 /* HostsSanitizerTests.swift */,
 				961583BB2EEAD89C006899B0 /* URLSessionTaskStateSwizzlerTests.swift */,
@@ -9009,6 +9012,7 @@
 				96E746AA2F30E535006B3419 /* AttributeEncodingTests.swift in Sources */,
 				D2D36DCB2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift in Sources */,
 				D2160CD429C0DF6700FAA9A5 /* NetworkInstrumentationFeatureTests.swift in Sources */,
+				RUMS5870AA0000000000001 /* RUMS5870Tests.swift in Sources */,
 				D263BCB629DB014900FA0E21 /* TimeInterval+ConvenienceTests.swift in Sources */,
 				D2DA23AA298D58F400C6C7E6 /* FeatureMessageReceiverTests.swift in Sources */,
 				3CD3A13D2C6C99FE00436A69 /* Data+CryptoTests.swift in Sources */,
