@@ -54,6 +54,10 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     }
 
     /// Flushes completed buckets and writes them to the feature storage for upload.
+    ///
+    /// - Parameter force: When `true`, flushes all buckets regardless of age (used during
+    ///   SDK teardown via `Flushable`). When `false`, only buckets older than the buffer
+    ///   window are flushed (normal periodic flush).
     func flushStats(force: Bool = false) {
         let now = dateProvider.now.timeIntervalSince1970.dd.toNanoseconds
         let exportedBuckets = concentrator.flush(now: now, force: force)

@@ -49,11 +49,8 @@ public enum Trace {
             let stats = ClientStatsFeature(core: core, configuration: configuration, dateProvider: configuration.dateProvider)
             try core.register(feature: stats)
 
-            trace.tracer.onSpanFinished = { [weak core] snapshot in
-                guard core != nil else {
-                    return
-                }
-                stats.concentrator.add(snapshot)
+            trace.tracer.onSpanFinished = { [weak stats] snapshot in
+                stats?.concentrator.add(snapshot)
             }
         }
 
