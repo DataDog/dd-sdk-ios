@@ -36,6 +36,8 @@ internal struct AggregationKey: Hashable, Sendable {
 // MARK: - Grouped Stats
 
 /// Running counters for a single aggregation key within a time bucket.
+/// Counters use `Double` to support fractional weighted sampling (weight per span).
+/// Currently weight is always 1.0, so these are effectively integers.
 internal final class GroupedStats {
     var hits: Double = 0
     var topLevelHits: Double = 0
@@ -100,41 +102,47 @@ private let eligibleSpanKinds: Set<String> = ["server", "consumer", "client", "p
 /// Span kinds for which peer tags should be included in the aggregation key.
 private let peerTagSpanKinds: Set<String> = ["client", "producer", "consumer"]
 
-// MARK: - FNV-64a Hash
+// MARK: - Stats Utilities
 
-/// Computes an FNV-64a hash of sorted tag strings, matching Go's `tagsFnvHash`.
-internal func fnv64a(_ tags: [String]) -> UInt64 {
-    if tags.isEmpty {
-        return 0
-    }
-    let sorted = tags.sorted()
-    var hash: UInt64 = 14_695_981_039_346_656_037 // FNV offset basis
-    let prime: UInt64 = 1_099_511_628_211
-
-    for (i, tag) in sorted.enumerated() {
-        if i > 0 {
-            hash ^= 0 // null separator byte
-            hash = hash &* prime
+/// Utility functions for stats computation.
+internal enum StatsUtils {
+    /// Computes an FNV-64a hash of sorted tag strings, matching Go's `tagsFnvHash`.
+    static func fnv64a(_ tags: [String]) -> UInt64 {
+        if tags.isEmpty {
+            return 0
         }
-        for byte in tag.utf8 {
-            hash ^= UInt64(byte)
-            hash = hash &* prime
+        let sorted = tags.sorted()
+        var hash: UInt64 = 14_695_981_039_346_656_037 // FNV offset basis
+        let prime: UInt64 = 1_099_511_628_211
+
+        for (i, tag) in sorted.enumerated() {
+            if i > 0 {
+                hash ^= 0 // null separator byte
+                hash = hash &* prime
+            }
+            for byte in tag.utf8 {
+                hash ^= UInt64(byte)
+                hash = hash &* prime
+            }
         }
+        return hash
     }
-    return hash
-}
 
-// MARK: - Stochastic Rounding
-
-/// Converts a floating-point count to UInt64 using stochastic rounding.
-/// When weight is always 1.0, this is effectively a truncation to integer.
-internal func stochasticRound(_ value: Double) -> UInt64 {
-    let truncated = UInt64(value)
-    let fractional = value - Double(truncated)
-    if Double.random(in: 0..<1) < fractional {
-        return truncated + 1
+    /// Converts a floating-point count to `UInt64` using stochastic rounding.
+    ///
+    /// In the Go reference, each span contributes a fractional sampling weight to its
+    /// group counters. When exporting, the float totals are rounded to integers with
+    /// probabilistic correction so that expected values remain unbiased. Currently
+    /// the iOS SDK always uses weight 1.0 (no weighted sampling), so this reduces
+    /// to simple truncation.
+    static func stochasticRound(_ value: Double) -> UInt64 {
+        let truncated = UInt64(value)
+        let fractional = value - Double(truncated)
+        if Double.random(in: 0..<1) < fractional {
+            return truncated + 1
+        }
+        return truncated
     }
-    return truncated
 }
 
 // MARK: - Stats Concentrator
@@ -142,14 +150,16 @@ internal func stochasticRound(_ value: Double) -> UInt64 {
 /// Aggregates `SpanSnapshot`s into time-bucketed stats (hit counts, error counts,
 /// duration totals) keyed by aggregation dimensions.
 ///
-/// Thread-safety: Access to `buckets` and `oldestTs` is protected by a `ReadWriteLock`.
-/// `add()` and `flush()` can be called from any thread.
+/// Thread-safety: All mutations are dispatched onto a dedicated serial queue.
+/// `add()` dispatches asynchronously so the caller's thread is never blocked.
+/// `flush()` dispatches synchronously to drain pending adds before collecting results.
 internal final class StatsConcentrator: @unchecked Sendable {
     /// Default bucket duration: 10 seconds in nanoseconds.
     static let defaultBucketDuration: Nanoseconds = 10_000_000_000
 
-    /// Number of bucket-duration windows to keep before flushing.
-    /// Matches Go's `defaultBufferLen = 2` (current + previous bucket).
+    /// How many recent bucket windows to keep before flushing. A value of 2 means
+    /// the current and previous buckets are retained; older buckets become eligible
+    /// for flush. Matches Go's `defaultBufferLen`.
     static let defaultBufferLen = 2
 
     /// Configured peer tag keys to extract from spans.
@@ -166,10 +176,10 @@ internal final class StatsConcentrator: @unchecked Sendable {
     private let bufferLen: Int
     private let peerTagKeys: [String]
 
-    @ReadWriteLock
-    private var buckets: [UInt64: StatsBucket] = [:]
+    /// Serial queue protecting `buckets` and `oldestTs`.
+    private let queue = DispatchQueue(label: "com.datadoghq.stats-concentrator", qos: .utility)
 
-    @ReadWriteLock
+    private var buckets: [UInt64: StatsBucket] = [:]
     private var oldestTs: UInt64
 
     init(
@@ -187,7 +197,8 @@ internal final class StatsConcentrator: @unchecked Sendable {
     // MARK: - Add
 
     /// Records a span snapshot into the appropriate time bucket.
-    /// Ineligible spans are silently discarded.
+    /// Ineligible spans are silently discarded. This method dispatches
+    /// asynchronously and returns immediately without blocking the caller.
     func add(_ snapshot: SpanSnapshot) {
         guard Self.isEligible(snapshot) else {
             return
@@ -198,12 +209,12 @@ internal final class StatsConcentrator: @unchecked Sendable {
         let aggregationKey = makeAggregationKey(from: snapshot, peerTags: matchingPeerTags)
         let peerTagStrings = matchingPeerTags.map { "\($0.key):\($0.value)" }
 
-        _buckets.mutate { buckets in
+        queue.async { [self] in
             let bucketKey = max(
-                Self.alignTimestamp(endTime, bucketDuration: self.bucketDuration),
-                self.oldestTs
+                Self.alignTimestamp(endTime, bucketDuration: bucketDuration),
+                oldestTs
             )
-            let bucket = buckets[bucketKey, default: StatsBucket(start: bucketKey, duration: self.bucketDuration)]
+            let bucket = buckets[bucketKey, default: StatsBucket(start: bucketKey, duration: bucketDuration)]
 
             let group = bucket.groups[aggregationKey, default: GroupedStats(peerTags: peerTagStrings)]
 
@@ -225,19 +236,18 @@ internal final class StatsConcentrator: @unchecked Sendable {
 
     /// Flushes completed buckets and returns them for export.
     ///
+    /// - Parameter now: Current time in nanoseconds.
     /// - Parameter force: When `true`, flushes all buckets regardless of age.
     ///   Used during SDK teardown.
-    /// - Parameter now: Current time in nanoseconds.
     /// - Returns: Array of exported buckets ready for serialization.
     func flush(now: Nanoseconds, force: Bool) -> [ExportedBucket] {
-        var flushed: [ExportedBucket] = []
-
-        _buckets.mutate { buckets in
-            let cutoff = Int64(now) - Int64(self.bufferLen) * Int64(self.bucketDuration)
+        return queue.sync {
+            let cutoff = force ? Int64.max : Int64(now) - Int64(bufferLen) * Int64(bucketDuration)
+            var flushed: [ExportedBucket] = []
             var keysToRemove: [UInt64] = []
 
             for (ts, bucket) in buckets {
-                if !force && Int64(ts) > cutoff {
+                if Int64(ts) > cutoff {
                     continue
                 }
                 keysToRemove.append(ts)
@@ -252,10 +262,10 @@ internal final class StatsConcentrator: @unchecked Sendable {
                         spanKind: key.spanKind,
                         isTraceRoot: key.isTraceRoot,
                         synthetics: key.synthetics,
-                        hits: stochasticRound(group.hits),
-                        errors: stochasticRound(group.errors),
-                        duration: stochasticRound(group.duration),
-                        topLevelHits: stochasticRound(group.topLevelHits),
+                        hits: StatsUtils.stochasticRound(group.hits),
+                        errors: StatsUtils.stochasticRound(group.errors),
+                        duration: StatsUtils.stochasticRound(group.duration),
+                        topLevelHits: StatsUtils.stochasticRound(group.topLevelHits),
                         okSummary: Data(),
                         errorSummary: Data(),
                         peerTags: group.peerTags,
@@ -276,17 +286,15 @@ internal final class StatsConcentrator: @unchecked Sendable {
                 buckets.removeValue(forKey: key)
             }
 
-            let aligned = Self.alignTimestamp(now, bucketDuration: self.bucketDuration)
-            let offset = UInt64(self.bufferLen - 1) * self.bucketDuration
+            let aligned = Self.alignTimestamp(now, bucketDuration: bucketDuration)
+            let offset = UInt64(bufferLen - 1) * bucketDuration
             let newOldestTs = aligned >= offset ? aligned - offset : 0
-            self._oldestTs.mutate { oldest in
-                if newOldestTs > oldest {
-                    oldest = newOldestTs
-                }
+            if newOldestTs > oldestTs {
+                oldestTs = newOldestTs
             }
-        }
 
-        return flushed
+            return flushed
+        }
     }
 
     // MARK: - Eligibility
@@ -342,7 +350,7 @@ internal final class StatsConcentrator: @unchecked Sendable {
             spanKind: snapshot.spanKind ?? "",
             isTraceRoot: isTraceRoot,
             synthetics: false,
-            peerTagsHash: fnv64a(peerTagStrings),
+            peerTagsHash: StatsUtils.fnv64a(peerTagStrings),
             serviceSource: snapshot.serviceSource
         )
     }
