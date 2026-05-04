@@ -501,34 +501,34 @@ class StatsConcentratorTests: XCTestCase {
     // MARK: - FNV-64a Hash
 
     func testFNV64aEmptyReturnsZero() {
-        XCTAssertEqual(fnv64a([]), 0)
+        XCTAssertEqual(StatsUtils.fnv64a([]), 0)
     }
 
     func testFNV64aDeterministic() {
         let tags = ["peer.service:web", "out.host:db.local"]
-        let hash1 = fnv64a(tags)
-        let hash2 = fnv64a(tags)
+        let hash1 = StatsUtils.fnv64a(tags)
+        let hash2 = StatsUtils.fnv64a(tags)
         XCTAssertEqual(hash1, hash2)
     }
 
     func testFNV64aSortsTags() {
-        let hash1 = fnv64a(["b:2", "a:1"])
-        let hash2 = fnv64a(["a:1", "b:2"])
+        let hash1 = StatsUtils.fnv64a(["b:2", "a:1"])
+        let hash2 = StatsUtils.fnv64a(["a:1", "b:2"])
         XCTAssertEqual(hash1, hash2)
     }
 
     func testFNV64aDifferentTagsProduceDifferentHash() {
-        let hash1 = fnv64a(["a:1"])
-        let hash2 = fnv64a(["b:2"])
+        let hash1 = StatsUtils.fnv64a(["a:1"])
+        let hash2 = StatsUtils.fnv64a(["b:2"])
         XCTAssertNotEqual(hash1, hash2)
     }
 
     // MARK: - Stochastic Rounding
 
     func testStochasticRoundIntegerValues() {
-        XCTAssertEqual(stochasticRound(5.0), 5)
-        XCTAssertEqual(stochasticRound(0.0), 0)
-        XCTAssertEqual(stochasticRound(100.0), 100)
+        XCTAssertEqual(StatsUtils.stochasticRound(5.0), 5)
+        XCTAssertEqual(StatsUtils.stochasticRound(0.0), 0)
+        XCTAssertEqual(StatsUtils.stochasticRound(100.0), 100)
     }
 
     // MARK: - Exported Bucket Structure
