@@ -89,7 +89,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         try XCTAssertEqual(matcher2.spanID(), .init(rawValue: 101))
     }
 
-    func testResourceAttributesProvider_givenURLSessionDataTaskRequestWithCompletionHandler() {
+    func testResourceAttributesProvider_givenURLSessionDataTaskRequestWithCompletionHandler() throws {
         core = DatadogCoreProxy(
             context: .mockWith(
                 env: "test",
@@ -140,7 +140,9 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
 
         wait(for: [providerExpectation, taskExpectation], timeout: 10)
         XCTAssertEqual(providerInfo?.resp, taskInfo?.resp)
-        XCTAssertEqual(providerInfo?.data, taskInfo?.data, "Data should be available with completion handler")
+        let providerData = try XCTUnwrap(providerInfo?.data)
+        XCTAssertTrue(providerData.count > 0, "Data should be available with registered delegate")
+        XCTAssertEqual(providerData, taskInfo?.data)
         XCTAssertEqual(providerInfo?.err as? NSError, taskInfo?.err as? NSError)
     }
 

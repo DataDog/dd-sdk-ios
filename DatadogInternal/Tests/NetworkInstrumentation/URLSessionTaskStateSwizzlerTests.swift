@@ -17,7 +17,7 @@ import XCTest
 /// Tests use `expectation.assertForOverFulfill = false` to handle this legitimate behavior.
 
 class URLSessionTaskStateSwizzlerTests: XCTestCase {
-    func testSwizzling_setState_interceptsSuccessfulCompletion() throws {
+    func testSwizzling_setState_interceptsCompletion() throws {
         let completionExpectation = self.expectation(description: "setState completion")
         completionExpectation.assertForOverFulfill = false // Allow multiple setState calls with same state
         var interceptedStates: [Int] = []
@@ -35,41 +35,7 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
             }
         )
 
-        // When
-        let session = URLSession(configuration: .ephemeral)
-        let url = URL(string: "https://localhost:1")!
-        let task = session.dataTask(with: url) { _, _, _ in }
-        task.resume()
-
-        // Then - Wait for completion state
-        wait(for: [completionExpectation], timeout: 3)
-
-        // Verify we intercepted state changes
-        XCTAssertTrue(interceptedStates.contains(where: { $0 == URLSessionTask.State.running.rawValue }), "Should intercept running state")
-        XCTAssertTrue(interceptedStates.contains(where: { $0 == URLSessionTask.State.completed.rawValue }), "Should intercept completed state")
-
-        swizzler.unswizzle()
-    }
-
-    func testSwizzling_setState_interceptsFailedCompletion() throws {
-        let completionExpectation = self.expectation(description: "setState completion")
-        completionExpectation.assertForOverFulfill = false // Allow multiple setState calls with same state
-        var interceptedStates: [Int] = []
-
-        // Given
-        let swizzler = URLSessionTaskStateSwizzler()
-
-        try swizzler.swizzle(
-            interceptSetState: { _, state in
-                interceptedStates.append(state)
-                // Only fulfill when we see completed state
-                if state == URLSessionTask.State.completed.rawValue {
-                    completionExpectation.fulfill()
-                }
-            }
-        )
-
-        // When - Use invalid URL for immediate connection failure
+        // When - Use localhost:1 for immediate connection failure
         let session = URLSession(configuration: .ephemeral)
         let url = URL(string: "https://localhost:1")!
         let task = session.dataTask(with: url) { _, _, _ in }
