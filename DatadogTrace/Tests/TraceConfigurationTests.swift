@@ -22,4 +22,14 @@ class TraceConfigurationTests: XCTestCase {
         XCTAssertNil(config.eventMapper)
         XCTAssertNil(config.customEndpoint)
     }
+
+    func testDefaultURLSessionTrackingConfiguration() {
+        // When
+        let tracking = Trace.Configuration.URLSessionTracking(
+            firstPartyHostsTracing: .trace(hosts: [])
+        )
+
+        // Then
+        XCTAssertEqual(tracking.redactedStatusCodes, [404])
+    }
 }

@@ -10,6 +10,7 @@
 
 # 3.10.0 / 16-04-2026
 
+- [FEATURE] Add `redactedStatusCodes` to `Trace.Configuration.URLSessionTracking` to configure which HTTP status codes have their resource URL replaced with the status code string in spans. Defaults to `[404]` for backward compatibility. See [#2845][]
 - [FEATURE] Add Mobile Heatmaps support. See [#2829][]
 - [FEATURE] Add watchOS and visionOS support. See [#2817][]
 - [FEATURE] Add support for the FedRAMP-compatible `fed2.ddog-gov.com` site. See [#2827][]
@@ -1136,6 +1137,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2844]: https://github.com/DataDog/dd-sdk-ios/pull/2844
 [#2847]: https://github.com/DataDog/dd-sdk-ios/pull/2847
 [#2854]: https://github.com/DataDog/dd-sdk-ios/pull/2854
+[#2845]: https://github.com/DataDog/dd-sdk-ios/pull/2845
 [#2855]: https://github.com/DataDog/dd-sdk-ios/pull/2855
 [#2856]: https://github.com/DataDog/dd-sdk-ios/pull/2856
 [#2866]: https://github.com/DataDog/dd-sdk-ios/pull/2866

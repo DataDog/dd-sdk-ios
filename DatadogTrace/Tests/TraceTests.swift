@@ -156,6 +156,26 @@ class TraceTests: XCTestCase {
         XCTAssertEqual(tracingHandler.samplingRate, 100)
     }
 
+    func testWhenEnabledWithURLSessionTrackingAndCustomRedactedStatusCodes() throws {
+        // Given
+        config.urlSessionTracking = .init(
+            firstPartyHostsTracing: .trace(hosts: ["example.com"]),
+            redactedStatusCodes: [401]
+        )
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        let networkInstrumentation = try XCTUnwrap(
+            core.get(feature: NetworkInstrumentationFeature.self)
+        )
+        let tracingHandler = try XCTUnwrap(
+            networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self)
+        )
+        XCTAssertEqual(tracingHandler.redactedStatusCodes, [401])
+    }
+
     func testWhenEnabledWithURLSessionTrackingAndCustomSampleRate() throws {
         // Given
         let random: Float = .mockRandom(min: 0, max: 100)
