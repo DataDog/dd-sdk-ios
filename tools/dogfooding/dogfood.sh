@@ -204,6 +204,12 @@ update_dependent_package_resolved() {
         --dogfooded-commit '$DOGFOODED_COMMIT'"
 }
 
+# Updates dd-sdk-ios branch requirement in dependent project's project.pbxproj.
+update_dependent_pbxproj_branch() {
+    local pbxproj_path="$1"
+    echo_subtitle "Update dd-sdk-ios branch to '$DOGFOODED_BRANCH' in '$pbxproj_path'"
+    sed -i '' -E "s/(branch = )develop(;)/\1$DOGFOODED_BRANCH\2/" "$pbxproj_path"
+}
 # Updates 'sdk_version' in dependent project to DOGFOODED_SDK_VERSION.
 update_dependent_sdk_version() {
     local version_file="$1"
@@ -246,6 +252,7 @@ if [ "$shopist" = "true" ]; then
     # Update dd-sdk-ios version:
     update_dependent_package_resolved "$CLONE_PATH/Shopist/Shopist.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
     update_dependent_sdk_version "$CLONE_PATH/Shopist/Shopist/DogfoodingConfig.swift"
+    update_dependent_pbxproj_branch "$CLONE_PATH/Shopist/Shopist.xcodeproj/project.pbxproj"
 
     echo_info "▸ Exporting 'GITHUB_TOKEN' for CI"
     export GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/shopist-ios --policy dd-sdk-ios.gitlab.pr)
