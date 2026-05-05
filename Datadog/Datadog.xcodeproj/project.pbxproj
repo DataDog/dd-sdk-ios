@@ -2855,6 +2855,7 @@
 		BB1A2B3C4D5E6F7800000003 /* DeltaEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaEncoder.swift; sourceTree = "<group>"; };
 		7F8C00B87F71287FB535342C /* TimeseriesSessionCollectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesSessionCollectorTests.swift; sourceTree = "<group>"; };
 		BB1A2B3C4D5E6F7800000003 /* DeltaEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaEncoder.swift; sourceTree = "<group>"; };
+		7F8C00B87F71287FB535342C /* TimeseriesSessionCollectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesSessionCollectorTests.swift; sourceTree = "<group>"; };
 		7F8C00B87F71287FB535342D /* DeltaEncoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaEncoderTests.swift; sourceTree = "<group>"; };
 		B3BBBCBB265E71D100943419 /* VitalMemoryReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalMemoryReaderTests.swift; sourceTree = "<group>"; };
 		B3E46CAA2D91B3A400BABF66 /* NetworkContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkContextProvider.swift; sourceTree = "<group>"; };
