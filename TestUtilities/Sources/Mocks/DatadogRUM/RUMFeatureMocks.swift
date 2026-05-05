@@ -1153,7 +1153,8 @@ extension RUMScopeDependencies {
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = {
             INVMetric(predicate: TimeBasedINVActionPredicate())
         },
-        sessionType: RUMSessionType? = nil
+        sessionType: RUMSessionType? = nil,
+        timeseriesCollector: TimeseriesCollecting? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -1183,7 +1184,8 @@ extension RUMScopeDependencies {
             watchdogTermination: watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
-            sessionType: sessionType
+            sessionType: sessionType,
+            timeseriesCollector: timeseriesCollector
         )
     }
 
@@ -1545,6 +1547,7 @@ public class RUMActionsHandlerMock: RUMActionsHandling {
         onViewModifierTapped?(actionName, actionAttributes)
     }
 }
+#endif
 
 public class SamplingBasedVitalReaderMock: SamplingBasedVitalReader {
     public var vitalData: Double?
@@ -1577,7 +1580,6 @@ public class ContinuousVitalReaderMock: ContinuousVitalReader {
         }
     }
 }
-#endif
 
 extension TelemetryReceiver: AnyMockable {
     public static func mockAny() -> Self { .mockWith() }
