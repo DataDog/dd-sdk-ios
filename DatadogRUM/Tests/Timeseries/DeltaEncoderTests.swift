@@ -37,6 +37,7 @@ class DeltaEncoderTests: XCTestCase {
 
         // Then
         XCTAssertEqual(result["precision"] as? Int, 4)
+        XCTAssertEqual(result["resolution"] as? String, "ns")
 
         let ts = try! XCTUnwrap(result["ts"] as? [Int64])
         XCTAssertEqual(ts, [1_000_000_000, 1_000_000_000, 1_000_000_000])
@@ -77,6 +78,7 @@ class DeltaEncoderTests: XCTestCase {
 
         // Then
         XCTAssertEqual(result["precision"] as? Int, 4)
+        XCTAssertEqual(result["resolution"] as? String, "ns")
 
         let ts = try! XCTUnwrap(result["ts"] as? [Int64])
         XCTAssertEqual(ts, [1_000_000_000, 1_000_000_000, 1_000_000_000])

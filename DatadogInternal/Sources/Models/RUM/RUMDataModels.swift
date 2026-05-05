@@ -5262,7 +5262,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
         public let id: String
 
         /// Name identifying the timeseries metric
-        public let name: String
+        public let name: String = "cpu"
 
         /// Wire-shape discriminator for the data field
         public let schema: Schema
@@ -5285,21 +5285,18 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
         ///   - data: Array of CPU data points
         ///   - end: Timestamp of the last sample in nanoseconds from epoch
         ///   - id: UUID of the timeseries batch
-        ///   - name: Name identifying the timeseries metric
         ///   - schema: Wire-shape discriminator for the data field
         ///   - start: Timestamp of the first sample in nanoseconds from epoch
         public init(
             data: [Data],
             end: Int64,
             id: String,
-            name: String,
             schema: Schema,
             start: Int64
         ) {
             self.data = data
             self.end = end
             self.id = id
-            self.name = name
             self.schema = schema
             self.start = start
         }
@@ -5517,7 +5514,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
         public let id: String
 
         /// Name identifying the timeseries metric
-        public let name: String
+        public let name: String = "memory"
 
         /// Wire-shape discriminator for the data field
         public let schema: Schema
@@ -5540,21 +5537,18 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
         ///   - data: Array of memory data points
         ///   - end: Timestamp of the last sample in nanoseconds from epoch
         ///   - id: UUID of the timeseries batch
-        ///   - name: Name identifying the timeseries metric
         ///   - schema: Wire-shape discriminator for the data field
         ///   - start: Timestamp of the first sample in nanoseconds from epoch
         public init(
             data: [Data],
             end: Int64,
             id: String,
-            name: String,
             schema: Schema,
             start: Int64
         ) {
             self.data = data
             self.end = end
             self.id = id
-            self.name = name
             self.schema = schema
             self.start = start
         }
@@ -14891,4 +14885,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/e6e26ff3a738130481c33ca08b30ffcc55e3f6e1
+// Generated from https://github.com/DataDog/rum-events-format/tree/1307c66921a47599d3b47b895abba44a5359343f
