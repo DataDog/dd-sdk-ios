@@ -824,9 +824,14 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
 
         waitForExpectations(timeout: 1)
-        XCTAssertEqual(dataUploader.uploadedEvents[0], Event(data: #"{"k1":"v1"}"#.utf8Data))
-        XCTAssertEqual(dataUploader.uploadedEvents[1], Event(data: #"{"k2":"v2"}"#.utf8Data))
-        XCTAssertEqual(dataUploader.uploadedEvents[2], Event(data: #"{"k3":"v3"}"#.utf8Data))
+
+        if dataUploader.uploadedEvents.count < 3 {
+            XCTFail("Expected 3 events in dataUploader.uploadedEvents, got \(dataUploader.uploadedEvents.count)")
+        } else {
+            XCTAssertEqual(dataUploader.uploadedEvents[0], Event(data: #"{"k1":"v1"}"#.utf8Data))
+            XCTAssertEqual(dataUploader.uploadedEvents[1], Event(data: #"{"k2":"v2"}"#.utf8Data))
+            XCTAssertEqual(dataUploader.uploadedEvents[2], Event(data: #"{"k3":"v3"}"#.utf8Data))
+        }
 
         worker.cancelSynchronously()
     }
