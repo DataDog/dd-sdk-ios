@@ -55,7 +55,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/kstenerud/KSCrash.git", from: "2.5.0"),
-        .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core.git", revision: "2fa47a7517be07f4efc959e513c8f80719cee65d"),
+        .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core.git", .upToNextMinor(from: "2.4.1")),
     ],
     targets: [
         .target(
@@ -213,7 +213,7 @@ let package = Package(
             path: "DatadogProfiling",
             sources: ["Sources"],
             resources: [
-                .copy("../Resources/PrivacyInfo.xcprivacy")
+                .copy("Resources/PrivacyInfo.xcprivacy")
             ],
             swiftSettings: internalSwiftSettings
         ),
@@ -266,8 +266,8 @@ let package = Package(
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
         )
     ],
+    swiftLanguageModes: [.v5],
     cxxLanguageStandard: .cxx17
-    swiftLanguageModes: [.v5]
 )
 
 // If the `DD_TEST_UTILITIES_ENABLED` development ENV is set, export additional utility packages.
