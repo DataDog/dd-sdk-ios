@@ -58,6 +58,7 @@ internal enum DeltaEncoder {
 
         return [
             "precision": precision,
+            "resolution": "ns",
             "ts": ts,
             "memory_max": memoryMax,
             "memory_percent": memoryPercent
@@ -100,6 +101,7 @@ internal enum DeltaEncoder {
 
         return [
             "precision": precision,
+            "resolution": "ns",
             "ts": ts,
             "value": cpuUsage
         ]
