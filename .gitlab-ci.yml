@@ -137,6 +137,13 @@ API Surface Verify:
     - make clean repo-setup ENV=ci
     - make api-surface-verify
 
+Feature Docs Verify:
+  stage: lint
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(release|hotfix)\/.*/'
+  script:
+    - make feature-docs-verify
+
 Unit Tests (iOS):
   stage: test
   rules: 
