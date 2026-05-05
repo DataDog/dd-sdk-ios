@@ -14,7 +14,10 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:IntegrationUnitTests/RUMHarness.xctestplan"
+            reference = "container:IntegrationUnitTests/RUMHarness.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:IntegrationUnitTests/LogsHarness.xctestplan"
             default = "YES">
          </TestPlanReference>
       </TestPlans>

@@ -1,0 +1,28 @@
+{
+  "configurations" : [
+    {
+      "id" : "D8D4DFB3-5211-4FBE-9020-BB6B26F58DF8",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "selectedTests" : [
+        "LogsBasicTests\/testItDoesSomething()"
+      ],
+      "target" : {
+        "containerPath" : "container:Datadog.xcodeproj",
+        "identifier" : "118247B32D908BEF00E3D16F",
+        "name" : "DatadogIntegrationTests"
+      }
+    }
+  ],
+  "version" : 1
+}

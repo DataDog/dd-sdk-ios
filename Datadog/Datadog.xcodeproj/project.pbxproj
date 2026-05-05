@@ -640,6 +640,8 @@
 		61CE585A2B48174D00479510 /* SpanWriteContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61CE58592B48174D00479510 /* SpanWriteContext.swift */; };
 		61D03BE0273404E700367DE0 /* RUMDataModels+objcTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */; };
 		61D11FAA2FA8F8A7004B2CE4 /* RUMHarness.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 61D11FA92FA8F8A7004B2CE4 /* RUMHarness.xctestplan */; };
+		61D11FAD2FAA41FB004B2CE4 /* LogsBasicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D11FAC2FAA41FB004B2CE4 /* LogsBasicTests.swift */; };
+		61D11FAF2FAA4219004B2CE4 /* LogsHarness.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 61D11FAE2FAA4219004B2CE4 /* LogsHarness.xctestplan */; };
 		61D3E0D2277B23F1008BE766 /* KronosInternetAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0C8277B23F0008BE766 /* KronosInternetAddress.swift */; };
 		61D3E0D3277B23F1008BE766 /* KronosDNSResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0C9277B23F0008BE766 /* KronosDNSResolver.swift */; };
 		61D3E0D4277B23F1008BE766 /* KronosTimeStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CA277B23F0008BE766 /* KronosTimeStorage.swift */; };
@@ -2447,6 +2449,8 @@
 		61CE58592B48174D00479510 /* SpanWriteContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanWriteContext.swift; sourceTree = "<group>"; };
 		61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objcTests.swift"; sourceTree = "<group>"; };
 		61D11FA92FA8F8A7004B2CE4 /* RUMHarness.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = RUMHarness.xctestplan; sourceTree = "<group>"; };
+		61D11FAC2FAA41FB004B2CE4 /* LogsBasicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsBasicTests.swift; sourceTree = "<group>"; };
+		61D11FAE2FAA4219004B2CE4 /* LogsHarness.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = LogsHarness.xctestplan; sourceTree = "<group>"; };
 		61D3E0C8277B23F0008BE766 /* KronosInternetAddress.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosInternetAddress.swift; sourceTree = "<group>"; };
 		61D3E0C9277B23F0008BE766 /* KronosDNSResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosDNSResolver.swift; sourceTree = "<group>"; };
 		61D3E0CA277B23F0008BE766 /* KronosTimeStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosTimeStorage.swift; sourceTree = "<group>"; };
@@ -4320,9 +4324,11 @@
 				116656D32EB501B6004248E8 /* Profiling */,
 				610ABD4A2A6930AB00AFEA34 /* Public */,
 				61E8C5062B28896100E709B4 /* RUM */,
+				61D11FAB2FAA41C3004B2CE4 /* Logs */,
 				D2C5D52E2B84F6E700B63F36 /* SessionReplay */,
 				61F3E36B2BC7D51400C7881E /* Trace */,
 				61D11FA92FA8F8A7004B2CE4 /* RUMHarness.xctestplan */,
+				61D11FAE2FAA4219004B2CE4 /* LogsHarness.xctestplan */,
 			);
 			path = IntegrationUnitTests;
 			sourceTree = "<group>";
@@ -5410,6 +5416,14 @@
 				61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */,
 			);
 			path = RUM;
+			sourceTree = "<group>";
+		};
+		61D11FAB2FAA41C3004B2CE4 /* Logs */ = {
+			isa = PBXGroup;
+			children = (
+				61D11FAC2FAA41FB004B2CE4 /* LogsBasicTests.swift */,
+			);
+			path = Logs;
 			sourceTree = "<group>";
 		};
 		61D3E0C7277B237D008BE766 /* Kronos */ = {
@@ -7452,6 +7466,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61D11FAA2FA8F8A7004B2CE4 /* RUMHarness.xctestplan in Resources */,
+				61D11FAF2FAA4219004B2CE4 /* LogsHarness.xctestplan in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7754,6 +7769,7 @@
 				5B4F376C2E93C5E90093778F /* FlagsEvaluationIntegrationTests.swift in Sources */,
 				118248722D908D3400E3D16F /* CoreMetricsIntegrationTests.swift in Sources */,
 				1182486B2D908CF400E3D16F /* WebEventIntegrationTests.swift in Sources */,
+				61D11FAD2FAA41FB004B2CE4 /* LogsBasicTests.swift in Sources */,
 				118247BE2D908BEF00E3D16F /* RUMViewEndedMetricIntegrationTests.swift in Sources */,
 				1182486F2D908D1C00E3D16F /* NetworkInstrumentationIntegrationTests.swift in Sources */,
 				D26152342F433BBA0054EB7D /* UIApplicationSwizzlerTests.swift in Sources */,
