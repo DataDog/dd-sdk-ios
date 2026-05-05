@@ -818,7 +818,6 @@ public enum objc_RUMActionEventContainerSource: Int {
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
         case .rumCpp: self = .rumCpp
-        case .maui: self = .maui
         }
     }
 
@@ -834,7 +833,6 @@ public enum objc_RUMActionEventContainerSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -848,7 +846,6 @@ public enum objc_RUMActionEventContainerSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMActionEventContainerView)
@@ -1112,7 +1109,6 @@ public enum objc_RUMActionEventSource: Int {
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
         case .rumCpp?: self = .rumCpp
-        case .maui?: self = .maui
         }
     }
 
@@ -1129,7 +1125,6 @@ public enum objc_RUMActionEventSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -1144,7 +1139,6 @@ public enum objc_RUMActionEventSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMActionEventStream)
@@ -1911,7 +1905,6 @@ public enum objc_RUMErrorEventContainerSource: Int {
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
         case .rumCpp: self = .rumCpp
-        case .maui: self = .maui
         }
     }
 
@@ -1927,7 +1920,6 @@ public enum objc_RUMErrorEventContainerSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -1941,7 +1933,6 @@ public enum objc_RUMErrorEventContainerSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMErrorEventContainerView)
@@ -2802,7 +2793,6 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .windows?: self = .windows
         case .macos?: self = .macos
         case .linux?: self = .linux
-        case .maui?: self = .maui
         }
     }
 
@@ -2821,7 +2811,6 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .windows: return .windows
         case .macos: return .macos
         case .linux: return .linux
-        case .maui: return .maui
         }
     }
 
@@ -2838,7 +2827,6 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
     case windows
     case macos
     case linux
-    case maui
 }
 
 @objc(DDRUMErrorEventErrorThreads)
@@ -2990,7 +2978,6 @@ public enum objc_RUMErrorEventSource: Int {
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
         case .rumCpp?: self = .rumCpp
-        case .maui?: self = .maui
         }
     }
 
@@ -3007,7 +2994,6 @@ public enum objc_RUMErrorEventSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -3022,7 +3008,6 @@ public enum objc_RUMErrorEventSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMErrorEventStream)
@@ -3769,7 +3754,6 @@ public enum objc_RUMLongTaskEventContainerSource: Int {
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
         case .rumCpp: self = .rumCpp
-        case .maui: self = .maui
         }
     }
 
@@ -3785,7 +3769,6 @@ public enum objc_RUMLongTaskEventContainerSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -3799,7 +3782,6 @@ public enum objc_RUMLongTaskEventContainerSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMLongTaskEventContainerView)
@@ -4230,7 +4212,6 @@ public enum objc_RUMLongTaskEventSource: Int {
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
         case .rumCpp?: self = .rumCpp
-        case .maui?: self = .maui
         }
     }
 
@@ -4247,7 +4228,6 @@ public enum objc_RUMLongTaskEventSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -4262,7 +4242,6 @@ public enum objc_RUMLongTaskEventSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMLongTaskEventStream)
@@ -4938,7 +4917,6 @@ public enum objc_RUMResourceEventContainerSource: Int {
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
         case .rumCpp: self = .rumCpp
-        case .maui: self = .maui
         }
     }
 
@@ -4954,7 +4932,6 @@ public enum objc_RUMResourceEventContainerSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -4968,7 +4945,6 @@ public enum objc_RUMResourceEventContainerSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMResourceEventContainerView)
@@ -5908,7 +5884,6 @@ public enum objc_RUMResourceEventSource: Int {
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
         case .rumCpp?: self = .rumCpp
-        case .maui?: self = .maui
         }
     }
 
@@ -5925,7 +5900,6 @@ public enum objc_RUMResourceEventSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -5940,7 +5914,6 @@ public enum objc_RUMResourceEventSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMResourceEventStream)
@@ -7265,7 +7238,6 @@ public enum objc_RUMViewEventContainerSource: Int {
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
         case .rumCpp: self = .rumCpp
-        case .maui: self = .maui
         }
     }
 
@@ -7281,7 +7253,6 @@ public enum objc_RUMViewEventContainerSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -7295,7 +7266,6 @@ public enum objc_RUMViewEventContainerSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMViewEventContainerView)
@@ -7653,7 +7623,6 @@ public enum objc_RUMViewEventSource: Int {
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
         case .rumCpp?: self = .rumCpp
-        case .maui?: self = .maui
         }
     }
 
@@ -7670,7 +7639,6 @@ public enum objc_RUMViewEventSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -7685,7 +7653,6 @@ public enum objc_RUMViewEventSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMViewEventStream)
@@ -8333,8 +8300,6 @@ public enum objc_RUMViewEventViewLoadingType: Int {
         case .fragmentRedisplay?: self = .fragmentRedisplay
         case .viewControllerDisplay?: self = .viewControllerDisplay
         case .viewControllerRedisplay?: self = .viewControllerRedisplay
-        case .sessionRenewal?: self = .sessionRenewal
-        case .bfCache?: self = .bfCache
         }
     }
 
@@ -8349,8 +8314,6 @@ public enum objc_RUMViewEventViewLoadingType: Int {
         case .fragmentRedisplay: return .fragmentRedisplay
         case .viewControllerDisplay: return .viewControllerDisplay
         case .viewControllerRedisplay: return .viewControllerRedisplay
-        case .sessionRenewal: return .sessionRenewal
-        case .bfCache: return .bfCache
         }
     }
 
@@ -8363,8 +8326,6 @@ public enum objc_RUMViewEventViewLoadingType: Int {
     case fragmentRedisplay
     case viewControllerDisplay
     case viewControllerRedisplay
-    case sessionRenewal
-    case bfCache
 }
 
 @objc(DDRUMViewEventViewLongTask)
@@ -9188,7 +9149,6 @@ public enum objc_RUMViewUpdateEventContainerSource: Int {
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
         case .rumCpp: self = .rumCpp
-        case .maui: self = .maui
         }
     }
 
@@ -9204,7 +9164,6 @@ public enum objc_RUMViewUpdateEventContainerSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -9218,7 +9177,6 @@ public enum objc_RUMViewUpdateEventContainerSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMViewUpdateEventContainerView)
@@ -9576,7 +9534,6 @@ public enum objc_RUMViewUpdateEventSource: Int {
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
         case .rumCpp?: self = .rumCpp
-        case .maui?: self = .maui
         }
     }
 
@@ -9593,7 +9550,6 @@ public enum objc_RUMViewUpdateEventSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -9608,7 +9564,6 @@ public enum objc_RUMViewUpdateEventSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMViewUpdateEventStream)
@@ -10256,8 +10211,6 @@ public enum objc_RUMViewUpdateEventViewLoadingType: Int {
         case .fragmentRedisplay?: self = .fragmentRedisplay
         case .viewControllerDisplay?: self = .viewControllerDisplay
         case .viewControllerRedisplay?: self = .viewControllerRedisplay
-        case .sessionRenewal?: self = .sessionRenewal
-        case .bfCache?: self = .bfCache
         }
     }
 
@@ -10272,8 +10225,6 @@ public enum objc_RUMViewUpdateEventViewLoadingType: Int {
         case .fragmentRedisplay: return .fragmentRedisplay
         case .viewControllerDisplay: return .viewControllerDisplay
         case .viewControllerRedisplay: return .viewControllerRedisplay
-        case .sessionRenewal: return .sessionRenewal
-        case .bfCache: return .bfCache
         }
     }
 
@@ -10286,8 +10237,6 @@ public enum objc_RUMViewUpdateEventViewLoadingType: Int {
     case fragmentRedisplay
     case viewControllerDisplay
     case viewControllerRedisplay
-    case sessionRenewal
-    case bfCache
 }
 
 @objc(DDRUMViewUpdateEventViewLongTask)
@@ -11186,7 +11135,6 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int {
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
         case .rumCpp: self = .rumCpp
-        case .maui: self = .maui
         }
     }
 
@@ -11202,7 +11150,6 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -11216,7 +11163,6 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMVitalAppLaunchEventContainerView)
@@ -11480,7 +11426,6 @@ public enum objc_RUMVitalAppLaunchEventSource: Int {
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
         case .rumCpp?: self = .rumCpp
-        case .maui?: self = .maui
         }
     }
 
@@ -11497,7 +11442,6 @@ public enum objc_RUMVitalAppLaunchEventSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -11512,7 +11456,6 @@ public enum objc_RUMVitalAppLaunchEventSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMVitalAppLaunchEventStream)
@@ -12299,7 +12242,6 @@ public enum objc_RUMVitalDurationEventContainerSource: Int {
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
         case .rumCpp: self = .rumCpp
-        case .maui: self = .maui
         }
     }
 
@@ -12315,7 +12257,6 @@ public enum objc_RUMVitalDurationEventContainerSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -12329,7 +12270,6 @@ public enum objc_RUMVitalDurationEventContainerSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMVitalDurationEventContainerView)
@@ -12593,7 +12533,6 @@ public enum objc_RUMVitalDurationEventSource: Int {
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
         case .rumCpp?: self = .rumCpp
-        case .maui?: self = .maui
         }
     }
 
@@ -12610,7 +12549,6 @@ public enum objc_RUMVitalDurationEventSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -12625,7 +12563,6 @@ public enum objc_RUMVitalDurationEventSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMVitalDurationEventStream)
@@ -13351,7 +13288,6 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int {
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
         case .rumCpp: self = .rumCpp
-        case .maui: self = .maui
         }
     }
 
@@ -13367,7 +13303,6 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -13381,7 +13316,6 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMVitalOperationStepEventContainerView)
@@ -13645,7 +13579,6 @@ public enum objc_RUMVitalOperationStepEventSource: Int {
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
         case .rumCpp?: self = .rumCpp
-        case .maui?: self = .maui
         }
     }
 
@@ -13662,7 +13595,6 @@ public enum objc_RUMVitalOperationStepEventSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -13677,7 +13609,6 @@ public enum objc_RUMVitalOperationStepEventSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDRUMVitalOperationStepEventStream)
@@ -14031,7 +13962,6 @@ public enum objc_TelemetryConfigurationEventSource: Int {
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
         case .rumCpp: self = .rumCpp
-        case .maui: self = .maui
         }
     }
 
@@ -14046,7 +13976,6 @@ public enum objc_TelemetryConfigurationEventSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -14059,7 +13988,6 @@ public enum objc_TelemetryConfigurationEventSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDTelemetryConfigurationEventTelemetry)
@@ -14188,11 +14116,6 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     public var isMainProcess: NSNumber? {
         root.swiftModel.telemetry.configuration.isMainProcess as NSNumber?
-    }
-
-    public var mauiVersion: String? {
-        set { root.swiftModel.telemetry.configuration.mauiVersion = newValue }
-        get { root.swiftModel.telemetry.configuration.mauiVersion }
     }
 
     public var mobileVitalsUpdatePeriod: NSNumber? {
@@ -14419,11 +14342,6 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
     public var trackNetworkRequests: NSNumber? {
         set { root.swiftModel.telemetry.configuration.trackNetworkRequests = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.trackNetworkRequests as NSNumber? }
-    }
-
-    public var trackResourceHeaders: objc_TelemetryConfigurationEventTelemetryConfigurationTrackResourceHeaders {
-        set { root.swiftModel.telemetry.configuration.trackResourceHeaders = newValue.toSwift }
-        get { .init(swift: root.swiftModel.telemetry.configuration.trackResourceHeaders) }
     }
 
     public var trackResources: NSNumber? {
@@ -14723,30 +14641,6 @@ public enum objc_TelemetryConfigurationEventTelemetryConfigurationTrackFeatureFl
     case longTask
 }
 
-@objc(DDTelemetryConfigurationEventTelemetryConfigurationTrackResourceHeaders)
-@_spi(objc)
-public enum objc_TelemetryConfigurationEventTelemetryConfigurationTrackResourceHeaders: Int {
-    internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.TrackResourceHeaders?) {
-        switch swift {
-        case nil: self = .none
-        case .defaultHeaders?: self = .defaultHeaders
-        case .custom?: self = .custom
-        }
-    }
-
-    internal var toSwift: TelemetryConfigurationEvent.Telemetry.Configuration.TrackResourceHeaders? {
-        switch self {
-        case .none: return nil
-        case .defaultHeaders: return .defaultHeaders
-        case .custom: return .custom
-        }
-    }
-
-    case none
-    case defaultHeaders
-    case custom
-}
-
 @objc(DDTelemetryConfigurationEventTelemetryConfigurationTrackingConsent)
 @_spi(objc)
 public enum objc_TelemetryConfigurationEventTelemetryConfigurationTrackingConsent: Int {
@@ -15015,7 +14909,6 @@ public enum objc_TelemetryDebugEventSource: Int {
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
         case .rumCpp: self = .rumCpp
-        case .maui: self = .maui
         }
     }
 
@@ -15030,7 +14923,6 @@ public enum objc_TelemetryDebugEventSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -15043,7 +14935,6 @@ public enum objc_TelemetryDebugEventSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDTelemetryDebugEventTelemetry)
@@ -15293,7 +15184,6 @@ public enum objc_TelemetryErrorEventSource: Int {
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
         case .rumCpp: self = .rumCpp
-        case .maui: self = .maui
         }
     }
 
@@ -15308,7 +15198,6 @@ public enum objc_TelemetryErrorEventSource: Int {
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
         case .rumCpp: return .rumCpp
-        case .maui: return .maui
         }
     }
 
@@ -15321,7 +15210,6 @@ public enum objc_TelemetryErrorEventSource: Int {
     case kotlinMultiplatform
     case electron
     case rumCpp
-    case maui
 }
 
 @objc(DDTelemetryErrorEventTelemetry)
@@ -15459,3 +15347,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 // swiftlint:enable force_unwrapping
 
 // Generated from https://github.com/DataDog/rum-events-format/tree/41a1741091c4690633728ca86dee85fa12ef3fe1
+// Generated from https://github.com/DataDog/rum-events-format/tree/1307c66921a47599d3b47b895abba44a5359343f
