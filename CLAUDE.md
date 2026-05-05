@@ -19,6 +19,7 @@ Use these skills (via `/skill-name`) for common workflows:
 | `dd-sdk-ios:open-pr` | Opening a pull request against `develop` |
 | `dd-sdk-ios:running-tests` | Running unit, module, or integration tests |
 | `dd-sdk-ios:xcode-file-management` | Adding, removing, moving, or renaming Swift source files |
+| `dd-sdk-ios:update-feature-docs` | Review and update all `*_FEATURE.md` docs after public API changes |
 
 ## CI Environment
 

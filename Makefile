@@ -424,6 +424,11 @@ api-surface-verify:
 		--output-file /tmp/api-surface-objc-generated \
 		../../api-surface-objc
 
+# Verify feature doc files are up to date
+feature-docs-verify:
+	@$(ECHO_TITLE) "make feature-docs-verify"
+	@./tools/feature-docs-verify.sh
+
 # Builds API documentation using the same process as Swift Package Index.
 spi-docs-build:
 	@$(ECHO_TITLE) "make spi-docs-build"
