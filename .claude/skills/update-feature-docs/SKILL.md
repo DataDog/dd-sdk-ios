@@ -1,3 +1,8 @@
+---
+name: dd-sdk-ios:update-feature-docs
+description: Use when public API changes have been made to review and update all *_FEATURE.md documentation files, or to audit whether they are still accurate.
+---
+
 # update-feature-docs
 
 Review and update the feature documentation files to match the current public API.
