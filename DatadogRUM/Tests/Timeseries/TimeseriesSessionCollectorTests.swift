@@ -251,6 +251,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let tsDict = try! XCTUnwrap(dict["timeseries"] as? [String: Any])
         XCTAssertEqual(tsDict["schema"] as? String, "delta-object")
         let dataDict = try! XCTUnwrap(tsDict["data"] as? [String: Any])
+        XCTAssertEqual(dataDict["resolution"] as? String, "ns")
         XCTAssertNotNil(dataDict["ts"])
         XCTAssertNotNil(dataDict["memory_max"])
         XCTAssertNotNil(dataDict["memory_percent"])
@@ -315,6 +316,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let tsDict = try! XCTUnwrap(dict["timeseries"] as? [String: Any])
         XCTAssertEqual(tsDict["schema"] as? String, "delta-scalar")
         let dataDict = try! XCTUnwrap(tsDict["data"] as? [String: Any])
+        XCTAssertEqual(dataDict["resolution"] as? String, "ns")
         XCTAssertNotNil(dataDict["ts"])
         XCTAssertNotNil(dataDict["value"])
     }
