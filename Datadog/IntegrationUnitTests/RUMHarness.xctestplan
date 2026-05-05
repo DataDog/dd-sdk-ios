@@ -1,0 +1,96 @@
+{
+  "configurations" : [
+    {
+      "id" : "301BCC25-769F-47FD-A3DD-E7A3A60EAA85",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "selectedTests" : [
+        "RUMSessionStartInBackgroundTests\/testGivenBackgroundLaunch_whenEventAreTracked()",
+        "RUMSessionStartInBackgroundTests\/testGivenBackgroundLaunch_whenLongTasksAreTracked()",
+        "RUMSessionStartInBackgroundTests\/testGivenBackgroundLaunch_whenNoEventIsTracked()",
+        "RUMSessionStartInBackgroundTests\/testGivenOSPrewarmLaunch_whenEventAreTracked()",
+        "RUMSessionStartInBackgroundTests\/testGivenOSPrewarmLaunch_whenLongTasksAreTracked()",
+        "RUMSessionStartInBackgroundTests\/testGivenOSPrewarmLaunch_whenNoEventIsTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenBackgroundLaunch_whenActionsAreTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenBackgroundLaunch_whenAutomaticViewIsTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenBackgroundLaunch_whenLongTasksAreTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenBackgroundLaunch_whenManualViewIsTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenBackgroundLaunch_whenNoEventIsTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenBackgroundLaunch_whenResourceIsTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenOSPrewarmLaunch_whenActionsAreTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenOSPrewarmLaunch_whenAutomaticViewIsTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenOSPrewarmLaunch_whenLongTasksAreTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenOSPrewarmLaunch_whenManualViewIsTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenOSPrewarmLaunch_whenNoEventIsTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenOSPrewarmLaunch_whenResourceIsTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenUserLaunch_whenActionsAreTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenUserLaunch_whenAutomaticViewIsTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenUserLaunch_whenLongTasksAreTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenUserLaunch_whenManualViewIsTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenUserLaunch_whenNoEventIsTracked()",
+        "RUMSessionStartInForegroundTests\/testGivenUserLaunch_whenResourceIsTracked()",
+        "RUMSessionStopTests\/testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andActionIsTrackedInBackground()",
+        "RUMSessionStopTests\/testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andNextEventIsTrackedInForeground()",
+        "RUMSessionStopTests\/testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andOtherEventsAreTrackedInBackground()",
+        "RUMSessionStopTests\/testGivenBackgroundSession_andBETEnabled_whenItIsStopped_andViewIsTrackedInForeground()",
+        "RUMSessionStopTests\/testGivenBackgroundSession_whenItIsStopped_andNextEventIsTrackedInBackground()",
+        "RUMSessionStopTests\/testGivenBackgroundSession_whenItIsStopped_andNextEventIsTrackedInForeground()",
+        "RUMSessionStopTests\/testGivenBackgroundSession_whenItIsStopped_andViewIsTrackedInForeground()",
+        "RUMSessionStopTests\/testGivenUserSession_andBETEnabled_whenItIsStopped_andActionIsTrackedInBackground()",
+        "RUMSessionStopTests\/testGivenUserSession_andBETEnabled_whenItIsStopped_andOtherEventsAreTrackedInBackground()",
+        "RUMSessionStopTests\/testGivenUserSession_whenItIsStoppedBeforeOrAfterEnteringBackground_andActionIsTrackedInForeground()",
+        "RUMSessionStopTests\/testGivenUserSession_whenItIsStoppedBeforeOrAfterEnteringBackground_andOtherEventsAreTrackedInForeground()",
+        "RUMSessionStopTests\/testGivenUserSession_whenItIsStopped_andActionIsTrackedInForeground()",
+        "RUMSessionStopTests\/testGivenUserSession_whenItIsStopped_andNextEventIsTrackedInBackground()",
+        "RUMSessionStopTests\/testGivenUserSession_whenItIsStopped_andOtherEventsAreTrackedInForeground()",
+        "RUMSessionTimeOutTests\/testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andNextEventIsTrackedInBackground()",
+        "RUMSessionTimeOutTests\/testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andNextEventIsTrackedInForeground()",
+        "RUMSessionTimeOutTests\/testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andViewIsTrackedInForeground()",
+        "RUMSessionTimeOutTests\/testGivenBackgroundSession_whenItTimesOut_andNextEventIsTrackedInBackground()",
+        "RUMSessionTimeOutTests\/testGivenBackgroundSession_whenItTimesOut_andNextEventIsTrackedInForeground()",
+        "RUMSessionTimeOutTests\/testGivenBackgroundSession_whenItTimesOut_andViewIsTrackedInForeground()",
+        "RUMSessionTimeOutTests\/testGivenUserSession_andBETEnabled_whenItTimesOut_andNextEventIsTrackedInBackground()",
+        "RUMSessionTimeOutTests\/testGivenUserSession_whenItEntersBackground_andTimesOut_andNextEventIsTrackedInForeground()",
+        "RUMSessionTimeOutTests\/testGivenUserSession_whenItTimesOut_andEntersBackground_andNextEventIsTrackedInForeground()",
+        "RUMSessionTimeOutTests\/testGivenUserSession_whenItTimesOut_andNextEventIsTrackedInBackground()",
+        "RUMSessionTimeOutTests\/testGivenUserSession_whenItTimesOut_andNextEventIsTrackedInForeground()",
+        "RUMSessionTrackingTests\/testGivenBackgroundLaunch_andBETEnabled_andSuspendedBackgroundSession_whenItGetsResumedByUserSession()",
+        "RUMSessionTrackingTests\/testGivenBackgroundLaunch_andBETEnabled_whenTrackingBackgroundSession()",
+        "RUMSessionTrackingTests\/testGivenBackgroundLaunch_andSuspendedBackgroundSession_whenItGetsResumedByUserSession()",
+        "RUMSessionTrackingTests\/testGivenBackgroundLaunch_whenTrackingBackgroundSession()",
+        "RUMSessionTrackingTests\/testGivenPrewarmedLaunch_andBETEnabled_andSuspendedBackgroundSession_whenItGetsResumedByUserSession()",
+        "RUMSessionTrackingTests\/testGivenPrewarmedLaunch_andBETEnabled_whenTrackingBackgroundSession()",
+        "RUMSessionTrackingTests\/testGivenPrewarmedLaunch_andSuspendedBackgroundSession_whenItGetsResumedByUserSession()",
+        "RUMSessionTrackingTests\/testGivenPrewarmedLaunch_whenTrackingBackgroundSession()",
+        "RUMSessionTrackingTests\/testGivenUserLaunch_whenTrackingUserSession()",
+        "RUMSessionWithNoViewTests\/testGivenBackgroundOrPrewarmedSessionThatBecameActive_whenEventsAreTracked()",
+        "RUMSessionWithNoViewTests\/testGivenBackgroundOrPrewarmedSession_whenEventsAreTracked()",
+        "RUMSessionWithNoViewTests\/testGivenUserSessionThatEnteredBackground_whenEventsAreTracked()",
+        "RUMSessionWithNoViewTests\/testGivenUserSessionWithAutomaticViewThatEnteredBackground_whenEventsAreTracked()",
+        "RUMUserInfoTests\/testGivenUserSession_whenExtraInfoIsAdded_itMergesWithExistingInfo()",
+        "RUMUserInfoTests\/testGivenUserSession_whenExtraInfoKeyIsRemovedWithNil_itIsRemovedFromEvents()",
+        "RUMUserInfoTests\/testGivenUserSession_whenUserInfoChanges_newViewEventsReflectUpdatedInfo()",
+        "RUMUserInfoTests\/testGivenUserSession_whenUserInfoIsCleared_newEventsHaveNoUserInfo()",
+        "RUMUserInfoTests\/testGivenUserSession_whenUserInfoIsSetAfterViewStart_laterEventUpdatesReflectIt()",
+        "RUMUserInfoTests\/testGivenUserSession_whenUserInfoIsSetWithExtraInfo_itAppearsOnEvents()",
+        "RUMUserInfoTests\/testGivenUserSession_whenUserInfoIsSet_itAppearsOnAllViewEvents()"
+      ],
+      "target" : {
+        "containerPath" : "container:Datadog.xcodeproj",
+        "identifier" : "118247B32D908BEF00E3D16F",
+        "name" : "DatadogIntegrationTests"
+      }
+    }
+  ],
+  "version" : 1
+}
