@@ -945,7 +945,6 @@ public struct RUMActionEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
-            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -1062,7 +1061,6 @@ public struct RUMActionEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// Stream properties
@@ -1837,7 +1835,6 @@ public struct RUMErrorEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
-            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -2391,7 +2388,6 @@ public struct RUMErrorEvent: RUMDataModel {
             case windows = "windows"
             case macos = "macos"
             case linux = "linux"
-            case maui = "maui"
         }
 
         /// Description of the thread in the process when error happened.
@@ -2517,7 +2513,6 @@ public struct RUMErrorEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// Stream properties
@@ -3326,7 +3321,6 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
-            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -3630,7 +3624,6 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// Stream properties
@@ -4158,7 +4151,6 @@ public struct RUMResourceEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
-            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -4809,7 +4801,6 @@ public struct RUMResourceEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// Stream properties
@@ -5110,6 +5101,517 @@ public struct RUMTelemetryOperatingSystem: Codable {
         self.build = build
         self.name = name
         self.version = version
+    }
+}
+
+/// Schema for a CPU timeseries event.
+public struct RUMTimeseriesCpuEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Application properties
+    public let application: Application
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// The service name for this application
+    public let service: String?
+
+    /// Session properties
+    public let session: Session
+
+    /// The source of this event
+    public let source: Source
+
+    /// CPU timeseries properties
+    public let timeseries: Timeseries
+
+    /// RUM event type
+    public let type: String = "timeseries"
+
+    /// The version for this application
+    public let version: String?
+
+    public enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case application = "application"
+        case date = "date"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case timeseries = "timeseries"
+        case type = "type"
+        case version = "version"
+    }
+
+    /// Schema for a CPU timeseries event.
+    ///
+    /// - Parameters:
+    ///   - dd: Internal properties
+    ///   - application: Application properties
+    ///   - date: Start of the event in ms from epoch
+    ///   - service: The service name for this application
+    ///   - session: Session properties
+    ///   - source: The source of this event
+    ///   - timeseries: CPU timeseries properties
+    ///   - version: The version for this application
+    public init(
+        dd: DD,
+        application: Application,
+        date: Int64,
+        service: String? = nil,
+        session: Session,
+        source: Source,
+        timeseries: Timeseries,
+        version: String? = nil
+    ) {
+        self.dd = dd
+        self.application = application
+        self.date = date
+        self.service = service
+        self.session = session
+        self.source = source
+        self.timeseries = timeseries
+        self.version = version
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        public enum CodingKeys: String, CodingKey {
+            case formatVersion = "format_version"
+        }
+
+        /// Internal properties
+        public init() { }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Application properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the application
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// UUID of the session
+        public let id: String
+
+        /// Type of the session
+        public let type: RUMSessionType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case type = "type"
+        }
+
+        /// Session properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the session
+        ///   - type: Type of the session
+        public init(
+            id: String,
+            type: RUMSessionType
+        ) {
+            self.id = id
+            self.type = type
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case roku = "roku"
+        case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
+        case rumCpp = "rum-cpp"
+    }
+
+    /// CPU timeseries properties
+    public struct Timeseries: Codable {
+        /// Array of CPU data points
+        public let data: [Data]
+
+        /// Timestamp of the last sample in nanoseconds from epoch
+        public let end: Int64
+
+        /// UUID of the timeseries batch
+        public let id: String
+
+        /// Name identifying the timeseries metric
+        public let name: String = "cpu"
+
+        /// Wire-shape discriminator for the data field
+        public let schema: Schema
+
+        /// Timestamp of the first sample in nanoseconds from epoch
+        public let start: Int64
+
+        public enum CodingKeys: String, CodingKey {
+            case data = "data"
+            case end = "end"
+            case id = "id"
+            case name = "name"
+            case schema = "schema"
+            case start = "start"
+        }
+
+        /// CPU timeseries properties
+        ///
+        /// - Parameters:
+        ///   - data: Array of CPU data points
+        ///   - end: Timestamp of the last sample in nanoseconds from epoch
+        ///   - id: UUID of the timeseries batch
+        ///   - schema: Wire-shape discriminator for the data field
+        ///   - start: Timestamp of the first sample in nanoseconds from epoch
+        public init(
+            data: [Data],
+            end: Int64,
+            id: String,
+            schema: Schema,
+            start: Int64
+        ) {
+            self.data = data
+            self.end = end
+            self.id = id
+            self.schema = schema
+            self.start = start
+        }
+
+        /// A single CPU data point
+        public struct Data: Codable {
+            /// CPU measurements for this sample
+            public let dataPoint: DataPoint
+
+            /// Sample timestamp in nanoseconds from epoch
+            public let timestamp: Int64
+
+            public enum CodingKeys: String, CodingKey {
+                case dataPoint = "data_point"
+                case timestamp = "timestamp"
+            }
+
+            /// A single CPU data point
+            ///
+            /// - Parameters:
+            ///   - dataPoint: CPU measurements for this sample
+            ///   - timestamp: Sample timestamp in nanoseconds from epoch
+            public init(
+                dataPoint: DataPoint,
+                timestamp: Int64
+            ) {
+                self.dataPoint = dataPoint
+                self.timestamp = timestamp
+            }
+
+            /// CPU measurements for this sample
+            public struct DataPoint: Codable {
+                /// CPU usage as a percentage (0.0 to 100.0)
+                public let cpuUsage: Double
+
+                public enum CodingKeys: String, CodingKey {
+                    case cpuUsage = "cpu_usage"
+                }
+
+                /// CPU measurements for this sample
+                ///
+                /// - Parameters:
+                ///   - cpuUsage: CPU usage as a percentage (0.0 to 100.0)
+                public init(
+                    cpuUsage: Double
+                ) {
+                    self.cpuUsage = cpuUsage
+                }
+            }
+        }
+
+        /// Wire-shape discriminator for the data field
+        public enum Schema: String, Codable {
+            case object = "object"
+            case deltaScalar = "delta-scalar"
+        }
+    }
+}
+
+/// Schema for a memory timeseries event.
+public struct RUMTimeseriesMemoryEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Application properties
+    public let application: Application
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// The service name for this application
+    public let service: String?
+
+    /// Session properties
+    public let session: Session
+
+    /// The source of this event
+    public let source: Source
+
+    /// Memory timeseries properties
+    public let timeseries: Timeseries
+
+    /// RUM event type
+    public let type: String = "timeseries"
+
+    /// The version for this application
+    public let version: String?
+
+    public enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case application = "application"
+        case date = "date"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case timeseries = "timeseries"
+        case type = "type"
+        case version = "version"
+    }
+
+    /// Schema for a memory timeseries event.
+    ///
+    /// - Parameters:
+    ///   - dd: Internal properties
+    ///   - application: Application properties
+    ///   - date: Start of the event in ms from epoch
+    ///   - service: The service name for this application
+    ///   - session: Session properties
+    ///   - source: The source of this event
+    ///   - timeseries: Memory timeseries properties
+    ///   - version: The version for this application
+    public init(
+        dd: DD,
+        application: Application,
+        date: Int64,
+        service: String? = nil,
+        session: Session,
+        source: Source,
+        timeseries: Timeseries,
+        version: String? = nil
+    ) {
+        self.dd = dd
+        self.application = application
+        self.date = date
+        self.service = service
+        self.session = session
+        self.source = source
+        self.timeseries = timeseries
+        self.version = version
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        public enum CodingKeys: String, CodingKey {
+            case formatVersion = "format_version"
+        }
+
+        /// Internal properties
+        public init() { }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Application properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the application
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// UUID of the session
+        public let id: String
+
+        /// Type of the session
+        public let type: RUMSessionType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case type = "type"
+        }
+
+        /// Session properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the session
+        ///   - type: Type of the session
+        public init(
+            id: String,
+            type: RUMSessionType
+        ) {
+            self.id = id
+            self.type = type
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case roku = "roku"
+        case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
+        case rumCpp = "rum-cpp"
+    }
+
+    /// Memory timeseries properties
+    public struct Timeseries: Codable {
+        /// Array of memory data points
+        public let data: [Data]
+
+        /// Timestamp of the last sample in nanoseconds from epoch
+        public let end: Int64
+
+        /// UUID of the timeseries batch
+        public let id: String
+
+        /// Name identifying the timeseries metric
+        public let name: String = "memory"
+
+        /// Wire-shape discriminator for the data field
+        public let schema: Schema
+
+        /// Timestamp of the first sample in nanoseconds from epoch
+        public let start: Int64
+
+        public enum CodingKeys: String, CodingKey {
+            case data = "data"
+            case end = "end"
+            case id = "id"
+            case name = "name"
+            case schema = "schema"
+            case start = "start"
+        }
+
+        /// Memory timeseries properties
+        ///
+        /// - Parameters:
+        ///   - data: Array of memory data points
+        ///   - end: Timestamp of the last sample in nanoseconds from epoch
+        ///   - id: UUID of the timeseries batch
+        ///   - schema: Wire-shape discriminator for the data field
+        ///   - start: Timestamp of the first sample in nanoseconds from epoch
+        public init(
+            data: [Data],
+            end: Int64,
+            id: String,
+            schema: Schema,
+            start: Int64
+        ) {
+            self.data = data
+            self.end = end
+            self.id = id
+            self.schema = schema
+            self.start = start
+        }
+
+        /// A single memory data point
+        public struct Data: Codable {
+            /// Memory measurements for this sample
+            public let dataPoint: DataPoint
+
+            /// Sample timestamp in nanoseconds from epoch
+            public let timestamp: Int64
+
+            public enum CodingKeys: String, CodingKey {
+                case dataPoint = "data_point"
+                case timestamp = "timestamp"
+            }
+
+            /// A single memory data point
+            ///
+            /// - Parameters:
+            ///   - dataPoint: Memory measurements for this sample
+            ///   - timestamp: Sample timestamp in nanoseconds from epoch
+            public init(
+                dataPoint: DataPoint,
+                timestamp: Int64
+            ) {
+                self.dataPoint = dataPoint
+                self.timestamp = timestamp
+            }
+
+            /// Memory measurements for this sample
+            public struct DataPoint: Codable {
+                /// Physical memory footprint of the process in bytes
+                public let memoryMax: Double
+
+                /// Memory footprint as a percentage of total device RAM
+                public let memoryPercent: Double
+
+                public enum CodingKeys: String, CodingKey {
+                    case memoryMax = "memory_max"
+                    case memoryPercent = "memory_percent"
+                }
+
+                /// Memory measurements for this sample
+                ///
+                /// - Parameters:
+                ///   - memoryMax: Physical memory footprint of the process in bytes
+                ///   - memoryPercent: Memory footprint as a percentage of total device RAM
+                public init(
+                    memoryMax: Double,
+                    memoryPercent: Double
+                ) {
+                    self.memoryMax = memoryMax
+                    self.memoryPercent = memoryPercent
+                }
+            }
+        }
+
+        /// Wire-shape discriminator for the data field
+        public enum Schema: String, Codable {
+            case object = "object"
+            case deltaObject = "delta-object"
+        }
     }
 }
 
@@ -5783,7 +6285,6 @@ public struct RUMViewEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
-            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -6004,7 +6505,6 @@ public struct RUMViewEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// Stream properties
@@ -6914,8 +7414,6 @@ public struct RUMViewEvent: RUMDataModel {
             case fragmentRedisplay = "fragment_redisplay"
             case viewControllerDisplay = "view_controller_display"
             case viewControllerRedisplay = "view_controller_redisplay"
-            case sessionRenewal = "session_renewal"
-            case bfCache = "bf_cache"
         }
 
         /// Properties of the long tasks of the view
@@ -7818,7 +8316,6 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
-            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -8039,7 +8536,6 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// Stream properties
@@ -8949,8 +9445,6 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             case fragmentRedisplay = "fragment_redisplay"
             case viewControllerDisplay = "view_controller_display"
             case viewControllerRedisplay = "view_controller_redisplay"
-            case sessionRenewal = "session_renewal"
-            case bfCache = "bf_cache"
         }
 
         /// Properties of the long tasks of the view
@@ -9928,7 +10422,6 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
-            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -10045,7 +10538,6 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// Stream properties
@@ -10672,7 +11164,6 @@ public struct RUMVitalDurationEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
-            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -10789,7 +11280,6 @@ public struct RUMVitalDurationEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// Stream properties
@@ -11376,7 +11866,6 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
-            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -11493,7 +11982,6 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// Stream properties
@@ -11836,7 +12324,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// The telemetry configuration information
@@ -11943,9 +12430,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether the SDK is initialised on the application's main or a secondary process
             public let isMainProcess: Bool?
 
-            /// The version of MAUI used in a .NET MAUI application
-            public var mauiVersion: String?
-
             /// The period between each Mobile Vital sample (in milliseconds)
             public var mobileVitalsUpdatePeriod: Int64?
 
@@ -11997,7 +12481,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether initialization fails silently if the SDK is already initialized
             public let silentMultipleInit: Bool?
 
-            /// The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform', 'maui'.
+            /// The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform'.
             public var source: String?
 
             /// Whether Session Replay should automatically start a recording when enabled
@@ -12089,9 +12573,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether automatic collection of network requests is enabled
             public var trackNetworkRequests: Bool?
-
-            /// How the SDK tracks resource request/response headers
-            public var trackResourceHeaders: TrackResourceHeaders?
 
             /// Whether resources are tracked
             public var trackResources: Bool?
@@ -12192,7 +12673,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case initializationType = "initialization_type"
                 case invTimeThresholdMs = "inv_time_threshold_ms"
                 case isMainProcess = "is_main_process"
-                case mauiVersion = "maui_version"
                 case mobileVitalsUpdatePeriod = "mobile_vitals_update_period"
                 case numberOfDisplays = "number_of_displays"
                 case plugins = "plugins"
@@ -12241,7 +12721,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case trackNativeLongTasks = "track_native_long_tasks"
                 case trackNativeViews = "track_native_views"
                 case trackNetworkRequests = "track_network_requests"
-                case trackResourceHeaders = "track_resource_headers"
                 case trackResources = "track_resources"
                 case trackSessionAcrossSubdomains = "track_session_across_subdomains"
                 case trackUserInteractions = "track_user_interactions"
@@ -12293,7 +12772,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - initializationType: The type of initialization the SDK used, in case multiple are supported
             ///   - invTimeThresholdMs: Interval in milliseconds when the last action is considered as the action that created the next view. Only sent if a time based strategy has been used
             ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
-            ///   - mauiVersion: The version of MAUI used in a .NET MAUI application
             ///   - mobileVitalsUpdatePeriod: The period between each Mobile Vital sample (in milliseconds)
             ///   - numberOfDisplays: The number of displays available to the device
             ///   - plugins: The list of plugins enabled
@@ -12311,7 +12789,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - silentMultipleInit: Whether initialization fails silently if the SDK is already initialized
-            ///   - source: The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform', 'maui'.
+            ///   - source: The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform'.
             ///   - startRecordingImmediately: Whether Session Replay should automatically start a recording when enabled
             ///   - startSessionReplayRecordingManually: Whether the session replay start is handled manually
             ///   - storeContextsAcrossPages: Whether contexts are stored in local storage
@@ -12342,7 +12820,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - trackNativeLongTasks: Whether long task tracking is performed automatically
             ///   - trackNativeViews: Whether native views are tracked (for cross platform SDKs)
             ///   - trackNetworkRequests: Whether automatic collection of network requests is enabled
-            ///   - trackResourceHeaders: How the SDK tracks resource request/response headers
             ///   - trackResources: Whether resources are tracked
             ///   - trackSessionAcrossSubdomains: Whether sessions across subdomains for the same site are tracked
             ///   - trackUserInteractions: Whether user actions are tracked
@@ -12390,7 +12867,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 initializationType: String? = nil,
                 invTimeThresholdMs: Int64? = nil,
                 isMainProcess: Bool? = nil,
-                mauiVersion: String? = nil,
                 mobileVitalsUpdatePeriod: Int64? = nil,
                 numberOfDisplays: Int64? = nil,
                 plugins: [Plugins]? = nil,
@@ -12439,7 +12915,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 trackNativeLongTasks: Bool? = nil,
                 trackNativeViews: Bool? = nil,
                 trackNetworkRequests: Bool? = nil,
-                trackResourceHeaders: TrackResourceHeaders? = nil,
                 trackResources: Bool? = nil,
                 trackSessionAcrossSubdomains: Bool? = nil,
                 trackUserInteractions: Bool? = nil,
@@ -12487,7 +12962,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.initializationType = initializationType
                 self.invTimeThresholdMs = invTimeThresholdMs
                 self.isMainProcess = isMainProcess
-                self.mauiVersion = mauiVersion
                 self.mobileVitalsUpdatePeriod = mobileVitalsUpdatePeriod
                 self.numberOfDisplays = numberOfDisplays
                 self.plugins = plugins
@@ -12536,7 +13010,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.trackNativeLongTasks = trackNativeLongTasks
                 self.trackNativeViews = trackNativeViews
                 self.trackNetworkRequests = trackNetworkRequests
-                self.trackResourceHeaders = trackResourceHeaders
                 self.trackResources = trackResources
                 self.trackSessionAcrossSubdomains = trackSessionAcrossSubdomains
                 self.trackUserInteractions = trackUserInteractions
@@ -12697,12 +13170,6 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case resource = "resource"
                 case action = "action"
                 case longTask = "long_task"
-            }
-
-            /// How the SDK tracks resource request/response headers
-            public enum TrackResourceHeaders: String, Codable {
-                case defaultHeaders = "default_headers"
-                case custom = "custom"
             }
 
             /// The initial tracking consent value
@@ -12990,7 +13457,6 @@ public struct TelemetryDebugEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// The telemetry log information
@@ -13280,7 +13746,6 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// The telemetry log information
@@ -13606,7 +14071,6 @@ public struct TelemetryUsageEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
-        case maui = "maui"
     }
 
     /// The telemetry usage information
@@ -14360,7 +14824,6 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public enum AndroidNetworkInstrumentationType: String, Codable {
                         case cRONET = "CRONET"
                         case oKHTTP = "OKHTTP"
-                        case lEGACYOKHTTP = "LEGACY_OKHTTP"
                     }
                 }
             }
@@ -14422,4 +14885,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ed69a908b5f05a97b984498526d50c0e97284c06
+// Generated from https://github.com/DataDog/rum-events-format/tree/1307c66921a47599d3b47b895abba44a5359343f
