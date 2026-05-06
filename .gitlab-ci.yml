@@ -150,6 +150,9 @@ Unit Tests (iOS):
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
+  artifacts:
+    paths:
+      - test-run.log
 
 Unit Tests (tvOS):
   stage: test

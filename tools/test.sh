@@ -95,4 +95,4 @@ fi
 set -x
 
 xcodebuild -version
-xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test 2>&1
+set -o pipefail; xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test 2>&1 | tee test-run.log | xcbeautify
