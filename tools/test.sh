@@ -95,4 +95,15 @@ fi
 set -x
 
 xcodebuild -version
-xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test 2>&1 | xcbeautify
+
+if [ "$CI" = "true" ]; then
+    mkdir -p ResultBundles
+    RESULT_BUNDLE_PATH="ResultBundles/${SCHEME}.xcresult"
+    rm -rf "$RESULT_BUNDLE_PATH"
+    XCODEBUILD_EXIT=0
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | xcbeautify || XCODEBUILD_EXIT=$?
+    zip -r -q "ResultBundles/${SCHEME}.xcresult.zip" "$RESULT_BUNDLE_PATH"
+    exit $XCODEBUILD_EXIT
+else
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test 2>&1 | xcbeautify
+fi
