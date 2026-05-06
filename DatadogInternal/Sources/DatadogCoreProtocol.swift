@@ -15,6 +15,12 @@ public protocol DatadogCoreProtocol: AnyObject, MessageSending, AdditionalContex
     // Remove `DatadogCoreProtocol` conformance to `MessageSending` and `BaggageSharing` once
     // all features are migrated to depend on `FeatureScope` interface.
 
+    /// The typed message bus shared between Features registered to this core.
+    ///
+    /// Use it to subscribe to or publish `BusMessage` values. The default implementation
+    /// returns a `NOPMessageBus`; concrete cores override this with their real bus.
+    var messageBus: MessageBus { get }
+
     /// Registers a Feature instance.
     ///
     /// Feature can interact with the core and other Feature through the message bus. Some specific Features
@@ -250,6 +256,8 @@ public extension FeatureScope {
 /// No-op implementation of `DatadogFeatureRegistry`.
 public class NOPDatadogCore: DatadogCoreProtocol {
     public init() { }
+    /// no-op
+    public var messageBus: MessageBus { NOPMessageBus() }
     /// no-op
     public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op

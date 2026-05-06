@@ -837,6 +837,8 @@
 		D224430629E95C2C00274EC7 /* MessageBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA429E072D7004D0AE8 /* MessageBus.swift */; };
 		D224430D29E95D6700274EC7 /* CrashReportReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */; };
 		D224430F29E9779F00274EC7 /* TelemetryReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */; };
+		D224DFA82FAB8C4B000AED53 /* MessageBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224DFA72FAB8C4B000AED53 /* MessageBus.swift */; };
+		D224DFAA2FAB9DCE000AED53 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224DFA92FAB9DCE000AED53 /* MessageBusTests.swift */; };
 		D22689B92EB12C3100875E44 /* Filters in Frameworks */ = {isa = PBXBuildFile; productRef = D22689B82EB12C3100875E44 /* Filters */; };
 		D22689BB2EB12C3100875E44 /* Recording in Frameworks */ = {isa = PBXBuildFile; productRef = D22689BA2EB12C3100875E44 /* Recording */; };
 		D22689C32EB12D3D00875E44 /* KSCrashPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22689C22EB12D3D00875E44 /* KSCrashPlugin.swift */; };
@@ -2686,6 +2688,8 @@
 		D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+SessionReplay.swift"; sourceTree = "<group>"; };
 		D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrashReportReceiverTests.swift; sourceTree = "<group>"; };
+		D224DFA72FAB8C4B000AED53 /* MessageBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBus.swift; sourceTree = "<group>"; };
+		D224DFA92FAB9DCE000AED53 /* MessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusTests.swift; sourceTree = "<group>"; };
 		D22689C22EB12D3D00875E44 /* KSCrashPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KSCrashPlugin.swift; sourceTree = "<group>"; };
 		D22689C62EB2151F00875E44 /* KSCrashPluginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KSCrashPluginTests.swift; sourceTree = "<group>"; };
 		D2268AD12EB4DA4100875E44 /* DatadogTypeSafeFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogTypeSafeFilter.swift; sourceTree = "<group>"; };
@@ -6073,6 +6077,7 @@
 			children = (
 				D23039C1298D5235001A1FA3 /* FeatureMessageReceiver.swift */,
 				D23039C2298D5235001A1FA3 /* FeatureMessage.swift */,
+				D224DFA72FAB8C4B000AED53 /* MessageBus.swift */,
 			);
 			path = MessageBus;
 			sourceTree = "<group>";
@@ -6465,6 +6470,7 @@
 			isa = PBXGroup;
 			children = (
 				D2DA23A0298D58F400C6C7E6 /* FeatureMessageReceiverTests.swift */,
+				D224DFA92FAB9DCE000AED53 /* MessageBusTests.swift */,
 			);
 			path = MessageBus;
 			sourceTree = "<group>";
@@ -8511,6 +8517,7 @@
 				3CA8525F2BF2073800B52CBA /* TraceContextInjection.swift in Sources */,
 				D23039F6298D5236001A1FA3 /* Attributes.swift in Sources */,
 				D20731CB29A52E6000ECBF94 /* Sampler.swift in Sources */,
+				D224DFA82FAB8C4B000AED53 /* MessageBus.swift in Sources */,
 				D2EBEE2029BA160F00B15732 /* TracePropagationHeadersWriter.swift in Sources */,
 				267134902D688D280048CB54 /* AccountInfo.swift in Sources */,
 				D23039EF298D5236001A1FA3 /* FeatureMessage.swift in Sources */,
@@ -8973,6 +8980,7 @@
 				D21AE6BC29E5EDAF0064BF29 /* TelemetryTests.swift in Sources */,
 				D2DA23A3298D58F400C6C7E6 /* AnyEncodableTests.swift in Sources */,
 				3CCECDAF2BC688120013C125 /* SpanIDGeneratorTests.swift in Sources */,
+				D224DFAA2FAB9DCE000AED53 /* MessageBusTests.swift in Sources */,
 				D263BCB429DB014900FA0E21 /* FixedWidthInteger+ConvenienceTests.swift in Sources */,
 				D233E7D22E4627D900E7CFDE /* MultipartFormDataTests.swift in Sources */,
 				960A0D402D6F88A0004BB999 /* ReflectorTests.swift in Sources */,

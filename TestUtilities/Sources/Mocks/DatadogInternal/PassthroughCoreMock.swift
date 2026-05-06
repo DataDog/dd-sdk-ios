@@ -69,6 +69,8 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
     }
 
     /// no-op
+    public var messageBus: MessageBus { NOPMessageBus() }
+    /// no-op
     public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op
     public func feature<T>(named name: String, type: T.Type) -> T? { nil }
