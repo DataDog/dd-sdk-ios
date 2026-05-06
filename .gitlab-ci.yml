@@ -169,6 +169,10 @@ Unit Tests (tvOS):
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
+  artifacts:
+    paths:
+      - test-run.log
+    when: always
 
 Unit Tests (watchOS):
   stage: test
@@ -184,6 +188,10 @@ Unit Tests (watchOS):
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
     - make test-watchos-all OS="$DEFAULT_WATCHOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
+  artifacts:
+    paths:
+      - test-run.log
+    when: always
 
 Unit Tests (visionOS):
   stage: test
@@ -199,6 +207,10 @@ Unit Tests (visionOS):
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
     - make test-visionos-all OS="$DEFAULT_VISIONOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
+  artifacts:
+    paths:
+      - test-run.log
+    when: always
 
 UI Tests:
   stage: ui-test
