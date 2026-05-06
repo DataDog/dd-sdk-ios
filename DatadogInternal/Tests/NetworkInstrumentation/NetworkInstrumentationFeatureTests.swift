@@ -1812,16 +1812,16 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Create a real URLSession
         let session = URLSession(configuration: .ephemeral)
 
-        // Track if any requests with DD-REQUEST-ID are intercepted
+        // Track if any requests with DD-API-KEY are intercepted
         var interceptedSDKRequests: [URLSessionTaskInterception] = []
         handler.onInterceptionDidStart = { interception in
             interceptedSDKRequests.append(interception)
         }
 
-        // When - Make a request to a custom endpoint with DD-REQUEST-ID header (simulating SDK internal request)
+        // When - Make a request to a custom endpoint with DD-API-KEY header (simulating SDK internal request)
         let customEndpointURL = URL(string: "http://custom-endpoint.example.com/api/v2/intake")!
         var request = URLRequest(url: customEndpointURL)
-        request.setValue(UUID().uuidString, forHTTPHeaderField: "DD-REQUEST-ID")
+        request.setValue(.mockRandom(), forHTTPHeaderField: "DD-API-KEY")
 
         let taskCompleted = expectation(description: "Task completed")
         let task = session.dataTask(with: request) { _, _, _ in
@@ -1832,8 +1832,34 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Wait for task to complete
         wait(for: [taskCompleted], timeout: 10)
 
-        // Then - Verify SDK request with DD-REQUEST-ID was not intercepted
-        XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests with DD-REQUEST-ID header, even to custom endpoints")
+        // Then - Verify SDK request with DD-API-KEY was not intercepted
+        XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests with DD-API-KEY header, even to custom endpoints")
+    }
+
+    func testAutomaticMode_doesNotTrackDatadogSDKTestingRequests() throws {
+        // Given - Enable automatic mode
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        let session = URLSession(configuration: .ephemeral)
+
+        var intercepted: [URLSessionTaskInterception] = []
+        handler.onInterceptionDidStart = { intercepted.append($0) }
+
+        // When - Simulate `DatadogSDKTesting`'s CI Visibility upload: it hits citestcycle intake
+        // authenticated with `DD-API-KEY` but without our SDK's internal `DD-REQUEST-ID` header.
+        let citestcycleURL = URL(string: "https://citestcycle-intake.datadoghq.com/api/v2/citestcycle")!
+        var request = URLRequest(url: citestcycleURL)
+        request.setValue(.mockRandom(), forHTTPHeaderField: "DD-API-KEY")
+
+        let taskCompleted = expectation(description: "Task completed")
+        let task = session.dataTask(with: request) { _, _, _ in taskCompleted.fulfill() }
+        task.resume()
+        task.cancel()
+
+        wait(for: [taskCompleted], timeout: 5)
+
+        // Then
+        XCTAssertEqual(intercepted.count, 0, "Should not intercept DatadogSDKTesting CI Visibility uploads (DD-API-KEY without DD-REQUEST-ID)")
     }
 
     // MARK: - URLSessionTask Interception
