@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 @_spi(Internal)
 @testable import DatadogInternal
+import DatadogSDKTesting
 
 class NetworkInstrumentationFeatureTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
@@ -17,7 +18,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-
+        DDInstrumentationControl.stopInjectingHeaders()
+        DDInstrumentationControl.stopPayloadCapture()
         core = SingleFeatureCoreMock()
         handler = URLSessionHandlerMock()
         try core.register(urlSessionHandler: handler)
@@ -33,6 +35,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         core?.get(feature: NetworkInstrumentationFeature.self)?.flush()
         core = nil
         handler = nil
+        DDInstrumentationControl.startPayloadCapture()
+        DDInstrumentationControl.startInjectingHeaders()
         super.tearDown()
     }
 
