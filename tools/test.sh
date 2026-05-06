@@ -95,4 +95,8 @@ fi
 set -x
 
 xcodebuild -version
-set -o pipefail; xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test 2>&1 | tee -a test-run.log | xcbeautify
+mkdir -p ResultBundles
+RESULT_BUNDLE_PATH="ResultBundles/${SCHEME}.xcresult"
+rm -rf "$RESULT_BUNDLE_PATH"
+xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | xcbeautify
+zip -r -q "ResultBundles/${SCHEME}.xcresult.zip" "$RESULT_BUNDLE_PATH"
