@@ -323,6 +323,8 @@ internal final class DatadogCore {
 }
 
 extension DatadogCore: DatadogCoreProtocol {
+    var messageBus: DatadogInternal.MessageBus { NOPMessageBus() }
+
     /// Registers a Feature instance.
     ///
     /// A Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). A registered Feature can
