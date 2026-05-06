@@ -9,6 +9,7 @@ import Foundation
 internal final class URLSessionTaskSwizzler {
     private let lock: NSLocking
     private var taskResume: TaskResume?
+    private let id = UUID()
 
     init(lock: NSLocking = NSLock()) {
         self.lock = lock
@@ -20,6 +21,7 @@ internal final class URLSessionTaskSwizzler {
     ) throws {
         lock.lock()
         defer { lock.unlock() }
+        print("[\(id)] 👉 Swizzling interceptResume")
         taskResume = try TaskResume.build()
         taskResume?.swizzle(intercept: interceptResume)
     }
@@ -29,11 +31,13 @@ internal final class URLSessionTaskSwizzler {
     /// This method is called during deinit.
     func unswizzle() {
         lock.lock()
+        print("[\(id)] 👈 Un-swizzling interceptResume")
         taskResume?.unswizzle()
         lock.unlock()
     }
 
     deinit {
+        print("[\(id)] 🧹 Going to un-swizzle by deinit")
         unswizzle()
     }
 
