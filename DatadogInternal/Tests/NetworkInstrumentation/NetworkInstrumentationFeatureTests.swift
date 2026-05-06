@@ -1836,6 +1836,29 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests with DD-REQUEST-ID header, even to custom endpoints")
     }
 
+    func testAutomaticMode_doesNotTrackDatadogSDKTestingRequests() throws {
+        // Given - Enable automatic mode
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        let session = URLSession(configuration: .ephemeral)
+
+        var intercepted: [URLSessionTaskInterception] = []
+        handler.onInterceptionDidStart = { intercepted.append($0) }
+
+        // When - Simulate `DatadogSDKTesting`'s CI Visibility upload (no `DD-REQUEST-ID` header,
+        // hits the citestcycle intake on the same process where our resume swizzle is installed).
+        let citestcycleURL = URL(string: "https://citestcycle-intake.datadoghq.com/api/v2/citestcycle")!
+        let taskCompleted = expectation(description: "Task completed")
+        let task = session.dataTask(with: citestcycleURL) { _, _, _ in taskCompleted.fulfill() }
+        task.resume()
+        task.cancel()
+
+        wait(for: [taskCompleted], timeout: 5)
+
+        // Then
+        XCTAssertEqual(intercepted.count, 0, "Should not intercept DatadogSDKTesting CI Visibility uploads even without DD-REQUEST-ID")
+    }
+
     // MARK: - URLSessionTask Interception
 
     func testWhenInterceptingTaskWithMultipleTraceContexts_itTakesTheFirstContext() throws {
