@@ -360,18 +360,11 @@ extension NetworkInstrumentationFeature {
     /// - Parameter request: The URLRequest to check.
     /// - Returns: `true` if the request is an SDK internal request, `false` otherwise.
     private func isDatadogIntakeRequest(_ request: URLRequest?) -> Bool {
-        // Check for DD-REQUEST-ID header (present in all SDK upload requests, including custom endpoints)
-        if request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddRequestIDHeaderField) != nil {
-            return true
-        }
-        // Fallback: skip Datadog intake hosts that don't carry DD-REQUEST-ID (e.g. DatadogSDKTesting's
-        // CI Visibility uploads to `citestcycle-intake.datadoghq.com`). Without this, those requests
-        // get caught by the global `__NSCFLocalSessionTask.resume` swizzle during tests and pollute
-        // interception expectations. Remove once DatadogSDKTesting sends the header.
-        if let host = request?.url?.host, host.hasSuffix("-intake.datadoghq.com") {
-            return true
-        }
-        return false
+        // Every Datadog intake request authenticates with `DD-API-KEY`. This catches both this SDK's
+        // own uploads (preventing recursion) and other Datadog tooling that may run in the same
+        // process (e.g. `DatadogSDKTesting`'s CI Visibility uploader, which would otherwise pollute
+        // interception expectations via the global `__NSCFLocalSessionTask.resume` swizzle in tests).
+        return request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddAPIKeyHeaderField) != nil
     }
 
     /// Helper structure that optionally contains a trace context and captured state, used to pass this
