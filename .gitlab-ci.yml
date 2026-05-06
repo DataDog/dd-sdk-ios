@@ -153,6 +153,7 @@ Unit Tests (iOS):
   artifacts:
     paths:
       - test-run.log
+    when: always
 
 Unit Tests (tvOS):
   stage: test
