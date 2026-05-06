@@ -38,7 +38,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
             let when = given
 
             // Then
-            let sessions = try when.then()
+            let sessions = try when.then().sessions
             XCTAssertTrue(sessions.isEmpty)
         }
         #endif
@@ -58,7 +58,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
 
         for when in [when1, when2] {
             // Then
-            let sessions = try when.then()
+            let sessions = try when.then().sessions
             XCTAssertTrue(sessions.isEmpty)
         }
 
@@ -74,7 +74,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
 
         for when in [when3, when4] {
             // Then
-            let session = try when.then().takeSingle()
+            let session = try when.then().sessions.takeSingle()
             XCTAssertNil(session.ttidEvent)
             XCTAssertNil(session.timeToInitialDisplay)
             DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
@@ -102,7 +102,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
             let when = given.when(.trackTwoLongTasks(after1: dt1, after2: dt2))
 
             // Then
-            let sessions = try when.then()
+            let sessions = try when.then().sessions
             XCTAssertTrue(sessions.isEmpty)
         }
         #endif
@@ -124,7 +124,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
             let when = given
 
             // Then
-            let sessions = try when.then()
+            let sessions = try when.then().sessions
             XCTAssertTrue(sessions.isEmpty)
         }
     }
@@ -143,7 +143,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
 
         for when in [when1, when2] {
             // Then
-            let sessions = try when.then()
+            let sessions = try when.then().sessions
             XCTAssertTrue(sessions.isEmpty)
         }
 
@@ -158,7 +158,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
         let when4 = given2.when(.trackResource(after: dt1, duration: dt2))
 
         for when in [when3, when4] {
-            let session = try when.then().takeSingle()
+            let session = try when.then().sessions.takeSingle()
             XCTAssertNil(session.ttidEvent)
             XCTAssertNil(session.timeToInitialDisplay)
             DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
@@ -183,7 +183,7 @@ class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
             let when = given.when(.trackTwoLongTasks(after1: dt1, after2: dt2))
 
             // Then
-            let sessions = try when.then()
+            let sessions = try when.then().sessions
             XCTAssertTrue(sessions.isEmpty)
         }
     }

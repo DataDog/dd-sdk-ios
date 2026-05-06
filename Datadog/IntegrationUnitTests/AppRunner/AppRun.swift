@@ -7,6 +7,12 @@
 import Foundation
 import TestUtilities
 
+/// Aggregated results of an `AppRun` scenario.
+internal struct AppRunResult {
+    let sessions: [RUMSessionMatcher]
+    let logs: [LogMatcher]
+}
+
 /// Defines a chain of `AppRunStep`s representing a test scenario for SDK integration testing.
 /// Allows building scenarios using `given()`, `when()`, and `then()` for fluent test composition.
 internal struct AppRun: Hashable {
@@ -31,20 +37,20 @@ internal struct AppRun: Hashable {
         return when(step)
     }
 
-    /// Executes the defined scenario and returns the resulting RUM sessions.
-    /// - Returns: An array of RUM session matchers.
-    func then() throws -> [RUMSessionMatcher] {
+    /// Executes the defined scenario and returns recorded events.
+    /// Features that were not enabled return empty arrays.
+    func then() throws -> AppRunResult {
         let app = AppRunner()
         app.setUp()
         defer { app.tearDown() }
 
-        // Perform all steps:
         steps.forEach { step in
             step.perform(app)
         }
 
-        // Get recorded sessions:
-        let sessions = try app.recordedRUMSessions()
-        return sessions
+        return AppRunResult(
+            sessions: try app.recordedRUMSessions(),
+            logs: try app.recordedLogs()
+        )
     }
 }

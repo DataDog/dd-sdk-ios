@@ -41,7 +41,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
 
             // Then
             // - It tracks "stopped" session:
-            let (session1, session2) = try when.then().takeTwo()
+            let (session1, session2) = try when.then().sessions.takeTwo()
             XCTAssertNotNil(session1.ttidEvent)
             DDAssertEqual(session1.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
             DDAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
@@ -95,7 +95,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
 
             // Then
             // - It tracks "stopped" session:
-            let (session1, session2) = try when.then().takeTwo()
+            let (session1, session2) = try when.then().sessions.takeTwo()
             DDAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
             DDAssertEqual(session1.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
             XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
@@ -149,7 +149,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             for when in [when2, when3] {
                 // Then
                 // - It only tracks "stopped" session:
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
 
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
@@ -192,7 +192,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             for when in [when2, when3] {
                 // Then
                 // - It only tracks "stopped" session:
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
 
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
                 DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
@@ -252,7 +252,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 // Then
                 // - It tracks "stopped" session
                 // - It tracks action in new session with restarting the last view
-                let (session1, session2) = try when.then().takeTwo()
+                let (session1, session2) = try when.then().sessions.takeTwo()
                 XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session2.sessionPrecondition, .explicitStop)
                 XCTAssertEqual(session2.views.count, 1)
@@ -295,7 +295,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 // Then
                 // - It tracks "stopped" session
                 // - It tracks action in new session with restarting the last view
-                let (session1, session2) = try when.then().takeTwo()
+                let (session1, session2) = try when.then().sessions.takeTwo()
                 XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session2.sessionPrecondition, .explicitStop)
                 XCTAssertEqual(session2.views.count, 1)
@@ -343,7 +343,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             for when in [when1, when2, when3, when4] {
                 // Then
                 // - It tracks "stopped" session (events other than action are dropped after `sessionStop()` unless a view is started explicitly)
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
             }
         }
@@ -385,7 +385,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 // Then
                 // - It tracks "stopped" session
                 // - It tracks other events in new session because view was started by "→ FG" transition
-                let (session1, session2) = try when.then().takeTwo()
+                let (session1, session2) = try when.then().sessions.takeTwo()
                 XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
                 XCTAssertEqual(session2.sessionPrecondition, .explicitStop)
                 XCTAssertEqual(session2.views.count, 1)
@@ -419,7 +419,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             ] {
                 // Then
                 // - It only tracks "stopped" session (background events are skipped due to BET disabled):
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
@@ -452,7 +452,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             ] {
                 // Then
                 // - It only tracks "stopped" session (background events are skipped due to BET disabled):
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
@@ -501,7 +501,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             ] {
                 // Then
                 // - It only tracks "stopped" session (background events are skipped due to BET disabled):
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
                 DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
@@ -532,7 +532,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             ] {
                 // Then
                 // - It only tracks "stopped" session (background events are skipped due to BET disabled):
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
                 XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 if given == given1 { // session with `ApplicationLaunch` view
@@ -575,7 +575,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 // - It tracks "stopped" session (same as with BET disabled):
-                let (session1, session2) = try when.then().takeTwo()
+                let (session1, session2) = try when.then().sessions.takeTwo()
                 XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
 
                 // - It creates new session for tracking background events:
@@ -612,7 +612,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 // - It tracks "stopped" session (same as with BET disabled):
-                let (session1, session2) = try when.then().takeTwo()
+                let (session1, session2) = try when.then().sessions.takeTwo()
                 XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
 
                 // - It creates new session for tracking background events:
@@ -655,7 +655,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 for when in [when1, when2] {
                     // Then
                     // - It tracks "stopped" session (events other than action are dropped after `sessionStop()` unless a view is started explicitly)
-                    let session = try when.then().takeSingle()
+                    let session = try when.then().sessions.takeSingle()
                     XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 }
             }
@@ -685,7 +685,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 for when in [when1, when2] {
                     // Then
                     // - It tracks "stopped" session (events other than action are dropped after `sessionStop()` unless a view is started explicitly)
-                    let session = try when.then().takeSingle()
+                    let session = try when.then().sessions.takeSingle()
                     XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
                 }
             }
@@ -720,7 +720,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             for when in [when1, when2, when3] {
                 // Then
                 // - No session is tracked because BET is disabled:
-                let sessions = try when.then()
+                let sessions = try when.then().sessions
                 XCTAssertTrue(sessions.isEmpty)
             }
         }
@@ -746,7 +746,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
 
             // Then
             // - It tracks "stopped" background session:
-            let (session1, session2) = try when.then().takeTwo()
+            let (session1, session2) = try when.then().sessions.takeTwo()
             XCTAssertNil(session1.ttidEvent)
             XCTAssertNil(session1.timeToInitialDisplay)
             DDAssertEqual(session1.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
@@ -794,7 +794,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 // - It tracks "stopped" session (events other than action are dropped after `sessionStop()`):
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
@@ -839,7 +839,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 for when in [when1, when2, when3] {
                     // Then
                     // - No session is tracked (background events are skipped due to BET disabled; foreground events are skipped due to "no view"):
-                    let sessions = try when.then()
+                    let sessions = try when.then().sessions
                     XCTAssertTrue(sessions.isEmpty)
                 }
             }
@@ -872,7 +872,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             ] {
                 // Then
                 // - It only tracks "stopped" background session (foreground events are skipped due to "no view"):
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
@@ -896,7 +896,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             ] {
                 // Then
                 // - It only tracks "stopped" background session (foreground events are skipped due to "no view"):
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
@@ -941,7 +941,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
                 for when in [when1, when2] {
                     // Then
                     // - It only tracks foreground session ("stopped" background session is skipped due to BET disabled):
-                    let session = try when.then().takeSingle()
+                    let session = try when.then().sessions.takeSingle()
                     XCTAssertNil(session.ttidEvent)
                     XCTAssertNil(session.timeToInitialDisplay)
                     DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1 + dt2 + dt3 + dt4 + dt5, accuracy: accuracy)
@@ -976,7 +976,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
 
         // Then
         // - Session 1: userAppLaunch with ApplicationLaunch view (resource tracked, stopped):
-        let (session1when1, session2when1) = try when1.then().takeTwo()
+        let (session1when1, session2when1) = try when1.then().sessions.takeTwo()
         XCTAssertNil(session1when1.ttidEvent)
         XCTAssertNil(session1when1.timeToInitialDisplay)
         DDAssertEqual(session1when1.sessionStartDate, processLaunchDate, accuracy: accuracy)
@@ -1010,7 +1010,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
 
         // Then
         // - Session 1: userAppLaunch with ApplicationLaunch view (longer since active arrives before stop):
-        let (session1when2, session2when2) = try when2.then().takeTwo()
+        let (session1when2, session2when2) = try when2.then().sessions.takeTwo()
         XCTAssertNil(session1when2.ttidEvent)
         XCTAssertNil(session1when2.timeToInitialDisplay)
         DDAssertEqual(session1when2.sessionStartDate, processLaunchDate, accuracy: accuracy)
@@ -1067,7 +1067,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             for when in [when1, when2] {
                 // Then
                 // - It tracks "stopped" background session:
-                let (session1, session2) = try when.then().takeTwo()
+                let (session1, session2) = try when.then().sessions.takeTwo()
                 XCTAssertNil(session1.ttidEvent)
                 XCTAssertNil(session1.timeToInitialDisplay)
                 DDAssertEqual(session1.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
@@ -1105,7 +1105,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             for when in [when3, when4] {
                 // Then
                 // - It tracks "stopped" background session:
-                let (session1, session2) = try when.then().takeTwo()
+                let (session1, session2) = try when.then().sessions.takeTwo()
                 XCTAssertNil(session1.ttidEvent)
                 XCTAssertNil(session1.timeToInitialDisplay)
                 DDAssertEqual(session1.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
@@ -1148,7 +1148,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
 
         // Then
         // - Session 1: userAppLaunch with ApplicationLaunch view (resource tracked, stopped):
-        let (session1a, session2a) = try when1.then().takeTwo()
+        let (session1a, session2a) = try when1.then().sessions.takeTwo()
         XCTAssertNil(session1a.ttidEvent)
         XCTAssertNil(session1a.timeToInitialDisplay)
         DDAssertEqual(session1a.sessionStartDate, processLaunchDate, accuracy: accuracy)
@@ -1179,7 +1179,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
 
         // Then
         // - Session 1: userAppLaunch, duration includes time until stop:
-        let (session1b, session2b) = try when2.then().takeTwo()
+        let (session1b, session2b) = try when2.then().sessions.takeTwo()
         XCTAssertNil(session1b.ttidEvent)
         XCTAssertNil(session1b.timeToInitialDisplay)
         DDAssertEqual(session1b.sessionStartDate, processLaunchDate, accuracy: accuracy)

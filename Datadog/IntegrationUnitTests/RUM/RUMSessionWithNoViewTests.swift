@@ -88,7 +88,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
             for when in [when1, when2, when3] {
                 // Then
                 // - it only tracks Background view (foreground events are dropped due to "no view")
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 if session.sessionPrecondition == .prewarm {
                     XCTAssertNotNil(session.ttidEvent)
                     DDAssertEqual(session.timeToInitialDisplay, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2 - 0.1 , accuracy: accuracy)
@@ -129,7 +129,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
 
             for when in [when1, when2, when3] {
                 // Then
-                let sessions = try when.then()
+                let sessions = try when.then().sessions
                 XCTAssertTrue(sessions.isEmpty)
             }
         }
@@ -148,7 +148,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + dt1, accuracy: accuracy)
@@ -166,7 +166,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
                 .when(.trackTwoLongTasks(after1: dt1, after2: dt2))
 
             // Then
-            let sessions = try when.then()
+            let sessions = try when.then().sessions
             XCTAssertTrue(sessions.isEmpty)
         }
         #endif
@@ -188,7 +188,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
         for when in [when1, when2, when3] {
             // Then
             // - it only tracks ApplicationLaunch view (background events are dropped due to BET disabled)
-            let session = try when.then().takeSingle()
+            let session = try when.then().sessions.takeSingle()
             #if !os(watchOS)
             XCTAssertNotNil(session.ttidEvent)
             DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
@@ -217,7 +217,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
         for when in [when4, when5] {
             // Then
             // - it tracks ApplicationLaunch and Background views
-            let session = try when.then().takeSingle()
+            let session = try when.then().sessions.takeSingle()
             #if !os(watchOS)
             XCTAssertNotNil(session.ttidEvent)
             DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
@@ -241,7 +241,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
 
         // Then
         // - it only tracks ApplicationLaunch view (Long Tasks are not tracked in background even if BET is enabled)
-        let session = try when6.then().takeSingle()
+        let session = try when6.then().sessions.takeSingle()
         #if !os(watchOS)
         XCTAssertNotNil(session.ttidEvent)
         DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
@@ -276,7 +276,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
         for when in [when1, when2, when3] {
             // Then
             // - it only tracks ApplicationLaunch + AutomaticView views (background events are dropped due to BET disabled)
-            let session = try when.then().takeSingle()
+            let session = try when.then().sessions.takeSingle()
             XCTAssertNotNil(session.ttidEvent)
             DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
             DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
@@ -302,7 +302,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
         for when in [when4, when5] {
             // Then
             // - it tracks ApplicationLaunch + AutomaticView + Background views
-            let session = try when.then().takeSingle()
+            let session = try when.then().sessions.takeSingle()
             XCTAssertNotNil(session.ttidEvent)
             DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
             DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
@@ -323,7 +323,7 @@ class RUMSessionWithNoViewTests: RUMSessionTestsBase {
 
         // Then
         // - it only tracks ApplicationLaunch + AutomaticView views (Long Tasks are not tracked in background even if BET is enabled)
-        let session = try when6.then().takeSingle()
+        let session = try when6.then().sessions.takeSingle()
         XCTAssertNotNil(session.ttidEvent)
         DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
         DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)

@@ -139,7 +139,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
             let when = simulateUserSession(in: given)
 
             // Then
-            let session = try when.then().takeSingle()
+            let session = try when.then().sessions.takeSingle()
             assertUserSession(
                 session: session,
                 expectBackgroundView: given == givens[2] || given == givens[3]
@@ -204,7 +204,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         let when = simulateBackgroundSession(in: given)
 
         // Then
-        let sessions = try when.then()
+        let sessions = try when.then().sessions
         XCTAssertTrue(sessions.isEmpty)
         #endif
     }
@@ -219,7 +219,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
 
         let when = simulateBackgroundSession(in: given)
 
-        let session = try when.then().takeSingle()
+        let session = try when.then().sessions.takeSingle()
         assertBackgroundSession(session: session, expectedSessionPrecondition: .prewarm)
         #endif
     }
@@ -235,7 +235,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         let when = simulateBackgroundSession(in: given)
 
         // Then
-        let sessions = try when.then()
+        let sessions = try when.then().sessions
         XCTAssertTrue(sessions.isEmpty)
     }
 
@@ -248,7 +248,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         let when = simulateBackgroundSession(in: given)
 
         // Then
-        let session = try when.then().takeSingle()
+        let session = try when.then().sessions.takeSingle()
         assertBackgroundSession(session: session, expectedSessionPrecondition: .backgroundLaunch)
     }
 
@@ -331,7 +331,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         let when = simulateSuspendedBackgroundSessionResumedByUser(in: given)
 
         // Then
-        let userSession = try when.then().takeSingle()
+        let userSession = try when.then().sessions.takeSingle()
         assertResumedUserSession(session: userSession, expectedSessionPrecondition: .inactivityTimeout)
         #endif
     }
@@ -351,7 +351,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         let when = simulateSuspendedBackgroundSessionResumedByUser(in: given)
 
         // Then
-        let (backgroundSession, userSession) = try when.then().takeTwo()
+        let (backgroundSession, userSession) = try when.then().sessions.takeTwo()
         assertSuspendedBackgroundSession(session: backgroundSession, expectedSessionPrecondition: .prewarm)
         assertResumedUserSession(session: userSession, expectedSessionPrecondition: .inactivityTimeout)
         #endif
@@ -371,7 +371,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         let when = simulateSuspendedBackgroundSessionResumedByUser(in: given)
 
         // Then
-        let userSession = try when.then().takeSingle()
+        let userSession = try when.then().sessions.takeSingle()
         assertResumedUserSession(session: userSession, expectedSessionPrecondition: .inactivityTimeout)
     }
 
@@ -392,7 +392,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         let when = simulateSuspendedBackgroundSessionResumedByUser(in: given)
 
         // Then
-        let (backgroundSession, userSession) = try when.then().takeTwo()
+        let (backgroundSession, userSession) = try when.then().sessions.takeTwo()
         assertSuspendedBackgroundSession(session: backgroundSession, expectedSessionPrecondition: .backgroundLaunch)
         assertResumedUserSession(session: userSession, expectedSessionPrecondition: .inactivityTimeout)
     }

@@ -19,7 +19,7 @@ class RUMUserInfoTests: RUMSessionTestsBase {
             .when(.setUserInfo(id: "user-123", name: "John", email: "john@example.com"))
             .and(.startManualView(after: dt1, viewName: manualViewName))
             .and(.appEntersBackground(after: dt2))
-            .then()
+            .then().sessions
             .takeSingle()
 
         // Then
@@ -37,7 +37,7 @@ class RUMUserInfoTests: RUMSessionTestsBase {
             .when(.setUserInfo(id: "user-456", extraInfo: ["plan": "premium", "age": 30]))
             .and(.startManualView(after: dt1, viewName: manualViewName))
             .and(.appEntersBackground(after: dt2))
-            .then()
+            .then().sessions
             .takeSingle()
 
         // Then
@@ -57,7 +57,7 @@ class RUMUserInfoTests: RUMSessionTestsBase {
             .and(.flushDatadogContext())
             .and(.trackTwoActions(after1: dt3, after2: dt4))
             .and(.appEntersBackground(after: dt5))
-            .then()
+            .then().sessions
             .takeSingle()
 
         // Then
@@ -82,7 +82,7 @@ class RUMUserInfoTests: RUMSessionTestsBase {
             .and(.flushDatadogContext())
             .and(.trackTwoActions(after1: dt3, after2: dt4))
             .and(.appEntersBackground(after: dt5))
-            .then()
+            .then().sessions
             .takeSingle()
 
         // Then
@@ -102,7 +102,7 @@ class RUMUserInfoTests: RUMSessionTestsBase {
             .and(.flushDatadogContext())
             .and(.trackTwoActions(after1: dt3, after2: dt4))
             .and(.appEntersBackground(after: dt5))
-            .then()
+            .then().sessions
             .takeSingle()
 
         // Then
@@ -122,7 +122,7 @@ class RUMUserInfoTests: RUMSessionTestsBase {
             .and(.flushDatadogContext())
             .and(.startManualView(after: dt3, viewName: "SecondView", viewKey: "view2"))
             .and(.appEntersBackground(after: dt4))
-            .then()
+            .then().sessions
             .takeSingle()
 
         // Then
@@ -148,7 +148,7 @@ class RUMUserInfoTests: RUMSessionTestsBase {
             .and(.flushDatadogContext())
             .and(.trackTwoActions(after1: dt3, after2: dt4))
             .and(.appEntersBackground(after: dt5))
-            .then()
+            .then().sessions
             .takeSingle()
 
         // Then

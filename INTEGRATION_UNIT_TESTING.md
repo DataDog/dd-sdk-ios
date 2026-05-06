@@ -16,18 +16,18 @@ Key properties:
 Datadog/IntegrationUnitTests/
 ├── AppRunner/                    # The micro-framework
 │   ├── AppRunner.swift           # Test harness — simulates app environment + SDK lifecycle
-│   ├── AppRun.swift              # Fluent chain builder (given/when/and/then)
+│   ├── AppRunner+Logs.swift      # Logs feature support: enableLogs, createLogger, recordedLogs
+│   ├── AppRun.swift              # Fluent chain builder (given/when/and/then) + AppRunResult
 │   ├── AppRunStep.swift          # Single step abstraction (closure wrapper)
-│   └── AppRunStep+Fixtures.swift # Predefined steps (launch, time, views, events, etc.)
-└── RUM/                          # RUM integration tests using the framework
-    ├── RUMSessionTestsBase.swift # Base class with shared fixtures and session builders
-    ├── RUMSessionStartInForegroundTests.swift
-    ├── RUMSessionStartInBackgroundTests.swift
-    ├── RUMSessionStopTests.swift
-    ├── RUMSessionTimeOutTests.swift
-    ├── RUMSessionWithNoViewTests.swift
-    ├── RUMSessionTrackingTests.swift
-    └── SDKMetrics/               # SDK metric integration tests
+│   ├── AppRunStep+Fixtures.swift # Predefined steps for SDK init, RUM, app lifecycle, etc.
+│   └── AppRunStep+Logs.swift     # Logs fixtures: enableLogs, createLogger, withLogger
+├── RUM/                          # RUM integration tests using the framework
+│   ├── RUMSessionTestsBase.swift # Base class with shared fixtures and session builders
+│   ├── RUMSessionStartInForegroundTests.swift
+│   ├── ...
+│   └── SDKMetrics/               # SDK metric integration tests
+└── Logs/                         # Logs integration tests using the framework
+    └── LogsBasicTests.swift      # Baseline coverage; demonstrates Logs and RUM↔Logs wiring
 ```
 
 ## Core Components
@@ -61,7 +61,12 @@ A wrapper around a `(AppRunner) -> Void` closure. Predefined steps in `AppRunSte
 | `.appBecomesActive(after:)` | Advances time, then transitions to active |
 | `.appEntersBackground(after:)` | Advances time, then transitions to background |
 | `.appDisplaysFirstFrame(after:)` | Simulates first frame render |
-| `.enableRUM(after:sdkSetup:rumSetup:)` | Advances time, inits SDK, enables RUM |
+| `.initializeSDK(sdkSetup:)` | Initializes SDK without enabling any feature; pair with `enableRUM(rumSetup:)` and/or `enableLogs(logsSetup:)` |
+| `.enableRUM(after:sdkSetup:rumSetup:)` | Advances time, inits SDK, enables RUM (monolithic helper) |
+| `.enableRUM(rumSetup:)` | Enables RUM only; assumes SDK was initialized via `initializeSDK` |
+| `.enableLogs(logsSetup:)` | Enables Logs feature; assumes SDK was initialized |
+| `.createLogger(_:setup:)` | Registers a persistent named logger (default name: `"default"`) |
+| `.withLogger(_:_:)` | Runs a closure against a named logger (any `LoggerProtocol` API) |
 | `.stopSession(after:)` | Advances time, calls `rum.stopSession()` |
 | `.timeoutSession()` | Advances time by the session timeout duration |
 | `.startManualView(after:viewName:viewKey:)` | Starts a manual RUM view |
@@ -133,13 +138,16 @@ All builders accept an optional `rumSetup:` closure for custom RUM configuration
 
 ### Verification Helpers
 
-Results are verified through `RUMSessionMatcher` (from `TestUtilities`):
+`then()` returns an `AppRunResult` with separate `sessions` and `logs` arrays — features that were not enabled in the scenario return empty arrays.
 
 ```swift
-let sessions = try run.then()           // Returns [RUMSessionMatcher]
-let session = try sessions.takeSingle() // Asserts exactly 1 session
-let (s1, s2) = try sessions.takeTwo()   // Asserts exactly 2 sessions
+let result = try run.then()
+let session = try result.sessions.takeSingle() // Asserts exactly 1 session
+let (s1, s2) = try result.sessions.takeTwo()   // Asserts exactly 2 sessions
+let firstLog = result.logs[0]                  // LogMatcher
 ```
+
+`RUMSessionMatcher` (from `TestUtilities`) drives session-level assertions; `LogMatcher` (also from `TestUtilities`) drives log-level assertions (`assertStatus`, `assertMessage`, `assertService`, `assertTags`, `assertAttributes`, …).
 
 Key `RUMSessionMatcher` properties:
 - `sessionStartDate`, `duration`, `sessionPrecondition`
@@ -245,15 +253,28 @@ func userSessionWithBackgroundReturn(rumSetup: AppRunner.RUMSetup? = nil) -> App
 }
 ```
 
+## Logs
+
+Logs are wired into the framework through:
+
+- `AppRunner+Logs.swift` — adds `enableLogs(_:)`, `createLogger(name:setup:)`, `logger(name:)`, and `recordedLogs()`. Loggers are stored by name in `AppRunner.loggers`; reusing the same name from multiple `withLogger` calls preserves stateful changes (tags, attributes) across steps.
+- `AppRunStep+Logs.swift` — exposes `enableLogs(logsSetup:)`, `createLogger(_:setup:)`, and `withLogger(_:_:)` fixtures. The closurowy `withLogger { logger in … }` pattern means new logger APIs do not require new fixtures — call them directly on the logger inside the closure.
+
+Test classes for Logs sit in `Datadog/IntegrationUnitTests/Logs/` and inherit directly from `XCTestCase` — there is no `LogsTestsBase`, since Logs lacks a shared session-like concept that would make a base class useful.
+
+`LogsBasicTests.swift` demonstrates the three core scenarios: a single-feature info log, a configured logger preserving tags across steps, and a RUM↔Logs cross-feature test that verifies `bundleWithRumEnabled` injects the active `view.id` into the emitted log.
+
+New Logs tests need to be added to `LogsHarness.xctestplan` to run via `make test-ios SCHEME="TestHarness" TEST_PLAN="LogsHarness"`.
+
 ## Extending to Other Products
 
-The `AppRunner` framework is product-agnostic. While currently used for RUM, it can be extended for **Logs**, **Trace**, **Crash Reporting**, etc.:
+The `AppRunner` framework is product-agnostic. RUM and Logs are wired in already; Trace, Crash Reporting, etc. follow the same pattern:
 
-1. Add `enableLogs(_:)` / `enableTrace(_:)` methods to `AppRunner`
-2. Add retrieval methods (e.g., `recordedLogs()`)
-3. Create corresponding `AppRunStep` factories
-4. Create a new base class (e.g., `LogsTestsBase`) with shared fixtures
-5. Place tests under `IntegrationUnitTests/Logs/`, `IntegrationUnitTests/Trace/`, etc.
+1. Add `enableTrace(_:)` (or analogous) on `AppRunner` via a new `AppRunner+<Feature>.swift` extension
+2. Add retrieval methods (e.g., `recordedSpans()`) and surface them through `AppRunResult`
+3. Create corresponding `AppRunStep` factories in `AppRunStep+<Feature>.swift`
+4. Decide whether a base test class is warranted (RUM has one, Logs does not)
+5. Place tests under `IntegrationUnitTests/<Feature>/` and register them in a dedicated `<Feature>Harness.xctestplan`
 
 ## Conventions
 

@@ -44,16 +44,41 @@ extension AppRunStep {
         })
     }
 
+    // MARK: - SDK Setup
+
+    /// Initializes the SDK without enabling any feature. Use in sequence with
+    /// `enableRUM(rumSetup:)` and/or `enableLogs(logsSetup:)`.
+    /// Do not combine with `enableRUM(after:sdkSetup:rumSetup:)` — that helper
+    /// performs init internally.
+    static func initializeSDK(sdkSetup: AppRunner.SDKSetup? = nil) -> AppRunStep {
+        return AppRunStep({ app in
+            app.initializeSDK(sdkSetup ?? { _ in })
+        })
+    }
+
     // MARK: - RUM Use Cases
 
+    // Convenience helper for initializing the SDK and enabling the RUM feature in one step.
+    /// - Parameters:
+    ///   - dt: The time interval to advance before initializing the SDK and enabling the RUM feature.
+    ///   - sdkSetup: A closure to configure the SDK setup.
+    ///   - rumSetup: A closure to configure the RUM feature.
     static func enableRUM(
         after dt: TimeInterval,
         sdkSetup: AppRunner.SDKSetup? = nil,
         rumSetup: AppRunner.RUMSetup? = nil
     ) -> AppRunStep {
         return AppRunStep({ app in
-            app.advanceTime(by: dt)
-            app.initializeSDK(sdkSetup ?? { _ in })
+            AppRunStep.advanceTime(by: dt).perform(app)
+            AppRunStep.initializeSDK(sdkSetup: sdkSetup).perform(app)
+            AppRunStep.enableRUM(rumSetup: rumSetup).perform(app)
+        })
+    }
+
+    /// Enables the RUM feature. Assumes the SDK has been initialized via `initializeSDK`.
+    /// Used in sequences combining multiple features (e.g., `initializeSDK → enableRUM → enableLogs`).
+    static func enableRUM(rumSetup: AppRunner.RUMSetup? = nil) -> AppRunStep {
+        return AppRunStep({ app in
             app.enableRUM { rumConfig in
                 rumSetup?(&rumConfig)
                 rumConfig.sessionEndedSampleRate = 0 // TODO: RUM-9335 Enable "Session Ended" telemetry after fixing `application.id` value for session stop

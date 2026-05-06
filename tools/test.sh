@@ -21,6 +21,7 @@ define_arg "scheme" "" "Identifies the test scheme to execute" "string" "true"
 define_arg "os" "" "Sets the operating system version for the tests, e.g. '17.5'" "string" "true"
 define_arg "platform" "" "Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'" "string" "true"
 define_arg "device" "" "Specifies the simulator device for running tests, e.g. 'iPhone 15 Pro'" "string" "true"
+define_arg "test-plan" "" "Optional .xctestplan to run; when empty the scheme's default test plan is used" "string" "false"
 
 check_for_help "$@"
 parse_args "$@"
@@ -99,6 +100,12 @@ set -x
 
 xcodebuild -version
 
+if [ -n "$test_plan" ]; then
+    TEST_PLAN_ARGS=(-testPlan "$test_plan")
+else
+    TEST_PLAN_ARGS=()
+fi
+
 if [ "$CI" = "true" ]; then
     mkdir -p ResultBundles
     RESULT_BUNDLE_PATH="ResultBundles/${SCHEME}.xcresult"
@@ -108,9 +115,9 @@ if [ "$CI" = "true" ]; then
     # be against the point since the bundle that fails is usually the one we want to look at.
     # After doing that, the cached result is returned.
     XCODEBUILD_EXIT=0
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | xcbeautify || XCODEBUILD_EXIT=$?
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" "${TEST_PLAN_ARGS[@]}" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | xcbeautify || XCODEBUILD_EXIT=$?
     zip -r -q "ResultBundles/${SCHEME}.xcresult.zip" "$RESULT_BUNDLE_PATH"
     exit $XCODEBUILD_EXIT
 else
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test 2>&1 | xcbeautify
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" "${TEST_PLAN_ARGS[@]}" test 2>&1 | xcbeautify
 fi

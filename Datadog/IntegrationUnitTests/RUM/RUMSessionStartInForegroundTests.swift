@@ -56,7 +56,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .when(.appEntersBackground(after: dt1))
 
             // When
-            let session = try when.then().takeSingle()
+            let session = try when.then().sessions.takeSingle()
             #if !os(watchOS)
             XCTAssertNotNil(session.ttidEvent)
             DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
@@ -86,7 +86,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             let when = given.when(.appEntersBackground(after: dt1))
 
             // When
-            let session = try when.then().takeSingle()
+            let session = try when.then().sessions.takeSingle()
             XCTAssertNil(session.ttidEvent)
             XCTAssertNil(session.timeToInitialDisplay)
             DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -123,7 +123,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 #if !os(watchOS)
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
@@ -163,7 +163,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -211,7 +211,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
@@ -253,7 +253,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: dt2))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -292,7 +292,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 #if !os(watchOS)
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
@@ -329,7 +329,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: 0))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -367,7 +367,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 #if !os(watchOS)
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
@@ -404,7 +404,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -441,7 +441,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 #if !os(watchOS)
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, timeToInitialDisplay, accuracy: accuracy)
@@ -478,7 +478,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -512,7 +512,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             let when = given.when(.appEntersBackground(after: dt1))
 
             // When
-            let sessions = try when.then()
+            let sessions = try when.then().sessions
             XCTAssertTrue(sessions.isEmpty)
         }
 
@@ -527,7 +527,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             let when = given.when(.appEntersBackground(after: dt1))
 
             // When
-            let session = try when.then().takeSingle()
+            let session = try when.then().sessions.takeSingle()
             XCTAssertNil(session.ttidEvent)
             XCTAssertNil(session.timeToInitialDisplay)
             DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -562,7 +562,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, preWarmedTimeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
@@ -592,7 +592,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -631,7 +631,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: dt2))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, preWarmedTimeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
@@ -662,7 +662,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: dt2))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -697,7 +697,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: 0))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, preWarmedTimeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
@@ -726,7 +726,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: 0))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -761,7 +761,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: 0))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, preWarmedTimeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
@@ -789,7 +789,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: 0))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -824,7 +824,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNotNil(session.ttidEvent)
                 DDAssertEqual(session.timeToInitialDisplay, preWarmedTimeToInitialDisplay, accuracy: accuracy)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
@@ -853,7 +853,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -886,7 +886,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             let when = given.when(.appEntersBackground(after: dt1))
 
             // When
-            let sessions = try when.then()
+            let sessions = try when.then().sessions
             XCTAssertTrue(sessions.isEmpty)
         }
 
@@ -901,7 +901,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
             let when = given.when(.appEntersBackground(after: dt1))
 
             // When
-            let session = try when.then().takeSingle()
+            let session = try when.then().sessions.takeSingle()
             XCTAssertNil(session.ttidEvent)
             XCTAssertNil(session.timeToInitialDisplay)
             DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -936,7 +936,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
@@ -966,7 +966,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
                 DDAssertEqual(session.duration, dt1 + dt2, accuracy: accuracy)
@@ -1004,7 +1004,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: dt2))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.timeToInitialDisplay)
                 XCTAssertNil(session.ttidEvent)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
@@ -1035,7 +1035,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: dt2))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -1070,7 +1070,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: 0))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.timeToInitialDisplay)
                 XCTAssertNil(session.ttidEvent)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
@@ -1099,7 +1099,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: 0))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -1134,7 +1134,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: 0))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.timeToInitialDisplay)
                 XCTAssertNil(session.ttidEvent)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
@@ -1162,7 +1162,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 .and(.appEntersBackground(after: 0))
 
             for when in [when1, when2] {
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)
@@ -1197,7 +1197,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.timeToInitialDisplay)
                 XCTAssertNil(session.ttidEvent)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
@@ -1226,7 +1226,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
 
             for when in [when1, when2] {
                 // Then
-                let session = try when.then().takeSingle()
+                let session = try when.then().sessions.takeSingle()
                 XCTAssertNil(session.ttidEvent)
                 XCTAssertNil(session.timeToInitialDisplay)
                 DDAssertEqual(session.sessionStartDate, processLaunchDate + timeToAppBecomeActive + timeToSDKInit, accuracy: accuracy)

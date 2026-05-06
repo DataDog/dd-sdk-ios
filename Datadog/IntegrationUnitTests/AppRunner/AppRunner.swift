@@ -8,6 +8,7 @@ import XCTest
 import DatadogInternal
 import TestUtilities
 @testable import DatadogCore
+@testable import DatadogLogs
 @testable import DatadogRUM
 
 /// A [Test Harness](https://en.wikipedia.org/wiki/Test_harness) that simulates the iOS app environment and manages SDK lifecycle.
@@ -135,6 +136,7 @@ internal class AppRunner {
         appStateProvider = nil
         appLaunchHandler = nil
         core = nil
+        loggers.removeAll()
     }
 
     // swiftlint:disable implicitly_unwrapped_optional
@@ -147,9 +149,10 @@ internal class AppRunner {
     #if !os(watchOS)
     private var frameInfoProvider: FrameInfoProviderMock!
     #endif
-    private var core: DatadogCoreProxy!
+    var core: DatadogCoreProxy!
     // swiftlint:enable implicitly_unwrapped_optional
     private var appStateObservers: [NSObjectProtocol] = []
+    var loggers: [String: LoggerProtocol] = [:]
 
     // MARK: - App Lifecycle
 
