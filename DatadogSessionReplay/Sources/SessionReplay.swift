@@ -88,6 +88,10 @@ public enum SessionReplay {
         try core.register(feature: resources)
 
         let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)
+
+        // Subscribe typed-bus receivers before registration so initial context push is received:
+        core.messageBus.subscribe(receiver: sessionReplay.contextReceiver)
+
         try core.register(feature: sessionReplay)
         core.set(
             context: SessionReplayCoreContext.Configuration(
