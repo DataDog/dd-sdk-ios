@@ -42,14 +42,13 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, MessageBus, @
     /// The legacy `FeatureMessage` receiver.
     public var messageReceiver: FeatureMessageReceiver
 
-    public typealias DispatchBusMessage = (any BusMessage, DatadogCoreProtocol) -> Bool
+    public typealias DispatchBusMessage = (any BusMessage, DatadogCoreProtocol) -> Void
 
-    /// Closure invoked for each typed `BusMessage` sent through `messageBus.send(...)`.
+    /// Per-message-key dispatchers, keyed by receiver identity.
     ///
-    /// Set by `subscribe(receiver:)` and cleared by `unsubscribe(receiver:)`. When `nil`,
-    /// `send(message:else:)` invokes the caller's `fallback`. The mock holds at most one
-    /// subscriber at a time — the second `subscribe` replaces the first.
-    public var dispatchBusMessage: DispatchBusMessage?
+    /// Supports multiple subscribers per message type so multi-subscription patterns
+    /// (e.g. `provider.subscribe(to:)`) work correctly in tests.
+    private var dispatchers: [String: [ObjectIdentifier: DispatchBusMessage]] = [:]
 
     /// Callback called when `eventWriteContext` closure is executed.
     public var onEventWriteContext: ((Bool) -> Void)?
@@ -80,27 +79,29 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, MessageBus, @
     /// The mock acts as its own typed message bus.
     public var messageBus: MessageBus { self }
 
-    /// Sets `dispatchBusMessage` to forward matching messages to `receiver`.
-    /// Replaces any previously-subscribed receiver.
+    /// Adds `receiver` to the dispatch table for `Receiver.Message`.
     public func subscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
-        self.dispatchBusMessage = { message, core in
-            guard let typed = message as? Receiver.Message else { return false }
+        let id = ObjectIdentifier(receiver)
+        dispatchers[Receiver.Message.key, default: [:]][id] = { message, core in
+            guard let typed = message as? Receiver.Message else { return }
             receiver.receive(message: typed, from: core)
-            return true
         }
     }
 
-    /// Clears `dispatchBusMessage`.
+    /// Removes `receiver` from the dispatch table.
     public func unsubscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
-        self.dispatchBusMessage = nil
+        let id = ObjectIdentifier(receiver)
+        dispatchers[Receiver.Message.key]?.removeValue(forKey: id)
     }
 
-    /// Forwards `message` to `dispatchBusMessage`. Invokes `fallback` if no dispatcher
-    /// is set or the dispatcher returns `false`.
+    /// Delivers `message` to all registered dispatchers for `Message.key`.
+    /// Invokes `fallback` if no dispatcher is registered for this message type.
     public func send<Message>(message: Message, else fallback: @escaping () -> Void) where Message: BusMessage {
-        if dispatchBusMessage?(message, self) != true {
+        guard let bucket = dispatchers[Message.key], !bucket.isEmpty else {
             fallback()
+            return
         }
+        bucket.values.forEach { $0(message, self) }
     }
 
     /// no-op
