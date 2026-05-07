@@ -48,6 +48,16 @@ public protocol MessageBus {
     /// Identity (`===`) is used to locate the subscription; the call is a no-op if
     /// `receiver` is not currently subscribed.
     func unsubscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver
+
+    /// Publishes `message` to every subscriber registered for `Message`.
+    ///
+    /// If no subscriber is registered for the message kind, `fallback` is invoked
+    /// instead. Do not assume which thread the fallback runs on.
+    ///
+    /// - Parameters:
+    ///   - message: The message to publish.
+    ///   - fallback: Closure invoked when the message had no subscribers.
+    func send<Message>(message: Message, else fallback: @escaping () -> Void) where Message: BusMessage
 }
 
 extension MessageBus {
@@ -79,6 +89,14 @@ extension MessageBus {
     /// Idempotent — additional calls with the same `subscription` are no-ops.
     func unsubscribe(_ subscription: MessageBusSubscription) {
         subscription.unsubscribe(from: self)
+    }
+
+    /// Publishes `message` to every subscriber registered for `Message`.
+    ///
+    /// Convenience over `send(message:else:)` for the common case where the
+    /// caller doesn't care whether the message was consumed.
+    public func send<Message>(message: Message) where Message: BusMessage {
+        send(message: message, else: {})
     }
 }
 
@@ -158,6 +176,9 @@ public struct NOPMessageBus: MessageBus {
 
     /// no-op
     public func unsubscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver { }
+
+    /// no-op
+    public func send<Message>(message: Message, else fallback: @escaping () -> Void) where Message: BusMessage { }
 }
 
 /// Adapts a free closure to `BusMessageReceiver`. Internal-only — exposed exclusively

@@ -831,10 +831,10 @@
 		D21A94F22B8397CA00AC4256 /* WebViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21A94F12B8397CA00AC4256 /* WebViewMessage.swift */; };
 		D21AE6BC29E5EDAF0064BF29 /* TelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21AE6BB29E5EDAF0064BF29 /* TelemetryTests.swift */; };
 		D21C26C528A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
-		D21C26D128A64599005DD405 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D028A64599005DD405 /* MessageBusTests.swift */; };
+		D21C26D128A64599005DD405 /* CoreMessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D028A64599005DD405 /* CoreMessageBusTests.swift */; };
 		D22442C52CA301DA002E71E4 /* UIColor+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */; };
 		D224430429E9588100274EC7 /* TelemetryReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */; };
-		D224430629E95C2C00274EC7 /* MessageBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA429E072D7004D0AE8 /* MessageBus.swift */; };
+		D224430629E95C2C00274EC7 /* CoreMessageBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA429E072D7004D0AE8 /* CoreMessageBus.swift */; };
 		D224430D29E95D6700274EC7 /* CrashReportReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */; };
 		D224430F29E9779F00274EC7 /* TelemetryReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */; };
 		D224DFA82FAB8C4B000AED53 /* MessageBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224DFA72FAB8C4B000AED53 /* MessageBus.swift */; };
@@ -2659,7 +2659,7 @@
 		D20FD9D52ACC0934004D3569 /* WebLogIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebLogIntegrationTests.swift; sourceTree = "<group>"; };
 		D21331C02D132F0600E4A6A1 /* SwiftUIWireframesBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIWireframesBuilderTests.swift; sourceTree = "<group>"; };
 		D213532F270CA722000315AD /* DataCompressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompressionTests.swift; sourceTree = "<group>"; };
-		D214DAA429E072D7004D0AE8 /* MessageBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBus.swift; sourceTree = "<group>"; };
+		D214DAA429E072D7004D0AE8 /* CoreMessageBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMessageBus.swift; sourceTree = "<group>"; };
 		D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryReceiver.swift; sourceTree = "<group>"; };
 		D215ED6A29D2E1080046B721 /* ErrorMessageReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageReceiver.swift; sourceTree = "<group>"; };
 		D215F0932F6D5DE000E86466 /* ThirdPartyDelegateProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThirdPartyDelegateProxy.swift; sourceTree = "<group>"; };
@@ -2683,7 +2683,7 @@
 		D21A94F12B8397CA00AC4256 /* WebViewMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewMessage.swift; sourceTree = "<group>"; };
 		D21AE6BB29E5EDAF0064BF29 /* TelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryTests.swift; sourceTree = "<group>"; };
 		D21C26C428A3B49C005DD405 /* FeatureStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureStorage.swift; sourceTree = "<group>"; };
-		D21C26D028A64599005DD405 /* MessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusTests.swift; sourceTree = "<group>"; };
+		D21C26D028A64599005DD405 /* CoreMessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMessageBusTests.swift; sourceTree = "<group>"; };
 		D21C26EA28AFA11E005DD405 /* LogMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+SessionReplay.swift"; sourceTree = "<group>"; };
@@ -4455,7 +4455,7 @@
 			isa = PBXGroup;
 			children = (
 				D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */,
-				D214DAA429E072D7004D0AE8 /* MessageBus.swift */,
+				D214DAA429E072D7004D0AE8 /* CoreMessageBus.swift */,
 				D2EFA866286DA82700F1FAA6 /* Context */,
 				61133BA62423979B00786299 /* Storage */,
 				6128F56C2BA223A100D35B08 /* DataStore */,
@@ -6717,7 +6717,7 @@
 				614B78EA296D7B63009C6B92 /* DatadogCoreTests.swift */,
 				6167E70D2B83502200C3CA2D /* DatadogCore+FeatureDirectoriesTests.swift */,
 				613F9C172BAC3527007C7606 /* DatadogCore+FeatureDataStoreTests.swift */,
-				D21C26D028A64599005DD405 /* MessageBusTests.swift */,
+				D21C26D028A64599005DD405 /* CoreMessageBusTests.swift */,
 			);
 			path = DatadogCore;
 			sourceTree = "<group>";
@@ -7871,7 +7871,7 @@
 				6128F5742BA3280300D35B08 /* DataStoreFileReader.swift in Sources */,
 				11F59BC22EAE2180009F8579 /* LaunchInfoPublisher.swift in Sources */,
 				D2553829288F0B2400727FAD /* LowPowerModePublisher.swift in Sources */,
-				D224430629E95C2C00274EC7 /* MessageBus.swift in Sources */,
+				D224430629E95C2C00274EC7 /* CoreMessageBus.swift in Sources */,
 				61F930BE2BA1ACAC005F0EE2 /* Storage+TLV.swift in Sources */,
 				6128F5772BA32DE500D35B08 /* DataStoreFileWriter.swift in Sources */,
 				6139CD712589FAFD007E8BB7 /* Retrying.swift in Sources */,
@@ -8065,7 +8065,7 @@
 				61345613244756E300E7DA6B /* PerformancePresetTests.swift in Sources */,
 				D28F836C29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift in Sources */,
 				F603F12B2CAEA4FA0088E6B7 /* DDInternalLoggerTests.swift in Sources */,
-				D21C26D128A64599005DD405 /* MessageBusTests.swift in Sources */,
+				D21C26D128A64599005DD405 /* CoreMessageBusTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

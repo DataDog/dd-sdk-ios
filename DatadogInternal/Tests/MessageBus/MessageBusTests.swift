@@ -15,7 +15,7 @@ class MessageBusTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = PassthroughCoreMock()
-        bus = MessageBusSpy()
+        bus = MessageBusSpy(core: core)
     }
 
     override func tearDown() {
@@ -41,7 +41,7 @@ class MessageBusTests: XCTestCase {
             received.fulfill()
         }
 
-        bus.deliver(AlphaMessage(value: 42), from: core)
+        bus.send(message: AlphaMessage(value: 42))
 
         wait(for: [received], timeout: 1)
         XCTAssertEqual(payload?.value, 42)
@@ -56,7 +56,7 @@ class MessageBusTests: XCTestCase {
             received.fulfill()
         }
 
-        bus.deliver(AlphaMessage(value: 0), from: core)
+        bus.send(message: AlphaMessage(value: 0))
 
         wait(for: [received], timeout: 1)
         XCTAssertTrue(forwardedCore === core)
@@ -69,11 +69,11 @@ class MessageBusTests: XCTestCase {
         _ = bus.subscribe { (_: AlphaMessage, _) in alphaCount += 1 }
         _ = bus.subscribe { (_: BetaMessage, _) in betaCount += 1 }
 
-        bus.deliver(AlphaMessage(value: 0), from: core)
+        bus.send(message: AlphaMessage(value: 0))
         XCTAssertEqual(alphaCount, 1)
         XCTAssertEqual(betaCount, 0)
 
-        bus.deliver(BetaMessage(label: "x"), from: core)
+        bus.send(message: BetaMessage(label: "x"))
         XCTAssertEqual(alphaCount, 1)
         XCTAssertEqual(betaCount, 1)
     }
@@ -103,12 +103,18 @@ private struct BetaMessage: BusMessage {
     let label: String
 }
 
-/// A test double that records subscribe/unsubscribe calls and lets tests
-/// drive message delivery to the captured receivers.
+/// A test double that records subscribe/unsubscribe calls and dispatches
+/// `send` to every captured receiver — the per-receiver closure filters by
+/// type, so cross-type sends are ignored without ceremony.
 private final class MessageBusSpy: MessageBus {
+    let core: DatadogCoreProtocol
     private(set) var subscribedReceivers: [AnyObject] = []
     private(set) var unsubscribedReceivers: [AnyObject] = []
     private var deliveryActions: [(Any, DatadogCoreProtocol) -> Void] = []
+
+    init(core: DatadogCoreProtocol) {
+        self.core = core
+    }
 
     func subscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
         subscribedReceivers.append(receiver)
@@ -124,7 +130,7 @@ private final class MessageBusSpy: MessageBus {
         unsubscribedReceivers.append(receiver)
     }
 
-    func deliver<Message>(_ message: Message, from core: DatadogCoreProtocol) where Message: BusMessage {
+    func send<Message>(message: Message, else fallback: @escaping () -> Void) where Message: BusMessage {
         deliveryActions.forEach { $0(message, core) }
     }
 }

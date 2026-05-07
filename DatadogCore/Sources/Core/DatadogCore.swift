@@ -53,7 +53,7 @@ internal final class DatadogCore {
     let applicationVersionPublisher: ApplicationVersionPublisher
 
     /// The message-bus instance.
-    let bus = MessageBus()
+    let bus = CoreMessageBus()
 
     /// Registry for Features.
     @ReadWriteLock
@@ -323,7 +323,7 @@ internal final class DatadogCore {
 }
 
 extension DatadogCore: DatadogCoreProtocol {
-    var messageBus: DatadogInternal.MessageBus { NOPMessageBus() }
+    var messageBus: MessageBus { NOPMessageBus() }
 
     /// Registers a Feature instance.
     ///
