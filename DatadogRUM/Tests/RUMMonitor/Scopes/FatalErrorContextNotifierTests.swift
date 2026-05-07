@@ -10,28 +10,30 @@ import TestUtilities
 @testable import DatadogRUM
 
 class FatalErrorContextNotifierTests: XCTestCase {
-    private let featureScope = FeatureScopeMock()
+    private let bus = PassthroughCoreMock()
 
     // MARK: - Changing Session State
 
     func testWhenSessionStateIsSet_itSendsSessionStateMessage() throws {
         // Given
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: featureScope)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        var received: [RUMSessionState] = []
+        _ = bus.subscribe { (state: RUMSessionState, _) in received.append(state) }
         let newSessionState: RUMSessionState = .mockRandom()
 
         // When
         fatalErrorContext.sessionState = newSessionState
 
         // Then
-        let messages = featureScope.messagesSent()
-        XCTAssertEqual(messages.count, 1)
-        let sessionStateMessage = try XCTUnwrap(messages.lastPayload as? RUMSessionState)
-        XCTAssertEqual(newSessionState, sessionStateMessage)
+        XCTAssertEqual(received.count, 1)
+        XCTAssertEqual(received.first, newSessionState)
     }
 
     func testWhenSessionStateIsReset_itDoesNotSendNextSessionStateMessage() throws {
         // Given
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: featureScope)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        var received: [RUMSessionState] = []
+        _ = bus.subscribe { (state: RUMSessionState, _) in received.append(state) }
         let originalSessionState: RUMSessionState = .mockRandom()
         fatalErrorContext.sessionState = originalSessionState
 
@@ -39,58 +41,55 @@ class FatalErrorContextNotifierTests: XCTestCase {
         fatalErrorContext.sessionState = nil
 
         // Then
-        let messages = featureScope.messagesSent()
-        XCTAssertEqual(messages.count, 1)
-        let sessionStateMessage = try XCTUnwrap(messages.lastPayload as? RUMSessionState)
-        XCTAssertEqual(originalSessionState, sessionStateMessage)
+        XCTAssertEqual(received.count, 1)
+        XCTAssertEqual(received.first, originalSessionState)
     }
 
     // MARK: - Changing View State
 
     func testWhenViewIsSet_itSendsViewEventMessage() throws {
         // Given
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: featureScope)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        var receivedViews: [RUMViewEvent] = []
+        _ = bus.subscribe { (event: RUMViewEvent, _) in receivedViews.append(event) }
         let newViewEvent: RUMViewEvent = .mockRandom()
 
         // When
         fatalErrorContext.view = newViewEvent
 
         // Then
-        let messages = featureScope.messagesSent()
-        XCTAssertEqual(messages.count, 1)
-        let viewEventMessage = try XCTUnwrap(messages.firstPayload as? RUMViewEvent)
-        DDAssertJSONEqual(newViewEvent, viewEventMessage)
+        XCTAssertEqual(receivedViews.count, 1)
+        DDAssertJSONEqual(receivedViews.first, newViewEvent)
     }
 
     func testWhenViewIsReset_itSendsViewResetMessage() throws {
         // Given
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: featureScope)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        var resetCount = 0
+        _ = bus.subscribe { (_: RUMViewReset, _) in resetCount += 1 }
         fatalErrorContext.view = .mockRandom()
 
         // When
         fatalErrorContext.view = nil
 
         // Then
-        let messages = featureScope.messagesSent()
-        XCTAssertEqual(messages.count, 2)
-        let viewEventMessage = try XCTUnwrap(messages.lastPayload as? String)
-        XCTAssertEqual(viewEventMessage, RUMPayloadMessages.viewReset)
+        XCTAssertEqual(resetCount, 1)
     }
 
     // MARK: - Changing Global Attributes
 
     func testWhenGlobalAttributesAreSet_itSendsAttributesMessage() throws {
         // Given
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: featureScope)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        var received: [RUMEventAttributes] = []
+        _ = bus.subscribe { (attrs: RUMEventAttributes, _) in received.append(attrs) }
         let newGlobalAttributes = mockRandomAttributes()
 
         // When
         fatalErrorContext.globalAttributes = newGlobalAttributes
 
         // Then
-        let messages = featureScope.messagesSent()
-        XCTAssertEqual(messages.count, 1)
-        let attributesMessage = try XCTUnwrap(messages.lastPayload as? RUMEventAttributes)
-        DDAssertJSONEqual(newGlobalAttributes, attributesMessage)
+        XCTAssertEqual(received.count, 1)
+        DDAssertJSONEqual(received.first, newGlobalAttributes)
     }
 }
