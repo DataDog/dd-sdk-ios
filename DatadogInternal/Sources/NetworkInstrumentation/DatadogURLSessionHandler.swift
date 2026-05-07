@@ -46,8 +46,8 @@ extension DatadogCoreProtocol {
     ///
     /// - Parameter urlSessionHandler: The `URLSession` handler to register.
     public func register(urlSessionHandler: DatadogURLSessionHandler) throws {
-        let contextProvider = NetworkContextCoreProvider()
         let feature = get(feature: NetworkInstrumentationFeature.self) ?? {
+            let contextProvider = NetworkContextCoreProvider()
             let feature = NetworkInstrumentationFeature(networkContextProvider: contextProvider, messageReceiver: NOPFeatureMessageReceiver())
             // Subscribe typed-bus receiver before registration so initial context push is received:
             messageBus.subscribe(receiver: contextProvider)
