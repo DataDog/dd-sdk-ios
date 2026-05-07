@@ -87,7 +87,7 @@ class RUMTests: XCTestCase {
         // Then
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        let telemetryReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: TelemetryReceiver.self)
+        let telemetryReceiver: TelemetryReceiver? = rum.telemetryReceiver
         let crashReportReceiver = rum.crashReportReceiver
         XCTAssertEqual(rum.performanceOverride?.maxFileAgeForRead, 24.hours)
         XCTAssertEqual(monitor.scopes.dependencies.rumApplicationID, applicationID)
@@ -374,7 +374,7 @@ class RUMTests: XCTestCase {
 
         // Then
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
-        let telemetryReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: TelemetryReceiver.self)
+        let telemetryReceiver: TelemetryReceiver? = rum.telemetryReceiver
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 42)
     }
 
@@ -384,7 +384,7 @@ class RUMTests: XCTestCase {
 
         // Then
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
-        let telemetryReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: TelemetryReceiver.self)
+        let telemetryReceiver: TelemetryReceiver? = rum.telemetryReceiver
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 20)
     }
 

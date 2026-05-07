@@ -43,13 +43,17 @@ public enum RUM {
 
         // Register RUM feature:
         let rum = try RUMFeature(in: core, configuration: configuration)
-        try core.register(feature: rum)
 
-        // Subscribe typed-bus receivers:
+        // Subscribe typed-bus receivers before registration so initial context push is received:
         core.messageBus.subscribe(receiver: rum.crashReportReceiver)
         core.messageBus.subscribe(receiver: rum.errorMessageReceiver)
         core.messageBus.subscribe(receiver: rum.flagEvaluationReceiver)
         core.messageBus.subscribe(receiver: rum.telemetryReceiver)
+        if let watchdog = rum.watchdogTerminationMonitor {
+            core.messageBus.subscribe(receiver: watchdog)
+        }
+
+        try core.register(feature: rum)
 
         // If resource tracking is configured, register URLSessionHandler to enable network instrumentation:
         if let urlSessionConfig = configuration.urlSessionTracking {

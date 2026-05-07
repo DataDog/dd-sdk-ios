@@ -11,6 +11,7 @@ import DatadogInternal
 internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFeature {
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
+    let contextReceiver: RUMContextReceiver
     let performanceOverride: PerformancePresetOverride?
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
@@ -32,6 +33,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
             configuration: configuration
         )
 
+        self.contextReceiver = recordingComponents.contextReceiver
         self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry

@@ -23,6 +23,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
     let telemetryReceiver: TelemetryReceiver
 
+    let watchdogTerminationMonitor: WatchdogTerminationMonitor?
+
     let monitor: Monitor
 
     let instrumentation: RUMInstrumentation
@@ -318,10 +320,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             )
         ]
 
-        if let watchdogTermination = watchdogTermination {
-            messageReceivers.append(watchdogTermination)
-        }
-
+        self.watchdogTerminationMonitor = watchdogTermination
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
 
         // Forward instrumentation calls to monitor:
