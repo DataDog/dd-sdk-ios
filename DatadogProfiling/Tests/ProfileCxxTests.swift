@@ -373,6 +373,48 @@ final class ProfileCxxTests: XCTestCase {
         XCTAssertEqual(unpackedProfile.pointee.n_sample_type, 1, "Should have one sample type")
     }
 
+    func testProfileAggregation_withMissingImageCache_fallsBackToBinaryLookup() throws {
+        // Given
+        let profile = try XCTUnwrap(dd_pprof_create(10_000_000))
+        defer { dd_pprof_destroy(profile) }
+
+        let validPC = try XCTUnwrap(anyKnownProgramCounter())
+        let trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        trace.pointee = .mockWith(
+            tid: 1,
+            addresses: [UInt64(UInt(bitPattern: validPC))],
+            binaryImage: binary_image_t(load_address: 0, uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), filename: nil)
+        )
+        defer { dd_free(trace) }
+
+        // When
+        dd_pprof_add_samples(profile, trace, 1)
+        var data: UnsafeMutablePointer<UInt8>?
+        let size = dd_pprof_serialize(profile, &data)
+        defer { dd_pprof_free_serialized_data(data) }
+
+        // Then
+        XCTAssertGreaterThan(size, 0, "Serialized profile should not be empty")
+
+        let unpackedProfile = try XCTUnwrap(perftools__profiles__profile__unpack(nil, size, data))
+        defer { perftools__profiles__profile__free_unpacked(unpackedProfile, nil) }
+
+        XCTAssertEqual(unpackedProfile.pointee.n_mapping, 1, "Resolved frame should create one concrete mapping")
+
+        let mapping = try XCTUnwrap(unpackedProfile.pointee.mapping[0])
+        XCTAssertGreaterThan(mapping.pointee.memory_start, 0, "Fallback lookup should populate the binary load address")
+
+        let buildID = try XCTUnwrap(unpackedProfile.pointee.string_table[Int(mapping.pointee.build_id)])
+        XCTAssertNotEqual(
+            String(cString: buildID),
+            "00000000-0000-0000-0000-000000000000",
+            "Fallback lookup should populate a non-zero build id"
+        )
+
+        let filename = try XCTUnwrap(unpackedProfile.pointee.string_table[Int(mapping.pointee.filename)])
+        XCTAssertFalse(String(cString: filename).isEmpty, "Fallback lookup should populate the binary filename")
+    }
+
     private func firstSerializedSampleEndTimestampSeconds(from profile: OpaquePointer?) throws -> TimeInterval {
         var data: UnsafeMutablePointer<UInt8>?
         let size = dd_pprof_serialize(profile, &data)
@@ -400,6 +442,25 @@ final class ProfileCxxTests: XCTestCase {
         return try XCTUnwrap(timestamp)
     }
 }
+
+private func anyKnownProgramCounter() -> UnsafeMutableRawPointer? {
+    guard let handle = dlopen(nil, RTLD_LAZY) else {
+        return nil
+    }
+
+    let symbols = [
+        "strlen",
+        "malloc",
+        "free",
+        "dlopen",
+        "dlsym"
+    ]
+    guard let randomSymbol = symbols.randomElement() else {
+        return nil
+    }
+    return randomSymbol.withCString { dlsym(handle, $0) }
+}
+
 ///  Deallocates a stack_trace_t and its subsequent frames
 func dd_free(_ trace: UnsafeMutablePointer<stack_trace_t>) {
     // Deallocate frames if they exist

@@ -182,6 +182,25 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         XCTAssertEqual(metricTelemetry.sampleRate, 20.0)
     }
 
+    func testTrackingProfilingSessionMetric_attachesAggregationDiagnostics() throws {
+        // Given
+        let controller = ProfilingTelemetryController(telemetry: telemetry)
+        let diagnosticsKey = AggregationDiagnosticsMetric.Constants.diagnosticsKey
+
+        // When
+        controller.sendProfile(durationNs: 1, fileSize: 2, for: .continuousProfiling)
+        controller.sendProfileNotWritten(for: .customProfiling)
+
+        // Then
+        let diagnostics = telemetry.messages.compactMap { message in
+            message.asMetric?.attributes[diagnosticsKey] as? AggregationDiagnosticsMetric.Attributes
+        }
+        XCTAssertEqual(diagnostics.count, 2)
+        XCTAssertEqual(diagnostics.first?.aggregation.droppedBatchCount, 0)
+        XCTAssertEqual(diagnostics.first?.aggregation.droppedSampleCount, 0)
+        XCTAssertEqual(diagnostics.first?.aggregation.maxPendingBytes, 0)
+    }
+
     func testSendProfile_usesContinuousStartReason_forContinuousOperation() throws {
         // Given
         let controller = ProfilingTelemetryController(telemetry: telemetry)

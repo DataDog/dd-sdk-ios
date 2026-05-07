@@ -14,13 +14,13 @@
 #if !TARGET_OS_WATCH
 
 #include <atomic>
-#include <condition_variable>
-#include <mutex>
 #include <mach/mach.h>
 #include <mach/thread_act.h>
 #include <mach/thread_info.h>
-#include <vector>
+#include <memory>
+#include <mutex>
 #include <pthread.h>
+#include <vector>
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,15 +41,19 @@ void set_main_thread(pthread_t thread);
 
 namespace dd::profiler {
 
+class aggregation_worker;
+
 /**
  * @brief Mach-based sampling profiler
  * 
- * A pure sampling engine. Collects raw stack frames at a configured interval
- * and delivers them to the callback. Binary image resolution is the
- * responsibility of the callback consumer.
+ * A sampling engine. Collects raw stack frames at a configured interval and
+ * delivers them to the callback. Binary image resolution is the responsibility
+ * of the callback consumer.
  */
 class mach_sampling_profiler {
 public:
+    using flush_action_t = void (*)(void* ctx);
+
     /**
      * @brief Constructs a new profiler instance
      * 
@@ -60,7 +64,8 @@ public:
     mach_sampling_profiler(
         const sampling_config_t* config,
         stack_trace_callback_t callback,
-        void* ctx);
+        void* ctx,
+        uint64_t hard_limit_bytes);
 
     /**
      * @brief Destructor that ensures profiling is stopped
@@ -75,20 +80,38 @@ public:
     bool start_sampling();
 
     /**
-     * @brief Stops the sampling process
+     * @brief Stops the sampling process.
+     *
+     * If called from a thread owned by this profiler, this requests an
+     * asynchronous stop and returns immediately. Full join and reset are
+     * performed only when called from another thread.
      */
     void stop_sampling();
 
     /**
-     * @brief Requests a flush of the sample buffer and blocks until complete.
-     * The sampling thread flushes at its next safe point (start of loop iteration).
+     * @brief Requests a flush of buffered samples and blocks until complete.
+     *
+     * If provided, `action` runs after all work before this request has
+     * completed and before later buffered work is processed.
      */
-    void request_flush();
+    void request_flush(flush_action_t action = nullptr, void* action_ctx = nullptr);
 
     /**
-     * @brief Atomic flag indicating if profiling is currently running
+     * @brief Requests that sampling stop at the next safe point.
+     *
+     * This does not join threads or reset internal state.
      */
-    std::atomic<bool> running;
+    void request_stop();
+
+    /**
+     * @brief Returns and resets diagnostics accumulated since the last consume.
+     */
+    void consume_diagnostics(dd_profiler_diagnostics_t* out);
+
+    /**
+     * @brief Atomic flag indicating whether the sampling loop should keep running.
+     */
+    std::atomic<bool> should_sample;
 
 protected:
     /**
@@ -110,6 +133,8 @@ protected:
      * @brief Thread handle for the sampling thread
      */
     pthread_t sampling_thread{};
+    /// Cached Mach thread id for hot-path internal-thread filtering.
+    std::atomic<thread_t> sampling_thread_mach{MACH_PORT_NULL};
 
     /**
      * @brief Thread to profile when in single-thread mode
@@ -120,6 +145,11 @@ protected:
      * @brief Buffer for collecting stack traces
      */
     std::vector<stack_trace_t> sample_buffer;
+
+    /**
+     * @brief Serialized aggregation worker used to drain sampled traces off-thread.
+     */
+    std::unique_ptr<aggregation_worker> worker;
 
     /**
      * @brief Main sampling loop that collects stack traces from threads
@@ -135,9 +165,9 @@ protected:
     void sample_thread(thread_t thread, uint64_t interval_nanos);
 
     /**
-     * @brief Flushes the sample buffer (common implementation)
+     * @brief Returns true when the thread is owned by the profiler itself.
      */
-    void flush_buffer();
+    bool is_profiler_internal_thread(thread_t thread) const;
 
 private:
     /**
@@ -149,13 +179,8 @@ private:
      * @brief Mutex to protect start/stop operations from concurrent access
      */
     std::mutex state_mutex;
-
-    /**
-     * @brief Synchronization for flush request
-     */
-    std::atomic<bool> flush_requested{false};
-    std::mutex flush_mutex;
-    std::condition_variable flush_cv;
+    /// Indicates whether `sampling_thread` currently refers to a live session thread.
+    std::atomic<bool> has_sampling_thread{false};
 };
 
 } // namespace dd::profiler

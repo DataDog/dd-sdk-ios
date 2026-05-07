@@ -107,6 +107,7 @@ internal final class ProfilingTelemetryController {
             telemetry.debug("Failed to compute attributes for '\(metric.metricName)'")
             return
         }
+        metricAttributes.merge(AggregationDiagnosticsMetric.consumeDiagnostics().asMetricAttributes() ?? [:]) { $1 }
         metricAttributes.merge(configMetric.asMetricAttributes() ?? [:]) { $1 }
 
         telemetry.metric(name: metric.metricName, attributes: metricAttributes, sampleRate: sampleRate)
