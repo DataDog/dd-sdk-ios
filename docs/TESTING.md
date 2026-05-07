@@ -1,5 +1,7 @@
 # Testing Guide
 
+> For fast black-box behavioural tests of the SDK (the `IntegrationUnitTests` target — `AppRunner` micro-framework, `*Harness.xctestplan`), see [`HARNESS_TESTING.md`](HARNESS_TESTING.md).
+
 ## Test Conventions
 
 - **Follow existing patterns** — Look at sibling test files for conventions

@@ -27,6 +27,8 @@ docs/
 │                          RFC process, build & test quick reference
 ├── TESTING.md           ← Test conventions, mock infrastructure (.mockAny(),
 │                          .mockRandom(), .mockWith()), DatadogCoreProxy usage
+├── HARNESS_TESTING.md   ← Black-box behavioural tests via the AppRunner
+│                          micro-framework (IntegrationUnitTests target)
 ├── KNOWN_CONCERNS.md    ← Fragile areas requiring extra caution
 ├── SWIZZLING.md         ← Mandatory swizzling patterns and real incidents
 ├── LLM_FEATURE_DOCS_GUIDELINES.md  ← How to update *_FEATURE.md files
@@ -45,6 +47,7 @@ Feature-specific docs (in each module directory):
 | Understand module boundaries & data flow | `docs/ARCHITECTURE.md` |
 | Add a new feature, command, or provider | `docs/DEVELOPMENT.md` |
 | Write or fix tests | `docs/TESTING.md` |
+| Write a black-box behavioural (harness) test | `docs/HARNESS_TESTING.md` |
 | Check naming, lint, commit format | `docs/CONVENTIONS.md` |
 | Touch swizzling code | `docs/SWIZZLING.md` |
 | Modify a fragile area | `docs/KNOWN_CONCERNS.md` |
