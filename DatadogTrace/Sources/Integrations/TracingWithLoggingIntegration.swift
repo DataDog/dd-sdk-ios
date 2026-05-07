@@ -61,23 +61,21 @@ internal struct TracingWithLoggingIntegration {
             )
         : nil
 
-        core.send(
-            message: .payload(
-                LogMessage(
-                    logger: "trace",
-                    service: service,
-                    date: date,
-                    message: message,
-                    error: extractedError,
-                    level: level,
-                    thread: Thread.current.dd.name,
-                    networkInfoEnabled: networkInfoEnabled,
-                    userAttributes: userAttributes,
-                    internalAttributes: [
-                        Constants.traceIDKey: String(spanContext.traceID, representation: .hexadecimal),
-                        Constants.spanIDKey: String(spanContext.spanID, representation: .hexadecimal)
-                    ]
-                )
+        core.messageBus.send(
+            message: LogMessage(
+                logger: "trace",
+                service: service,
+                date: date,
+                message: message,
+                error: extractedError,
+                level: level,
+                thread: Thread.current.dd.name,
+                networkInfoEnabled: networkInfoEnabled,
+                userAttributes: userAttributes,
+                internalAttributes: [
+                    Constants.traceIDKey: String(spanContext.traceID, representation: .hexadecimal),
+                    Constants.spanIDKey: String(spanContext.spanID, representation: .hexadecimal)
+                ]
             ),
             else: fallback
         )

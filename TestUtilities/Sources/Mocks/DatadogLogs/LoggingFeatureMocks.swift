@@ -54,16 +54,14 @@ extension LogsFeature {
 }
 
 extension LogMessageReceiver: AnyMockable {
-    public static func mockAny() -> Self {
-        .mockWith()
+    public static func mockAny() -> LogMessageReceiver {
+        mockWith()
     }
 
     public static func mockWith(
         logEventMapper: LogEventMapper? = nil
-    ) -> Self {
-        .init(
-            logEventMapper: logEventMapper
-        )
+    ) -> LogMessageReceiver {
+        LogMessageReceiver(logEventMapper: logEventMapper)
     }
 }
 
