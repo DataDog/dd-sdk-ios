@@ -1275,6 +1275,7 @@ public enum SessionReplay
         case swiftui
         case heatmaps
         case screenChangeScheduling
+        case layerTreeRecording
 [?] extension SessionReplay.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool

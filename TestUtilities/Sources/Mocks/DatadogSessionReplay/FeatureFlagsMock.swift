@@ -12,10 +12,16 @@ import Foundation
 
 extension SessionReplay.Configuration.FeatureFlags {
     public static var allEnabled: Self {
-        [
+        var flags: Self = [
             .swiftui: true,
             .heatmaps: true,
         ]
+
+        if #available(iOS 13.0, tvOS 13.0, *) {
+            flags[.layerTreeRecording] = true
+        }
+
+        return flags
     }
 }
 
