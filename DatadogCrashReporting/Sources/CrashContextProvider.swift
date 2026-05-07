@@ -64,12 +64,7 @@ internal class CrashContextCoreProvider: CrashContextProvider {
 
 extension CrashContextCoreProvider: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case .context(let context) = message else {
-            return false
-        }
-
-        update(context: context)
-        return true
+        return false
     }
 
     /// Updates crash context.
@@ -105,6 +100,9 @@ extension CrashContextCoreProvider {
     /// by the provider and cancelled when it is deallocated.
     func subscribe(to bus: MessageBus) {
         subscriptions = [
+            bus.subscribe { [weak self] (context: DatadogContext, _) in
+                self?.update(context: context)
+            },
             bus.subscribe { [weak self] (message: RUMViewEvent, _) in
                 self?.queue.async { self?.viewEvent = message }
             },
