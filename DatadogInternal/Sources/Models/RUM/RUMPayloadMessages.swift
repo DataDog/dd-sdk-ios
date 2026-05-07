@@ -109,7 +109,9 @@ public struct RUMErrorMessage: BusMessage {
 }
 
 /// Flag evaluation message consumed by RUM on the message-bus.
-public struct RUMFlagEvaluationMessage {
+public struct RUMFlagEvaluationMessage: BusMessage {
+    public static let key = "rum-flag-evaluation"
+
     /// The flag key
     public let flagKey: String
     /// The evaluated value

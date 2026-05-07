@@ -10,12 +10,20 @@ import DatadogInternal
 
 @testable import DatadogFlags
 
-final class RUMFlagEvaluationReporterTests: XCTestCase {
-    private let featureScope = FeatureScopeMock()
+private final class RUMFlagEvaluationRecorder: BusMessageReceiver {
+    private(set) var messages: [RUMFlagEvaluationMessage] = []
+    func receive(message: RUMFlagEvaluationMessage, from core: DatadogCoreProtocol) {
+        messages.append(message)
+    }
+}
 
+final class RUMFlagEvaluationReporterTests: XCTestCase {
     func testSendFlagEvaluation() throws {
         // Given
-        let reporter = RUMFlagEvaluationReporter(featureScope: featureScope)
+        let messageBus = PassthroughCoreMock()
+        let recorder = RUMFlagEvaluationRecorder()
+        messageBus.subscribe(receiver: recorder)
+        let reporter = RUMFlagEvaluationReporter(messageBus: messageBus)
 
         // When
         reporter.sendFlagEvaluation(
@@ -24,10 +32,9 @@ final class RUMFlagEvaluationReporterTests: XCTestCase {
         )
 
         // Then
-        let messages = featureScope.messagesSent()
-        XCTAssertEqual(messages.count, 1, "Should send flag evaluation message")
+        XCTAssertEqual(recorder.messages.count, 1, "Should send flag evaluation message")
 
-        let flagEvaluation = try XCTUnwrap(messages.firstPayload as? RUMFlagEvaluationMessage)
+        let flagEvaluation = try XCTUnwrap(recorder.messages.first)
         XCTAssertEqual(flagEvaluation.flagKey, "feature-flag")
         XCTAssertEqual(flagEvaluation.value as? Bool, true)
     }
