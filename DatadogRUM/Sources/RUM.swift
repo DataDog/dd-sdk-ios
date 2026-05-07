@@ -49,6 +49,7 @@ public enum RUM {
         core.messageBus.subscribe(receiver: rum.crashReportReceiver)
         core.messageBus.subscribe(receiver: rum.errorMessageReceiver)
         core.messageBus.subscribe(receiver: rum.flagEvaluationReceiver)
+        core.messageBus.subscribe(receiver: rum.telemetryReceiver)
 
         // If resource tracking is configured, register URLSessionHandler to enable network instrumentation:
         if let urlSessionConfig = configuration.urlSessionTracking {

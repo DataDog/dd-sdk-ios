@@ -1580,19 +1580,26 @@ public class ContinuousVitalReaderMock: ContinuousVitalReader {
 #endif
 
 extension TelemetryReceiver: AnyMockable {
-    public static func mockAny() -> Self { .mockWith() }
+    public static func mockAny() -> TelemetryReceiver { mockWith() }
 
     public static func mockWith(
         featureScope: FeatureScope = NOPFeatureScope(),
         dateProvider: DateProvider = SystemDateProvider(),
         sampler: Sampler = .mockKeepAll(),
-        configurationExtraSampler: Sampler = .mockKeepAll()
-    ) -> Self {
-        .init(
+        configurationExtraSampler: Sampler = .mockKeepAll(),
+        sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(
+            telemetry: NOPTelemetry(),
+            sampleRate: 100,
+            tracksBackgroundEvents: false,
+            isUsingSceneLifecycle: false
+        )
+    ) -> TelemetryReceiver {
+        TelemetryReceiver(
             featureScope: featureScope,
             dateProvider: dateProvider,
             sampler: sampler,
-            configurationExtraSampler: configurationExtraSampler
+            configurationExtraSampler: configurationExtraSampler,
+            sessionEndedMetric: sessionEndedMetric
         )
     }
 }

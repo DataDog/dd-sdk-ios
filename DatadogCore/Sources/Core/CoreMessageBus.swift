@@ -61,11 +61,18 @@ internal final class CoreMessageBus: @unchecked Sendable {
     /// - Parameter configurationDispatchTime: The delay to dispatch the
     /// configuration telemetry
     init(configurationDispatchTime: DispatchTimeInterval = .seconds(5)) {
-        queue.asyncAfter(deadline: .now() + configurationDispatchTime) {
-            guard let core = self.core, let configuration = self.configuration else {
+        queue.asyncAfter(deadline: .now() + configurationDispatchTime) { [weak self] in
+            guard let self = self, let core = self.core, let configuration = self.configuration else {
                 return
             }
 
+            // Dispatch via typed bus to TelemetryMessage subscribers.
+            if let bucket = self.receivers[TelemetryMessage.key] {
+                let message = TelemetryMessage.configuration(configuration)
+                bucket.values.forEach { dispatch in dispatch(message, core) }
+            }
+
+            // Dispatch via legacy bus for receivers still on the legacy bus.
             self.bus.values.forEach {
                 $0.receive(message: .telemetry(.configuration(configuration)), from: core)
             }
@@ -180,9 +187,18 @@ extension CoreMessageBus: MessageBus {
 
     /// Publishes `message` to every receiver in the bucket for `Message.key`.
     ///
+    /// Configuration telemetry messages are intercepted and accumulated for deferred
+    /// batch dispatch; they are never routed to subscribers immediately.
+    ///
     /// `fallback` is invoked when the bus has no core, or when the bucket is
     /// empty. Delivery is dispatched on the bus's serial queue.
     func send<Message>(message: Message, else fallback: @escaping () -> Void) where Message: BusMessage {
+        // Intercept configuration telemetry for deferred accumulated dispatch.
+        if let telemetry = message as? TelemetryMessage, case .configuration(let config) = telemetry {
+            save(configuration: config)
+            return
+        }
+
         queue.async {
             guard let core = self.core else {
                 return fallback()
