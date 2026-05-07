@@ -123,10 +123,10 @@ public enum Logs {
     }
 
     private static func sendAttributesChanged(for feature: LogsFeature, in core: DatadogCoreProtocol) {
-        core.send(
-            message: .payload(LogEventAttributes(
+        core.messageBus.send(
+            message: LogEventAttributes(
                 attributes: feature.attributes.getAttributes()
-            ))
+            )
         )
     }
 }
