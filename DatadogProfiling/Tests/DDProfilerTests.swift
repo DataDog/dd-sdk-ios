@@ -89,17 +89,15 @@ final class DDProfilerTests: XCTestCase {
             dd_pprof_destroy(profile)
         }
 
-        var diagnostics = dd_profiler_diagnostics_t()
-        dd_profiler_consume_diagnostics(&diagnostics)
+        let diagnostics = dd_profiler_diagnostics()
 
         XCTAssertGreaterThan(diagnostics.dropped_batch_count, 0, "Hard-limit drops should be reported")
         XCTAssertGreaterThan(diagnostics.dropped_sample_count, 0, "Dropped samples should be counted")
         XCTAssertGreaterThan(diagnostics.max_pending_bytes, 0, "Pending-byte high-water mark should be reported")
 
-        var secondRead = dd_profiler_diagnostics_t()
-        dd_profiler_consume_diagnostics(&secondRead)
-        XCTAssertEqual(secondRead.dropped_batch_count, 0, "Consuming diagnostics should reset batch drops")
-        XCTAssertEqual(secondRead.dropped_sample_count, 0, "Consuming diagnostics should reset sample drops")
+        let secondRead = dd_profiler_diagnostics()
+        XCTAssertEqual(secondRead.dropped_batch_count, 0, "Reading diagnostics should reset batch drops")
+        XCTAssertEqual(secondRead.dropped_sample_count, 0, "Reading diagnostics should reset sample drops")
     }
 
     func testDDProfiler_doesNotIncludeProfilerInternalThreadsInProfile() throws {
