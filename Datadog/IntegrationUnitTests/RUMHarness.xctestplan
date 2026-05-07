@@ -9,6 +9,15 @@
     }
   ],
   "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:Datadog.xcodeproj",
+          "identifier" : "D29A9F3329DD84AA005C54A4",
+          "name" : "DatadogRUM"
+        }
+      ]
+    },
     "testTimeoutsEnabled" : true
   },
   "testTargets" : [

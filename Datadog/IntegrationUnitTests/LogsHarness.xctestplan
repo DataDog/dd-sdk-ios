@@ -9,6 +9,15 @@
     }
   ],
   "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:Datadog.xcodeproj",
+          "identifier" : "D207317B29A5226A00ECBF94",
+          "name" : "DatadogLogs"
+        }
+      ]
+    },
     "testTimeoutsEnabled" : true
   },
   "testTargets" : [
