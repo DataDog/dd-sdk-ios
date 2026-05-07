@@ -95,4 +95,19 @@ fi
 set -x
 
 xcodebuild -version
-xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test 2>&1 | xcbeautify
+
+if [ "$CI" = "true" ]; then
+    mkdir -p ResultBundles
+    RESULT_BUNDLE_PATH="ResultBundles/${SCHEME}.xcresult"
+    rm -rf "$RESULT_BUNDLE_PATH"
+    # Because of "set -eo pipefail" we need the xcodebuild line to return 0, and cache the real result.
+    # Otherwise, the script ends before zipping the result bundle, and it's not uploaded. Thay would
+    # be against the point since the bundle that fails is usually the one we want to look at.
+    # After doing that, the cached result is returned.
+    XCODEBUILD_EXIT=0
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | xcbeautify || XCODEBUILD_EXIT=$?
+    zip -r -q "ResultBundles/${SCHEME}.xcresult.zip" "$RESULT_BUNDLE_PATH"
+    exit $XCODEBUILD_EXIT
+else
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test 2>&1 | xcbeautify
+fi
