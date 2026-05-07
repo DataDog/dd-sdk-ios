@@ -78,7 +78,7 @@ extension MessageBus {
     ///
     /// - Parameter block: Called on the bus's delivery queue. Must not block.
     /// - Returns: A handle to pass to `unsubscribe(_:)`.
-    func subscribe<Message>(block: @escaping (Message, DatadogCoreProtocol) -> Void) -> MessageBusSubscription where Message: BusMessage {
+    public func subscribe<Message>(block: @escaping (Message, DatadogCoreProtocol) -> Void) -> MessageBusSubscription where Message: BusMessage {
         let receiver = BusMessageReceiverCallback(block: block)
         self.subscribe(receiver: receiver)
         return MessageBusSubscription(receiver)
@@ -87,7 +87,7 @@ extension MessageBus {
     /// Removes the subscription created by `subscribe(block:)`.
     ///
     /// Idempotent — additional calls with the same `subscription` are no-ops.
-    func unsubscribe(_ subscription: MessageBusSubscription) {
+    public func unsubscribe(_ subscription: MessageBusSubscription) {
         subscription.unsubscribe(from: self)
     }
 
