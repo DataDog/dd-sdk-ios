@@ -54,6 +54,7 @@ default:
           - "IntegrationTests/**/*"
           - "SmokeTests/**/*"
           - "TestUtilities/**/*"
+          - "tools/**/*"
           - "*" # match any file in the root directory
         compare_to: 'develop' # cannot use $DEVELOP_BRANCH var due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
 

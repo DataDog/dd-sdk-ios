@@ -92,6 +92,9 @@ if [ "$USE_TEST_VISIBILITY" = "1" ]; then
     setup_test_visibility
 fi
 
+# Suppress lint Build Phase during xcodebuild test runs. CI runs `make lint` standalone
+export SKIP_LINT=1
+
 set -x
 
 xcodebuild -version
