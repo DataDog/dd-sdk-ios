@@ -206,15 +206,13 @@ public final class PassthroughScopeMock: FeatureScope, @unchecked Sendable {
 public final class PassthroughMessageBusMock: MessageBus, @unchecked Sendable {
     private typealias Dispatch = (any BusMessage, DatadogCoreProtocol) -> Void
 
-    /// Weak reference stored as `AnyObject` because `DatadogCoreProtocol` is not class-constrained.
-    private weak var _core: AnyObject?
-    private var core: DatadogCoreProtocol? { _core as? DatadogCoreProtocol }
+    private weak var core: (any DatadogCoreProtocol)?
 
     /// Per-message-key dispatchers, keyed by receiver identity.
     private var dispatchers: [String: [ObjectIdentifier: Dispatch]] = [:]
 
     public init(core: DatadogCoreProtocol) {
-        self._core = core as AnyObject
+        self.core = core
     }
 
     public func subscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
