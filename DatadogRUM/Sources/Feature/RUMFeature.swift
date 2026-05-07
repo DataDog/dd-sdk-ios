@@ -17,6 +17,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
     let crashReportReceiver: CrashReportReceiver
 
+    let errorMessageReceiver: ErrorMessageReceiver
+
     let monitor: Monitor
 
     let instrumentation: RUMInstrumentation
@@ -288,6 +290,11 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             eventsMapper: eventsMapper
         )
 
+        self.errorMessageReceiver = ErrorMessageReceiver(
+            featureScope: featureScope,
+            monitor: monitor
+        )
+
         var messageReceivers: [FeatureMessageReceiver] = [
             TelemetryInterceptor(sessionEndedMetric: sessionEndedMetric),
             TelemetryReceiver(
@@ -295,10 +302,6 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 dateProvider: configuration.dateProvider,
                 sampler: Sampler(samplingRate: configuration.telemetrySampleRate),
                 configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate)
-            ),
-            ErrorMessageReceiver(
-                featureScope: featureScope,
-                monitor: monitor
             ),
             FlagEvaluationReceiver(monitor: monitor),
             WebViewEventReceiver(

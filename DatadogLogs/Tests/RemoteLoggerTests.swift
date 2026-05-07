@@ -9,8 +9,22 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogLogs
 
+private final class RUMErrorMessageRecorder: BusMessageReceiver {
+    private(set) var messages: [RUMErrorMessage] = []
+    func receive(message: RUMErrorMessage, from core: DatadogCoreProtocol) {
+        messages.append(message)
+    }
+}
+
 class RemoteLoggerTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
+    private let messageBus = PassthroughCoreMock()
+    private let errorRecorder = RUMErrorMessageRecorder()
+
+    override func setUp() {
+        super.setUp()
+        messageBus.subscribe(receiver: errorRecorder)
+    }
 
     // MARK: - Sending Error Message over Message Bus
 
@@ -33,6 +47,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -45,13 +60,14 @@ class RemoteLoggerTests: XCTestCase {
         logger.info("Info message")
 
         // Then
-        XCTAssertEqual(featureScope.messagesSent().count, 0)
+        XCTAssertEqual(errorRecorder.messages.count, 0)
     }
 
     func testWhenErrorLogged_itPostsToMessageBus() throws {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -64,7 +80,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message")
 
         // Then
-        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        let errorMessage = try XCTUnwrap(errorRecorder.messages.first)
         XCTAssertEqual(errorMessage.message, "Error message")
     }
 
@@ -72,6 +88,7 @@ class RemoteLoggerTests: XCTestCase {
         let stubBacktrace: BacktraceReport = .mockRandom()
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -84,7 +101,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Information message", error: ErrorMock(), attributes: [CrossPlatformAttributes.includeBinaryImages: true])
 
         // Then
-        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        let errorMessage = try XCTUnwrap(errorRecorder.messages.first)
         // This is removed because binary images are sent in the message, so the additional attribute isn't needed
         XCTAssertNil(errorMessage.attributes[CrossPlatformAttributes.includeBinaryImages])
         XCTAssertEqual(errorMessage.binaryImages?.count, stubBacktrace.binaryImages.count)
@@ -104,6 +121,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -124,7 +142,7 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // Then
-        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        let errorMessage = try XCTUnwrap(errorRecorder.messages.first)
         XCTAssertEqual(errorMessage.attributes[CrossPlatformAttributes.errorSourceType] as? String, "flutter")
         XCTAssertEqual(errorMessage.attributes[Logs.Attributes.errorFingerprint] as? String, mockFingerprint)
     }
@@ -133,6 +151,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -156,7 +175,7 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // Then
-        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        let errorMessage = try XCTUnwrap(errorRecorder.messages.first)
         XCTAssertEqual(errorMessage.attributes[CrossPlatformAttributes.errorSourceType] as? String, "flutter")
         XCTAssertEqual(errorMessage.attributes[Logs.Attributes.errorFingerprint] as? String, mockFingerprint)
     }
@@ -169,6 +188,7 @@ class RemoteLoggerTests: XCTestCase {
 
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -214,6 +234,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -250,6 +271,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: SynchronizedAttributes(attributes: [attributeKey: attributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -277,6 +299,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: SynchronizedAttributes(attributes: [attributeKey: globalAttributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -306,6 +329,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: SynchronizedAttributes(attributes: [attributeKey: globalAttributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -333,6 +357,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: SynchronizedAttributes(attributes: [attributeKey: attributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -345,7 +370,7 @@ class RemoteLoggerTests: XCTestCase {
         logger.error("Error message")
 
         // Then
-        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        let errorMessage = try XCTUnwrap(errorRecorder.messages.first)
         XCTAssertEqual(errorMessage.attributes[attributeKey] as? String, attributeValue)
     }
 
@@ -353,6 +378,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -378,6 +404,7 @@ class RemoteLoggerTests: XCTestCase {
         let stubBacktrace: BacktraceReport = .mockRandom()
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -415,6 +442,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -454,6 +482,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -497,6 +526,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -537,6 +567,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -566,6 +597,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -601,6 +633,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -638,6 +671,7 @@ class RemoteLoggerTests: XCTestCase {
 
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -685,6 +719,7 @@ class RemoteLoggerTests: XCTestCase {
 
         let logger = RemoteLogger(
             featureScope: featureScope,
+            messageBus: messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),

@@ -61,7 +61,9 @@ public struct RUMSessionState: Codable, Equatable {
 }
 
 /// Error message consumed by RUM on the message-bus.
-public struct RUMErrorMessage {
+public struct RUMErrorMessage: BusMessage {
+    public static let key = "rum-error"
+
     /// The time of the error
     public let time: Date
     /// The RUM error message
