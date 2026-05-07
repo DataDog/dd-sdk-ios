@@ -166,7 +166,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             accessibilityReader: accessibilityReader,
             onSessionUpdate: onSessionUpdate,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
-            fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
+            fatalErrorContext: FatalErrorContextNotifier(messageBus: core.messageBus),
             sessionEndedMetric: sessionEndedMetric,
             viewEndedMetricFactory: {
                 let viewEndedController = ViewEndedController(

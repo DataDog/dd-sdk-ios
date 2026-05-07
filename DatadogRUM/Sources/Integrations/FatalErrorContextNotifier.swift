@@ -23,10 +23,10 @@ internal protocol FatalErrorContextNotifying: AnyObject {
 /// Manages RUM information necessary for building context of fatal errors such as Crashes or Fatal App Hangs.
 /// It tracks value changes and notifies updates on message bus.
 internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
-    /// Message bus interface to send context updates to Crash Reporting.
-    private let messageBus: MessageSending
+    /// Typed message bus to send context updates to Crash Reporting.
+    private let messageBus: MessageBus
 
-    init(messageBus: MessageSending) {
+    init(messageBus: MessageBus) {
         self.messageBus = messageBus
     }
 
@@ -36,7 +36,7 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
     var sessionState: RUMSessionState? {
         didSet {
             if let sessionState {
-                messageBus.send(message: .payload(sessionState))
+                messageBus.send(message: sessionState)
             }
         }
     }
@@ -47,9 +47,9 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
     var view: RUMViewEvent? {
         didSet {
             if let view {
-                messageBus.send(message: .payload(view))
+                messageBus.send(message: view)
             } else {
-                messageBus.send(message: .payload(RUMPayloadMessages.viewReset))
+                messageBus.send(message: RUMViewReset())
             }
         }
     }
@@ -57,7 +57,7 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
     @ReadWriteLock
     var globalAttributes: [String: Encodable] = [:] {
         didSet {
-            messageBus.send(message: .payload(RUMEventAttributes(contextInfo: globalAttributes)))
+            messageBus.send(message: RUMEventAttributes(contextInfo: globalAttributes))
         }
     }
 }
