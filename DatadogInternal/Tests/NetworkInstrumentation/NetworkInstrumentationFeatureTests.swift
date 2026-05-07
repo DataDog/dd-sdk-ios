@@ -52,6 +52,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             skipIsMainThreadCheck: true
         )
 
+        // Scope the handler to this `ServerMock`'s traffic. The resume swizzle is process-global,
+        // so foreign URLSession activity in the test process would otherwise reach the handler.
+        handler.shouldInterceptRequest = { [weak server] req in server?.isMyRequest(req) ?? false }
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
@@ -1860,6 +1863,40 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Then
         XCTAssertEqual(intercepted.count, 0, "Should not intercept DatadogSDKTesting CI Visibility uploads (DD-API-KEY without DD-REQUEST-ID)")
+    }
+
+    /// Regression test: the resume swizzle is process-global, so foreign URLSession activity in
+    /// the test process (e.g. `DatadogSDKTesting`) was reaching the test handler and over-fulfilling
+    /// expectations with `NSInternalInconsistencyException: multiple calls made to -[XCTestExpectation fulfill]`.
+    /// `setupInterceptionTest` defends against this via `shouldInterceptRequest`; this test verifies
+    /// that a foreign request is not observed.
+    func testAutomaticMode_handlerIgnoresForeignURLSessionTraffic() throws {
+        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
+
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        // Foreign URLSession not produced by `ServerMock` — simulates any other framework using
+        // URLSession in the same process.
+        let foreignSession = URLSession(configuration: .ephemeral)
+        let foreignTask = foreignSession.dataTask(with: URL(string: "http://example.invalid/foreign")!)
+        foreignTask.resume()
+        foreignTask.cancel() // resume hook has already fired; short-circuit any real network IO
+
+        // Real test traffic through the `ServerMock`-backed session.
+        let session = server.getInterceptedURLSession()
+        let task = session.dataTask(with: URL.mockAny())
+        task.resume()
+
+        wait(
+            for: [notifyInterceptionDidStart, notifyInterceptionDidComplete],
+            timeout: 5,
+            enforceOrder: true
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+
+        XCTAssertEqual(handler.interceptions.count, 1, "Only the `ServerMock`-backed request should be captured")
+        let interception = try XCTUnwrap(handler.interceptions.first).value
+        XCTAssertEqual(interception.request.url, URL.mockAny(), "Should be the `ServerMock` task, not the foreign one")
     }
 
     // MARK: - URLSessionTask Interception

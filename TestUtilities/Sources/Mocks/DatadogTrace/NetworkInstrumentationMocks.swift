@@ -133,6 +133,9 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
 
     public var modifiedRequest: URLRequest?
     public var injectedTraceContext: TraceContext?
+
+    /// When set, gates `interceptionDidStart` / `interceptionDidComplete`: events whose request
+    /// fails this predicate are dropped — no callback fires and nothing is stored in `interceptions`.
     public var shouldInterceptRequest: ((URLRequest) -> Bool)?
 
     public var onRequestMutation: ((URLRequest, Set<TracingHeaderType>, NetworkContext?) -> Void)?
@@ -161,11 +164,17 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
     }
 
     public func interceptionDidStart(interception: URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
+        guard shouldInterceptRequest?(interception.request.unsafeOriginal) ?? true else {
+            return
+        }
         onInterceptionDidStart?(interception)
         interceptions[interception.identifier] = interception
     }
 
     public func interceptionDidComplete(interception: URLSessionTaskInterception) {
+        guard shouldInterceptRequest?(interception.request.unsafeOriginal) ?? true else {
+            return
+        }
         onInterceptionDidComplete?(interception)
         interceptions[interception.identifier] = interception
     }
