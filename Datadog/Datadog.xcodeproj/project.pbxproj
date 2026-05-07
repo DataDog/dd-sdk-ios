@@ -837,6 +837,7 @@
 		D224430F29E9779F00274EC7 /* TelemetryReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */; };
 		D224DFA82FAB8C4B000AED53 /* MessageBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224DFA72FAB8C4B000AED53 /* MessageBus.swift */; };
 		D224DFAA2FAB9DCE000AED53 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224DFA92FAB9DCE000AED53 /* MessageBusTests.swift */; };
+		D224DFAE2FACFA43000AED53 /* RUMDataModels+BusMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224DFAD2FACFA43000AED53 /* RUMDataModels+BusMessage.swift */; };
 		D22689B92EB12C3100875E44 /* Filters in Frameworks */ = {isa = PBXBuildFile; productRef = D22689B82EB12C3100875E44 /* Filters */; };
 		D22689BB2EB12C3100875E44 /* Recording in Frameworks */ = {isa = PBXBuildFile; productRef = D22689BA2EB12C3100875E44 /* Recording */; };
 		D22689C32EB12D3D00875E44 /* KSCrashPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22689C22EB12D3D00875E44 /* KSCrashPlugin.swift */; };
@@ -2686,6 +2687,7 @@
 		D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrashReportReceiverTests.swift; sourceTree = "<group>"; };
 		D224DFA72FAB8C4B000AED53 /* MessageBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBus.swift; sourceTree = "<group>"; };
 		D224DFA92FAB9DCE000AED53 /* MessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusTests.swift; sourceTree = "<group>"; };
+		D224DFAD2FACFA43000AED53 /* RUMDataModels+BusMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+BusMessage.swift"; sourceTree = "<group>"; };
 		D22689C22EB12D3D00875E44 /* KSCrashPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KSCrashPlugin.swift; sourceTree = "<group>"; };
 		D22689C62EB2151F00875E44 /* KSCrashPluginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KSCrashPluginTests.swift; sourceTree = "<group>"; };
 		D2268AD12EB4DA4100875E44 /* DatadogTypeSafeFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogTypeSafeFilter.swift; sourceTree = "<group>"; };
@@ -5271,6 +5273,7 @@
 				D28FB6952DB7D3F000CD76D0 /* RUMDataModels.swift */,
 				D2D9A9DB2DBFD507005DB31D /* RUMPayloadMessages.swift */,
 				D2E8A8E62DCBBA5100CF7C63 /* RUMCoreContext.swift */,
+				D224DFAD2FACFA43000AED53 /* RUMDataModels+BusMessage.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -8523,6 +8526,7 @@
 				D23039E0298D5235001A1FA3 /* DatadogCoreProtocol.swift in Sources */,
 				D27465812E7B1C4D00C47FE2 /* ProfilingMessages.swift in Sources */,
 				5BFDD7A92E28FDD3009A2CEE /* RUMWebViewContext.swift in Sources */,
+				D224DFAE2FACFA43000AED53 /* RUMDataModels+BusMessage.swift in Sources */,
 				D23039FD298D5236001A1FA3 /* DataCompression.swift in Sources */,
 				D2C179E12DD2388800556F68 /* TraceCoreContext.swift in Sources */,
 				B3E46CAE2D91B40000BABF66 /* NetworkContext.swift in Sources */,
