@@ -15,6 +15,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
     let messageReceiver: FeatureMessageReceiver
 
+    let crashReportReceiver: CrashReportReceiver
+
     let monitor: Monitor
 
     let instrumentation: RUMInstrumentation
@@ -268,6 +270,24 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             telemetry: core.telemetry
         )
 
+        self.crashReportReceiver = CrashReportReceiver(
+            featureScope: featureScope,
+            applicationID: configuration.applicationID,
+            dateProvider: configuration.dateProvider,
+            sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
+            trackBackgroundEvents: configuration.trackBackgroundEvents,
+            uuidGenerator: configuration.uuidGenerator,
+            ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
+            syntheticsTest: {
+                if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
+                    return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
+                } else {
+                    return nil
+                }
+            }(),
+            eventsMapper: eventsMapper
+        )
+
         var messageReceivers: [FeatureMessageReceiver] = [
             TelemetryInterceptor(sessionEndedMetric: sessionEndedMetric),
             TelemetryReceiver(
@@ -286,23 +306,6 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 dateProvider: configuration.dateProvider,
                 commandSubscriber: monitor,
                 viewCache: dependencies.viewCache
-            ),
-            CrashReportReceiver(
-                featureScope: featureScope,
-                applicationID: configuration.applicationID,
-                dateProvider: configuration.dateProvider,
-                sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
-                trackBackgroundEvents: configuration.trackBackgroundEvents,
-                uuidGenerator: configuration.uuidGenerator,
-                ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
-                syntheticsTest: {
-                    if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
-                        return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
-                    } else {
-                        return nil
-                    }
-                }(),
-                eventsMapper: eventsMapper
             )
         ]
 

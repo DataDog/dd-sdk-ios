@@ -35,7 +35,7 @@ import Foundation
 ///   the returned `MessageBusSubscription` is the cleanup anchor.
 ///
 /// - SeeAlso: `BusMessage`, `BusMessageReceiver`, `MessageBusSubscription`.
-public protocol MessageBus {
+public protocol MessageBus: Sendable {
     /// Subscribes `receiver` to messages of type `Receiver.Message`.
     ///
     /// The bus retains `receiver` until `unsubscribe(receiver:)` is called.

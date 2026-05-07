@@ -26,7 +26,7 @@ import DatadogInternal
 ///     try core.register(feature: feature)
 ///     core.get(feature: MyCustomFeature.self) // returns nil
 ///
-open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Sendable {
+open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, MessageBus, @unchecked Sendable {
     /// Counts references to `PassthroughCoreMock` instances, so we can prevent memory
     /// leaks of SDK core in `DatadogTestsObserver`.
     public private(set) static var referenceCount = 0
@@ -39,8 +39,17 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
 
     let writer = FileWriterMock()
 
-    /// The message receiver.
+    /// The legacy `FeatureMessage` receiver.
     public var messageReceiver: FeatureMessageReceiver
+
+    public typealias DispatchBusMessage = (any BusMessage, DatadogCoreProtocol) -> Bool
+
+    /// Closure invoked for each typed `BusMessage` sent through `messageBus.send(...)`.
+    ///
+    /// Set by `subscribe(receiver:)` and cleared by `unsubscribe(receiver:)`. When `nil`,
+    /// `send(message:else:)` invokes the caller's `fallback`. The mock holds at most one
+    /// subscriber at a time — the second `subscribe` replaces the first.
+    public var dispatchBusMessage: DispatchBusMessage?
 
     /// Callback called when `eventWriteContext` closure is executed.
     public var onEventWriteContext: ((Bool) -> Void)?
@@ -68,16 +77,40 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
         PassthroughCoreMock.referenceCount -= 1
     }
 
-    /// no-op
-    public var messageBus: MessageBus { NOPMessageBus() }
+    /// The mock acts as its own typed message bus.
+    public var messageBus: MessageBus { self }
+
+    /// Sets `dispatchBusMessage` to forward matching messages to `receiver`.
+    /// Replaces any previously-subscribed receiver.
+    public func subscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
+        self.dispatchBusMessage = { message, core in
+            guard let typed = message as? Receiver.Message else { return false }
+            receiver.receive(message: typed, from: core)
+            return true
+        }
+    }
+
+    /// Clears `dispatchBusMessage`.
+    public func unsubscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
+        self.dispatchBusMessage = nil
+    }
+
+    /// Forwards `message` to `dispatchBusMessage`. Invokes `fallback` if no dispatcher
+    /// is set or the dispatcher returns `false`.
+    public func send<Message>(message: Message, else fallback: @escaping () -> Void) where Message: BusMessage {
+        if dispatchBusMessage?(message, self) != true {
+            fallback()
+        }
+    }
+
     /// no-op
     public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op
     public func feature<T>(named name: String, type: T.Type) -> T? { nil }
 
-    /// Always returns a feature-scope.
+    /// Returns a feature-scope backed by a weak reference to avoid retain cycles.
     public func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature {
-        self
+        PassthroughScopeMock(core: self)
     }
 
     public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
@@ -137,5 +170,41 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
 
     public func mostRecentModifiedFileAt(before: Date) throws -> Date? {
         return nil
+    }
+}
+
+/// A `FeatureScope` backed by a **weak** reference to a `PassthroughCoreMock`.
+///
+/// Returned by `PassthroughCoreMock.scope(for:)` so that receivers holding the scope
+/// do not retain the mock core, preventing retain cycles in tests.
+public final class PassthroughScopeMock: FeatureScope, @unchecked Sendable {
+    private weak var core: PassthroughCoreMock?
+
+    public init(core: PassthroughCoreMock) {
+        self.core = core
+    }
+
+    public func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+        core?.eventWriteContext(bypassConsent: bypassConsent, block)
+    }
+
+    public func context(_ block: @escaping (DatadogContext) -> Void) {
+        core?.context(block)
+    }
+
+    public var dataStore: DataStore { core?.dataStore ?? NOPDataStore() }
+
+    public var telemetry: Telemetry { core?.telemetry ?? NOPTelemetry() }
+
+    public func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        if let core = core { core.send(message: message, else: fallback) } else { fallback() }
+    }
+
+    public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        core?.set(context: context)
+    }
+
+    public func set(anonymousId: String?) {
+        core?.set(anonymousId: anonymousId)
     }
 }
