@@ -13,27 +13,23 @@ class LogMessageReceiverTests: XCTestCase {
     func testReceivePartialLogMessage() throws {
         // Given
         let expectation = expectation(description: "Send log")
-        let core = PassthroughCoreMock(
-            context: .mockWith(service: "service-test"),
-            messageReceiver: LogMessageReceiver.mockAny()
-        )
+        let core = PassthroughCoreMock(context: .mockWith(service: "service-test"))
+        core.subscribe(receiver: LogMessageReceiver.mockAny())
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
-        core.send(
-            message: .payload(
-                LogMessage(
-                    logger: "logger-test",
-                    service: nil,
-                    date: .mockDecember15th2019At10AMUTC(),
-                    message: "message-test",
-                    error: nil,
-                    level: .info,
-                    thread: "thread-test",
-                    networkInfoEnabled: nil,
-                    userAttributes: nil,
-                    internalAttributes: nil
-                )
+        core.messageBus.send(
+            message: LogMessage(
+                logger: "logger-test",
+                service: nil,
+                date: .mockDecember15th2019At10AMUTC(),
+                message: "message-test",
+                error: nil,
+                level: .info,
+                thread: "thread-test",
+                networkInfoEnabled: nil,
+                userAttributes: nil,
+                internalAttributes: nil
             )
         )
 
@@ -56,27 +52,23 @@ class LogMessageReceiverTests: XCTestCase {
     func testReceiveCompleteLogMessage() throws {
         // Given
         let expectation = expectation(description: "Send log")
-        let core = PassthroughCoreMock(
-            context: .mockAny(),
-            messageReceiver: LogMessageReceiver.mockAny()
-        )
+        let core = PassthroughCoreMock(context: .mockAny())
+        core.subscribe(receiver: LogMessageReceiver.mockAny())
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
-        core.send(
-            message: .payload(
-                LogMessage(
-                    logger: "logger-test",
-                    service: "service-test",
-                    date: .mockDecember15th2019At10AMUTC(),
-                    message: "message-test",
-                    error: .mockAny(),
-                    level: .info,
-                    thread: "thread-test",
-                    networkInfoEnabled: true,
-                    userAttributes: ["user": "attribute"],
-                    internalAttributes: ["internal": "attribute"]
-                )
+        core.messageBus.send(
+            message: LogMessage(
+                logger: "logger-test",
+                service: "service-test",
+                date: .mockDecember15th2019At10AMUTC(),
+                message: "message-test",
+                error: .mockAny(),
+                level: .info,
+                thread: "thread-test",
+                networkInfoEnabled: true,
+                userAttributes: ["user": "attribute"],
+                internalAttributes: ["internal": "attribute"]
             )
         )
 
@@ -105,29 +97,25 @@ class LogMessageReceiverTests: XCTestCase {
     func testReceiveRejectedLogMessage() throws {
         // Given
         let expectation = expectation(description: "Open scope but don't send log")
-        let core = PassthroughCoreMock(
-            context: .mockWith(service: "service-test"),
-            messageReceiver: LogMessageReceiver(
-                logEventMapper: SyncLogEventMapper { _ in nil }
-            )
-        )
+        let core = PassthroughCoreMock(context: .mockWith(service: "service-test"))
+        core.subscribe(receiver: LogMessageReceiver(
+            logEventMapper: SyncLogEventMapper { _ in nil }
+        ))
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
-        core.send(
-            message: .payload(
-                LogMessage(
-                    logger: "logger-test",
-                    service: nil,
-                    date: .mockDecember15th2019At10AMUTC(),
-                    message: "message-test",
-                    error: nil,
-                    level: .info,
-                    thread: "thread-test",
-                    networkInfoEnabled: nil,
-                    userAttributes: nil,
-                    internalAttributes: nil
-                )
+        core.messageBus.send(
+            message: LogMessage(
+                logger: "logger-test",
+                service: nil,
+                date: .mockDecember15th2019At10AMUTC(),
+                message: "message-test",
+                error: nil,
+                level: .info,
+                thread: "thread-test",
+                networkInfoEnabled: nil,
+                userAttributes: nil,
+                internalAttributes: nil
             )
         )
 

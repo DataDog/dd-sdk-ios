@@ -89,6 +89,9 @@ public enum Logs {
         )
 
         try core.register(feature: feature)
+
+        // Subscribe typed-bus receivers:
+        core.messageBus.subscribe(receiver: feature.logMessageReceiver)
     }
 
     /// Adds a custom attribute to all future logs sent by any logger created from the provided Core.

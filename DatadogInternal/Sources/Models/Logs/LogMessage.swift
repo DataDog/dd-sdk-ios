@@ -6,7 +6,9 @@
 
 import Foundation
 
-public struct LogMessage {
+public struct LogMessage: BusMessage {
+    public static let key = "log-message"
+
     /// Log levels ordered by their severity, with `.debug` being the least severe and
     /// `.critical` being the most severe.
     public enum Level: Int {
