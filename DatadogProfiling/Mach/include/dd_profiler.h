@@ -213,13 +213,11 @@ typedef struct profile dd_profile_t;
 dd_profiler_status_t dd_profiler_get_status(void);
 
 /**
- * @brief Returns and resets profiling diagnostics accumulated since the last consume.
+ * @brief Returns and resets profiling diagnostics accumulated since the last call.
  *
- * If `out` is null, this function is a no-op.
- *
- * @param out Output diagnostics structure
+ * @return Profiling diagnostics, or zeroed diagnostics if the profiler does not exist.
  */
-void dd_profiler_consume_diagnostics(dd_profiler_diagnostics_t* out);
+dd_profiler_diagnostics_t dd_profiler_diagnostics(void);
 
 /**
  * @brief Stops profiling if it's currently running
