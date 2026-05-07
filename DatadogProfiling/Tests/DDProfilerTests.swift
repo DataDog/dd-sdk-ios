@@ -19,12 +19,14 @@ final class DDProfilerTests: XCTestCase {
         // `tearDown` leaves `g_dd_profiler` nil; without this, only the first test would match the
         // static constructor's state. Recreate with 0% sample rate so `auto_start` leaves `NOT_STARTED`.
         dd_profiler_destroy()
+        dd_delete_profiling_defaults()
         dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
     }
 
     override func tearDown() {
         dd_profiler_stop()
         dd_profiler_destroy()
+        dd_delete_profiling_defaults()
         super.tearDown()
     }
 
@@ -144,6 +146,36 @@ final class DDProfilerTests: XCTestCase {
             threadNames.contains(where: { $0.hasPrefix("com.datadoghq.profiler.") }),
             "Profiler-owned threads should not appear in the harvested profile"
         )
+    }
+
+    func testDDProfiler_withCPUTimingEnabled_serializesDualSampleValues() throws {
+        dd_profiler_destroy()
+        let userDefaults = try XCTUnwrap(UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME))
+        userDefaults.setValue(true, forKey: DD_PROFILING_RECORD_CPU_TIME_KEY)
+
+        XCTAssertEqual(dd_profiler_start(), 1)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        for i in 0..<10_000 {
+            _ = sqrt(Double(i))
+            if i % 500 == 0 {
+                Thread.sleep(forTimeInterval: 0.002)
+            }
+        }
+
+        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        defer { dd_pprof_destroy(profile) }
+
+        var data: UnsafeMutablePointer<UInt8>?
+        let size = dd_pprof_serialize(profile, &data)
+        defer { dd_pprof_free_serialized_data(data) }
+
+        let unpackedProfile = try XCTUnwrap(perftools__profiles__profile__unpack(nil, size, data))
+        defer { perftools__profiles__profile__free_unpacked(unpackedProfile, nil) }
+
+        XCTAssertEqual(unpackedProfile.pointee.n_sample_type, 2)
+        let sample = try XCTUnwrap(unpackedProfile.pointee.sample[0])
+        XCTAssertEqual(sample.pointee.n_value, 2)
     }
 
     func testDDProfiler_startTesting_withPrewarming_doesNotStart() {

@@ -137,6 +137,23 @@ static double read_profiling_sample_rate() {
     return sample_rate;
 }
 
+static bool read_profiling_record_cpu_time() {
+    CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
+    CFStringRef key = CFSTR(DD_PROFILING_RECORD_CPU_TIME_KEY);
+    CFPropertyListRef value = CFPreferencesCopyAppValue(key, suiteName);
+
+    bool result = false;
+
+    if (value) {
+        if (CFGetTypeID(value) == CFBooleanGetTypeID()) {
+            result = CFBooleanGetValue((CFBooleanRef)value);
+        }
+        CFRelease(value);
+    }
+
+    return result;
+}
+
 /**
  * Deletes the DatadogProfiling defaults from the `UserDefaults`
  * to be re-evaluated during `Profiling.enable()`.
@@ -145,9 +162,11 @@ void dd_delete_profiling_defaults() {
     CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
     CFStringRef isEnabledKey = CFSTR(DD_PROFILING_IS_ENABLED_KEY);
     CFStringRef sampleRateKey = CFSTR(DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY);
+    CFStringRef recordCPUTimeKey = CFSTR(DD_PROFILING_RECORD_CPU_TIME_KEY);
 
     CFPreferencesSetValue(isEnabledKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     CFPreferencesSetValue(sampleRateKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    CFPreferencesSetValue(recordCPUTimeKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     CFPreferencesSynchronize(suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
 }
 
@@ -265,7 +284,7 @@ public:
     profile* flush_and_get_profile() {
         profile_swap_context swap_context{
             this,
-            new (std::nothrow) dd::profiler::profile(sampling_interval_ns),
+            new (std::nothrow) dd::profiler::profile(sampling_interval_ns, record_cpu_time),
             nullptr
         };
 
@@ -343,7 +362,9 @@ private:
 
         if (profiler) return true;
 
-        profile = new (std::nothrow) dd::profiler::profile(sampling_interval_ns);
+        record_cpu_time = read_profiling_record_cpu_time();
+
+        profile = new (std::nothrow) dd::profiler::profile(sampling_interval_ns, record_cpu_time);
         if (!profile) {
             status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
             return false;
@@ -352,6 +373,7 @@ private:
 
         sampling_config_t config = SAMPLING_CONFIG_DEFAULT;
         config.sampling_interval_nanos = sampling_interval_ns;
+        config.record_cpu_time = record_cpu_time ? 1 : 0;
 
         profiler = new (std::nothrow) mach_sampling_profiler(&config, callback, this, hard_limit_bytes);
         if (!profiler) {
@@ -373,6 +395,7 @@ private:
     uint64_t hard_limit_bytes = DD_PROFILER_DEFAULT_HARD_LIMIT_BYTES;
     uint64_t sampling_interval_ns = SAMPLING_CONFIG_DEFAULT_INTERVAL_NANOS;
     int64_t server_time_offset_ns = 0;
+    bool record_cpu_time = false;
 
     /**
      * Mutex protecting the profile pointer.
