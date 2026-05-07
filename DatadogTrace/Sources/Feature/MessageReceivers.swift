@@ -21,7 +21,7 @@ internal struct CoreContext {
     var accountInfo: AccountInfo?
 }
 
-internal final class ContextMessageReceiver: FeatureMessageReceiver {
+internal final class ContextMessageReceiver: BusMessageReceiver {
     /// Creates a new `ContextMessageReceiver`.
     ///
     /// - parameters:
@@ -41,24 +41,7 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
     /// The tracer sampler that should be updated with the RUM deterministic sampler.
     let samplerProvider: SamplerProvider
 
-    /// Process messages receives from the bus.
-    ///
-    /// - Parameters:
-    ///   - message: The Feature message
-    ///   - core: The core from which the message is transmitted.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .context(let context):
-            return update(context: context, from: core)
-        default:
-            return false
-        }
-    }
-
-    /// Updates context of the `DatadogTracer` if available.
-    ///
-    /// - Parameter context: The updated core context.
-    private func update(context datadogContext: DatadogContext, from core: DatadogCoreProtocol) -> Bool {
+    func receive(message datadogContext: DatadogContext, from core: DatadogCoreProtocol) {
         let rumContext = datadogContext.additionalContext(ofType: RUMCoreContext.self)
 
         _context.mutate {
@@ -69,7 +52,5 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
         }
 
         samplerProvider.updateWith(deterministicSampler: rumContext?.sessionSampler)
-
-        return true
     }
 }
