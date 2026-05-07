@@ -21,6 +21,12 @@ import TestUtilities
 /// separate part of the `CrashContext` information.
 class CrashContextProviderTests: XCTestCase {
     private let provider = CrashContextCoreProvider()
+    private let core = PassthroughCoreMock()
+
+    override func setUp() {
+        super.setUp()
+        provider.subscribe(to: core.messageBus)
+    }
 
     // MARK: - Receiving SDK Context
 
@@ -71,7 +77,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
+        core.messageBus.send(message: rumView)
 
         // Then
         provider.flush()
@@ -91,7 +97,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
+        core.messageBus.send(message: rumView)
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -114,8 +120,8 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: NOPDatadogCore()))
+        core.messageBus.send(message: rumView)
+        core.messageBus.send(message: RUMViewReset())
 
         // Then
         provider.flush()
@@ -135,8 +141,8 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumView), from: NOPDatadogCore()))
-        XCTAssertTrue(provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: NOPDatadogCore()))
+        core.messageBus.send(message: rumView)
+        core.messageBus.send(message: RUMViewReset())
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -159,7 +165,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumSessionState), from: NOPDatadogCore()))
+        core.messageBus.send(message: rumSessionState)
 
         // Then
         provider.flush()
@@ -179,7 +185,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumSessionState), from: NOPDatadogCore()))
+        core.messageBus.send(message: rumSessionState)
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -202,7 +208,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumAttributes), from: NOPDatadogCore()))
+        core.messageBus.send(message: rumAttributes)
 
         // Then
         provider.flush()
@@ -222,7 +228,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(rumAttributes), from: NOPDatadogCore()))
+        core.messageBus.send(message: rumAttributes)
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -245,7 +251,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(sdkContext), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(logAttributes), from: NOPDatadogCore()))
+        core.messageBus.send(message: logAttributes)
 
         // Then
         provider.flush()
@@ -265,7 +271,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         XCTAssertTrue(provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore())) // receive initial SDK context
-        XCTAssertTrue(provider.receive(message: .payload(logAttributes), from: NOPDatadogCore()))
+        core.messageBus.send(message: logAttributes)
         XCTAssertTrue(provider.receive(message: .context(nextSDKContext), from: NOPDatadogCore()))
 
         // Then
@@ -279,24 +285,27 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Thread safety
 
     func testWhenContextIsWrittenAndReadFromDifferentThreads_itRunsAllOperationsSafely() {
-        let provider = CrashContextCoreProvider()
+        let localProvider = CrashContextCoreProvider()
+        let localCore = PassthroughCoreMock()
+        localProvider.subscribe(to: localCore.messageBus)
+
         let viewEvent: RUMViewEvent = .mockRandom()
         let sessionState: RUMSessionState = .mockRandom()
 
         // swiftlint:disable opening_brace
         callConcurrently(
             closures: [
-                { _ = provider.currentCrashContext },
-                { _ = provider.receive(message: .context(.mockRandom()), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .payload(viewEvent), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: NOPDatadogCore()) },
-                { _ = provider.receive(message: .payload(sessionState), from: NOPDatadogCore()) },
+                { _ = localProvider.currentCrashContext },
+                { _ = localProvider.receive(message: .context(.mockRandom()), from: NOPDatadogCore()) },
+                { localCore.messageBus.send(message: viewEvent) },
+                { localCore.messageBus.send(message: RUMViewReset()) },
+                { localCore.messageBus.send(message: sessionState) },
             ],
             iterations: 50
         )
         // swiftlint:enable opening_brace
 
-        provider.flush()
+        localProvider.flush()
     }
 
     // MARK: - Helpers
