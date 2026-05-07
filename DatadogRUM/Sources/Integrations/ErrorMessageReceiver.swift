@@ -7,17 +7,18 @@
 import Foundation
 import DatadogInternal
 
-internal struct ErrorMessageReceiver: FeatureMessageReceiver {
+internal final class ErrorMessageReceiver: BusMessageReceiver {
     /// RUM feature scope.
     let featureScope: FeatureScope
     let monitor: Monitor
 
-    /// Adds RUM Error with given message and stack to current RUM View.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(error as RUMErrorMessage) = message else {
-            return false
-        }
+    init(featureScope: FeatureScope, monitor: Monitor) {
+        self.featureScope = featureScope
+        self.monitor = monitor
+    }
 
+    /// Adds RUM Error with given message and stack to current RUM View.
+    func receive(message error: RUMErrorMessage, from core: DatadogCoreProtocol) {
         monitor._internal?.addError(
             at: error.time,
             message: error.message,
@@ -28,7 +29,5 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
             attributes: error.attributes,
             binaryImages: error.binaryImages
         )
-
-        return true
     }
 }
