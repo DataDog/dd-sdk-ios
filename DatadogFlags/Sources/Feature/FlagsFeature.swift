@@ -21,7 +21,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     let clientRegistry: FlagsClientRegistry
     let makeExposureLogger: (any FeatureScope) -> any ExposureLogging
     let makeEvaluationLogger: (any FeatureScope) -> any EvaluationLogging
-    let makeRUMFlagEvaluationReporter: (any FeatureScope) -> any RUMFlagEvaluationReporting
+    let makeRUMFlagEvaluationReporter: () -> any RUMFlagEvaluationReporting
     let performanceOverride: PerformancePresetOverride?
     let issueReporter: IssueReporter
     private let evaluationAggregator: EvaluationAggregator?
@@ -76,11 +76,11 @@ internal struct FlagsFeature: DatadogRemoteFeature {
             return EvaluationLogger(aggregator: aggregator)
         }
 
-        makeRUMFlagEvaluationReporter = { featureScope in
+        makeRUMFlagEvaluationReporter = { [messageBus = core.messageBus] in
             guard configuration.rumIntegrationEnabled else {
                 return NOPRUMFlagEvaluationReporter()
             }
-            return RUMFlagEvaluationReporter(featureScope: featureScope)
+            return RUMFlagEvaluationReporter(messageBus: messageBus)
         }
         performanceOverride = PerformancePresetOverride(maxObjectsInFile: 50)
 
