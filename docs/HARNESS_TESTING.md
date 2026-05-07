@@ -21,28 +21,27 @@ Datadog/IntegrationUnitTests/
 │   ├── AppRunner.swift           # SDK-agnostic core: app lifecycle, mocks, state
 │   ├── AppRunner+Core.swift      # SDK init, user info, flush; computed `core`
 │   ├── AppRunner+RUM.swift       # RUM enable, monitor, recordedRUMSessions, view tracking
-│   ├── AppRunner+Logs.swift      # Logs enable, named loggers, recordedLogs
+│   ├── AppRunner+Logs.swift      # Logs state plumbing: `loggers` dict, default `logger`, recordedLogs
 │   ├── AppRun.swift              # Fluent chain (given/when/and/then) + AppRunResult
 │   ├── AppRunStep.swift          # Step struct + SDK-agnostic step factories (lifecycle)
 │   ├── AppRunStep+Core.swift     # SDK init, user info, flushDatadogContext factories
-│   ├── AppRunStep+RUM.swift      # RUM Use Cases (view, action, resource, session)
-│   └── AppRunStep+Logs.swift     # enableLogs, createLogger, withLogger
+│   └── AppRunStep+RUM.swift      # RUM Use Cases (view, action, resource, session)
 ├── RUM/                          # RUM harness tests
 │   ├── RUMSessionTestsBase.swift # Base XCTestCase: shared time fixtures + session builders
 │   ├── RUMSessionStartInForegroundTests.swift
 │   └── …
 ├── Logs/                         # Logs harness tests
-│   └── LogsBasicTests.swift
+│   └── …
 ├── RUMHarness.xctestplan
 └── LogsHarness.xctestplan
 ```
 
 ### SDK-agnostic core + per-feature extensions
 
-`AppRunner.swift` and `AppRunStep.swift` are SDK-agnostic — they know about app lifecycle, time, mocks, and the step grammar, but nothing about Datadog products. Each SDK product gets a pair of extension files:
+`AppRunner.swift` and `AppRunStep.swift` are SDK-agnostic — they know about app lifecycle, time, mocks, and the step grammar, but nothing about Datadog products. Each SDK product attaches itself through extensions:
 
-- `AppRunner+<Feature>.swift` — feature-specific methods on the runner (enable, monitor accessors, retrieval).
-- `AppRunStep+<Feature>.swift` — static factories returning `AppRunStep` for that feature's use cases.
+- `AppRunner+<Feature>.swift` — feature-specific methods on the runner (enable, monitor accessors, retrieval, retained-object accessors). **Always present** for a feature.
+- `AppRunStep+<Feature>.swift` — static factories returning `AppRunStep` for that feature's use cases. **Optional** — only added when the feature uses the typed-factory style (see *Extension styles* below). Logs, for example, has no such file.
 
 Per-feature *state* lives in a single anonymous slot on `AppRunner`:
 
@@ -67,17 +66,96 @@ extension AppRunner {
         get { state["loggers"] as? [String: LoggerProtocol] ?? [:] }
         set { state["loggers"] = newValue }
     }
+
+    /// Default logger pinned under the `"default"` key in `loggers`.
+    var logger: LoggerProtocol! {
+        get { loggers["default"] }
+        set { /* set or removeValue */ }
+    }
 }
 ```
 
-This is what makes adding a new SDK product a **drop-in** operation: create `AppRunner+Trace.swift` and `AppRunStep+Trace.swift`, add a computed property over `state["trace"]` if the feature needs storage, register tests in a new `TraceHarness.xctestplan`. `AppRunner.swift`/`AppRunStep.swift` stay untouched.
+This is what makes adding a new SDK product a **drop-in** operation: create `AppRunner+Trace.swift` (and optionally `AppRunStep+Trace.swift` — see *Extension styles* below), add a computed property over `state["trace"]` if the feature needs storage, register tests in a new `TraceHarness.xctestplan`. `AppRunner.swift`/`AppRunStep.swift` stay untouched.
+
+### Extension styles: typed factories vs inline closures
+
+A step in the chain is either a **typed factory** call or an **inline closure**. Both are first-class — `.and(_:)` and `.when(_:)` have an overload for each — and they mix freely within a single chain.
+
+**Typed step factories.** Steps are defined as static functions on `AppRunStep` (in `AppRunStep+<Feature>.swift`) and called by name:
+
+```swift
+.and(.enableRUM(rumSetup: { $0.trackBackgroundEvents = true }))
+.and(.startManualView(after: dt1, viewName: "Cart"))
+```
+
+The reader sees use-case names. Setup is centralized and reused across tests.
+
+**Inline closures.** A closure receives the `AppRunner` and calls public SDK APIs directly — no fixture layer required:
+
+```swift
+.and { app in
+    Logs.enable(in: app.core)
+    app.logger = Logger.create(in: app.core)
+}
+.when { app in app.logger.info("user signed in") }
+```
+
+The reader sees real SDK code.
+
+#### Tradeoffs
+
+|  | Typed factories | Inline closures |
+|---|---|---|
+| **Setup cost** | A factory must be defined before first use. | None — write against the real SDK surface. |
+| **Reads as** | Domain use-case names. | Real SDK code. |
+| **Permutation scaling** | Excellent — one factory reused N times across tests; matrices of `given × when` stay readable. | Setup repeats at each call site; many givens × many whens makes the chain bulky. |
+| **Resilience to SDK API churn** | Wrappers absorb signature changes in one place. | Each call site updates when the SDK API shifts. |
+| **Learning curve** | Contributor learns the factory vocabulary. | Contributor uses the SDK API they already know. |
+
+#### Picking a style
+
+- **Default to inline closures** for features with a small/flat surface or shallow app-lifecycle integration. Lowest friction; trivially refactorable later.
+- **Reach for typed factories** when scenarios permute heavily across launch types, app states, and timing, or when a step is a multi-step *macro* worth naming (`appBecomesActive(after:)` = `advanceTime` + `transitionToActive`).
+- **Extract a factory once a pattern repeats ≥3×** — not before. Missing factories are easy to add; premature factories ossify.
+- **Mix freely within a chain.** `.and(.appLaunch(...))` followed by `.and { app in Logs.enable(...) }` is the intended use of the two `.and` overloads.
+
+Lifecycle and core steps (`appLaunch`, `advanceTime`, `appBecomesActive`, `initializeSDK`, …) are typed factories regardless of which style a feature picks — that's the SDK-agnostic backbone everyone shares.
+
+#### How the existing features happen to use these
+
+- **RUM** uses typed factories — its scenarios are permutation-heavy and many actions are multi-step macros, so the factory vocabulary earns its keep. See `AppRunStep+RUM.swift`.
+- **Logs** uses inline closures — its surface is flat and largely orthogonal to app lifecycle, so the fixture layer was deleted. There is intentionally no `AppRunStep+Logs.swift`; `AppRunner+Logs.swift` keeps only state plumbing (`loggers` dict, `logger` IUO accessor).
+
+These are current choices, not constraints. RUM could grow inline closures for one-off APIs; Logs could grow a factory if a recurring multi-step pattern appears. A new product picks whatever fits its surface, independent of what RUM and Logs do.
+
+#### Object lifetime in the inline-closure style
+
+When you create a long-lived SDK object inside a closure (e.g. a `Logger`), you **must** retain it on the `AppRunner` — typically through a typed `state[…]`-backed accessor like `app.logger = …`. If the only reference goes out of scope when the closure returns, the object can deallocate mid-test, before its events make it through the SDK pipeline; the test then sees zero recorded events with no obvious error.
+
+```swift
+// ❌ Logger deallocates after the closure returns; test sees 0 logs.
+.when { app in
+    Logs.enable(in: app.core)
+    let logger = Logger.create(in: app.core)
+    logger.info("hello")
+}
+
+// ✅ Logger pinned to runner state; survives until tearDown().
+.when { app in
+    Logs.enable(in: app.core)
+    app.logger = Logger.create(in: app.core)
+    app.logger.info("hello")
+}
+```
+
+The `loggers` dict + `logger` accessor in `AppRunner+Logs.swift` exists for this reason: it pins the logger to the runner's `state`, which lives until `tearDown()` clears it. When adopting inline closures for a new feature, mirror this pattern — expose a typed accessor (`app.<thing>`) backed by `state["<key>"]` for any object that needs to outlive a single closure.
 
 ## Core Components
 
 | Type | File | Role |
 |------|------|------|
 | `AppRunner` | `AppRunner.swift` | Simulates the iOS app process: process launch, app state transitions, time, mocks. Holds `state` keyed storage. |
-| `AppRunStep` | `AppRunStep.swift` | Wrapper around `(AppRunner) -> Void`. Static factories live in `+Core`/`+RUM`/`+Logs` files. |
+| `AppRunStep` | `AppRunStep.swift` | Wrapper around `(AppRunner) -> Void`. Static factories live in `+Core`/`+RUM` files; features without a step file (e.g. Logs) are driven via the inline-closure overloads of `.and`/`.when`. |
 | `AppRun` | `AppRun.swift` | Fluent builder — `given(...).and(...).when(...).then()`. Hashable to allow shared `given` branches. |
 | `AppRunResult` | `AppRun.swift` | Value returned by `then()`: `sessions: [RUMSessionMatcher]`, `logs: [LogMatcher]`. Empty arrays for features that weren't enabled. |
 | `RUMSessionTestsBase` | `RUM/RUMSessionTestsBase.swift` | Optional `XCTestCase` base. Shared time deltas (`dt1`–`dt7`, `accuracy`) and session builders (`userSession()`, `userSessionWithManualView()`, `backgroundSession()`, …). Logs has no analogous base. |
@@ -103,7 +181,7 @@ Steps grouped by file. Each is a static factory on `AppRunStep`.
 
 | Step | Effect |
 |------|--------|
-| `initializeSDK(sdkSetup:)` | Initializes the SDK without enabling any feature. Pair with `enableRUM(rumSetup:)` and/or `enableLogs(logsSetup:)`. |
+| `initializeSDK(sdkSetup:)` | Initializes the SDK without enabling any feature. Pair with `enableRUM(rumSetup:)` and/or an inline closure that calls `Logs.enable(in: app.core)`. |
 | `setUserInfo(after:id:name:email:extraInfo:)` | Sets user info on core. |
 | `addUserExtraInfo(after:_:)` | Adds extra info; passing `nil` for a key clears it. |
 | `clearUserInfo(after:)` | Clears all user info. |
@@ -125,19 +203,25 @@ Steps grouped by file. Each is a static factory on `AppRunStep`.
 | `startResource(after:key:url:)` / `stopResource(after:key:)` | Resource tracked across multiple steps. |
 | `trackTwoLongTasks(after1:after2:duration1:duration2:)` | Two long tasks. |
 
-### `AppRunStep+Logs.swift`
+### Logs (no step file)
 
-| Step | Effect |
-|------|--------|
-| `enableLogs(logsSetup:)` | Enables Logs. Assumes SDK is already initialized. |
-| `createLogger(_:setup:)` | Registers a persistent named logger (default name `"default"`). |
-| `withLogger(_:_:)` | Runs a closure against a named logger. The closure can call any `LoggerProtocol` API — new logger APIs do not require new step factories. |
+Logs uses inline closures rather than typed factories. Drive the SDK directly inside `.and { app in … }` / `.when { app in … }`:
+
+```swift
+.and { app in
+    Logs.enable(in: app.core)
+    app.logger = Logger.create(in: app.core)
+}
+.when { app in app.logger.info("user signed in") }
+```
+
+See *Extension styles* under *Architecture* for the rationale and the lifetime rule (`app.logger = …` to keep the logger alive across steps).
 
 ## How to extend
 
 ### Adding a new step within an existing feature
 
-1. Pick the right file by feature: lifecycle → `AppRunStep.swift`, core → `+Core`, RUM → `+RUM`, Logs → `+Logs`.
+1. Pick the right file by feature: lifecycle → `AppRunStep.swift`, core → `+Core`, RUM → `+RUM`. (Logs uses inline closures rather than typed factories — see *Extension styles*.)
 2. Add a static factory. Convention: name describes the action (`trackX`, `startX`, `stopX`, `appX`); first parameter is typically `after dt: TimeInterval`.
 
 ```swift
@@ -160,11 +244,11 @@ static func trackError(after dt: TimeInterval, message: String) -> AppRunStep {
 
 The golden path — no edits to `AppRunner.swift` or `AppRunStep.swift`:
 
-1. **`AppRunner+<Feature>.swift`**
-   - `enable<Feature>(_:)` — initialize and enable the product against `core`.
-   - Computed property over `state["<feature>"]` for any per-feature storage (monitor proxy, registered handlers).
+1. **`AppRunner+<Feature>.swift`** (always).
+   - Computed properties over `state["<feature>"]` for any per-feature storage: monitor proxies, registered handlers, and — for any objects whose lifetime must outlive a single closure — typed accessors (`app.<thing> = …`). See the lifetime rule under *Extension styles*.
    - `recorded<Feature>Events()` — retrieval via `core.waitAndReturn…Matchers()`.
-2. **`AppRunStep+<Feature>.swift`** — static factories for the product's use cases (`enable<Feature>`, plus per-action factories).
+   - An `enable<Feature>(_:)` method if you'll wrap it in a typed factory step.
+2. **`AppRunStep+<Feature>.swift`** — *only* if the feature adopts typed factories. Skip entirely for inline-closure style. See *Extension styles* for the criteria; rule of thumb: start without it, add it once a pattern repeats ≥3× or a multi-step macro emerges.
 3. **`AppRunResult`** — extend `then()` only if the product has its own retrieval API; add a property (e.g., `spans: [SpanMatcher]`) and populate it in `AppRun.then()`.
 4. **`<Feature>Harness.xctestplan`** — new test plan filtering to that feature's test methods.
 5. **Optional base test class** (à la `RUMSessionTestsBase`) — add only if there's a recurring scenario shape worth abstracting; otherwise tests inherit from `XCTestCase` directly (Logs has no base).

@@ -31,10 +31,22 @@ internal struct AppRun: Hashable {
         return .init(steps: steps + [step])
     }
 
+    /// Adds a step to the scenario in the "when" phase.
+    /// - Parameter perform: The next step representing an action or change.
+    func when(_ perform: @escaping (AppRunner) -> Void) -> Self {
+        return .init(steps: steps + [AppRunStep(perform)])
+    }
+
     /// Adds an additional step to the scenario (alias for `when()`).
     /// - Parameter step: The additional step to append to the sequence.
     func and(_ step: AppRunStep) -> Self {
         return when(step)
+    }
+
+    /// Adds an additional step to the scenario (alias for `when()`).
+    /// - Parameter perform: The additional step to append to the sequence.
+    func and(_ perform: @escaping (AppRunner) -> Void) -> Self {
+        return when(perform)
     }
 
     /// Executes the defined scenario and returns recorded events.

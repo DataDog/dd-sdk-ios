@@ -11,38 +11,23 @@ import TestUtilities
 @testable import DatadogLogs
 
 extension AppRunner {
-    typealias LogsSetup = (inout Logs.Configuration) -> Void
-    typealias LoggerSetup = (inout Logger.Configuration) -> Void
-
     /// Registered loggers, keyed by name. Backed by `state["loggers"]`.
     var loggers: [String: LoggerProtocol] {
         get { state["loggers"] as? [String: LoggerProtocol] ?? [:] }
         set { state["loggers"] = newValue }
     }
 
-    /// Enables the Logs feature. Assumes the SDK has been initialized via `initializeSDK(...)`.
-    func enableLogs(_ logsSetup: LogsSetup = { _ in }) {
-        var config = Logs.Configuration()
-        logsSetup(&config)
-        Logs.enable(with: config, in: core)
-    }
-
-    /// Registers a persistent named logger. The logger is shared across all
-    /// `withLogger(name:)` calls referencing the same name, preserving stateful
-    /// modifications (tags, attributes) between steps.
-    func createLogger(name: String = "default", setup: LoggerSetup = { _ in }) {
-        var config = Logger.Configuration()
-        setup(&config)
-        loggers[name] = Logger.create(with: config, in: core)
-    }
-
-    /// Returns the named logger. Crashes via precondition if the logger was not
-    /// registered first via `createLogger(name:)`.
-    func logger(name: String = "default") -> LoggerProtocol {
-        guard let existing = loggers[name] else {
-            preconditionFailure("Logger '\(name)' was not registered. Call createLogger(name: \"\(name)\") first.")
+    /// The default logger, registered under the `"default"` key in `loggers`.
+    /// Crashes (IUO semantics) if read before assignment.
+    var logger: LoggerProtocol! {
+        get { loggers["default"] }
+        set {
+            if let newValue {
+                loggers["default"] = newValue
+            } else {
+                loggers.removeValue(forKey: "default")
+            }
         }
-        return existing
     }
 
     /// Returns log matchers for events recorded during the test.

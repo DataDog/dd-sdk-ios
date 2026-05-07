@@ -24,9 +24,6 @@
     {
       "parallelizable" : false,
       "selectedTests" : [
-        "LogsBasicTests\/testGivenCustomLogger_whenTagIsAddedThenErrorIsLogged_bothPersist()",
-        "LogsBasicTests\/testGivenLogsEnabled_whenInfoIsLogged_itIsRecorded()",
-        "LogsBasicTests\/testGivenRUMAndLogsEnabled_whenLogIsEmittedDuringActiveView_itIsBundledWithViewID()"
       ],
       "target" : {
         "containerPath" : "container:Datadog.xcodeproj",

@@ -22,12 +22,23 @@ For full architecture and step catalog, see `docs/HARNESS_TESTING.md`.
 |---|---|---|---|
 | RUM (views, actions, resources, sessions) | `Datadog/IntegrationUnitTests/RUM/` | Inherit `RUMSessionTestsBase` to reuse `dt1`–`dt7`, `accuracy`, session builders | `RUMHarness.xctestplan` |
 | Logs (logger APIs, log content, RUM↔Logs bundling) | `Datadog/IntegrationUnitTests/Logs/` | `XCTestCase` directly (no base — Logs has no shared session shape) | `LogsHarness.xctestplan` |
-| New product (Trace, Crash, …) | New folder | First read `docs/HARNESS_TESTING.md` "How to extend" — drop-in pattern: pair of `AppRunner+<Feature>.swift` / `AppRunStep+<Feature>.swift` files, no edits to `AppRunner.swift` |  New `<Feature>Harness.xctestplan` |
+| New product (Trace, Crash, …) | New folder | First read `docs/HARNESS_TESTING.md` "How to extend" — drop-in pattern: `AppRunner+<Feature>.swift` (always), `AppRunStep+<Feature>.swift` (only if you adopt typed factories — see below), no edits to `AppRunner.swift` |  New `<Feature>Harness.xctestplan` |
+
+## Picking a step style
+
+A chain step is either a **typed factory** (`.startManualView(after: dt1, viewName: "Cart")`) or an **inline closure** (`.when { app in … }`). Both are first-class — `.and(_:)` / `.when(_:)` have an overload for each — and they mix freely within one chain.
+
+- **Default to inline closures** for features with a small/flat surface or shallow app-lifecycle integration. Lowest setup cost.
+- **Reach for typed factories** when scenarios permute heavily across launch types, app states, and timing, or when a step is a multi-step macro worth naming.
+- **Extract a factory once a pattern repeats ≥3×** — not before.
+- **Lifecycle and core steps** (`appLaunch`, `advanceTime`, `initializeSDK`, …) are always typed — that's the SDK-agnostic backbone everyone uses.
+
+RUM uses typed factories (`AppRunStep+RUM.swift`) because its scenarios are permutation-heavy; Logs uses inline closures (no `AppRunStep+Logs.swift`) because its surface is flat. These are choices, not constraints — mix as the feature demands. See `docs/HARNESS_TESTING.md` *Extension styles* for the longer treatment.
 
 ## Workflow
 
 1. **Translate the scenario into `given/when/then`.** Identify the precondition (process launch type, SDK + features enabled, app state, time elapsed), the action under test, and the expected outcome.
-2. **Pick the right step files for fixtures.** Lifecycle steps live in `AppRunStep.swift`; core (SDK init, user info, flush) in `AppRunStep+Core.swift`; RUM in `AppRunStep+RUM.swift`; Logs in `AppRunStep+Logs.swift`. Check whether the action is already covered. If not, add a static factory in the file matching the feature — name it `trackX`/`startX`/`stopX`/`appX`, first parameter typically `after dt: TimeInterval`.
+2. **Express each step.** Lifecycle and core steps come from `AppRunStep.swift` and `AppRunStep+Core.swift`. For the feature step, follow the convention of existing tests in the target folder (RUM = typed factory in `AppRunStep+RUM.swift`; Logs = inline closure driving the SDK directly) — but you can deviate if it fits the scenario better; see *Picking a step style*. If you add a new typed factory: name it `trackX`/`startX`/`stopX`/`appX`, first parameter typically `after dt: TimeInterval`. If you write an inline closure that creates a long-lived object, pin it to `app.<thing>` so it survives across steps.
 3. **For RUM scenarios — check `RUMSessionTestsBase` builders.** `userSession()`, `userSessionWithManualView()`, `userSessionWithAutomaticView()`, `backgroundSession()`, `prewarmedSession()` (and `…WithResource` variants). Reuse if it fits; if you find yourself writing a recurring shared-`given` shape twice, add a builder there.
 4. **Write the test.** Naming: `testGiven<precondition>_when<action>_<and more context>()`. Branch a single `given` into multiple `when`s when permutations are cheap.
 5. **Add the file to the project.** Use the `dd-sdk-ios:xcode-file-management` skill (Xcode MCP) — it updates `.pbxproj` atomically. Target membership is inferred from path: anything under `Datadog/IntegrationUnitTests/` joins `DatadogIntegrationTests`.
@@ -36,15 +47,16 @@ For full architecture and step catalog, see `docs/HARNESS_TESTING.md`.
 
 ## Conventions
 
-- **Time deltas.** Use shared `dt1`–`dt7` from `RUMSessionTestsBase`. Logs tests not inheriting from it should declare their own equivalents at the top of the test class (see `LogsBasicTests.swift`).
+- **Time deltas.** Use shared `dt1`–`dt7` from `RUMSessionTestsBase`. Tests that don't inherit from it should declare their own equivalents at the top of the test class.
 - **Accuracy.** Use shared `accuracy`; pair with `DDAssertEqual(_:_:accuracy:)` (unwraps optionals, compares with tolerance).
 - **Session shape.** Document in doc comment using ASCII: `[FG:ApplicationLaunch] → [FG:ManualView] → [BG:(no view)]`.
 - **Permutation coverage.** Loop over multiple `given`s and multiple `when`s to multiply scenarios from one method.
 - **`then()` results.** `result.sessions.takeSingle()` / `takeTwo()` for exact-count assertions; `result.logs[i]` direct access. Features not enabled in the scenario return empty arrays — no need to guard.
+- **Object lifetime in inline-closure style (Logs, future inline features).** Any SDK object created inside a closure that needs to outlive that closure **must** be retained on `AppRunner` — usually via a `state[…]`-backed accessor like `app.logger = …` (or `app.loggers["custom"] = …`). If the only reference is a local `let` inside `.when { app in … }`, the object can deallocate when the closure returns and the test will see zero recorded events with no obvious error. This is the reason `AppRunner+Logs.swift` exposes `loggers` and `logger` even though there's no Logs step factory file.
 
 ## Mini-examples
 
-Logs (`Datadog/IntegrationUnitTests/Logs/LogsBasicTests.swift`):
+Logs — inline-closure style:
 
 ```swift
 func testGivenLogsEnabled_whenInfoIsLogged_itIsRecorded() throws {
@@ -52,17 +64,32 @@ func testGivenLogsEnabled_whenInfoIsLogged_itIsRecorded() throws {
         .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
         .and(.advanceTime(by: timeToSDKInit))
         .and(.initializeSDK())
-        .and(.enableLogs())
-        .and(.createLogger())
-        .and(.appBecomesActive(after: timeToAppBecomeActive))
-        .and(.advanceTime(by: dt1))
-        .when(.withLogger { $0.info("user signed in") })
+        .when { app in
+            Logs.enable(in: app.core)
+            app.logger = Logger.create(in: app.core)   // pin to runner state — see *Object lifetime*
+            app.logger.info("user signed in")
+        }
 
     let result = try when.then()
     XCTAssertEqual(result.logs.count, 1)
     result.logs[0].assertStatus(equals: "info")
     result.logs[0].assertMessage(equals: "user signed in")
 }
+```
+
+For multi-step Logs scenarios, split the closures across `.and { app in … }` boundaries — the logger pinned via `app.logger` survives across `.advanceTime(...)` and other steps:
+
+```swift
+.and { app in
+    Logs.enable(in: app.core)
+    var config = Logger.Configuration()
+    config.service = "checkout"
+    app.logger = Logger.create(with: config, in: app.core)
+}
+.and(.advanceTime(by: dt1))
+.and { app in app.logger.addTag(withKey: "feature", value: "promo") }
+.and(.advanceTime(by: dt2))
+.when { app in app.logger.error("checkout failed", error: TestError()) }
 ```
 
 RUM (using a `RUMSessionTestsBase` builder):
@@ -89,7 +116,8 @@ func testGivenUserSession_whenItIsStopped_andActionIsTrackedInForeground() throw
 |---|---|
 | Test compiles but never runs in CI | Add `<TestClass>/<testMethod>()` to `selectedTests` in the `*Harness.xctestplan`. |
 | Used `XCTestCase` for a RUM scenario, then re-declared `dt1`/`accuracy` | Inherit `RUMSessionTestsBase` instead — gives time deltas, accuracy, and session builders for free. |
-| Wrote a new step factory when an existing one fit | Search `AppRunStep+RUM.swift` / `+Logs.swift` first; for Logs APIs the existing `withLogger { $0.<api>(...) }` covers any `LoggerProtocol` method. |
+| Wrote a new step factory when an existing one fit | Search `AppRunStep+RUM.swift` first. For Logs there is no factory file — drive the SDK inline via `.when { app in … }` using public APIs. |
+| Created a logger inside `.when { app in … }` without pinning it to `app.logger` / `app.loggers[...]` | The local `let logger = …` deallocates when the closure returns, before its events flush — the test then sees zero recorded events. Always assign to `app.logger` (or `app.loggers["custom"]`) so the runner's `state` retains it until `tearDown()`. |
 | Combined `enableRUM(after:sdkSetup:rumSetup:)` (does init internally) with a separate `initializeSDK` step | Use either the `enableRUM(after:…)` convenience **or** `initializeSDK` + `enableRUM(rumSetup:)` — never both. |
 | Added the new step factory in `AppRunStep.swift` instead of the feature file | Lifecycle (process launch, time, app state) only in `AppRunStep.swift`; everything else in the feature-specific file. |
 | Touched `AppRunner.swift` to add per-feature storage | Use `state[...]` + computed property in the feature extension. See `core` / `loggers` for the pattern. |

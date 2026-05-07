@@ -506,7 +506,6 @@
 		6119DDE02DD24AB700DA80F9 /* AppRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6119DDD52DD24AB700DA80F9 /* AppRunner.swift */; };
 		6119DDEE2DD4E94300DA80F9 /* AppRunStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6119DDEC2DD4E94300DA80F9 /* AppRunStep.swift */; };
 		6119DDF12DD24AB700DA80F9 /* AppRunner+Logs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6119DDF02DD24AB700DA80F9 /* AppRunner+Logs.swift */; };
-		6119DDF32DD24AB700DA80F9 /* AppRunStep+Logs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6119DDF22DD24AB700DA80F9 /* AppRunStep+Logs.swift */; };
 		6121627C247D220500AC5D67 /* TracingWithLoggingIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216279247D21FE00AC5D67 /* TracingWithLoggingIntegrationTests.swift */; };
 		6128F56A2BA2237300D35B08 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F5692BA2237300D35B08 /* DataStore.swift */; };
 		6128F56E2BA223A100D35B08 /* FeatureDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F56D2BA223A100D35B08 /* FeatureDataStore.swift */; };
@@ -641,7 +640,6 @@
 		61CE585A2B48174D00479510 /* SpanWriteContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61CE58592B48174D00479510 /* SpanWriteContext.swift */; };
 		61D03BE0273404E700367DE0 /* RUMDataModels+objcTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */; };
 		61D11FAA2FA8F8A7004B2CE4 /* RUMHarness.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 61D11FA92FA8F8A7004B2CE4 /* RUMHarness.xctestplan */; };
-		61D11FAD2FAA41FB004B2CE4 /* LogsBasicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D11FAC2FAA41FB004B2CE4 /* LogsBasicTests.swift */; };
 		61D11FAF2FAA4219004B2CE4 /* LogsHarness.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 61D11FAE2FAA4219004B2CE4 /* LogsHarness.xctestplan */; };
 		61D11FB12FACA5EA004B2CE4 /* AppRunner+RUM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D11FB02FACA5EA004B2CE4 /* AppRunner+RUM.swift */; };
 		61D11FB32FACA5FE004B2CE4 /* AppRunStep+RUM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D11FB22FACA5FE004B2CE4 /* AppRunStep+RUM.swift */; };
@@ -2237,7 +2235,6 @@
 		6119DDD52DD24AB700DA80F9 /* AppRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRunner.swift; sourceTree = "<group>"; };
 		6119DDEC2DD4E94300DA80F9 /* AppRunStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRunStep.swift; sourceTree = "<group>"; };
 		6119DDF02DD24AB700DA80F9 /* AppRunner+Logs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppRunner+Logs.swift"; sourceTree = "<group>"; };
-		6119DDF22DD24AB700DA80F9 /* AppRunStep+Logs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppRunStep+Logs.swift"; sourceTree = "<group>"; };
 		611F82022563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMViewsPredicateTests.swift; sourceTree = "<group>"; };
 		61216275247D1CD700AC5D67 /* TracingWithLoggingIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingWithLoggingIntegration.swift; sourceTree = "<group>"; };
 		61216279247D21FE00AC5D67 /* TracingWithLoggingIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingWithLoggingIntegrationTests.swift; sourceTree = "<group>"; };
@@ -2455,7 +2452,6 @@
 		61CE58592B48174D00479510 /* SpanWriteContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanWriteContext.swift; sourceTree = "<group>"; };
 		61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objcTests.swift"; sourceTree = "<group>"; };
 		61D11FA92FA8F8A7004B2CE4 /* RUMHarness.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = RUMHarness.xctestplan; sourceTree = "<group>"; };
-		61D11FAC2FAA41FB004B2CE4 /* LogsBasicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsBasicTests.swift; sourceTree = "<group>"; };
 		61D11FAE2FAA4219004B2CE4 /* LogsHarness.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = LogsHarness.xctestplan; sourceTree = "<group>"; };
 		61D11FB02FACA5EA004B2CE4 /* AppRunner+RUM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppRunner+RUM.swift"; sourceTree = "<group>"; };
 		61D11FB22FACA5FE004B2CE4 /* AppRunStep+RUM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppRunStep+RUM.swift"; sourceTree = "<group>"; };
@@ -4699,7 +4695,6 @@
 				6119DDEC2DD4E94300DA80F9 /* AppRunStep.swift */,
 				6119DDD52DD24AB700DA80F9 /* AppRunner.swift */,
 				6119DDF02DD24AB700DA80F9 /* AppRunner+Logs.swift */,
-				6119DDF22DD24AB700DA80F9 /* AppRunStep+Logs.swift */,
 				61D11FB02FACA5EA004B2CE4 /* AppRunner+RUM.swift */,
 				61D11FB22FACA5FE004B2CE4 /* AppRunStep+RUM.swift */,
 				61D11FB42FACA988004B2CE4 /* AppRunner+Core.swift */,
@@ -5436,7 +5431,6 @@
 		61D11FAB2FAA41C3004B2CE4 /* Logs */ = {
 			isa = PBXGroup;
 			children = (
-				61D11FAC2FAA41FB004B2CE4 /* LogsBasicTests.swift */,
 			);
 			path = Logs;
 			sourceTree = "<group>";
@@ -7766,7 +7760,6 @@
 				094B553F2F76C63100BAB8B5 /* RUMResourceTraceIntegrationTests.swift in Sources */,
 				6119DDDE2DD24AB700DA80F9 /* AppRun.swift in Sources */,
 				6119DDF12DD24AB700DA80F9 /* AppRunner+Logs.swift in Sources */,
-				6119DDF32DD24AB700DA80F9 /* AppRunStep+Logs.swift in Sources */,
 				6119DDE02DD24AB700DA80F9 /* AppRunner.swift in Sources */,
 				61536ABE2DF0A0D100B06D7D /* RUMSessionTrackingTests.swift in Sources */,
 				118248682D908CF400E3D16F /* WatchdogTerminationsMonitoringTests.swift in Sources */,
@@ -7785,7 +7778,6 @@
 				5B4F376C2E93C5E90093778F /* FlagsEvaluationIntegrationTests.swift in Sources */,
 				118248722D908D3400E3D16F /* CoreMetricsIntegrationTests.swift in Sources */,
 				1182486B2D908CF400E3D16F /* WebEventIntegrationTests.swift in Sources */,
-				61D11FAD2FAA41FB004B2CE4 /* LogsBasicTests.swift in Sources */,
 				118247BE2D908BEF00E3D16F /* RUMViewEndedMetricIntegrationTests.swift in Sources */,
 				61D11FB12FACA5EA004B2CE4 /* AppRunner+RUM.swift in Sources */,
 				1182486F2D908D1C00E3D16F /* NetworkInstrumentationIntegrationTests.swift in Sources */,
