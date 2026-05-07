@@ -323,7 +323,7 @@ internal final class DatadogCore {
 }
 
 extension DatadogCore: DatadogCoreProtocol {
-    var messageBus: MessageBus { NOPMessageBus() }
+    var messageBus: MessageBus { bus }
 
     /// Registers a Feature instance.
     ///

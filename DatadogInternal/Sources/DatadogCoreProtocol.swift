@@ -70,6 +70,7 @@ extension DatadogCoreProtocol {
     }
 }
 
+@available(*, deprecated, message: "Use `MessageBus` and `BusMessage` for typed feature-to-feature messaging.")
 public protocol MessageSending {
     /// Sends a message on the bus shared by features registered to the sam core.
     ///
@@ -83,6 +84,7 @@ public protocol MessageSending {
     func send(message: FeatureMessage, else fallback: @escaping () -> Void)
 }
 
+@available(*, deprecated, message: "Use `MessageBus` and `BusMessage` for typed feature-to-feature messaging.")
 extension MessageSending {
     /// Sends a message on the bus shared by features registered to the same core.
     ///

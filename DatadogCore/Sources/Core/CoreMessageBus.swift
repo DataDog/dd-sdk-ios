@@ -10,7 +10,7 @@ import DatadogInternal
 /// The message-bus sends messages to a set of registered receivers.
 ///
 /// The bus dispatches messages on a serial queue.
-internal final class CoreMessageBus {
+internal final class CoreMessageBus: @unchecked Sendable {
     /// The message bus GDC queue.
     let queue = DispatchQueue(
         label: "com.datadoghq.ios-sdk-message-bus",
