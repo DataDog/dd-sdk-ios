@@ -54,6 +54,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let trackUserInteractions: Bool?
     public let trackViewsManually: Bool?
     public let unityVersion: String?
+    public let mauiVersion: String?
     public let useAllowedTracingUrls: Bool?
     public let useBeforeSend: Bool?
     public let useExcludedActivityUrls: Bool?
@@ -416,6 +417,7 @@ extension Telemetry {
         trackUserInteractions: Bool? = nil,
         trackViewsManually: Bool? = nil,
         unityVersion: String? = nil,
+        mauiVersion: String? = nil,
         useAllowedTracingUrls: Bool? = nil,
         useBeforeSend: Bool? = nil,
         useExcludedActivityUrls: Bool? = nil,
@@ -473,6 +475,7 @@ extension Telemetry {
             trackUserInteractions: trackUserInteractions,
             trackViewsManually: trackViewsManually,
             unityVersion: unityVersion,
+            mauiVersion: mauiVersion,
             useAllowedTracingUrls: useAllowedTracingUrls,
             useBeforeSend: useBeforeSend,
             useExcludedActivityUrls: useExcludedActivityUrls,
@@ -615,6 +618,7 @@ extension ConfigurationTelemetry {
             trackUserInteractions: other.trackUserInteractions ?? trackUserInteractions,
             trackViewsManually: other.trackViewsManually ?? trackViewsManually,
             unityVersion: other.unityVersion ?? unityVersion,
+            mauiVersion: other.mauiVersion ?? mauiVersion,
             useAllowedTracingUrls: other.useAllowedTracingUrls ?? useAllowedTracingUrls,
             useBeforeSend: other.useBeforeSend ?? useBeforeSend,
             useExcludedActivityUrls: other.useExcludedActivityUrls ?? useExcludedActivityUrls,
