@@ -28,3 +28,33 @@ internal struct AppRunStep: Hashable {
 
     func hash(into hasher: inout Hasher) { hasher.combine(uuid) }
 }
+
+// MARK: - App Lifecycle
+
+extension AppRunStep {
+    static func appLaunch(type: AppRunner.ProcessLaunchType) -> AppRunStep {
+        return AppRunStep({ app in
+            app.launch(type)
+        })
+    }
+
+    static func advanceTime(by duration: TimeInterval) -> AppRunStep {
+        return AppRunStep({ app in
+            app.advanceTime(by: duration)
+        })
+    }
+
+    static func appBecomesActive(after dt: TimeInterval) -> AppRunStep {
+        return AppRunStep({ app in
+            app.advanceTime(by: dt)
+            app.transitionToActive()
+        })
+    }
+
+    static func appEntersBackground(after dt: TimeInterval) -> AppRunStep {
+        return AppRunStep({ app in
+            app.advanceTime(by: dt)
+            app.transitionToBackground()
+        })
+    }
+}

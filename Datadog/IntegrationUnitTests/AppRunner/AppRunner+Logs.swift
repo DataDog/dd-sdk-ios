@@ -14,6 +14,12 @@ extension AppRunner {
     typealias LogsSetup = (inout Logs.Configuration) -> Void
     typealias LoggerSetup = (inout Logger.Configuration) -> Void
 
+    /// Registered loggers, keyed by name. Backed by `state["loggers"]`.
+    var loggers: [String: LoggerProtocol] {
+        get { state["loggers"] as? [String: LoggerProtocol] ?? [:] }
+        set { state["loggers"] = newValue }
+    }
+
     /// Enables the Logs feature. Assumes the SDK has been initialized via `initializeSDK(...)`.
     func enableLogs(_ logsSetup: LogsSetup = { _ in }) {
         var config = Logs.Configuration()

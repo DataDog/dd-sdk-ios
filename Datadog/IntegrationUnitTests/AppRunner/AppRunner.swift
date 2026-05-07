@@ -7,9 +7,6 @@
 import XCTest
 import DatadogInternal
 import TestUtilities
-@testable import DatadogCore
-@testable import DatadogLogs
-@testable import DatadogRUM
 
 /// A [Test Harness](https://en.wikipedia.org/wiki/Test_harness) that simulates the iOS app environment and manages SDK lifecycle.
 /// Used for testing how the SDK responds to different app states and events.
@@ -129,36 +126,40 @@ internal class AppRunner {
 
         DeleteTemporaryDirectory()
 
-        appDirectory = nil
+        appDirectoryURL = nil
         processInfo = nil
         notificationCenter = nil
         dateProvider = nil
         appStateProvider = nil
         appLaunchHandler = nil
-        core = nil
-        loggers.removeAll()
+        state.removeAll()
     }
 
     // swiftlint:disable implicitly_unwrapped_optional
-    private var appDirectory: (() -> Directory)!
-    private var processInfo: ProcessInfoMock!
-    private var notificationCenter: NotificationCenter!
-    private var dateProvider: DateProviderMock!
-    private var appStateProvider: AppStateProviderMock!
-    private var appLaunchHandler: AppLaunchHandlerMock!
+    var appDirectoryURL: URL!
+    var processInfo: ProcessInfoMock!
+    var notificationCenter: NotificationCenter!
+    var dateProvider: DateProviderMock!
+    var appStateProvider: AppStateProviderMock!
+    var appLaunchHandler: AppLaunchHandlerMock!
     #if !os(watchOS)
-    private var frameInfoProvider: FrameInfoProviderMock!
+    var frameInfoProvider: FrameInfoProviderMock!
     #endif
-    var core: DatadogCoreProxy!
     // swiftlint:enable implicitly_unwrapped_optional
     private var appStateObservers: [NSObjectProtocol] = []
-    var loggers: [String: LoggerProtocol] = [:]
+    /// Per-feature anonymous storage. Each `AppRunner+<Feature>` extension reads/writes
+    /// its own slot via a computed property (e.g., `core`, `loggers`), keeping the main
+    /// class SDK-agnostic.
+    var state: [String: Any] = [:]
+    #if !os(watchOS)
+    var lastAppearedViewController: UIViewController?
+    #endif
 
     // MARK: - App Lifecycle
 
     /// Simulates app launch with the given process launch type.
     func launch(_ launchType: ProcessLaunchType) {
-        appDirectory = { Directory(url: temporaryDirectory) }
+        appDirectoryURL = temporaryDirectory
         processInfo = ProcessInfoMock(environment: launchType.processInfoEnvironment)
         notificationCenter = NotificationCenter()
         dateProvider = DateProviderMock(now: launchType.processLaunchDate)
@@ -221,113 +222,4 @@ internal class AppRunner {
 
     /// Returns the current simulated time.
     var currentTime: Date { dateProvider.now }
-
-    /// Simulates the first frame of an app launch.
-    func displayFirstFrame(after interval: TimeInterval) {
-        #if !os(watchOS)
-        self.frameInfoProvider.triggerCallback(interval: interval)
-        #endif
-    }
-
-    #if !os(watchOS)
-    private var lastAppearedViewController: UIViewController?
-
-    /// Simulates `viewDidAppear()` for a given view controller.
-    /// If another view controller had previously appeared, it will automatically simulate `viewDidDisappear()` for it.
-    func viewDidAppear(vc: UIViewController) {
-        if let lastAppearedViewController {
-            viewDidDisappear(vc: lastAppearedViewController)
-        }
-        vc.viewDidAppear(true)
-        lastAppearedViewController = vc
-    }
-
-    /// Simulates `viewDidDisappear()` for a given view controller.
-    func viewDidDisappear(vc: UIViewController) {
-        vc.viewDidDisappear(true)
-        if lastAppearedViewController === vc {
-            lastAppearedViewController = nil
-        }
-    }
-    #endif
-
-    // MARK: - User Info
-
-    /// Sets user info on the SDK core.
-    func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [AttributeKey: AttributeValue] = [:]) {
-        core.setUserInfo(id: id, name: name, email: email, extraInfo: extraInfo)
-    }
-
-    /// Adds extra info to the current user.
-    func addUserExtraInfo(_ newExtraInfo: [AttributeKey: AttributeValue?]) {
-        core.addUserExtraInfo(newExtraInfo)
-    }
-
-    /// Clears user info on the SDK core.
-    func clearUserInfo() {
-        core.clearUserInfo()
-    }
-
-    // MARK: - SDK Setup
-
-    /// Typealias for SDK configuration closure.
-    typealias SDKSetup = (inout Datadog.Configuration) -> Void
-
-    /// Initializes the SDK using an optional setup block.
-    func initializeSDK(_ sdkSetup: SDKSetup = { _ in }) {
-        var config = Datadog.Configuration(clientToken: "mock-client-token", env: "env")
-        config.systemDirectory = appDirectory
-        config.processInfo = processInfo
-        config.dateProvider = dateProvider
-        config.notificationCenter = notificationCenter
-        config.appLaunchHandler = appLaunchHandler
-        config.appStateProvider = appStateProvider
-        config.serverDateProvider = ServerDateProviderMock()
-        sdkSetup(&config)
-        do {
-            core = DatadogCoreProxy(
-                core: try DatadogCore(configuration: config, trackingConsent: .granted, instanceName: .mockAny())
-            )
-        } catch {
-            preconditionFailure("\(error)")
-        }
-    }
-
-    // MARK: - RUM Setup
-
-    /// Typealias for RUM configuration closure.
-    typealias RUMSetup = (inout RUM.Configuration) -> Void
-
-    /// Enables RUM with optional configuration.
-    func enableRUM(_ rumSetup: RUMSetup = { _ in }) {
-        var config = RUM.Configuration(applicationID: "mock-application-id")
-        config.dateProvider = dateProvider
-        config.mediaTimeProvider = MediaTimeProviderMock(current: 0)
-        config.notificationCenter = notificationCenter
-        #if !os(watchOS)
-        config.frameInfoProviderFactory = { [weak self] in
-            let frameInfoProvider = FrameInfoProviderMock(target: $0, selector: $1)
-            self?.frameInfoProvider = frameInfoProvider
-            return frameInfoProvider
-        }
-        #endif
-        rumSetup(&config)
-        RUM.enable(with: config, in: core)
-    }
-
-    /// Provides convenient access to the current `RUMMonitor`.
-    var rum: RUMMonitorProtocol { RUMMonitor.shared(in: core) }
-
-    // MARK: - Data Retrieval
-
-    /// Flushes all pending SDK operations synchronously.
-    func flush() {
-        core.flush()
-    }
-
-    /// Returns grouped RUM sessions recorded during the test.
-    /// - Returns: An array of `RUMSessionMatcher` grouped by `session.id`.
-    func recordedRUMSessions() throws -> [RUMSessionMatcher] {
-        return try RUMSessionMatcher.groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
-    }
 }

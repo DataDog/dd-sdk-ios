@@ -5,37 +5,12 @@
  */
 
 import Foundation
+import TestUtilities
 @testable import DatadogCore
 @testable import DatadogRUM
 
 extension AppRunStep {
-    // MARK: - App Lifecycle
-
-    static func appLaunch(type: AppRunner.ProcessLaunchType) -> AppRunStep {
-        return AppRunStep({ app in
-            app.launch(type)
-        })
-    }
-
-    static func advanceTime(by duration: TimeInterval) -> AppRunStep {
-        return AppRunStep({ app in
-            app.advanceTime(by: duration)
-        })
-    }
-
-    static func appBecomesActive(after dt: TimeInterval) -> AppRunStep {
-        return AppRunStep({ app in
-            app.advanceTime(by: dt)
-            app.transitionToActive()
-        })
-    }
-
-    static func appEntersBackground(after dt: TimeInterval) -> AppRunStep {
-        return AppRunStep({ app in
-            app.advanceTime(by: dt)
-            app.transitionToBackground()
-        })
-    }
+    // MARK: - App Lifecycle (RUM-dependent)
 
     static func appDisplaysFirstFrame(after dt: TimeInterval = 0) -> AppRunStep {
         return AppRunStep({ app in
@@ -44,21 +19,9 @@ extension AppRunStep {
         })
     }
 
-    // MARK: - SDK Setup
-
-    /// Initializes the SDK without enabling any feature. Use in sequence with
-    /// `enableRUM(rumSetup:)` and/or `enableLogs(logsSetup:)`.
-    /// Do not combine with `enableRUM(after:sdkSetup:rumSetup:)` — that helper
-    /// performs init internally.
-    static func initializeSDK(sdkSetup: AppRunner.SDKSetup? = nil) -> AppRunStep {
-        return AppRunStep({ app in
-            app.initializeSDK(sdkSetup ?? { _ in })
-        })
-    }
-
     // MARK: - RUM Use Cases
 
-    // Convenience helper for initializing the SDK and enabling the RUM feature in one step.
+    /// Convenience helper for initializing the SDK and enabling the RUM feature in one step.
     /// - Parameters:
     ///   - dt: The time interval to advance before initializing the SDK and enabling the RUM feature.
     ///   - sdkSetup: A closure to configure the SDK setup.
@@ -169,44 +132,5 @@ extension AppRunStep {
             app.advanceTime(by: dt)
             app.rum.stopResource(resourceKey: key, response: .mockAny())
         })
-    }
-
-    // MARK: - User Info
-
-    static func setUserInfo(
-        after dt: TimeInterval = 0,
-        id: String? = nil,
-        name: String? = nil,
-        email: String? = nil,
-        extraInfo: [String: any Encodable] = [:]
-    ) -> AppRunStep {
-        return AppRunStep({ app in
-            app.advanceTime(by: dt)
-            app.setUserInfo(id: id, name: name, email: email, extraInfo: extraInfo)
-        })
-    }
-
-    static func addUserExtraInfo(after dt: TimeInterval = 0, _ extraInfo: [String: (any Encodable)?]) -> AppRunStep {
-        return AppRunStep({ app in
-            app.advanceTime(by: dt)
-            app.addUserExtraInfo(extraInfo)
-        })
-    }
-
-    static func clearUserInfo(after dt: TimeInterval = 0) -> AppRunStep {
-        return AppRunStep({ app in
-            app.advanceTime(by: dt)
-            app.clearUserInfo()
-        })
-    }
-}
-
-// MARK: - Test Utils
-
-extension AppRunStep {
-    static func flushDatadogContext() -> AppRunStep {
-        AppRunStep { app in
-            app.flush()
-        }
     }
 }
