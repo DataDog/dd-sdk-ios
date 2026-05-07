@@ -34,6 +34,7 @@
 		1121FD002EE319F000297156 /* ProfilingTelemetryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */; };
 		1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */; };
 		1121FD052F00000000297156 /* ProfilingSessionMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD042F00000000297156 /* ProfilingSessionMetric.swift */; };
+		1121FD072F00000100297156 /* AggregationDiagnosticsMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD062F00000100297156 /* AggregationDiagnosticsMetric.swift */; };
 		1124D5302EA6D23C0002E053 /* StartupTypeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */; };
 		1124D5322EA6D4050002E053 /* RUMAppLaunchManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D5312EA6D4050002E053 /* RUMAppLaunchManagerTests.swift */; };
 		1124D5382EA6D4390002E053 /* RUMAppLaunchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124D5342EA6D4390002E053 /* RUMAppLaunchManager.swift */; };
@@ -1803,6 +1804,7 @@
 		1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingTelemetryController.swift; sourceTree = "<group>"; };
 		1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationMetric.swift; sourceTree = "<group>"; };
 		1121FD042F00000000297156 /* ProfilingSessionMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingSessionMetric.swift; sourceTree = "<group>"; };
+		1121FD062F00000100297156 /* AggregationDiagnosticsMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AggregationDiagnosticsMetric.swift; sourceTree = "<group>"; };
 		1124D52E2EA6D2370002E053 /* StartupTypeHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTypeHandler.swift; sourceTree = "<group>"; };
 		1124D5312EA6D4050002E053 /* RUMAppLaunchManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAppLaunchManagerTests.swift; sourceTree = "<group>"; };
 		1124D5342EA6D4390002E053 /* RUMAppLaunchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAppLaunchManager.swift; sourceTree = "<group>"; };
@@ -3262,6 +3264,7 @@
 		1121FCFA2EE305D900297156 /* SDKMetrics */ = {
 			isa = PBXGroup;
 			children = (
+				1121FD062F00000100297156 /* AggregationDiagnosticsMetric.swift */,
 				1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */,
 				1121FD042F00000000297156 /* ProfilingSessionMetric.swift */,
 				1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */,
@@ -8459,6 +8462,7 @@
 				110DD1B22EEB6BBD002F3B8B /* ProfilingConfiguration.swift in Sources */,
 				D233E7C42E4625D400E7CFDE /* RequestBuilder.swift in Sources */,
 				D233E7C52E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
+				1121FD072F00000100297156 /* AggregationDiagnosticsMetric.swift in Sources */,
 				1121FD002EE319F000297156 /* ProfilingTelemetryController.swift in Sources */,
 				1121FD052F00000000297156 /* ProfilingSessionMetric.swift in Sources */,
 				D233E8022E4B653F00E7CFDE /* dd_pprof.cpp in Sources */,

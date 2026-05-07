@@ -27,6 +27,10 @@ static constexpr double DD_PROFILER_MAX_SAMPLE_RATE = 100.0;
 // Maximum queued aggregation batch memory before new batches are dropped.
 static constexpr uint64_t DD_PROFILER_DEFAULT_HARD_LIMIT_BYTES = 64ULL * 1024ULL * 1024ULL;
 
+static dd_profiler_diagnostics_t empty_diagnostics() {
+    return {0, 0, 0};
+}
+
 namespace dd::profiler { class dd_profiler; }
 
 static dd::profiler::dd_profiler* g_dd_profiler = nullptr;
@@ -281,18 +285,14 @@ public:
         return swap_context.flushed_profile;
     }
 
-    void consume_diagnostics(dd_profiler_diagnostics_t* out) {
-        if (!out) {
-            return;
-        }
-
-        out->dropped_batch_count = 0;
-        out->dropped_sample_count = 0;
-        out->max_pending_bytes = 0;
+    dd_profiler_diagnostics_t diagnostics() {
+        dd_profiler_diagnostics_t result = empty_diagnostics();
 
         if (profiler) {
-            profiler->consume_diagnostics(out);
+            profiler->consume_diagnostics(&result);
         }
+
+        return result;
     }
 
 private:
@@ -466,16 +466,12 @@ dd_profiler_status_t dd_profiler_get_status(void) {
     return g_dd_profiler ? g_dd_profiler->status : DD_PROFILER_STATUS_NOT_CREATED;
 }
 
-void dd_profiler_consume_diagnostics(dd_profiler_diagnostics_t* out) {
+dd_profiler_diagnostics_t dd_profiler_diagnostics(void) {
     std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
-    if (out) {
-        out->dropped_batch_count = 0;
-        out->dropped_sample_count = 0;
-        out->max_pending_bytes = 0;
-    }
     if (g_dd_profiler) {
-        g_dd_profiler->consume_diagnostics(out);
+        return g_dd_profiler->diagnostics();
     }
+    return empty_diagnostics();
 }
 
 bool dd_profiler_is_running() {
