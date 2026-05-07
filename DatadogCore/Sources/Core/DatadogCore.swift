@@ -119,9 +119,9 @@ internal final class DatadogCore {
         // the bus will keep a weak ref to the core.
         bus.connect(core: self)
 
-        // forward any context change on the message-bus
+        // forward any context change on the typed message-bus
         self.contextProvider.publish { [weak self] context in
-            self?.send(message: .context(context))
+            self?.bus.send(message: context)
         }
     }
 
@@ -264,8 +264,9 @@ internal final class DatadogCore {
     ///   - key: The key associated with the receiver.
     private func add(messageReceiver: FeatureMessageReceiver, forKey key: String) {
         bus.connect(messageReceiver, forKey: key)
+        // Push current context to typed-bus DatadogContext subscribers.
         contextProvider.read { context in
-            self.bus.queue.async { messageReceiver.receive(message: .context(context), from: self) }
+            self.bus.send(message: context)
         }
     }
 
