@@ -74,4 +74,85 @@ class LogsFilteringTests: XCTestCase {
         let recordedMessages = try result.logs.map { try $0.value(forKeyPath: "message") as String }
         XCTAssertEqual(recordedMessages, messages, "Every emitted message should appear in recordedLogs() in order")
     }
+
+    // MARK: - §8 Log threshold (remoteLogThreshold)
+
+    func testGivenLoggerWithWarnThreshold_whenLogsAreEmittedAtEachLevel_onlyWarnAndAboveAreRecorded() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                var config = Logger.Configuration()
+                config.remoteLogThreshold = .warn
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.debug("d")
+                app.logger.info("i")
+                app.logger.notice("n")
+                app.logger.warn("w")
+                app.logger.error("e")
+                app.logger.critical("c")
+            }
+
+        // Then
+        let result = try when.then()
+        let expectedStatuses = ["warn", "error", "critical"]
+        XCTAssertEqual(result.logs.count, expectedStatuses.count, "Only logs at or above .warn should be recorded")
+        for (index, expectedStatus) in expectedStatuses.enumerated() {
+            result.logs[index].assertStatus(equals: expectedStatus)
+        }
+    }
+
+    func testGivenLoggerWithCriticalThreshold_whenLogsAreEmittedAtEachLevel_onlyCriticalIsRecorded() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                var config = Logger.Configuration()
+                config.remoteLogThreshold = .critical
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.debug("d")
+                app.logger.info("i")
+                app.logger.notice("n")
+                app.logger.warn("w")
+                app.logger.error("e")
+                app.logger.critical("c")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Only the critical log should be recorded")
+        result.logs[0].assertStatus(equals: "critical")
+    }
+
+    func testGivenLoggerWithDefaultThreshold_whenLogsAreEmittedAtEachLevel_allLevelsAreRecorded() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(with: Logger.Configuration(), in: app.core)
+                app.logger.debug("d")
+                app.logger.info("i")
+                app.logger.notice("n")
+                app.logger.warn("w")
+                app.logger.error("e")
+                app.logger.critical("c")
+            }
+
+        // Then
+        let result = try when.then()
+        let expectedStatuses = ["debug", "info", "notice", "warn", "error", "critical"]
+        XCTAssertEqual(result.logs.count, expectedStatuses.count, "Default threshold (.debug) should accept every level")
+        for (index, expectedStatus) in expectedStatuses.enumerated() {
+            result.logs[index].assertStatus(equals: expectedStatus)
+        }
+    }
 }

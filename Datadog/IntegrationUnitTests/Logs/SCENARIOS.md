@@ -102,9 +102,9 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 
 ## 8. Log threshold (`remoteLogThreshold`) → `LogsFilteringTests.swift`
 
-- **Threshold `.warn` filters lower levels** — `debug`, `info`, `notice` not in recorded logs; `warn`, `error`, `critical` present. _ready_
-- **Threshold `.critical` filters all but critical** — only critical logs present in recorded logs. _ready_
-- **Threshold `.debug` (default) accepts all levels** — every level passes. _ready_
+- **Threshold `.warn` filters lower levels** — `debug`, `info`, `notice` not in recorded logs; `warn`, `error`, `critical` present. _ready_ → `testGivenLoggerWithWarnThreshold_whenLogsAreEmittedAtEachLevel_onlyWarnAndAboveAreRecorded()`
+- **Threshold `.critical` filters all but critical** — only critical logs present in recorded logs. _ready_ → `testGivenLoggerWithCriticalThreshold_whenLogsAreEmittedAtEachLevel_onlyCriticalIsRecorded()`
+- **Threshold `.debug` (default) accepts all levels** — every level passes. _ready_ → `testGivenLoggerWithDefaultThreshold_whenLogsAreEmittedAtEachLevel_allLevelsAreRecorded()`
 - **Threshold doesn't affect console output** — below-threshold logs still printed to console, only remote sending is filtered. _needs-fixture: console capture_
 
 ## 9. Console output → `LogsFilteringTests.swift`
