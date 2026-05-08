@@ -35,15 +35,15 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 
 ## 2. Logger creation & configuration → `LogsConfigTests.swift`
 
-- **Default Logger.Configuration** — log emitted from default-config logger has `serviceName` from SDK env, `loggerName` from main bundle id, `bundleWithRumEnabled=true`, `bundleWithTraceEnabled=true`, `networkInfoEnabled=false`, no console output. _ready_
-- **Logger.Configuration.service overrides default** — explicit `service: "checkout"` appears in event `service` field. _ready_
-- **Logger.Configuration.name overrides default** — explicit `name: "auth-logger"` appears in `logger.name`. _ready_
-- **Multiple named loggers — independent tag state** — two loggers created with different names; tag added on logger A doesn't appear on logger B's logs. _ready_
-- **Multiple named loggers — independent attribute state** — same as above for attributes. _ready_
-- **Logger with `remoteSampleRate=0` and no console** — `Logger.create` returns NOPLogger; no logs recorded. _ready_
+- **Default Logger.Configuration** — log emitted from default-config logger has `serviceName` from SDK env, `loggerName` from main bundle id, `bundleWithRumEnabled=true`, `bundleWithTraceEnabled=true`, `networkInfoEnabled=false`, no console output. _ready_ → `testGivenDefaultLoggerConfiguration_whenLogIsEmitted_itHasDefaultServiceAndLoggerName()`
+- **Logger.Configuration.service overrides default** — explicit `service: "checkout"` appears in event `service` field. _ready_ → `testGivenLoggerConfigurationWithExplicitService_whenLogIsEmitted_itUsesProvidedServiceName()`
+- **Logger.Configuration.name overrides default** — explicit `name: "auth-logger"` appears in `logger.name`. _ready_ → `testGivenLoggerConfigurationWithExplicitName_whenLogIsEmitted_itUsesProvidedLoggerName()`
+- **Multiple named loggers — independent tag state** — two loggers created with different names; tag added on logger A doesn't appear on logger B's logs. _ready_ → `testGivenTwoLoggers_whenTagIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()`
+- **Multiple named loggers — independent attribute state** — same as above for attributes. _ready_ → `testGivenTwoLoggers_whenAttributeIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()`
+- **Logger with `remoteSampleRate=0` and no console** — `Logger.create` returns NOPLogger; no logs recorded. _ready_ → `testGivenLoggerWithZeroRemoteSampleRateAndNoConsole_whenLogsAreEmitted_noLogsAreRecorded()`
 - **Logger with `consoleLogFormat` only (`.short`, `remoteSampleRate=0`)** — no logs sent remotely; console output produced. _needs-fixture: console capture_
 - **Combined logger (console + remote)** — both outputs receive each log emission. _needs-fixture: console capture_
-- **`loggerVersion` populated from SDK version** — every log carries the current SDK version in `logger.version`. _ready_
+- **`loggerVersion` populated from SDK version** — every log carries the current SDK version in `logger.version`. _ready_ → `testGivenAnyLogger_whenLogIsEmitted_itCarriesCurrentSDKVersionInLoggerVersion()`
 
 ## 3. Log emission (levels & content) → `LogsRecordingTests.swift`
 

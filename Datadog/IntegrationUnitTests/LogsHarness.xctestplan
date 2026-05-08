@@ -24,9 +24,16 @@
     {
       "parallelizable" : false,
       "selectedTests" : [
+        "LogsConfigTests\/testGivenAnyLogger_whenLogIsEmitted_itCarriesCurrentSDKVersionInLoggerVersion()",
+        "LogsConfigTests\/testGivenDefaultLoggerConfiguration_whenLogIsEmitted_itHasDefaultServiceAndLoggerName()",
+        "LogsConfigTests\/testGivenLoggerConfigurationWithExplicitName_whenLogIsEmitted_itUsesProvidedLoggerName()",
+        "LogsConfigTests\/testGivenLoggerConfigurationWithExplicitService_whenLogIsEmitted_itUsesProvidedServiceName()",
+        "LogsConfigTests\/testGivenLoggerWithZeroRemoteSampleRateAndNoConsole_whenLogsAreEmitted_noLogsAreRecorded()",
         "LogsConfigTests\/testGivenLogsFeatureEnabled_whenEnabledASecondTime_previouslyCreatedLoggerStillWorks()",
         "LogsConfigTests\/testGivenLogsFeatureNotEnabled_whenLoggerIsCreated_itProducesNoRecordedLogs()",
-        "LogsConfigTests\/testGivenSDKInitialized_whenLogsEnabledAfterInit_loggerProducesRecordedLogs()"
+        "LogsConfigTests\/testGivenSDKInitialized_whenLogsEnabledAfterInit_loggerProducesRecordedLogs()",
+        "LogsConfigTests\/testGivenTwoLoggers_whenAttributeIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()",
+        "LogsConfigTests\/testGivenTwoLoggers_whenTagIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()"
       ],
       "target" : {
         "containerPath" : "container:Datadog.xcodeproj",
