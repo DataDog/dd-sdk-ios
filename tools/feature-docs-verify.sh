@@ -15,6 +15,12 @@ import sys
 repo_root = sys.argv[1]
 failed = False
 
+def print_fix_instructions(full_clone=False):
+    """Print the standard recipe for fixing a feature-doc verification failure."""
+    on_full_clone = " on a full clone" if full_clone else ""
+    print(f"   Run the '/dd-sdk-ios:update-feature-docs' skill in Claude Code{on_full_clone} to refresh the doc,")
+    print(f"   then `make feature-docs-verify` to confirm, and push the update.")
+
 def parse_frontmatter(path):
     """Return (verified_against_commit, tracked_files) from a doc's YAML frontmatter."""
     commit = None
@@ -69,11 +75,13 @@ for doc in sorted(docs):
 
     if not commit:
         print(f"❌ {doc_name}: missing verified_against_commit in frontmatter.")
+        print_fix_instructions()
         failed = True
         continue
 
     if not files:
         print(f"❌ {doc_name}: missing tracked_files in frontmatter.")
+        print_fix_instructions()
         failed = True
         continue
 
@@ -87,10 +95,25 @@ for doc in sorted(docs):
         capture_output=True, text=True
     )
 
-    if result.stdout.strip():
+    # `git diff` exits non-zero when the baseline commit isn't reachable
+    # (e.g. shallow clone on a release/hotfix branch, or a typo in the
+    # frontmatter). In that case stdout is empty, so we'd otherwise silently
+    # report the doc as up to date. Treat any non-zero exit as a failure and
+    # surface stderr so the engineer knows what to do.
+    if result.returncode != 0:
+        print(f"❌ {doc_name}: failed to diff against {commit}.")
+        stderr = result.stderr.strip()
+        if stderr:
+            for stderr_line in stderr.splitlines():
+                print(f"   {stderr_line}")
+        print(f"   The baseline commit is not reachable in this checkout (often a shallow clone on a")
+        print(f"   release/hotfix branch, or a typo in the frontmatter).")
+        print_fix_instructions(full_clone=True)
+        failed = True
+    elif result.stdout.strip():
         print(f"❌ {doc_name} may be out of date.")
         print(f"   Public API changed since commit {commit}.")
-        print(f"   Run the '/dd-sdk-ios:update-feature-docs' skill in Claude Code to update it.")
+        print_fix_instructions()
         failed = True
     else:
         print(f"✅ {doc_name} is up to date (verified at {commit}).")
