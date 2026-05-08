@@ -59,8 +59,9 @@ internal struct ViewTreeRecorder {
             context.clip = frame.intersection(context.clip)
         }
 
-        // Append this view to the node path when heatmaps are enabled
-        if context.heatmapCache != nil {
+        // Compute the heatmap identifier when heatmaps are enabled
+        let heatmapIdentifier: HeatmapIdentifier?
+        if let heatmapCache = context.heatmapCache, let viewPath = context.recorder.viewPath {
             let component: String
             if let accessibilityIdentifier = view.accessibilityIdentifier, !accessibilityIdentifier.isEmpty {
                 component = accessibilityIdentifier
@@ -68,23 +69,22 @@ internal struct ViewTreeRecorder {
                 component = "cls:\(String(describing: type(of: view)))#\(typeIndex)"
             }
             context.nodePath.append(component)
+
+            let identifier = HeatmapIdentifier(
+                elementPath: context.nodePath,
+                screenName: viewPath,
+                bundleIdentifier: bundleIdentifier() ?? "unknown"
+            )
+            heatmapCache.identifiers[ObjectIdentifier(view)] = identifier
+            heatmapIdentifier = identifier
+        } else {
+            heatmapIdentifier = nil
         }
 
         let attributes = ViewAttributes(view: view, frame: frame, clip: context.clip, overrides: overrides)
         let semantics = nodeSemantics(for: view, with: attributes, in: context)
 
         if !semantics.nodes.isEmpty {
-            // Compute the heatmap identifier
-            var heatmapIdentifier: HeatmapIdentifier?
-            if let heatmapCache = context.heatmapCache, let viewPath = context.recorder.viewPath {
-                let identifier = HeatmapIdentifier(
-                    elementPath: context.nodePath,
-                    screenName: viewPath,
-                    bundleIdentifier: bundleIdentifier() ?? "unknown"
-                )
-                heatmapCache.identifiers[ObjectIdentifier(view)] = identifier
-                heatmapIdentifier = identifier
-            }
             nodes.append(
                 contentsOf: heatmapIdentifier.map { heatmapIdentifier in
                     semantics.nodes.map {
