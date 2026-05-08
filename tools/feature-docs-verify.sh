@@ -85,6 +85,20 @@ for doc in sorted(docs):
         failed = True
         continue
 
+    # Validate each tracked path actually exists. `git diff <commit>..HEAD -- <missing>`
+    # exits 0 with empty output, so without this check a typo or stale renamed
+    # path would silently report the doc as up to date.
+    missing = [f for f in files if not os.path.isfile(os.path.join(repo_root, f))]
+    if missing:
+        print(f"❌ {doc_name}: tracked_files references paths that don't exist in the working tree:")
+        for m in missing:
+            print(f"   - {m}")
+        print(f"   The file was likely renamed, moved, or deleted. Update the frontmatter")
+        print(f"   to point at the current path(s).")
+        print_fix_instructions()
+        failed = True
+        continue
+
     # Check whether any tracked file changed since the doc was last verified
     print(f"Checking {doc_name} against:")
     for f in files:
