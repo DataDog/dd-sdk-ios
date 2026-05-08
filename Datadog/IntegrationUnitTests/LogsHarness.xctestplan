@@ -33,7 +33,17 @@
         "LogsConfigTests\/testGivenLogsFeatureNotEnabled_whenLoggerIsCreated_itProducesNoRecordedLogs()",
         "LogsConfigTests\/testGivenSDKInitialized_whenLogsEnabledAfterInit_loggerProducesRecordedLogs()",
         "LogsConfigTests\/testGivenTwoLoggers_whenAttributeIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()",
-        "LogsConfigTests\/testGivenTwoLoggers_whenTagIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()"
+        "LogsConfigTests\/testGivenTwoLoggers_whenTagIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()",
+        "LogsRecordingTests\/testGivenHarnessWithoutCrossPlatformBuildId_whenLogIsEmitted_buildIdIsAbsent()",
+        "LogsRecordingTests\/testGivenLoggerWithDefaultThreshold_whenLogsAreEmittedAtEachLevel_eachLogCarriesMatchingStatus()",
+        "LogsRecordingTests\/testGivenLogger_whenInfoLogIsEmitted_itHasInfoStatusAndMatchingMessage()",
+        "LogsRecordingTests\/testGivenLogger_whenLogIsEmitted_itCarriesApplicationVersionAndBuildNumber()",
+        "LogsRecordingTests\/testGivenLogger_whenLogIsEmitted_itCarriesDeviceAndOsBlocks()",
+        "LogsRecordingTests\/testGivenLogger_whenLogIsEmitted_itCarriesInternalDdBlock()",
+        "LogsRecordingTests\/testGivenLogger_whenMessageContainsUnicodeAndMultilineContent_itIsPreservedVerbatim()",
+        "LogsRecordingTests\/testGivenNamedThread_whenLogIsEmitted_loggerThreadNameMatches()",
+        "LogsRecordingTests\/testGivenSDKConfiguredWithCustomEnv_whenLogIsEmitted_itCarriesThatEnvInDdTags()",
+        "LogsRecordingTests\/testGivenTwoLoggers_whenOneUsesBaseLogMethodAndOtherUsesConvenience_payloadsMatch()"
       ],
       "target" : {
         "containerPath" : "container:Datadog.xcodeproj",

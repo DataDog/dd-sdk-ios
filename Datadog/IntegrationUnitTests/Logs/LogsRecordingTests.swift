@@ -1,0 +1,318 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+import XCTest
+import DatadogInternal
+import TestUtilities
+@testable import DatadogCore
+@testable import DatadogLogs
+
+/// Tests covering what ends up in the recorded log: levels, message content, dates,
+/// thread name, application/build metadata, environment, device/os, `_dd` block.
+///
+/// See `Datadog/IntegrationUnitTests/Logs/SCENARIOS.md` for the full list of scenarios this file covers.
+class LogsRecordingTests: XCTestCase {
+    /// Timestamp representing when the app process was spawned.
+    private let processLaunchDate = Date()
+    /// Simulated delay between app launch and SDK initialization (`Datadog.initialize()`).
+    private let timeToSDKInit: TimeInterval = 0.7
+
+    // MARK: - §3 Log emission (levels & content)
+
+    /// Each log level maps to matching status — for each of `debug`, `info`, `notice`,
+    /// `warn`, `error`, `critical`, the recorded log carries the matching `status` string,
+    /// in the same order as emitted.
+    func testGivenLoggerWithDefaultThreshold_whenLogsAreEmittedAtEachLevel_eachLogCarriesMatchingStatus() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.debug("d")
+                app.logger.info("i")
+                app.logger.notice("n")
+                app.logger.warn("w")
+                app.logger.error("e")
+                app.logger.critical("c")
+            }
+
+        // Then
+        let result = try when.then()
+        let expectedStatuses = ["debug", "info", "notice", "warn", "error", "critical"]
+        XCTAssertEqual(result.logs.count, expectedStatuses.count, "Each emitted log should be recorded")
+        for (index, expectedStatus) in expectedStatuses.enumerated() {
+            result.logs[index].assertStatus(equals: expectedStatus)
+        }
+    }
+
+    /// Base `log(level:message:error:attributes:)` method — emitting via the protocol-level
+    /// method produces output indistinguishable from convenience methods. We compare two
+    /// loggers' outputs side-by-side: one emitting via `info("x")`, the other via
+    /// `log(level: .info, message: "x", error: nil, attributes: nil)`.
+    func testGivenTwoLoggers_whenOneUsesBaseLogMethodAndOtherUsesConvenience_payloadsMatch() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .and { app in
+                Logs.enable(in: app.core)
+                app.loggers["base"] = Logger.create(with: Logger.Configuration(name: "base"), in: app.core)
+                app.loggers["convenience"] = Logger.create(with: Logger.Configuration(name: "convenience"), in: app.core)
+            }
+            .when { app in
+                app.loggers["base"]?.log(level: .info, message: "shared message", error: nil, attributes: nil)
+                app.loggers["convenience"]?.info("shared message")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 2, "Exactly two logs should be recorded — one from each logger")
+
+        let baseLog = try XCTUnwrap(result.logs.first { (try? $0.value(forKeyPath: "logger.name") as String) == "base" })
+        let convenienceLog = try XCTUnwrap(result.logs.first { (try? $0.value(forKeyPath: "logger.name") as String) == "convenience" })
+
+        // Same status & message
+        baseLog.assertStatus(equals: "info")
+        convenienceLog.assertStatus(equals: "info")
+        baseLog.assertMessage(equals: "shared message")
+        convenienceLog.assertMessage(equals: "shared message")
+
+        // Same SDK-managed fields — service, logger.version, ddtags. The recorded JSON does
+        // not have a top-level `env` key (it lives only inside `ddtags`), so we compare the
+        // tag string instead.
+        let baseService: String = try baseLog.value(forKeyPath: "service")
+        let convService: String = try convenienceLog.value(forKeyPath: "service")
+        XCTAssertEqual(baseService, convService, "Both logs must carry the same service field")
+
+        let baseVersion: String = try baseLog.value(forKeyPath: "logger.version")
+        let convVersion: String = try convenienceLog.value(forKeyPath: "logger.version")
+        XCTAssertEqual(baseVersion, convVersion, "Both logs must carry the same logger.version field")
+
+        let baseTags: String = try baseLog.value(forKeyPath: "ddtags")
+        let convTags: String = try convenienceLog.value(forKeyPath: "ddtags")
+        XCTAssertEqual(baseTags, convTags, "Both logs must carry the same ddtags string")
+    }
+
+    /// Info log emission — `info("user signed in")` produces a single recorded log
+    /// with status `"info"` and matching message.
+    func testGivenLogger_whenInfoLogIsEmitted_itHasInfoStatusAndMatchingMessage() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("user signed in")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        result.logs[0].assertStatus(equals: "info")
+        result.logs[0].assertMessage(equals: "user signed in")
+    }
+
+    /// Message text preserved verbatim — special characters, unicode, multi-line content
+    /// survive end-to-end. The exact bytes emitted should be present in the recorded log
+    /// `message` field.
+    func testGivenLogger_whenMessageContainsUnicodeAndMultilineContent_itIsPreservedVerbatim() throws {
+        let message = "Spëcial 🚀\nMulti\\nLine"
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info(message)
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        result.logs[0].assertMessage(equals: message)
+    }
+
+    /// `threadName` populated — log emitted while `Thread.current.name` is set carries
+    /// that name in `logger.thread_name`. `RemoteLogger` collects the thread name
+    /// synchronously on the user thread (see `RemoteLogger.internalLog`), so setting
+    /// the main thread's name immediately before emission is sufficient and avoids
+    /// any cross-thread synchronization concerns.
+    func testGivenNamedThread_whenLogIsEmitted_loggerThreadNameMatches() throws {
+        let threadName = "harness-test-thread"
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+
+                let previousName = Thread.current.name
+                Thread.current.name = threadName
+                defer { Thread.current.name = previousName }
+                app.logger.info("from-named-thread")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        result.logs[0].assertThreadName(equals: threadName)
+    }
+
+    /// `applicationVersion` and `applicationBuildNumber` — populated from bundle context
+    /// on every log via top-level `version` and `build_version` fields. The harness uses
+    /// `Bundle.main` (the test runner bundle) by default, so we assert that both values
+    /// are non-empty strings rather than pinning to specific values which depend on the
+    /// runner's Info.plist.
+    func testGivenLogger_whenLogIsEmitted_itCarriesApplicationVersionAndBuildNumber() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("version-fields")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+
+        let version: String = try result.logs[0].value(forKeyPath: "version")
+        let buildVersion: String = try result.logs[0].value(forKeyPath: "build_version")
+        XCTAssertFalse(version.isEmpty, "`version` should fall back to a non-empty value sourced from Bundle.main")
+        XCTAssertFalse(buildVersion.isEmpty, "`build_version` should fall back to a non-empty value sourced from Bundle.main")
+    }
+
+    /// `build_id` field handling — `build_id` is set only via the cross-platform
+    /// `additionalConfiguration[CrossPlatformAttributes.buildId]` path (see `Datadog.swift`).
+    /// The harness does not populate this attribute, so the field is expected to be
+    /// absent from the recorded JSON payload. This test asserts that absence — if the SDK
+    /// ever starts auto-deriving `build_id` for the binary, both shapes (present
+    /// non-empty / absent) are valid and the test should be relaxed accordingly.
+    func testGivenHarnessWithoutCrossPlatformBuildId_whenLogIsEmitted_buildIdIsAbsent() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("build-id-check")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        result.logs[0].assertNoValue(forKey: "build_id")
+    }
+
+    /// `environment` populated from `Datadog.Configuration.env` — the env value passed
+    /// to `Datadog.initialize(...)` propagates to every log. The encoder does not emit a
+    /// top-level `env` field; instead, env appears as the `env:<value>` entry in the
+    /// `ddtags` string (see `LogEventSanitizer` SDK-managed tag list and
+    /// `LogEventEncoder` which only writes `ddtags`).
+    func testGivenSDKConfiguredWithCustomEnv_whenLogIsEmitted_itCarriesThatEnvInDdTags() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK(sdkSetup: { config in
+                config.env = "harness-env"
+            }))
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("env-check")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+
+        let tags: String = try result.logs[0].value(forKeyPath: "ddtags")
+        XCTAssertTrue(
+            tags.split(separator: ",").contains("env:harness-env"),
+            "ddtags should contain the SDK-managed `env:harness-env` entry; got: \(tags)"
+        )
+    }
+
+    /// `device` and `os` blocks present — every log carries `device` and `os` JSON objects
+    /// describing the simulated environment. We assert presence and non-emptiness on the
+    /// most stable sub-keys (`device.model`, `device.brand`, `os.name`, `os.version`)
+    /// rather than pinning specific values, which can shift between simulator and host.
+    func testGivenLogger_whenLogIsEmitted_itCarriesDeviceAndOsBlocks() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("device-os-check")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let log = result.logs[0]
+
+        log.assertValue(forKeyPath: "device", isTypeOf: [String: Any].self)
+        log.assertValue(forKeyPath: "os", isTypeOf: [String: Any].self)
+
+        let deviceModel: String = try log.value(forKeyPath: "device.model")
+        let deviceBrand: String = try log.value(forKeyPath: "device.brand")
+        XCTAssertFalse(deviceModel.isEmpty, "device.model should be a non-empty string")
+        XCTAssertFalse(deviceBrand.isEmpty, "device.brand should be a non-empty string")
+
+        let osName: String = try log.value(forKeyPath: "os.name")
+        let osVersion: String = try log.value(forKeyPath: "os.version")
+        XCTAssertFalse(osName.isEmpty, "os.name should be a non-empty string")
+        XCTAssertFalse(osVersion.isEmpty, "os.version should be a non-empty string")
+    }
+
+    /// `_dd` internal block present — every log JSON carries a `_dd` object with internal
+    /// SDK metadata. Minimum assertion: `_dd` is present as a JSON object. Currently the
+    /// SDK populates `_dd.device.architecture` (see `LogEvent.Dd`); we assert that nested
+    /// field as a stronger shape check.
+    func testGivenLogger_whenLogIsEmitted_itCarriesInternalDdBlock() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("dd-block-check")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let log = result.logs[0]
+
+        log.assertValue(forKeyPath: "_dd", isTypeOf: [String: Any].self)
+
+        let architecture: String = try log.value(forKeyPath: "_dd.device.architecture")
+        XCTAssertFalse(architecture.isEmpty, "_dd.device.architecture should be a non-empty string")
+    }
+}

@@ -47,17 +47,17 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 
 ## 3. Log emission (levels & content) → `LogsRecordingTests.swift`
 
-- **Each log level maps to matching status** — for each of `debug/info/notice/warn/error/critical`, the event `status` matches; permutate inside one test. _ready_
-- **Base `log(level:message:error:attributes:)` method** — emitting via the protocol-level method produces same output as convenience methods. _ready_
-- **Info log emission** — `info("user signed in")` produces a single recorded log with status "info" and matching message. _ready_
-- **Message text preserved verbatim** — special characters, unicode, multi-line messages survive end-to-end. _ready_
-- **`date` matches simulated time** — log emitted at simulated time T carries `date` field equal to T; verifies that harness time-mocking flows through to the log payload. _ready_
-- **`threadName` populated** — log emitted from a named thread reports that thread name in `logger.thread_name`. _ready_
-- **`applicationVersion` and `applicationBuildNumber`** — populated from bundle context on every log (`version`, `build_version` fields). _ready_
-- **`build_id` field handling** — log carries `build_id` consistent with the binary loaded in the harness environment: present if SDK detects the binary's code-integrity hash, otherwise absent (assert whichever the harness produces — both shapes are valid SDK behaviour). _ready_
-- **`environment`** — populated from `Datadog.Configuration.env` ("env" field) on every log. _ready_
-- **`device` and `os` fields populated** — every log carries `device` and `os` blocks consistent with `AppRunner` simulated environment. _ready_
-- **`_dd` internal block present** — every log JSON contains the `_dd` key with internal SDK metadata. Minimum assertion: `_dd` is present as a JSON object on every recorded log; nested shape can be discovered during test authoring. _ready_
+- **Each log level maps to matching status** — for each of `debug/info/notice/warn/error/critical`, the event `status` matches; permutate inside one test. _ready_ → `testGivenLoggerWithDefaultThreshold_whenLogsAreEmittedAtEachLevel_eachLogCarriesMatchingStatus()`
+- **Base `log(level:message:error:attributes:)` method** — emitting via the protocol-level method produces same output as convenience methods. _ready_ → `testGivenTwoLoggers_whenOneUsesBaseLogMethodAndOtherUsesConvenience_payloadsMatch()`
+- **Info log emission** — `info("user signed in")` produces a single recorded log with status "info" and matching message. _ready_ → `testGivenLogger_whenInfoLogIsEmitted_itHasInfoStatusAndMatchingMessage()`
+- **Message text preserved verbatim** — special characters, unicode, multi-line messages survive end-to-end. _ready_ → `testGivenLogger_whenMessageContainsUnicodeAndMultilineContent_itIsPreservedVerbatim()`
+- **`date` matches simulated time** — log emitted at simulated time T carries `date` field equal to T; verifies that harness time-mocking flows through to the log payload. _needs-fixture: `Logs.Configuration.dateProvider` override_
+- **`threadName` populated** — log emitted from a named thread reports that thread name in `logger.thread_name`. _ready_ → `testGivenNamedThread_whenLogIsEmitted_loggerThreadNameMatches()`
+- **`applicationVersion` and `applicationBuildNumber`** — populated from bundle context on every log (`version`, `build_version` fields). _ready_ → `testGivenLogger_whenLogIsEmitted_itCarriesApplicationVersionAndBuildNumber()`
+- **`build_id` field handling** — log carries `build_id` consistent with the binary loaded in the harness environment: present if SDK detects the binary's code-integrity hash, otherwise absent (assert whichever the harness produces — both shapes are valid SDK behaviour). _ready_ → `testGivenHarnessWithoutCrossPlatformBuildId_whenLogIsEmitted_buildIdIsAbsent()`
+- **`environment`** — populated from `Datadog.Configuration.env` on every log; encoded as the `env:<value>` entry in `ddtags` (the encoder does not emit a top-level `env` field). _ready_ → `testGivenSDKConfiguredWithCustomEnv_whenLogIsEmitted_itCarriesThatEnvInDdTags()`
+- **`device` and `os` fields populated** — every log carries `device` and `os` blocks consistent with `AppRunner` simulated environment. _ready_ → `testGivenLogger_whenLogIsEmitted_itCarriesDeviceAndOsBlocks()`
+- **`_dd` internal block present** — every log JSON contains the `_dd` key with internal SDK metadata. Minimum assertion: `_dd` is present as a JSON object on every recorded log; nested shape can be discovered during test authoring. _ready_ → `testGivenLogger_whenLogIsEmitted_itCarriesInternalDdBlock()`
 
 ## 4. Tags → `LogsRecordingTests.swift`
 
@@ -167,3 +167,13 @@ Behaviours from the public `DatadogLogs` API the harness cannot exercise via `re
 - **Cross-platform / Objective-C bridge surface** (`Logs+objc.swift`, `LogsDataModels+objc.swift`). Not driven through the Swift API surface that `AppRunner` exposes. Covered by `LogsDataModels+objcTests.swift` (unit).
 - **Internal event mapper API** (`InternalExtension.setLogEventMapper`). Internal-only — the harness sticks to public APIs.
 - **Stochastic sampling correctness** (`remoteSampleRate=50` produces ~50% acceptance over many runs). Behaviour is non-deterministic; `Sampler` unit tests cover the math. The harness only asserts the boundary cases (0 and 100).
+
+---
+
+## Observations & Notes
+
+Findings surfaced while writing harness tests — non-blocking, but worth tracking so they don't get lost. Each entry: short title + 1–3 sentences + optional follow-up.
+
+- **Dead key `env` in `LogEventEncoder.StaticCodingKeys`** (surfaced in Batch 3, §3 `environment` scenario). The encoder declares `case environment = "env"` (`DatadogLogs/Sources/Log/LogEventEncoder.swift:180`) but never calls `try container.encode(log.environment, forKey: .environment)`. The `env` value reaches the wire only as an `env:<value>` entry in `ddtags`, never as a top-level `env` field. The coding key is unused — candidate for cleanup in `LogEventEncoder.swift`. Follow-up: drop the unused case (or actually emit the field if intended).
+
+- **`Logs.Configuration.dateProvider` not pluggable from harness** (surfaced in Batch 3, §3 `date` scenario). `Logs.Configuration.dateProvider` defaults to `SystemDateProvider()` and is `internal`, so `Logs.enable(in: app.core)` ignores the `DateProviderMock` registered via `Datadog.Configuration` — log payloads carry wall-clock timestamps regardless of harness time-mocking. Forces the `date matches simulated time` scenario to be a fixture-dependent test. Follow-up: add a harness fixture (Batch 18 in plan) that overrides `Logs.Configuration.dateProvider` via `@testable import DatadogLogs` so simulated time flows through to log payloads.
