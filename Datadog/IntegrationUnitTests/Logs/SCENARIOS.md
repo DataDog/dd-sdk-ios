@@ -51,10 +51,13 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 - **Base `log(level:message:error:attributes:)` method** — emitting via the protocol-level method produces same output as convenience methods. _ready_
 - **Info log emission** — `info("user signed in")` produces a single recorded log with status "info" and matching message. _ready_
 - **Message text preserved verbatim** — special characters, unicode, multi-line messages survive end-to-end. _ready_
+- **`date` matches simulated time** — log emitted at simulated time T carries `date` field equal to T; verifies that harness time-mocking flows through to the log payload. _ready_
 - **`threadName` populated** — log emitted from a named thread reports that thread name in `logger.thread_name`. _ready_
-- **`applicationVersion` and `applicationBuildNumber`** — populated from bundle context on every log. _ready_
+- **`applicationVersion` and `applicationBuildNumber`** — populated from bundle context on every log (`version`, `build_version` fields). _ready_
+- **`build_id` field handling** — log carries `build_id` consistent with the binary loaded in the harness environment: present if SDK detects the binary's code-integrity hash, otherwise absent (assert whichever the harness produces — both shapes are valid SDK behaviour). _ready_
 - **`environment`** — populated from `Datadog.Configuration.env` ("env" field) on every log. _ready_
 - **`device` and `os` fields populated** — every log carries `device` and `os` blocks consistent with `AppRunner` simulated environment. _ready_
+- **`_dd` internal block present** — every log JSON contains the `_dd` key with internal SDK metadata. Minimum assertion: `_dd` is present as a JSON object on every recorded log; nested shape can be discovered during test authoring. _ready_
 
 ## 4. Tags → `LogsRecordingTests.swift`
 
@@ -148,7 +151,7 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 ## 14. Network info enrichment → `LogsContextEnrichmentTests.swift`
 
 - **`networkInfoEnabled=false` (default)** — log has no `network.client.*` or `network.client.sim_carrier.*` attributes. _ready_
-- **`networkInfoEnabled=true` + WiFi reachability** — log carries `network.client.reachability="yes"`, `available_interfaces` includes "wifi". _needs-fixture: network state mock_
+- **`networkInfoEnabled=true` + WiFi reachability** — log carries `network.client.reachability="yes"`, `available_interfaces` includes "wifi", and connection-meta fields: `supports_ipv4`, `supports_ipv6`, `is_expensive`, `is_constrained`, `link_quality`. _needs-fixture: network state mock_
 - **`networkInfoEnabled=true` + cellular + carrier** — log carries cellular reachability and `network.client.sim_carrier.*` (name, iso_country, technology, allows_voip). _needs-fixture: network state mock_
 - **Reachability change between logs** — log A emitted while online; log B emitted while offline; reflects different `reachability`. _needs-fixture: network state mock_
 
