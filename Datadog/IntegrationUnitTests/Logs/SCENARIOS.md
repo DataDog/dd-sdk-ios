@@ -61,15 +61,15 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 
 ## 4. Tags → `LogsRecordingTests.swift`
 
-- **`addTag(withKey:value:)` persists** — tag added once appears on all subsequent logs from the same logger. _ready_
-- **`removeTag(withKey:)`** — after removal, tag with that key disappears from subsequent logs (prior logs unaffected). _ready_
-- **`add(tag:)` raw tag** — raw value appears in `ddtags` of subsequent logs. _ready_
-- **`remove(tag:)` raw tag** — after removal, raw tag disappears from subsequent logs. _ready_
-- **Tag sanitization — special characters** — characters outside `[a-z0-9_:./-]` are converted to underscores in the emitted `ddtags`. _ready_
-- **Tag sanitization — uppercase to lowercase** — uppercase characters in tag key/value are lowercased. _ready_
-- **Tag truncation at 200 chars** — tags longer than 200 are truncated. _ready_
-- **SDK-managed tags always present** — `env`, `version`, `service`, `host`, `device`, `source` are present in `ddtags` regardless of user tags. _ready_
-- **Two loggers — tag isolation** — tag added on logger A absent from logger B's logs (overlap with §2 "independent tag state" but stated as tag-specific assertion). _ready_
+- **`addTag(withKey:value:)` persists** — tag added once appears on all subsequent logs from the same logger. _ready_ → `testGivenLogger_whenTagIsAddedWithKeyValue_itPersistsAcrossSubsequentLogs()`
+- **`removeTag(withKey:)`** — after removal, tag with that key disappears from subsequent logs (prior logs unaffected). _ready_ → `testGivenLoggerWithTag_whenTagIsRemovedByKey_subsequentLogsDoNotCarryIt()`
+- **`add(tag:)` raw tag** — raw value appears in `ddtags` of subsequent logs. _ready_ → `testGivenLogger_whenRawTagIsAdded_itAppearsInDdTags()`
+- **`remove(tag:)` raw tag** — after removal, raw tag disappears from subsequent logs. _ready_ → `testGivenLoggerWithRawTag_whenRawTagIsRemoved_subsequentLogsDoNotCarryIt()`
+- **Tag sanitization — special characters** — characters outside `[a-z0-9_:./-]` are converted to underscores in the emitted `ddtags` (one-for-one substitution; see `LogEventSanitizer.replaceIllegalCharactersIn`). _ready_ → `testGivenLogger_whenTagContainsIllegalCharacters_eachIsReplacedWithUnderscore()`
+- **Tag sanitization — uppercase to lowercase** — uppercase characters in tag key/value are lowercased. _ready_ → `testGivenLogger_whenTagContainsUppercase_itIsLowercasedInDdTags()`
+- **Tag truncation at 200 chars** — tags whose joined `key:value` length exceeds 200 are truncated to the first 200 characters (limit applies to the full tag string, not just the value). _ready_ → `testGivenLogger_whenTagExceeds200Characters_itIsTruncatedToTheFirst200()`
+- **SDK-managed tags always present** — the core injects `service:<value>`, `version:<value>`, `sdk_version:<value>`, `env:<value>` (and optional `variant:<value>`) into `ddtags` regardless of user tags (see `DatadogContext.buildDDTags()`). `host`, `device`, `source` are *reserved tag keys* (rejected if a user tries to use them) but the SDK does not auto-emit them. _ready_ → `testGivenLoggerWithoutUserTags_whenLogIsEmitted_ddtagsCarriesSDKManagedEntries()`
+- **Two loggers — tag isolation** — tag added on logger A absent from logger B's logs (overlap with §2 "independent tag state" but stated as tag-specific assertion). _ready_ → `testGivenTwoLoggers_whenTagIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()` (in `LogsConfigTests.swift`, shared with §2)
 
 ## 5. Attributes → `LogsRecordingTests.swift`
 
@@ -177,3 +177,5 @@ Findings surfaced while writing harness tests — non-blocking, but worth tracki
 - **Dead key `env` in `LogEventEncoder.StaticCodingKeys`** (surfaced in Batch 3, §3 `environment` scenario). The encoder declares `case environment = "env"` (`DatadogLogs/Sources/Log/LogEventEncoder.swift:180`) but never calls `try container.encode(log.environment, forKey: .environment)`. The `env` value reaches the wire only as an `env:<value>` entry in `ddtags`, never as a top-level `env` field. The coding key is unused — candidate for cleanup in `LogEventEncoder.swift`. Follow-up: drop the unused case (or actually emit the field if intended).
 
 - **`Logs.Configuration.dateProvider` not pluggable from harness** (surfaced in Batch 3, §3 `date` scenario). `Logs.Configuration.dateProvider` defaults to `SystemDateProvider()` and is `internal`, so `Logs.enable(in: app.core)` ignores the `DateProviderMock` registered via `Datadog.Configuration` — log payloads carry wall-clock timestamps regardless of harness time-mocking. Forces the `date matches simulated time` scenario to be a fixture-dependent test. Follow-up: add a harness fixture (Batch 18 in plan) that overrides `Logs.Configuration.dateProvider` via `@testable import DatadogLogs` so simulated time flows through to log payloads.
+
+- **`host`/`device`/`source` are reserved tag keys, not auto-emitted SDK-managed tags** (surfaced in Batch 4, §4 "SDK-managed tags always present"). `LogEventSanitizer.Constraints.reservedTagKeys` contains `host`, `device`, `source`, `service`, `env` — meaning user-supplied tags using those keys are dropped on the way out. But the *core* (`DatadogContext.buildDDTags()`) only auto-injects `service`, `version`, `sdk_version`, `env` (and optional `variant`). So `ddtags` on every log carries those four entries, plus any user tags, plus the SDK-managed reserves *that are also auto-emitted* (i.e. just `service` and `env`) — never `host`/`device`/`source`. SCENARIOS.md description for §4 was inaccurate; updated to match implementation. No code change needed.
