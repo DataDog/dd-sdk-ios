@@ -24,6 +24,11 @@
     {
       "parallelizable" : false,
       "selectedTests" : [
+        "LogsBundlingTests\/testGivenActiveUserAction_whenLogIsEmitted_logCarriesUserActionIdMatchingActiveAction()",
+        "LogsBundlingTests\/testGivenBundleWithRumEnabledAndActiveManualView_whenLogIsEmitted_logCarriesViewIdMatchingRUMSession()",
+        "LogsBundlingTests\/testGivenBundleWithRumEnabledAndNoManualView_whenLogIsEmitted_logCarriesApplicationAndSessionIdsMatchingRUMSession()",
+        "LogsBundlingTests\/testGivenBundleWithRumEnabledFalseAndActiveView_whenLogIsEmitted_logCarriesNoRUMContextAttributes()",
+        "LogsBundlingTests\/testGivenRUMFeatureNotEnabled_whenLogIsEmitted_logCarriesNoRUMContextAttributesRegardlessOfBundleFlag()",
         "LogsConfigTests\/testGivenAnyLogger_whenLogIsEmitted_itCarriesCurrentSDKVersionInLoggerVersion()",
         "LogsConfigTests\/testGivenDefaultLoggerConfiguration_whenLogIsEmitted_itHasDefaultServiceAndLoggerName()",
         "LogsConfigTests\/testGivenLoggerConfigurationWithExplicitName_whenLogIsEmitted_itUsesProvidedLoggerName()",
