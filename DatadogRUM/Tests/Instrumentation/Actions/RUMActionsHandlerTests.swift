@@ -16,11 +16,12 @@ class RUMActionsHandlerTests: XCTestCase {
     #if !os(watchOS)
     private func touchHandler(
         with uiKitPredicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate(),
-        swiftUIPredicate: SwiftUIRUMActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true)
+        swiftUIPredicate: SwiftUIRUMActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
+        heatmapRegistry: HeatmapIdentifierRegistryMock = HeatmapIdentifierRegistryMock()
     ) -> RUMActionsHandler {
         let handler = RUMActionsHandler(
             dateProvider: dateProvider,
-            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+            heatmapIdentifierRegistry: heatmapRegistry,
             uiKitPredicate: uiKitPredicate,
             swiftUIPredicate: swiftUIPredicate,
             swiftUIDetector: SwiftUIComponentFactory.createDetector()
@@ -142,6 +143,60 @@ class RUMActionsHandlerTests: XCTestCase {
             XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
             XCTAssertEqual(command?.attributes.count, 0)
         }
+    }
+
+    // MARK: - Heatmap attributes
+
+    func testWhenTapViewIsInRegistry_itLooksUpHeatmapByTapView() {
+        // Given
+        let cell = UITableViewCell(frame: .init(x: 0, y: 0, width: 320, height: 88))
+        mockAppWindow.addSubview(cell)
+        cell.accessibilityIdentifier = "Item: 3"
+        let leaf = UIView(frame: .init(x: 10, y: 20, width: 100, height: 30))
+        cell.contentView.addSubview(leaf)
+
+        let registry = HeatmapIdentifierRegistryMock(identifiers: [
+            ObjectIdentifier(cell): HeatmapIdentifier(rawValue: "cell-id"),
+            ObjectIdentifier(leaf): HeatmapIdentifier(rawValue: "leaf-id"),
+        ])
+        let handler = touchHandler(heatmapRegistry: registry)
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(touch: .mockWith(view: leaf))
+        )
+
+        // Then
+        let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+        XCTAssertEqual(command?.heatmapAttributes?.targetPermanentID, "leaf-id")
+        XCTAssertEqual(command?.heatmapAttributes?.targetWidth, 100)
+        XCTAssertEqual(command?.heatmapAttributes?.targetHeight, 30)
+    }
+
+    func testWhenTapViewIsNotInRegistry_itDoesNotAttachHeatmapAttributes() {
+        // Given
+        let cell = UITableViewCell()
+        mockAppWindow.addSubview(cell)
+        cell.accessibilityIdentifier = "Item: 3"
+        let leaf = UIView()
+        cell.contentView.addSubview(leaf)
+
+        let registry = HeatmapIdentifierRegistryMock(identifiers: [
+            ObjectIdentifier(cell): HeatmapIdentifier(rawValue: "cell-id"),
+        ])
+        let handler = touchHandler(heatmapRegistry: registry)
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(touch: .mockWith(view: leaf))
+        )
+
+        // Then
+        let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+        XCTAssertNotNil(command)
+        XCTAssertNil(command?.heatmapAttributes)
     }
 
     // MARK: - UIKit Automatic Action Tracking (iOS, UITouch events)
