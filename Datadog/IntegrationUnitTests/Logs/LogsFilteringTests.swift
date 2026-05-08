@@ -155,4 +155,134 @@ class LogsFilteringTests: XCTestCase {
             result.logs[index].assertStatus(equals: expectedStatus)
         }
     }
+
+    // MARK: - §10 Event mapper
+
+    func testGivenLogsConfigurationWithMessageMapper_whenLogIsEmitted_recordedMessageIsMapped() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                var config = Logs.Configuration()
+                config.eventMapper = { event in
+                    var mapped = event
+                    mapped.message = "MAPPED: \(event.message)"
+                    return mapped
+                }
+                Logs.enable(with: config, in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("hello")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let message: String = try result.logs[0].value(forKeyPath: "message")
+        XCTAssertEqual(message, "MAPPED: hello", "Recorded log should carry the message produced by the mapper")
+    }
+
+    func testGivenLogsConfigurationWithAttributesMapper_whenLogIsEmitted_recordedAttributesReflectMapperChanges() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                var config = Logs.Configuration()
+                config.eventMapper = { event in
+                    var mapped = event
+                    mapped.attributes.userAttributes["original-key"] = "mapped-value"
+                    mapped.attributes.userAttributes["mapper-added"] = true
+                    return mapped
+                }
+                Logs.enable(with: config, in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("with-attrs", attributes: ["original-key": "original-value"])
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let original: String = try result.logs[0].value(forKeyPath: "original-key")
+        let added: Bool = try result.logs[0].value(forKeyPath: "mapper-added")
+        XCTAssertEqual(original, "mapped-value", "Mapper should overwrite the existing user attribute")
+        XCTAssertTrue(added, "Mapper should be able to add a new user attribute")
+    }
+
+    func testGivenLogsConfigurationWithMapperReturningNil_whenLogsAreEmitted_noLogsAreRecorded() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                var config = Logs.Configuration()
+                config.eventMapper = { _ in nil }
+                Logs.enable(with: config, in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("dropped-1")
+                app.logger.warn("dropped-2")
+                app.logger.error("dropped-3")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 0, "Mapper returning nil should drop every emitted log")
+    }
+
+    func testGivenLogsConfigurationWithIdentityMapper_whenLogIsEmitted_recordedPayloadMatchesBaseline() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK(sdkSetup: { config in
+                config.service = "harness-service"
+            }))
+            .when { app in
+                var config = Logs.Configuration()
+                config.eventMapper = { $0 }
+                Logs.enable(with: config, in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("identity")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let log = result.logs[0]
+        let message: String = try log.value(forKeyPath: "message")
+        let service: String = try log.value(forKeyPath: "service")
+        XCTAssertEqual(message, "identity", "Identity mapper should not modify the message")
+        log.assertStatus(equals: "info")
+        XCTAssertEqual(service, "harness-service", "Identity mapper should not modify the service")
+    }
+
+    func testGivenLogsConfigurationMapper_whenMultipleLoggersEmit_mapperAppliesToAll() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                var config = Logs.Configuration()
+                config.eventMapper = { event in
+                    var mapped = event
+                    mapped.message = "PFX:\(event.message)"
+                    return mapped
+                }
+                Logs.enable(with: config, in: app.core)
+                app.loggers["a"] = Logger.create(with: Logger.Configuration(name: "logger-a"), in: app.core)
+                app.loggers["b"] = Logger.create(with: Logger.Configuration(name: "logger-b"), in: app.core)
+                app.loggers["a"]?.info("from-a")
+                app.loggers["b"]?.info("from-b")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 2, "Two logs should be recorded — one per logger")
+        let messages = Set(try result.logs.map { try $0.value(forKeyPath: "message") as String })
+        XCTAssertEqual(messages, ["PFX:from-a", "PFX:from-b"], "Mapper should apply to logs from every logger")
+    }
 }

@@ -116,11 +116,11 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 
 ## 10. Event mapper → `LogsFilteringTests.swift`
 
-- **Mapper modifies `message`** — `eventMapper` returns event with modified message; recorded log has the mapped message. _ready_
-- **Mapper modifies `attributes`** — mapper adds/changes user attributes; recorded log reflects the changes. _ready_
-- **Mapper returns nil → log dropped** — events for which mapper returns `nil` are absent from `recordedLogs()`. _ready_
-- **Mapper passes through unchanged** — mapper returns the input unchanged; recorded log identical to baseline. _ready_
-- **Mapper applies to all loggers globally** — multiple loggers all subject to the same `Logs.Configuration.eventMapper`. _ready_
+- **Mapper modifies `message`** — `eventMapper` returns event with modified message; recorded log has the mapped message. _ready_ → `testGivenLogsConfigurationWithMessageMapper_whenLogIsEmitted_recordedMessageIsMapped()`
+- **Mapper modifies `attributes`** — mapper adds/changes user attributes; recorded log reflects the changes. _ready_ → `testGivenLogsConfigurationWithAttributesMapper_whenLogIsEmitted_recordedAttributesReflectMapperChanges()`
+- **Mapper returns nil → log dropped** — events for which mapper returns `nil` are absent from `recordedLogs()`. _ready_ → `testGivenLogsConfigurationWithMapperReturningNil_whenLogsAreEmitted_noLogsAreRecorded()`
+- **Mapper passes through unchanged** — mapper returns the input unchanged; recorded log identical to baseline. _ready_ → `testGivenLogsConfigurationWithIdentityMapper_whenLogIsEmitted_recordedPayloadMatchesBaseline()`
+- **Mapper applies to all loggers globally** — multiple loggers all subject to the same `Logs.Configuration.eventMapper`. _ready_ → `testGivenLogsConfigurationMapper_whenMultipleLoggersEmit_mapperAppliesToAll()`
 
 ## 11. RUM bundling → `LogsBundlingTests.swift`
 
@@ -188,3 +188,7 @@ Findings surfaced while writing harness tests — non-blocking, but worth tracki
 - **`error.message` falls back to `String(describing:)`, not `localizedDescription`, for Swift Errors** (surfaced in Batch 6, §6 `error.message` scenario). `DDError(error:)` only consults `localizedDescription` for `NSError` subclasses. For pure Swift `Error`s — even ones conforming to `LocalizedError` — `error.message` is `"\(error)"`, which uses `CustomStringConvertible.description` if present, otherwise the runtime-synthesised representation. SCENARIOS.md description for §6 was ambiguous ("`localizedDescription` or `String(describing:)`"); updated to be precise about which path applies.
 
 - **`critical()` does not auto-capture binary images** (surfaced in Batch 6, §6 "`critical()` with error captures stack and binary images"). The `critical(message:error:attributes:)` entry point in `RemoteLogger` calls the same `internalLog(...)` path as `error(...)`. Binary images are gated on the per-log attribute `_dd.error.include_binary_images: true` (constant `CrossPlatformAttributes.includeBinaryImages`) — the level alone does not trigger collection. Even with the opt-in, capture requires a `BacktraceReporting` (provided by `DatadogCrashReporting`) registered on the core. The harness does not register one, so binary images are always nil here regardless of how the user emits. SCENARIOS.md description for §6 was inaccurate ("critical-level emission populates ... `error.binary_images`"); split into a covered "error fields populated" branch and a documented "Out of harness" branch.
+
+- **Pipeline order for §10 `eventMapper`: sampler → threshold → mapper** (surfaced in Batch 9, §10). `RemoteLogger.internalLog(...)` short-circuits on `sampler.sample()` first, then `level.rawValue >= threshold.rawValue`, and only then builds the `LogEvent` and runs `eventMapper.map(event:callback:)` (`LogEventBuilder.createLogEvent` step at the end). So the mapper never sees logs that were dropped by sampling or threshold — it only observes the ones that would otherwise be written. User-facing implication: a mapper cannot resurrect a dropped log, and a mapper that observes counts will not see below-threshold or sub-sampled traffic. No code change needed.
+
+- **`Logs.Configuration.eventMapper` is per-feature, not per-logger** (surfaced in Batch 9, §10 "Mapper applies to all loggers globally"). The mapper stored on `Logs.Configuration` is wrapped into `SyncLogEventMapper` and saved on `LogsFeature.logEventMapper` at `Logs.enable(with:in:)` time. Every `Logger.create(...)` call afterwards reads `feature.logEventMapper` and wires it into the `RemoteLogger.Configuration` it builds — so all loggers share the single feature-level mapper. There is no per-logger override on the public surface (only the internal `Logs.Configuration.dd.setLogEventMapper(...)` exists, also feature-scoped). No code change needed.
