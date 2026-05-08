@@ -17,8 +17,12 @@
 extern "C" {
 
 dd_pprof_t* dd_pprof_create(uint64_t sampling_interval_ns) {
+    return dd_pprof_create_with_cpu_time(sampling_interval_ns, false);
+}
+
+dd_pprof_t* dd_pprof_create_with_cpu_time(uint64_t sampling_interval_ns, bool record_cpu_time) {
     try {
-        auto* profiler = new dd::profiler::profile(sampling_interval_ns);
+        auto* profiler = new dd::profiler::profile(sampling_interval_ns, record_cpu_time);
         return reinterpret_cast<dd_pprof_t*>(profiler);
     } catch (...) {
         return nullptr;

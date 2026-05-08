@@ -18,6 +18,20 @@ final class ProfilingConfigurationTests: XCTestCase {
         // Then
         XCTAssertEqual(config.customEndpoint, endpoint)
         XCTAssertEqual(config.applicationLaunchSampleRate, 5)
+        XCTAssertEqual(config.continuousSampleRate, 5)
+        XCTAssertFalse(config.featureFlags[.cpuTimeSamples])
+    }
+
+    func testConfigurationWithCPUTimingFeatureFlag() {
+        // When
+        let config = Profiling.Configuration(
+            featureFlags: [
+                .cpuTimeSamples: true
+            ]
+        )
+
+        // Then
+        XCTAssertTrue(config.featureFlags[.cpuTimeSamples])
     }
 }
 

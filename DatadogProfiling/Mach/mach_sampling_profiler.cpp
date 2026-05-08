@@ -19,6 +19,7 @@
 #include <setjmp.h>
 #include <mach/thread_act.h>
 #include <mach/thread_status.h>
+#include <mach/thread_info.h>
 #include <mach/machine/thread_state.h>
 #include <new>
 
@@ -159,9 +160,30 @@ bool stack_trace_init(stack_trace_t* trace, uint32_t max_depth, uint64_t interva
     trace->thread_name = nullptr;
     trace->timestamp = 0;
     trace->sampling_interval_nanos = interval_nanos;
+    trace->cpu_time_nanos = 0;
     trace->frame_count = 0;
     trace->frames = (stack_frame_t*)malloc(max_depth * sizeof(stack_frame_t));
     return trace->frames != nullptr;
+}
+
+static bool thread_cpu_time_nanos(thread_t thread, uint64_t* cpu_time_nanos) {
+    if (!cpu_time_nanos) return false;
+
+    thread_basic_info_data_t info{};
+    mach_msg_type_number_t count = THREAD_BASIC_INFO_COUNT;
+    if (thread_info(thread, THREAD_BASIC_INFO, reinterpret_cast<thread_info_t>(&info), &count) != KERN_SUCCESS) {
+        return false;
+    }
+
+    const uint64_t user_time_nanos =
+        (static_cast<uint64_t>(info.user_time.seconds) * 1000000000ULL)
+        + (static_cast<uint64_t>(info.user_time.microseconds) * 1000ULL);
+    const uint64_t system_time_nanos =
+        (static_cast<uint64_t>(info.system_time.seconds) * 1000000000ULL)
+        + (static_cast<uint64_t>(info.system_time.microseconds) * 1000ULL);
+
+    *cpu_time_nanos = user_time_nanos + system_time_nanos;
+    return true;
 }
 
 /**
@@ -395,6 +417,7 @@ bool mach_sampling_profiler::start_sampling() {
 
     // Clear any leftover data from previous runs
     sample_buffer.clear();
+    previous_thread_cpu_time_nanos.clear();
     if (sample_buffer.capacity() < config.max_buffer_size) {
         sample_buffer.reserve(config.max_buffer_size);
     }
@@ -488,9 +511,10 @@ bool mach_sampling_profiler::is_profiler_internal_thread(thread_t thread) const 
  * @param thread The thread to sample
  * @param interval_nanos The actual sampling interval in nanoseconds for this sample
  */
-void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_nanos) {
+void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_nanos, uint64_t cpu_time_nanos) {
     stack_trace_t trace;
     if (!stack_trace_init(&trace, config.max_stack_depth, interval_nanos)) return;
+    trace.cpu_time_nanos = cpu_time_nanos;
 
     // Get thread info
     stack_trace_get_thread_info(&trace, thread);
@@ -516,6 +540,53 @@ void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_na
     }
 }
 
+uint64_t mach_sampling_profiler::thread_cpu_time_delta_nanos(thread_t thread) {
+    if (!config.record_cpu_time) {
+        return 0;
+    }
+
+    uint64_t current_cpu_time_nanos = 0;
+    if (!thread_cpu_time_nanos(thread, &current_cpu_time_nanos)) {
+        return 0;
+    }
+
+    auto result = previous_thread_cpu_time_nanos.emplace(thread, current_cpu_time_nanos);
+    if (result.second) {
+        return 0;
+    }
+
+    const uint64_t previous_cpu_time_nanos = result.first->second;
+    result.first->second = current_cpu_time_nanos;
+
+    if (current_cpu_time_nanos < previous_cpu_time_nanos) {
+        return 0;
+    }
+
+    return current_cpu_time_nanos - previous_cpu_time_nanos;
+}
+
+void mach_sampling_profiler::prune_thread_cpu_time_state(const thread_t* threads, mach_msg_type_number_t count) {
+    if (!config.record_cpu_time || previous_thread_cpu_time_nanos.empty()) {
+        return;
+    }
+
+    for (auto it = previous_thread_cpu_time_nanos.begin(); it != previous_thread_cpu_time_nanos.end();) {
+        bool is_live_thread = false;
+        for (mach_msg_type_number_t i = 0; i < count; i++) {
+            if (threads[i] == it->first) {
+                is_live_thread = true;
+                break;
+            }
+        }
+
+        if (is_live_thread) {
+            ++it;
+        } else {
+            it = previous_thread_cpu_time_nanos.erase(it);
+        }
+    }
+}
+
 /**
  * Main sampling loop that collects stack traces from threads.
  */
@@ -532,7 +603,8 @@ void mach_sampling_profiler::main() {
         }
 
         if (config.profile_current_thread_only) {
-            sample_thread(pthread_mach_thread_np(target_thread), interval_nanos);
+            const thread_t thread = pthread_mach_thread_np(target_thread);
+            sample_thread(thread, interval_nanos, thread_cpu_time_delta_nanos(thread));
             if (sample_buffer.size() >= config.max_buffer_size) {
                 worker->enqueue_active_buffer(sample_buffer);
             }
@@ -554,12 +626,14 @@ void mach_sampling_profiler::main() {
                 // Skip profiler-owned threads to avoid self-noise in customer profiles.
                 if (is_profiler_internal_thread(threads[i])) continue;
                 
-                sample_thread(threads[i], interval_nanos);
+                sample_thread(threads[i], interval_nanos, thread_cpu_time_delta_nanos(threads[i]));
 
                 if (sample_buffer.size() >= config.max_buffer_size) {
                     worker->enqueue_active_buffer(sample_buffer);
                 }
             }
+
+            prune_thread_cpu_time_state(threads, count);
 
             // Clean up thread references
             for (mach_msg_type_number_t i = 0; i < count; i++) {
