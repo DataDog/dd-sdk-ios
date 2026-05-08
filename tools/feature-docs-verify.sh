@@ -118,5 +118,51 @@ for doc in sorted(docs):
     else:
         print(f"✅ {doc_name} is up to date (verified at {commit}).")
 
+# Each *_FEATURE.md must be wired into a few hand-maintained registries:
+# - the Confluence publish workflow (operational — drift breaks publishing)
+# - AGENTS.md (LLM doc map)
+# - docs/LLM_FEATURE_DOCS_GUIDELINES.md (expected docs list)
+# The workflow is checked strictly: a leading slash on a `paths:` entry never
+# matches anything in GitHub Actions, so we flag that case explicitly.
+REGISTRIES = [
+    (".github/workflows/changelog-to-confluence.yaml", "Confluence publish workflow", True),
+    ("AGENTS.md", "AGENTS.md", False),
+    ("docs/LLM_FEATURE_DOCS_GUIDELINES.md", "LLM feature-docs guidelines", False),
+]
+
+doc_rel_paths = sorted(os.path.relpath(d, repo_root) for d in docs)
+registry_failed = False
+
+print()
+print("Checking that each feature doc is registered in:")
+for path, _, _ in REGISTRIES:
+    print(f"  - {path}")
+
+for registry_path, label, strict in REGISTRIES:
+    abs_path = os.path.join(repo_root, registry_path)
+    if not os.path.exists(abs_path):
+        print(f"⚠️  {label}: file not found at {registry_path} — skipping.")
+        continue
+    with open(abs_path) as f:
+        content = f.read()
+    for rel in doc_rel_paths:
+        total = content.count(rel)
+        with_slash = content.count("/" + rel)
+        if total == 0:
+            print(f"❌ {label}: missing reference to '{rel}'.")
+            registry_failed = True
+        elif strict and with_slash > 0:
+            # In the workflow the path must never appear with a leading slash:
+            # GitHub Actions `paths:` filters treat `/path` as absolute and never match.
+            print(f"❌ {label}: '{rel}' is referenced with a leading slash (`/{rel}`),")
+            print(f"   which never matches in GitHub Actions `paths:` filters. Remove the leading slash.")
+            registry_failed = True
+
+if registry_failed:
+    print_fix_instructions()
+    failed = True
+else:
+    print(f"✅ All {len(doc_rel_paths)} feature doc(s) registered in every required location.")
+
 sys.exit(1 if failed else 0)
 EOF
