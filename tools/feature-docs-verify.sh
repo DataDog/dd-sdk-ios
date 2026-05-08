@@ -119,15 +119,18 @@ for doc in sorted(docs):
         print(f"✅ {doc_name} is up to date (verified at {commit}).")
 
 # Each *_FEATURE.md must be wired into a few hand-maintained registries:
-# - the Confluence publish workflow (operational — drift breaks publishing)
-# - AGENTS.md (LLM doc map)
-# - docs/LLM_FEATURE_DOCS_GUIDELINES.md (expected docs list)
-# The workflow is checked strictly: a leading slash on a `paths:` entry never
-# matches anything in GitHub Actions, so we flag that case explicitly.
-REGISTRIES = [
-    (".github/workflows/changelog-to-confluence.yaml", "Confluence publish workflow", True),
-    ("AGENTS.md", "AGENTS.md", False),
-    ("docs/LLM_FEATURE_DOCS_GUIDELINES.md", "LLM feature-docs guidelines", False),
+# - the Confluence publish workflow
+# - AGENTS.md
+# - docs/LLM_FEATURE_DOCS_GUIDELINES.md
+# The Confluence workflow needs the path in TWO distinct places (the trigger
+# `paths:` filter AND the `cp` block), so it gets a dedicated check that
+# verifies both contexts separately. Other registries just need any mention.
+
+WORKFLOW_PATH = ".github/workflows/changelog-to-confluence.yaml"
+WORKFLOW_LABEL = "Confluence publish workflow"
+SUBSTRING_REGISTRIES = [
+    ("AGENTS.md", "AGENTS.md"),
+    ("docs/LLM_FEATURE_DOCS_GUIDELINES.md", "LLM feature-docs guidelines"),
 ]
 
 doc_rel_paths = sorted(os.path.relpath(d, repo_root) for d in docs)
@@ -135,10 +138,37 @@ registry_failed = False
 
 print()
 print("Checking that each feature doc is registered in:")
-for path, _, _ in REGISTRIES:
+print(f"  - {WORKFLOW_PATH} (paths: filter AND cp block)")
+for path, _ in SUBSTRING_REGISTRIES:
     print(f"  - {path}")
 
-for registry_path, label, strict in REGISTRIES:
+# --- Workflow check: two contexts must each contain the path ---
+abs_workflow = os.path.join(repo_root, WORKFLOW_PATH)
+if not os.path.exists(abs_workflow):
+    print(f"⚠️  {WORKFLOW_LABEL}: file not found at {WORKFLOW_PATH} — skipping.")
+else:
+    with open(abs_workflow) as f:
+        workflow_content = f.read()
+    for rel in doc_rel_paths:
+        # `paths:` filter entries appear as quoted YAML list items.
+        in_paths_filter = (f"'{rel}'" in workflow_content) or (f'"{rel}"' in workflow_content)
+        # `cp` lines start with `cp <relative_path> ...`.
+        in_cp_block = f"cp {rel} " in workflow_content
+
+        if not in_paths_filter and not in_cp_block:
+            print(f"❌ {WORKFLOW_LABEL}: '{rel}' is missing from BOTH the `paths:` filter and the `cp` block.")
+            registry_failed = True
+        elif not in_paths_filter:
+            print(f"❌ {WORKFLOW_LABEL}: '{rel}' is missing from the `paths:` filter")
+            print(f"   (expected as `'{rel}'` under `on.push.paths`). Without it, doc-only updates won't trigger publishing.")
+            registry_failed = True
+        elif not in_cp_block:
+            print(f"❌ {WORKFLOW_LABEL}: '{rel}' is missing from the `cp` block")
+            print(f"   (expected as `cp {rel} publish_folder/...`). Without it, the page is never copied for publishing.")
+            registry_failed = True
+
+# --- Substring registries (AGENTS.md, LLM guidelines): any mention is enough ---
+for registry_path, label in SUBSTRING_REGISTRIES:
     abs_path = os.path.join(repo_root, registry_path)
     if not os.path.exists(abs_path):
         print(f"⚠️  {label}: file not found at {registry_path} — skipping.")
@@ -146,16 +176,8 @@ for registry_path, label, strict in REGISTRIES:
     with open(abs_path) as f:
         content = f.read()
     for rel in doc_rel_paths:
-        total = content.count(rel)
-        with_slash = content.count("/" + rel)
-        if total == 0:
+        if rel not in content:
             print(f"❌ {label}: missing reference to '{rel}'.")
-            registry_failed = True
-        elif strict and with_slash > 0:
-            # In the workflow the path must never appear with a leading slash:
-            # GitHub Actions `paths:` filters treat `/path` as absolute and never match.
-            print(f"❌ {label}: '{rel}' is referenced with a leading slash (`/{rel}`),")
-            print(f"   which never matches in GitHub Actions `paths:` filters. Remove the leading slash.")
             registry_failed = True
 
 if registry_failed:
