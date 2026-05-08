@@ -77,9 +77,6 @@ class LogsRecordingTests: XCTestCase {
         baseLog.assertMessage(equals: "shared message")
         convenienceLog.assertMessage(equals: "shared message")
 
-        // Same SDK-managed fields — service, logger.version, ddtags. The recorded JSON does
-        // not have a top-level `env` key (it lives only inside `ddtags`), so we compare the
-        // tag string instead.
         let baseService: String = try baseLog.value(forKeyPath: "service")
         let convService: String = try convenienceLog.value(forKeyPath: "service")
         XCTAssertEqual(baseService, convService, "Both logs must carry the same service field")
@@ -408,8 +405,6 @@ class LogsRecordingTests: XCTestCase {
             .when { app in
                 Logs.enable(in: app.core)
                 app.logger = Logger.create(in: app.core)
-                // Spaces, `!`, `@`, `#` are all outside `[a-z0-9_:./-]` and should be
-                // each replaced with `_` (one-for-one substitution, not collapsed).
                 app.logger.add(tag: "weird tag!@#")
                 app.logger.info("sanitized-tag")
             }
@@ -418,9 +413,6 @@ class LogsRecordingTests: XCTestCase {
         let result = try when.then()
         XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
         let tags: String = try result.logs[0].value(forKeyPath: "ddtags")
-        // "weird tag!@#" (12 chars) → lowercase → unchanged
-        // → each illegal char (' ' at idx 5, '!' at 9, '@' at 10, '#' at 11) → '_'
-        // → "weird_tag___" (still 12 chars: 5 letters + 1 underscore + 3 letters + 3 underscores)
         XCTAssertTrue(
             tags.split(separator: ",").contains("weird_tag___"),
             "Each illegal character in the tag should be replaced one-for-one with `_`; got: \(tags)"
@@ -506,17 +498,11 @@ class LogsRecordingTests: XCTestCase {
         XCTAssertTrue(entries.contains("env:harness-env"), "ddtags should contain `env:harness-env`; got: \(tags)")
         XCTAssertTrue(entries.contains("service:harness-service"), "ddtags should contain `service:harness-service`; got: \(tags)")
 
-        // `version` and `sdk_version` are always present; their values come from bundle
-        // / SDK constants and are non-empty but not pinned here.
         let hasVersion = entries.contains { $0.hasPrefix("version:") && $0.count > "version:".count }
         let hasSDKVersion = entries.contains { $0.hasPrefix("sdk_version:") && $0.count > "sdk_version:".count }
         XCTAssertTrue(hasVersion, "ddtags should contain a non-empty `version:<value>` entry; got: \(tags)")
         XCTAssertTrue(hasSDKVersion, "ddtags should contain a non-empty `sdk_version:<value>` entry; got: \(tags)")
     }
-
-    // §4 "Two loggers — tag isolation" is covered by
-    // `LogsConfigTests.testGivenTwoLoggers_whenTagIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()`
-    // (added in Batch 2 for §2 "Multiple named loggers — independent tag state").
 
     // MARK: - §5 Attributes
 
@@ -718,22 +704,9 @@ class LogsRecordingTests: XCTestCase {
         XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
         let log = result.logs[0]
 
-        // The encoder writes the dotted key as a flat top-level field. `NSDictionary`
-        // KVC resolves the literal key first, so `value(forKeyPath: "user.profile.id")`
-        // returns the encoded value (42). This would also hold if the SDK ever started
-        // expanding to nested objects, so the assertion is robust either way.
         let id: Int = try log.value(forKeyPath: "user.profile.id")
         XCTAssertEqual(id, 42, "Dotted-key attribute should be retrievable at `user.profile.id`")
 
-        // Stronger shape check: assert the encoder produces a flat key (the documented
-        // behaviour). A nested `user` JSON object would mean the SDK started expanding
-        // dot syntax — surface that as a failure so the SCENARIOS.md description and
-        // this test get re-evaluated together. We retrieve the literal `user.profile.id`
-        // key path as `Int`; if the encoder had produced a nested structure, the value
-        // there would be an `Int`, but additionally a top-level `user` object would
-        // exist and `value(forKeyPath: "user")` would resolve to a dictionary. With the
-        // flat-key encoding, only the *exact* literal key `"user.profile.id"` exists,
-        // so trying to resolve the partial prefix `"user"` returns nil.
         let userPrefix: [String: Any]? = try log.valueOrNil(forKeyPath: "user")
         XCTAssertNil(userPrefix, "Encoder should produce a flat literal key `user.profile.id`, not a nested `user` object")
     }
@@ -746,10 +719,6 @@ class LogsRecordingTests: XCTestCase {
         let date = Date(timeIntervalSince1970: 1_700_000_000) // 2023-11-14T22:13:20Z
         let expectedDateString = iso8601DateFormatter.string(from: date)
         let profile = Profile(name: "alice", age: 30)
-        // `AttributeValue` is a typealias for `Encodable`, so a heterogeneous nested
-        // dictionary must be expressed as `[String: AnyEncodable]` (or a custom struct).
-        // `AnyEncodable` is the SDK's type-erasing wrapper used internally to bridge
-        // mixed Swift values into the `Encodable` system.
         let nested: [String: AnyEncodable] = [
             "count": AnyEncodable(3),
             "label": AnyEncodable("ok"),
@@ -809,7 +778,192 @@ class LogsRecordingTests: XCTestCase {
         XCTAssertTrue(nestedActive)
     }
 
-    // §5 #10 "Two loggers — attribute isolation" is covered by
-    // `LogsConfigTests.testGivenTwoLoggers_whenAttributeIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()`
-    // (added in Batch 2 for §2 "Multiple named loggers — independent attribute state").
+    // MARK: - §6 Errors
+
+    func testGivenSwiftErrorPassedToLogger_whenLogIsEmitted_errorKindMatchesSwiftErrorTypeName() throws {
+        struct CheckoutFailed: Error {}
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.error("checkout error", error: CheckoutFailed())
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let kind: String = try result.logs[0].value(forKeyPath: "error.kind")
+        XCTAssertEqual(kind, "CheckoutFailed", "error.kind should equal the Swift Error type name")
+    }
+
+    func testGivenSwiftErrorWithCustomDescription_whenLogIsEmitted_errorMessageMatchesStringDescription() throws {
+        struct PaymentRejected: Error, CustomStringConvertible {
+            let description: String = "card declined: insufficient_funds"
+        }
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.error("payment error", error: PaymentRejected())
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let message: String = try result.logs[0].value(forKeyPath: "error.message")
+        XCTAssertEqual(
+            message,
+            "card declined: insufficient_funds",
+            "error.message should equal `String(describing: error)` (via `\\(error)`), which uses `CustomStringConvertible.description` when present"
+        )
+    }
+
+    func testGivenSwiftErrorPassedToLogger_whenLogIsEmitted_errorStackEqualsErrorDescription() throws {
+        struct StackProbe: Error, CustomStringConvertible {
+            let description: String = "boom-marker-3173"
+        }
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.error("stack-check", error: StackProbe())
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let stack: String = try result.logs[0].value(forKeyPath: "error.stack")
+        let message: String = try result.logs[0].value(forKeyPath: "error.message")
+        XCTAssertFalse(stack.isEmpty, "error.stack should be a non-empty string")
+        XCTAssertEqual(stack, "boom-marker-3173", "error.stack mirrors `String(describing: error)` for Swift Errors")
+        XCTAssertEqual(stack, message, "error.stack and error.message are populated from the same source for Swift Errors")
+    }
+
+    func testGivenAnySwiftErrorPassedToLogger_whenLogIsEmitted_errorSourceTypeIsIos() throws {
+        struct AnyError: Error {}
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.error("source-type-check", error: AnyError())
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let sourceType: String = try result.logs[0].value(forKeyPath: "error.source_type")
+        XCTAssertEqual(sourceType, "ios", "error.source_type must always be `ios` for errors emitted from this SDK")
+    }
+
+    func testGivenErrorLogWithFingerprintAttribute_whenLogIsEmitted_errorFingerprintIsPopulated() throws {
+        struct AnyError: Error {}
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.error(
+                    "fingerprint-check",
+                    error: AnyError(),
+                    attributes: [Logs.Attributes.errorFingerprint: "my-custom-fingerprint"]
+                )
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let fingerprint: String = try result.logs[0].value(forKeyPath: "error.fingerprint")
+        XCTAssertEqual(fingerprint, "my-custom-fingerprint", "Per-log `Logs.Attributes.errorFingerprint` should populate `error.fingerprint`")
+
+        let leaked: String? = try result.logs[0].valueOrNil(forKeyPath: Logs.Attributes.errorFingerprint)
+        XCTAssertNil(leaked, "`_dd.error.fingerprint` should be consumed and not appear as a user attribute on the log JSON")
+    }
+
+    func testGivenLogWithoutErrorParameter_whenLogIsEmitted_noErrorFieldsArePresent() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("no-error-log")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let log = result.logs[0]
+
+        log.assertNoValue(forKey: "error.kind")
+        log.assertNoValue(forKey: "error.message")
+        log.assertNoValue(forKey: "error.stack")
+        log.assertNoValue(forKey: "error.source_type")
+        log.assertNoValue(forKey: "error.fingerprint")
+        log.assertNoValue(forKey: "error.binary_images")
+    }
+
+    func testGivenCriticalLogWithError_whenLogIsEmitted_errorFieldsArePopulatedAndBinaryImagesAreAbsentInHarness() throws {
+        struct FatalFailure: Error, CustomStringConvertible {
+            let description: String = "system_failure"
+        }
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.critical(
+                    "critical-error",
+                    error: FatalFailure(),
+                    attributes: [CrossPlatformAttributes.includeBinaryImages: true]
+                )
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let log = result.logs[0]
+
+        log.assertStatus(equals: "critical")
+
+        let kind: String = try log.value(forKeyPath: "error.kind")
+        let message: String = try log.value(forKeyPath: "error.message")
+        let stack: String = try log.value(forKeyPath: "error.stack")
+        let sourceType: String = try log.value(forKeyPath: "error.source_type")
+        XCTAssertEqual(kind, "FatalFailure")
+        XCTAssertEqual(message, "system_failure")
+        XCTAssertEqual(stack, "system_failure")
+        XCTAssertEqual(sourceType, "ios")
+
+        log.assertNoValue(forKey: "error.binary_images")
+    }
 }
