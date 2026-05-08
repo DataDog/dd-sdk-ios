@@ -26,6 +26,8 @@ To add a new feature doc to the system, just create a `*_FEATURE.md` file with t
 1. **Discover feature docs** — find all `*_FEATURE.md` files in the repo (excluding `build/` and `artifacts/`).
 
 2. **For each doc, read its frontmatter** — extract `verified_against_commit` and `tracked_files`.
+   - If `tracked_files` is missing, derive the list from the doc's "Key Files" section (every source file path it references). Treat the doc as fully out of date and proceed to step 4 — the diff in step 3 cannot be computed.
+   - If `verified_against_commit` is missing, treat the doc as fully out of date and proceed to step 4 — the diff in step 3 cannot be computed.
 
 3. **Get the diff since that commit** — run:
    ```
@@ -49,6 +51,7 @@ To add a new feature doc to the system, just create a `*_FEATURE.md` file with t
    - Fix any stale descriptions or defaults
 
 7. **Update the frontmatter** — set:
+   - `tracked_files` → if it was missing or out of date, write the list derived in step 2
    - `verified_against_commit` → current HEAD commit hash (use `git rev-parse --short=9 HEAD`)
    - `sdk_version` → current version from `DatadogCore.podspec`
    - `last_updated` → today's date (YYYY-MM-DD)
