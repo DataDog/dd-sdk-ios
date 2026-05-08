@@ -22,9 +22,6 @@ class LogsRecordingTests: XCTestCase {
 
     // MARK: - §3 Log emission (levels & content)
 
-    /// Each log level maps to matching status — for each of `debug`, `info`, `notice`,
-    /// `warn`, `error`, `critical`, the recorded log carries the matching `status` string,
-    /// in the same order as emitted.
     func testGivenLoggerWithDefaultThreshold_whenLogsAreEmittedAtEachLevel_eachLogCarriesMatchingStatus() throws {
         // Given / When
         let when = AppRun
@@ -51,10 +48,6 @@ class LogsRecordingTests: XCTestCase {
         }
     }
 
-    /// Base `log(level:message:error:attributes:)` method — emitting via the protocol-level
-    /// method produces output indistinguishable from convenience methods. We compare two
-    /// loggers' outputs side-by-side: one emitting via `info("x")`, the other via
-    /// `log(level: .info, message: "x", error: nil, attributes: nil)`.
     func testGivenTwoLoggers_whenOneUsesBaseLogMethodAndOtherUsesConvenience_payloadsMatch() throws {
         // Given / When
         let when = AppRun
@@ -100,8 +93,6 @@ class LogsRecordingTests: XCTestCase {
         XCTAssertEqual(baseTags, convTags, "Both logs must carry the same ddtags string")
     }
 
-    /// Info log emission — `info("user signed in")` produces a single recorded log
-    /// with status `"info"` and matching message.
     func testGivenLogger_whenInfoLogIsEmitted_itHasInfoStatusAndMatchingMessage() throws {
         // Given / When
         let when = AppRun
@@ -121,9 +112,6 @@ class LogsRecordingTests: XCTestCase {
         result.logs[0].assertMessage(equals: "user signed in")
     }
 
-    /// Message text preserved verbatim — special characters, unicode, multi-line content
-    /// survive end-to-end. The exact bytes emitted should be present in the recorded log
-    /// `message` field.
     func testGivenLogger_whenMessageContainsUnicodeAndMultilineContent_itIsPreservedVerbatim() throws {
         let message = "Spëcial 🚀\nMulti\\nLine"
 
@@ -144,11 +132,6 @@ class LogsRecordingTests: XCTestCase {
         result.logs[0].assertMessage(equals: message)
     }
 
-    /// `threadName` populated — log emitted while `Thread.current.name` is set carries
-    /// that name in `logger.thread_name`. `RemoteLogger` collects the thread name
-    /// synchronously on the user thread (see `RemoteLogger.internalLog`), so setting
-    /// the main thread's name immediately before emission is sufficient and avoids
-    /// any cross-thread synchronization concerns.
     func testGivenNamedThread_whenLogIsEmitted_loggerThreadNameMatches() throws {
         let threadName = "harness-test-thread"
 
@@ -173,11 +156,6 @@ class LogsRecordingTests: XCTestCase {
         result.logs[0].assertThreadName(equals: threadName)
     }
 
-    /// `applicationVersion` and `applicationBuildNumber` — populated from bundle context
-    /// on every log via top-level `version` and `build_version` fields. The harness uses
-    /// `Bundle.main` (the test runner bundle) by default, so we assert that both values
-    /// are non-empty strings rather than pinning to specific values which depend on the
-    /// runner's Info.plist.
     func testGivenLogger_whenLogIsEmitted_itCarriesApplicationVersionAndBuildNumber() throws {
         // Given / When
         let when = AppRun
@@ -200,12 +178,6 @@ class LogsRecordingTests: XCTestCase {
         XCTAssertFalse(buildVersion.isEmpty, "`build_version` should fall back to a non-empty value sourced from Bundle.main")
     }
 
-    /// `build_id` field handling — `build_id` is set only via the cross-platform
-    /// `additionalConfiguration[CrossPlatformAttributes.buildId]` path (see `Datadog.swift`).
-    /// The harness does not populate this attribute, so the field is expected to be
-    /// absent from the recorded JSON payload. This test asserts that absence — if the SDK
-    /// ever starts auto-deriving `build_id` for the binary, both shapes (present
-    /// non-empty / absent) are valid and the test should be relaxed accordingly.
     func testGivenHarnessWithoutCrossPlatformBuildId_whenLogIsEmitted_buildIdIsAbsent() throws {
         // Given / When
         let when = AppRun
@@ -224,11 +196,6 @@ class LogsRecordingTests: XCTestCase {
         result.logs[0].assertNoValue(forKey: "build_id")
     }
 
-    /// `environment` populated from `Datadog.Configuration.env` — the env value passed
-    /// to `Datadog.initialize(...)` propagates to every log. The encoder does not emit a
-    /// top-level `env` field; instead, env appears as the `env:<value>` entry in the
-    /// `ddtags` string (see `LogEventSanitizer` SDK-managed tag list and
-    /// `LogEventEncoder` which only writes `ddtags`).
     func testGivenSDKConfiguredWithCustomEnv_whenLogIsEmitted_itCarriesThatEnvInDdTags() throws {
         // Given / When
         let when = AppRun
@@ -254,10 +221,6 @@ class LogsRecordingTests: XCTestCase {
         )
     }
 
-    /// `device` and `os` blocks present — every log carries `device` and `os` JSON objects
-    /// describing the simulated environment. We assert presence and non-emptiness on the
-    /// most stable sub-keys (`device.model`, `device.brand`, `os.name`, `os.version`)
-    /// rather than pinning specific values, which can shift between simulator and host.
     func testGivenLogger_whenLogIsEmitted_itCarriesDeviceAndOsBlocks() throws {
         // Given / When
         let when = AppRun
@@ -289,10 +252,6 @@ class LogsRecordingTests: XCTestCase {
         XCTAssertFalse(osVersion.isEmpty, "os.version should be a non-empty string")
     }
 
-    /// `_dd` internal block present — every log JSON carries a `_dd` object with internal
-    /// SDK metadata. Minimum assertion: `_dd` is present as a JSON object. Currently the
-    /// SDK populates `_dd.device.architecture` (see `LogEvent.Dd`); we assert that nested
-    /// field as a stronger shape check.
     func testGivenLogger_whenLogIsEmitted_itCarriesInternalDdBlock() throws {
         // Given / When
         let when = AppRun
@@ -318,9 +277,6 @@ class LogsRecordingTests: XCTestCase {
 
     // MARK: - §4 Tags
 
-    /// `addTag(withKey:value:)` persists — a tag added once is visible on every subsequent
-    /// log emitted by the same logger. Encoded as the `key:value` entry in `ddtags` (which
-    /// is a comma-separated string composed of user tags + SDK-managed `ddTags`).
     func testGivenLogger_whenTagIsAddedWithKeyValue_itPersistsAcrossSubsequentLogs() throws {
         // Given / When
         let when = AppRun
@@ -347,8 +303,6 @@ class LogsRecordingTests: XCTestCase {
         }
     }
 
-    /// `removeTag(withKey:)` — once a tag is removed, it disappears from subsequent logs;
-    /// logs already emitted while the tag was set keep it (recorded payloads are immutable).
     func testGivenLoggerWithTag_whenTagIsRemovedByKey_subsequentLogsDoNotCarryIt() throws {
         // Given / When
         let when = AppRun
@@ -384,8 +338,6 @@ class LogsRecordingTests: XCTestCase {
         )
     }
 
-    /// `add(tag:)` raw tag — a value-only tag (no `key:value` colon) appears verbatim in
-    /// `ddtags` of subsequent logs.
     func testGivenLogger_whenRawTagIsAdded_itAppearsInDdTags() throws {
         // Given / When
         let when = AppRun
@@ -412,8 +364,6 @@ class LogsRecordingTests: XCTestCase {
         }
     }
 
-    /// `remove(tag:)` raw tag — once a raw tag is removed, it disappears from subsequent
-    /// logs while logs emitted while it was set keep it.
     func testGivenLoggerWithRawTag_whenRawTagIsRemoved_subsequentLogsDoNotCarryIt() throws {
         // Given / When
         let when = AppRun
@@ -449,10 +399,6 @@ class LogsRecordingTests: XCTestCase {
         )
     }
 
-    /// Tag sanitization — special characters. `LogEventSanitizer` lowercases the tag, then
-    /// replaces every character outside `[a-z0-9_:./-]` with `_` (regex
-    /// `[^a-z0-9_:.\/-]`, see `LogEventSanitizer.replaceIllegalCharactersIn`). Special
-    /// characters in either key or value are individually replaced with underscores.
     func testGivenLogger_whenTagContainsIllegalCharacters_eachIsReplacedWithUnderscore() throws {
         // Given / When
         let when = AppRun
@@ -481,9 +427,6 @@ class LogsRecordingTests: XCTestCase {
         )
     }
 
-    /// Tag sanitization — uppercase characters. `LogEventSanitizer` lowercases every tag
-    /// before any other sanitization step (see `sanitize(tags:).map { $0.lowercased() }`),
-    /// so an uppercase `key:value` pair is normalised to lowercase end-to-end.
     func testGivenLogger_whenTagContainsUppercase_itIsLowercasedInDdTags() throws {
         // Given / When
         let when = AppRun
@@ -511,11 +454,6 @@ class LogsRecordingTests: XCTestCase {
         )
     }
 
-    /// Tag truncation at 200 characters. `LogEventSanitizer.limitToMaxLength` truncates
-    /// the *whole tag* (the joined `"key:value"` string, not just the value) when its
-    /// length exceeds `Constraints.maxTagLength = 200`. With `key="k"` and a 250-char
-    /// value, the full tag is 252 chars; the recorded entry should be exactly 200 chars
-    /// — `"k:"` plus the first 198 chars of the value.
     func testGivenLogger_whenTagExceeds200Characters_itIsTruncatedToTheFirst200() throws {
         let value = String(repeating: "a", count: 250)
 
@@ -544,13 +482,6 @@ class LogsRecordingTests: XCTestCase {
         XCTAssertEqual(longEntry, expected, "Truncation should keep the first 200 characters of the joined `key:value` tag")
     }
 
-    /// SDK-managed tags always present — even with no user tags, `ddtags` carries the
-    /// SDK-managed entries assembled by `DatadogContext.buildDDTags()`:
-    /// `service:<value>`, `version:<value>`, `sdk_version:<value>`, `env:<value>`
-    /// (plus optional `variant:<value>` when set). Note the SCENARIOS.md description
-    /// mentions `host`/`device`/`source` — those are *reserved* tag keys (the sanitizer
-    /// drops user tags using them) but the SDK does not auto-emit them; only the four
-    /// fields above are unconditionally injected by the core.
     func testGivenLoggerWithoutUserTags_whenLogIsEmitted_ddtagsCarriesSDKManagedEntries() throws {
         // Given / When
         let when = AppRun
@@ -586,4 +517,299 @@ class LogsRecordingTests: XCTestCase {
     // §4 "Two loggers — tag isolation" is covered by
     // `LogsConfigTests.testGivenTwoLoggers_whenTagIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()`
     // (added in Batch 2 for §2 "Multiple named loggers — independent tag state").
+
+    // MARK: - §5 Attributes
+
+    func testGivenLogger_whenAttributeIsAddedWithKeyAndValue_itPersistsAcrossSubsequentLogs() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.addAttribute(forKey: "tenant", value: "acme")
+                app.logger.info("first")
+                app.logger.info("second")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 2, "Two logs should be recorded")
+        for log in result.logs {
+            let tenant: String = try log.value(forKeyPath: "tenant")
+            XCTAssertEqual(tenant, "acme", "Logger-scoped attribute should appear on every subsequent log")
+        }
+    }
+
+    func testGivenLoggerWithAttribute_whenAttributeIsRemovedByKey_subsequentLogsDoNotCarryIt() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.addAttribute(forKey: "tenant", value: "acme")
+                app.logger.info("with-attr")
+                app.logger.removeAttribute(forKey: "tenant")
+                app.logger.info("without-attr")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 2, "Two logs should be recorded")
+
+        let logA = try XCTUnwrap(result.logs.first { (try? $0.value(forKeyPath: "message") as String) == "with-attr" })
+        let logB = try XCTUnwrap(result.logs.first { (try? $0.value(forKeyPath: "message") as String) == "without-attr" })
+
+        let tenantOnA: String? = try logA.valueOrNil(forKeyPath: "tenant")
+        let tenantOnB: String? = try logB.valueOrNil(forKeyPath: "tenant")
+
+        XCTAssertEqual(tenantOnA, "acme", "First log emitted before removeAttribute(...) should still carry `tenant`")
+        XCTAssertNil(tenantOnB, "Log emitted after removeAttribute(...) must not carry `tenant`")
+    }
+
+    func testGivenLogsFeatureEnabled_whenGlobalAttributeIsAdded_allLoggersIncludeItOnSubsequentLogs() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .and { app in
+                Logs.enable(in: app.core)
+                app.loggers["a"] = Logger.create(with: Logger.Configuration(name: "logger-a"), in: app.core)
+                app.loggers["b"] = Logger.create(with: Logger.Configuration(name: "logger-b"), in: app.core)
+            }
+            .when { app in
+                Logs.addAttribute(forKey: "global", value: "shared", in: app.core)
+                app.loggers["a"]?.info("from a")
+                app.loggers["b"]?.info("from b")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 2, "Two logs should be recorded")
+        for log in result.logs {
+            let global: String = try log.value(forKeyPath: "global")
+            XCTAssertEqual(global, "shared", "Global attribute should appear on every logger's subsequent logs")
+        }
+    }
+
+    func testGivenGlobalAttribute_whenGlobalAttributeIsRemoved_subsequentLogsDoNotCarryIt() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .and { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+            }
+            .when { app in
+                Logs.addAttribute(forKey: "global", value: "shared", in: app.core)
+                app.logger.info("with-global")
+                Logs.removeAttribute(forKey: "global", in: app.core)
+                app.logger.info("without-global")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 2, "Two logs should be recorded")
+
+        let logA = try XCTUnwrap(result.logs.first { (try? $0.value(forKeyPath: "message") as String) == "with-global" })
+        let logB = try XCTUnwrap(result.logs.first { (try? $0.value(forKeyPath: "message") as String) == "without-global" })
+
+        let globalOnA: String? = try logA.valueOrNil(forKeyPath: "global")
+        let globalOnB: String? = try logB.valueOrNil(forKeyPath: "global")
+
+        XCTAssertEqual(globalOnA, "shared", "Log emitted before global removeAttribute(...) should still carry `global`")
+        XCTAssertNil(globalOnB, "Log emitted after global removeAttribute(...) must not carry `global`")
+    }
+
+    func testGivenLoggerWithAttribute_whenSameKeyIsPassedPerLog_perLogValueWins() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.addAttribute(forKey: "k", value: "logger-val")
+                app.logger.info("with-override", attributes: ["k": "per-log-val"])
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let value: String = try result.logs[0].value(forKeyPath: "k")
+        XCTAssertEqual(value, "per-log-val", "Per-log attribute value should override the logger-scoped value for this log")
+    }
+
+    func testGivenLogger_whenAttributeIsPassedPerLog_subsequentLogsDoNotCarryIt() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("with-per-log", attributes: ["k": "v"])
+                app.logger.info("without-per-log")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 2, "Two logs should be recorded")
+
+        let logA = try XCTUnwrap(result.logs.first { (try? $0.value(forKeyPath: "message") as String) == "with-per-log" })
+        let logB = try XCTUnwrap(result.logs.first { (try? $0.value(forKeyPath: "message") as String) == "without-per-log" })
+
+        let kOnA: String? = try logA.valueOrNil(forKeyPath: "k")
+        let kOnB: String? = try logB.valueOrNil(forKeyPath: "k")
+
+        XCTAssertEqual(kOnA, "v", "First log should carry the per-log attribute")
+        XCTAssertNil(kOnB, "Second log without the per-log attribute must not carry `k`")
+    }
+
+    func testGivenAttributeAtAllThreeScopes_whenLogIsEmitted_perLogValueWinsOverLoggerAndGlobal() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .and { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+            }
+            .when { app in
+                // Set the same key `k` at every scope, with distinct values.
+                Logs.addAttribute(forKey: "k", value: "global-val", in: app.core)
+                app.logger.addAttribute(forKey: "k", value: "logger-val")
+                app.logger.info("precedence", attributes: ["k": "per-log-val"])
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let value: String = try result.logs[0].value(forKeyPath: "k")
+        XCTAssertEqual(value, "per-log-val", "Per-log attribute should win over logger-scoped and global values")
+    }
+
+    func testGivenAttributeWithDottedKey_whenLogIsEmitted_keyAppearsAsFlatLiteralKeyInJson() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.addAttribute(forKey: "user.profile.id", value: 42)
+                app.logger.info("dotted-key")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let log = result.logs[0]
+
+        // The encoder writes the dotted key as a flat top-level field. `NSDictionary`
+        // KVC resolves the literal key first, so `value(forKeyPath: "user.profile.id")`
+        // returns the encoded value (42). This would also hold if the SDK ever started
+        // expanding to nested objects, so the assertion is robust either way.
+        let id: Int = try log.value(forKeyPath: "user.profile.id")
+        XCTAssertEqual(id, 42, "Dotted-key attribute should be retrievable at `user.profile.id`")
+
+        // Stronger shape check: assert the encoder produces a flat key (the documented
+        // behaviour). A nested `user` JSON object would mean the SDK started expanding
+        // dot syntax — surface that as a failure so the SCENARIOS.md description and
+        // this test get re-evaluated together. We retrieve the literal `user.profile.id`
+        // key path as `Int`; if the encoder had produced a nested structure, the value
+        // there would be an `Int`, but additionally a top-level `user` object would
+        // exist and `value(forKeyPath: "user")` would resolve to a dictionary. With the
+        // flat-key encoding, only the *exact* literal key `"user.profile.id"` exists,
+        // so trying to resolve the partial prefix `"user"` returns nil.
+        let userPrefix: [String: Any]? = try log.valueOrNil(forKeyPath: "user")
+        XCTAssertNil(userPrefix, "Encoder should produce a flat literal key `user.profile.id`, not a nested `user` object")
+    }
+
+    func testGivenAttributesOfVariousEncodableTypes_whenLogIsEmitted_eachTypeRoundtripsCleanly() throws {
+        struct Profile: Encodable {
+            let name: String
+            let age: Int
+        }
+        let date = Date(timeIntervalSince1970: 1_700_000_000) // 2023-11-14T22:13:20Z
+        let expectedDateString = iso8601DateFormatter.string(from: date)
+        let profile = Profile(name: "alice", age: 30)
+        // `AttributeValue` is a typealias for `Encodable`, so a heterogeneous nested
+        // dictionary must be expressed as `[String: AnyEncodable]` (or a custom struct).
+        // `AnyEncodable` is the SDK's type-erasing wrapper used internally to bridge
+        // mixed Swift values into the `Encodable` system.
+        let nested: [String: AnyEncodable] = [
+            "count": AnyEncodable(3),
+            "label": AnyEncodable("ok"),
+            "active": AnyEncodable(true)
+        ]
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.addAttribute(forKey: "intAttr", value: 7)
+                app.logger.addAttribute(forKey: "stringAttr", value: "hello")
+                app.logger.addAttribute(forKey: "boolAttr", value: true)
+                app.logger.addAttribute(forKey: "dateAttr", value: date)
+                app.logger.addAttribute(forKey: "profileAttr", value: profile)
+                app.logger.addAttribute(forKey: "nestedAttr", value: nested)
+                app.logger.info("encodable-types")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Exactly one log should be recorded")
+        let log = result.logs[0]
+
+        // Int → JSON number, retrievable as Int (and not as String).
+        let intValue: Int = try log.value(forKeyPath: "intAttr")
+        XCTAssertEqual(intValue, 7)
+
+        // String → JSON string.
+        let stringValue: String = try log.value(forKeyPath: "stringAttr")
+        XCTAssertEqual(stringValue, "hello")
+
+        // Bool → JSON bool.
+        let boolValue: Bool = try log.value(forKeyPath: "boolAttr")
+        XCTAssertTrue(boolValue)
+
+        // Date → ISO8601 string (custom strategy in `JSONEncoder.dd.default()`).
+        let dateValue: String = try log.value(forKeyPath: "dateAttr")
+        XCTAssertEqual(dateValue, expectedDateString, "Date should encode as ISO8601 with fractional seconds")
+
+        // Custom `Encodable` struct → JSON object with the struct's fields preserved.
+        let profileName: String = try log.value(forKeyPath: "profileAttr.name")
+        let profileAge: Int = try log.value(forKeyPath: "profileAttr.age")
+        XCTAssertEqual(profileName, "alice")
+        XCTAssertEqual(profileAge, 30)
+
+        // Nested `[String: Any]` with mixed values — each value preserves its JSON type.
+        let nestedCount: Int = try log.value(forKeyPath: "nestedAttr.count")
+        let nestedLabel: String = try log.value(forKeyPath: "nestedAttr.label")
+        let nestedActive: Bool = try log.value(forKeyPath: "nestedAttr.active")
+        XCTAssertEqual(nestedCount, 3)
+        XCTAssertEqual(nestedLabel, "ok")
+        XCTAssertTrue(nestedActive)
+    }
+
+    // §5 #10 "Two loggers — attribute isolation" is covered by
+    // `LogsConfigTests.testGivenTwoLoggers_whenAttributeIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()`
+    // (added in Batch 2 for §2 "Multiple named loggers — independent attribute state").
 }

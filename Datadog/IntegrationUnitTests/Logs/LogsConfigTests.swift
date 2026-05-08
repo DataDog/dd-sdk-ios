@@ -21,8 +21,6 @@ class LogsConfigTests: XCTestCase {
 
     // MARK: - §1 Setup & enablement
 
-    /// Logs feature enable after SDK init — `Logs.enable(in: app.core)` after `Datadog.initialize(...)`
-    /// registers the feature; subsequent `Logger.create(in: app.core)` produces a working remote logger.
     func testGivenSDKInitialized_whenLogsEnabledAfterInit_loggerProducesRecordedLogs() throws {
         // Given / When
         let when = AppRun
@@ -42,8 +40,6 @@ class LogsConfigTests: XCTestCase {
         result.logs[0].assertMessage(equals: "after enable")
     }
 
-    /// Logger creation before Logs feature enabled — `Logger.create` returns a `NOPLogger`
-    /// (no logs recorded) when `Logs.enable` was never called.
     func testGivenLogsFeatureNotEnabled_whenLoggerIsCreated_itProducesNoRecordedLogs() throws {
         // Given / When
         let when = AppRun
@@ -63,8 +59,6 @@ class LogsConfigTests: XCTestCase {
         XCTAssertEqual(result.logs.count, 0, "No logs should be recorded when Logs feature was never enabled")
     }
 
-    /// Logs feature enabled twice — second `Logs.enable(in: app.core)` is a no-op;
-    /// previously-created loggers continue working.
     func testGivenLogsFeatureEnabled_whenEnabledASecondTime_previouslyCreatedLoggerStillWorks() throws {
         // Given / When
         let when = AppRun
@@ -100,9 +94,6 @@ class LogsConfigTests: XCTestCase {
 
     // MARK: - §2 Logger creation & configuration
 
-    /// Default Logger.Configuration — log emitted from a logger created with `Logger.Configuration()`
-    /// carries the default `service` (from SDK env-derived service name) and `logger.name` (from main bundle id),
-    /// and contains no `network.client.*` attributes (since `networkInfoEnabled=false` by default).
     func testGivenDefaultLoggerConfiguration_whenLogIsEmitted_itHasDefaultServiceAndLoggerName() throws {
         // Given / When
         let when = AppRun
@@ -134,8 +125,6 @@ class LogsConfigTests: XCTestCase {
         result.logs[0].assertNoValue(forKeyPath: "network.client.reachability")
     }
 
-    /// Logger.Configuration.service overrides default — explicit `service: "checkout"`
-    /// appears in the recorded log's `service` field instead of the default bundle id.
     func testGivenLoggerConfigurationWithExplicitService_whenLogIsEmitted_itUsesProvidedServiceName() throws {
         // Given / When
         let when = AppRun
@@ -156,8 +145,6 @@ class LogsConfigTests: XCTestCase {
         result.logs[0].assertService(equals: "checkout")
     }
 
-    /// Logger.Configuration.name overrides default — explicit `name: "auth-logger"`
-    /// appears in `logger.name` instead of the default bundle id.
     func testGivenLoggerConfigurationWithExplicitName_whenLogIsEmitted_itUsesProvidedLoggerName() throws {
         // Given / When
         let when = AppRun
@@ -178,8 +165,6 @@ class LogsConfigTests: XCTestCase {
         result.logs[0].assertLoggerName(equals: "auth-logger")
     }
 
-    /// Multiple named loggers — independent tag state. A tag added on logger A
-    /// is not visible on logs emitted by logger B.
     func testGivenTwoLoggers_whenTagIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs() throws {
         // Given / When
         let when = AppRun
@@ -211,8 +196,6 @@ class LogsConfigTests: XCTestCase {
         XCTAssertFalse(tagsB.contains("feature:promo"), "Logger B's log must not carry tags added on logger A")
     }
 
-    /// Multiple named loggers — independent attribute state. An attribute added on logger A
-    /// is not visible on logs emitted by logger B.
     func testGivenTwoLoggers_whenAttributeIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs() throws {
         // Given / When
         let when = AppRun
@@ -244,8 +227,6 @@ class LogsConfigTests: XCTestCase {
         XCTAssertNil(tenantOnB, "Logger B's log must not carry attributes added on logger A")
     }
 
-    /// Logger with `remoteSampleRate=0` and no console — `Logger.create` returns a NOPLogger;
-    /// emitting any logs through it produces zero recorded logs.
     func testGivenLoggerWithZeroRemoteSampleRateAndNoConsole_whenLogsAreEmitted_noLogsAreRecorded() throws {
         // Given / When
         let when = AppRun
@@ -268,8 +249,6 @@ class LogsConfigTests: XCTestCase {
         XCTAssertEqual(result.logs.count, 0, "NOPLogger from `remoteSampleRate=0` + no console must record nothing")
     }
 
-    /// `loggerVersion` populated from SDK version — every log carries the current
-    /// `__sdkVersion` (from `DatadogCore/Sources/Versioning.swift`) in `logger.version`.
     func testGivenAnyLogger_whenLogIsEmitted_itCarriesCurrentSDKVersionInLoggerVersion() throws {
         // Given / When
         let when = AppRun

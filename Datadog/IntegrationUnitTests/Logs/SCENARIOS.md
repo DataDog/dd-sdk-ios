@@ -73,16 +73,16 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 
 ## 5. Attributes → `LogsRecordingTests.swift`
 
-- **`Logger.addAttribute(forKey:value:)` persists** — attribute added once appears on all subsequent logs from that logger. _ready_
-- **`Logger.removeAttribute(forKey:)`** — attribute removed disappears from subsequent logs (prior logs unaffected). _ready_
-- **`Logs.addAttribute(forKey:value:)` (global)** — global attribute propagates to all loggers' subsequent logs. _ready_
-- **`Logs.removeAttribute(forKey:)` (global)** — global attribute removed propagates as removal. _ready_
-- **Per-log `attributes` parameter overrides logger-scoped** — same key passed at emission time wins over logger-attached value (only for that log). _ready_
-- **Per-log `attributes` doesn't pollute logger state** — subsequent logs without the per-log attribute don't carry it. _ready_
-- **Attribute precedence: per-log > logger > global** — same key set at all three scopes; per-log value wins. _ready_
-- **Nested attribute keys with dot syntax** — `addAttribute(forKey: "user.profile.id", …)` produces nested JSON structure. _ready_
-- **Encodable value types** — `Int`, `String`, `Bool`, `Date`, custom `Encodable` struct, nested dictionaries — all preserved through encoding. _ready_
-- **Two loggers — attribute isolation** — attribute added on logger A absent from logger B's logs. _ready_
+- **`Logger.addAttribute(forKey:value:)` persists** — attribute added once appears on all subsequent logs from that logger. _ready_ → `testGivenLogger_whenAttributeIsAddedWithKeyAndValue_itPersistsAcrossSubsequentLogs()`
+- **`Logger.removeAttribute(forKey:)`** — attribute removed disappears from subsequent logs (prior logs unaffected). _ready_ → `testGivenLoggerWithAttribute_whenAttributeIsRemovedByKey_subsequentLogsDoNotCarryIt()`
+- **`Logs.addAttribute(forKey:value:)` (global)** — global attribute propagates to all loggers' subsequent logs. _ready_ → `testGivenLogsFeatureEnabled_whenGlobalAttributeIsAdded_allLoggersIncludeItOnSubsequentLogs()`
+- **`Logs.removeAttribute(forKey:)` (global)** — global attribute removed propagates as removal. _ready_ → `testGivenGlobalAttribute_whenGlobalAttributeIsRemoved_subsequentLogsDoNotCarryIt()`
+- **Per-log `attributes` parameter overrides logger-scoped** — same key passed at emission time wins over logger-attached value (only for that log). _ready_ → `testGivenLoggerWithAttribute_whenSameKeyIsPassedPerLog_perLogValueWins()`
+- **Per-log `attributes` doesn't pollute logger state** — subsequent logs without the per-log attribute don't carry it. _ready_ → `testGivenLogger_whenAttributeIsPassedPerLog_subsequentLogsDoNotCarryIt()`
+- **Attribute precedence: per-log > logger > global** — same key set at all three scopes; per-log value wins. _ready_ → `testGivenAttributeAtAllThreeScopes_whenLogIsEmitted_perLogValueWinsOverLoggerAndGlobal()`
+- **Nested attribute keys with dot syntax** — `addAttribute(forKey: "user.profile.id", …)` is encoded as a *flat* top-level JSON key (literal dots preserved in the property name) — the SDK does not expand dotted keys into nested objects. The sanitizer only collapses dots to underscores once nesting exceeds 10 levels. _ready_ → `testGivenAttributeWithDottedKey_whenLogIsEmitted_keyAppearsAsFlatLiteralKeyInJson()`
+- **Encodable value types** — `Int`, `String`, `Bool`, `Date`, custom `Encodable` struct, nested dictionaries — all preserved through encoding. _ready_ → `testGivenAttributesOfVariousEncodableTypes_whenLogIsEmitted_eachTypeRoundtripsCleanly()`
+- **Two loggers — attribute isolation** — attribute added on logger A absent from logger B's logs. _ready_ → `testGivenTwoLoggers_whenAttributeIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()` (in `LogsConfigTests.swift`, shared with §2)
 
 ## 6. Errors → `LogsRecordingTests.swift`
 
@@ -179,3 +179,5 @@ Findings surfaced while writing harness tests — non-blocking, but worth tracki
 - **`Logs.Configuration.dateProvider` not pluggable from harness** (surfaced in Batch 3, §3 `date` scenario). `Logs.Configuration.dateProvider` defaults to `SystemDateProvider()` and is `internal`, so `Logs.enable(in: app.core)` ignores the `DateProviderMock` registered via `Datadog.Configuration` — log payloads carry wall-clock timestamps regardless of harness time-mocking. Forces the `date matches simulated time` scenario to be a fixture-dependent test. Follow-up: add a harness fixture (Batch 18 in plan) that overrides `Logs.Configuration.dateProvider` via `@testable import DatadogLogs` so simulated time flows through to log payloads.
 
 - **`host`/`device`/`source` are reserved tag keys, not auto-emitted SDK-managed tags** (surfaced in Batch 4, §4 "SDK-managed tags always present"). `LogEventSanitizer.Constraints.reservedTagKeys` contains `host`, `device`, `source`, `service`, `env` — meaning user-supplied tags using those keys are dropped on the way out. But the *core* (`DatadogContext.buildDDTags()`) only auto-injects `service`, `version`, `sdk_version`, `env` (and optional `variant`). So `ddtags` on every log carries those four entries, plus any user tags, plus the SDK-managed reserves *that are also auto-emitted* (i.e. just `service` and `env`) — never `host`/`device`/`source`. SCENARIOS.md description for §4 was inaccurate; updated to match implementation. No code change needed.
+
+- **Dotted attribute keys are encoded as flat literal JSON keys, not expanded into nested objects** (surfaced in Batch 5, §5 "Nested attribute keys with dot syntax"). User attributes are written via `DynamicCodingKey(name)` in `LogEventEncoder.encode(_:to:)` step 3 — `name` is the literal key string, including dots. So `addAttribute(forKey: "user.profile.id", value: 42)` produces a JSON object containing the literal key `"user.profile.id": 42`, not `{"user": {"profile": {"id": 42}}}`. `AttributesSanitizer.sanitizeKeys` only intervenes once nesting count exceeds `maxNestedLevelsInAttributeName = 10`, replacing extra dots with `_`. Datadog's backend treats `key.subkey` patterns as nested for query/visualisation, so the on-the-wire shape is functionally equivalent — but the *JSON document* itself is flat, and any test that asserts an actual nested object structure will fail. SCENARIOS.md description for §5 was misleading ("nested JSON structure"); updated. No code change needed.
