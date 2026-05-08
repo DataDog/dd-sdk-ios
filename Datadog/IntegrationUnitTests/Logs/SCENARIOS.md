@@ -96,8 +96,8 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 
 ## 7. Sampling (`remoteSampleRate`) → `LogsFilteringTests.swift`
 
-- **`remoteSampleRate=0` drops all logs** — no logs in `recordedLogs()` regardless of how many emitted. _ready_
-- **`remoteSampleRate=100` keeps all logs** — every emitted log appears in `recordedLogs()`. _ready_
+- **`remoteSampleRate=0` drops all logs** — no logs in `recordedLogs()` regardless of how many emitted. _ready_ → `testGivenLoggerWithZeroRemoteSampleRateAndConsoleOutput_whenLogsAreEmitted_noLogsAreRecorded()`
+- **`remoteSampleRate=100` keeps all logs** — every emitted log appears in `recordedLogs()`. _ready_ → `testGivenLoggerWithMaxRemoteSampleRate_whenLogsAreEmitted_allLogsAreRecorded()`
 - **Debug launch argument forces 100** — when `LaunchArguments.Debug` is in process arguments, `remoteSampleRate=0` is overridden to send all. _needs-fixture: launch arguments_
 
 ## 8. Log threshold (`remoteLogThreshold`) → `LogsFilteringTests.swift`
