@@ -1,10 +1,13 @@
 ---
-last_updated: 2026-05-05
+last_updated: 2026-05-08
 sdk_version: 3.10.0
-verified_against_commit: 228fb06d7
+verified_against_commit: 6bc779cf6
 tracked_files:
   - DatadogSessionReplay/Sources/SessionReplay.swift
   - DatadogSessionReplay/Sources/SessionReplayConfiguration.swift
+  - DatadogSessionReplay/Sources/SessionReplayPrivacyOverrides.swift
+  - DatadogSessionReplay/Sources/SessionReplayPrivacyView.swift
+  - DatadogInternal/Sources/Models/SessionReplay/SessionReplayConfiguration.swift
 ---
 
 # Session Replay Feature
@@ -88,8 +91,9 @@ SessionReplay.enable(
         // Feature flags for experimental features
         // Default: [.swiftui: false]
         // Available flags:
-        //   .swiftui - Enable SwiftUI recording (experimental)
-        //   .heatmaps - Enable heatmap identifier computation (experimental)
+        //   .swiftui                - Enable SwiftUI recording (experimental)
+        //   .heatmaps               - Enable heatmap identifier computation (experimental)
+        //   .screenChangeScheduling - DEPRECATED: now default and always enabled; setting it has no effect
         featureFlags: [
             .swiftui: true,   // Enable SwiftUI recording (experimental)
             .heatmaps: false  // Enable heatmap identifier computation (experimental)
@@ -228,6 +232,7 @@ SessionReplayPrivacyView(
 ### Available feature flags
 - `.swiftui` — Enable SwiftUI recording (experimental, default: `false`)
 - `.heatmaps` — Enable heatmap identifier computation (experimental, default: `false`)
+- `.screenChangeScheduling` — **Deprecated.** Screen change scheduling is now the default and always enabled; setting this flag has no effect. Kept on the public API for backward compatibility.
 
 ## Feature Interactions
 
