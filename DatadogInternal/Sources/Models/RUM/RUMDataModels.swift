@@ -945,6 +945,7 @@ public struct RUMActionEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
+            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -1061,6 +1062,7 @@ public struct RUMActionEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// Stream properties
@@ -1835,6 +1837,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
+            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -2388,6 +2391,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case windows = "windows"
             case macos = "macos"
             case linux = "linux"
+            case maui = "maui"
         }
 
         /// Description of the thread in the process when error happened.
@@ -2513,6 +2517,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// Stream properties
@@ -3321,6 +3326,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
+            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -3624,6 +3630,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// Stream properties
@@ -4151,6 +4158,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
+            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -4801,6 +4809,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// Stream properties
@@ -5774,6 +5783,7 @@ public struct RUMViewEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
+            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -5994,6 +6004,7 @@ public struct RUMViewEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// Stream properties
@@ -6903,6 +6914,8 @@ public struct RUMViewEvent: RUMDataModel {
             case fragmentRedisplay = "fragment_redisplay"
             case viewControllerDisplay = "view_controller_display"
             case viewControllerRedisplay = "view_controller_redisplay"
+            case sessionRenewal = "session_renewal"
+            case bfCache = "bf_cache"
         }
 
         /// Properties of the long tasks of the view
@@ -7805,6 +7818,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
+            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -8025,6 +8039,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// Stream properties
@@ -8934,6 +8949,8 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             case fragmentRedisplay = "fragment_redisplay"
             case viewControllerDisplay = "view_controller_display"
             case viewControllerRedisplay = "view_controller_redisplay"
+            case sessionRenewal = "session_renewal"
+            case bfCache = "bf_cache"
         }
 
         /// Properties of the long tasks of the view
@@ -9911,6 +9928,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
+            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -10027,6 +10045,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// Stream properties
@@ -10653,6 +10672,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
+            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -10769,6 +10789,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// Stream properties
@@ -11355,6 +11376,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
             case rumCpp = "rum-cpp"
+            case maui = "maui"
         }
 
         /// Attributes of the view's container
@@ -11471,6 +11493,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// Stream properties
@@ -11813,6 +11836,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// The telemetry configuration information
@@ -11919,6 +11943,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether the SDK is initialised on the application's main or a secondary process
             public let isMainProcess: Bool?
 
+            /// The version of MAUI used in a .NET MAUI application
+            public var mauiVersion: String?
+
             /// The period between each Mobile Vital sample (in milliseconds)
             public var mobileVitalsUpdatePeriod: Int64?
 
@@ -11970,7 +11997,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether initialization fails silently if the SDK is already initialized
             public let silentMultipleInit: Bool?
 
-            /// The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform'.
+            /// The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform', 'maui'.
             public var source: String?
 
             /// Whether Session Replay should automatically start a recording when enabled
@@ -12062,6 +12089,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether automatic collection of network requests is enabled
             public var trackNetworkRequests: Bool?
+
+            /// How the SDK tracks resource request/response headers
+            public var trackResourceHeaders: TrackResourceHeaders?
 
             /// Whether resources are tracked
             public var trackResources: Bool?
@@ -12162,6 +12192,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case initializationType = "initialization_type"
                 case invTimeThresholdMs = "inv_time_threshold_ms"
                 case isMainProcess = "is_main_process"
+                case mauiVersion = "maui_version"
                 case mobileVitalsUpdatePeriod = "mobile_vitals_update_period"
                 case numberOfDisplays = "number_of_displays"
                 case plugins = "plugins"
@@ -12210,6 +12241,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case trackNativeLongTasks = "track_native_long_tasks"
                 case trackNativeViews = "track_native_views"
                 case trackNetworkRequests = "track_network_requests"
+                case trackResourceHeaders = "track_resource_headers"
                 case trackResources = "track_resources"
                 case trackSessionAcrossSubdomains = "track_session_across_subdomains"
                 case trackUserInteractions = "track_user_interactions"
@@ -12261,6 +12293,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - initializationType: The type of initialization the SDK used, in case multiple are supported
             ///   - invTimeThresholdMs: Interval in milliseconds when the last action is considered as the action that created the next view. Only sent if a time based strategy has been used
             ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
+            ///   - mauiVersion: The version of MAUI used in a .NET MAUI application
             ///   - mobileVitalsUpdatePeriod: The period between each Mobile Vital sample (in milliseconds)
             ///   - numberOfDisplays: The number of displays available to the device
             ///   - plugins: The list of plugins enabled
@@ -12278,7 +12311,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - silentMultipleInit: Whether initialization fails silently if the SDK is already initialized
-            ///   - source: The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform'.
+            ///   - source: The source of the SDK, e.g., 'browser', 'ios', 'android', 'flutter', 'react-native', 'unity', 'kotlin-multiplatform', 'maui'.
             ///   - startRecordingImmediately: Whether Session Replay should automatically start a recording when enabled
             ///   - startSessionReplayRecordingManually: Whether the session replay start is handled manually
             ///   - storeContextsAcrossPages: Whether contexts are stored in local storage
@@ -12309,6 +12342,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - trackNativeLongTasks: Whether long task tracking is performed automatically
             ///   - trackNativeViews: Whether native views are tracked (for cross platform SDKs)
             ///   - trackNetworkRequests: Whether automatic collection of network requests is enabled
+            ///   - trackResourceHeaders: How the SDK tracks resource request/response headers
             ///   - trackResources: Whether resources are tracked
             ///   - trackSessionAcrossSubdomains: Whether sessions across subdomains for the same site are tracked
             ///   - trackUserInteractions: Whether user actions are tracked
@@ -12356,6 +12390,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 initializationType: String? = nil,
                 invTimeThresholdMs: Int64? = nil,
                 isMainProcess: Bool? = nil,
+                mauiVersion: String? = nil,
                 mobileVitalsUpdatePeriod: Int64? = nil,
                 numberOfDisplays: Int64? = nil,
                 plugins: [Plugins]? = nil,
@@ -12404,6 +12439,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 trackNativeLongTasks: Bool? = nil,
                 trackNativeViews: Bool? = nil,
                 trackNetworkRequests: Bool? = nil,
+                trackResourceHeaders: TrackResourceHeaders? = nil,
                 trackResources: Bool? = nil,
                 trackSessionAcrossSubdomains: Bool? = nil,
                 trackUserInteractions: Bool? = nil,
@@ -12451,6 +12487,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.initializationType = initializationType
                 self.invTimeThresholdMs = invTimeThresholdMs
                 self.isMainProcess = isMainProcess
+                self.mauiVersion = mauiVersion
                 self.mobileVitalsUpdatePeriod = mobileVitalsUpdatePeriod
                 self.numberOfDisplays = numberOfDisplays
                 self.plugins = plugins
@@ -12499,6 +12536,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.trackNativeLongTasks = trackNativeLongTasks
                 self.trackNativeViews = trackNativeViews
                 self.trackNetworkRequests = trackNetworkRequests
+                self.trackResourceHeaders = trackResourceHeaders
                 self.trackResources = trackResources
                 self.trackSessionAcrossSubdomains = trackSessionAcrossSubdomains
                 self.trackUserInteractions = trackUserInteractions
@@ -12659,6 +12697,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case resource = "resource"
                 case action = "action"
                 case longTask = "long_task"
+            }
+
+            /// How the SDK tracks resource request/response headers
+            public enum TrackResourceHeaders: String, Codable {
+                case defaultHeaders = "default_headers"
+                case custom = "custom"
             }
 
             /// The initial tracking consent value
@@ -12946,6 +12990,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// The telemetry log information
@@ -13235,6 +13280,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// The telemetry log information
@@ -13560,6 +13606,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
         case rumCpp = "rum-cpp"
+        case maui = "maui"
     }
 
     /// The telemetry usage information
@@ -14313,6 +14360,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public enum AndroidNetworkInstrumentationType: String, Codable {
                         case cRONET = "CRONET"
                         case oKHTTP = "OKHTTP"
+                        case lEGACYOKHTTP = "LEGACY_OKHTTP"
                     }
                 }
             }
@@ -14374,4 +14422,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/0ca44bb75f6d0d02df73ecdfb0e71ea8eeb3e2e4
+// Generated from https://github.com/DataDog/rum-events-format/tree/ed69a908b5f05a97b984498526d50c0e97284c06

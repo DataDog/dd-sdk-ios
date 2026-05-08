@@ -419,6 +419,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             initializationType: nil,
             invTimeThresholdMs: configuration.invTimeThresholdMs,
             isMainProcess: nil,
+            mauiVersion: configuration.mauiVersion,
             mobileVitalsUpdatePeriod: configuration.mobileVitalsUpdatePeriod,
             premiumSampleRate: nil,
             reactNativeVersion: nil,
