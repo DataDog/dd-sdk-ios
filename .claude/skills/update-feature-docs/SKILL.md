@@ -28,6 +28,7 @@ To add a new feature doc to the system, just create a `*_FEATURE.md` file with t
 2. **For each doc, read its frontmatter** — extract `verified_against_commit` and `tracked_files`.
    - If `tracked_files` is missing, derive the list from the doc's "Key Files" section (every source file path it references). Treat the doc as fully out of date and proceed to step 4 — the diff in step 3 cannot be computed.
    - If `verified_against_commit` is missing, treat the doc as fully out of date and proceed to step 4 — the diff in step 3 cannot be computed.
+   - **Audit `tracked_files` coverage** against the doc's "Key Files" section. Every public-API source file path referenced in "Key Files" must also appear in `tracked_files`. This audit must happen *here*, before step 3 — otherwise drift in untracked files is silently ignored. If any are missing, add them to `tracked_files` and treat the doc as fully out of date so the newly-tracked files are inspected in step 4.
 
 3. **Get the diff since that commit** — run:
    ```
@@ -42,6 +43,7 @@ To add a new feature doc to the system, just create a `*_FEATURE.md` file with t
    - Removed or renamed options still mentioned in the doc
    - Changed defaults, behaviors, or platform availability
    - New types, enums, or feature flags not documented
+   - **Deprecated public cases not documented** — walk every public enum case, method, and property, including those marked `@available(*, deprecated, message:)`. Deprecated cases stay on the public API and must appear in the doc with a clear deprecation note, otherwise customers reading the doc won't know they exist or that they're being phased out.
    - Outdated code examples
 
 6. **Update the feature doc** — apply all necessary changes:
