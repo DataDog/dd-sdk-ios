@@ -24,6 +24,9 @@
     {
       "parallelizable" : false,
       "selectedTests" : [
+        "LogsConfigTests\/testGivenLogsFeatureEnabled_whenEnabledASecondTime_previouslyCreatedLoggerStillWorks()",
+        "LogsConfigTests\/testGivenLogsFeatureNotEnabled_whenLoggerIsCreated_itProducesNoRecordedLogs()",
+        "LogsConfigTests\/testGivenSDKInitialized_whenLogsEnabledAfterInit_loggerProducesRecordedLogs()"
       ],
       "target" : {
         "containerPath" : "container:Datadog.xcodeproj",

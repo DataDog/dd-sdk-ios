@@ -8,7 +8,8 @@
 - **Readiness flag** at end of each bullet:
   - *`ready`* — no harness extension required; test can be written directly using inline closures (`Logs.enable(in: app.core)`, `app.logger = Logger.create(...)`) against the existing harness.
   - *`needs-fixture: <name>`* — harness must be extended first (e.g., console output capture, network state mock, `enableTrace`, launch arguments).
-- **Format**: `**<title>** — <1–2 sentence behaviour description>. _<flag>_`
+- **Implementation link**: once a scenario is covered by a test, append `→ `<TestMethodName>`` to the bullet. Bullet without a link = not yet implemented. Multi-permutation scenarios (e.g., "for each log level") link to the single permutating method.
+- **Format**: `**<title>** — <1–2 sentence behaviour description>. _<flag>_ [→ `<TestMethodName>`]`
 
 Framework reference: `docs/HARNESS_TESTING.md`. Write a test: invoke `dd-sdk-ios:add-harness-test`.
 
@@ -28,9 +29,9 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 
 ## 1. Setup & enablement → `LogsConfigTests.swift`
 
-- **Logs feature enable after SDK init** — `Logs.enable(in: app.core)` after `Datadog.initialize(...)` registers the feature; subsequent `Logger.create(in: app.core)` produces a working remote logger. _ready_
-- **Logger creation before Logs feature enabled** — `Logger.create` returns a `NOPLogger` (no logs recorded) when `Logs.enable` was never called. _ready_
-- **Logs feature enabled twice** — second `Logs.enable(in: app.core)` is a no-op; previously-created loggers continue working. _ready_
+- **Logs feature enable after SDK init** — `Logs.enable(in: app.core)` after `Datadog.initialize(...)` registers the feature; subsequent `Logger.create(in: app.core)` produces a working remote logger. _ready_ → `testGivenSDKInitialized_whenLogsEnabledAfterInit_loggerProducesRecordedLogs()`
+- **Logger creation before Logs feature enabled** — `Logger.create` returns a `NOPLogger` (no logs recorded) when `Logs.enable` was never called. _ready_ → `testGivenLogsFeatureNotEnabled_whenLoggerIsCreated_itProducesNoRecordedLogs()`
+- **Logs feature enabled twice** — second `Logs.enable(in: app.core)` is a no-op; previously-created loggers continue working. _ready_ → `testGivenLogsFeatureEnabled_whenEnabledASecondTime_previouslyCreatedLoggerStillWorks()`
 
 ## 2. Logger creation & configuration → `LogsConfigTests.swift`
 
