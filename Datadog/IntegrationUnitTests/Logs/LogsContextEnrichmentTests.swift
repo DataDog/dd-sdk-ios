@@ -268,4 +268,166 @@ class LogsContextEnrichmentTests: XCTestCase {
         log.assertNoValue(forKey: "network.client.sim_carrier.technology")
         log.assertNoValue(forKey: "network.client.sim_carrier.allows_voip")
     }
+
+    func testGivenNetworkInfoEnabledAndWiFiReachability_whenLogIsEmitted_logCarriesAllNetworkClientFields() throws {
+        let wifi = NetworkConnectionInfo(
+            reachability: .yes,
+            availableInterfaces: [.wifi],
+            supportsIPv4: true,
+            supportsIPv6: true,
+            isExpensive: false,
+            isConstrained: false,
+            linkQuality: .good
+        )
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .and { app in
+                var ctx = app.core.context
+                ctx.networkConnectionInfo = wifi
+                app.core.context = ctx
+            }
+            .and(.flushDatadogContext())
+            .when { app in
+                var config = Logger.Configuration()
+                config.networkInfoEnabled = true
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.info("with network info wifi")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1)
+        let log = result.logs[0]
+        let reachability: String = try log.value(forKeyPath: "network.client.reachability")
+        let availableInterfaces: [String] = try log.value(forKeyPath: "network.client.available_interfaces")
+        let supportsIPv4: Bool = try log.value(forKeyPath: "network.client.supports_ipv4")
+        let supportsIPv6: Bool = try log.value(forKeyPath: "network.client.supports_ipv6")
+        let isExpensive: Bool = try log.value(forKeyPath: "network.client.is_expensive")
+        let isConstrained: Bool = try log.value(forKeyPath: "network.client.is_constrained")
+        let linkQuality: String = try log.value(forKeyPath: "network.client.link_quality")
+        XCTAssertEqual(reachability, "yes")
+        XCTAssertTrue(availableInterfaces.contains("wifi"))
+        XCTAssertTrue(supportsIPv4)
+        XCTAssertTrue(supportsIPv6)
+        XCTAssertFalse(isExpensive)
+        XCTAssertFalse(isConstrained)
+        XCTAssertEqual(linkQuality, "good")
+    }
+
+    func testGivenNetworkInfoEnabledAndCellularWithCarrier_whenLogIsEmitted_logCarriesSimCarrierFields() throws {
+        let cellular = NetworkConnectionInfo(
+            reachability: .yes,
+            availableInterfaces: [.cellular],
+            supportsIPv4: true,
+            supportsIPv6: true,
+            isExpensive: true,
+            isConstrained: false,
+            linkQuality: nil
+        )
+        let carrier = CarrierInfo(
+            carrierName: "TestCarrier",
+            carrierISOCountryCode: "US",
+            carrierAllowsVOIP: true,
+            radioAccessTechnology: .LTE
+        )
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .and { app in
+                var ctx = app.core.context
+                ctx.networkConnectionInfo = cellular
+                ctx.carrierInfo = carrier
+                app.core.context = ctx
+            }
+            .and(.flushDatadogContext())
+            .when { app in
+                var config = Logger.Configuration()
+                config.networkInfoEnabled = true
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.info("with network info cellular")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1)
+        let log = result.logs[0]
+        let reachability: String = try log.value(forKeyPath: "network.client.reachability")
+        let carrierName: String = try log.value(forKeyPath: "network.client.sim_carrier.name")
+        let carrierISO: String = try log.value(forKeyPath: "network.client.sim_carrier.iso_country")
+        let carrierTech: String = try log.value(forKeyPath: "network.client.sim_carrier.technology")
+        let carrierVoIP: Bool = try log.value(forKeyPath: "network.client.sim_carrier.allows_voip")
+        XCTAssertEqual(reachability, "yes")
+        XCTAssertEqual(carrierName, "TestCarrier")
+        XCTAssertEqual(carrierISO, "US")
+        XCTAssertFalse(carrierTech.isEmpty)
+        XCTAssertTrue(carrierVoIP)
+    }
+
+    func testGivenNetworkInfoEnabled_whenReachabilityChangesBetweenLogs_eachLogReflectsItsReachability() throws {
+        let online = NetworkConnectionInfo(
+            reachability: .yes,
+            availableInterfaces: [.wifi],
+            supportsIPv4: true,
+            supportsIPv6: true,
+            isExpensive: false,
+            isConstrained: false,
+            linkQuality: nil
+        )
+        let offline = NetworkConnectionInfo(
+            reachability: .no,
+            availableInterfaces: nil,
+            supportsIPv4: nil,
+            supportsIPv6: nil,
+            isExpensive: nil,
+            isConstrained: nil,
+            linkQuality: nil
+        )
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .and { app in
+                var ctx = app.core.context
+                ctx.networkConnectionInfo = online
+                app.core.context = ctx
+            }
+            .and(.flushDatadogContext())
+            .and { app in
+                var config = Logger.Configuration()
+                config.networkInfoEnabled = true
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.info("log A online")
+            }
+            .and { app in
+                var ctx = app.core.context
+                ctx.networkConnectionInfo = offline
+                app.core.context = ctx
+            }
+            .and(.flushDatadogContext())
+            .when { app in
+                app.logger.info("log B offline")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 2)
+        let logA = try XCTUnwrap(result.logs.first { (try? $0.value(forKeyPath: "message") as String) == "log A online" })
+        let logB = try XCTUnwrap(result.logs.first { (try? $0.value(forKeyPath: "message") as String) == "log B offline" })
+        let reachA: String = try logA.value(forKeyPath: "network.client.reachability")
+        let reachB: String = try logB.value(forKeyPath: "network.client.reachability")
+        XCTAssertEqual(reachA, "yes")
+        XCTAssertEqual(reachB, "no")
+    }
 }
