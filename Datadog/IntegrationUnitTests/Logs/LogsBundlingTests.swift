@@ -177,4 +177,37 @@ class LogsBundlingTests: XCTestCase {
         XCTAssertEqual(logViewId, manualView.viewID)
         XCTAssertEqual(logUserActionId, actionEvent.action.id, "Log user_action.id should match the active RUM action UUID")
     }
+
+    // MARK: - §12 Trace bundling
+
+    func testGivenTraceFeatureNotEnabled_whenLogsAreEmitted_logsCarryNoTraceContextRegardlessOfBundleFlag() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .and { app in
+                Logs.enable(in: app.core)
+                app.loggers["default"] = Logger.create(with: Logger.Configuration(name: "logger-default"), in: app.core)
+                var disabled = Logger.Configuration(name: "logger-disabled")
+                disabled.bundleWithTraceEnabled = false
+                app.loggers["disabled"] = Logger.create(with: disabled, in: app.core)
+            }
+            .when { app in
+                app.loggers["default"]?.info("default flag, Trace disabled")
+                app.loggers["disabled"]?.info("bundle disabled, Trace disabled")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 2)
+
+        let logDefault = try XCTUnwrap(result.logs.first { (try? $0.value(forKeyPath: "logger.name") as String) == "logger-default" })
+        let logDisabled = try XCTUnwrap(result.logs.first { (try? $0.value(forKeyPath: "logger.name") as String) == "logger-disabled" })
+
+        for log in [logDefault, logDisabled] {
+            log.assertNoValue(forKey: "dd.trace_id")
+            log.assertNoValue(forKey: "dd.span_id")
+        }
+    }
 }

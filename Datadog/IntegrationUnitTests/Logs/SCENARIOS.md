@@ -135,7 +135,7 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 - **`bundleWithTraceEnabled=true` + active span** — log carries `dd.trace_id` and `dd.span_id` matching the active span. _needs-fixture: enableTrace_
 - **`bundleWithTraceEnabled=false` + active span** — log carries no trace context attributes. _needs-fixture: enableTrace_
 - **No active span** — log carries no `dd.trace_id` / `dd.span_id`. _needs-fixture: enableTrace_
-- **Trace not enabled in SDK** — log carries no trace context regardless of `bundleWithTraceEnabled`. _ready_
+- **Trace not enabled in SDK** — log carries no trace context regardless of `bundleWithTraceEnabled`. _ready_ → `testGivenTraceFeatureNotEnabled_whenLogsAreEmitted_logsCarryNoTraceContextRegardlessOfBundleFlag()`
 
 ## 13. User info & account info → `LogsContextEnrichmentTests.swift`
 

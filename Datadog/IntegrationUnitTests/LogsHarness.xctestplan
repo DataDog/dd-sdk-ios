@@ -29,6 +29,7 @@
         "LogsBundlingTests\/testGivenBundleWithRumEnabledAndNoManualView_whenLogIsEmitted_logCarriesApplicationAndSessionIdsMatchingRUMSession()",
         "LogsBundlingTests\/testGivenBundleWithRumEnabledFalseAndActiveView_whenLogIsEmitted_logCarriesNoRUMContextAttributes()",
         "LogsBundlingTests\/testGivenRUMFeatureNotEnabled_whenLogIsEmitted_logCarriesNoRUMContextAttributesRegardlessOfBundleFlag()",
+        "LogsBundlingTests\/testGivenTraceFeatureNotEnabled_whenLogsAreEmitted_logsCarryNoTraceContextRegardlessOfBundleFlag()",
         "LogsConfigTests\/testGivenAnyLogger_whenLogIsEmitted_itCarriesCurrentSDKVersionInLoggerVersion()",
         "LogsConfigTests\/testGivenDefaultLoggerConfiguration_whenLogIsEmitted_itHasDefaultServiceAndLoggerName()",
         "LogsConfigTests\/testGivenLoggerConfigurationWithExplicitName_whenLogIsEmitted_itUsesProvidedLoggerName()",
