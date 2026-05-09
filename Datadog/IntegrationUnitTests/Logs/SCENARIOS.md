@@ -41,8 +41,8 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 - **Multiple named loggers — independent tag state** — two loggers created with different names; tag added on logger A doesn't appear on logger B's logs. _ready_ → `testGivenTwoLoggers_whenTagIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()`
 - **Multiple named loggers — independent attribute state** — same as above for attributes. _ready_ → `testGivenTwoLoggers_whenAttributeIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()`
 - **Logger with `remoteSampleRate=0` and no console** — `Logger.create` returns NOPLogger; no logs recorded. _ready_ → `testGivenLoggerWithZeroRemoteSampleRateAndNoConsole_whenLogsAreEmitted_noLogsAreRecorded()`
-- **Logger with `consoleLogFormat` only (`.short`, `remoteSampleRate=0`)** — no logs sent remotely; console output produced. _needs-fixture: console capture_
-- **Combined logger (console + remote)** — both outputs receive each log emission. _needs-fixture: console capture_
+- **Logger with `consoleLogFormat` only (`.short`, `remoteSampleRate=0`)** — no logs sent remotely; console output produced. _needs-fixture: console capture_ → `testGivenLoggerWithConsoleOutputOnlyAndZeroRemoteSampleRate_whenLogIsEmitted_itProducesConsoleOutputAndNoRecordedLogs()`
+- **Combined logger (console + remote)** — both outputs receive each log emission. _needs-fixture: console capture_ → `testGivenLoggerWithCombinedConsoleAndRemoteOutput_whenLogIsEmitted_bothOutputsReceiveTheLog()`
 - **`loggerVersion` populated from SDK version** — every log carries the current SDK version in `logger.version`. _ready_ → `testGivenAnyLogger_whenLogIsEmitted_itCarriesCurrentSDKVersionInLoggerVersion()`
 
 ## 3. Log emission (levels & content) → `LogsRecordingTests.swift`
@@ -105,14 +105,14 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 - **Threshold `.warn` filters lower levels** — `debug`, `info`, `notice` not in recorded logs; `warn`, `error`, `critical` present. _ready_ → `testGivenLoggerWithWarnThreshold_whenLogsAreEmittedAtEachLevel_onlyWarnAndAboveAreRecorded()`
 - **Threshold `.critical` filters all but critical** — only critical logs present in recorded logs. _ready_ → `testGivenLoggerWithCriticalThreshold_whenLogsAreEmittedAtEachLevel_onlyCriticalIsRecorded()`
 - **Threshold `.debug` (default) accepts all levels** — every level passes. _ready_ → `testGivenLoggerWithDefaultThreshold_whenLogsAreEmittedAtEachLevel_allLevelsAreRecorded()`
-- **Threshold doesn't affect console output** — below-threshold logs still printed to console, only remote sending is filtered. _needs-fixture: console capture_
+- **Threshold doesn't affect console output** — below-threshold logs still printed to console, only remote sending is filtered. _needs-fixture: console capture_ → `testGivenLoggerWithWarnThresholdAndConsoleOutput_whenLogsAreEmittedAtEachLevel_consoleReceivesAllSixWhileOnlyWarnAndAboveAreRecorded()`
 
 ## 9. Console output → `LogsFilteringTests.swift`
 
-- **`.short` format** — log printed as `[<TIMESTAMP>] [<STATUS>] <MESSAGE>` (or equivalent canonical form) to console. _needs-fixture: console capture_
-- **`.shortWith(prefix:)` format** — log printed with the configured prefix prepended. _needs-fixture: console capture_
-- **Error log on console includes error block** — error kind/message/stack rendered. _needs-fixture: console capture_
-- **Console output ignores `remoteSampleRate` and `remoteLogThreshold`** — all logs printed regardless. _needs-fixture: console capture_
+- **`.short` format** — log printed as `[<TIMESTAMP>] [<STATUS>] <MESSAGE>` (or equivalent canonical form) to console. _needs-fixture: console capture_ → `testGivenLoggerWithShortConsoleFormat_whenInfoLogIsEmitted_consoleMessageContainsLevelAndMessage()`
+- **`.shortWith(prefix:)` format** — log printed with the configured prefix prepended. _needs-fixture: console capture_ → `testGivenLoggerWithShortWithPrefixConsoleFormat_whenLogIsEmitted_consoleMessageStartsWithPrefix()`
+- **Error log on console includes error block** — error kind/message/stack rendered. _needs-fixture: console capture_ → `testGivenLoggerWithShortConsoleFormat_whenErrorLogIsEmittedWithSwiftError_consoleMessageContainsErrorBlock()`
+- **Console output ignores `remoteSampleRate` and `remoteLogThreshold`** — all logs printed regardless. _needs-fixture: console capture_ → `testGivenLoggerWithConsoleOutputZeroSampleRateAndCriticalThreshold_whenLogsAreEmitted_consoleReceivesAllAndNoLogsAreRecorded()`
 
 ## 10. Event mapper → `LogsFilteringTests.swift`
 

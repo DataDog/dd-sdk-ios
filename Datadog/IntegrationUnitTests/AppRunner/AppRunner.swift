@@ -117,12 +117,21 @@ internal class AppRunner {
     /// Prepares the app environment for testing.
     func setUp() {
         CreateTemporaryDirectory()
+        consoleSpy = PrintFunctionSpy()
+        originalConsolePrint = consolePrint
+        consolePrint = consoleSpy.print
     }
 
     /// Cleans up and resets the test environment.
     func tearDown() {
         appStateObservers.forEach { notificationCenter.removeObserver($0) }
         appStateObservers = []
+
+        if let original = originalConsolePrint {
+            consolePrint = original
+        }
+        originalConsolePrint = nil
+        consoleSpy = nil
 
         DeleteTemporaryDirectory()
 
@@ -142,10 +151,12 @@ internal class AppRunner {
     var dateProvider: DateProviderMock!
     var appStateProvider: AppStateProviderMock!
     var appLaunchHandler: AppLaunchHandlerMock!
+    var consoleSpy: PrintFunctionSpy!
     #if !os(watchOS)
     var frameInfoProvider: FrameInfoProviderMock!
     #endif
     // swiftlint:enable implicitly_unwrapped_optional
+    private var originalConsolePrint: (@Sendable (String, CoreLoggerLevel) -> Void)?
     private var appStateObservers: [NSObjectProtocol] = []
     /// Per-feature anonymous storage. Each `AppRunner+<Feature>` extension reads/writes
     /// its own slot via a computed property (e.g., `core`, `loggers`), keeping the main
@@ -222,4 +233,7 @@ internal class AppRunner {
 
     /// Returns the current simulated time.
     var currentTime: Date { dateProvider.now }
+
+    /// Messages captured by `consoleSpy` during the test run.
+    var consoleOutput: [String] { consoleSpy.printedMessages }
 }

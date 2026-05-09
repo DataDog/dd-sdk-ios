@@ -11,6 +11,8 @@ import TestUtilities
 internal struct AppRunResult {
     let sessions: [RUMSessionMatcher]
     let logs: [LogMatcher]
+    /// Messages captured by the `consolePrint's` spy.
+    let consoleOutput: [String]
 }
 
 /// Defines a chain of `AppRunStep`s representing a test scenario for SDK integration testing.
@@ -62,7 +64,8 @@ internal struct AppRun: Hashable {
 
         return AppRunResult(
             sessions: try app.recordedRUMSessions(),
-            logs: try app.recordedLogs()
+            logs: try app.recordedLogs(),
+            consoleOutput: app.consoleOutput
         )
     }
 }

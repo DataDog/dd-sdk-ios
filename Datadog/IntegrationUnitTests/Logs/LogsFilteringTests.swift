@@ -156,6 +156,138 @@ class LogsFilteringTests: XCTestCase {
         }
     }
 
+    func testGivenLoggerWithWarnThresholdAndConsoleOutput_whenLogsAreEmittedAtEachLevel_consoleReceivesAllSixWhileOnlyWarnAndAboveAreRecorded() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                var config = Logger.Configuration()
+                config.remoteLogThreshold = .warn
+                config.consoleLogFormat = .short
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.debug("d")
+                app.logger.info("i")
+                app.logger.notice("n")
+                app.logger.warn("w")
+                app.logger.error("e")
+                app.logger.critical("c")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 3, "Only warn/error/critical should reach the remote pipeline")
+        XCTAssertEqual(
+            result.consoleOutput.count,
+            6,
+            "Console output should receive every emitted log regardless of remoteLogThreshold"
+        )
+    }
+
+    // MARK: - §9 Console output
+
+    func testGivenLoggerWithShortConsoleFormat_whenInfoLogIsEmitted_consoleMessageContainsLevelAndMessage() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                var config = Logger.Configuration()
+                config.consoleLogFormat = .short
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.info("test")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.consoleOutput.count, 1, "Exactly one console message should be printed")
+        let line = result.consoleOutput[0]
+        XCTAssertTrue(line.contains("[INFO]"), "Short format should include the level marker; got: \(line)")
+        XCTAssertTrue(line.contains("test"), "Short format should include the message; got: \(line)")
+        XCTAssertFalse(line.hasPrefix(" "), "Short format has no prefix, so the line should not start with whitespace; got: \(line)")
+    }
+
+    func testGivenLoggerWithShortWithPrefixConsoleFormat_whenLogIsEmitted_consoleMessageStartsWithPrefix() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                var config = Logger.Configuration()
+                config.consoleLogFormat = .shortWith(prefix: "MyApp")
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.info("test")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.consoleOutput.count, 1, "Exactly one console message should be printed")
+        let line = result.consoleOutput[0]
+        XCTAssertTrue(line.hasPrefix("MyApp "), "shortWith(prefix:) should prepend the prefix followed by a space; got: \(line)")
+        XCTAssertTrue(line.contains("[INFO]"))
+        XCTAssertTrue(line.contains("test"))
+    }
+
+    func testGivenLoggerWithShortConsoleFormat_whenErrorLogIsEmittedWithSwiftError_consoleMessageContainsErrorBlock() throws {
+        struct LoginFailed: Error, CustomStringConvertible {
+            var description: String { "credentials rejected" }
+        }
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                var config = Logger.Configuration()
+                config.consoleLogFormat = .short
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.error("oops", error: LoginFailed())
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.consoleOutput.count, 1, "Exactly one console message should be printed")
+        let line = result.consoleOutput[0]
+        XCTAssertTrue(line.contains("[ERROR]"))
+        XCTAssertTrue(line.contains("oops"))
+        XCTAssertTrue(line.contains("Error details:"), "Error log on console should include the error block; got: \(line)")
+        XCTAssertTrue(line.contains("LoginFailed"), "Error block should include the error type name (error.kind); got: \(line)")
+        XCTAssertTrue(line.contains("credentials rejected"), "Error block should include the error description (error.message); got: \(line)")
+    }
+
+    func testGivenLoggerWithConsoleOutputZeroSampleRateAndCriticalThreshold_whenLogsAreEmitted_consoleReceivesAllAndNoLogsAreRecorded() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                var config = Logger.Configuration()
+                config.remoteSampleRate = 0
+                config.remoteLogThreshold = .critical
+                config.consoleLogFormat = .short
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.info("info-msg")
+                app.logger.warn("warn-msg")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 0, "Both remote filters should drop everything from the remote pipeline")
+        XCTAssertEqual(result.consoleOutput.count, 2, "Console output ignores remoteSampleRate and remoteLogThreshold")
+        XCTAssertTrue(result.consoleOutput[0].contains("info-msg"))
+        XCTAssertTrue(result.consoleOutput[1].contains("warn-msg"))
+    }
+
     // MARK: - §10 Event mapper
 
     func testGivenLogsConfigurationWithMessageMapper_whenLogIsEmitted_recordedMessageIsMapped() throws {

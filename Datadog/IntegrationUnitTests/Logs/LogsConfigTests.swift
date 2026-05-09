@@ -249,6 +249,57 @@ class LogsConfigTests: XCTestCase {
         XCTAssertEqual(result.logs.count, 0, "NOPLogger from `remoteSampleRate=0` + no console must record nothing")
     }
 
+    func testGivenLoggerWithConsoleOutputOnlyAndZeroRemoteSampleRate_whenLogIsEmitted_itProducesConsoleOutputAndNoRecordedLogs() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                var config = Logger.Configuration()
+                config.remoteSampleRate = 0
+                config.consoleLogFormat = .short
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.info("hello")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 0, "remoteSampleRate=0 must drop all logs from the remote pipeline")
+
+        let console = result.consoleOutput
+        XCTAssertEqual(console.count, 1, "Console-only logger should still print exactly one message")
+        XCTAssertTrue(console[0].contains("[INFO]"), "Console output should carry the level marker")
+        XCTAssertTrue(console[0].contains("hello"), "Console output should carry the message")
+    }
+
+    func testGivenLoggerWithCombinedConsoleAndRemoteOutput_whenLogIsEmitted_bothOutputsReceiveTheLog() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                var config = Logger.Configuration()
+                config.consoleLogFormat = .short
+                config.remoteSampleRate = 100
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.info("hello")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1, "Remote output should receive the log")
+        result.logs[0].assertMessage(equals: "hello")
+
+        let console = result.consoleOutput
+        XCTAssertEqual(console.count, 1, "Console output should receive the same log")
+        XCTAssertTrue(console[0].contains("[INFO]"))
+        XCTAssertTrue(console[0].contains("hello"))
+    }
+
     func testGivenAnyLogger_whenLogIsEmitted_itCarriesCurrentSDKVersionInLoggerVersion() throws {
         // Given / When
         let when = AppRun
