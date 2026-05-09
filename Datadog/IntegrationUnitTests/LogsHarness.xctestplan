@@ -57,6 +57,7 @@
         "LogsConfigTests\/testGivenSDKInitialized_whenLogsEnabledAfterInit_loggerProducesRecordedLogs()",
         "LogsConfigTests\/testGivenTwoLoggers_whenAttributeIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()",
         "LogsConfigTests\/testGivenTwoLoggers_whenTagIsAddedOnOneOfThem_itDoesNotAppearOnOtherLoggersLogs()",
+        "LogsFilteringTests\/testGivenDebugLaunchArgument_whenLoggerWithNonZeroSampleRateEmits_allLogsAreRecorded()",
         "LogsFilteringTests\/testGivenLogsConfigurationMapper_whenMultipleLoggersEmit_mapperAppliesToAll()",
         "LogsFilteringTests\/testGivenLogsConfigurationWithAttributesMapper_whenLogIsEmitted_recordedAttributesReflectMapperChanges()",
         "LogsFilteringTests\/testGivenLogsConfigurationWithIdentityMapper_whenLogIsEmitted_recordedPayloadMatchesBaseline()",

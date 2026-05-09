@@ -17,6 +17,15 @@ extension AppRunStep {
         })
     }
 
+    // MARK: - Process Info
+
+    static func setProcessArguments(after dt: TimeInterval = 0, _ args: [String]) -> AppRunStep {
+        return AppRunStep({ app in
+            app.advanceTime(by: dt)
+            app.setProcessArguments(args)
+        })
+    }
+
     // MARK: - User Info
 
     static func setUserInfo(

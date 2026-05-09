@@ -49,6 +49,16 @@ extension AppRunner {
         }
     }
 
+    // MARK: - Process Info
+
+    /// Sets process launch arguments on the mock `ProcessInfo`. Must be called BEFORE
+    /// `initializeSDK()` because the SDK reads arguments from `configuration.processInfo`
+    /// at config time (e.g., `Logger.swift` reads `LaunchArguments.Debug` at logger creation).
+    func setProcessArguments(_ args: [String]) {
+        let env = processInfo.environment
+        processInfo = ProcessInfoMock(environment: env, arguments: args)
+    }
+
     // MARK: - User Info
 
     /// Sets user info on the SDK core.

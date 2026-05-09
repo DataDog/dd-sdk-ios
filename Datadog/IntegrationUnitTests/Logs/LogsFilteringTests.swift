@@ -75,6 +75,33 @@ class LogsFilteringTests: XCTestCase {
         XCTAssertEqual(recordedMessages, messages, "Every emitted message should appear in recordedLogs() in order")
     }
 
+    func testGivenDebugLaunchArgument_whenLoggerWithNonZeroSampleRateEmits_allLogsAreRecorded() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.setProcessArguments([LaunchArguments.Debug]))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                var config = Logger.Configuration()
+                config.remoteSampleRate = 50
+                config.processInfo = app.processInfo
+                app.logger = Logger.create(with: config, in: app.core)
+                for i in 0..<20 {
+                    app.logger.info("log-\(i)")
+                }
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(
+            result.logs.count,
+            20,
+            "DD_DEBUG should force all logs through despite remoteSampleRate=50"
+        )
+    }
+
     // MARK: - §8 Log threshold (remoteLogThreshold)
 
     func testGivenLoggerWithWarnThreshold_whenLogsAreEmittedAtEachLevel_onlyWarnAndAboveAreRecorded() throws {
