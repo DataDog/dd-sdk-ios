@@ -103,6 +103,7 @@
         "LogsRecordingTests\/testGivenLogsFeatureEnabled_whenGlobalAttributeIsAdded_allLoggersIncludeItOnSubsequentLogs()",
         "LogsRecordingTests\/testGivenNamedThread_whenLogIsEmitted_loggerThreadNameMatches()",
         "LogsRecordingTests\/testGivenSDKConfiguredWithCustomEnv_whenLogIsEmitted_itCarriesThatEnvInDdTags()",
+        "LogsRecordingTests\/testGivenSimulatedTime_whenLogIsEmitted_itsDateMatchesSimulatedTime()",
         "LogsRecordingTests\/testGivenSwiftErrorPassedToLogger_whenLogIsEmitted_errorKindMatchesSwiftErrorTypeName()",
         "LogsRecordingTests\/testGivenSwiftErrorPassedToLogger_whenLogIsEmitted_errorStackEqualsErrorDescription()",
         "LogsRecordingTests\/testGivenSwiftErrorWithCustomDescription_whenLogIsEmitted_errorMessageMatchesStringDescription()",

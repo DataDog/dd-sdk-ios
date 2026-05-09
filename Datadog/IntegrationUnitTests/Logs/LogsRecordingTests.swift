@@ -129,6 +129,41 @@ class LogsRecordingTests: XCTestCase {
         result.logs[0].assertMessage(equals: message)
     }
 
+    func testGivenSimulatedTime_whenLogIsEmitted_itsDateMatchesSimulatedTime() throws {
+        let extraDelayBeforeEmit: TimeInterval = 1.234
+
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .and(.advanceTime(by: extraDelayBeforeEmit))
+            .when { app in
+                var config = Logs.Configuration()
+                config.dateProvider = app.dateProvider
+                Logs.enable(with: config, in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("at-T")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1)
+
+        let recordedDateString: String = try result.logs[0].value(forKeyPath: "date")
+        let parser = ISO8601DateFormatter()
+        parser.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let recordedDate = try XCTUnwrap(parser.date(from: recordedDateString))
+
+        let expectedDate = processLaunchDate.addingTimeInterval(timeToSDKInit + extraDelayBeforeEmit)
+        XCTAssertEqual(
+            recordedDate.timeIntervalSince1970,
+            expectedDate.timeIntervalSince1970,
+            accuracy: 0.001,
+            "Recorded `date` should match simulated time (processLaunch + advanceTime sum)"
+        )
+    }
+
     func testGivenNamedThread_whenLogIsEmitted_loggerThreadNameMatches() throws {
         let threadName = "harness-test-thread"
 
