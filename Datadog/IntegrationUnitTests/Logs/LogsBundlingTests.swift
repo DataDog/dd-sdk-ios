@@ -10,6 +10,7 @@ import TestUtilities
 @testable import DatadogCore
 @testable import DatadogLogs
 @testable import DatadogRUM
+@testable import DatadogTrace
 
 /// Tests covering cross-feature integration between Logs and RUM: `bundleWithRumEnabled` flag,
 /// `application_id`, `session_id`, `view.id`, `user_action.id` injected into recorded logs.
@@ -180,6 +181,85 @@ class LogsBundlingTests: XCTestCase {
 
     // MARK: - §12 Trace bundling
 
+    func testGivenBundleWithTraceEnabledAndActiveSpan_whenLogIsEmitted_logCarriesTraceAndSpanIdsMatchingActiveSpan() throws {
+        // Given / When
+        let captured = CapturedSpanIDs()
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.enableTrace(after: timeToSDKInit))
+            .and { app in
+                let span = Tracer.shared(in: app.core).startSpan(operationName: "checkout")
+                app.activeSpan = span.setActive()
+                let ddContext = span.context as! DDSpanContext
+                captured.traceID = String(ddContext.traceID, representation: .hexadecimal)
+                captured.spanID = String(ddContext.spanID, representation: .decimal)
+            }
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("during span")
+            }
+            .and { app in
+                app.activeSpan?.finish()
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1)
+        let log = result.logs[0]
+        let logTraceID: String = try log.value(forKeyPath: "dd.trace_id")
+        let logSpanID: String = try log.value(forKeyPath: "dd.span_id")
+        XCTAssertEqual(logTraceID, captured.traceID, "Log dd.trace_id should match the active span's trace ID (hex)")
+        XCTAssertEqual(logSpanID, captured.spanID, "Log dd.span_id should match the active span's span ID (decimal)")
+    }
+
+    func testGivenBundleWithTraceEnabledFalseAndActiveSpan_whenLogIsEmitted_logCarriesNoTraceContextAttributes() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.enableTrace(after: timeToSDKInit))
+            .and { app in
+                let span = Tracer.shared(in: app.core).startSpan(operationName: "checkout")
+                app.activeSpan = span.setActive()
+            }
+            .when { app in
+                Logs.enable(in: app.core)
+                var config = Logger.Configuration()
+                config.bundleWithTraceEnabled = false
+                app.logger = Logger.create(with: config, in: app.core)
+                app.logger.info("opted out of Trace bundling")
+            }
+            .and { app in
+                app.activeSpan?.finish()
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1)
+        let log = result.logs[0]
+        log.assertNoValue(forKey: "dd.trace_id")
+        log.assertNoValue(forKey: "dd.span_id")
+    }
+
+    func testGivenBundleWithTraceEnabledAndNoActiveSpan_whenLogIsEmitted_logCarriesNoTraceContextAttributes() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.enableTrace(after: timeToSDKInit))
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("no active span")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1)
+        let log = result.logs[0]
+        log.assertNoValue(forKey: "dd.trace_id")
+        log.assertNoValue(forKey: "dd.span_id")
+    }
+
     func testGivenTraceFeatureNotEnabled_whenLogsAreEmitted_logsCarryNoTraceContextRegardlessOfBundleFlag() throws {
         // Given / When
         let when = AppRun
@@ -210,4 +290,9 @@ class LogsBundlingTests: XCTestCase {
             log.assertNoValue(forKey: "dd.span_id")
         }
     }
+}
+
+private final class CapturedSpanIDs {
+    var traceID: String = ""
+    var spanID: String = ""
 }

@@ -685,6 +685,8 @@
 		61F9A0EC2FAE284000B419F1 /* LogsFilteringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9A0EB2FAE284000B419F1 /* LogsFilteringTests.swift */; };
 		61F9A0EE2FAE345500B419F1 /* LogsBundlingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9A0ED2FAE345500B419F1 /* LogsBundlingTests.swift */; };
 		61F9A0F02FAF0A4900B419F1 /* LogsContextEnrichmentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9A0EF2FAF0A4900B419F1 /* LogsContextEnrichmentTests.swift */; };
+		61F9A0F22FAF1DFF00B419F1 /* AppRunner+Trace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9A0F12FAF1DFF00B419F1 /* AppRunner+Trace.swift */; };
+		61F9A0F42FAF1E0400B419F1 /* AppRunStep+Trace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9A0F32FAF1E0400B419F1 /* AppRunStep+Trace.swift */; };
 		61FC5F3525CC1898006BB4DE /* CrashContextProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FC5F3425CC1898006BB4DE /* CrashContextProviderTests.swift */; };
 		6482FB0E2EE885C60042234B /* FlagsClientInternal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482FB0D2EE885C20042234B /* FlagsClientInternal.swift */; };
 		770E0BF093842AF7D350E888 /* EvaluationLoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC44AD2847746ED69201F65 /* EvaluationLoggingTests.swift */; };
@@ -2521,6 +2523,8 @@
 		61F9A0EB2FAE284000B419F1 /* LogsFilteringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsFilteringTests.swift; sourceTree = "<group>"; };
 		61F9A0ED2FAE345500B419F1 /* LogsBundlingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsBundlingTests.swift; sourceTree = "<group>"; };
 		61F9A0EF2FAF0A4900B419F1 /* LogsContextEnrichmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsContextEnrichmentTests.swift; sourceTree = "<group>"; };
+		61F9A0F12FAF1DFF00B419F1 /* AppRunner+Trace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppRunner+Trace.swift"; sourceTree = "<group>"; };
+		61F9A0F32FAF1E0400B419F1 /* AppRunStep+Trace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppRunStep+Trace.swift"; sourceTree = "<group>"; };
 		61FB222F244E1BE900902D19 /* DatadogLogsFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogLogsFeatureTests.swift; sourceTree = "<group>"; };
 		61FC5F3425CC1898006BB4DE /* CrashContextProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContextProviderTests.swift; sourceTree = "<group>"; };
 		61FD9FCE28534EBD00214BD9 /* RUMDeviceInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDeviceInfoTests.swift; sourceTree = "<group>"; };
@@ -4709,6 +4713,8 @@
 				61D11FB22FACA5FE004B2CE4 /* AppRunStep+RUM.swift */,
 				61D11FB42FACA988004B2CE4 /* AppRunner+Core.swift */,
 				61D11FB62FACA98D004B2CE4 /* AppRunStep+Core.swift */,
+				61F9A0F12FAF1DFF00B419F1 /* AppRunner+Trace.swift */,
+				61F9A0F32FAF1E0400B419F1 /* AppRunStep+Trace.swift */,
 			);
 			path = AppRunner;
 			sourceTree = "<group>";
@@ -7792,6 +7798,7 @@
 				6119DDCA2DD24A9600DA80F9 /* RUMSessionTimeOutTests.swift in Sources */,
 				6119DDCB2DD24A9600DA80F9 /* RUMSessionStartInBackgroundTests.swift in Sources */,
 				6119DDCC2DD24A9600DA80F9 /* RUMSessionStopTests.swift in Sources */,
+				61F9A0F22FAF1DFF00B419F1 /* AppRunner+Trace.swift in Sources */,
 				6119DDCD2DD24A9600DA80F9 /* RUMSessionStartInForegroundTests.swift in Sources */,
 				5B4F37692E93C5C90093778F /* FlagsRUMIntegrationTests.swift in Sources */,
 				5B4F376C2E93C5E90093778F /* FlagsEvaluationIntegrationTests.swift in Sources */,
@@ -7810,6 +7817,7 @@
 				1182486D2D908D0500E3D16F /* RUMSessionEndedMetricIntegrationTests.swift in Sources */,
 				61D11FB32FACA5FE004B2CE4 /* AppRunStep+RUM.swift in Sources */,
 				118247C12D908BEF00E3D16F /* WebRecordIntegrationTests.swift in Sources */,
+				61F9A0F42FAF1E0400B419F1 /* AppRunStep+Trace.swift in Sources */,
 				118247D62D908BEF00E3D16F /* Datadog+MultipleInstancesIntegrationTests.swift in Sources */,
 				D26152312F432C990054EB7D /* RUMDebuggingTests.swift in Sources */,
 			);
