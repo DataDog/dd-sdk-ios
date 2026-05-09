@@ -237,4 +237,35 @@ class LogsContextEnrichmentTests: XCTestCase {
         XCTAssertEqual(accountId, "acc1")
         XCTAssertEqual(accountName, "Acme")
     }
+
+    // MARK: - §14 Network info
+
+    func testGivenDefaultLoggerConfiguration_whenLogIsEmitted_logCarriesNoNetworkClientFields() throws {
+        // Given / When
+        let when = AppRun
+            .given(.appLaunch(type: .userLaunchInSceneDelegateBasedApp(processLaunchDate: processLaunchDate)))
+            .and(.advanceTime(by: timeToSDKInit))
+            .and(.initializeSDK())
+            .when { app in
+                Logs.enable(in: app.core)
+                app.logger = Logger.create(in: app.core)
+                app.logger.info("default network info disabled")
+            }
+
+        // Then
+        let result = try when.then()
+        XCTAssertEqual(result.logs.count, 1)
+        let log = result.logs[0]
+        log.assertNoValue(forKey: "network.client.reachability")
+        log.assertNoValue(forKey: "network.client.available_interfaces")
+        log.assertNoValue(forKey: "network.client.supports_ipv4")
+        log.assertNoValue(forKey: "network.client.supports_ipv6")
+        log.assertNoValue(forKey: "network.client.is_expensive")
+        log.assertNoValue(forKey: "network.client.is_constrained")
+        log.assertNoValue(forKey: "network.client.link_quality")
+        log.assertNoValue(forKey: "network.client.sim_carrier.name")
+        log.assertNoValue(forKey: "network.client.sim_carrier.iso_country")
+        log.assertNoValue(forKey: "network.client.sim_carrier.technology")
+        log.assertNoValue(forKey: "network.client.sim_carrier.allows_voip")
+    }
 }

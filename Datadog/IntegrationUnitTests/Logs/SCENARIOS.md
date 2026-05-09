@@ -150,7 +150,7 @@ The 14 sections below distribute across 5 test files, grouped by behavioural con
 
 ## 14. Network info enrichment → `LogsContextEnrichmentTests.swift`
 
-- **`networkInfoEnabled=false` (default)** — log has no `network.client.*` or `network.client.sim_carrier.*` attributes. _ready_
+- **`networkInfoEnabled=false` (default)** — log has no `network.client.*` or `network.client.sim_carrier.*` attributes. _ready_ → `testGivenDefaultLoggerConfiguration_whenLogIsEmitted_logCarriesNoNetworkClientFields()`
 - **`networkInfoEnabled=true` + WiFi reachability** — log carries `network.client.reachability="yes"`, `available_interfaces` includes "wifi", and connection-meta fields: `supports_ipv4`, `supports_ipv6`, `is_expensive`, `is_constrained`, `link_quality`. _needs-fixture: network state mock_
 - **`networkInfoEnabled=true` + cellular + carrier** — log carries cellular reachability and `network.client.sim_carrier.*` (name, iso_country, technology, allows_voip). _needs-fixture: network state mock_
 - **Reachability change between logs** — log A emitted while online; log B emitted while offline; reflects different `reachability`. _needs-fixture: network state mock_

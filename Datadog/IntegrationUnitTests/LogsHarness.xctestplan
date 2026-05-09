@@ -32,6 +32,7 @@
         "LogsBundlingTests\/testGivenTraceFeatureNotEnabled_whenLogsAreEmitted_logsCarryNoTraceContextRegardlessOfBundleFlag()",
         "LogsConfigTests\/testGivenAnyLogger_whenLogIsEmitted_itCarriesCurrentSDKVersionInLoggerVersion()",
         "LogsContextEnrichmentTests\/testGivenAccountInfoSet_whenLogIsEmitted_logCarriesAccountIdAndAccountName()",
+        "LogsContextEnrichmentTests\/testGivenDefaultLoggerConfiguration_whenLogIsEmitted_logCarriesNoNetworkClientFields()",
         "LogsContextEnrichmentTests\/testGivenLogEmittedBeforeUserInfoSet_whenLaterLogIsEmitted_onlyLaterLogCarriesUsrId()",
         "LogsContextEnrichmentTests\/testGivenNoExplicitUserInfo_whenLogIsEmitted_logCarriesNonEmptyAnonymousId()",
         "LogsContextEnrichmentTests\/testGivenSDKInitialized_whenUserInfoIsSet_subsequentLogsCarryUsrIdNameAndEmail()",
