@@ -6,24 +6,16 @@
 
 import DatadogInternal
 
-internal final class ContextSharingTransformer: FeatureMessageReceiver, ContextValuePublisher {
+internal final class ContextSharingTransformer: BusMessageReceiver, ContextValuePublisher {
     @ReadWriteLock
     private var sharedContext: SharedContext? = nil
     @ReadWriteLock
     private var receiver: ContextValueReceiver<SharedContext?>? = nil
 
-    // MARK: - FeatureMessageReceiver
-
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .context(let context):
-            let newContext = SharedContext(datadogContext: context)
-            sharedContext = newContext
-            receiver?(newContext)
-            return true
-        default:
-            return false
-        }
+    func receive(message context: DatadogContext, from core: DatadogCoreProtocol) {
+        let newContext = SharedContext(datadogContext: context)
+        sharedContext = newContext
+        receiver?(newContext)
     }
 
     // MARK: - ContextValuePublisher
