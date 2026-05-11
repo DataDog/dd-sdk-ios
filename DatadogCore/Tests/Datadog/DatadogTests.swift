@@ -12,6 +12,34 @@ import TestUtilities
 @testable import DatadogTrace
 @testable import DatadogCore
 
+// MARK: RemoteConfigMockURLProtocol
+
+private class RemoteConfigMockURLProtocol: URLProtocol {
+    static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data?))?
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        guard let handler = RemoteConfigMockURLProtocol.requestHandler else {
+            client?.urlProtocolDidFinishLoading(self)
+            return
+        }
+        do {
+            let (response, data) = try handler(request)
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            if let data = data { client?.urlProtocol(self, didLoad: data) }
+            client?.urlProtocolDidFinishLoading(self)
+        } catch {
+            client?.urlProtocol(self, didFailWithError: error)
+        }
+    }
+
+    override func stopLoading() {}
+}
+
+// MARK: DatadogTests
+
 class DatadogTests: XCTestCase {
     private var printFunction: PrintFunctionSpy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var defaultConfig = Datadog.Configuration(clientToken: "abc-123", env: "tests")
@@ -27,6 +55,7 @@ class DatadogTests: XCTestCase {
     override func tearDown() {
         consolePrint = { message, _ in print(message) }
         printFunction = nil
+        RemoteConfigMockURLProtocol.requestHandler = nil
         XCTAssertFalse(Datadog.isInitialized())
         super.tearDown()
     }
@@ -519,6 +548,53 @@ class DatadogTests: XCTestCase {
         XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.logs"))
         XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.traces"))
         XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.rum"))
+    }
+
+    // MARK: Remote Configuration
+
+    func testGivenNoRemoteConfigurationID_fetchIsSkipped() {
+        // Given — inject a session whose handler fails the test if ever called
+        RemoteConfigMockURLProtocol.requestHandler = { _ in
+            XCTFail("No remote config fetch should occur when remoteConfigurationID is nil")
+            throw URLError(.cancelled)
+        }
+        var config = defaultConfig
+        // remoteConfigurationID is nil by default
+        let sessionConfig = URLSessionConfiguration.ephemeral
+        sessionConfig.protocolClasses = [RemoteConfigMockURLProtocol.self]
+        config.remoteConfigurationSession = URLSession(configuration: sessionConfig)
+
+        // When
+        Datadog.initialize(with: config, trackingConsent: .granted)
+
+        // Then — reaching here without XCTFail confirms no fetch was triggered.
+        // No expectation wait is needed: when remoteConfigurationID is nil the guard
+        // in Datadog.swift returns early and no URLSession task is ever scheduled.
+        Datadog.flushAndDeinitialize()
+    }
+
+    func testGivenRemoteConfigurationID_fetchIsTriggered() {
+        // Given
+        let fetchExpectation = expectation(description: "remote config fetch triggered")
+        RemoteConfigMockURLProtocol.requestHandler = { request in
+            fetchExpectation.fulfill()
+            return (
+                HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!,
+                Data("{}".utf8)
+            )
+        }
+        var config = defaultConfig
+        config.remoteConfigurationID = "test-id"
+        let sessionConfig = URLSessionConfiguration.ephemeral
+        sessionConfig.protocolClasses = [RemoteConfigMockURLProtocol.self]
+        config.remoteConfigurationSession = URLSession(configuration: sessionConfig)
+
+        // When
+        Datadog.initialize(with: config, trackingConsent: .granted)
+        defer { Datadog.flushAndDeinitialize() }
+
+        // Then
+        waitForExpectations(timeout: 5)
     }
 
     func testCustomSDKInstance() throws {

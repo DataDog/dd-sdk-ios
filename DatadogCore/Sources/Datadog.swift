@@ -297,6 +297,14 @@ public enum Datadog {
         CITestIntegration.active?.startIntegration()
 
         CoreRegistry.register(core, named: instanceName)
+
+        // Trigger remote config fetch if an ID was provided.
+        // The fetch is async — init returns immediately and does not wait for it.
+        if let id = configuration.remoteConfigurationID,
+           let endpoint = configuration.site.remoteConfigurationURL(for: id) {
+            core.fetchRemoteConfiguration(from: endpoint, session: configuration.remoteConfigurationSession)
+        }
+
         deleteV1Folders(in: core)
 
         DD.logger = InternalLogger(
