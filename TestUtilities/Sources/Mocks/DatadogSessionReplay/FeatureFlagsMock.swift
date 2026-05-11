@@ -8,6 +8,7 @@
 
 import Foundation
 
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 extension SessionReplay.Configuration.FeatureFlags {
