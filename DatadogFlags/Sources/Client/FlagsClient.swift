@@ -189,7 +189,7 @@ public final class FlagsClient {
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),
-            rumFlagEvaluationReporter: feature.makeRUMFlagEvaluationReporter(featureScope)
+            rumFlagEvaluationReporter: feature.makeRUMFlagEvaluationReporter()
         )
 
         feature.clientRegistry.register(client, named: name)
