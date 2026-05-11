@@ -106,59 +106,62 @@ DataUploadWorker (periodic) → DataReader → RequestBuilder → HTTPClient →
 
 ## Message Bus
 
-### Message Types
+> **Current design:** See `docs/MESSAGE_BUS.md` — typed `BusMessage` protocol, all supported messages, subscription patterns, and how to add a new message.
 
-Inter-feature communication uses `FeatureMessage` (defined in `DatadogInternal/Sources/MessageBus/FeatureMessage.swift`):
+The subsections below describe the **deprecated** `FeatureMessage`-based API (`FeatureMessageReceiver`, `CombinedFeatureMessageReceiver`). This API is being removed. Do not add new receivers or senders using it.
+
+### ~~Message Types~~ (deprecated)
+
+~~Inter-feature communication uses `FeatureMessage` (defined in `DatadogInternal/Sources/MessageBus/FeatureMessage.swift`):~~
 
 | Case | When to use |
 |------|------------|
-| `.context(DatadogContext)` | **Shared state that changes over time.** Broadcast automatically on every context update. Receivers extract what they need from `DatadogContext.additionalContext`. |
-| `.payload(Any)` | **One-off events or commands.** Sender explicitly calls `core.send(message: .payload(...))`. Receiver downcasts to the expected type. |
-| `.webview(WebViewMessage)` | Browser SDK events from the JS bridge (logs, RUM, telemetry, session replay records). |
-| `.telemetry(TelemetryMessage)` | SDK internal telemetry (debug, error, configuration, metric, usage). |
+| ~~`.context(DatadogContext)`~~ | ~~**Shared state that changes over time.** Broadcast automatically on every context update. Receivers extract what they need from `DatadogContext.additionalContext`.~~ |
+| ~~`.payload(Any)`~~ | ~~**One-off events or commands.** Sender explicitly calls `core.send(message: .payload(...))`. Receiver downcasts to the expected type.~~ |
+| ~~`.webview(WebViewMessage)`~~ | ~~Browser SDK events from the JS bridge (logs, RUM, telemetry, session replay records).~~ |
+| ~~`.telemetry(TelemetryMessage)`~~ | ~~SDK internal telemetry (debug, error, configuration, metric, usage).~~ |
 
-### `.context` Pattern — Reading Shared State
+**Replacement:** send a concrete `BusMessage` type directly via `core.messageBus.send(message:else:)`.
 
-Use this when a feature needs to track another feature's evolving state (e.g., current RUM view, session sampling decision). Context is propagated automatically — no explicit sends required.
+### ~~`.context` Pattern~~ (deprecated)
 
-**How it works:**
-1. A feature sets its context via `featureScope.set(context: { RUMCoreContext(...) })` — this updates `DatadogContext.additionalContext`.
-2. Any context change triggers `DatadogCore` to broadcast `.context(datadogContext)` to every registered feature.
-3. Receivers extract what they need: `context.additionalContext(ofType: RUMCoreContext.self)`.
+~~Use this when a feature needs to track another feature's evolving state (e.g., current RUM view, session sampling decision). Context is propagated automatically — no explicit sends required.~~
 
-**Canonical example** — Session Replay's `RUMContextReceiver` (`DatadogSessionReplay/Sources/Feature/RUMContextReceiver.swift`):
+**Replacement:** subscribe to `DatadogContext` on the typed bus — it is broadcast automatically on every context update, identical to the old `.context` case but without the enum wrapper.
 
 ```swift
+// Before (deprecated)
 func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
     guard case let .context(context) = message else { return false }
     let new = context.additionalContext(ofType: RUMCoreContext.self)
     if new != previous { onNew?(new); previous = new }
     return true
 }
+
+// After
+func receive(message: DatadogContext, from core: DatadogCoreProtocol) {
+    let new = message.additionalContext(ofType: RUMCoreContext.self)
+    if new != previous { onNew?(new); previous = new }
+}
 ```
 
-Other `.context` receivers: Trace's `ContextMessageReceiver`, `NetworkContextCoreProvider`, `CrashContextCoreProvider`, `WatchdogTerminationMonitor`, `ContextSharingTransformer`.
+### ~~`.payload` Pattern~~ (deprecated)
 
-### `.payload` Pattern — One-Off Events
+~~Use this for discrete events that one feature sends and another consumes — crash reports, error forwarding, flag evaluations.~~
 
-Use this for discrete events that one feature sends and another consumes — crash reports, error forwarding, flag evaluations.
+**Replacement:** define a dedicated `BusMessage` struct for the payload type and subscribe via `BusMessageReceiver`.
 
-**Examples:**
-- `RemoteLogger` sends `.payload(RUMErrorMessage)` → RUM's `ErrorMessageReceiver` adds a RUM error
-- `CrashReportSender` sends `.payload(Crash)` → RUM's `CrashReportReceiver` writes crash error events
-- `FatalErrorContextNotifier` sends `.payload(RUMViewEvent)` → `CrashContextCoreProvider` persists the last view for crash reports
+### ~~`CombinedFeatureMessageReceiver`~~ (deprecated)
 
-### `CombinedFeatureMessageReceiver` — Ordering Matters
+~~`CombinedFeatureMessageReceiver` uses `contains(where:)` — it short-circuits after the first receiver returns `true`.~~
 
-`CombinedFeatureMessageReceiver` uses `contains(where:)` — it **short-circuits** after the first receiver returns `true`. Receivers later in the list will not see the message. This is intentional for deduplication but means **ordering of receivers within a feature matters**.
-
-Note: `MessageBus.send()` does NOT short-circuit across features — every registered feature receives every message.
+**Replacement:** all typed-bus subscribers receive every message independently — there is no short-circuiting.
 
 ### `RUMCoreContext`
 
 Defined in `DatadogInternal/Sources/Models/RUM/RUMCoreContext.swift`. Key fields: `applicationID`, `sessionID`, `viewID`, `userActionID`, `viewServerTimeOffset`, `sessionSampler`. Conforms to `AdditionalContext` (key: `"rum"`) and `Equatable`.
 
-Set by `Monitor.swift` after each command via `featureScope.set(context:)`. Consumed by any receiver that calls `context.additionalContext(ofType: RUMCoreContext.self)`.
+Set by `Monitor.swift` after each command via `featureScope.set(context:)`. Consumed by any receiver that calls `context.additionalContext(ofType: RUMCoreContext.self)`. This mechanism is not deprecated — `AdditionalContext` piggybacks on the `DatadogContext` bus message and is unaffected by the `FeatureMessage` removal.
 
 ## Error Handling Strategy
 
