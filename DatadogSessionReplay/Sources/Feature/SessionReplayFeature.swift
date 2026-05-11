@@ -12,6 +12,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let contextReceiver: RUMContextReceiver
+    let webViewRecordReceiver: WebViewRecordReceiver
     let performanceOverride: PerformancePresetOverride?
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
@@ -34,16 +35,14 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         )
 
         self.contextReceiver = recordingComponents.contextReceiver
+        self.webViewRecordReceiver = WebViewRecordReceiver(
+            scope: core.scope(for: SessionReplayFeature.self)
+        )
         self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry
         )
-        self.messageReceiver = CombinedFeatureMessageReceiver(
-            [
-                recordingComponents.messageReceiver,
-                WebViewRecordReceiver(scope: core.scope(for: SessionReplayFeature.self))
-            ]
-        )
+        self.messageReceiver = recordingComponents.messageReceiver
         self.performanceOverride = PerformancePresetOverride(
             maxFileSize: SessionReplay.maxObjectSize,
             maxObjectSize: SessionReplay.maxObjectSize,

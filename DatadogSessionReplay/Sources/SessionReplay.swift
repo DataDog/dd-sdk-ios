@@ -91,6 +91,7 @@ public enum SessionReplay {
 
         // Subscribe typed-bus receivers before registration so initial context push is received:
         core.messageBus.subscribe(receiver: sessionReplay.contextReceiver)
+        core.messageBus.subscribe(receiver: sessionReplay.webViewRecordReceiver)
 
         try core.register(feature: sessionReplay)
         core.set(
