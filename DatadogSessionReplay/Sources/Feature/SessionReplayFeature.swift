@@ -12,6 +12,7 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let contextReceiver: RUMContextReceiver
+    let webViewRecordReceiver: WebViewRecordReceiver
     let performanceOverride: PerformancePresetOverride?
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
@@ -60,10 +61,10 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         let scheduler = ScreenChangeScheduler(minimumInterval: 0.1, telemetry: telemetry)
         let contextReceiver = RUMContextReceiver()
         self.contextReceiver = contextReceiver
-
-        self.messageReceiver = WebViewRecordReceiver(
+        self.webViewRecordReceiver = WebViewRecordReceiver(
             scope: core.scope(for: SessionReplayFeature.self)
         )
+        self.messageReceiver = NOPFeatureMessageReceiver()
 
         self.textAndInputPrivacyLevel = configuration.textAndInputPrivacyLevel
         self.imagePrivacyLevel = configuration.imagePrivacyLevel
