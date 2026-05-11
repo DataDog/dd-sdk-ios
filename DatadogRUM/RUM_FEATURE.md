@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-05-08
+last_updated: 2026-05-11
 sdk_version: 3.10.0
-verified_against_commit: 6bc779cf6
+verified_against_commit: b584ef3af
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -156,6 +156,10 @@ RUM.enable(
         // Default: true
         trackMemoryWarnings: true,
         
+        // Track slow frames / view hitches
+        // Default: true
+        trackSlowFrames: true,
+        
         // SDK telemetry sampling rate (for Datadog internal monitoring)
         // Default: 20.0
         telemetrySampleRate: 20.0,
@@ -163,10 +167,6 @@ RUM.enable(
         // Collect accessibility settings in view events
         // Default: false
         collectAccessibility: false,
-        
-        // Track slow frames / view hitches
-        // Default: true
-        trackSlowFrames: true,
         
         // Experimental feature flags (currently no active flags for RUM)
         // Default: [:]
