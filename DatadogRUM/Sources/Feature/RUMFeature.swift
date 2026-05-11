@@ -23,6 +23,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
     let telemetryReceiver: TelemetryReceiver
 
+    let webViewEventReceiver: WebViewEventReceiver
+
     let watchdogTerminationMonitor: WatchdogTerminationMonitor?
 
     let monitor: Monitor
@@ -311,17 +313,15 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             sessionEndedMetric: sessionEndedMetric
         )
 
-        var messageReceivers: [FeatureMessageReceiver] = [
-            WebViewEventReceiver(
-                featureScope: featureScope,
-                dateProvider: configuration.dateProvider,
-                commandSubscriber: monitor,
-                viewCache: dependencies.viewCache
-            )
-        ]
+        self.webViewEventReceiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: configuration.dateProvider,
+            commandSubscriber: monitor,
+            viewCache: dependencies.viewCache
+        )
 
         self.watchdogTerminationMonitor = watchdogTermination
-        self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
+        self.messageReceiver = NOPFeatureMessageReceiver()
 
         // Forward instrumentation calls to monitor:
         instrumentation.publish(to: monitor)

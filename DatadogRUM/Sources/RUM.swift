@@ -49,6 +49,7 @@ public enum RUM {
         core.messageBus.subscribe(receiver: rum.errorMessageReceiver)
         core.messageBus.subscribe(receiver: rum.flagEvaluationReceiver)
         core.messageBus.subscribe(receiver: rum.telemetryReceiver)
+        core.messageBus.subscribe(receiver: rum.webViewEventReceiver)
         if let watchdog = rum.watchdogTerminationMonitor {
             core.messageBus.subscribe(receiver: watchdog)
         }
