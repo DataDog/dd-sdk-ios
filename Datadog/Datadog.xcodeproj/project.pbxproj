@@ -838,6 +838,7 @@
 		D224DFA82FAB8C4B000AED53 /* MessageBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224DFA72FAB8C4B000AED53 /* MessageBus.swift */; };
 		D224DFAA2FAB9DCE000AED53 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224DFA92FAB9DCE000AED53 /* MessageBusTests.swift */; };
 		D224DFAE2FACFA43000AED53 /* RUMDataModels+BusMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224DFAD2FACFA43000AED53 /* RUMDataModels+BusMessage.swift */; };
+		D224DFB02FB1BBCA000AED53 /* WebViewBusMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D224DFAF2FB1BBCA000AED53 /* WebViewBusMessages.swift */; };
 		D22689B92EB12C3100875E44 /* Filters in Frameworks */ = {isa = PBXBuildFile; productRef = D22689B82EB12C3100875E44 /* Filters */; };
 		D22689BB2EB12C3100875E44 /* Recording in Frameworks */ = {isa = PBXBuildFile; productRef = D22689BA2EB12C3100875E44 /* Recording */; };
 		D22689C32EB12D3D00875E44 /* KSCrashPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22689C22EB12D3D00875E44 /* KSCrashPlugin.swift */; };
@@ -2688,6 +2689,7 @@
 		D224DFA72FAB8C4B000AED53 /* MessageBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBus.swift; sourceTree = "<group>"; };
 		D224DFA92FAB9DCE000AED53 /* MessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusTests.swift; sourceTree = "<group>"; };
 		D224DFAD2FACFA43000AED53 /* RUMDataModels+BusMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+BusMessage.swift"; sourceTree = "<group>"; };
+		D224DFAF2FB1BBCA000AED53 /* WebViewBusMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewBusMessages.swift; sourceTree = "<group>"; };
 		D22689C22EB12D3D00875E44 /* KSCrashPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KSCrashPlugin.swift; sourceTree = "<group>"; };
 		D22689C62EB2151F00875E44 /* KSCrashPluginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KSCrashPluginTests.swift; sourceTree = "<group>"; };
 		D2268AD12EB4DA4100875E44 /* DatadogTypeSafeFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogTypeSafeFilter.swift; sourceTree = "<group>"; };
@@ -6223,6 +6225,7 @@
 			isa = PBXGroup;
 			children = (
 				D21A94F12B8397CA00AC4256 /* WebViewMessage.swift */,
+				D224DFAF2FB1BBCA000AED53 /* WebViewBusMessages.swift */,
 			);
 			path = WebViewTracking;
 			sourceTree = "<group>";
@@ -8544,6 +8547,7 @@
 				E996B2C5B9B268490842F924 /* HeatmapAttributes.swift in Sources */,
 				9D0C56F6A6472E38F662D6D7 /* HeatmapIdentifier.swift in Sources */,
 				13124CCC91AF2DC5EC18DDA6 /* HeatmapIdentifierRegistry.swift in Sources */,
+				D224DFB02FB1BBCA000AED53 /* WebViewBusMessages.swift in Sources */,
 				A01D384CBDE4FFDC49CCD424 /* HeatmapIdentifierRegistryFeature.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
