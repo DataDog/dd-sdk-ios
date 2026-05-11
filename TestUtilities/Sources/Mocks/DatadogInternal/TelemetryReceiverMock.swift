@@ -7,19 +7,14 @@
 import Foundation
 import DatadogInternal
 
-/// `FeatureMessageReceiver` that records received telemetry events.
-public class TelemetryReceiverMock: FeatureMessageReceiver {
+/// `BusMessageReceiver` that records received telemetry events.
+public final class TelemetryReceiverMock: BusMessageReceiver {
     @ReadWriteLock
     public private(set) var messages: [TelemetryMessage] = []
 
     public init() {}
 
-    public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .telemetry(message) = message else {
-            return false
-        }
-
+    public func receive(message: TelemetryMessage, from core: DatadogCoreProtocol) {
         messages.append(message)
-        return true
     }
 }
