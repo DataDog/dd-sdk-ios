@@ -1885,6 +1885,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Real test traffic through the `ServerMock`-backed session.
         let session = server.getInterceptedURLSession()
         let task = session.dataTask(with: URL.mockAny())
+
+        // The rest of this test depends on `httpAdditionalHeaders` having the UUID
+        // on `task.currentRequest` so ServerMock can recognize its own session.
+        let currentRequest = try XCTUnwrap(task.currentRequest)
+        XCTAssertTrue(server.isMyRequest(currentRequest), "ServerMock should recognize its own session's task")
+
         task.resume()
 
         wait(
