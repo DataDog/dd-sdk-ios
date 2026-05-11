@@ -17,6 +17,9 @@ internal struct LogsFeature: DatadogRemoteFeature {
     /// Typed-bus receiver for `LogMessage`.
     let logMessageReceiver: LogMessageReceiver
 
+    /// Typed-bus receiver for WebView log events.
+    let webViewLogReceiver: WebViewLogReceiver
+
     let logEventMapper: LogEventMapper?
 
     let backtraceReporter: BacktraceReporting?
@@ -43,7 +46,7 @@ internal struct LogsFeature: DatadogRemoteFeature {
                 customIntakeURL: customIntakeURL,
                 telemetry: telemetry
             ),
-            messageReceiver: WebViewLogReceiver(),
+            messageReceiver: NOPFeatureMessageReceiver(),
             dateProvider: dateProvider,
             backtraceReporter: backtraceReporter
         )
@@ -60,6 +63,7 @@ internal struct LogsFeature: DatadogRemoteFeature {
         self.requestBuilder = requestBuilder
         self.messageReceiver = messageReceiver
         self.logMessageReceiver = LogMessageReceiver(logEventMapper: logEventMapper)
+        self.webViewLogReceiver = WebViewLogReceiver()
         self.dateProvider = dateProvider
         self.backtraceReporter = backtraceReporter
         self.attributes = SynchronizedAttributes(attributes: [:])
