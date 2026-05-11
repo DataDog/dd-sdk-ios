@@ -11,6 +11,7 @@ import Foundation
 ///
 /// The message is composed of a key and a dictionary of attributes. The message format is a loose
 /// agreement between Features - all messages supported by a Feature should be properly documented.
+@available(*, deprecated, message: "Use `BusMessageReceiver` for typed feature-to-feature messaging.")
 public protocol FeatureMessageReceiver {
     /// Receives messages from the message bus.
     ///
@@ -32,6 +33,7 @@ public protocol FeatureMessageReceiver {
     // instead of depending on directly on `core`.
 }
 
+@available(*, deprecated, message: "Use `BusMessageReceiver` for typed feature-to-feature messaging.")
 public struct NOPFeatureMessageReceiver: FeatureMessageReceiver {
     public init() { }
 
@@ -43,6 +45,7 @@ public struct NOPFeatureMessageReceiver: FeatureMessageReceiver {
 
 /// A receiver that combines multiple receivers. It will loop though receivers and stop on the first that is able to
 /// consume the given message.
+@available(*, deprecated, message: "Use `BusMessageReceiver` for typed feature-to-feature messaging.")
 public struct CombinedFeatureMessageReceiver: FeatureMessageReceiver {
     let receivers: [FeatureMessageReceiver]
 

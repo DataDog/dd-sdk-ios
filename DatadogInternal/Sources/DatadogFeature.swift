@@ -15,6 +15,7 @@ public protocol DatadogFeature {
     ///
     /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
     /// from a bus that is shared between Features registered in a core.
+    @available(*, deprecated, message: "Use `BusMessageReceiver` and subscribe via `MessageBus` instead.")
     var messageReceiver: FeatureMessageReceiver { get }
 }
 

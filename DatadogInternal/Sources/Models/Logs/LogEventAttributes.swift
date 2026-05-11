@@ -7,7 +7,9 @@
 import Foundation
 
 /// User provided log attributes
-public struct LogEventAttributes {
+public struct LogEventAttributes: BusMessage {
+    public static let key = "log-event-attributes"
+
     public var attributes: [String: Encodable]
 
     /// User provided log attributes
