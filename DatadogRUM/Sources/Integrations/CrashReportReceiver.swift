@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Receiver to consume crash reports as RUM events.
-internal struct CrashReportReceiver: FeatureMessageReceiver {
+internal final class CrashReportReceiver: BusMessageReceiver {
     private struct AdjustedCrashTimings {
         /// Crash date read from `CrashReport`. It uses device time.
         let crashDate: Date
@@ -57,15 +57,11 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         self.eventsMapper = eventsMapper
     }
 
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(crash as Crash) = message else {
-            return false
-        }
-
-        return send(report: crash.report, with: crash.context)
+    func receive(message: Crash, from core: DatadogCoreProtocol) {
+        send(report: message.report, with: message.context)
     }
 
-    private func send(report: DDCrashReport, with context: CrashContext) -> Bool {
+    private func send(report: DDCrashReport, with context: CrashContext) {
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
         // from the moment of crash), but this is the best approximation we can get.
@@ -100,18 +96,17 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 )
             } else {
                 DD.logger.debug("There was a crash in previous session, but it is ignored due to another crash already present in the last view.")
-                return false
             }
 
-            return true
+            return
         }
 
         if let lastRUMSessionState = context.lastRUMSessionState {
             sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings)
-            return true
+            return
         }
 
-        return sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings)
+        sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings)
     }
 
     /// If the crash occurred in an existing RUM session and we know its `lastRUMViewEvent` we send the error using that session UUID and link
@@ -128,7 +123,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // To avoid inconsistency, we only send the RUM error.
             DD.logger.debug("Sending crash as RUM error.")
             featureScope.eventWriteContext(bypassConsent: true) { context, writer in
-                let builder = createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
+                let builder = self.createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
                 let rumError = builder.createRUMError(with: lastRUMViewEvent)
 
                 if let mappedError = self.eventsMapper.map(event: rumError) {
@@ -200,7 +195,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         _ crashReport: DDCrashReport,
         crashContext: CrashContext,
         using crashTimings: AdjustedCrashTimings
-    ) -> Bool {
+    ) {
         let sessionID = uuidGenerator.generateUnique()
         let sampled = DeterministicSampler(
             uuid: sessionID.rawValue,
@@ -209,7 +204,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
 
         guard sampled else {
             DD.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")
-            return false
+            return
         }
 
         // We can ignore `sessionState` for building the rule as we can assume there was no session sent - otherwise,
@@ -258,8 +253,6 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         if let newRUMView = newRUMView {
             send(crashReport: crashReport, to: newRUMView, using: crashTimings)
         }
-
-        return true
     }
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
@@ -269,7 +262,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
         featureScope.eventWriteContext(bypassConsent: true) { context, writer in
-            let builder = createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
+            let builder = self.createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
             let updatedRUMView = builder.updateRUMViewWithError(rumView)
             let rumError = builder.createRUMError(with: updatedRUMView)
 

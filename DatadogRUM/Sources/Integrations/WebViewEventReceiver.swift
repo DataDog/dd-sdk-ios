@@ -10,7 +10,7 @@ import DatadogInternal
 internal typealias JSON = [String: Any]
 
 /// Receiver to consume a RUM event coming from Browser SDK.
-internal final class WebViewEventReceiver: FeatureMessageReceiver {
+internal final class WebViewEventReceiver: BusMessageReceiver {
     /// RUM feature scope.
     let featureScope: FeatureScope
     /// Subscriber that can process a `RUMKeepSessionAliveCommand`.
@@ -46,17 +46,13 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     /// - Parameters:
     ///   - message: The message containing the Browser RUM event.
     ///   - core: The core to write the event.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case let .webview(.rum(event)):
-            receive(rum: event)
-        case let .webview(.telemetry(event)):
-            receive(telemetry: event)
-        default:
-            return false
+    func receive(message: WebViewRUMMessage, from core: DatadogCoreProtocol) {
+        switch message.kind {
+        case .rum:
+            receive(rum: message.event)
+        case .telemetry:
+            receive(telemetry: message.event)
         }
-
-        return true
     }
 
     private func receive(rum event: JSON) {
