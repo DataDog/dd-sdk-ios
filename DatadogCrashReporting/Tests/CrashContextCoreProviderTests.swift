@@ -33,11 +33,11 @@ class CrashContextCoreProviderTests: XCTestCase {
 
     func testItUpdatesContextFromDatadogContext() {
         // When
-        XCTAssertTrue(provider.receive(message: .context(.mockWith(
+        core.messageBus.send(message: DatadogContext.mockWith(
             service: "test-service",
             env: "test-env",
             version: "1.0.0"
-        )), from: core))
+        ))
         provider.flush()
 
         // Then
@@ -53,8 +53,8 @@ class CrashContextCoreProviderTests: XCTestCase {
         provider.onCrashContextChange = { _ in callbackCount += 1 }
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(context), from: core))
-        XCTAssertTrue(provider.receive(message: .context(context), from: core))
+        core.messageBus.send(message: context)
+        core.messageBus.send(message: context)
         provider.flush()
 
         // Then — callback fires once per distinct value
@@ -66,7 +66,7 @@ class CrashContextCoreProviderTests: XCTestCase {
     func testItStoresRUMViewEvent() {
         // Given
         let viewEvent: RUMViewEvent = .mockRandom()
-        XCTAssertTrue(provider.receive(message: .context(.mockAny()), from: core))
+        core.messageBus.send(message: DatadogContext.mockAny())
 
         // When
         core.messageBus.send(message: viewEvent)
@@ -79,7 +79,7 @@ class CrashContextCoreProviderTests: XCTestCase {
     func testItResetsRUMViewEventOnViewReset() {
         // Given
         let viewEvent: RUMViewEvent = .mockRandom()
-        XCTAssertTrue(provider.receive(message: .context(.mockAny()), from: core))
+        core.messageBus.send(message: DatadogContext.mockAny())
         core.messageBus.send(message: viewEvent)
         provider.flush()
         XCTAssertNotNil(provider.currentCrashContext?.lastRUMViewEvent)
@@ -97,7 +97,7 @@ class CrashContextCoreProviderTests: XCTestCase {
     func testItStoresRUMSessionState() {
         // Given
         let sessionState: RUMSessionState = .mockRandom()
-        XCTAssertTrue(provider.receive(message: .context(.mockAny()), from: core))
+        core.messageBus.send(message: DatadogContext.mockAny())
         provider.flush()
 
         // When
@@ -117,20 +117,22 @@ class CrashContextCoreProviderTests: XCTestCase {
         provider.flush()
 
         // When
-        XCTAssertTrue(provider.receive(message: .context(.mockWith(service: "test-service")), from: core))
+        core.messageBus.send(message: DatadogContext.mockWith(service: "test-service"))
         provider.flush()
 
         // Then
+        XCTAssertNotNil(receivedContext)
         XCTAssertEqual(receivedContext?.service, "test-service")
     }
 
-    // MARK: - Message Handling Tests
+    // MARK: - Initial State Tests
 
-    func testItReturnsFalseForUnhandledMessages() {
-        // When
-        let handled = provider.receive(message: .payload("unrelated"), from: core)
+    func testCrashContextIsNilUntilFirstContextMessageIsReceived() {
+        // Given
+        let provider = CrashContextCoreProvider()
+        provider.subscribe(to: core.messageBus)
 
-        // Then
-        XCTAssertFalse(handled)
+        // Then — no message sent yet
+        XCTAssertNil(provider.currentCrashContext)
     }
 }
