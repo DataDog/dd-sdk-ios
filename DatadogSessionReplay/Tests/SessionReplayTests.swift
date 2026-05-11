@@ -216,8 +216,9 @@ class SessionReplayTests: XCTestCase {
         let textAndInputPrivacyLevel: TextAndInputPrivacyLevel = .mockRandom()
         let imagePrivacyLevel: ImagePrivacyLevel = .mockRandom()
         let touchPrivacyLevel: TouchPrivacyLevel = .mockRandom()
-        let messageReceiver = FeatureMessageReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: messageReceiver)
+        let telemetryReceiver = TelemetryReceiverMock()
+        let core = PassthroughCoreMock()
+        core.subscribe(receiver: telemetryReceiver)
 
         // When
         SessionReplay.enable(
@@ -232,7 +233,7 @@ class SessionReplayTests: XCTestCase {
         )
 
         // Then
-        let configuration = try XCTUnwrap(messageReceiver.messages.firstTelemetry?.asConfiguration)
+        let configuration = try XCTUnwrap(telemetryReceiver.messages.firstConfiguration())
         XCTAssertEqual(configuration.sessionReplaySampleRate, sampleRate)
         XCTAssertNil(configuration.defaultPrivacyLevel)
         XCTAssertEqual(configuration.textAndInputPrivacyLevel, textAndInputPrivacyLevel.rawValue)
@@ -248,8 +249,9 @@ class SessionReplayTests: XCTestCase {
         let imageLevel: ImagePrivacyLevel = .mockRandom()
         let touchLevel: TouchPrivacyLevel = .mockRandom()
         let startRecordingImmediately: Bool = .mockRandom()
-        let messageReceiver = FeatureMessageReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: messageReceiver)
+        let telemetryReceiver = TelemetryReceiverMock()
+        let core = PassthroughCoreMock()
+        core.subscribe(receiver: telemetryReceiver)
 
         // When
         SessionReplay.enable(
@@ -264,7 +266,7 @@ class SessionReplayTests: XCTestCase {
         )
 
         // Then
-        let configuration = try XCTUnwrap(messageReceiver.messages.firstTelemetry?.asConfiguration)
+        let configuration = try XCTUnwrap(telemetryReceiver.messages.firstConfiguration())
         XCTAssertEqual(configuration.sessionReplaySampleRate, sampleRate)
         XCTAssertNil(configuration.defaultPrivacyLevel)
         XCTAssertEqual(configuration.textAndInputPrivacyLevel, textAndInputLevel.rawValue)

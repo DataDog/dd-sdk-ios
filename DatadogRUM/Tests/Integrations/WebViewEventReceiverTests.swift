@@ -16,12 +16,7 @@ class WebViewEventReceiverTests: XCTestCase {
     /// Both mobile and browser events conform to the same schema, so we can consider mobile events browser-compatible.
     private func randomWebEvent() -> JSON { try! randomRUMEvent().toJSONObject() }
 
-    /// Creates message sent from `DatadogWebViewTracking`.
-    private func webViewTrackingMessage(with webEvent: JSON) -> FeatureMessage {
-        return .webview(.rum(webEvent))
-    }
-
-    // MARK: - Handling `FeatureMessage`
+    // MARK: - Parsing Web Events
 
     func testParsingViewEvent() throws {
         // Given
@@ -200,30 +195,11 @@ class WebViewEventReceiverTests: XCTestCase {
         )
 
         // When
-        let message = webViewTrackingMessage(with: randomWebEvent())
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
+        receiver.receive(message: WebViewRUMMessage(kind: .rum, event: randomWebEvent()), from: NOPDatadogCore())
 
         // Then
-        XCTAssertTrue(result, "It must acknowledge the message")
         let command = try XCTUnwrap(commandsSubscriberMock.receivedCommands.firstElement(of: RUMKeepSessionAliveCommand.self), "It must keep RUM session alive")
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
-    }
-
-    func testWhenReceivingOtherMessage_itRejectsIt() throws {
-        // Given
-        let receiver = WebViewEventReceiver(
-            featureScope: featureScope,
-            dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock(),
-            viewCache: ViewCache(dateProvider: SystemDateProvider())
-        )
-
-        // When
-        let otherMessage: FeatureMessage = .payload(String.mockRandom())
-        let result = receiver.receive(message: otherMessage, from: NOPDatadogCore())
-
-        // Then
-        XCTAssertFalse(result, "It must reject messages addressed to other receivers")
     }
 
     // MARK: - Modifying Web Events
@@ -258,8 +234,7 @@ class WebViewEventReceiverTests: XCTestCase {
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         // When
-
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+        receiver.receive(message: WebViewRUMMessage(kind: .rum, event: webEventMock), from: NOPDatadogCore())
 
         // Then
         let expectedWebEventWritten: JSON = [
@@ -275,7 +250,6 @@ class WebViewEventReceiverTests: XCTestCase {
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
@@ -293,10 +267,9 @@ class WebViewEventReceiverTests: XCTestCase {
         )
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: randomWebEvent()), from: NOPDatadogCore())
+        receiver.receive(message: WebViewRUMMessage(kind: .rum, event: randomWebEvent()), from: NOPDatadogCore())
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertTrue(featureScope.eventsWritten.isEmpty, "The event must be dropped")
     }
 
@@ -350,7 +323,7 @@ class WebViewEventReceiverTests: XCTestCase {
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+        receiver.receive(message: WebViewRUMMessage(kind: .rum, event: webEventMock), from: NOPDatadogCore())
 
         // Then
         let expectedWebEventWritten: JSON = [
@@ -376,7 +349,6 @@ class WebViewEventReceiverTests: XCTestCase {
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
@@ -431,7 +403,7 @@ class WebViewEventReceiverTests: XCTestCase {
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+        receiver.receive(message: WebViewRUMMessage(kind: .rum, event: webEventMock), from: NOPDatadogCore())
 
         // Then
         let expectedWebEventWritten: JSON = [
@@ -452,7 +424,6 @@ class WebViewEventReceiverTests: XCTestCase {
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
@@ -493,10 +464,9 @@ class WebViewEventReceiverTests: XCTestCase {
         ]
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+        receiver.receive(message: WebViewRUMMessage(kind: .rum, event: webEventMock), from: NOPDatadogCore())
 
         // Then
-        XCTAssertTrue(result)
         XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         let expectedWebEventWritten: JSON = [
@@ -542,10 +512,9 @@ class WebViewEventReceiverTests: XCTestCase {
         ]
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+        receiver.receive(message: WebViewRUMMessage(kind: .rum, event: webEventMock), from: NOPDatadogCore())
 
         // Then
-        XCTAssertTrue(result)
         XCTAssertEqual(featureScope.eventsWritten.count, 1)
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         let expectedWebEventWritten: JSON = [
@@ -615,10 +584,9 @@ class WebViewEventReceiverTests: XCTestCase {
         ]
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: core)
+        receiver.receive(message: WebViewRUMMessage(kind: .rum, event: webEventMock), from: core)
 
         // Then
-        XCTAssertTrue(result)
         let events = core.waitAndReturnEvents(ofFeature: "rum", ofType: AnyEncodable.self)
         let actualWebEventWritten = try XCTUnwrap((events.first)?.value as? [String: Any])
         let actualDD = try XCTUnwrap(actualWebEventWritten["_dd"] as? [String: Any])
@@ -680,10 +648,9 @@ class WebViewEventReceiverTests: XCTestCase {
         ]
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: core)
+        receiver.receive(message: WebViewRUMMessage(kind: .rum, event: webEventMock), from: core)
 
         // Then
-        XCTAssertTrue(result)
         let events = core.waitAndReturnEvents(ofFeature: "rum", ofType: AnyEncodable.self)
         let actualWebEventWritten = try XCTUnwrap((events.first)?.value as? [String: Any])
         let actualDD = try XCTUnwrap(actualWebEventWritten["_dd"] as? [String: Any])
@@ -743,10 +710,9 @@ class WebViewEventReceiverTests: XCTestCase {
         ]
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+        receiver.receive(message: WebViewRUMMessage(kind: .rum, event: webEventMock), from: NOPDatadogCore())
 
         // Then
-        XCTAssertTrue(result)
         let events = core.waitAndReturnEvents(ofFeature: "rum", ofType: AnyEncodable.self)
         let actualWebEventWritten = try XCTUnwrap((events.first)?.value as? [String: Any])
         let actualDD = try XCTUnwrap(actualWebEventWritten["_dd"] as? [String: Any])
@@ -784,10 +750,9 @@ class WebViewEventReceiverTests: XCTestCase {
         ]
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+        receiver.receive(message: WebViewRUMMessage(kind: .rum, event: webEventMock), from: NOPDatadogCore())
 
         // Then
-        XCTAssertTrue(result)
         XCTAssertEqual(featureScope.eventsWritten.count, 1)
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         let expectedWebEventWritten: JSON = [

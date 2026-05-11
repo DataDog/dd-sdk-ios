@@ -20,10 +20,10 @@ private final class RUMFlagEvaluationRecorder: BusMessageReceiver {
 final class RUMFlagEvaluationReporterTests: XCTestCase {
     func testSendFlagEvaluation() throws {
         // Given
-        let messageBus = PassthroughCoreMock()
+        let core = PassthroughCoreMock()
         let recorder = RUMFlagEvaluationRecorder()
-        messageBus.subscribe(receiver: recorder)
-        let reporter = RUMFlagEvaluationReporter(messageBus: messageBus)
+        core.subscribe(receiver: recorder)
+        let reporter = RUMFlagEvaluationReporter(messageBus: core.messageBus)
 
         // When
         reporter.sendFlagEvaluation(

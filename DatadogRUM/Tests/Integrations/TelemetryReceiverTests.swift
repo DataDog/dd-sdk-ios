@@ -433,7 +433,7 @@ class TelemetryReceiverTests: XCTestCase {
     func testSendTelemetryConfiguration_trackResourceHeaders() {
         // Given
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
-        let telemetry = TelemetryMock(with: receiver)
+        let telemetry = TelemetryReceiverProxy(with: receiver)
         let trackResourceHeaders: TelemetryConfigurationEvent.Telemetry.Configuration.TrackResourceHeaders = [.defaultHeaders, .custom].randomElement()!
 
         // When

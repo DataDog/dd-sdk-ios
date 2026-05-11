@@ -47,7 +47,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -67,7 +67,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -88,7 +88,7 @@ class RemoteLoggerTests: XCTestCase {
         let stubBacktrace: BacktraceReport = .mockRandom()
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -121,7 +121,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -151,7 +151,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -188,7 +188,7 @@ class RemoteLoggerTests: XCTestCase {
 
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -234,7 +234,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -271,7 +271,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: SynchronizedAttributes(attributes: [attributeKey: attributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -299,7 +299,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: SynchronizedAttributes(attributes: [attributeKey: globalAttributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -329,7 +329,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: SynchronizedAttributes(attributes: [attributeKey: globalAttributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -357,7 +357,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: SynchronizedAttributes(attributes: [attributeKey: attributeValue]),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -378,7 +378,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -404,7 +404,7 @@ class RemoteLoggerTests: XCTestCase {
         let stubBacktrace: BacktraceReport = .mockRandom()
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -442,7 +442,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -482,7 +482,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -526,7 +526,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -567,7 +567,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -597,7 +597,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -633,7 +633,7 @@ class RemoteLoggerTests: XCTestCase {
         // Given
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -671,7 +671,7 @@ class RemoteLoggerTests: XCTestCase {
 
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
@@ -719,7 +719,7 @@ class RemoteLoggerTests: XCTestCase {
 
         let logger = RemoteLogger(
             featureScope: featureScope,
-            messageBus: messageBus,
+            messageBus: messageBus.messageBus,
             globalAttributes: .mockAny(),
             configuration: .mockAny(),
             dateProvider: RelativeDateProvider(),
