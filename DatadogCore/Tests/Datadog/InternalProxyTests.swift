@@ -17,7 +17,8 @@ class InternalProxyTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        core = PassthroughCoreMock(messageReceiver: telemetry)
+        core = PassthroughCoreMock()
+        core.subscribe(receiver: telemetry)
     }
 
     override func tearDown() {
