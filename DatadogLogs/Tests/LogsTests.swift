@@ -131,7 +131,7 @@ class LogsTests: XCTestCase {
         let core = SingleFeatureCoreMock<LogsFeature>()
         Logs.enable(with: .init(), in: core)
         var received: [LogEventAttributes] = []
-        _ = core.subscribe { (attrs: LogEventAttributes, _) in received.append(attrs) }
+        _ = core.messageBus.subscribe { (attrs: LogEventAttributes, _) in received.append(attrs) }
 
         // When
         let attributeKey: String = .mockRandom()
@@ -149,7 +149,7 @@ class LogsTests: XCTestCase {
         let core = SingleFeatureCoreMock<LogsFeature>()
         Logs.enable(with: .init(), in: core)
         var received: [LogEventAttributes] = []
-        _ = core.subscribe { (attrs: LogEventAttributes, _) in received.append(attrs) }
+        _ = core.messageBus.subscribe { (attrs: LogEventAttributes, _) in received.append(attrs) }
         let attributeKey: String = .mockRandom()
         let attributeValue: String = .mockRandom()
         Logs.addAttribute(forKey: attributeKey, value: attributeValue, in: core)

@@ -42,8 +42,8 @@ class WebViewRecordReceiverTests: XCTestCase {
 
         // When
 
-        let message = WebViewMessage.record(webRecordMock, WebViewMessage.View(id: browserViewID))
-        let result = receiver.receive(message: .webview(message), from: NOPDatadogCore())
+        let message = WebViewRecordMessage(event: webRecordMock, view: WebViewMessage.View(id: browserViewID))
+        receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
         let expectedWebSegmentWritten: [String: Any] = [
@@ -58,7 +58,6 @@ class WebViewRecordReceiverTests: XCTestCase {
             ]
         ]
 
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertEqual(scope.eventsWritten.count, 1, "It must write web segment to core")
         let actualWebEventWritten = try XCTUnwrap(scope.eventsWritten.first)
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebSegmentWritten))
@@ -73,26 +72,11 @@ class WebViewRecordReceiverTests: XCTestCase {
         let receiver = WebViewRecordReceiver(scope: scope)
 
         // When
-        let record = WebViewMessage.record(mockRandomAttributes(), WebViewMessage.View(id: .mockRandom()))
-        let result = receiver.receive(message: .webview(record), from: NOPDatadogCore())
+        let message = WebViewRecordMessage(event: mockRandomAttributes(), view: WebViewMessage.View(id: .mockRandom()))
+        receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertTrue(scope.eventsWritten.isEmpty, "The event must be dropped")
-    }
-
-    func testWhenReceivingOtherMessage_itRejectsIt() throws {
-        let scope = FeatureScopeMock()
-
-        // Given
-        let receiver = WebViewRecordReceiver(scope: scope)
-
-        // When
-        let otherMessage: FeatureMessage = .payload(String.mockRandom())
-        let result = receiver.receive(message: otherMessage, from: NOPDatadogCore())
-
-        // Then
-        XCTAssertFalse(result, "It must reject messages addressed to other receivers")
     }
 }
 

@@ -10,15 +10,25 @@ import TestUtilities
 @testable import DatadogRUM
 
 class FatalErrorContextNotifierTests: XCTestCase {
-    private let bus = PassthroughCoreMock()
+    private var bus: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+        bus = PassthroughCoreMock()
+    }
+
+    override func tearDown() {
+        bus = nil
+        super.tearDown()
+    }
 
     // MARK: - Changing Session State
 
     func testWhenSessionStateIsSet_itSendsSessionStateMessage() throws {
         // Given
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus.messageBus)
         var received: [RUMSessionState] = []
-        _ = bus.subscribe { (state: RUMSessionState, _) in received.append(state) }
+        _ = bus.messageBus.subscribe { (state: RUMSessionState, _) in received.append(state) }
         let newSessionState: RUMSessionState = .mockRandom()
 
         // When
@@ -31,9 +41,9 @@ class FatalErrorContextNotifierTests: XCTestCase {
 
     func testWhenSessionStateIsReset_itDoesNotSendNextSessionStateMessage() throws {
         // Given
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus.messageBus)
         var received: [RUMSessionState] = []
-        _ = bus.subscribe { (state: RUMSessionState, _) in received.append(state) }
+        _ = bus.messageBus.subscribe { (state: RUMSessionState, _) in received.append(state) }
         let originalSessionState: RUMSessionState = .mockRandom()
         fatalErrorContext.sessionState = originalSessionState
 
@@ -49,9 +59,9 @@ class FatalErrorContextNotifierTests: XCTestCase {
 
     func testWhenViewIsSet_itSendsViewEventMessage() throws {
         // Given
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus.messageBus)
         var receivedViews: [RUMViewEvent] = []
-        _ = bus.subscribe { (event: RUMViewEvent, _) in receivedViews.append(event) }
+        _ = bus.messageBus.subscribe { (event: RUMViewEvent, _) in receivedViews.append(event) }
         let newViewEvent: RUMViewEvent = .mockRandom()
 
         // When
@@ -64,9 +74,9 @@ class FatalErrorContextNotifierTests: XCTestCase {
 
     func testWhenViewIsReset_itSendsViewResetMessage() throws {
         // Given
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus.messageBus)
         var resetCount = 0
-        _ = bus.subscribe { (_: RUMViewReset, _) in resetCount += 1 }
+        _ = bus.messageBus.subscribe { (_: RUMViewReset, _) in resetCount += 1 }
         fatalErrorContext.view = .mockRandom()
 
         // When
@@ -80,9 +90,9 @@ class FatalErrorContextNotifierTests: XCTestCase {
 
     func testWhenGlobalAttributesAreSet_itSendsAttributesMessage() throws {
         // Given
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus.messageBus)
         var received: [RUMEventAttributes] = []
-        _ = bus.subscribe { (attrs: RUMEventAttributes, _) in received.append(attrs) }
+        _ = bus.messageBus.subscribe { (attrs: RUMEventAttributes, _) in received.append(attrs) }
         let newGlobalAttributes = mockRandomAttributes()
 
         // When
