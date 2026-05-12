@@ -17,12 +17,10 @@ internal struct RecordingComponents {
         configuration: SessionReplay.Configuration
     ) throws {
         if #available(iOS 13.0, tvOS 13.0, *), configuration.featureFlags[.layerTreeRecording] {
-            // TODO: PANA-6884 Implement layer tree recording pipeline
-            struct LayerTreeRecordingNotImplemented: Error {}
-            throw LayerTreeRecordingNotImplemented()
+            self = try .layerTreeRecordingComponents(core: core, configuration: configuration)
+        } else {
+            self = try .viewTreeRecordingComponents(core: core, configuration: configuration)
         }
-
-        self = try .viewTreeRecordingComponents(core: core, configuration: configuration)
     }
 
     private init(
@@ -39,7 +37,11 @@ internal struct RecordingComponents {
     ) throws -> Self {
         let processorsQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.processors", qos: .utility)
         // The telemetry queue targets the processors queue with a lower qos.
-        let telemetryQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.telemetry", qos: .background, target: processorsQueue)
+        let telemetryQueue = BackgroundAsyncQueue(
+            label: "com.datadoghq.session-replay.telemetry",
+            qos: .background,
+            target: processorsQueue
+        )
 
         let telemetry = SessionReplayTelemetry(
             telemetry: core.telemetry,
@@ -84,6 +86,36 @@ internal struct RecordingComponents {
         return .init(
             recordingCoordinator: recordingCoordinator,
             messageReceiver: contextReceiver
+        )
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    private static func layerTreeRecordingComponents(
+        core: DatadogCoreProtocol,
+        configuration: SessionReplay.Configuration
+    ) throws -> Self {
+        let telemetryQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.telemetry", qos: .background)
+        let telemetry = SessionReplayTelemetry(
+            telemetry: core.telemetry,
+            queue: telemetryQueue
+        )
+
+        let screenChangeMonitor = try ScreenChangeMonitor(minimumDeliveryInterval: 0.1)
+        let recordingCoordinator = LayerTreeRecordingCoordinator(
+            screenChangeMonitor: screenChangeMonitor,
+            textAndInputPrivacy: configuration.textAndInputPrivacyLevel,
+            imagePrivacy: configuration.imagePrivacyLevel,
+            touchPrivacy: configuration.touchPrivacyLevel,
+            srContextPublisher: SRContextPublisher(core: core),
+            layerRecording: LayerRecorder(),
+            replaySampleRate: configuration.debugSDK ? 100 : configuration.replaySampleRate,
+            telemetry: telemetry,
+            startRecordingImmediately: configuration.startRecordingImmediately
+        )
+
+        return .init(
+            recordingCoordinator: recordingCoordinator,
+            messageReceiver: recordingCoordinator
         )
     }
 }

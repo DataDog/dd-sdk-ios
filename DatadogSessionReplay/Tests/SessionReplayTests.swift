@@ -181,6 +181,20 @@ class SessionReplayTests: XCTestCase {
         XCTAssertEqual(sr.recordingCoordinator.replaySampleRate, random)
     }
 
+    @available(iOS 13.0, *)
+    func testWhenEnabledWithLayerTreeRecordingFeatureFlag_itUsesLayerTreeRecordingCoordinator() throws {
+        // Given
+        config.featureFlags[.layerTreeRecording] = true
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        let sessionReplay = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
+        XCTAssertTrue(sessionReplay.recordingCoordinator is LayerTreeRecordingCoordinator)
+        XCTAssertNotNil(core.get(feature: ResourcesFeature.self))
+    }
+
     func testItDoesntStartFeatureWhenSamplingRateIsZero() throws {
         // Given
         config.replaySampleRate = 0
