@@ -113,6 +113,10 @@ extension SessionReplay.Configuration {
 
         @available(*, deprecated, message: "Screen change scheduling is now the default and always enabled. This flag has no effect.")
         case screenChangeScheduling
+
+        @_spi(Internal)
+        @available(iOS 13.0, tvOS 13.0, *)
+        case layerTreeRecording
     }
 }
 
