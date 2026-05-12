@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0474714B086BA0F36C4D3EBB /* DDSketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B9DD22142B7F7F44A9BAC86 /* DDSketch.swift */; };
 		05B9B20299CF44BB97F4A7C8 /* HeatmapIdentifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048E335C84F4B41E3ACA3B91 /* HeatmapIdentifierTests.swift */; };
+		101425D8A43F7B735CF27468 /* ProtoEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F105FFCAFF3B8B9C95CDD5D9 /* ProtoEncoderTests.swift */; };
+		1078B5138B9AC8B7ECA58D7C /* CollapsingLowestDenseStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59B98EA5D5BFA33BE350E840 /* CollapsingLowestDenseStore.swift */; };
 		0904F9F42EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		093AC32A2F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
@@ -1256,6 +1259,11 @@
 		E996B2C5B9B268490842F924 /* HeatmapAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E3DACDED0DB3C9908B93EB9 /* HeatmapAttributes.swift */; };
 		F603F12B2CAEA4FA0088E6B7 /* DDInternalLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F603F1282CAEA4E90088E6B7 /* DDInternalLoggerTests.swift */; };
 		F603F1302CAEA7620088E6B7 /* DDInternalLogger+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F603F12D2CAEA7590088E6B7 /* DDInternalLogger+apiTests.m */; };
+		E0114863DA85419446E3F9F6 /* ProtoEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D8F4E81764B7CB8702E87E /* ProtoEncoder.swift */; };
+		E0C3AB4D04F40B9AF96DD1F1 /* LogarithmicMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 494934821A8A7BB3D4D475BE /* LogarithmicMapping.swift */; };
+		BBFB0D5A71C212ECA613AC7B /* LogarithmicMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA76045D2C506FBC17AE5D67 /* LogarithmicMappingTests.swift */; };
+		6804F0BC4D67E9416B418186 /* CollapsingLowestDenseStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7CEC7C5D50941F6E11D2D3 /* CollapsingLowestDenseStoreTests.swift */; };
+		EDC13F3F220F554EE9C5CA36 /* DDSketchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490510BE3F80C9EA26B065D9 /* DDSketchTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2973,6 +2981,14 @@
 		F603F12D2CAEA7590088E6B7 /* DDInternalLogger+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDInternalLogger+apiTests.m"; sourceTree = "<group>"; };
 		F637AED12697404200516F32 /* UIKitRUMUserActionsPredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsPredicate.swift; sourceTree = "<group>"; };
 		FCD4671FE899787D04A9ADD6 /* EvaluationRequestBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationRequestBuilder.swift; sourceTree = "<group>"; };
+		C2D8F4E81764B7CB8702E87E /* ProtoEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoEncoder.swift; sourceTree = "<group>"; };
+		494934821A8A7BB3D4D475BE /* LogarithmicMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogarithmicMapping.swift; sourceTree = "<group>"; };
+		59B98EA5D5BFA33BE350E840 /* CollapsingLowestDenseStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollapsingLowestDenseStore.swift; sourceTree = "<group>"; };
+		0B9DD22142B7F7F44A9BAC86 /* DDSketch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSketch.swift; sourceTree = "<group>"; };
+		F105FFCAFF3B8B9C95CDD5D9 /* ProtoEncoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoEncoderTests.swift; sourceTree = "<group>"; };
+		FA76045D2C506FBC17AE5D67 /* LogarithmicMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogarithmicMappingTests.swift; sourceTree = "<group>"; };
+		4B7CEC7C5D50941F6E11D2D3 /* CollapsingLowestDenseStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollapsingLowestDenseStoreTests.swift; sourceTree = "<group>"; };
+		490510BE3F80C9EA26B065D9 /* DDSketchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSketchTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -6259,6 +6275,7 @@
 				61C5A8A324509FAA00DA608C /* Span */,
 				095AE9512F7D30BD00C332AE /* Sampling */,
 				61C5A87A24509A0C00DA608C /* Utils */,
+				973EF724C408F6C307F8D322 /* DDSketch */,
 			);
 			name = DatadogTrace;
 			path = ../DatadogTrace/Sources;
@@ -6280,6 +6297,7 @@
 				61C5A89924509C1100DA608C /* Utils */,
 				619CE7602A458D66005588CB /* TraceTests.swift */,
 				E7CSS00629C4D5A800000006 /* ClientStatsFeatureTests.swift */,
+				C3DA51A343C9DC7532745612 /* DDSketch */,
 			);
 			name = DatadogTraceTests;
 			path = ../DatadogTrace/Tests;
@@ -6747,6 +6765,28 @@
 				D1E553EF33633FBFBB288899 /* HeatmapIdentifierStore.swift */,
 			);
 			path = Heatmaps;
+			sourceTree = "<group>";
+		};
+		973EF724C408F6C307F8D322 /* DDSketch */ = {
+			isa = PBXGroup;
+			children = (
+				59B98EA5D5BFA33BE350E840 /* CollapsingLowestDenseStore.swift */,
+				0B9DD22142B7F7F44A9BAC86 /* DDSketch.swift */,
+				494934821A8A7BB3D4D475BE /* LogarithmicMapping.swift */,
+				C2D8F4E81764B7CB8702E87E /* ProtoEncoder.swift */,
+			);
+			path = DDSketch;
+			sourceTree = "<group>";
+		};
+		C3DA51A343C9DC7532745612 /* DDSketch */ = {
+			isa = PBXGroup;
+			children = (
+				4B7CEC7C5D50941F6E11D2D3 /* CollapsingLowestDenseStoreTests.swift */,
+				490510BE3F80C9EA26B065D9 /* DDSketchTests.swift */,
+				FA76045D2C506FBC17AE5D67 /* LogarithmicMappingTests.swift */,
+				F105FFCAFF3B8B9C95CDD5D9 /* ProtoEncoderTests.swift */,
+			);
+			path = DDSketch;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -8719,6 +8759,10 @@
 				E7CSS01129C4D5A800000011 /* SpanSnapshot.swift in Sources */,
 				D2C1A50829C4C4CB00946C31 /* TracingURLSessionHandler.swift in Sources */,
 				D2C1A50529C4C4CB00946C31 /* DatadogTracer.swift in Sources */,
+				E0114863DA85419446E3F9F6 /* ProtoEncoder.swift in Sources */,
+				E0C3AB4D04F40B9AF96DD1F1 /* LogarithmicMapping.swift in Sources */,
+				1078B5138B9AC8B7ECA58D7C /* CollapsingLowestDenseStore.swift in Sources */,
+				0474714B086BA0F36C4D3EBB /* DDSketch.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8749,6 +8793,10 @@
 				3C6C7FFB2B459AF6006F5CBC /* OTelSpanId+DatadogTests.swift in Sources */,
 				D2C1A51F29C4C75700946C31 /* ActiveSpansPoolTests.swift in Sources */,
 				D2C1A52529C4C75700946C31 /* SpanSanitizerTests.swift in Sources */,
+				101425D8A43F7B735CF27468 /* ProtoEncoderTests.swift in Sources */,
+				BBFB0D5A71C212ECA613AC7B /* LogarithmicMappingTests.swift in Sources */,
+				6804F0BC4D67E9416B418186 /* CollapsingLowestDenseStoreTests.swift in Sources */,
+				EDC13F3F220F554EE9C5CA36 /* DDSketchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
