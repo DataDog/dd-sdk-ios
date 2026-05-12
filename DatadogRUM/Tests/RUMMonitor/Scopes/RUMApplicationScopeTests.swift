@@ -11,6 +11,34 @@ import DatadogInternal
 
 class RUMApplicationScopeTests: XCTestCase {
     let writer = FileWriterMock()
+    private let recorder = ActiveSessionUpdateRecorder()
+
+    private class ActiveSessionUpdateRecorder {
+        var calls = [DeterministicSampler?]()
+
+        func record(_ sampler: DeterministicSampler?) {
+            calls.append(sampler)
+        }
+
+        /// Asserts if the recorded calls match the expected ones.
+        ///
+        /// The idea of this function is not comparing the samplers, but if we recorded a sampler (for an active
+        /// session) or `nil` for no active session (aka, when all sessions are stopped). So it receives an
+        /// array of booleans, `true` meaning `.some(_)`, `false` meaning `.none` in the recorded calls
+        /// array.
+        ///
+        /// - parameters:
+        ///   - expected: An array of booleans as explained above.
+        func assert(_ expected: [Bool]) {
+            guard expected.count == calls.count else {
+                XCTFail("Different number of recorded calls, expected \(expected.count), got \(calls.count)")
+                return
+            }
+
+            let callsAsBooleans = calls.map { $0 != nil }
+            XCTAssertEqual(expected, callsAsBooleans)
+        }
+    }
 
     /// Creates `RUMApplicationScope` instance and configures it with the effects applied when RUM gets enabled.
     /// TODO: RUM-1649 Move this configuration to `RUMApplicationScope.init()`, so we can remove this setup in tests.
@@ -18,7 +46,7 @@ class RUMApplicationScopeTests: XCTestCase {
         dependencies: RUMScopeDependencies,
         sdkContext: DatadogContext = .mockWith(sdkInitDate: Date())
     ) -> RUMApplicationScope {
-        let scope = RUMApplicationScope(dependencies: dependencies)
+        let scope = RUMApplicationScope(dependencies: dependencies, onActiveSessionUpdate: recorder.record)
         // Always receive `RUMSDKInitCommand` as the very first command (see: `Monitor.notifySDKInit()`)
         let initCommand = RUMSDKInitCommand(time: sdkContext.sdkInitDate, globalAttributes: [:])
         _ = scope.process(command: initCommand, context: sdkContext, writer: writer)
@@ -44,6 +72,7 @@ class RUMApplicationScopeTests: XCTestCase {
             XCTAssertTrue(isDiscarded)
             expectation.fulfill()
         }
+        recorder.assert([])
 
         // When
         let scope = createRUMApplicationScope(
@@ -58,6 +87,7 @@ class RUMApplicationScopeTests: XCTestCase {
         // Then
         let session = try XCTUnwrap(scope.activeSession)
         XCTAssertTrue(session.isInitialSession, "Starting the very first view in application must create initial session")
+        recorder.assert([true])
     }
 
     #if !os(watchOS)
@@ -70,6 +100,7 @@ class RUMApplicationScopeTests: XCTestCase {
             XCTAssertFalse(isDiscarded)
             expectation.fulfill()
         }
+        recorder.assert([])
 
         // Given
         var currentTime = Date()
@@ -78,6 +109,7 @@ class RUMApplicationScopeTests: XCTestCase {
                 onSessionStart: onSessionStart
             )
         )
+        recorder.assert([true])
 
         let view = createMockViewInWindow()
 
@@ -88,6 +120,7 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         let initialSession = try XCTUnwrap(scope.activeSession)
+        recorder.assert([true])
 
         // When
         // Push time forward by the max session duration:
@@ -100,6 +133,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5)
+        recorder.assert([true, true])
 
         let nextSession = try XCTUnwrap(scope.activeSession)
         XCTAssertNotEqual(initialSession.sessionUUID, nextSession.sessionUUID, "New session must have different id")
@@ -201,13 +235,16 @@ class RUMApplicationScopeTests: XCTestCase {
                 samplingRate: .mockRandom(min: 0, max: 100) // no matter sampling
             )
         )
+        recorder.assert([true])
 
         let command = RUMStartResourceCommand.mockWith(time: currentTime.addingTimeInterval(1))
         _ = scope.process(command: command, context: .mockAny(), writer: writer)
+        recorder.assert([true])
 
         // When
         let stopCommand = RUMStopSessionCommand.mockAny()
         _ = scope.process(command: stopCommand, context: .mockAny(), writer: writer)
+        recorder.assert([true, false])
 
         // Then
         XCTAssertNil(scope.activeSession)
@@ -221,16 +258,19 @@ class RUMApplicationScopeTests: XCTestCase {
                 samplingRate: 100
             )
         )
+        recorder.assert([true])
         _ = scope.process(
             command: RUMCommandMock(time: currentTime.addingTimeInterval(1), isUserInteraction: true),
             context: .mockAny(),
             writer: writer
         )
+        recorder.assert([true])
         _ = scope.process(
             command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)),
             context: .mockAny(),
             writer: writer
         )
+        recorder.assert([true, false])
 
         // When
         _ = scope.process(
@@ -238,6 +278,7 @@ class RUMApplicationScopeTests: XCTestCase {
             context: .mockAny(),
             writer: writer
         )
+        recorder.assert([true, false, true])
 
         // Then
         XCTAssertEqual(scope.sessionScopes.count, 1)
@@ -252,11 +293,13 @@ class RUMApplicationScopeTests: XCTestCase {
                 samplingRate: 100
             )
         )
+        recorder.assert([true])
         _ = scope.process(
             command: RUMStartResourceCommand.mockRandom(),
             context: .mockAny(),
             writer: writer
         )
+        recorder.assert([true])
 
         // When
         _ = scope.process(
@@ -264,6 +307,7 @@ class RUMApplicationScopeTests: XCTestCase {
             context: .mockAny(),
             writer: writer
         )
+        recorder.assert([true, false])
 
         // Then
         XCTAssertEqual(scope.sessionScopes.count, 1)
@@ -278,6 +322,7 @@ class RUMApplicationScopeTests: XCTestCase {
                 samplingRate: 100
             )
         )
+        recorder.assert([true])
         let resourceKey = "resources/1"
         _ = scope.process(
             command: RUMStartResourceCommand.mockWith(
@@ -287,6 +332,7 @@ class RUMApplicationScopeTests: XCTestCase {
             context: .mockAny(),
             writer: writer
         )
+        recorder.assert([true])
 
         // When
         let firstSession = try XCTUnwrap(scope.activeSession)
@@ -295,12 +341,14 @@ class RUMApplicationScopeTests: XCTestCase {
             context: .mockAny(),
             writer: writer
         )
+        recorder.assert([true, false])
         XCTAssertEqual(scope.sessionScopes.count, 1)
         _ = scope.process(
             command: RUMCommandMock(time: currentTime.addingTimeInterval(3), isUserInteraction: true),
             context: .mockAny(),
             writer: writer
         )
+        recorder.assert([true, false, true])
         XCTAssertEqual(scope.sessionScopes.count, 2)
         let secondSession = try XCTUnwrap(scope.activeSession)
         _ = scope.process(
@@ -311,6 +359,7 @@ class RUMApplicationScopeTests: XCTestCase {
             context: .mockAny(),
             writer: writer
         )
+        recorder.assert([true, false, true])
 
         // Then
         XCTAssertNotEqual(firstSession.sessionUUID, secondSession.sessionUUID)

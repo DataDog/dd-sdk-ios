@@ -111,24 +111,17 @@ internal class Monitor: RUMCommandSubscriber {
     private let rumUUIDGenerator: RUMUUIDGenerator
     private let telemetry: Telemetry
 
-    /// When the active session changes, this function should be called with the session's sampler.
-    ///
-    /// Pass the session's `DeterministicSampler` or `nil` if there is no active session (usually
-    /// as a result of a call to `Monitor.stopSession()`.
-    private let onActiveSessionUpdate: (DeterministicSampler?) -> Void
-
     init(
         dependencies: RUMScopeDependencies,
         dateProvider: DateProvider,
         onActiveSessionUpdate: @escaping (DeterministicSampler?) -> Void
     ) {
         self.featureScope = dependencies.featureScope
-        self.scopes = RUMApplicationScope(dependencies: dependencies)
+        self.scopes = RUMApplicationScope(dependencies: dependencies, onActiveSessionUpdate: onActiveSessionUpdate)
         self.dateProvider = dateProvider
         self.fatalErrorContext = dependencies.fatalErrorContext
         self.rumUUIDGenerator = dependencies.rumUUIDGenerator
         self.telemetry = dependencies.telemetry
-        self.onActiveSessionUpdate = onActiveSessionUpdate
     }
 
     func process(command: RUMCommand) {
@@ -143,8 +136,6 @@ internal class Monitor: RUMCommandSubscriber {
             let transformedCommand = self.transform(command: command)
 
             _ = self.scopes.process(command: transformedCommand, context: context, writer: writer)
-
-            self.onActiveSessionUpdate(self.scopes.activeSession?.sampler)
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.scopes)

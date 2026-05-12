@@ -1252,7 +1252,8 @@ extension RUMScopeDependencies {
 
 extension RUMApplicationScope {
     public static func mockAny() -> RUMApplicationScope {
-        return RUMApplicationScope(dependencies: .mockAny())
+        return RUMApplicationScope(dependencies: .mockAny(),
+                                   onActiveSessionUpdate: { _ in })
     }
 }
 
