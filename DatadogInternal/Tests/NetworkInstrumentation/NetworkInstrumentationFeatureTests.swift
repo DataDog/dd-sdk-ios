@@ -2171,10 +2171,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         )
 
         // When
-        let result = provider.receive(message: .context(context), from: core)
+        provider.receive(message: context, from: core)
 
         // Then
-        XCTAssertTrue(result)
         let networkContext = try XCTUnwrap(provider.currentNetworkContext)
 
         // Verify RUM context
@@ -2203,10 +2202,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         )
 
         // When
-        let result = provider.receive(message: .context(context), from: core)
+        provider.receive(message: context, from: core)
 
         // Then
-        XCTAssertTrue(result)
         let networkContext = try XCTUnwrap(provider.currentNetworkContext)
 
         // Verify RUM context is still available
@@ -2218,15 +2216,11 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(networkContext.accountConfigurationContext)
     }
 
-    func testWhenReceivingNonContextMessage_itReturnsFalse() {
+    func testNetworkContextIsNilUntilContextMessageIsReceived() {
         // Given
         let provider = NetworkContextCoreProvider()
 
-        // When
-        let result = provider.receive(message: .payload("some data"), from: core)
-
-        // Then
-        XCTAssertFalse(result)
+        // Then — no DatadogContext delivered yet
         XCTAssertNil(provider.currentNetworkContext)
     }
 

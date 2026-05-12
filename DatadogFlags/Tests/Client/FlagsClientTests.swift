@@ -308,15 +308,18 @@ final class FlagsClientTests: XCTestCase {
             date: .mockAny()
         )
         let data = try JSONEncoder().encode(initialState)
-        let messageReceiver = FeatureMessageReceiverMock()
         let core = SingleFeatureCoreMock<FlagsFeature>(
             dataStore: DataStoreMock(
                 storage: [
                     FlagsClient.defaultName: .value(data, dataStoreDefaultKeyVersion)
                 ]
-            ),
-            messageReceiver: messageReceiver
+            )
         )
+        var rumMessages: [RUMFlagEvaluationMessage] = []
+        let subscription = core.messageBus.subscribe { (msg: RUMFlagEvaluationMessage, _) in
+            rumMessages.append(msg)
+        }
+        defer { core.messageBus.unsubscribe(subscription) }
 
         // When
         Flags.enable(with: .init(trackExposures: false), in: core)
@@ -326,7 +329,7 @@ final class FlagsClientTests: XCTestCase {
 
         // Then
         XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 0, "No exposure events should be written")
-        XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, 1, "RUM integration should still work")
+        XCTAssertEqual(rumMessages.count, 1, "RUM integration should still work")
     }
 
     func testRUMIntegrationDisabled() throws {
@@ -337,15 +340,18 @@ final class FlagsClientTests: XCTestCase {
             date: .mockAny()
         )
         let data = try JSONEncoder().encode(initialState)
-        let messageReceiver = FeatureMessageReceiverMock()
         let core = SingleFeatureCoreMock<FlagsFeature>(
             dataStore: DataStoreMock(
                 storage: [
                     FlagsClient.defaultName: .value(data, dataStoreDefaultKeyVersion)
                 ]
-            ),
-            messageReceiver: messageReceiver
+            )
         )
+        var rumMessages: [RUMFlagEvaluationMessage] = []
+        let subscription = core.messageBus.subscribe { (msg: RUMFlagEvaluationMessage, _) in
+            rumMessages.append(msg)
+        }
+        defer { core.messageBus.unsubscribe(subscription) }
 
         // When
         Flags.enable(with: .init(rumIntegrationEnabled: false), in: core)
@@ -355,7 +361,7 @@ final class FlagsClientTests: XCTestCase {
 
         // Then
         XCTAssertEqual(core.events(ofType: ExposureEvent.self).count, 1, "Exposure should still be logged")
-        XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, 0, "No RUM messages should be sent")
+        XCTAssertEqual(rumMessages.count, 0, "No RUM messages should be sent")
     }
 
     // MARK: - Internal methods consumed by the React Native SDK

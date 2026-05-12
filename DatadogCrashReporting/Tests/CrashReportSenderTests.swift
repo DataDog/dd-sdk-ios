@@ -16,7 +16,8 @@ class CrashReportSenderTests: XCTestCase {
     func testItSendsCrashReportWhenTrackingConsentIsGranted() {
         // Given
         let receiver = CrashReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: receiver)
+        let core = PassthroughCoreMock()
+        core.subscribe(receiver: receiver)
         let sender = MessageBusSender(core: core)
         let crashContext: CrashContext = .mockWith(trackingConsent: .granted)
         let crashReport: DDCrashReport = .mockAny()
@@ -33,7 +34,8 @@ class CrashReportSenderTests: XCTestCase {
     func testItDoesNotSendCrashReportWhenTrackingConsentIsNotGranted() {
         // Given
         let receiver = CrashReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: receiver)
+        let core = PassthroughCoreMock()
+        core.subscribe(receiver: receiver)
         let sender = MessageBusSender(core: core)
         let crashContext: CrashContext = .mockWith(trackingConsent: .notGranted)
         let crashReport: DDCrashReport = .mockAny()
@@ -48,7 +50,8 @@ class CrashReportSenderTests: XCTestCase {
     func testItDoesNotSendCrashReportWhenTrackingConsentIsPending() {
         // Given
         let receiver = CrashReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: receiver)
+        let core = PassthroughCoreMock()
+        core.subscribe(receiver: receiver)
         let sender = MessageBusSender(core: core)
         let crashContext: CrashContext = .mockWith(trackingConsent: .pending)
         let crashReport: DDCrashReport = .mockAny()
@@ -63,7 +66,8 @@ class CrashReportSenderTests: XCTestCase {
     func testItSendsCrashReportWithCorrectContext() {
         // Given
         let receiver = CrashReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: receiver)
+        let core = PassthroughCoreMock()
+        core.subscribe(receiver: receiver)
         let sender = MessageBusSender(core: core)
         let crashContext: CrashContext = .mockWith(
             service: "test-service",

@@ -27,6 +27,8 @@ docs/
 │                          RFC process, build & test quick reference
 ├── TESTING.md           ← Test conventions, mock infrastructure (.mockAny(),
 │                          .mockRandom(), .mockWith()), DatadogCoreProxy usage
+├── MESSAGE_BUS.md       ← Typed pub/sub bus: subscription patterns, all message types,
+│                          how to add a new message
 ├── KNOWN_CONCERNS.md    ← Fragile areas requiring extra caution
 ├── SWIZZLING.md         ← Mandatory swizzling patterns and real incidents
 ├── LLM_FEATURE_DOCS_GUIDELINES.md  ← How to update *_FEATURE.md files
@@ -46,6 +48,7 @@ Feature-specific docs (in each module directory):
 | Add a new feature, command, or provider | `docs/DEVELOPMENT.md` |
 | Write or fix tests | `docs/TESTING.md` |
 | Check naming, lint, commit format | `docs/CONVENTIONS.md` |
+| Send or receive messages between features | `docs/MESSAGE_BUS.md` |
 | Touch swizzling code | `docs/SWIZZLING.md` |
 | Modify a fragile area | `docs/KNOWN_CONCERNS.md` |
 | Work on RUM specifically | `DatadogRUM/RUM_FEATURE.md` |

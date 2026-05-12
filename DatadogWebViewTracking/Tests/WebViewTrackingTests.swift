@@ -238,25 +238,17 @@ class WebViewTrackingTests: XCTestCase {
 
     func testSendingWebEvents() throws {
         let logMessageExpectation = expectation(description: "Log message received")
-        let core = PassthroughCoreMock(
-            messageReceiver: FeatureMessageReceiverMock { message in
-                switch message {
-                case let .webview(.log(event)):
-                    let matcher = JSONObjectMatcher(object: event)
-                    XCTAssertEqual(try? matcher.value("date"), 1_635_932_927_012)
-                    XCTAssertEqual(try? matcher.value("message"), "console error: error")
-                    XCTAssertEqual(try? matcher.value("status"), "error")
-                    XCTAssertEqual(try? matcher.value("view"), ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
-                    XCTAssertEqual(try? matcher.value("error"), ["origin": "console"])
-                    XCTAssertEqual(try? matcher.value("session_id"), "0110cab4-7471-480e-aa4e-7ce039ced355")
-                    logMessageExpectation.fulfill()
-                case .context, .telemetry:
-                    break
-                default:
-                    XCTFail("Unexpected message received: \(message)")
-                }
-            }
-        )
+        let core = PassthroughCoreMock()
+        let subscription = core.messageBus.subscribe { (message: WebViewLogMessage, _) in
+            let matcher = JSONObjectMatcher(object: message.event)
+            XCTAssertEqual(try? matcher.value("date"), 1_635_932_927_012)
+            XCTAssertEqual(try? matcher.value("message"), "console error: error")
+            XCTAssertEqual(try? matcher.value("status"), "error")
+            XCTAssertEqual(try? matcher.value("view"), ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
+            XCTAssertEqual(try? matcher.value("error"), ["origin": "console"])
+            XCTAssertEqual(try? matcher.value("session_id"), "0110cab4-7471-480e-aa4e-7ce039ced355")
+            logMessageExpectation.fulfill()
+        }
 
         let controller = DDUserContentController()
         try WebViewTracking.enableOrThrow(
@@ -295,20 +287,12 @@ class WebViewTrackingTests: XCTestCase {
 
     func testSendingWebRUMEvent() throws {
         let rumMessageExpectation = expectation(description: "RUM message received")
-        let core = PassthroughCoreMock(
-            messageReceiver: FeatureMessageReceiverMock { message in
-                switch message {
-                case let .webview(.rum(event)):
-                    let matcher = JSONObjectMatcher(object: event)
-                    XCTAssertEqual(try? matcher.value("view.id"), "64308fd4-83f9-48cb-b3e1-1e91f6721230")
-                    rumMessageExpectation.fulfill()
-                case .context, .telemetry:
-                    break
-                default:
-                    XCTFail("Unexpected message received: \(message)")
-                }
-            }
-        )
+        let core = PassthroughCoreMock()
+        let subscription = core.messageBus.subscribe { (message: WebViewRUMMessage, _) in
+            let matcher = JSONObjectMatcher(object: message.event)
+            XCTAssertEqual(try? matcher.value("view.id"), "64308fd4-83f9-48cb-b3e1-1e91f6721230")
+            rumMessageExpectation.fulfill()
+        }
 
         let controller = DDUserContentController()
         try WebViewTracking.enableOrThrow(
@@ -386,22 +370,14 @@ class WebViewTrackingTests: XCTestCase {
         let webView = WKWebView()
         let controller = DDUserContentController()
 
-        let core = PassthroughCoreMock(
-            messageReceiver: FeatureMessageReceiverMock { message in
-                switch message {
-                case let .webview(.record(event, view)):
-                    XCTAssertEqual(view.id, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
-                    let matcher = JSONObjectMatcher(object: event)
-                    XCTAssertEqual(try? matcher.value("date"), 1_635_932_927_012)
-                    XCTAssertEqual(try? matcher.value("slotId"), String(webView.hash))
-                    recordMessageExpectation.fulfill()
-                case .context, .telemetry:
-                    break
-                default:
-                    XCTFail("Unexpected message received: \(message)")
-                }
-            }
-        )
+        let core = PassthroughCoreMock()
+        let subscription = core.messageBus.subscribe { (message: WebViewRecordMessage, _) in
+            XCTAssertEqual(message.view.id, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
+            let matcher = JSONObjectMatcher(object: message.event)
+            XCTAssertEqual(try? matcher.value("date"), 1_635_932_927_012)
+            XCTAssertEqual(try? matcher.value("slotId"), String(webView.hash))
+            recordMessageExpectation.fulfill()
+        }
 
         try WebViewTracking.enableOrThrow(
             tracking: controller,
@@ -428,14 +404,9 @@ class WebViewTrackingTests: XCTestCase {
 
     func testItSendsTrackWebViewUsageTelemetry() throws {
         // Given
-        var capturedUsage: UsageTelemetry?
-        let core = PassthroughCoreMock(
-            messageReceiver: FeatureMessageReceiverMock { message in
-                if case .telemetry(.usage(let usage)) = message {
-                    capturedUsage = usage
-                }
-            }
-        )
+        let telemetry = TelemetryReceiverMock()
+        let core = PassthroughCoreMock()
+        core.subscribe(receiver: telemetry)
         let controller = DDUserContentController()
 
         // When
@@ -448,7 +419,7 @@ class WebViewTrackingTests: XCTestCase {
         )
 
         // Then
-        let usage = try XCTUnwrap(capturedUsage, "Expected a usage telemetry event to be sent")
+        let usage = try XCTUnwrap(telemetry.messages.firstUsage(), "Expected a usage telemetry event to be sent")
         XCTAssertEqual(usage.sampleRate, UsageTelemetry.defaultSampleRate)
         guard case .trackWebView = usage.event else {
             XCTFail("Expected .trackWebView usage event")
@@ -458,14 +429,9 @@ class WebViewTrackingTests: XCTestCase {
 
     func testItSendsTrackWebViewUsageTelemetryOnlyOnce() throws {
         // Given
-        var trackWebViewUsageCount = 0
-        let core = PassthroughCoreMock(
-            messageReceiver: FeatureMessageReceiverMock { message in
-                if case .telemetry(.usage(let usage)) = message, case .trackWebView = usage.event {
-                    trackWebViewUsageCount += 1
-                }
-            }
-        )
+        let telemetry = TelemetryReceiverMock()
+        let core = PassthroughCoreMock()
+        core.subscribe(receiver: telemetry)
         let controller = DDUserContentController()
 
         // When - enable is called multiple times on the same controller
@@ -480,19 +446,21 @@ class WebViewTrackingTests: XCTestCase {
         }
 
         // Then
-        XCTAssertEqual(trackWebViewUsageCount, 1)
+        let usageCount = telemetry.messages.filter {
+            if case .usage = $0 {
+                return true
+            } else {
+                return false
+            }
+        }.count
+        XCTAssertEqual(usageCount, 1)
     }
 
     func testItSendsTrackWebViewUsageTelemetryAgainAfterDisable() throws {
         // Given
-        var trackWebViewUsageCount = 0
-        let core = PassthroughCoreMock(
-            messageReceiver: FeatureMessageReceiverMock { message in
-                if case .telemetry(.usage(let usage)) = message, case .trackWebView = usage.event {
-                    trackWebViewUsageCount += 1
-                }
-            }
-        )
+        let telemetry = TelemetryReceiverMock()
+        let core = PassthroughCoreMock()
+        core.subscribe(receiver: telemetry)
         let controller = DDUserContentController()
         let configuration = WKWebViewConfiguration()
         configuration.userContentController = controller
@@ -500,13 +468,27 @@ class WebViewTrackingTests: XCTestCase {
 
         // When
         WebViewTracking.enable(webView: webview, in: core)
-        XCTAssertEqual(trackWebViewUsageCount, 1)
+        let countAfterFirstEnable = telemetry.messages.filter {
+            if case .usage = $0 {
+                return true
+            } else {
+                return false
+            }
+        }.count
+        XCTAssertEqual(countAfterFirstEnable, 1)
 
         WebViewTracking.disable(webView: webview)
         WebViewTracking.enable(webView: webview, in: core)
 
         // Then - disable clears user scripts so the duplicate guard passes again on re-enable
-        XCTAssertEqual(trackWebViewUsageCount, 2)
+        let countAfterSecondEnable = telemetry.messages.filter {
+            if case .usage = $0 {
+                return true
+            } else {
+                return false
+            }
+        }.count
+        XCTAssertEqual(countAfterSecondEnable, 2)
     }
 }
 

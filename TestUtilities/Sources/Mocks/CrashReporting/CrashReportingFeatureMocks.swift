@@ -108,15 +108,11 @@ public class CrashReportSenderMock: CrashReportSender {
     public func send(launch: DatadogInternal.LaunchReport) {}
 }
 
-public class CrashReceiverMock: FeatureMessageReceiver {
+public final class CrashReceiverMock: BusMessageReceiver {
     public var receivedCrash: Crash?
 
-    public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(crash as Crash) = message else {
-            return false
-        }
-        receivedCrash = crash
-        return true
+    public func receive(message: Crash, from core: DatadogCoreProtocol) {
+        receivedCrash = message
     }
 
     public init() {}
