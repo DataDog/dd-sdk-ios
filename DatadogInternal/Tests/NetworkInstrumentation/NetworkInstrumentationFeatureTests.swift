@@ -38,24 +38,34 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     // MARK: - Test Helpers
 
-    /// Sets up a test with interception expectations for single-request scenarios.
+    /// Sets up a test with interception expectations.
     /// Returns server, start expectation, and complete expectation.
     private func setupInterceptionTest(
         dataSize: Int = 10,
-        statusCode: Int = 200,
-        skipIsMainThreadCheck: Bool = false
+        error: NSError? = nil,
+        skipIsMainThreadCheck: Bool = false,
+        expectedFulfillmentCount: Int = 1
     ) -> (ServerMock, XCTestExpectation, XCTestExpectation) {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        notifyInterceptionDidStart.expectedFulfillmentCount = expectedFulfillmentCount
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
-        let server = ServerMock(
-            delivery: .success(response: .mockResponseWith(statusCode: statusCode), data: .mock(ofSize: dataSize)),
-            skipIsMainThreadCheck: true
-        )
+        notifyInterceptionDidComplete.expectedFulfillmentCount = expectedFulfillmentCount
 
+        let delivery: ServerMock.Delivery = error.map { .failure(error: $0) } ?? .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: dataSize))
+        let server = ServerMock(delivery: delivery, skipIsMainThreadCheck: true)
+
+        scopeHandler(to: server)
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         return (server, notifyInterceptionDidStart, notifyInterceptionDidComplete)
+    }
+
+    /// Scopes `handler` to traffic produced by `server`'s URLSession. The resume swizzle is
+    /// process-global, so foreign URLSession activity in the test process would otherwise reach
+    /// the handler.
+    private func scopeHandler(to server: ServerMock) {
+        handler.shouldInterceptRequest = { [weak server] req in server?.isMyRequest(req) ?? false }
     }
 
     // MARK: - Registered Delegate Mode
@@ -105,6 +115,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onRequestMutation = { _, _, _ in notifyRequestMutation.fulfill() }
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        scopeHandler(to: server)
 
         // Given
         let url: URL = .mockAny()
@@ -413,6 +424,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             notifyInterceptionDidStart.fulfill()
         }
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        scopeHandler(to: server)
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
@@ -989,6 +1001,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
             skipIsMainThreadCheck: true
         )
+        scopeHandler(to: server)
 
         // Given - Enable both automatic and registered delegate modes (reflects real-world usage)
         let delegate1 = MockDelegate()
@@ -1291,18 +1304,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     @available(iOS 16, tvOS 16, watchOS 8, *)
     func testGivenBothModesEnabled_whenUsingAsyncAPI_itCapturesAllValues() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
-        notifyInterceptionDidStart.expectedFulfillmentCount = 2
-        notifyInterceptionDidComplete.expectedFulfillmentCount = 2
-
-        let server = ServerMock(
-            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
-            skipIsMainThreadCheck: true
-        )
-
-        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
-        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(skipIsMainThreadCheck: true, expectedFulfillmentCount: 2)
 
         // Given - Enable both modes
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
@@ -1362,6 +1364,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
             skipIsMainThreadCheck: true
         )
+        scopeHandler(to: server)
 
         // Given - Both modes enabled
         let delegate = SessionDataDelegateMock()
@@ -1447,14 +1450,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testGivenRegisteredDelegate_whenTaskCompletesWithFailure_itCapturesError() throws {
-        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
-
         let expectedError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "some error"])
-        let server = ServerMock(delivery: .failure(error: expectedError))
-
-        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
-        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        let (server, _, _) = setupInterceptionTest(error: expectedError)
 
         let dateBeforeRequest = Date()
 
@@ -1492,13 +1489,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testGivenRegisteredDelegate_whenTaskCompletesWithSuccess_itCapturesAllValues() throws {
-        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
-
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mockRandom()))
-
-        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
-        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        let (server, _, _) = setupInterceptionTest()
 
         let dateBeforeRequest = Date()
 
@@ -1595,6 +1586,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        scopeHandler(to: server)
 
         // Given - Enable only automatic mode
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
@@ -1641,14 +1633,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testGivenAutomaticMode_whenTaskCompletesWithFailure_itCapturesError() throws {
-        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
-
         let testError = NSError(domain: "test", code: 123, userInfo: nil)
-        let server = ServerMock(delivery: .failure(error: testError))
-
-        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
-        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(error: testError)
 
         // Given - Enable only automatic mode
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
@@ -1686,19 +1672,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     @available(iOS 16, tvOS 16, watchOS 8, *)
     func testGivenRegisteredDelegate_whenUsingAsyncAPI_itCapturesAllValues() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
-        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
-        notifyInterceptionDidStart.expectedFulfillmentCount = 2
-        notifyInterceptionDidComplete.expectedFulfillmentCount = 2
-
         let expectedError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "some error"])
-        let server = ServerMock(
-            delivery: .failure(error: expectedError),
-            skipIsMainThreadCheck: true
-        )
-
-        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
-        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest(error: expectedError, skipIsMainThreadCheck: true, expectedFulfillmentCount: 2)
 
         let dateBeforeAnyRequests = Date()
 
@@ -1862,6 +1837,46 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(intercepted.count, 0, "Should not intercept DatadogSDKTesting CI Visibility uploads (DD-API-KEY without DD-REQUEST-ID)")
     }
 
+    /// Regression test: the resume swizzle is process-global, so foreign URLSession activity in
+    /// the test process (e.g. `DatadogSDKTesting`) was reaching the test handler and over-fulfilling
+    /// expectations with `NSInternalInconsistencyException: multiple calls made to -[XCTestExpectation fulfill]`.
+    /// `setupInterceptionTest` defends against this via `shouldInterceptRequest`; this test verifies
+    /// that a foreign request is not observed.
+    func testAutomaticMode_handlerIgnoresForeignURLSessionTraffic() throws {
+        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
+
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        // Foreign URLSession not produced by `ServerMock` — simulates any other framework using
+        // URLSession in the same process.
+        let foreignSession = URLSession(configuration: .ephemeral)
+        let foreignTask = foreignSession.dataTask(with: URL(string: "http://example.invalid/foreign")!)
+        foreignTask.resume()
+        foreignTask.cancel() // resume hook has already fired; short-circuit any real network IO
+
+        // Real test traffic through the `ServerMock`-backed session.
+        let session = server.getInterceptedURLSession()
+        let task = session.dataTask(with: URL.mockAny())
+
+        // The rest of this test depends on `httpAdditionalHeaders` having the UUID
+        // on `task.currentRequest` so ServerMock can recognize its own session.
+        let currentRequest = try XCTUnwrap(task.currentRequest)
+        XCTAssertTrue(server.isMyRequest(currentRequest), "ServerMock should recognize its own session's task")
+
+        task.resume()
+
+        wait(
+            for: [notifyInterceptionDidStart, notifyInterceptionDidComplete],
+            timeout: 5,
+            enforceOrder: true
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+
+        XCTAssertEqual(handler.interceptions.count, 1, "Only the `ServerMock`-backed request should be captured")
+        let interception = try XCTUnwrap(handler.interceptions.first).value
+        XCTAssertEqual(interception.request.url, URL.mockAny(), "Should be the `ServerMock` task, not the foreign one")
+    }
+
     // MARK: - URLSessionTask Interception
 
     func testWhenInterceptingTaskWithMultipleTraceContexts_itTakesTheFirstContext() throws {
@@ -1979,6 +1994,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testAutomaticMode_detectsFirstPartyHosts() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        scopeHandler(to: server)
 
         // Given - Configure first-party hosts
         let url = URL(string: "https://api.example.com")!
@@ -2009,6 +2025,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyRequestMutation = expectation(description: "Notify request mutation")
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        scopeHandler(to: server)
 
         // Given - Configure first-party hosts
         let url = URL(string: "https://api.example.com")!
@@ -2043,6 +2060,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testAutomaticMode_doesNotInjectHeadersForThirdPartyHosts() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        scopeHandler(to: server)
 
         // Given - Configure first-party hosts that don't match the request URL
         handler.firstPartyHosts = .init(
@@ -2075,6 +2093,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testRegisteredDelegate_detectsFirstPartyHosts() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        scopeHandler(to: server)
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
