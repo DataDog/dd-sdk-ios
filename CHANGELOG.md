@@ -1,5 +1,7 @@
 # Unreleased
 
+# 3.11.0 / 12-05-2026
+
 - [IMPROVEMENT] Add support for `maui` source for cross-platform RUM events from .NET MAUI applications. See [#2891][]
 - [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
 - [IMPROVEMENT] Skip malformed RUM attributes individually instead of dropping the entire event, and log clear error messages. See [#2844][]
