@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 #endif
 import DatadogInternal
+import XCTest
 
 @testable import DatadogRUM
 
@@ -1106,6 +1107,10 @@ public func mockNoOpSessionListener() -> RUM.SessionListener {
     return { _, _ in }
 }
 
+public func mockNoOpSessionUpdater() -> RUM.SessionUpdater {
+    return { _ in }
+}
+
 public class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
     public var sessionState: RUMSessionState?
     public var view: RUMViewEvent?
@@ -1138,7 +1143,7 @@ extension RUMScopeDependencies {
         viewHitchesReaderFactory: @escaping () -> (ViewHitchesModel & RenderLoopReader)? = { ViewHitchesMock.mockAny() },
         vitalsReaders: VitalsReaders? = nil,
         accessibilityReader: AccessibilityReading? = nil,
-        onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
+        onSessionUpdate: @escaping RUM.SessionUpdater = mockNoOpSessionUpdater(),
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider()),
         fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
         sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry(), sampleRate: 0, tracksBackgroundEvents: .mockAny(), isUsingSceneLifecycle: .mockAny()),
@@ -1174,7 +1179,7 @@ extension RUMScopeDependencies {
             viewHitchesReaderFactory: viewHitchesReaderFactory,
             vitalsReaders: vitalsReaders,
             accessibilityReader: accessibilityReader,
-            onSessionStart: onSessionStart,
+            onSessionUpdate: onSessionUpdate,
             viewCache: viewCache,
             fatalErrorContext: fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric,
@@ -1206,7 +1211,7 @@ extension RUMScopeDependencies {
         viewHitchesReaderFactory: (() -> RenderLoopReader & ViewHitchesModel)? = nil,
         vitalsReaders: VitalsReaders? = nil,
         accessibilityReader: AccessibilityReading? = nil,
-        onSessionStart: RUM.SessionListener? = nil,
+        onSessionUpdate: RUM.SessionUpdater? = nil,
         viewCache: ViewCache? = nil,
         fatalErrorContext: FatalErrorContextNotifying? = nil,
         sessionEndedMetric: SessionEndedMetricController? = nil,
@@ -1236,7 +1241,7 @@ extension RUMScopeDependencies {
             viewHitchesReaderFactory: viewHitchesReaderFactory ?? self.viewHitchesReaderFactory,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
             accessibilityReader: accessibilityReader,
-            onSessionStart: onSessionStart ?? self.onSessionStart,
+            onSessionUpdate: onSessionUpdate ?? self.onSessionUpdate,
             viewCache: viewCache ?? self.viewCache,
             fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext,
             sessionEndedMetric: sessionEndedMetric ?? self.sessionEndedMetric,
@@ -1252,8 +1257,7 @@ extension RUMScopeDependencies {
 
 extension RUMApplicationScope {
     public static func mockAny() -> RUMApplicationScope {
-        return RUMApplicationScope(dependencies: .mockAny(),
-                                   onActiveSessionUpdate: { _ in })
+        return RUMApplicationScope(dependencies: .mockAny())
     }
 }
 

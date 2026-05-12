@@ -92,7 +92,7 @@ internal class WebViewTrackingMessageReceiver: FeatureMessageReceiver {
             self.previousIsTraceSampled = newIsTraceSampled
 
             // Running the following call synchronously on the main queue
-            // causes locks when other functions, like core.flush(), are called.
+            // causes deadlocks when other functions, like core.flush(), are called.
             // To avoid this, we queue asynchronously.
             DispatchQueue.main.async { [sessionRolloverHandler] in
                 sessionRolloverHandler?.updateViews(isTraceSampled: newIsTraceSampled)

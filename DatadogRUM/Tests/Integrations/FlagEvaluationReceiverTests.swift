@@ -18,8 +18,7 @@ class FlagEvaluationReceiverTests: XCTestCase {
         let receiver = FlagEvaluationReceiver(
             monitor: Monitor(
                 dependencies: .mockWith(featureScope: featureScope),
-                dateProvider: SystemDateProvider(),
-                onActiveSessionUpdate: { _ in }
+                dateProvider: SystemDateProvider()
             )
         )
         let message: FeatureMessage = .payload(

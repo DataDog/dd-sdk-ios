@@ -14,8 +14,7 @@ class RUMSessionScopeTests: XCTestCase {
     let writer = FileWriterMock()
 
     private lazy var parent = RUMApplicationScope(
-        dependencies: .mockWith(rumApplicationID: "rum-123"),
-        onActiveSessionUpdate: { _ in }
+        dependencies: .mockWith(rumApplicationID: "rum-123")
     )
 
     func testDefaultContext() {

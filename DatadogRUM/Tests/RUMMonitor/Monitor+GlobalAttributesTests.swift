@@ -17,8 +17,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
     override func setUp() {
         monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
-            dateProvider: SystemDateProvider(),
-            onActiveSessionUpdate: { _ in }
+            dateProvider: SystemDateProvider()
         )
     }
 
@@ -569,8 +568,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         // Given
         monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
-            dateProvider: SystemDateProvider(),
-            onActiveSessionUpdate: { _ in }
+            dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
 
@@ -588,8 +586,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         let mockAttributes: [AttributeKey: AttributeValue] = (0...99).reduce(into: [:]) { $0[String(describing: $1)] = $1 }
         monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
-            dateProvider: SystemDateProvider(),
-            onActiveSessionUpdate: { _ in }
+            dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
 
@@ -609,8 +606,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         // Given
         monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
-            dateProvider: SystemDateProvider(),
-            onActiveSessionUpdate: { _ in }
+            dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
 
@@ -631,8 +627,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         let keysToRemove = [try XCTUnwrap(mockAttributes.first?.key)]
         monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
-            dateProvider: SystemDateProvider(),
-            onActiveSessionUpdate: { _ in }
+            dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
 

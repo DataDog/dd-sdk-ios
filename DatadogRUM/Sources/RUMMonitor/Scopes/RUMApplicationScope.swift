@@ -32,12 +32,6 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         get { return sessionScopes.first(where: { $0.isActive }) }
     }
 
-    /// When the active session changes, this function should be called with the session's sampler.
-    ///
-    /// Pass the session's `DeterministicSampler` or `nil` if there is no active session (usually
-    /// as a result of a call to `Monitor.stopSession()`.
-    private let onActiveSessionUpdate: (DeterministicSampler?) -> Void
-
     // MARK: - Initialization
 
     /// Container bundling dependencies for this scope.
@@ -49,10 +43,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Ensures the fallback to `launchReasonResolver` is logged only once when `launchReason` is unexpectedly `.uncertain` on iOS.
     private var didLogFallbackToResolver = false
 
-    init(
-        dependencies: RUMScopeDependencies,
-        onActiveSessionUpdate: @escaping (DeterministicSampler?) -> Void
-    ) {
+    init(dependencies: RUMScopeDependencies) {
         self.dependencies = dependencies
 
         self.context = RUMContext(
@@ -64,8 +55,6 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             activeViewName: nil,
             activeUserActionID: nil
         )
-
-        self.onActiveSessionUpdate = onActiveSessionUpdate
     }
 
     // MARK: - RUMContextProvider
@@ -211,10 +200,10 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.error("An application has \(activeSessions.count) active sessions")
         }
         if activeSessions.isEmpty {
-            // There is no need to call `onActiveSessionUpdate` if we have
-            // active sessions because we are certain it was already called
-            // when sessions were created.
-            onActiveSessionUpdate(nil)
+            // There is no need to call `sessionScopeDidUpdate` here if we have
+            // active sessions because we are certain it was already called when
+            // sessions were created.
+            sessionScopeDidUpdate(nil)
         }
     }
 
@@ -257,7 +246,6 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         lastSessionEndReason = nil
         sessionScopes.append(initialSession)
         sessionScopeDidUpdate(initialSession)
-        onActiveSessionUpdate(initialSession.sampler)
     }
 
     /// Starts new RUM Session immediately after previous one expires or time outs. It transfers some of the state from the expired session to the new one.
@@ -287,7 +275,6 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             applicationState: applicationState
         )
         sessionScopeDidUpdate(refreshedSession)
-        onActiveSessionUpdate(refreshedSession.sampler)
         lastActiveView = nil
         lastSessionEndReason = nil
         _ = refreshedSession.process(command: command, context: context, writer: writer)
@@ -335,13 +322,10 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         lastSessionEndReason = nil
         sessionScopes.append(newSession)
         sessionScopeDidUpdate(newSession)
-        onActiveSessionUpdate(newSession.sampler)
     }
 
-    private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope) {
-        let sessionID = sessionScope.sessionUUID.rawValue.uuidString
-        let isDiscarded = !sessionScope.sampler.isSampled
-        dependencies.onSessionStart?(sessionID, isDiscarded)
+    private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope?) {
+        dependencies.onSessionUpdate(sessionScope)
     }
 
     /// Forces the `ApplicationLaunchView` to be started.

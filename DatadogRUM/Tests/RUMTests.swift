@@ -285,30 +285,6 @@ class RUMTests: XCTestCase {
         XCTAssertNil(eventsMapper.longTaskEventMapper)
     }
 
-    func testWhenEnabledWithSessionStartListener() throws {
-        // Given
-        config.onSessionStart = { _, _ in }
-
-        // When
-        RUM.enable(with: config, in: core)
-
-        // Then
-        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        XCTAssertNotNil(monitor.scopes.dependencies.onSessionStart)
-    }
-
-    func testWhenEnabledWithNoSessionStartListener() throws {
-        // Given
-        config.onSessionStart = nil
-
-        // When
-        RUM.enable(with: config, in: core)
-
-        // Then
-        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        XCTAssertNil(monitor.scopes.dependencies.onSessionStart)
-    }
-
     func testWhenEnabledWithCustomEndpoint() throws {
         // Given
         let randomURL: URL = .mockRandom()

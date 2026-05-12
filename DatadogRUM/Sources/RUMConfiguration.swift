@@ -426,6 +426,15 @@ extension RUM {
         internal var syntheticsEnvironment: Bool { syntheticsTestId != nil || syntheticsResultId != nil }
         internal var sessionTypeOverride: String? = ProcessInfo.processInfo.environment["DD_SESSION_TYPE"]
     }
+
+    // MARK: - Internal
+
+    /// Used by `RUMApplicationScope` to notify when a session changes.
+    ///
+    /// In normal conditions the implementation should call the configuration's `onSessionStart`
+    /// if session scope is not `nil`, and do any additional work required. Check `RUMFeature.init`
+    /// where a `SessionUpdater` is created.
+    internal typealias SessionUpdater = (RUMSessionScope?) -> Void
 }
 
 extension RUM.Configuration.URLSessionTracking {

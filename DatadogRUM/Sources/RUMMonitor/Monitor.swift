@@ -113,11 +113,10 @@ internal class Monitor: RUMCommandSubscriber {
 
     init(
         dependencies: RUMScopeDependencies,
-        dateProvider: DateProvider,
-        onActiveSessionUpdate: @escaping (DeterministicSampler?) -> Void
+        dateProvider: DateProvider
     ) {
         self.featureScope = dependencies.featureScope
-        self.scopes = RUMApplicationScope(dependencies: dependencies, onActiveSessionUpdate: onActiveSessionUpdate)
+        self.scopes = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
         self.fatalErrorContext = dependencies.fatalErrorContext
         self.rumUUIDGenerator = dependencies.rumUUIDGenerator

@@ -110,6 +110,15 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             }
         }()
 
+        let onSessionUpdate: RUM.SessionUpdater = { [onSessionStart = configuration.onSessionStart, _rumSessionSampler] sessionScope in
+            if let sessionScope {
+                let sessionID = sessionScope.sessionUUID.rawValue.uuidString
+                let isDiscarded = !sessionScope.sampler.isSampled
+                onSessionStart?(sessionID, isDiscarded)
+            }
+            _rumSessionSampler.mutate { $0 = sessionScope?.sampler }
+        }
+
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
@@ -147,7 +156,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 )
             },
             accessibilityReader: accessibilityReader,
-            onSessionStart: configuration.onSessionStart,
+            onSessionUpdate: onSessionUpdate,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
@@ -193,10 +202,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         self.monitor = Monitor(
             dependencies: dependencies,
-            dateProvider: configuration.dateProvider,
-            onActiveSessionUpdate: { [_rumSessionSampler] sampler in
-                _rumSessionSampler.mutate { $0 = sampler }
-            }
+            dateProvider: configuration.dateProvider
         )
 
         if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {
