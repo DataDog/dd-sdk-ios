@@ -10,15 +10,14 @@
 - [IMPROVEMENT] Add `collectAccessibility` property to the Objective-C API of RUM configuration. See [#2855][]
 - [IMPROVEMENT] Add Objective-C APIs for `networkSettledResourcePredicate` and `nextViewActionPredicate` of RUM configuration. See [#2856][]
 - [FIX] Fix `us2_fed` intake hostname. See [#2866][]
+- [FEATURE] Add `redactedStatusCodes` to `Trace.Configuration.URLSessionTracking` to configure which HTTP status codes have their resource URL replaced with the status code string in spans. Defaults to `[404]` for backward compatibility. See [#2845][]
 
 # 3.10.0 / 16-04-2026
 
-- [FEATURE] Add `redactedStatusCodes` to `Trace.Configuration.URLSessionTracking` to configure which HTTP status codes have their resource URL replaced with the status code string in spans. Defaults to `[404]` for backward compatibility. See [#2845][]
 - [FEATURE] Add Mobile Heatmaps support. See [#2829][]
 - [FEATURE] Add watchOS and visionOS support. See [#2817][]
 - [FEATURE] Add support for the FedRAMP-compatible `fed2.ddog-gov.com` site. See [#2827][]
 - [IMPROVEMENT] Rename RUM Operations APIs. See [#2802][]
-
 
 # 3.9.1 / 16-04-2026
 
