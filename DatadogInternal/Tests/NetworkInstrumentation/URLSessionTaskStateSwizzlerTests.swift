@@ -118,11 +118,12 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         task1.resume()
 
         wait(for: [task1CompletedExpectation], timeout: 3)
-        let countAfterTask1 = interceptionCount
-        XCTAssertGreaterThanOrEqual(countAfterTask1, 2, "Task1 should have at least 2 state changes")
 
         // Unswizzle
         swizzler.unswizzle()
+
+        let countAfterTask1 = interceptionCount
+        XCTAssertGreaterThanOrEqual(countAfterTask1, 2, "Task1 should have at least 2 state changes")
 
         // When - Second task should NOT be intercepted
         let task2 = session.dataTask(with: url) { _, _, _ in }
