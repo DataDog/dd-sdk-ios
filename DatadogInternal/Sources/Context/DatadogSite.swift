@@ -55,9 +55,10 @@ extension DatadogSite {
     @_spi(Internal)
     public func remoteConfigurationURL(for id: String) -> URL? {
         // Format: https://sdk-configuration.browser-intake-{site}/v1/{id}.json
-        // `.urlPathAllowed` leaves `/` unencoded (it is legal in a path).
-        // Subtract it so a slash in the ID doesn't produce extra path segments.
-        let pathSegmentAllowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+        // `.urlPathAllowed` leaves `/`, `?`, and `#` unencoded (they are legal in a URL).
+        // Subtract them so an ID containing those characters doesn't produce extra path
+        // segments, a query string, or a fragment.
+        let pathSegmentAllowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))
         guard let encoded = id.addingPercentEncoding(withAllowedCharacters: pathSegmentAllowed) else {
             return nil
         }

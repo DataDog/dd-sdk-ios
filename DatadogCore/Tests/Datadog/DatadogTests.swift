@@ -553,9 +553,11 @@ class DatadogTests: XCTestCase {
     // MARK: Remote Configuration
 
     func testGivenNoRemoteConfigurationID_fetchIsSkipped() {
-        // Given — inject a session whose handler fails the test if ever called
+        // Given — inject a session that fulfils an inverted expectation if called
+        let noFetchExpectation = expectation(description: "no remote config fetch should occur")
+        noFetchExpectation.isInverted = true
         RemoteConfigMockURLProtocol.requestHandler = { _ in
-            XCTFail("No remote config fetch should occur when remoteConfigurationID is nil")
+            noFetchExpectation.fulfill()
             throw URLError(.cancelled)
         }
         var config = defaultConfig
@@ -566,11 +568,10 @@ class DatadogTests: XCTestCase {
 
         // When
         Datadog.initialize(with: config, trackingConsent: .granted)
+        defer { Datadog.flushAndDeinitialize() }
 
-        // Then — reaching here without XCTFail confirms no fetch was triggered.
-        // No expectation wait is needed: when remoteConfigurationID is nil the guard
-        // in Datadog.swift returns early and no URLSession task is ever scheduled.
-        Datadog.flushAndDeinitialize()
+        // Then — the inverted expectation times out (i.e. passes) if no request is fired.
+        waitForExpectations(timeout: 0.5)
     }
 
     func testGivenRemoteConfigurationID_fetchIsTriggered() {

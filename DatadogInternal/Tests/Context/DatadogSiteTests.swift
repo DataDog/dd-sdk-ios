@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@_spi(Internal)
 import DatadogInternal
 
 class DatadogSiteTests: XCTestCase {
@@ -64,5 +65,19 @@ class DatadogSiteTests: XCTestCase {
         // Without this, "a/b" would produce …/v1/a/b.json (wrong path) instead of …/v1/a%2Fb.json.
         let url = DatadogSite.us1.remoteConfigurationURL(for: "a/b")
         XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.com/v1/a%2Fb.json")
+    }
+
+    func testIDWithQuestionMarkDoesNotProduceQueryString() {
+        // A `?` in the ID must be encoded as %3F so it doesn't start a query string.
+        // Without this, "id?query" would produce …/v1/id?query.json (malformed URL).
+        let url = DatadogSite.us1.remoteConfigurationURL(for: "id?query")
+        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.com/v1/id%3Fquery.json")
+    }
+
+    func testIDWithHashDoesNotProduceFragment() {
+        // A `#` in the ID must be encoded as %23 so it doesn't start a URL fragment.
+        // Without this, "id#section" would produce …/v1/id#section.json (truncated path).
+        let url = DatadogSite.us1.remoteConfigurationURL(for: "id#section")
+        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.com/v1/id%23section.json")
     }
 }
