@@ -137,6 +137,10 @@ internal class WebViewSessionRolloverHandler {
     ///
     /// - throws: If a problem happens registering a newly created feature.
     static func register(webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements) throws {
+        // In some situations, like users manually removing the injected user scripts and enabling tracking on the
+        // WebView again, we cannot detect the view is already instrumented. So, just in case, try to unregister
+        // the given WebView it before registering it.
+        unregister(webView: webView)
         let feature = try WebViewTrackingFeature.obtainOrRegisterFeature(in: core)
         handlerPerView.setObject(feature.sessionRolloverHandler, forKey: webView)
         feature.sessionRolloverHandler.register(webView: webView, elements: elements)
