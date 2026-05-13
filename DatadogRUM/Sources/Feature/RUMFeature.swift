@@ -25,7 +25,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
     /// Used by WebViewTracking to obtain the RUM session sampler synchronously.
     @ReadWriteLock
-    var rumSessionSampler: DeterministicSampler?
+    private(set) var rumSessionSampler: DeterministicSampler?
 
     /// Overrides the max file age.
     let performanceOverride: PerformancePresetOverride? = PerformancePresetOverride(

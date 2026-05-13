@@ -184,7 +184,7 @@ extension WebViewEventReceiver: AnyMockable {
             featureScope: featureScope,
             dateProvider: dateProvider,
             commandSubscriber: commandSubscriber,
-            viewCache: viewCache,
+            viewCache: viewCache
         )
     }
 }
