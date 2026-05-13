@@ -246,6 +246,8 @@ extension Datadog {
         internal var appStateProvider: AppStateProvider = DefaultAppStateProvider()
 
         /// The URLSession used for remote configuration fetching. Replaceable in tests.
+        /// TODO: Build this session from `proxyConfiguration` so remote config fetches respect
+        /// proxy settings in restricted network environments (same as the main HTTP client).
         internal var remoteConfigurationSession = URLSession(configuration: .ephemeral)
     }
 }

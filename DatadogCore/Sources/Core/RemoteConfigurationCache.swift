@@ -46,10 +46,11 @@ internal final class RemoteConfigurationCache {
 
     // MARK: - Internal
 
-    /// Writes raw CDN response bytes to disk atomically.
+    /// Writes raw CDN response bytes to disk atomically and updates the in-memory copy.
     /// Called only on a successful CDN response — never on failure.
     /// Write errors are swallowed silently; the cache is best-effort.
     func save(_ data: Data) {
         try? data.write(to: fileURL, options: .atomic)
+        self.data = data
     }
 }
