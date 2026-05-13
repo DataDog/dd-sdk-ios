@@ -6,8 +6,6 @@
 
 import Foundation
 
-public let RUMFeatureName = "rum"
-
 /// Provides the RUM session deterministic sampler for the active session.
 public protocol RUMSessionSamplerProvider {
     /// The RUM session deterministic sampler for the active session. `nil` if there is no active session.

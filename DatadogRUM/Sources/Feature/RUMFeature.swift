@@ -9,7 +9,7 @@ import DatadogInternal
 import UIKit
 
 internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider {
-    static var name: String { RUMFeatureName }
+    static var name: String { Feature.rum }
 
     let requestBuilder: FeatureRequestBuilder
 

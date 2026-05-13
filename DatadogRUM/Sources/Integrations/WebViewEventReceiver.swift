@@ -127,7 +127,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 }
                 if dd["rule_psr"] != nil,
                    let networkInstrumentation = core.feature(
-                    named: NetworkInstrumentationFeatureName,
+                    named: Feature.networkInstrumentation,
                     type: DistributedTracingSampleRateProvider.self
                    ),
                    let distributedTracingSampleRate = networkInstrumentation.distributedTracingSampleRate {

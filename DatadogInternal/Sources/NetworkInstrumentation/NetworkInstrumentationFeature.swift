@@ -6,8 +6,6 @@
 
 import Foundation
 
-public let NetworkInstrumentationFeatureName = "network-instrumentation"
-
 /// The Network Instrumentation Feature that can be registered into a core if
 /// any handler is provided.
 ///
@@ -21,7 +19,7 @@ public let NetworkInstrumentationFeatureName = "network-instrumentation"
 /// Registering multiple handlers will aggregate instrumentation.
 internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The Feature name: "network-instrumentation".
-    static var name: String { NetworkInstrumentationFeatureName }
+    static var name: String { Feature.networkInstrumentation }
 
     /// Network Instrumentation serial queue for safe and serialized access to the
     /// `URLSessionTask` interceptions.

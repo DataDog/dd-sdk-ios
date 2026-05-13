@@ -153,7 +153,7 @@ public enum WebViewTracking {
         let webkitMethodName = "window.webkit.messageHandlers.\(bridgeName).postMessage"
 
         let sessionReplay = core.feature(
-            named: SessionReplayFeatureName,
+            named: Feature.sessionReplay,
             type: SessionReplayConfiguration.self
         )
 
@@ -290,7 +290,7 @@ public enum WebViewTracking {
     ///
     /// - Returns: The string ready to be injected in the bridge as explained above.
     static func isTraceSampledStringValue(for core: DatadogCoreProtocol) -> String {
-        guard let rum = core.feature(named: RUMFeatureName, type: RUMSessionSamplerProvider.self),
+        guard let rum = core.feature(named: Feature.rum, type: RUMSessionSamplerProvider.self),
               let sessionSampler = rum.rumSessionSampler else {
             return "null"
         }
@@ -329,7 +329,7 @@ public enum WebViewTracking {
     /// - Returns: The string ready to be injected in the bridge as explained above.
     static func isTraceSampledStringValue(for core: DatadogCoreProtocol, sessionSampler: DeterministicSampler?) -> String {
         guard let sessionSampler,
-              let networkInstrumentation = core.feature(named: NetworkInstrumentationFeatureName, type: DistributedTracingSampleRateProvider.self),
+              let networkInstrumentation = core.feature(named: Feature.networkInstrumentation, type: DistributedTracingSampleRateProvider.self),
               let distributedTracingSampleRate = networkInstrumentation.distributedTracingSampleRate else {
             return "null"
         }
