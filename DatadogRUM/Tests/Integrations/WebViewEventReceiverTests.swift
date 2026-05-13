@@ -456,4 +456,147 @@ class WebViewEventReceiverTests: XCTestCase {
         let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
     }
+
+    // MARK: - Anonymous ID Propagation
+
+    func testGivenAnonymousIdAvailable_whenReceivingWebEventWithExistingUsr_itAddsAnonymousIdAndPreservesWebFields() throws {
+        // Given
+        let dateProvider = RelativeDateProvider()
+        let fakeAnonymousId: String = .mockRandom()
+        let webUsrId: String = .mockRandom()
+        let webUsrName: String = .mockRandom()
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            userInfo: UserInfo(anonymousId: fakeAnonymousId),
+            additionalContext: [rumContext]
+        )
+
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider)
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let webEventMock: JSON = [
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date),
+            "usr": [
+                "id": webUsrId,
+                "name": webUsrName
+            ]
+        ]
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+
+        // Then
+        XCTAssertTrue(result)
+        XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
+        let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
+        let expectedWebEventWritten: JSON = [
+            "application": ["id": rumContext.applicationID],
+            "session": ["id": rumContext.sessionID],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
+            "usr": [
+                "id": webUsrId,
+                "name": webUsrName,
+                "anonymous_id": fakeAnonymousId
+            ]
+        ]
+        DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
+    }
+
+    func testGivenAnonymousIdAlreadySetByBrowser_whenReceivingWebEvent_itOverwritesWithNativeValue() throws {
+        // Given
+        let dateProvider = RelativeDateProvider()
+        let nativeAnonymousId: String = .mockRandom()
+        let browserAnonymousId: String = .mockRandom()
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            userInfo: UserInfo(anonymousId: nativeAnonymousId),
+            additionalContext: [rumContext]
+        )
+
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider)
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let webEventMock: JSON = [
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date),
+            "usr": ["anonymous_id": browserAnonymousId]
+        ]
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+
+        // Then
+        XCTAssertTrue(result)
+        XCTAssertEqual(featureScope.eventsWritten.count, 1)
+        let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
+        let expectedWebEventWritten: JSON = [
+            "application": ["id": rumContext.applicationID],
+            "session": ["id": rumContext.sessionID],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
+            "usr": ["anonymous_id": nativeAnonymousId]
+        ]
+        DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
+    }
+
+    func testGivenAnonymousIdAvailable_whenReceivingWebEventWithNoUsr_itAddsAnonymousId() throws {
+        // Given
+        let dateProvider = RelativeDateProvider()
+        let fakeAnonymousId: String = .mockRandom()
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            userInfo: UserInfo(anonymousId: fakeAnonymousId),
+            additionalContext: [rumContext]
+        )
+
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider)
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let webEventMock: JSON = [
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date)
+        ]
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+
+        // Then
+        XCTAssertTrue(result)
+        XCTAssertEqual(featureScope.eventsWritten.count, 1)
+        let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
+        let expectedWebEventWritten: JSON = [
+            "application": ["id": rumContext.applicationID],
+            "session": ["id": rumContext.sessionID],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
+            "usr": ["anonymous_id": fakeAnonymousId]
+        ]
+        DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
+    }
 }

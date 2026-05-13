@@ -52,7 +52,7 @@ final class ExposureRequestBuilderTests: XCTestCase {
         XCTAssertEqual(url(for: .ap1), "https://browser-intake-ap1-datadoghq.com/api/v2/exposures")
         XCTAssertEqual(url(for: .ap2), "https://browser-intake-ap2-datadoghq.com/api/v2/exposures")
         XCTAssertEqual(url(for: .us1_fed), "https://browser-intake-ddog-gov.com/api/v2/exposures")
-        XCTAssertEqual(url(for: .us2_fed), "https://browser-intake-fed2-ddog-gov.com/api/v2/exposures")
+        XCTAssertEqual(url(for: .us2_fed), "https://browser-intake-us2-ddog-gov.com/api/v2/exposures")
     }
 
     func testItSetsCustomIntakeURL() throws {

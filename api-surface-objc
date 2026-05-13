@@ -204,12 +204,15 @@ public class objc_LogEventDevice: NSObject
     public var batteryLevel: Double?
     public var brand: String?
     public var brightnessLevel: Double?
+    public var isLowRam: Bool?
     public var locale: String?
     public var locales: [String]?
+    public var logicalCpuCount: Double?
     public var model: String?
     public var name: String?
     public var powerSavingMode: Bool?
     public var timeZone: String?
+    public var totalRam: Double?
     public var type: objc_LogEventDeviceDeviceType
 public enum objc_LogEventDeviceDeviceType: Int
     case none
@@ -330,6 +333,7 @@ public final class objc_TraceFirstPartyHostsTracing: NSObject
 public final class objc_TraceURLSessionTracking: NSObject
     public init(firstPartyHostsTracing: objc_TraceFirstPartyHostsTracing)
     public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_TraceFirstPartyHostsTracing)
+    public func setRedactedStatusCodes(_ codes: [NSNumber])
 public final class objc_Trace: NSObject
     public static func enable(with configuration: objc_TraceConfiguration)
 public final class objc_Tracer: NSObject, objc_OTTracer
@@ -512,6 +516,7 @@ public enum objc_RUMActionEventContainerSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMActionEventContainerView: NSObject
     public var id: String
 public class objc_RUMActionEventRUMEventAttributes: NSObject
@@ -570,6 +575,7 @@ public enum objc_RUMActionEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMActionEventStream: NSObject
     public var id: String
 public class objc_RUMActionEventRUMSyntheticsTest: NSObject
@@ -726,6 +732,7 @@ public enum objc_RUMErrorEventContainerSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMErrorEventContainerView: NSObject
     public var id: String
 public class objc_RUMErrorEventRUMEventAttributes: NSObject
@@ -908,6 +915,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int
     case windows
     case macos
     case linux
+    case maui
 public class objc_RUMErrorEventErrorThreads: NSObject
     public var crashed: NSNumber
     public var name: String
@@ -942,6 +950,7 @@ public enum objc_RUMErrorEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMErrorEventStream: NSObject
     public var id: String
 public class objc_RUMErrorEventRUMSyntheticsTest: NSObject
@@ -1093,6 +1102,7 @@ public enum objc_RUMLongTaskEventContainerSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMLongTaskEventContainerView: NSObject
     public var id: String
 public class objc_RUMLongTaskEventRUMEventAttributes: NSObject
@@ -1186,6 +1196,7 @@ public enum objc_RUMLongTaskEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMLongTaskEventStream: NSObject
     public var id: String
 public class objc_RUMLongTaskEventRUMSyntheticsTest: NSObject
@@ -1324,6 +1335,7 @@ public enum objc_RUMResourceEventContainerSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMResourceEventContainerView: NSObject
     public var id: String
 public class objc_RUMResourceEventRUMEventAttributes: NSObject
@@ -1513,6 +1525,7 @@ public enum objc_RUMResourceEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMResourceEventStream: NSObject
     public var id: String
 public class objc_RUMResourceEventRUMSyntheticsTest: NSObject
@@ -1677,6 +1690,7 @@ public enum objc_RUMViewEventContainerSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMViewEventContainerView: NSObject
     public var id: String
 public class objc_RUMViewEventRUMEventAttributes: NSObject
@@ -1751,6 +1765,7 @@ public enum objc_RUMViewEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMViewEventStream: NSObject
     public var bitrate: NSNumber?
     public var completionPercent: NSNumber?
@@ -1889,6 +1904,8 @@ public enum objc_RUMViewEventViewLoadingType: Int
     case fragmentRedisplay
     case viewControllerDisplay
     case viewControllerRedisplay
+    case sessionRenewal
+    case bfCache
 public class objc_RUMViewEventViewLongTask: NSObject
     public var count: NSNumber
 public class objc_RUMViewEventViewPerformance: NSObject
@@ -2054,6 +2071,7 @@ public enum objc_RUMViewUpdateEventContainerSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMViewUpdateEventContainerView: NSObject
     public var id: String
 public class objc_RUMViewUpdateEventRUMEventAttributes: NSObject
@@ -2128,6 +2146,7 @@ public enum objc_RUMViewUpdateEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMViewUpdateEventStream: NSObject
     public var bitrate: NSNumber?
     public var completionPercent: NSNumber?
@@ -2266,6 +2285,8 @@ public enum objc_RUMViewUpdateEventViewLoadingType: Int
     case fragmentRedisplay
     case viewControllerDisplay
     case viewControllerRedisplay
+    case sessionRenewal
+    case bfCache
 public class objc_RUMViewUpdateEventViewLongTask: NSObject
     public var count: NSNumber
 public class objc_RUMViewUpdateEventViewPerformance: NSObject
@@ -2445,6 +2466,7 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMVitalAppLaunchEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalAppLaunchEventRUMEventAttributes: NSObject
@@ -2503,6 +2525,7 @@ public enum objc_RUMVitalAppLaunchEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMVitalAppLaunchEventStream: NSObject
     public var id: String
 public class objc_RUMVitalAppLaunchEventRUMSyntheticsTest: NSObject
@@ -2663,6 +2686,7 @@ public enum objc_RUMVitalDurationEventContainerSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMVitalDurationEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalDurationEventRUMEventAttributes: NSObject
@@ -2721,6 +2745,7 @@ public enum objc_RUMVitalDurationEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMVitalDurationEventStream: NSObject
     public var id: String
 public class objc_RUMVitalDurationEventRUMSyntheticsTest: NSObject
@@ -2870,6 +2895,7 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMVitalOperationStepEventContainerView: NSObject
     public var id: String
 public class objc_RUMVitalOperationStepEventRUMEventAttributes: NSObject
@@ -2928,6 +2954,7 @@ public enum objc_RUMVitalOperationStepEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_RUMVitalOperationStepEventStream: NSObject
     public var id: String
 public class objc_RUMVitalOperationStepEventRUMSyntheticsTest: NSObject
@@ -3000,6 +3027,7 @@ public enum objc_TelemetryConfigurationEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_TelemetryConfigurationEventTelemetry: NSObject
     public var configuration: objc_TelemetryConfigurationEventTelemetryConfiguration
     public var device: objc_TelemetryConfigurationEventTelemetryRUMTelemetryDevice?
@@ -3027,6 +3055,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var initializationType: String?
     public var invTimeThresholdMs: NSNumber?
     public var isMainProcess: NSNumber?
+    public var mauiVersion: String?
     public var mobileVitalsUpdatePeriod: NSNumber?
     public var numberOfDisplays: NSNumber?
     public var plugins: [objc_TelemetryConfigurationEventTelemetryConfigurationPlugins]?
@@ -3075,6 +3104,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var trackNativeLongTasks: NSNumber?
     public var trackNativeViews: NSNumber?
     public var trackNetworkRequests: NSNumber?
+    public var trackResourceHeaders: objc_TelemetryConfigurationEventTelemetryConfigurationTrackResourceHeaders
     public var trackResources: NSNumber?
     public var trackSessionAcrossSubdomains: NSNumber?
     public var trackUserInteractions: NSNumber?
@@ -3131,6 +3161,10 @@ public enum objc_TelemetryConfigurationEventTelemetryConfigurationTrackFeatureFl
     case resource
     case action
     case longTask
+public enum objc_TelemetryConfigurationEventTelemetryConfigurationTrackResourceHeaders: Int
+    case none
+    case defaultHeaders
+    case custom
 public enum objc_TelemetryConfigurationEventTelemetryConfigurationTrackingConsent: Int
     case none
     case granted
@@ -3189,6 +3223,7 @@ public enum objc_TelemetryDebugEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_TelemetryDebugEventTelemetry: NSObject
     public var device: objc_TelemetryDebugEventTelemetryRUMTelemetryDevice?
     public var message: String
@@ -3243,6 +3278,7 @@ public enum objc_TelemetryErrorEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
 public class objc_TelemetryErrorEventTelemetry: NSObject
     public var device: objc_TelemetryErrorEventTelemetryRUMTelemetryDevice?
     public var error: objc_TelemetryErrorEventTelemetryError?
@@ -3295,6 +3331,27 @@ public protocol objc_UITouchRUMActionsPredicate: AnyObject
     func rumAction(targetView: UIView) -> objc_RUMAction?
 public protocol objc_UIPressRUMActionsPredicate: AnyObject
     func rumAction(press type: UIPress.PressType, targetView: UIView) -> objc_RUMAction?
+public class objc_TNSResourceParams: NSObject
+    public let url: String
+    public let timeSinceViewStart: TimeInterval
+    public let viewName: String
+public protocol objc_NetworkSettledResourcePredicate: AnyObject
+    func isInitialResource(from resourceParams: objc_TNSResourceParams) -> Bool
+public class objc_TimeBasedTNSResourcePredicate: NSObject, objc_NetworkSettledResourcePredicate
+    public static let defaultThreshold: TimeInterval = 0.1
+    public init(threshold: TimeInterval = objc_TimeBasedTNSResourcePredicate.defaultThreshold)
+    public func isInitialResource(from resourceParams: objc_TNSResourceParams) -> Bool
+public class objc_INVActionParams: NSObject
+    public let type: objc_RUMActionType
+    public let name: String
+    public let timeToNextView: TimeInterval
+    public let nextViewName: String
+public protocol objc_NextViewActionPredicate: AnyObject
+    func isLastAction(from actionParams: objc_INVActionParams) -> Bool
+public class objc_TimeBasedINVActionPredicate: NSObject, objc_NextViewActionPredicate
+    public static let defaultMaxTimeToNextView: TimeInterval = 3
+    public init(maxTimeToNextView: TimeInterval = objc_TimeBasedINVActionPredicate.defaultMaxTimeToNextView)
+    public func isLastAction(from actionParams: objc_INVActionParams) -> Bool
 public enum objc_RUMErrorSource: Int
     case source
     case network
@@ -3306,6 +3363,7 @@ public enum objc_RUMActionType: Int
     case scroll
     case swipe
     case custom
+    case click
 public enum objc_ResourceType: Int
     case image
     case xhr
@@ -3364,6 +3422,9 @@ public class objc_RUMConfiguration: NSObject
     public var swiftUIViewsPredicate: objc_SwiftUIRUMViewsPredicate?
     public var swiftUIActionsPredicate: objc_SwiftUIRUMActionsPredicate?
     public var trackMemoryWarnings: Bool
+    public var collectAccessibility: Bool
+    public var networkSettledResourcePredicate: objc_NetworkSettledResourcePredicate
+    public var nextViewActionPredicate: objc_NextViewActionPredicate?
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking)
     public var trackFrustrations: Bool
     public var trackBackgroundEvents: Bool

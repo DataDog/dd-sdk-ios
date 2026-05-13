@@ -175,6 +175,59 @@ class LogSanitizerTests: XCTestCase {
         }
     }
 
+    func testWhenAttributeValueExceedsCharacterLimit_itIsTruncated() {
+        let longValue = String(repeating: "a", count: 25_601)
+        let log = LogEvent.mockWith(
+            attributes: .mockWith(userAttributes: ["key": longValue])
+        )
+
+        let sanitized = LogEventSanitizer().sanitize(log: log)
+
+        let value = sanitized.attributes.userAttributes["key"] as? String
+        XCTAssertEqual(value?.count, 25_600)
+    }
+
+    func testWhenNSStringAttributeValueExceedsCharacterLimit_itIsTruncated() {
+        let longValue = AnyEncodable(NSString(string: String(repeating: "a", count: 25_601)))
+        let log = LogEvent.mockWith(
+            attributes: .mockWith(userAttributes: ["key": longValue])
+        )
+
+        let sanitized = LogEventSanitizer().sanitize(log: log)
+
+        let value = sanitized.attributes.userAttributes["key"] as? String
+        XCTAssertEqual(value?.count, 25_600)
+    }
+
+    func testWhenAttributeValueWithEmojiExceedsUTF16Limit_itIsTruncated() {
+        // "😀" is 1 grapheme cluster but 2 UTF-16 code units.
+        // 25,599 ASCII chars + "😀" = 25,600 grapheme clusters (at limit) but 25,601 UTF-16 units (over limit).
+        // The emoji should be dropped so the result stays within the UTF-16 limit.
+        let longValue = String(repeating: "a", count: 25_599) + "😀"
+        let log = LogEvent.mockWith(
+            attributes: .mockWith(userAttributes: ["key": longValue])
+        )
+
+        let sanitized = LogEventSanitizer().sanitize(log: log)
+
+        let value = sanitized.attributes.userAttributes["key"] as? String
+        XCTAssertEqual(value?.utf16.count, 25_599)
+        XCTAssertEqual(value, String(repeating: "a", count: 25_599))
+    }
+
+    func testWhenAttributeValueIsWithinLimit_itIsNotModified() {
+        let value = String(repeating: "a", count: 25_600)
+        let log = LogEvent.mockWith(
+            attributes: .mockWith(userAttributes: ["key": value])
+        )
+
+        let sanitized = LogEventSanitizer().sanitize(log: log)
+
+        let result = sanitized.attributes.userAttributes["key"] as? String
+        XCTAssertEqual(result?.count, 25_600)
+        XCTAssertEqual(result, value)
+    }
+
     // MARK: - Tags sanitization
 
     func testWhenTagHasUpperCasedCharacters_itGetsLowerCased() {

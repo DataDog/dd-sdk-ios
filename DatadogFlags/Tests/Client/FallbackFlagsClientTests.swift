@@ -11,6 +11,18 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FallbackFlagsClientTests: XCTestCase {
+    func testStateIsError() {
+        // Given
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        Flags.enable(in: core)
+
+        // When
+        let client = FallbackFlagsClient(name: FlagsClient.defaultName, core: core)
+
+        // Then
+        XCTAssertEqual(client.state.currentState, .error)
+    }
+
     func testSetEvaluationContext() {
         // Given
         let core = SingleFeatureCoreMock<FlagsFeature>()

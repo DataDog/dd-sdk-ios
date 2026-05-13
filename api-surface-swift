@@ -318,7 +318,9 @@ public enum Trace
             public enum FirstPartyHostsTracing
                 case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
                 case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
-            public init(firstPartyHostsTracing: FirstPartyHostsTracing)
+            public static let defaultRedactedStatusCodes: Set<Int> = [404]
+            public var redactedStatusCodes: Set<Int>
+            public init(firstPartyHostsTracing: FirstPartyHostsTracing,redactedStatusCodes: Set<Int> = defaultRedactedStatusCodes)
         public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: Encodable]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
 public enum SpanTags
     public static let resource = "resource.name"
@@ -1273,6 +1275,7 @@ public enum SessionReplay
         case swiftui
         case heatmaps
         case screenChangeScheduling
+        case layerTreeRecording
 [?] extension SessionReplay.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -1298,6 +1301,7 @@ public final class FlagsClient
     public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
     public static func shared(named name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
 [?] extension FlagsClient: FlagsClientProtocol
+    public var state: FlagsStateObservable
     public func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
 [?] extension FlagsClient: FlagsClientInternal
@@ -1310,8 +1314,11 @@ public protocol FlagsClientInternal: AnyObject
     public func getFlagAssignments() -> [String: FlagAssignment]?
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext)
 public protocol FlagsClientProtocol: AnyObject
+    var state: FlagsStateObservable
     func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)
     func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
+[?] extension FlagsClientProtocol
+    public var state: FlagsStateObservable
 [?] extension FlagsClientProtocol
     public func setEvaluationContext(_ context: FlagsEvaluationContext)
     public func setEvaluationContext(_ context: FlagsEvaluationContext) async throws
@@ -1328,6 +1335,18 @@ public protocol FlagsClientProtocol: AnyObject
     public func getIntegerDetails(key: String, defaultValue: Int) -> FlagDetails<Int>
     public func getDoubleDetails(key: String, defaultValue: Double) -> FlagDetails<Double>
     public func getObjectDetails(key: String, defaultValue: AnyValue) -> FlagDetails<AnyValue>
+public enum FlagsClientState: Sendable
+    case notReady
+    case ready
+    case reconciling
+    case stale
+    case error
+public protocol FlagsStateListener: AnyObject
+    func flagsStateDidChange(_ newState: FlagsClientState)
+public protocol FlagsStateObservable: AnyObject
+    var currentState: FlagsClientState
+    func addListener(_ listener: FlagsStateListener)
+    func removeListener(_ listener: FlagsStateListener)
 public enum Flags
     public struct Configuration
         public var gracefulModeEnabled: Bool
