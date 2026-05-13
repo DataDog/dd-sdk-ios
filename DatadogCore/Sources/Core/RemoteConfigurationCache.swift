@@ -48,17 +48,19 @@ internal final class RemoteConfigurationCache {
 
     /// Writes raw CDN response bytes to disk atomically and updates the in-memory copy.
     /// Called only on a successful CDN response — never on failure.
-    /// Write errors are swallowed silently; the cache is best-effort.
     /// In-memory `data` is only updated when the disk write succeeds, keeping
     /// the two in sync.
-    func save(_ data: Data) {
+    /// - Returns: `true` if the write succeeded, `false` otherwise.
+    @discardableResult
+    func save(_ data: Data) -> Bool {
         do {
             try data.write(to: fileURL, options: .atomic)
             self.data = data
+            return true
         } catch {
-            // Best-effort: disk write failures are silently ignored.
             // self.data is intentionally NOT updated so in-memory state stays
             // consistent with what is actually on disk.
+            return false
         }
     }
 }

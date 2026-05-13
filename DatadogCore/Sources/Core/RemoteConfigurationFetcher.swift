@@ -77,7 +77,9 @@ internal final class RemoteConfigurationFetcher {
             }
 
             // All checks passed — persist to disk
-            cache.save(data)
+            if !cache.save(data) {
+                telemetry.error("[RemoteConfig] Failed to write remote configuration to disk")
+            }
         }
         task.resume()
     }

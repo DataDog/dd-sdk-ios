@@ -56,10 +56,14 @@ class RemoteConfigurationCacheTests: XCTestCase {
 
     // MARK: Failure resilience
 
-    func testSaveFailsSilentlyWhenDirectoryMissing() {
+    func testSaveReturnsTrueOnSuccess() {
+        let cache = RemoteConfigurationCache(directory: coreDir.coreDirectory)
+        XCTAssertTrue(cache.save(Data("{\"k\":\"v\"}".utf8)))
+    }
+
+    func testSaveReturnsFalseWhenDirectoryMissing() {
         let missing = Directory(url: URL(fileURLWithPath: "/no/such/path/"))
         let cache   = RemoteConfigurationCache(directory: missing)
-        // Must not crash
-        cache.save(Data("{\"k\":\"v\"}".utf8))
+        XCTAssertFalse(cache.save(Data("{\"k\":\"v\"}".utf8)))
     }
 }

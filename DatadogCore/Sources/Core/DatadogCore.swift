@@ -56,8 +56,10 @@ internal final class DatadogCore {
     let bus = MessageBus()
 
     /// Cache of the remote configuration JSON fetched from the CDN.
-    /// Created at init using this core's directory. `data` is `nil` until a
-    /// successful CDN fetch has been written and the app relaunched.
+    /// Created at init using this core's directory. `data` is `nil` on first
+    /// launch (or when `remoteConfigurationID` was never set); populated either
+    /// from disk (previous successful fetch) or in-memory after the first
+    /// successful fetch in the current session.
     private let remoteConfigCache: RemoteConfigurationCache
 
     /// Registry for Features.

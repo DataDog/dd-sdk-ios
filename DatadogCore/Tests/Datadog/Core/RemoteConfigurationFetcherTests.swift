@@ -209,4 +209,30 @@ class RemoteConfigurationFetcherTests: XCTestCase {
             "A telemetry error must be reported"
         )
     }
+
+    func testDiskWriteFailureReportsTelemetry() {
+        // Use a cache pointing at a non-existent directory so the write will fail
+        let missingDir = Directory(url: URL(fileURLWithPath: "/no/such/path/"))
+        let brokenCache = RemoteConfigurationCache(directory: missingDir)
+
+        MockURLProtocol.requestHandler = { request in
+            (okResponse(for: request.url!), Data("{}".utf8))
+        }
+
+        let telemetry = TelemetryMock()
+        let expectation = expectation(description: "fetch completes")
+        let fetcher = RemoteConfigurationFetcher(cache: brokenCache, telemetry: telemetry, session: mockSession())
+        fetcher.fetch(from: endpoint, didComplete: { expectation.fulfill() })
+        wait(for: [expectation], timeout: 2)
+
+        XCTAssertTrue(
+            telemetry.messages.contains {
+                if case .error = $0 {
+                    return true
+                }
+                return false
+            },
+            "A telemetry error must be reported when the disk write fails"
+        )
+    }
 }
