@@ -245,9 +245,9 @@ extension Datadog {
         /// The default application state provider for accessing [application state](https://developer.apple.com/documentation/uikit/uiapplication/state).
         internal var appStateProvider: AppStateProvider = DefaultAppStateProvider()
 
-        /// The URLSession used for remote configuration fetching. Replaceable in tests.
-        /// TODO: Build this session from `proxyConfiguration` so remote config fetches respect
-        /// proxy settings in restricted network environments (same as the main HTTP client).
-        internal var remoteConfigurationSession = URLSession(configuration: .ephemeral)
+        /// Override the URLSession used for remote configuration fetching. For tests only.
+        /// When `nil` (the default), `Datadog.initialize()` builds a session from
+        /// `proxyConfiguration` — matching the proxy behaviour of the main HTTP client.
+        internal var remoteConfigurationSession: URLSession? = nil
     }
 }

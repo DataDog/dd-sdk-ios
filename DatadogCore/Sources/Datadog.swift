@@ -303,7 +303,13 @@ public enum Datadog {
         // The fetch is async — init returns immediately and does not wait for it.
         if let id = configuration.remoteConfigurationID {
             if let endpoint = configuration.site.remoteConfigurationURL(for: id) {
-                core.fetchRemoteConfiguration(from: endpoint, session: configuration.remoteConfigurationSession)
+                let session = configuration.remoteConfigurationSession ?? {
+                    let sessionConfig: URLSessionConfiguration = .ephemeral
+                    sessionConfig.urlCache = nil
+                    sessionConfig.connectionProxyDictionary = configuration.proxyConfiguration
+                    return URLSession(configuration: sessionConfig)
+                }()
+                core.fetchRemoteConfiguration(from: endpoint, session: session)
             } else {
                 core.telemetry.error("[RemoteConfig] Could not build CDN URL for remoteConfigurationID '\(id)'")
             }
