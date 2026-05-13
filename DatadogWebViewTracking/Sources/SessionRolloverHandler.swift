@@ -21,6 +21,16 @@ import WebKit
 @MainActor
 internal class WebViewSessionRolloverHandler {
 #if canImport(WebKit)
+    /// Keeps the relationship between instrumented WebViews and the handler instance.
+    ///
+    /// This avoids adding a `core` argument to ``WebViewTracking/disable(webView:)`` by providing
+    /// the knowledge of the core (or more specifically the handler belonging to the correct core) automatically to
+    /// the ``unregister(webView:)`` implementation.
+    private static var handlerPerView = NSMapTable<WKWebView, WebViewSessionRolloverHandler>(
+        keyOptions: .weakMemory,
+        valueOptions: .weakMemory
+    )
+
     /// The core that owns this handler.
     private weak var core: DatadogCoreProtocol?
 
@@ -90,11 +100,7 @@ internal class WebViewSessionRolloverHandler {
         }
 
         activeWebViewsToUnregister.forEach { webView in
-            do {
-                try WebViewSessionRolloverHandler.unregister(webView: webView, from: core)
-            } catch let error {
-                consolePrint("\(error)", .error)
-            }
+            WebViewSessionRolloverHandler.unregister(webView: webView)
         }
     }
 
@@ -132,6 +138,7 @@ internal class WebViewSessionRolloverHandler {
     /// - throws: If a problem happens registering a newly created feature.
     static func register(webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements) throws {
         let feature = try WebViewTrackingFeature.obtainOrRegisterFeature(in: core)
+        handlerPerView.setObject(feature.sessionRolloverHandler, forKey: webView)
         feature.sessionRolloverHandler.register(webView: webView, elements: elements)
     }
 
@@ -142,14 +149,12 @@ internal class WebViewSessionRolloverHandler {
     ///
     /// - Parameters:
     ///   - webView: The WebView to unregister.
-    ///   - core: The core where the WebViews tracked by this handler are instrumented. This must be the core where
-    ///   the ``WebViewTrackingFeature`` that owns this handler is registered. The caller is responsible for making
-    ///   sure the correct core is passed in here.
-    ///
-    /// - throws: If a problem happens registering a newly created feature.
-    static func unregister(webView: WKWebView, from core: DatadogCoreProtocol) throws {
-        let feature = try WebViewTrackingFeature.obtainOrRegisterFeature(in: core)
-        feature.sessionRolloverHandler.unregister(webView: webView)
+    static func unregister(webView: WKWebView) {
+        guard let handler = handlerPerView.object(forKey: webView) else {
+            return
+        }
+        handlerPerView.removeObject(forKey: webView)
+        handler.unregister(webView: webView)
     }
 #endif
 }
