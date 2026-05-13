@@ -14,6 +14,4 @@ public protocol RUMSessionSamplerProvider {
     var rumSessionSampler: DeterministicSampler? { get }
 }
 
-public extension DatadogFeature where Self: RUMSessionSamplerProvider {
-    static var name: String { RUMFeatureName }
-}
+public extension DatadogFeature where Self: RUMSessionSamplerProvider { }
