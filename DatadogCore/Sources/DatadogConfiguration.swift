@@ -246,6 +246,6 @@ extension Datadog {
         internal var appStateProvider: AppStateProvider = DefaultAppStateProvider()
 
         /// The URLSession used for remote configuration fetching. Replaceable in tests.
-        internal var remoteConfigurationSession: URLSession = URLSession(configuration: .ephemeral)
+        internal var remoteConfigurationSession = URLSession(configuration: .ephemeral)
     }
 }
