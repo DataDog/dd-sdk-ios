@@ -23,6 +23,7 @@ internal final class RemoteConfigurationCache {
 
     /// Raw JSON bytes from the previous CDN fetch, read synchronously at init.
     /// `nil` when no cache exists yet (first launch, or remoteConfigurationID was never set).
+    /// Consumed by the config-application layer in a follow-on ticket (out of scope for RUM-16084).
     private(set) var data: Data?
 
     init(directory: Directory) {

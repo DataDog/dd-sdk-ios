@@ -50,7 +50,13 @@ internal final class RemoteConfigurationFetcher {
             guard let http = response as? HTTPURLResponse,
                   (200..<300).contains(http.statusCode) else {
                 let code = (response as? HTTPURLResponse)?.statusCode ?? -1
-                telemetry.error("[RemoteConfig] Non-2xx response: \(code)")
+                // Use a fixed message so all HTTP errors bucket together in telemetry;
+                // the status code lives in the error object, not the message string.
+                telemetry.error("[RemoteConfig] Non-2xx response", error: NSError(
+                    domain: "RemoteConfiguration",
+                    code: code,
+                    userInfo: [NSLocalizedDescriptionKey: "HTTP \(code)"]
+                ))
                 return
             }
 
@@ -61,6 +67,10 @@ internal final class RemoteConfigurationFetcher {
             }
 
             // 4. Invalid JSON
+            // Intentional allocate-and-discard: we only need to validate the bytes
+            // are well-formed JSON before caching. The parsed object is thrown away.
+            // This guarantees the cache never contains non-JSON data, so future
+            // parsing layers can trust the cached bytes without re-validating.
             guard (try? JSONSerialization.jsonObject(with: data)) != nil else {
                 telemetry.error("[RemoteConfig] Response is not valid JSON")
                 return

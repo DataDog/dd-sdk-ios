@@ -92,7 +92,12 @@ class RemoteConfigurationFetcherTests: XCTestCase {
         let freshCache = RemoteConfigurationCache(directory: coreDir.coreDirectory)
         XCTAssertEqual(freshCache.data, payload, "Cache must contain the CDN response")
         XCTAssertFalse(
-            telemetry.messages.contains { if case .error = $0 { return true }; return false },
+            telemetry.messages.contains {
+                if case .error = $0 {
+                    return true
+                }
+                return false
+            },
             "No telemetry errors expected on success"
         )
     }
@@ -117,7 +122,12 @@ class RemoteConfigurationFetcherTests: XCTestCase {
             "Existing cache must be preserved after a network error"
         )
         XCTAssertTrue(
-            telemetry.messages.contains { if case .error = $0 { return true }; return false },
+            telemetry.messages.contains {
+                if case .error = $0 {
+                    return true
+                }
+                return false
+            },
             "A telemetry error must be reported"
         )
     }
@@ -138,7 +148,12 @@ class RemoteConfigurationFetcherTests: XCTestCase {
 
         XCTAssertEqual(RemoteConfigurationCache(directory: coreDir.coreDirectory).data, existing)
         XCTAssertTrue(
-            telemetry.messages.contains { if case .error = $0 { return true }; return false },
+            telemetry.messages.contains {
+                if case .error = $0 {
+                    return true
+                }
+                return false
+            },
             "A telemetry error must be reported"
         )
     }
@@ -159,7 +174,12 @@ class RemoteConfigurationFetcherTests: XCTestCase {
 
         XCTAssertEqual(RemoteConfigurationCache(directory: coreDir.coreDirectory).data, existing)
         XCTAssertTrue(
-            telemetry.messages.contains { if case .error = $0 { return true }; return false },
+            telemetry.messages.contains {
+                if case .error = $0 {
+                    return true
+                }
+                return false
+            },
             "A telemetry error must be reported"
         )
     }
@@ -180,7 +200,12 @@ class RemoteConfigurationFetcherTests: XCTestCase {
 
         XCTAssertEqual(RemoteConfigurationCache(directory: coreDir.coreDirectory).data, existing)
         XCTAssertTrue(
-            telemetry.messages.contains { if case .error = $0 { return true }; return false },
+            telemetry.messages.contains {
+                if case .error = $0 {
+                    return true
+                }
+                return false
+            },
             "A telemetry error must be reported"
         )
     }

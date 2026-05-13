@@ -300,9 +300,12 @@ public enum Datadog {
 
         // Trigger remote config fetch if an ID was provided.
         // The fetch is async — init returns immediately and does not wait for it.
-        if let id = configuration.remoteConfigurationID,
-           let endpoint = configuration.site.remoteConfigurationURL(for: id) {
-            core.fetchRemoteConfiguration(from: endpoint, session: configuration.remoteConfigurationSession)
+        if let id = configuration.remoteConfigurationID {
+            if let endpoint = configuration.site.remoteConfigurationURL(for: id) {
+                core.fetchRemoteConfiguration(from: endpoint, session: configuration.remoteConfigurationSession)
+            } else {
+                core.telemetry.error("[RemoteConfig] Could not build CDN URL for remoteConfigurationID '\(id)'")
+            }
         }
 
         deleteV1Folders(in: core)
