@@ -160,6 +160,20 @@ internal class WebViewSessionRolloverHandler {
         handlerPerView.removeObject(forKey: webView)
         handler.unregister(webView: webView)
     }
+
+    #if DD_SDK_COMPILED_FOR_TESTING
+    internal static var handlerPerViewTesting: NSMapTable<WKWebView, WebViewSessionRolloverHandler> {
+        handlerPerView
+    }
+
+    internal var activeWebViewsTesting: NSMapTable<WKWebView, WebViewTrackingElements> {
+        activeWebViews
+    }
+
+    internal var coreTesting: DatadogCoreProtocol? {
+        core
+    }
+    #endif
 #endif
 }
 
