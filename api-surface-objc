@@ -61,6 +61,7 @@ public final class objc_Configuration: NSObject
     public var bundle: Bundle
     public var additionalConfiguration: [String: Any]
     public var backgroundTasksEnabled: Bool
+    public var remoteConfigurationID: String?
     public init(clientToken: String, env: String)
 public final class objc_URLSessionInstrumentationConfiguration: NSObject
     public init(delegateClass: URLSessionDataDelegate.Type)

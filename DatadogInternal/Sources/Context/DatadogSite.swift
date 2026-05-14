@@ -48,4 +48,24 @@ extension DatadogSite {
         // swiftlint:enable force_unwrapping
         }
     }
+
+    /// Constructs the CDN URL for fetching the remote configuration document.
+    /// - Parameter id: The value of `Datadog.Configuration.remoteConfigurationID`.
+    /// - Returns: URL to GET the config JSON from, or `nil` if `id` cannot be percent-encoded
+    ///   or if the resulting URL string is malformed.
+    @_spi(Internal)
+    public func remoteConfigurationURL(for id: String) -> URL? {
+        // Format: https://sdk-configuration.browser-intake-{site}/v1/{id}.json
+        // `.urlPathAllowed` leaves `/`, `?`, and `#` unencoded (they are legal in a URL).
+        // Subtract them so an ID containing those characters doesn't produce extra path
+        // segments, a query string, or a fragment.
+        let pathSegmentAllowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))
+        guard
+            let encoded = id.addingPercentEncoding(withAllowedCharacters: pathSegmentAllowed),
+            let host = endpoint.host
+        else {
+            return nil
+        }
+        return URL(string: "https://sdk-configuration.\(host)/v1/\(encoded).json")
+    }
 }
