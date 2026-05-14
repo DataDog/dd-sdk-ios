@@ -173,7 +173,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
             swiftSpan: swiftTracer.startSpan(
                 operationName: operationName,
                 childOf: ddspanContext?.swiftSpanContext,
-                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTracer.TagValue]}
+                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTracer.TagValue] }
             )
         )
     }
@@ -190,7 +190,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
             swiftSpan: swiftTracer.startSpan(
                 operationName: operationName,
                 childOf: ddspanContext?.swiftSpanContext,
-                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTracer.TagValue]},
+                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTracer.TagValue] },
                 startTime: startTime
             )
         )
