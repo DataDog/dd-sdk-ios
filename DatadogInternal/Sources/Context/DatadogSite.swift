@@ -60,10 +60,12 @@ extension DatadogSite {
         // Subtract them so an ID containing those characters doesn't produce extra path
         // segments, a query string, or a fragment.
         let pathSegmentAllowed = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))
-        guard let encoded = id.addingPercentEncoding(withAllowedCharacters: pathSegmentAllowed) else {
+        guard
+            let encoded = id.addingPercentEncoding(withAllowedCharacters: pathSegmentAllowed),
+            let host = endpoint.host
+        else {
             return nil
         }
-        // swiftlint:disable:next force_unwrapping
-        return URL(string: "https://sdk-configuration.\(endpoint.host!)/v1/\(encoded).json")
+        return URL(string: "https://sdk-configuration.\(host)/v1/\(encoded).json")
     }
 }
