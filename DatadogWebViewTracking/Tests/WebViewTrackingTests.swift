@@ -212,6 +212,8 @@ class WebViewTrackingTests: XCTestCase {
                 innerExpectation.fulfill()
             }
 
+            RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
+
             wait(for: [innerExpectation], timeout: 5.0)
         }
 
