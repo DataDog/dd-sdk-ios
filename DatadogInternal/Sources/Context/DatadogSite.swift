@@ -51,7 +51,8 @@ extension DatadogSite {
 
     /// Constructs the CDN URL for fetching the remote configuration document.
     /// - Parameter id: The value of `Datadog.Configuration.remoteConfigurationID`.
-    /// - Returns: URL to GET the config JSON from, or `nil` if `id` cannot be percent-encoded.
+    /// - Returns: URL to GET the config JSON from, or `nil` if `id` cannot be percent-encoded
+    ///   or if the resulting URL string is malformed.
     @_spi(Internal)
     public func remoteConfigurationURL(for id: String) -> URL? {
         // Format: https://sdk-configuration.browser-intake-{site}/v1/{id}.json

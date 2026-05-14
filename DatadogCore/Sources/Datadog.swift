@@ -301,8 +301,11 @@ public enum Datadog {
 
         // Trigger remote config fetch if an ID was provided.
         // The fetch is async — init returns immediately and does not wait for it.
-        if let id = configuration.remoteConfigurationID, !id.isEmpty {
-            if let endpoint = configuration.site.remoteConfigurationURL(for: id) {
+        if let rawID = configuration.remoteConfigurationID {
+            let id = rawID.trimmingCharacters(in: .whitespacesAndNewlines)
+            if id.isEmpty {
+                core.telemetry.error("[RemoteConfig] remoteConfigurationID must not be blank")
+            } else if let endpoint = configuration.site.remoteConfigurationURL(for: id) {
                 let session = configuration.remoteConfigurationSession ?? {
                     let sessionConfig: URLSessionConfiguration = .ephemeral
                     sessionConfig.urlCache = nil

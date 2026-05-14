@@ -574,6 +574,28 @@ class DatadogTests: XCTestCase {
         waitForExpectations(timeout: 0.5)
     }
 
+    func testGivenEmptyRemoteConfigurationID_fetchIsSkipped() {
+        // Given — whitespace-only ID must be treated as empty and skip the fetch
+        let noFetchExpectation = expectation(description: "no remote config fetch should occur")
+        noFetchExpectation.isInverted = true
+        RemoteConfigMockURLProtocol.requestHandler = { _ in
+            noFetchExpectation.fulfill()
+            throw URLError(.cancelled)
+        }
+        var config = defaultConfig
+        config.remoteConfigurationID = "  \n  "
+        let sessionConfig = URLSessionConfiguration.ephemeral
+        sessionConfig.protocolClasses = [RemoteConfigMockURLProtocol.self]
+        config.remoteConfigurationSession = URLSession(configuration: sessionConfig)
+
+        // When
+        Datadog.initialize(with: config, trackingConsent: .granted)
+        defer { Datadog.flushAndDeinitialize() }
+
+        // Then — the inverted expectation times out (i.e. passes) if no request is fired.
+        waitForExpectations(timeout: 0.5)
+    }
+
     func testGivenRemoteConfigurationID_fetchIsTriggered() {
         // Given
         let fetchExpectation = expectation(description: "remote config fetch triggered")
