@@ -52,4 +52,15 @@ disable_apple_crash_reporter
 trap enable_apple_crash_reporter EXIT INT
 
 xcodebuild -version
-xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" test | xcbeautify
+
+if [ "$CI" = "true" ]; then
+    mkdir -p ResultBundles
+    RESULT_BUNDLE_PATH="ResultBundles/${SCHEME}-${TEST_PLAN}.xcresult"
+    rm -rf "$RESULT_BUNDLE_PATH"
+    XCODEBUILD_EXIT=0
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | xcbeautify || XCODEBUILD_EXIT=$?
+    zip -r -q "ResultBundles/${SCHEME}-${TEST_PLAN}.xcresult.zip" "$RESULT_BUNDLE_PATH"
+    exit $XCODEBUILD_EXIT
+else
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" test | xcbeautify
+fi

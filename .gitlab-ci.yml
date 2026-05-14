@@ -234,6 +234,10 @@ UI Tests:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+  artifacts:
+    paths:
+      - "ResultBundles/*.xcresult.zip"
+    when: always
 
 SR Snapshot Tests:
   stage: ui-test
