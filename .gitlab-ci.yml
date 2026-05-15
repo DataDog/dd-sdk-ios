@@ -471,7 +471,8 @@ Publish GH Asset:
 
 Publish CP podspecs (internal):
   stage: release-publish
-  rules: 
+  retry: 2
+  rules:
     - !reference [.release-pipeline-job, rules]
   before_script:
     - *export_MAKE_release_params
@@ -483,6 +484,7 @@ Publish CP podspecs (internal):
 
 .publish-dependent-podspec:
   stage: release-publish
+  retry: 2
   rules:
     - !reference [.release-pipeline-20m-delayed-job, rules]
   before_script:
