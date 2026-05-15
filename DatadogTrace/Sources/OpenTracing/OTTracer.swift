@@ -5,7 +5,7 @@ import DatadogInternal
 /// to create OTSpans, inject/extract them between processes, and so on.
 /// 
 /// Tracer should be thread-safe.
-public protocol OTTracer {
+public protocol OTTracer: Sendable {
     typealias TagValue = Encodable & Sendable
 
     /// Start a new span with the given operation name.

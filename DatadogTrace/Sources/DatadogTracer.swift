@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 import OpenTelemetryApi
 
-internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer, Sendable {
+internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     /// Trace feature scope.
     let featureScope: FeatureScope
 
