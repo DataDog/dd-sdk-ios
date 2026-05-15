@@ -212,8 +212,6 @@ class WebViewTrackingTests: XCTestCase {
                 innerExpectation.fulfill()
             }
 
-            RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
-
             wait(for: [innerExpectation], timeout: 5.0)
         }
 
@@ -271,6 +269,8 @@ class WebViewTrackingTests: XCTestCase {
 
         webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
 
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.5))
+
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "false", webView: webView, description: "sessionUUID1")
 
         // Start initial session by starting a view
@@ -288,7 +288,9 @@ class WebViewTrackingTests: XCTestCase {
 
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2")
 
-            webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.htmk")!), responseHTML: "<html><body>About us</body></html>")
+        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.htmk")!), responseHTML: "<html><body>About us</body></html>")
+
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.5))
 
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2 after loading a new page")
     }
