@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal final class DDSpan: OTSpan {
+internal final class DDSpan: OTSpan, @unchecked Sendable {
     /// The `Tracer` which created this span.
     private let ddTracer: DatadogTracer
     /// Span context.
@@ -22,7 +22,7 @@ internal final class DDSpan: OTSpan {
     private var operationName: String
     /// Span tags.
     @ReadWriteLock
-    private var tags: [String: Encodable]
+    private var tags: [String: OTTracer.TagValue]
     /// Span log fields.
     @ReadWriteLock
     private var logFields: [[String: Encodable]]
@@ -41,7 +41,7 @@ internal final class DDSpan: OTSpan {
         context: DDSpanContext,
         operationName: String,
         startTime: Date,
-        tags: [String: Encodable],
+        tags: [String: OTTracer.TagValue],
         eventBuilder: SpanEventBuilder,
         eventWriter: SpanWriteContext
     ) {
@@ -74,7 +74,7 @@ internal final class DDSpan: OTSpan {
         self.operationName = operationName
     }
 
-    func setTag(key: String, value: Encodable) {
+    func setTag(key: String, value: OTTracer.TagValue) {
         if warnIfFinished("setTag(key:value:)") {
             return
         }

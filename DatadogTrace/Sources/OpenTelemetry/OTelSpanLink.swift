@@ -8,7 +8,7 @@ import Foundation
 import OpenTelemetryApi
 
 /// Represents a span link containing a `SpanContext` and additional attributes.
-internal struct OTelSpanLink: Equatable {
+internal struct OTelSpanLink: Equatable, Sendable {
     /// Context of the linked span.
     let context: OpenTelemetryApi.SpanContext
 

@@ -10,6 +10,7 @@ import DatadogInternal
 
 @testable import DatadogTrace
 
+@MainActor
 class DDSpanTests: XCTestCase {
     // MARK: - Sending SpanEvent
 
@@ -230,9 +231,9 @@ class DDSpanTests: XCTestCase {
         let closure1: (NSArray) -> Void = { _ in }
         let closure2: () -> Void = { }
         span.setTag(key: "valid_tag", value: "test_value")
-        span.setTag(key: "onComplete", value: AnyEncodable(closure1))
-        span.setTag(key: "callback", value: AnyEncodable(closure2))
-        span.setTag(key: "custom_object", value: AnyEncodable(NSObject()))
+        span.setTag(key: "onComplete", value: AnyEncodable(closure1) as! OTTracer.TagValue)
+        span.setTag(key: "callback", value: AnyEncodable(closure2) as! OTTracer.TagValue)
+        span.setTag(key: "custom_object", value: AnyEncodable(NSObject()) as! OTTracer.TagValue)
         span.finish()
 
         // Then
@@ -268,8 +269,8 @@ class DDSpanTests: XCTestCase {
         let span = tracer.startSpan(operationName: "test operation")
 
         // When
-        span.setTag(key: "invalid_tag1", value: AnyEncodable(NSObject()))
-        span.setTag(key: "invalid_tag2", value: AnyEncodable(NSObject()))
+        span.setTag(key: "invalid_tag1", value: AnyEncodable(NSObject()) as! OTTracer.TagValue)
+        span.setTag(key: "invalid_tag2", value: AnyEncodable(NSObject()) as! OTTracer.TagValue)
         span.finish()
 
         // Then
