@@ -692,7 +692,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertFalse(span.isError)
@@ -732,7 +732,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertEqual(String(span.traceID, representation: .decimal), "300")
         XCTAssertEqual(String(span.spanID, representation: .decimal), "400")
@@ -792,7 +792,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         // Should use metrics timing (2.5s), not approximate timing (~2.55s)
         XCTAssertEqual(span.duration, 2.5, accuracy: 0.01, "Should use accurate metrics timing")
@@ -819,7 +819,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertTrue(span.isError)
         XCTAssertEqual(span.tags[OTTags.httpMethod], "POST")
@@ -845,7 +845,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertTrue(span.isError)
         XCTAssertEqual(span.tags[OTTags.httpStatusCode], "404")
@@ -881,7 +881,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         // Then
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertEqual(span.resource, "404")
     }
@@ -914,7 +914,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         // Then
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertEqual(span.resource, "https://www.example.com/resource")
     }
@@ -947,7 +947,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         // Then
-        let envelope: SpanEventsEnvelope? = core.events().last
+        let envelope: SpanEventsEnvelope? = core.events(ofType: SpanEventsEnvelope.self).last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertEqual(span.resource, "500")
         XCTAssertFalse(span.isError, "5xx responses are not client errors and should not set the error flag")
