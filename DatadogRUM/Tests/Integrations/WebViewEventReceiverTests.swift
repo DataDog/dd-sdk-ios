@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
+@testable import DatadogCore
 
 class WebViewEventReceiverTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
@@ -556,6 +557,205 @@ class WebViewEventReceiverTests: XCTestCase {
         ]
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
     }
+
+    // MARK: - First Party Host Sampling Rate (rule_psr)
+
+    func testGivenFirstPartyHostSamplingRate_whenReceivingTracedResourceEvent_itOverwritesRulePsr() throws {
+        // Given
+        let dateProvider = RelativeDateProvider()
+        // This session ID is not sampled at 50%, but it is sampled at 60%:
+        let sessionUUID = RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!)
+        let uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionUUID)
+
+        let core = DatadogCoreProxy(
+            context: .mockWith(
+                env: "test",
+                version: "1.0.0",
+                serverTimeOffset: 0
+            )
+        )
+        defer { try? core.flushAndTearDown() }
+
+        let nativeSamplingRate: SampleRate = 75.0
+
+        RUM.enable(
+            with: .mockWith(applicationID: "test-app-id") {
+                $0.uuidGenerator = uuidGenerator
+                $0.urlSessionTracking = .init(
+                    firstPartyHostsTracing: .trace(hosts: ["localhost"], sampleRate: nativeSamplingRate)
+                )
+            },
+            in: core
+        )
+
+        // Necessary for RUM to set the session sampler in the feature, since it's an async process.
+        Thread.sleep(forTimeInterval: 0.1)
+
+        let receiver = WebViewEventReceiver(
+            featureScope: core.scope(for: RUMFeature.self),
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider)
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let webEventMock: JSON = [
+            "type": "resource",
+            "_dd": [
+                "browser_sdk_version": "6.32.0",
+                "trace_id": "123456789",
+                "span_id": "987654321",
+                "rule_psr": 1.0
+            ] as [String: Any],
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date),
+        ]
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: core)
+
+        // Then
+        XCTAssertTrue(result)
+        let events = core.waitAndReturnEvents(ofFeature: "rum", ofType: AnyEncodable.self)
+        let actualWebEventWritten = try XCTUnwrap((events.first)?.value as? [String: Any])
+        let actualDD = try XCTUnwrap(actualWebEventWritten["_dd"] as? [String: Any])
+        XCTAssertEqual(actualDD["rule_psr"] as? Float, Float(nativeSamplingRate.percentageProportion), "rule_psr must be overwritten with the native sampling rate")
+        XCTAssertEqual(actualDD["trace_id"] as? String, "123456789", "trace_id must be preserved")
+        XCTAssertEqual(actualDD["span_id"] as? String, "987654321", "span_id must be preserved")
+    }
+
+    func testGivenFirstPartyHostSamplingRate_whenReceivingResourceEventWithoutRulePsr_itDoesNotAddRulePsr() throws {
+        // Given
+        // Given
+        let dateProvider = RelativeDateProvider()
+        // This session ID is not sampled at 50%, but it is sampled at 60%:
+        let sessionUUID = RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!)
+        let uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionUUID)
+
+        let core = DatadogCoreProxy(
+            context: .mockWith(
+                env: "test",
+                version: "1.0.0",
+                serverTimeOffset: 0
+            )
+        )
+        defer { try? core.flushAndTearDown() }
+
+        let nativeSamplingRate: SampleRate = 75.0
+
+        RUM.enable(
+            with: .mockWith(applicationID: "test-app-id") {
+                $0.uuidGenerator = uuidGenerator
+                $0.urlSessionTracking = .init(
+                    firstPartyHostsTracing: .trace(hosts: ["localhost"], sampleRate: nativeSamplingRate)
+                )
+            },
+            in: core
+        )
+
+        // Necessary for RUM to set the session sampler in the feature, since it's an async process.
+        Thread.sleep(forTimeInterval: 0.1)
+
+        let receiver = WebViewEventReceiver(
+            featureScope: core.scope(for: RUMFeature.self),
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider)
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let webEventMock: JSON = [
+            "type": "resource",
+            "_dd": [
+                "browser_sdk_version": "6.32.0"
+            ] as [String: Any],
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date),
+        ]
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: core)
+
+        // Then
+        XCTAssertTrue(result)
+        let events = core.waitAndReturnEvents(ofFeature: "rum", ofType: AnyEncodable.self)
+        let actualWebEventWritten = try XCTUnwrap((events.first)?.value as? [String: Any])
+        let actualDD = try XCTUnwrap(actualWebEventWritten["_dd"] as? [String: Any])
+        XCTAssertNil(actualDD["rule_psr"], "rule_psr should not have been created")
+        XCTAssertNil(actualDD["trace_id"])
+        XCTAssertNil(actualDD["span_id"])
+    }
+
+    func testGivenNoFirstPartyHostSamplingRate_whenReceivingTracedResourceEvent_itDoesNotModifyRulePsr() throws {
+        // Given
+        let dateProvider = RelativeDateProvider()
+        // This session ID is not sampled at 50%, but it is sampled at 60%:
+        let sessionUUID = RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!)
+        let uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionUUID)
+
+        let core = DatadogCoreProxy(
+            context: .mockWith(
+                env: "test",
+                version: "1.0.0",
+                serverTimeOffset: 0
+            )
+        )
+        defer { try? core.flushAndTearDown() }
+
+        RUM.enable(
+            with: .mockWith(applicationID: "test-app-id") {
+                $0.uuidGenerator = uuidGenerator
+            },
+            in: core
+        )
+
+        // Necessary for RUM to set the session sampler in the feature, since it's an async process.
+        Thread.sleep(forTimeInterval: 1.0)
+
+        let receiver = WebViewEventReceiver(
+            featureScope: core.scope(for: RUMFeature.self),
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider)
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let originalRulePsr: Float = 1.0
+        let webEventMock: JSON = [
+            "type": "resource",
+            "_dd": [
+                "browser_sdk_version": "6.32.0",
+                "trace_id": "123456789",
+                "span_id": "987654321",
+                "rule_psr": originalRulePsr
+            ] as [String: Any],
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date),
+        ]
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+
+        // Then
+        XCTAssertTrue(result)
+        let events = core.waitAndReturnEvents(ofFeature: "rum", ofType: AnyEncodable.self)
+        let actualWebEventWritten = try XCTUnwrap((events.first)?.value as? [String: Any])
+        let actualDD = try XCTUnwrap(actualWebEventWritten["_dd"] as? [String: Any])
+        XCTAssertEqual(actualDD["rule_psr"] as? Float, originalRulePsr, "rule_psr must be overwritten")
+        XCTAssertEqual(actualDD["trace_id"] as? String, "123456789", "trace_id must be preserved")
+        XCTAssertEqual(actualDD["span_id"] as? String, "987654321", "span_id must be preserved")
+    }
+
+    // MARK: - Anonymous ID Propagation
 
     func testGivenAnonymousIdAvailable_whenReceivingWebEventWithNoUsr_itAddsAnonymousId() throws {
         // Given

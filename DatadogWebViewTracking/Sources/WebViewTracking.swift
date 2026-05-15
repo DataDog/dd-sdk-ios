@@ -45,7 +45,7 @@ public enum WebViewTracking {
             // the entire initialization flow is synchronized on the main thread.
             try runOnMainThreadSync {
                 try enableOrThrow(
-                    tracking: webView.configuration.userContentController,
+                    tracking: webView,
                     hosts: hosts,
                     hostsSanitizer: HostsSanitizer(),
                     logsSampleRate: logsSampleRate,
@@ -60,23 +60,28 @@ public enum WebViewTracking {
     /// Disables Datadog iOS SDK and Datadog Browser SDK integration.
     ///
     /// Removes Datadog's ScriptMessageHandler and UserScript from the caller.
-    /// - Note: This method **must** be called when the webview can be deinitialized.
-    /// 
-    /// - Parameter webView: The web-view to stop tracking.
+    /// - Note: This method **must** be called when the WebView can be deinitialized.
+    ///
+    /// - Parameters:
+    ///   - webView: The web-view to stop tracking.
     public static func disable(webView: WKWebView) {
-        let controller = webView.configuration.userContentController
-        controller.removeScriptMessageHandler(forName: DDScriptMessageHandler.name)
-        let others = controller.userScripts.filter { !$0.source.starts(with: Self.jsCodePrefix) }
-        controller.removeAllUserScripts()
-        others.forEach(controller.addUserScript)
+        runOnMainThreadSync {
+            let controller = webView.configuration.userContentController
+            controller.removeScriptMessageHandler(forName: DDScriptMessageHandler.name)
+            let others = controller.userScripts.filter { !$0.source.starts(with: Self.jsCodePrefix) }
+            controller.removeAllUserScripts()
+            others.forEach(controller.addUserScript)
+            WebViewSessionRolloverHandler.unregister(webView: webView)
+        }
     }
 
     // MARK: Internal
 
     static let jsCodePrefix = "/* DatadogEventBridge */"
 
+    @MainActor
     static func enableOrThrow(
-        tracking controller: WKUserContentController,
+        tracking webView: WKWebView,
         hosts: Set<String>,
         hostsSanitizer: HostsSanitizing,
         logsSampleRate: Float,
@@ -88,11 +93,12 @@ public enum WebViewTracking {
             )
         }
 
+        let controller = webView.configuration.userContentController
         let isTracking = controller.userScripts.contains { $0.source.starts(with: Self.jsCodePrefix) }
         guard !isTracking else {
             DD.logger.warn("`startTrackingDatadogEvents(core:hosts:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
             return
-       }
+        }
 
         let bridgeName = DDScriptMessageHandler.name
 
@@ -107,9 +113,6 @@ public enum WebViewTracking {
         controller.removeScriptMessageHandler(forName: bridgeName)
         controller.add(messageHandler, name: bridgeName)
 
-        // WebKit installs message handlers with the given name format below
-        // We inject a user script to forward `window.{bridgeName}` to WebKit's format
-        let webkitMethodName = "window.webkit.messageHandlers.\(bridgeName).postMessage"
         // `WKScriptMessageHandlerWithReply` returns `Promise` and `browser-sdk` expects immediate values.
         // We inject a user script to return `allowedWebViewHosts` instead of using `WKScriptMessageHandlerWithReply`
         let sanitizedHosts = hostsSanitizer.sanitized(
@@ -120,8 +123,37 @@ public enum WebViewTracking {
             .map { return "\"\($0)\"" }
             .joined(separator: ",")
 
+        let elements = WebViewTrackingElements(allowedWebViewHostsString: allowedWebViewHostsString)
+        let isTraceSampled = WebViewTracking.isTraceSampledStringValue(for: core)
+
+        try WebViewSessionRolloverHandler.register(webView: webView, in: core, using: elements)
+
+        injectUserScript(on: webView, in: core, using: elements, isTraceSampled: isTraceSampled)
+
+        core.telemetry.usage(event: .trackWebView)
+    }
+
+    /// Injects the Javascript bridge code in the WebView user scripts.
+    ///
+    /// - Important: This function does not check if the script is already there and should be called *only* when
+    /// we know it's not. Make sure to test for this situation, or guarantee it wont happen, before calling this function.
+    ///
+    /// - Parameters:
+    ///   - webView: The WebView where the script will be injected into.
+    ///   - core: The core where the WebView is instrumented.
+    ///   - elements: The elements used to generate the injected script.
+    ///   - isTraceSampled: The trace sampling decision, already in String form. This should *always* be the output
+    ///   of ``WebViewTracking/isTraceSampledStringValue(for:)``.
+    @MainActor
+    private static func injectUserScript(on webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements, isTraceSampled: String) {
+        let bridgeName = DDScriptMessageHandler.name
+
+        // WebKit installs message handlers with the given name format below
+        // We inject a user script to forward `window.{bridgeName}` to WebKit's format
+        let webkitMethodName = "window.webkit.messageHandlers.\(bridgeName).postMessage"
+
         let sessionReplay = core.feature(
-            named: SessionReplayFeatureName,
+            named: Feature.sessionReplay,
             type: SessionReplayConfiguration.self
         )
 
@@ -143,26 +175,168 @@ public enum WebViewTracking {
                 \(webkitMethodName)(msg)
             },
             getAllowedWebViewHosts() {
-                return '[\(allowedWebViewHostsString)]'
+                return '[\(elements.allowedWebViewHostsString)]'
             },
             getCapabilities() {
                 return '[\(capabilities)]'
             },
             getPrivacyLevel() {
                 return '\(privacyLevel.rawValue)'
+            },
+            getIsTraceSampled() {
+                return '\(isTraceSampled)'
             }
         }
         """
 
-        controller.addUserScript(
+        webView.configuration.userContentController.addUserScript(
             WKUserScript(
                 source: js,
                 injectionTime: .atDocumentStart,
                 forMainFrameOnly: false
             )
         )
+    }
 
-        core.telemetry.usage(event: .trackWebView)
+    /// Updates this WebView instrumentation on session rollovers.
+    ///
+    /// Two things need to be done on session rollovers:
+    /// * Update the script stored in `userScripts` with the new decision. This guarantees that any new pages loaded
+    /// in the WebView will have the updated bridge and thus the updated sampling decision.
+    /// * Run a bit of JavaScript code to update the bridge on the currently loaded page. This guarantees the current page
+    /// gets the most up to date decision as well.
+    ///
+    /// - Parameters:
+    ///   - webView: The WebView whose instrumentation should be updated.
+    ///   - core: The core where the WebView is instrumented.
+    ///   - elements: The elements used to generate the injected script.
+    ///   - isTraceSampled: The trace sampling decision, already in String form. This should *always* be the output
+    ///   of ``WebViewTracking/isTraceSampledStringValue(for:)``.
+    ///
+    /// - Returns: `true` if the view was instrumented before (and therefore was re-instrumented correctly), `false`
+    /// if the view was not instrumented and should be unregistered from the `WebViewSessionRolloverHandler`.
+    /// Note that if the view was instrumented before, this function always returns `true`, it cannot fail instrumentation in
+    /// that situation. Therefore, `false` guarantees the view wasn't instrumented. It's possible views are registered in
+    /// `WebViewSessionRolloverHandler` and not instrumented in the rare situation where
+    ///  ``WebViewTracking/disable(webView:in:)`` was called on the wrong core.
+    @MainActor
+    static func update(_ webView: WKWebView, in core: DatadogCoreProtocol, using elements: WebViewTrackingElements, isTraceSampled: String) -> Bool {
+        let controller = webView.configuration.userContentController
+
+        // Remove our script
+        let others = controller.userScripts.filter { !$0.source.starts(with: Self.jsCodePrefix) }
+        guard others.count != controller.userScripts.count else {
+            // If this happens, the view is not instrumented any more, but we still think it is.
+            // This may happen in the rare situation the WebView was registered in a specific, non
+            // default core, and WebViewTracking.disable(…) was called without specifying the
+            // correct core.
+            // To avoid future calls, return false so it can be unregistered.
+
+            return false
+        }
+        controller.removeAllUserScripts()
+        others.forEach(controller.addUserScript)
+
+        // Re-insert updated script
+        injectUserScript(on: webView, in: core, using: elements, isTraceSampled: isTraceSampled)
+
+        // Run code to update the current page. This script updates the main page, iFrames and nested
+        // iFrames without defining a new top level function.
+        let js =
+        """
+        (function updateBridge(win) {
+            try {
+                if (win.\(DDScriptMessageHandler.name)) {
+                    win.\(DDScriptMessageHandler.name).getIsTraceSampled = () => '\(isTraceSampled)';
+                }
+                for (var i = 0; i < win.frames.length; i++) {
+                    updateBridge(win.frames[i]);
+                }
+            } catch(e) {}
+        })(window);
+        """
+
+        webView.evaluateJavaScript(js)
+
+        return true
+    }
+
+    /// Obtains the trace sampling decision for the given core, in `String` form ready to be used in the injected scripts.
+    ///
+    /// Use this function on callers that don't have the RUM session sampler available.
+    ///
+    /// This is the decision if requests should be traced. The decision is positive if:
+    /// * RUM is enabled, and the decision to sample the current session is positive; and
+    /// * `urlSessionTracking.firstPartyHostsTracing` is configured in `RUM.Configuration`; and
+    /// * The sampling decision for `firstPartyHostsTracing` is positive.
+    ///
+    /// Note the hosts configured in RUM's `urlSessionTracking.firstPartyHostsTracing` do not need to
+    /// match the ones being tracked by a WebView. The sampling decision is the same regardless.
+    ///
+    /// The returned values are the following strings:
+    /// * `true` if the sampling decision is positive as explained above.
+    /// * `false` if the sampling decision is negative. This happens if RUM is enabled but sampled out, _or_ if
+    /// `urlSessionTracking.firstPartyHostsTracing` is configured but sampled out.
+    /// * `null` if no sampling decision was made. This happens if RUM is not configured, _or_ if
+    /// `urlSessionTracking.firstPartyHostsTracing` is not configured.
+    ///
+    /// Note that `false` is not returned if either of the conditions for `null` happen. The goal of `null` is allowing
+    /// the Browser SDK to make its own sampling decision according to its own configuration, since the iOS side was
+    /// not configured to do so.
+    ///
+    /// - Parameters:
+    ///   - core: The core used for the instrumentation. Make sure this is consistent with the core used to instrument
+    ///   the view, since the sampling decision can be different in multiple cores.
+    ///
+    /// - Returns: The string ready to be injected in the bridge as explained above.
+    static func isTraceSampledStringValue(for core: DatadogCoreProtocol) -> String {
+        guard let rum = core.feature(named: Feature.rum, type: RUMSessionSamplerProvider.self),
+              let sessionSampler = rum.rumSessionSampler else {
+            return "null"
+        }
+
+        return isTraceSampledStringValue(for: core, sessionSampler: sessionSampler)
+    }
+
+    /// Obtains the trace sampling decision for the given core, in `String` form ready to be used in the injected scripts.
+    ///
+    /// Use this function on callers that have the RUM session sampler available.
+    ///
+    /// This is the decision if requests should be traced. The decision is positive if:
+    /// * RUM is enabled, and the decision to sample the current session is positive; and
+    /// * `urlSessionTracking.firstPartyHostsTracing` is configured in `RUM.Configuration`; and
+    /// * The sampling decision for `firstPartyHostsTracing` is positive.
+    ///
+    /// Note the hosts configured in RUM's `urlSessionTracking.firstPartyHostsTracing` do not need to
+    /// match the ones being tracked by a WebView. The sampling decision is the same regardless.
+    ///
+    /// The returned values are the following strings:
+    /// * `true` if the sampling decision is positive as explained above.
+    /// * `false` if the sampling decision is negative. This happens if RUM is enabled but sampled out, _or_ if
+    /// `urlSessionTracking.firstPartyHostsTracing` is configured but sampled out.
+    /// * `null` if no sampling decision was made. This happens if RUM is not configured, _or_ if
+    /// `urlSessionTracking.firstPartyHostsTracing` is not configured.
+    ///
+    /// Note that `false` is not returned if either of the conditions for `null` happen. The goal of `null` is allowing
+    /// the Browser SDK to make its own sampling decision according to its own configuration, since the iOS side was
+    /// not configured to do so.
+    ///
+    /// - Parameters:
+    ///   - core: The core used for the instrumentation. Make sure this is consistent with the core used to instrument
+    ///   the view, since the sampling decision can be different in multiple cores.
+    ///   - sessionSampler: The RUM deterministic session sampler, or `nil` if there is no active session.
+    ///
+    /// - Returns: The string ready to be injected in the bridge as explained above.
+    static func isTraceSampledStringValue(for core: DatadogCoreProtocol, sessionSampler: DeterministicSampler?) -> String {
+        guard let sessionSampler,
+              let networkInstrumentation = core.feature(named: Feature.networkInstrumentation, type: DistributedTracingSampleRateProvider.self),
+              let distributedTracingSampleRate = networkInstrumentation.distributedTracingSampleRate else {
+            return "null"
+        }
+
+        let isSampled = sessionSampler.combined(with: distributedTracingSampleRate).isSampled
+
+        return isSampled ? "true" : "false"
     }
 
     /// Conversion matrix from global privacy level to fine-grained privaly levels.

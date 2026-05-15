@@ -8,8 +8,8 @@ import Foundation
 import DatadogInternal
 import UIKit
 
-internal final class RUMFeature: DatadogRemoteFeature {
-    static let name = "rum"
+internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider {
+    static var name: String { Feature.rum }
 
     let requestBuilder: FeatureRequestBuilder
 
@@ -22,6 +22,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
     let configuration: RUM.Configuration
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
+
+    /// Used by WebViewTracking to obtain the RUM session sampler synchronously.
+    @ReadWriteLock
+    private(set) var rumSessionSampler: DeterministicSampler?
 
     /// Overrides the max file age.
     let performanceOverride: PerformancePresetOverride? = PerformancePresetOverride(
@@ -106,6 +110,15 @@ internal final class RUMFeature: DatadogRemoteFeature {
             }
         }()
 
+        let onSessionUpdate: RUM.SessionUpdater = { [onSessionStart = configuration.onSessionStart, _rumSessionSampler] sessionScope in
+            if let sessionScope {
+                let sessionID = sessionScope.sessionUUID.rawValue.uuidString
+                let isDiscarded = !sessionScope.sampler.isSampled
+                onSessionStart?(sessionID, isDiscarded)
+            }
+            _rumSessionSampler.mutate { $0 = sessionScope?.sampler }
+        }
+
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
@@ -143,7 +156,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             },
             accessibilityReader: accessibilityReader,
-            onSessionStart: configuration.onSessionStart,
+            onSessionUpdate: onSessionUpdate,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,

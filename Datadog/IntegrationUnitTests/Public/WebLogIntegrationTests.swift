@@ -10,11 +10,13 @@ import XCTest
 
 import DatadogInternal
 import TestUtilities
+import WebKit
 
 @testable import DatadogLogs
 @testable import DatadogRUM
 @testable import DatadogWebViewTracking
 
+@MainActor
 class WebLogIntegrationTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var controller: WKUserContentControllerMock! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -28,10 +30,13 @@ class WebLogIntegrationTests: XCTestCase {
             )
         )
 
+        let config = WKWebViewConfiguration()
         controller = WKUserContentControllerMock()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
 
         try WebViewTracking.enableOrThrow(
-            tracking: controller,
+            tracking: webView,
             hosts: [],
             hostsSanitizer: HostsSanitizer(),
             logsSampleRate: 100,

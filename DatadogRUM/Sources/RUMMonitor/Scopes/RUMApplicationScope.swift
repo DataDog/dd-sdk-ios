@@ -199,6 +199,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if activeSessions.count > 1 {
             dependencies.telemetry.error("An application has \(activeSessions.count) active sessions")
         }
+        if activeSessions.isEmpty {
+            // There is no need to call `sessionScopeDidUpdate` here if we have
+            // active sessions because we are certain it was already called when
+            // sessions were created.
+            sessionScopeDidUpdate(nil)
+        }
     }
 
     // MARK: - Private
@@ -318,10 +324,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         sessionScopeDidUpdate(newSession)
     }
 
-    private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope) {
-        let sessionID = sessionScope.sessionUUID.rawValue.uuidString
-        let isDiscarded = !sessionScope.sampler.isSampled
-        dependencies.onSessionStart?(sessionID, isDiscarded)
+    private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope?) {
+        dependencies.onSessionUpdate(sessionScope)
     }
 
     /// Forces the `ApplicationLaunchView` to be started.
