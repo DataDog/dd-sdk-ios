@@ -1,7 +1,12 @@
 ---
-last_updated: 2025-01-03
-sdk_version: 3.3.0
-verified_against_commit: 1d3e80ec5
+last_updated: 2026-05-11
+sdk_version: 3.10.0
+verified_against_commit: b584ef3af
+tracked_files:
+  - DatadogRUM/Sources/RUM.swift
+  - DatadogRUM/Sources/RUMConfiguration.swift
+  - DatadogRUM/Sources/RUMMonitor.swift
+  - DatadogRUM/Sources/RUMMonitorProtocol.swift
 ---
 
 # RUM (Real User Monitoring) Feature
@@ -48,12 +53,14 @@ RUM.enable(
         // Default: nil (disabled)
         // Or use custom: MyCustomViewsPredicate()
         // Note: Also requires uiKitViewsPredicate for SwiftUI tracking to work correctly
+        // Note: Experimental API - may change in future releases
         swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
         
         // SwiftUI automatic action tracking - provide predicate to enable
         // Default: nil (disabled)
         // Or use custom: MyCustomActionsPredicate()
         // Note: Also requires uiKitActionsPredicate for SwiftUI tracking to work correctly
+        // Note: Experimental API - behavior differs between iOS 17 and below vs iOS 18+
         swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
         
         // Automatic network resource tracking - provide config to enable
@@ -67,7 +74,14 @@ RUM.enable(
             // Optional: Add custom attributes to resources
             resourceAttributesProvider: { request, response, data, error in
                 return ["custom.attribute": "value"]
-            }
+            },
+            // Optional: Capture HTTP headers from requests and responses
+            // Default: .disabled
+            // Options:
+            //   .disabled - No header capture
+            //   .defaults - Capture predefined common headers (cache-control, content-type, etag, etc.)
+            //   .custom([rules]) - Capture headers by custom rules
+            trackResourceHeaders: .defaults
         ),
         
         // Track user frustrations (error taps following errors)
@@ -142,13 +156,21 @@ RUM.enable(
         // Default: true
         trackMemoryWarnings: true,
         
+        // Track slow frames / view hitches
+        // Default: true
+        trackSlowFrames: true,
+        
         // SDK telemetry sampling rate (for Datadog internal monitoring)
         // Default: 20.0
         telemetrySampleRate: 20.0,
         
         // Collect accessibility settings in view events
         // Default: false
-        collectAccessibility: false
+        collectAccessibility: false,
+        
+        // Experimental feature flags (currently no active flags for RUM)
+        // Default: [:]
+        featureFlags: [:]
     )
 )
 
@@ -199,14 +221,16 @@ monitor.stopView(key: "ProductList")
 
 ### Automatic Tracking
 Requires configuration to be set, otherwise disabled by default:
-- **View tracking**: `uiKitViewsPredicate`, `swiftUIViewsPredicate`
-- **Action tracking**: `uiKitActionsPredicate`, `swiftUIActionsPredicate`
+- **View tracking**: `uiKitViewsPredicate`, `swiftUIViewsPredicate` *(SwiftUI: experimental)*
+- **Action tracking**: `uiKitActionsPredicate`, `swiftUIActionsPredicate` *(SwiftUI: experimental, behavior differs on iOS 17 vs iOS 18+)*
 - **Resource tracking**: `urlSessionTracking` (automatic), optionally call `URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: YourSessionDelegate.self))` for detailed timing
+- **Header capture**: `urlSessionTracking.trackResourceHeaders` — `.disabled` (default), `.defaults` (common headers), or `.custom([rules])`
 
 ### Performance Monitoring
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
 - **App hangs**: `appHangThreshold` (default: nil/disabled)
 - **Vitals**: `vitalsUpdateFrequency` (default: .average)
+- **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view
 
 ### Sampling
 - **Sessions**: `sessionSampleRate` (default: 100%)
@@ -231,7 +255,7 @@ Event mappers allow modifying or dropping events before upload:
 ### "Views or actions not tracked"
 1. Check if predicates are configured in RUMConfiguration
 2. For UIKit: `uiKitViewsPredicate` and `uiKitActionsPredicate` must be set
-3. For SwiftUI: `swiftUIViewsPredicate` and `swiftUIActionssPredicate` must be set, as well as UIKit predicates
+3. For SwiftUI: `swiftUIViewsPredicate` and `swiftUIActionsPredicate` must be set, as well as UIKit predicates
 
 ### "Network requests not tracked"
 1. Verify `urlSessionTracking` is configured in RUMConfiguration (RUM.enable() handles URLSessionInstrumentation internally)
