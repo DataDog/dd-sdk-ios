@@ -534,4 +534,201 @@ class RUMApplicationScopeTests: XCTestCase {
         // Then
         XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .explicitStop)
     }
+
+    func testGivenInactiveSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition() {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let sdkContext: DatadogContext = .mockWith(sdkInitDate: currentTime)
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100),
+            sdkContext: sdkContext
+        )
+
+        // When
+        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        let backgroundContext: DatadogContext = .mockWith(
+            sdkInitDate: .mockDecember15th2019At10AMUTC(),
+            launchInfo: .mockWith(
+                launchReason: .backgroundLaunch,
+                processLaunchDate: .mockDecember15th2019At10AMUTC()
+            ),
+            applicationStateHistory: .mockAppInBackground(since: currentTime)
+        )
+        _ = scope.process(
+            command: RUMCommandMock(time: currentTime, isUserInteraction: true),
+            context: backgroundContext,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .backgroundLaunch)
+    }
+
+    func testGivenExpiredSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition() {
+        // Given
+        let initialTime: Date = .mockDecember15th2019At10AMUTC()
+        var currentTime: Date = initialTime
+        let sdkContext: DatadogContext = .mockWith(sdkInitDate: currentTime)
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100),
+            sdkContext: sdkContext
+        )
+
+        // Keep session active without exceeding maxDuration — stop one step before it would expire
+        while currentTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1) < initialTime.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration) {
+            currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+            _ = scope.process(
+                command: RUMCommandMock(time: currentTime, isUserInteraction: true),
+                context: sdkContext,
+                writer: writer
+            )
+        }
+
+        // When - advance past maxDuration without triggering inactivity timeout, then send in background
+        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+        let backgroundContext: DatadogContext = .mockWith(
+            sdkInitDate: .mockDecember15th2019At10AMUTC(),
+            launchInfo: .mockWith(
+                launchReason: .backgroundLaunch,
+                processLaunchDate: .mockDecember15th2019At10AMUTC()
+            ),
+            applicationStateHistory: .mockAppInBackground(since: currentTime)
+        )
+        _ = scope.process(
+            command: RUMCommandMock(time: currentTime, isUserInteraction: true),
+            context: backgroundContext,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .backgroundLaunch)
+    }
+
+    func testGivenStoppedSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition() {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let sdkContext: DatadogContext = .mockWith(sdkInitDate: currentTime)
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100),
+            sdkContext: sdkContext
+        )
+
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMStopSessionCommand(time: currentTime), context: sdkContext, writer: writer)
+
+        // When
+        currentTime.addTimeInterval(1)
+        let backgroundContext: DatadogContext = .mockWith(
+            sdkInitDate: .mockDecember15th2019At10AMUTC(),
+            launchInfo: .mockWith(
+                launchReason: .backgroundLaunch,
+                processLaunchDate: .mockDecember15th2019At10AMUTC()
+            ),
+            applicationStateHistory: .mockAppInBackground(since: currentTime)
+        )
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(time: currentTime),
+            context: backgroundContext,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .backgroundLaunch)
+    }
+
+    func testGivenInactiveSession_whenNewOneIsStartedInBackgroundWithPrewarming_itSetsPrewarmPrecondition() {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let sdkContext: DatadogContext = .mockWith(sdkInitDate: currentTime)
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100),
+            sdkContext: sdkContext
+        )
+
+        // When
+        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        let backgroundContext: DatadogContext = .mockWith(
+            sdkInitDate: .mockDecember15th2019At10AMUTC(),
+            launchInfo: .mockWith(
+                launchReason: .prewarming,
+                processLaunchDate: .mockDecember15th2019At10AMUTC()
+            ),
+            applicationStateHistory: .mockAppInBackground(since: currentTime)
+        )
+        _ = scope.process(
+            command: RUMCommandMock(time: currentTime, isUserInteraction: true),
+            context: backgroundContext,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .prewarm)
+    }
+
+    func testGivenStoppedSession_whenNewOneIsStartedInBackgroundWithPrewarming_itSetsPrewarmPrecondition() {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let sdkContext: DatadogContext = .mockWith(sdkInitDate: currentTime)
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100),
+            sdkContext: sdkContext
+        )
+
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMStopSessionCommand(time: currentTime), context: sdkContext, writer: writer)
+
+        // When
+        currentTime.addTimeInterval(1)
+        let backgroundContext: DatadogContext = .mockWith(
+            sdkInitDate: .mockDecember15th2019At10AMUTC(),
+            launchInfo: .mockWith(
+                launchReason: .prewarming,
+                processLaunchDate: .mockDecember15th2019At10AMUTC()
+            ),
+            applicationStateHistory: .mockAppInBackground(since: currentTime)
+        )
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(time: currentTime),
+            context: backgroundContext,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .prewarm)
+    }
+
+    func testGivenUserLaunchedApp_whenSessionTimesOutInBackground_itSetsInactivityTimeoutPrecondition() {
+        // Given - app launched by user, session becomes inactive
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let sdkContext: DatadogContext = .mockWith(
+            sdkInitDate: currentTime,
+            launchInfo: .mockWith(launchReason: .userLaunch)
+        )
+        let featureScope = FeatureScopeMock()
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            sdkContext: sdkContext
+        )
+
+        // When - session times out while app is in background
+        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        let backgroundContext: DatadogContext = .mockWith(
+            sdkInitDate: .mockDecember15th2019At10AMUTC(),
+            launchInfo: .mockWith(
+                launchReason: .userLaunch,
+                processLaunchDate: .mockDecember15th2019At10AMUTC()
+            ),
+            applicationStateHistory: .mockAppInBackground(since: currentTime)
+        )
+        _ = scope.process(
+            command: RUMCommandMock(time: currentTime, isUserInteraction: true),
+            context: backgroundContext,
+            writer: writer
+        )
+
+        // Then - end-reason-based precondition is used, not backgroundLaunch
+        XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .inactivityTimeout)
+        // And no error telemetry is fired for .userLaunch in background (it is a valid scenario)
+        XCTAssertNil(featureScope.telemetryMock.messages.firstError())
+    }
 }
