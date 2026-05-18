@@ -134,13 +134,23 @@ Code Review:
   allow_failure: true
   rules:
     - if: '$CI_COMMIT_BRANCH != $DEVELOP_BRANCH && $CI_COMMIT_BRANCH != $MAIN_BRANCH'
+  id_tokens:
+    <<: *dd-octo-sts-id-token
   script:
     # rum-ai-toolkit is a private repo — clone over SSH using the runner's key.
     - ./tools/runner-setup.sh --ssh
     # TODO: switch toolkit ref to `main` before merging to develop.
     - git clone --depth 1 --branch ncreated/feat/cr-agent git@github.com:DataDog/rum-ai-toolkit.git .rum-ai-toolkit
     - make -C .rum-ai-toolkit/tools/cr-agent install
-    - BASE="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$DEVELOP_BRANCH}"
+    # GitLab is a mirror of GitHub here and loses MR metadata, so query GitHub
+    # directly for the PR's base branch. dd-octo-sts mints a short-lived token
+    # with `pull-requests: read` (see .github/chainguard/self.cr-agent.sts.yaml).
+    - export GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/dd-sdk-ios --policy self.cr-agent)
+    - trap 'dd-octo-sts --disable-tracing revoke' EXIT
+    - PR=$(.rum-ai-toolkit/tools/gh-pr/find-pr.sh DataDog/dd-sdk-ios "$CI_COMMIT_BRANCH")
+    - BASE=$(echo "$PR" | jq -r '.[0].baseRefName // empty')
+    - if [ -z "$BASE" ]; then echo "No open PR for $CI_COMMIT_BRANCH — skipping cr-agent."; exit 0; fi
+    - git fetch --depth=1 origin "$BASE:$BASE"
     - .rum-ai-toolkit/tools/cr-agent/review.sh --repo-path "$CI_PROJECT_DIR" --base "$BASE"
 
 API Surface Verify:
