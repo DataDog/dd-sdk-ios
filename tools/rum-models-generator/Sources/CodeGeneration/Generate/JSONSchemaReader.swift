@@ -20,7 +20,7 @@ internal class JSONSchemaReader {
             return try decoder.decode(JSONSchema.self, from: data)
         }
 
-        try schema.resolveReferences(in: file.deletingLastPathComponent(), using: self)
+        try schema.resolveReferences(in: file.deletingLastPathComponent(), using: self, defs: schema.defs)
 
         return schema
     }

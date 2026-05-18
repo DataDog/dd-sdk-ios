@@ -219,14 +219,26 @@ internal class JSONToSwiftTypeTransformer {
                     return jsonPrimitive.rawValue // e.g. `bool` or `double`
                 case let jsonArray as JSONArray:
                     return try labelNameFromType(of: jsonArray.element) + "sArray" // e.g. `doublesArray`, `foosArray`
+                case is JSONEnumeration:
+                    return "string" // enumerations are string-valued primitives
+                case let jsonObject as JSONObject:
+                    return jsonObject.name
                 default:
                     throw Exception.unimplemented("Building `SwiftAssociatedTypeEnum` case label for \(type(of: jsonType)) is not supported")
                 }
             }
 
-            caseLabels = try jsonUnion.types.map {
-                try labelNameFromType(of: $0.type)
+            // Deduplicate labels by appending an index to any that collide.
+            var rawLabels = try jsonUnion.types.map { try labelNameFromType(of: $0.type) }
+            if Set(rawLabels).count < rawLabels.count {
+                var seen: [String: Int] = [:]
+                rawLabels = rawLabels.map { label in
+                    let count = seen[label, default: 0]
+                    seen[label] = count + 1
+                    return count == 0 ? label : "\(label)\(count)"
+                }
             }
+            caseLabels = rawLabels
         }
 
         return SwiftAssociatedTypeEnum(
