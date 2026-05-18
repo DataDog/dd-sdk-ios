@@ -116,6 +116,8 @@ if [ "$CI" = "true" ]; then
     echo "▸ CI_COMMIT_MESSAGE = ${CI_COMMIT_MESSAGE:-(not set or empty)}"
     echo "▸ CI_COMMIT_AUTHOR = ${CI_COMMIT_AUTHOR:-(not set or empty)}"
     echo "▸ CI_COMMIT_TIMESTAMP = ${CI_COMMIT_TIMESTAMP:-(not set or empty)}"
+    echo "▸ CI_PIPELINE_SOURCE = ${CI_PIPELINE_SOURCE:-(not set or empty)}"
+    echo "▸ CI_MERGE_REQUEST_TARGET_BRANCH_NAME = ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-(not set or empty)}"
     # Custom:
     echo "▸ RELEASE_GIT_TAG = ${RELEASE_GIT_TAG:-(not set or empty)}"
     echo "▸ RELEASE_DRY_RUN = ${RELEASE_DRY_RUN:-(not set or empty)}"
