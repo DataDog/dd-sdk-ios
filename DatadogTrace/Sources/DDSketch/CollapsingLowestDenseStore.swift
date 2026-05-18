@@ -15,14 +15,51 @@ import Foundation
 /// Collapsing the lowest bins trades accuracy on the lowest quantiles for bounded
 /// memory usage. This is the correct trade-off for latency distributions where
 /// higher percentiles (p50, p90, p99) matter more than p1.
+///
+/// ### Storage model
+///
+/// Bin indices can be any signed integer (positive or negative), but the backing
+/// array `bins` is a flat `[Double]` indexed from `0`. The mapping between a logical
+/// bin index `i` and its position in `bins` is:
+///
+///     bins[i - offset]
+///
+/// `offset` is the logical index of `bins[0]`. `minIndex` and `maxIndex` track the
+/// range of logical indices that currently hold non-zero counts. The store may
+/// reserve more array slots than this range (e.g. after collapsing).
+///
+/// ### Collapsing
+///
+/// When inserting a new index would require more than `maxNumBins` bins to span
+/// `[minIndex, maxIndex]`, the store collapses the lowest bins: the new logical
+/// range becomes `[newMax - maxNumBins + 1, newMax]`, and all counts below that
+/// new minimum are folded into the lowest surviving bin. Once collapsed,
+/// `isCollapsed` stays `true` for the lifetime of the store.
 internal struct CollapsingLowestDenseStore {
+    /// Flat array of bin counts. `bins[i - offset]` holds the count for logical bin `i`.
+    /// May contain trailing zeros beyond `maxIndex` due to capacity reservation.
     private(set) var bins: [Double]
+
+    /// Sum of all bin counts. Updated incrementally by `add`.
     private(set) var count: Double = 0
+
+    /// Lowest logical bin index currently in use. Undefined when the store is empty.
     private(set) var minIndex: Int = 0
+
+    /// Highest logical bin index currently in use. Undefined when the store is empty.
     private(set) var maxIndex: Int = 0
+
+    /// Logical index corresponding to `bins[0]`. Adjusted when the range shifts.
     private(set) var offset: Int = 0
+
+    /// `true` once the store has collapsed at least once. Drives the fast path in `add`
+    /// for values below `minIndex`.
     private(set) var isCollapsed: Bool = false
+
+    /// Maximum number of bins the store will allocate before collapsing.
     let maxNumBins: Int
+
+    /// `true` until the first non-zero `add(index:count:)` call.
     private var isEmpty: Bool = true
 
     init(maxNumBins: Int) {
@@ -31,7 +68,16 @@ internal struct CollapsingLowestDenseStore {
         self.bins = []
     }
 
-    /// Adds `count` to the bin at the given index, extending or collapsing as needed.
+    /// Adds `count` to the bin at the given logical `index`, extending or collapsing
+    /// the backing array as needed.
+    ///
+    /// - If `index` falls inside `[minIndex, maxIndex]`, the count is added in place.
+    /// - If `index` is below `minIndex` and the store is already collapsed, the count
+    ///   is folded into the lowest surviving bin.
+    /// - Otherwise, the range is extended and may trigger a collapse if it would
+    ///   exceed `maxNumBins`.
+    ///
+    /// Passing `count == 0` is a no-op.
     mutating func add(index: Int, count: Double) {
         if count == 0 {
             return
@@ -57,26 +103,27 @@ internal struct CollapsingLowestDenseStore {
             extendRange(newMin: minIndex, newMax: index)
         }
 
-        let arrayIndex = index - offset
-        bins[arrayIndex] += count
+        bins[index - offset] += count
         self.count += count
     }
 
     /// Returns the contiguous bin data for protobuf serialization.
-    /// The `offset` is the index of the first bin in the contiguous array.
-    func contiguousBins() -> (counts: [Double], indexOffset: Int32) {
+    /// The `indexOffset` is the logical index of the first bin in the returned slice.
+    /// The slice borrows from `bins` directly to avoid copying.
+    func contiguousBins() -> (counts: ArraySlice<Double>, indexOffset: Int32) {
         if isEmpty {
             return ([], 0)
         }
 
-        let startArrayIndex = minIndex - offset
-        let endArrayIndex = maxIndex - offset
-        let slice = Array(bins[startArrayIndex...endArrayIndex])
-        return (slice, Int32(minIndex))
+        let startArrayIndex = bins.startIndex.advanced(by: minIndex - offset)
+        let endArrayIndex = bins.startIndex.advanced(by: maxIndex - offset)
+        return (bins[startArrayIndex...endArrayIndex], Int32(minIndex))
     }
 
     // MARK: - Private
 
+    /// Initialises the store on its first `add` call: a single bin centred on `index`
+    /// with `offset == index` so the new value sits at `bins[0]`.
     private mutating func setupFirstValue(index: Int) {
         isEmpty = false
         minIndex = index
@@ -85,6 +132,9 @@ internal struct CollapsingLowestDenseStore {
         bins = [0]
     }
 
+    /// Extends `[minIndex, maxIndex]` to cover `[newMin, newMax]`, allocating more
+    /// capacity if needed. If the resulting range would exceed `maxNumBins`,
+    /// delegates to `collapse` instead.
     private mutating func extendRange(newMin: Int, newMax: Int) {
         let requiredBins = newMax - newMin + 1
 
@@ -112,15 +162,20 @@ internal struct CollapsingLowestDenseStore {
         }
     }
 
-    /// Rebuilds the bins array to cover exactly `adjustedMin...newMax` within `maxNumBins`.
-    /// Values below `adjustedMin` are folded into the lowest surviving bin.
+    /// Rebuilds the bins array to cover exactly `[adjustedMin, newMax]` within
+    /// `maxNumBins`. Values below `adjustedMin` are folded into the lowest surviving
+    /// bin.
+    ///
+    /// The new array is assembled as four concatenated slices:
+    /// `[leading zeros] + [fold] + [preserved] + [trailing zeros]`,
+    /// each of which may be empty depending on whether this is a downward
+    /// (`adjustedMin <= minIndex`) or upward (`adjustedMin > minIndex`) collapse.
     private mutating func collapse(newMin: Int, newMax: Int) {
         let adjustedMin = newMax - maxNumBins + 1
 
         if bins.isEmpty || adjustedMin >= maxIndex {
-            let totalCount = count
             bins = [Double](repeating: 0, count: maxNumBins)
-            bins[0] = totalCount
+            bins[0] = count
             offset = adjustedMin
             minIndex = adjustedMin
             maxIndex = newMax
@@ -128,20 +183,42 @@ internal struct CollapsingLowestDenseStore {
             return
         }
 
-        var newBins = [Double](repeating: 0, count: maxNumBins)
-        for oldIdx in minIndex...maxIndex {
-            let srcArrayIdx = oldIdx - offset
-            if srcArrayIdx < 0 || srcArrayIdx >= bins.count {
-                continue
-            }
-            let dstIdx = max(oldIdx, adjustedMin)
-            let dstArrayIdx = dstIdx - adjustedMin
-            if dstArrayIdx >= 0 && dstArrayIdx < newBins.count {
-                newBins[dstArrayIdx] += bins[srcArrayIdx]
-            }
+        let leadingZeros: [Double]
+        let fold: [Double]
+        let preservedStartIdx: Int
+
+        if adjustedMin > minIndex {
+            // Upward collapse: sum bins in `[minIndex, adjustedMin]` into a single
+            // bin at the new floor.
+            let foldStart = bins.startIndex.advanced(by: minIndex - offset)
+            let foldEnd = bins.startIndex.advanced(by: adjustedMin - offset)
+            let foldedCount = bins[foldStart...foldEnd].reduce(0, +)
+            leadingZeros = []
+            fold = [foldedCount]
+            preservedStartIdx = adjustedMin + 1
+        } else {
+            // Downward collapse (or no shift): pad zeros on the left, then copy
+            // the preserved range verbatim.
+            leadingZeros = [Double](repeating: 0, count: minIndex - adjustedMin)
+            fold = []
+            preservedStartIdx = minIndex
         }
 
-        bins = newBins
+        let preserved: [Double]
+        if preservedStartIdx <= maxIndex {
+            let srcStart = bins.startIndex.advanced(by: preservedStartIdx - offset)
+            let srcEnd = bins.startIndex.advanced(by: maxIndex - offset)
+            preserved = Array(bins[srcStart...srcEnd])
+        } else {
+            preserved = []
+        }
+
+        let trailingZeros = [Double](
+            repeating: 0,
+            count: maxNumBins - leadingZeros.count - fold.count - preserved.count
+        )
+        bins = leadingZeros + fold + preserved + trailingZeros
+
         offset = adjustedMin
         minIndex = adjustedMin
         maxIndex = newMax
