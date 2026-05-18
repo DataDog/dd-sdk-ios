@@ -121,13 +121,25 @@ Build Dependencies:
 
 Lint:
   stage: lint
-  rules: 
+  rules:
     - !reference [.test-pipeline-job, rules]
     - !reference [.benchmark-pipeline-job, rules]
   script:
     - make clean repo-setup ENV=ci
     - make lint license-check
     - make rum-models-verify sr-models-verify
+
+Code Review:
+  stage: lint
+  allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH != $DEVELOP_BRANCH && $CI_COMMIT_BRANCH != $MAIN_BRANCH'
+  script:
+    # TODO: switch toolkit ref to `main` before merging to develop.
+    - git clone --depth 1 --branch ncreated/feat/cr-agent https://github.com/DataDog/rum-ai-toolkit.git .rum-ai-toolkit
+    - make -C .rum-ai-toolkit/tools/cr-agent install
+    - BASE="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$DEVELOP_BRANCH}"
+    - .rum-ai-toolkit/tools/cr-agent/review.sh --repo-path "$CI_PROJECT_DIR" --base "$BASE"
 
 API Surface Verify:
   stage: lint

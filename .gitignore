@@ -30,3 +30,6 @@ artifacts/
 
 # GSD planning files (local only)
 .planning/
+
+# Toolkit clone (created by the Code Review CI job)
+.rum-ai-toolkit/
