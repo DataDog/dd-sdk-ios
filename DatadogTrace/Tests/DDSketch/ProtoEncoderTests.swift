@@ -149,7 +149,7 @@ final class ProtoEncoderTests: XCTestCase {
 
     func testEncodePackedDoubles() {
         var enc = ProtoEncoder()
-        enc.encodePackedDoubles(fieldNumber: 2, values: [1.0, 2.0])
+        enc.encodePackedDoubles(fieldNumber: 2, values: ArraySlice<Double>([1.0, 2.0]))
         // Tag: (2 << 3) | 2 = 0x12
         // Length: 16 bytes (2 doubles)
         XCTAssertEqual(enc.data[0], 0x12)
@@ -164,7 +164,7 @@ final class ProtoEncoderTests: XCTestCase {
 
     func testEncodePackedDoubles_empty_skipped() {
         var enc = ProtoEncoder()
-        enc.encodePackedDoubles(fieldNumber: 2, values: [])
+        enc.encodePackedDoubles(fieldNumber: 2, values: ArraySlice<Double>())
         XCTAssertTrue(enc.data.isEmpty)
     }
 
