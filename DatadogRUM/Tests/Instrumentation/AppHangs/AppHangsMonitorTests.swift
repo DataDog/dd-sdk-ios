@@ -288,7 +288,9 @@ class AppHangsMonitorTests: XCTestCase {
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let hangDate: Date = currentDate.secondsAgo(.random(in: 0...4.hours))
         let serverTimeOffset: TimeInterval = .mockRandom()
-        let lastView: RUMViewEvent = .mockRandom()
+        // `viewIsActive: true` and `crashCount: nil` are seeded explicitly so the diff is
+        // deterministic AND robust against changes to mockRandomWith's defaults.
+        let lastView: RUMViewEvent = .mockRandomWith(viewIsActive: true, crashCount: nil)
         let hang: AppHang = .mockWith(startDate: hangDate)
 
         // Given
@@ -315,6 +317,22 @@ class AppHangsMonitorTests: XCTestCase {
 
         // Then
         let viewEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+
+        // Assert exactly which fields the recovery code mutates — catches PII leak regressions
+        // by ensuring no other fields are silently added or modified during recovery.
+        DDAssertDiff(lastView, viewEvent) { diffs in
+            diffs.assertExact(
+                different: [
+                    "_dd.document_version",
+                    "date",
+                    "ddtags",
+                    "view.error.count",
+                    "view.is_active"
+                ],
+                added: ["view.crash.count"]
+            )
+        }
+
         XCTAssertEqual(viewEvent.application.id, lastView.application.id)
         XCTAssertEqual(viewEvent.session.id, lastView.session.id)
         XCTAssertEqual(viewEvent.view.id, lastView.view.id)

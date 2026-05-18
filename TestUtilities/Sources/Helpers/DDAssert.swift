@@ -270,8 +270,8 @@ private func _flatten(_ value: Any, prefix: String) -> [String: NSObject] {
         var result: [String: NSObject] = [:]
         for (key, child) in dict {
             let newPrefix = prefix.isEmpty ? key : "\(prefix).\(key)"
-            for (k, v) in _flatten(child, prefix: newPrefix) {
-                result[k] = v
+            for (childKey, childValue) in _flatten(child, prefix: newPrefix) {
+                result[childKey] = childValue
             }
         }
         return result
@@ -284,8 +284,8 @@ private func _flatten(_ value: Any, prefix: String) -> [String: NSObject] {
         var result: [String: NSObject] = [:]
         for (index, child) in array.enumerated() {
             let newPrefix = prefix.isEmpty ? "\(index)" : "\(prefix).\(index)"
-            for (k, v) in _flatten(child, prefix: newPrefix) {
-                result[k] = v
+            for (childKey, childValue) in _flatten(child, prefix: newPrefix) {
+                result[childKey] = childValue
             }
         }
         return result
@@ -294,15 +294,15 @@ private func _flatten(_ value: Any, prefix: String) -> [String: NSObject] {
     return [prefix: (value as? NSObject) ?? NSNull()]
 }
 
-private func leafEqual(_ a: NSObject, _ b: NSObject) -> Bool {
+private func leafEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
     // NSNumber.isEqual is value-based — NSNumber(true).isEqual(NSNumber(1)) returns true.
     // Distinguish booleans from numbers via CFBooleanGetTypeID to preserve JSON-level type fidelity.
-    let aIsBool = CFGetTypeID(a) == CFBooleanGetTypeID()
-    let bIsBool = CFGetTypeID(b) == CFBooleanGetTypeID()
-    if aIsBool != bIsBool {
+    let lhsIsBool = CFGetTypeID(lhs) == CFBooleanGetTypeID()
+    let rhsIsBool = CFGetTypeID(rhs) == CFBooleanGetTypeID()
+    if lhsIsBool != rhsIsBool {
         return false
     }
-    return a.isEqual(b)
+    return lhs.isEqual(rhs)
 }
 
 private func _DDAssertDiff<T: Encodable>(
@@ -328,10 +328,10 @@ private func _DDAssertDiff<T: Encodable>(
 
     let commonKeys = keys1.intersection(keys2)
     let equalKeys = commonKeys.filter { key in
-        guard let v1 = flat1[key], let v2 = flat2[key] else {
+        guard let value1 = flat1[key], let value2 = flat2[key] else {
             return false
         }
-        return leafEqual(v1, v2)
+        return leafEqual(value1, value2)
     }
     let differentKeys = commonKeys.subtracting(equalKeys)
     let removedKeys = keys1.subtracting(keys2)
@@ -354,5 +354,21 @@ public func DDAssertDiff<T: Encodable>(
     _DDEvaluateAssertion(message: "", file: file, line: line) {
         let result = try _DDAssertDiff(expression1(), expression2())
         verify(result)
+    }
+}
+
+public extension DiffResult {
+    /// Asserts the diff contains exactly these key paths in each category.
+    /// Pass empty arrays (or omit) for categories you expect to be empty.
+    func assertExact(
+        different: [String] = [],
+        added: [String] = [],
+        removed: [String] = [],
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertEqual(differentKeyPaths, different.sorted(), file: file, line: line)
+        XCTAssertEqual(addedKeyPaths, added.sorted(), file: file, line: line)
+        XCTAssertEqual(removedKeyPaths, removed.sorted(), file: file, line: line)
     }
 }
