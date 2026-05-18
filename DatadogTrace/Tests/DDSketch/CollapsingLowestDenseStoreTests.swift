@@ -27,7 +27,7 @@ final class CollapsingLowestDenseStoreTests: XCTestCase {
         XCTAssertEqual(store.maxIndex, 10)
 
         let (counts, offset) = store.contiguousBins()
-        XCTAssertEqual(counts, [1.0])
+        XCTAssertEqual(Array(counts), [1.0])
         XCTAssertEqual(offset, 10)
     }
 
@@ -39,7 +39,7 @@ final class CollapsingLowestDenseStoreTests: XCTestCase {
         XCTAssertEqual(store.count, 4.0)
 
         let (counts, _) = store.contiguousBins()
-        XCTAssertEqual(counts, [4.0])
+        XCTAssertEqual(Array(counts), [4.0])
     }
 
     func testAddMultipleValues_differentIndices() {
@@ -53,12 +53,13 @@ final class CollapsingLowestDenseStoreTests: XCTestCase {
         XCTAssertEqual(store.maxIndex, 10)
 
         let (counts, offset) = store.contiguousBins()
+        let countsArray = Array(counts)
         XCTAssertEqual(offset, 5)
-        XCTAssertEqual(counts.count, 6) // indices 5..10
-        XCTAssertEqual(counts[0], 1.0) // index 5
-        XCTAssertEqual(counts[1], 0.0) // index 6
-        XCTAssertEqual(counts[2], 2.0) // index 7
-        XCTAssertEqual(counts[5], 3.0) // index 10
+        XCTAssertEqual(countsArray.count, 6) // indices 5..10
+        XCTAssertEqual(countsArray[0], 1.0) // index 5
+        XCTAssertEqual(countsArray[1], 0.0) // index 6
+        XCTAssertEqual(countsArray[2], 2.0) // index 7
+        XCTAssertEqual(countsArray[5], 3.0) // index 10
     }
 
     func testAddZeroCount_noEffect() {
@@ -81,9 +82,10 @@ final class CollapsingLowestDenseStoreTests: XCTestCase {
         XCTAssertEqual(store.count, 3.0)
 
         let (counts, offset) = store.contiguousBins()
+        let countsArray = Array(counts)
         XCTAssertEqual(offset, 5)
-        XCTAssertEqual(counts[0], 2.0) // index 5
-        XCTAssertEqual(counts[5], 1.0) // index 10
+        XCTAssertEqual(countsArray[0], 2.0) // index 5
+        XCTAssertEqual(countsArray[5], 1.0) // index 10
     }
 
     // MARK: - Collapsing
@@ -134,10 +136,11 @@ final class CollapsingLowestDenseStoreTests: XCTestCase {
         XCTAssertEqual(store.maxIndex, -3)
 
         let (counts, offset) = store.contiguousBins()
+        let countsArray = Array(counts)
         XCTAssertEqual(offset, -5)
-        XCTAssertEqual(counts.count, 3) // -5, -4, -3
-        XCTAssertEqual(counts[0], 1.0) // index -5
-        XCTAssertEqual(counts[2], 2.0) // index -3
+        XCTAssertEqual(countsArray.count, 3) // -5, -4, -3
+        XCTAssertEqual(countsArray[0], 1.0) // index -5
+        XCTAssertEqual(countsArray[2], 2.0) // index -3
     }
 
     // MARK: - Collapsing After Already Collapsed
@@ -173,14 +176,15 @@ final class CollapsingLowestDenseStoreTests: XCTestCase {
         XCTAssertEqual(store.maxIndex, 10)
 
         let (counts, indexOffset) = store.contiguousBins()
+        let countsArray = Array(counts)
         XCTAssertEqual(indexOffset, 7)
-        XCTAssertEqual(counts.count, 4) // indices 7, 8, 9, 10
+        XCTAssertEqual(countsArray.count, 4) // indices 7, 8, 9, 10
 
         // index 0 collapsed into the lowest valid bin (7), index 10 stays at position 3
-        XCTAssertEqual(counts[0], 1.0) // collapsed value at index 7
-        XCTAssertEqual(counts[3], 1.0) // original value at index 10
+        XCTAssertEqual(countsArray[0], 1.0) // collapsed value at index 7
+        XCTAssertEqual(countsArray[3], 1.0) // original value at index 10
 
-        let totalCount = counts.reduce(0, +)
+        let totalCount = countsArray.reduce(0, +)
         XCTAssertEqual(totalCount, 2.0)
     }
 
@@ -213,8 +217,9 @@ final class CollapsingLowestDenseStoreTests: XCTestCase {
         XCTAssertEqual(store.maxIndex, 100)
 
         let (counts, _) = store.contiguousBins()
-        XCTAssertEqual(counts.count, 101)
-        XCTAssertEqual(counts[0], 1.0)
-        XCTAssertEqual(counts[100], 1.0)
+        let countsArray = Array(counts)
+        XCTAssertEqual(countsArray.count, 101)
+        XCTAssertEqual(countsArray[0], 1.0)
+        XCTAssertEqual(countsArray[100], 1.0)
     }
 }

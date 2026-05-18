@@ -15,21 +15,51 @@ import Foundation
 /// This implementation is intentionally self-contained (no SDK dependencies)
 /// so it can be extracted to a standalone repository.
 ///
-/// Usage for client-side stats:
+/// ### How it works
+///
+/// Each added value is mapped to a bin index by `LogarithmicMapping`. Counts for
+/// positive and negative values are stored separately in two `CollapsingLowestDenseStore`
+/// instances, and a third bucket counts values whose magnitude falls below the
+/// mapping's minimum indexable value (treated as zero).
+///
+/// The serialized protobuf payload (`toProtoBytes()`) matches the `DDSketch` message
+/// in `ddsketch.proto`. It is consumed by the APM stats intake to compute approximate
+/// latency percentiles on the backend.
+///
+/// ### Usage for client-side stats
+///
 /// ```
 /// var sketch = DDSketch.makeForStats()
 /// sketch.add(durationInNanoseconds)
 /// let protoBytes = sketch.toProtoBytes()
 /// ```
 internal struct DDSketch {
+    /// Maps values to bin indices. Shared by both stores so positive and negative
+    /// magnitudes use the same scale.
     let mapping: LogarithmicMapping
+
+    /// Bin counts for values strictly greater than `mapping.minIndexableValue`.
     private(set) var positiveStore: CollapsingLowestDenseStore
+
+    /// Bin counts for values strictly less than `-mapping.minIndexableValue`,
+    /// indexed by the absolute value.
     private(set) var negativeStore: CollapsingLowestDenseStore
+
+    /// Number of values whose magnitude is below the mapping's resolution; these
+    /// would all collapse to the same bin index, so we track them as a single count.
     private(set) var zeroCount: Double = 0
 
+    /// Total number of recorded values, including those in the zero bucket.
     private(set) var count: Double = 0
+
+    /// Running sum of all recorded values. Useful for computing the mean without
+    /// reconstructing the distribution.
     private(set) var sum: Double = 0
+
+    /// Minimum recorded value. `.infinity` when no values have been added.
     private(set) var min: Double = .infinity
+
+    /// Maximum recorded value. `-.infinity` when no values have been added.
     private(set) var max: Double = -.infinity
 
     /// Creates a DDSketch with the given relative accuracy and maximum bin count.
