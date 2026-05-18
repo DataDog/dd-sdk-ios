@@ -77,68 +77,54 @@ internal class JSONSchema: Decodable {
     }
 
     required init(from decoder: Decoder) throws {
-        do {
-            // First try decoding with keyed container
-            let keyedContainer = try decoder.container(keyedBy: CodingKeys.self)
-            self.id = try keyedContainer.decodeIfPresent(String.self, forKey: .id)
-            self.title = try keyedContainer.decodeIfPresent(String.self, forKey: .title)
-            self.description = try keyedContainer.decodeIfPresent(String.self, forKey: .description)
-            self.properties = try keyedContainer.decodeIfPresent([String: JSONSchema].self, forKey: .properties)
-            // `additionalProperties` can be `true`, `false`, or a schema object.
-            // `true` means any additional properties are allowed (treat as generic object schema).
-            // `false` means no additional properties are allowed (nil — nothing to generate).
-            if let boolValue = try? keyedContainer.decode(Bool.self, forKey: .additionalProperties) {
-                if boolValue {
-                    let schema = JSONSchema()
-                    schema.type = .object
-                    self.additionalProperties = schema
-                } else {
-                    self.additionalProperties = nil
-                }
-            } else {
-                self.additionalProperties = try keyedContainer.decodeIfPresent(JSONSchema.self, forKey: .additionalProperties)
-            }
-            self.required = try keyedContainer.decodeIfPresent([String].self, forKey: .required)
-            // JSON Schema allows `type` to be either a string or an array of strings.
-            // When it's an array like ["array", "null"], take the first non-null type.
-            if let singleType = try? keyedContainer.decodeIfPresent(SchemaType.self, forKey: .type) {
-                self.type = singleType
-            } else if let typeArray = try? keyedContainer.decode([String].self, forKey: .type) {
-                self.type = typeArray.filter { $0 != "null" }.first.flatMap { SchemaType(rawValue: $0) }
-            } else {
-                self.type = nil
-            }
-            self.enum = try keyedContainer.decodeIfPresent([EnumValue].self, forKey: .enum)
-            self.const = try keyedContainer.decodeIfPresent(SchemaConstant.self, forKey: .const)
-            self.items = try keyedContainer.decodeIfPresent(JSONSchema.self, forKey: .items)
-            self.readOnly = try keyedContainer.decodeIfPresent(Bool.self, forKey: .readOnly)
-            self.ref = try keyedContainer.decodeIfPresent(String.self, forKey: .ref)
-            self.defs = try keyedContainer.decodeIfPresent([String: JSONSchema].self, forKey: .defs)
-            self.allOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .allOf)
-            self.oneOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .oneOf)
-            self.anyOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .anyOf)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
 
-            // RUMM-2266 Patch:
-            // If schema doesn't define `type`, but defines `properties`, it is safe to assume
-            // that its `.object` schema:
-            if self.type == nil && self.properties != nil {
-                self.type = .object
-            }
-        } catch let keyedContainerError as DecodingError {
-            // If data in this `decoder` cannot be represented as keyed container, perhaps it encodes
-            // a single value. Check known schema values:
-            do {
-                throw Exception.moreContext(
-                    "Decoding \(decoder.codingPath) is not supported in `JSONSchema.init(from:)`.",
-                    for: keyedContainerError
-                )
-            } catch let singleValueContainerError {
-                throw Exception.moreContext(
-                    "Unhandled parsing exception in `JSONSchema.init(from:)`.",
-                    for: singleValueContainerError
-                )
-            }
+        self.id = try container.decodeIfPresent(String.self, forKey: .id)
+        self.title = try container.decodeIfPresent(String.self, forKey: .title)
+        self.description = try container.decodeIfPresent(String.self, forKey: .description)
+        self.properties = try container.decodeIfPresent([String: JSONSchema].self, forKey: .properties)
+        self.required = try container.decodeIfPresent([String].self, forKey: .required)
+        self.`enum` = try container.decodeIfPresent([EnumValue].self, forKey: .enum)
+        self.const = try container.decodeIfPresent(SchemaConstant.self, forKey: .const)
+        self.items = try container.decodeIfPresent(JSONSchema.self, forKey: .items)
+        self.readOnly = try container.decodeIfPresent(Bool.self, forKey: .readOnly)
+        self.ref = try container.decodeIfPresent(String.self, forKey: .ref)
+        self.defs = try container.decodeIfPresent([String: JSONSchema].self, forKey: .defs)
+        self.allOf = try container.decodeIfPresent([JSONSchema].self, forKey: .allOf)
+        self.oneOf = try container.decodeIfPresent([JSONSchema].self, forKey: .oneOf)
+        self.anyOf = try container.decodeIfPresent([JSONSchema].self, forKey: .anyOf)
+
+        self.additionalProperties = try Self.decodeAdditionalProperties(from: container)
+        // RUMM-2266: infer `.object` when `properties` exist but `type` is absent.
+        self.type = try Self.decodeType(from: container) ?? (properties != nil ? .object : nil)
+    }
+
+    /// Decodes `additionalProperties`, which JSON Schema allows as `true`, `false`, or a schema object.
+    /// `false` → `nil` (nothing to generate); `true` → unconstrained object schema.
+    private static func decodeAdditionalProperties(
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) throws -> JSONSchema? {
+        if let bool = try? container.decode(Bool.self, forKey: .additionalProperties) {
+            guard bool else { return nil }
+            let schema = JSONSchema()
+            schema.type = .object
+            return schema
         }
+        return try container.decodeIfPresent(JSONSchema.self, forKey: .additionalProperties)
+    }
+
+    /// Decodes `type`, which JSON Schema allows as a single string or an array of strings.
+    /// When it's an array (e.g. `["array", "null"]`), returns the first non-`null` entry.
+    private static func decodeType(
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) throws -> SchemaType? {
+        if let single = try? container.decodeIfPresent(SchemaType.self, forKey: .type) {
+            return single
+        }
+        if let array = try? container.decode([String].self, forKey: .type) {
+            return array.first(where: { $0 != "null" }).flatMap(SchemaType.init(rawValue:))
+        }
+        return nil
     }
 
     init() {}
