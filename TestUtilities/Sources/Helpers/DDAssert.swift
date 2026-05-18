@@ -252,3 +252,107 @@ public func DDAssertEqual(_ date1: Date?, _ date2: Date, accuracy: TimeInterval,
         XCTAssertEqual(date1.timeIntervalSince1970, date2.timeIntervalSince1970, accuracy: accuracy, message(), file: file, line: line)
     }
 }
+
+public struct DiffResult {
+    /// Key paths where the values differ between the two objects.
+    public let differentKeyPaths: [String]
+    /// Key paths present in `expression1` but missing in `expression2`.
+    public let removedKeyPaths: [String]
+    /// Key paths present in `expression2` but missing in `expression1`.
+    public let addedKeyPaths: [String]
+}
+
+private func _flatten(_ value: Any, prefix: String) -> [String: NSObject] {
+    if let dict = value as? [String: Any] {
+        if dict.isEmpty {
+            return [prefix: NSDictionary()]
+        }
+        var result: [String: NSObject] = [:]
+        for (key, child) in dict {
+            let newPrefix = prefix.isEmpty ? key : "\(prefix).\(key)"
+            for (k, v) in _flatten(child, prefix: newPrefix) {
+                result[k] = v
+            }
+        }
+        return result
+    }
+
+    if let array = value as? [Any] {
+        if array.isEmpty {
+            return [prefix: NSArray()]
+        }
+        var result: [String: NSObject] = [:]
+        for (index, child) in array.enumerated() {
+            let newPrefix = prefix.isEmpty ? "\(index)" : "\(prefix).\(index)"
+            for (k, v) in _flatten(child, prefix: newPrefix) {
+                result[k] = v
+            }
+        }
+        return result
+    }
+
+    return [prefix: (value as? NSObject) ?? NSNull()]
+}
+
+private func leafEqual(_ a: NSObject, _ b: NSObject) -> Bool {
+    // NSNumber.isEqual is value-based — NSNumber(true).isEqual(NSNumber(1)) returns true.
+    // Distinguish booleans from numbers via CFBooleanGetTypeID to preserve JSON-level type fidelity.
+    let aIsBool = CFGetTypeID(a) == CFBooleanGetTypeID()
+    let bIsBool = CFGetTypeID(b) == CFBooleanGetTypeID()
+    if aIsBool != bIsBool {
+        return false
+    }
+    return a.isEqual(b)
+}
+
+private func _DDAssertDiff<T: Encodable>(
+    _ expression1: @autoclosure () throws -> T,
+    _ expression2: @autoclosure () throws -> T
+) throws -> DiffResult {
+    let value1 = try expression1()
+    let value2 = try expression2()
+
+    let data1 = try JSONEncoder().encode(value1)
+    let data2 = try JSONEncoder().encode(value2)
+
+    guard let dict1 = try JSONSerialization.jsonObject(with: data1) as? [String: Any],
+          let dict2 = try JSONSerialization.jsonObject(with: data2) as? [String: Any] else {
+        throw DDAssertError.expectedFailure("Value does not encode to a JSON object")
+    }
+
+    let flat1 = _flatten(dict1, prefix: "")
+    let flat2 = _flatten(dict2, prefix: "")
+
+    let keys1 = Set(flat1.keys)
+    let keys2 = Set(flat2.keys)
+
+    let commonKeys = keys1.intersection(keys2)
+    let equalKeys = commonKeys.filter { key in
+        guard let v1 = flat1[key], let v2 = flat2[key] else {
+            return false
+        }
+        return leafEqual(v1, v2)
+    }
+    let differentKeys = commonKeys.subtracting(equalKeys)
+    let removedKeys = keys1.subtracting(keys2)
+    let addedKeys = keys2.subtracting(keys1)
+
+    return DiffResult(
+        differentKeyPaths: differentKeys.sorted(),
+        removedKeyPaths: removedKeys.sorted(),
+        addedKeyPaths: addedKeys.sorted()
+    )
+}
+
+public func DDAssertDiff<T: Encodable>(
+    _ expression1: @autoclosure () throws -> T,
+    _ expression2: @autoclosure () throws -> T,
+    file: StaticString = #filePath,
+    line: UInt = #line,
+    _ verify: (DiffResult) -> Void
+) {
+    _DDEvaluateAssertion(message: "", file: file, line: line) {
+        let result = try _DDAssertDiff(expression1(), expression2())
+        verify(result)
+    }
+}
