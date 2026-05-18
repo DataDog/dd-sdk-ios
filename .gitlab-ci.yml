@@ -135,8 +135,10 @@ Code Review:
   rules:
     - if: '$CI_COMMIT_BRANCH != $DEVELOP_BRANCH && $CI_COMMIT_BRANCH != $MAIN_BRANCH'
   script:
+    # rum-ai-toolkit is a private repo — clone over SSH using the runner's key.
+    - ./tools/runner-setup.sh --ssh
     # TODO: switch toolkit ref to `main` before merging to develop.
-    - git clone --depth 1 --branch ncreated/feat/cr-agent https://github.com/DataDog/rum-ai-toolkit.git .rum-ai-toolkit
+    - git clone --depth 1 --branch ncreated/feat/cr-agent git@github.com:DataDog/rum-ai-toolkit.git .rum-ai-toolkit
     - make -C .rum-ai-toolkit/tools/cr-agent install
     - BASE="${CI_MERGE_REQUEST_TARGET_BRANCH_NAME:-$DEVELOP_BRANCH}"
     - .rum-ai-toolkit/tools/cr-agent/review.sh --repo-path "$CI_PROJECT_DIR" --base "$BASE"
