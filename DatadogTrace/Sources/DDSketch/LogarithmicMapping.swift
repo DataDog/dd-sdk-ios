@@ -32,6 +32,12 @@ internal struct LogarithmicMapping {
     /// The target relative accuracy, in (0, 1). A value of 0.01 means 1% accuracy.
     let relativeAccuracy: Double
 
+    /// Largest exponent that does not overflow `exp()` for IEEE 754 doubles.
+    /// `exp(709.78...)` reaches `Double.greatestFiniteMagnitude`; `710` returns `+infinity`.
+    /// Used as a conservative ceiling when deriving `maxIndexableValue`. Matches the
+    /// Go reference: https://github.com/DataDog/sketches-go/blob/master/ddsketch/mapping/logarithmic_mapping.go
+    private static let maxSafeExpArgument: Double = 709.0
+
     init(relativeAccuracy: Double) {
         precondition(relativeAccuracy > 0 && relativeAccuracy < 1, "relativeAccuracy must be in (0, 1)")
 
@@ -47,7 +53,7 @@ internal struct LogarithmicMapping {
 
         self.maxIndexableValue = min(
             exp((Double(Int32.max) - indexOffset) / multiplier - 1),
-            exp(709.0) / (2.0 * gamma / (1.0 + gamma))
+            exp(LogarithmicMapping.maxSafeExpArgument) / (2.0 * gamma / (1.0 + gamma))
         )
     }
 
