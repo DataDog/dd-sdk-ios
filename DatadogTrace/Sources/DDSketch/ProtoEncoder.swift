@@ -94,8 +94,10 @@ internal struct ProtoEncoder {
         data.append(payload)
     }
 
-    /// Encodes a packed repeated `double` array. Skips if the array is empty.
-    mutating func encodePackedDoubles(fieldNumber: Int, values: [Double]) {
+    /// Encodes a packed repeated `double` field. Skips if the slice is empty.
+    /// Accepts an `ArraySlice` so callers can pass a view into their backing array
+    /// without copying.
+    mutating func encodePackedDoubles(fieldNumber: Int, values: ArraySlice<Double>) {
         guard !values.isEmpty else {
             return
         }
