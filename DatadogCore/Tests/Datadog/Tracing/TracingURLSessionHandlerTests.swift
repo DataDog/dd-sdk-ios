@@ -21,8 +21,10 @@ class TracingURLSessionHandlerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
-        core = PassthroughCoreMock(messageReceiver: receiver)
+        core = PassthroughCoreMock()
+        core.messageBus.subscribe(receiver: receiver)
         core.messageBus.subscribe(receiver: LogMessageReceiver.mockAny())
+        core.context = core.context
 
         tracer = .mockWith(
             core: core,
@@ -223,8 +225,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 )
             ]
         )
-        let message = FeatureMessage.context(fakeContext)
-        _ = handler.contextReceiver.receive(message: message, from: core)
+        handler.contextReceiver.receive(message: fakeContext, from: core)
         let (modifiedRequest, _, _) = handler.modify(
             request: request,
             headerTypes: [.datadog, .tracecontext, .b3, .b3multi],
