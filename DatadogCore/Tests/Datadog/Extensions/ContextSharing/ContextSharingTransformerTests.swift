@@ -27,25 +27,11 @@ class ContextSharingTransformerTests: XCTestCase {
     func testReceiveContextMessage_transformsToSharedContext() throws {
         // Given
         let transformer = ContextSharingTransformer()
-        let message = FeatureMessage.context(.mockRandom())
 
         // When
-        let handled = transformer.receive(message: message, from: core)
+        transformer.receive(message: .mockRandom(), from: core)
 
-        // Then
-        XCTAssertTrue(handled)
-    }
-
-    func testReceiveNonContextMessage_returnsNotHandled() throws {
-        // Given
-        let transformer = ContextSharingTransformer()
-        let customMessage = FeatureMessage.payload("")
-
-        // When
-        let handled = transformer.receive(message: customMessage, from: core)
-
-        // Then
-        XCTAssertFalse(handled)
+        // Then — no assertion needed; just checking it doesn't crash
     }
 
     func testPublish_callsReceiverImmediately() throws {
@@ -78,8 +64,7 @@ class ContextSharingTransformerTests: XCTestCase {
         let userInfo = UserInfo(id: "user-456")
         let accountInfo = AccountInfo(id: "account-789")
         let context = DatadogContext.mockWith(userInfo: userInfo, accountInfo: accountInfo)
-        let message = FeatureMessage.context(context)
-        _ = transformer.receive(message: message, from: core)
+        transformer.receive(message: context, from: core)
 
         // Then
         XCTAssertEqual(receivedContexts.count, 2)
@@ -101,8 +86,7 @@ class ContextSharingTransformerTests: XCTestCase {
         transformer.cancel()
 
         let context = DatadogContext.mockWith(userInfo: UserInfo(id: "user-789"))
-        let message = FeatureMessage.context(context)
-        _ = transformer.receive(message: message, from: core)
+        transformer.receive(message: context, from: core)
 
         // Then - receiver must not be called after cancel
         XCTAssertEqual(callCount, 1) // Only initial call from publish

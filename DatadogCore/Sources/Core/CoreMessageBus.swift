@@ -10,7 +10,7 @@ import DatadogInternal
 /// The message-bus sends messages to a set of registered receivers.
 ///
 /// The bus dispatches messages on a serial queue.
-internal final class MessageBus {
+internal final class CoreMessageBus: @unchecked Sendable {
     /// The message bus GDC queue.
     let queue = DispatchQueue(
         label: "com.datadoghq.ios-sdk-message-bus",
@@ -27,6 +27,25 @@ internal final class MessageBus {
     /// The bus **must** be accessed within the queue.
     private var bus: [String: FeatureMessageReceiver] = [:]
 
+    /// A closure that delivers a `BusMessage` to a single subscriber.
+    ///
+    /// Captures the receiver strongly and performs the runtime cast from `Any`
+    /// to the receiver's expected `Message` type.
+    private typealias Dispatch = (Any, DatadogCoreProtocol) -> Void
+
+    /// Typed `BusMessageReceiver` subscribers grouped by `BusMessage.key`.
+    ///
+    /// The outer key is the `BusMessage.key` of the message kind a subscriber
+    /// is registered for; the inner key is the receiver's object identity. The
+    /// keyed layout means dispatch only iterates receivers for the matching
+    /// message kind instead of the full subscriber set.
+    ///
+    /// Each `Dispatch` captures its receiver strongly, so the bus retains
+    /// subscribers until they are explicitly removed via `unsubscribe(receiver:)`.
+    ///
+    /// Must be accessed within the queue.
+    private var receivers: [String: [ObjectIdentifier: Dispatch]] = [:]
+
     /// The current configuration.
     ///
     /// The message-bus wil accumulate configuration by merge. A message
@@ -42,11 +61,18 @@ internal final class MessageBus {
     /// - Parameter configurationDispatchTime: The delay to dispatch the
     /// configuration telemetry
     init(configurationDispatchTime: DispatchTimeInterval = .seconds(5)) {
-        queue.asyncAfter(deadline: .now() + configurationDispatchTime) {
-            guard let core = self.core, let configuration = self.configuration else {
+        queue.asyncAfter(deadline: .now() + configurationDispatchTime) { [weak self] in
+            guard let self = self, let core = self.core, let configuration = self.configuration else {
                 return
             }
 
+            // Dispatch via typed bus to TelemetryMessage subscribers.
+            if let bucket = self.receivers[TelemetryMessage.key] {
+                let message = TelemetryMessage.configuration(configuration)
+                bucket.values.forEach { dispatch in dispatch(message, core) }
+            }
+
+            // Dispatch via legacy bus for receivers still on the legacy bus.
             self.bus.values.forEach {
                 $0.receive(message: .telemetry(.configuration(configuration)), from: core)
             }
@@ -125,7 +151,69 @@ internal final class MessageBus {
     }
 }
 
-extension MessageBus: Flushable {
+extension CoreMessageBus: MessageBus {
+    /// Adds `receiver` to the bucket for `Receiver.Message.key`.
+    ///
+    /// The receiver is retained by the bus (via the captured closure) until
+    /// `unsubscribe(receiver:)` is called. Re-subscribing the same instance for
+    /// the same message kind replaces the previous subscription — entries are
+    /// keyed by object identity.
+    func subscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
+        queue.async {
+            let id = ObjectIdentifier(receiver)
+            self.receivers[Receiver.Message.key, default: [:]][id] = { message, core in
+                guard let typed = message as? Receiver.Message else {
+                    return
+                }
+                receiver.receive(message: typed, from: core)
+            }
+        }
+    }
+
+    /// Removes `receiver` from the bucket for `Receiver.Message.key`.
+    ///
+    /// No-op if `receiver` is not currently subscribed. Empty buckets are
+    /// pruned to keep the registry tidy.
+    func unsubscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
+        queue.async {
+            let key = Receiver.Message.key
+            let id = ObjectIdentifier(receiver)
+            self.receivers[key]?.removeValue(forKey: id)
+            if self.receivers[key]?.isEmpty == true {
+                self.receivers.removeValue(forKey: key)
+            }
+        }
+    }
+
+    /// Publishes `message` to every receiver in the bucket for `Message.key`.
+    ///
+    /// Configuration telemetry messages are intercepted and accumulated for deferred
+    /// batch dispatch; they are never routed to subscribers immediately.
+    ///
+    /// `fallback` is invoked when the bus has no core, or when the bucket is
+    /// empty. Delivery is dispatched on the bus's serial queue.
+    func send<Message>(message: Message, else fallback: @escaping () -> Void) where Message: BusMessage {
+        // Intercept configuration telemetry for deferred accumulated dispatch.
+        if let telemetry = message as? TelemetryMessage, case .configuration(let config) = telemetry {
+            save(configuration: config)
+            return
+        }
+
+        queue.async {
+            guard let core = self.core else {
+                return fallback()
+            }
+            guard let bucket = self.receivers[Message.key], !bucket.isEmpty else {
+                return fallback()
+            }
+            bucket.values.forEach { dispatch in
+                dispatch(message, core)
+            }
+        }
+    }
+}
+
+extension CoreMessageBus: Flushable {
     /// Awaits completion of all asynchronous operations.
     ///
     /// **blocks the caller thread**

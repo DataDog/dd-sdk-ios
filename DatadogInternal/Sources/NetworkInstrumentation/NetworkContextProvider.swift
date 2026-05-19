@@ -19,12 +19,8 @@ internal class NetworkContextCoreProvider: NetworkContextProvider {
     var currentNetworkContext: NetworkContext?
 }
 
-extension NetworkContextCoreProvider: FeatureMessageReceiver {
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .context(context) = message else {
-            return false
-        }
-
+extension NetworkContextCoreProvider: BusMessageReceiver {
+    func receive(message context: DatadogContext, from core: DatadogCoreProtocol) {
         let userConfigurationContext: UserConfigurationContext? = {
             guard let userInfo = context.userInfo else {
                 return nil
@@ -45,6 +41,5 @@ extension NetworkContextCoreProvider: FeatureMessageReceiver {
             userConfigurationContext: userConfigurationContext,
             accountConfigurationContext: accountConfigurationContext
         )
-        return true
     }
 }
