@@ -206,7 +206,9 @@ class RemoteConfigurationFetcherTests: XCTestCase {
         )
         XCTAssertFalse(
             telemetry.messages.contains {
-                if case .error = $0 { return true }
+                if case .error = $0 {
+                    return true
+                }
                 return false
             },
             "No telemetry error expected when body is non-empty and status is 2xx"
