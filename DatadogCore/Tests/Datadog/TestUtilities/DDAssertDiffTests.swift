@@ -94,7 +94,7 @@ class DDAssertDiffTests: XCTestCase {
         let value2 = Foo(arr: [Item(x: 99), Item(x: 2)])
 
         DDAssertDiff(value1, value2) { diffs in
-            XCTAssertEqual(diffs.differentKeyPaths, ["arr.0.x"])
+            XCTAssertEqual(diffs.differentKeyPaths, ["arr[0].x"])
             XCTAssertEqual(diffs.addedKeyPaths, [])
             XCTAssertEqual(diffs.removedKeyPaths, [])
         }
@@ -112,7 +112,7 @@ class DDAssertDiffTests: XCTestCase {
 
         DDAssertDiff(value1, value2) { diffs in
             XCTAssertEqual(diffs.differentKeyPaths, [])
-            XCTAssertEqual(diffs.addedKeyPaths, ["arr.1.x"])
+            XCTAssertEqual(diffs.addedKeyPaths, ["arr[1].x"])
             XCTAssertEqual(diffs.removedKeyPaths, [])
         }
     }
@@ -127,7 +127,7 @@ class DDAssertDiffTests: XCTestCase {
         DDAssertDiff(value1, value2) { diffs in
             XCTAssertEqual(diffs.differentKeyPaths, [])
             XCTAssertEqual(diffs.removedKeyPaths, ["arr"])
-            XCTAssertEqual(diffs.addedKeyPaths, ["arr.0", "arr.1"])
+            XCTAssertEqual(diffs.addedKeyPaths, ["arr[0]", "arr[1]"])
         }
     }
 
@@ -203,8 +203,70 @@ class DDAssertDiffTests: XCTestCase {
         DDAssertDiff(value1, value2) { diffs in
             XCTAssertEqual(diffs.differentKeyPaths, [])
             XCTAssertEqual(diffs.addedKeyPaths, [])
-            XCTAssertEqual(diffs.removedKeyPaths, ["arr.1"])
+            XCTAssertEqual(diffs.removedKeyPaths, ["arr[1]"])
         }
+    }
+
+    func testArrayIndexVsDictStringKey_areDistinguished() {
+        // `{ "a": ["x"] }` must not collide with `{ "a": { "0": "x" } }` — array uses `[0]`, dict uses `.0`
+        struct WithArray: Encodable { let a: [String] }
+        struct WithDict: Encodable { let a: [String: String] }
+
+        var arrayPath: String?
+        var dictPath: String?
+        DDAssertDiff(WithArray(a: ["x"]), WithArray(a: ["y"])) { diffs in
+            arrayPath = diffs.differentKeyPaths.first
+        }
+        DDAssertDiff(WithDict(a: ["0": "x"]), WithDict(a: ["0": "y"])) { diffs in
+            dictPath = diffs.differentKeyPaths.first
+        }
+        XCTAssertEqual(arrayPath, "a[0]")
+        XCTAssertEqual(dictPath, "a.0")
+        XCTAssertNotEqual(arrayPath, dictPath)
+    }
+
+    func testDotInDictKey_isEscapedAndDoesNotCollide() {
+        // `{ "a.b": "x" }` must not collide with `{ "a": { "b": "x" } }`
+        struct WithDotKey: Encodable {
+            enum CodingKeys: String, CodingKey { case ab = "a.b" }
+            let ab: String
+        }
+        struct WithNested: Encodable {
+            struct Inner: Encodable { let b: String }
+            let a: Inner
+        }
+        var dotKeyPath: String?
+        var nestedPath: String?
+        DDAssertDiff(WithDotKey(ab: "x"), WithDotKey(ab: "y")) { diffs in
+            dotKeyPath = diffs.differentKeyPaths.first
+        }
+        DDAssertDiff(WithNested(a: .init(b: "x")), WithNested(a: .init(b: "y"))) { diffs in
+            nestedPath = diffs.differentKeyPaths.first
+        }
+        XCTAssertEqual(dotKeyPath, "a\\.b")
+        XCTAssertEqual(nestedPath, "a.b")
+        XCTAssertNotEqual(dotKeyPath, nestedPath)
+    }
+
+    func testBracketsInDictKey_areEscapedAndDoNotCollide() {
+        // `{ "a[0]": "x" }` must not collide with `{ "a": ["x"] }` — brackets in keys are escaped as `\[` and `\]`
+        struct WithBracketKey: Encodable {
+            enum CodingKeys: String, CodingKey { case elem = "a[0]" }
+            let elem: String
+        }
+        struct WithArray: Encodable { let a: [String] }
+
+        var bracketKeyPath: String?
+        var arrayPath: String?
+        DDAssertDiff(WithBracketKey(elem: "x"), WithBracketKey(elem: "y")) { diffs in
+            bracketKeyPath = diffs.differentKeyPaths.first
+        }
+        DDAssertDiff(WithArray(a: ["x"]), WithArray(a: ["y"])) { diffs in
+            arrayPath = diffs.differentKeyPaths.first
+        }
+        XCTAssertEqual(bracketKeyPath, "a\\[0\\]")
+        XCTAssertEqual(arrayPath, "a[0]")
+        XCTAssertNotEqual(bracketKeyPath, arrayPath)
     }
 
     func testDiffResultAssertExact_passesForMatchingResult() {
