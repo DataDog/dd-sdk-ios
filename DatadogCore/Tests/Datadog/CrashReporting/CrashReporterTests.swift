@@ -57,7 +57,8 @@ class CrashReporterTests: XCTestCase {
         let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
         let rumCrashReceiver = CrashReceiverMock()
 
-        let core = PassthroughCoreMock(messageReceiver: rumCrashReceiver)
+        let core = PassthroughCoreMock()
+        core.subscribe(receiver: rumCrashReceiver)
 
         let plugin = CrashReportingPluginMock()
 
