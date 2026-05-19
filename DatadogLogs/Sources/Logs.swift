@@ -89,6 +89,10 @@ public enum Logs {
         )
 
         try core.register(feature: feature)
+
+        // Subscribe typed-bus receivers:
+        core.messageBus.subscribe(receiver: feature.logMessageReceiver)
+        core.messageBus.subscribe(receiver: feature.webViewLogReceiver)
     }
 
     /// Adds a custom attribute to all future logs sent by any logger created from the provided Core.
@@ -120,10 +124,10 @@ public enum Logs {
     }
 
     private static func sendAttributesChanged(for feature: LogsFeature, in core: DatadogCoreProtocol) {
-        core.send(
-            message: .payload(LogEventAttributes(
+        core.messageBus.send(
+            message: LogEventAttributes(
                 attributes: feature.attributes.getAttributes()
-            ))
+            )
         )
     }
 }
