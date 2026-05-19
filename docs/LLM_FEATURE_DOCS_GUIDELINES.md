@@ -10,6 +10,16 @@ These files serve as **LLM-optimized entry points** to the codebase. They are NO
 - Highlight troubleshooting patterns
 - Show feature interactions and dependencies
 
+## How updates flow
+
+Three pieces work together to keep these docs honest:
+
+- **`/dd-sdk-ios:update-feature-docs`** (Claude Code skill) — the canonical way to refresh feature docs. It discovers every `*_FEATURE.md`, audits `tracked_files` coverage against the doc's "Key Files" section, diffs against the last verified commit, updates the content where needed, and keeps the registries (the Confluence publish workflow + `AGENTS.md` + this file) in sync.
+- **`tools/feature-docs-verify.sh`** (`make feature-docs-verify`) — drift detection. Runs in a `Feature Docs Verify` GitLab CI job on `release/*` and `hotfix/*` branches. Fails with a clear "run the skill" recipe when any doc has drifted from its tracked source files or any registry is missing an entry.
+- **`.github/workflows/changelog-to-confluence.yaml`** — publishes the docs to the Confluence space used by Technical Escalation Engineers.
+
+For the full system overview (rationale, architecture, day-to-day workflow), see the *Feature Docs System* page in Confluence.
+
 ## Feature Documentation Files
 
 Each feature module contains a `*_FEATURE.md` file at its root:
@@ -26,21 +36,25 @@ Each feature documentation file contains a **"Key Files"** section listing all r
 
 ## File Metadata
 
-Each feature documentation file should include a metadata header at the top:
+Each feature documentation file must include a YAML frontmatter header at the top:
 
 ```markdown
 ---
 last_updated: YYYY-MM-DD
 sdk_version: X.Y.Z
 verified_against_commit: <short_commit_hash>
+tracked_files:
+  - Module/Sources/PublicAPI.swift
+  - Module/Sources/AnotherPublicAPI.swift
 ---
 ```
 
-- **last_updated**: Date when the file was last reviewed/updated
-- **sdk_version**: SDK version the documentation was verified against
-- **verified_against_commit**: Git commit hash of the source files used for verification
+- **last_updated**: Date when the file was last reviewed/updated.
+- **sdk_version**: SDK version the documentation was verified against.
+- **verified_against_commit**: Short git commit hash that **must be reachable from `develop`**. The verify script uses `git diff <verified_against_commit>..HEAD` to detect drift in the tracked files. Don't use a PR-branch SHA — it can be orphaned by local rebases/amends or by certain merge strategies. Use `git merge-base origin/develop HEAD` to compute a stable value, or use the most recent develop commit your branch is built on.
+- **tracked_files**: List of public-API source files whose changes should trigger a doc update. Every source file referenced in the doc's "Key Files" section must appear here — the verify script enforces this.
 
-When updating, always update these metadata fields to reflect the current state.
+When updating, always update these metadata fields to reflect the current state. The `/dd-sdk-ios:update-feature-docs` skill handles this automatically.
 
 ## Update Checklist
 
