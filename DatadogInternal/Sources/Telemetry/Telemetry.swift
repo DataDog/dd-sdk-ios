@@ -173,7 +173,9 @@ public struct MethodCalledTrace {
 }
 
 /// Defines different types of telemetry messages supported by the SDK.
-public enum TelemetryMessage {
+public enum TelemetryMessage: BusMessage {
+    public static let key = "telemetry"
+
     /// A debug log message.
     case debug(id: String, message: String, attributes: [String: Encodable]?)
     /// An execution error.

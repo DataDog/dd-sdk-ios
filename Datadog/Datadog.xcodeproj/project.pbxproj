@@ -1208,6 +1208,7 @@
 		D2C5D52B2B84F6AB00B63F36 /* WebViewRecordReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C5D52A2B84F6AB00B63F36 /* WebViewRecordReceiver.swift */; };
 		D2C5D52D2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C5D52C2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift */; };
 		D2C7E3AB28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */; };
+		D2CC33DB2FBCC81D00377194 /* MessageBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2CC33DA2FBCC81D00377194 /* MessageBus.swift */; };
 		D2D0E1F22E3CE59700BA4113 /* mach_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */; };
 		D2D0E1F82E3CE73700BA4113 /* mach_sampling_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */; };
 		D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */; };
@@ -2954,6 +2955,7 @@
 		D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryStatusPublisherTests.swift; sourceTree = "<group>"; };
 		D2CBC26A294383F200134409 /* WebViewEventReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewEventReceiver.swift; sourceTree = "<group>"; };
 		D2CBC26D294395A300134409 /* RUMContextAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContextAttributes.swift; sourceTree = "<group>"; };
+		D2CC33DA2FBCC81D00377194 /* MessageBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBus.swift; sourceTree = "<group>"; };
 		D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mach_profiler.cpp; sourceTree = "<group>"; };
 		D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mach_sampling_profiler.cpp; sourceTree = "<group>"; };
 		D2D0E2012E3CEF1200BA4113 /* MachProfilerCAPITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MachProfilerCAPITests.swift; sourceTree = "<group>"; };
@@ -6170,6 +6172,7 @@
 			children = (
 				D23039C1298D5235001A1FA3 /* FeatureMessageReceiver.swift */,
 				D23039C2298D5235001A1FA3 /* FeatureMessage.swift */,
+				D2CC33DA2FBCC81D00377194 /* MessageBus.swift */,
 			);
 			path = MessageBus;
 			sourceTree = "<group>";
@@ -8570,6 +8573,7 @@
 				D21A94F22B8397CA00AC4256 /* WebViewMessage.swift in Sources */,
 				D23039EC298D5236001A1FA3 /* LaunchInfo.swift in Sources */,
 				6175C3512BCE66DB006FAAB0 /* TraceContext.swift in Sources */,
+				D2CC33DB2FBCC81D00377194 /* MessageBus.swift in Sources */,
 				D227A0A42C7622EA00C83324 /* BenchmarkProfiler.swift in Sources */,
 				D23039EE298D5236001A1FA3 /* FeatureMessageReceiver.swift in Sources */,
 				D23039DE298D5235001A1FA3 /* Writer.swift in Sources */,

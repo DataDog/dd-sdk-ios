@@ -133,3 +133,9 @@ extension MessageBus: Flushable {
         queue.sync { }
     }
 }
+
+extension MessageBus: Telemetry {
+    func send(telemetry: TelemetryMessage) {
+        send(message: .telemetry(telemetry))
+    }
+}

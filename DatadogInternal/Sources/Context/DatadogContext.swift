@@ -6,7 +6,9 @@
 
 import Foundation
 
-public struct DatadogContext {
+public struct DatadogContext: BusMessage {
+    public static let key = "core.context"
+
     // MARK: - Datadog Specific
 
     /// [Datadog Site](https://docs.datadoghq.com/getting_started/site/) for data uploads. It can be `nil` in V1
