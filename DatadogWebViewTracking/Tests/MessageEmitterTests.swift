@@ -17,8 +17,9 @@ class MessageEmitterTests: XCTestCase {
         let sampler = Sampler(samplingRate: 100)
 
         // Given
-        let receiverMock = FeatureMessageReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: receiverMock)
+        let core = PassthroughCoreMock()
+        var received: [WebViewLogMessage] = []
+        _ = core.messageBus.subscribe { (msg: WebViewLogMessage, _) in received.append(msg) }
         let emitter = MessageEmitter(logsSampler: sampler, core: core)
 
         // When
@@ -34,11 +35,7 @@ class MessageEmitterTests: XCTestCase {
         """)
 
         // Then
-        let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
-        guard case let .log(event) = message else {
-            return XCTFail("not a log message")
-        }
-
+        let event = try XCTUnwrap(received.first?.event)
         let json = JSONObjectMatcher(object: event)
         XCTAssertEqual(try json.value("attribute1"), 123)
         XCTAssertEqual(try json.value("attribute2"), "foo")
@@ -47,33 +44,32 @@ class MessageEmitterTests: XCTestCase {
 
     func testGivenSampleRate0_whenReceivingLogEvent_itIsDropped() throws {
         let sampler = Sampler(samplingRate: 0)
-        let eventType = "log"
 
         // Given
-        let receiverMock = FeatureMessageReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: receiverMock)
+        let core = PassthroughCoreMock()
+        var received: [WebViewLogMessage] = []
+        _ = core.messageBus.subscribe { (msg: WebViewLogMessage, _) in received.append(msg) }
         let emitter = MessageEmitter(logsSampler: sampler, core: core)
 
         // When
         emitter.send(body: """
         {
-          "eventType": "\(eventType)",
+          "eventType": "log",
           "event": {
-            "attribute1": 123,
-            "attribute2": "foo",
-            "attribute3": ["foo", "bar", "bizz"]
+            "attribute1": 123
           }
         }
         """)
 
         // Then
-        XCTAssertNil(receiverMock.messages.firstWebViewMessage)
+        XCTAssertTrue(received.isEmpty)
     }
 
     func testWhenReceivingRUMEvent_itForwardsToRUM() throws {
         // Given
-        let receiverMock = FeatureMessageReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: receiverMock)
+        let core = PassthroughCoreMock()
+        var received: [WebViewRUMMessage] = []
+        _ = core.messageBus.subscribe { (msg: WebViewRUMMessage, _) in received.append(msg) }
         let emitter = MessageEmitter(logsSampler: .mockRandom(), core: core)
 
         // When
@@ -89,12 +85,9 @@ class MessageEmitterTests: XCTestCase {
         """)
 
         // Then
-        let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
-        guard case let .rum(event) = message else {
-            return XCTFail("not a rum message")
-        }
-
-        let json = JSONObjectMatcher(object: event)
+        let msg = try XCTUnwrap(received.first)
+        XCTAssertEqual(msg.kind, .rum)
+        let json = JSONObjectMatcher(object: msg.event)
         XCTAssertEqual(try json.value("attribute1"), 123)
         XCTAssertEqual(try json.value("attribute2"), "foo")
         XCTAssertEqual(try json.array("attribute3").values(), ["foo", "bar", "bizz"])
@@ -102,8 +95,9 @@ class MessageEmitterTests: XCTestCase {
 
     func testWhenReceivingTelemetryEvent_itForwardsToTelemetry() throws {
         // Given
-        let receiverMock = FeatureMessageReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: receiverMock)
+        let core = PassthroughCoreMock()
+        var received: [WebViewRUMMessage] = []
+        _ = core.messageBus.subscribe { (msg: WebViewRUMMessage, _) in received.append(msg) }
         let emitter = MessageEmitter(logsSampler: .mockRandom(), core: core)
 
         // When
@@ -119,12 +113,9 @@ class MessageEmitterTests: XCTestCase {
         """)
 
         // Then
-        let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
-        guard case let .telemetry(event) = message else {
-            return XCTFail("not a telemetry message")
-        }
-
-        let json = JSONObjectMatcher(object: event)
+        let msg = try XCTUnwrap(received.first)
+        XCTAssertEqual(msg.kind, .telemetry)
+        let json = JSONObjectMatcher(object: msg.event)
         XCTAssertEqual(try json.value("attribute1"), 123)
         XCTAssertEqual(try json.value("attribute2"), "foo")
         XCTAssertEqual(try json.array("attribute3").values(), ["foo", "bar", "bizz"])
