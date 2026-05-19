@@ -549,7 +549,7 @@ public struct RUMActionEvent: RUMDataModel {
                 /// Height of the target element (in pixels)
                 public let height: Int64?
 
-                /// Mobile-only: a globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate actions with mobile session replay wireframes.
+                /// Mobile-only: a globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate actions with mobile session replay wireframes.
                 public let permanentId: String?
 
                 /// CSS selector path of the target element
@@ -571,7 +571,7 @@ public struct RUMActionEvent: RUMDataModel {
                 /// - Parameters:
                 ///   - composedPathSelector: Selector data based on the click event composed path
                 ///   - height: Height of the target element (in pixels)
-                ///   - permanentId: Mobile-only: a globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate actions with mobile session replay wireframes.
+                ///   - permanentId: Mobile-only: a globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate actions with mobile session replay wireframes.
                 ///   - selector: CSS selector path of the target element
                 ///   - width: Width of the target element (in pixels)
                 public init(
@@ -2626,6 +2626,90 @@ extension RUMErrorEvent.FeatureFlags {
         try dynamicContainer.allKeys.forEach {
             self.featureFlagsInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
+    }
+}
+
+/// Schema of all properties of a RUM event
+public enum RUMEvent: Codable {
+    case rumActionEvent(value: RUMVitalDurationEvent)
+    case rumErrorEvent(value: RUMVitalOperationStepEvent)
+    case rumLongTaskEvent(value: RUMVitalAppLaunchEvent)
+    case rumResourceEvent(value: TelemetryErrorEvent)
+    case rumViewEvent(value: TelemetryDebugEvent)
+    case rumViewUpdateEvent(value: TelemetryConfigurationEvent)
+    case rumVitalEvent(value: TelemetryUsageEvent)
+    case telemetryEvent(value: RUMActionEvent)
+
+    // MARK: - Codable
+
+    public func encode(to encoder: Encoder) throws {
+        // Encode only the associated value, without encoding enum case
+        var container = encoder.singleValueContainer()
+
+        switch self {
+        case .rumActionEvent(let value):
+            try container.encode(value)
+        case .rumErrorEvent(let value):
+            try container.encode(value)
+        case .rumLongTaskEvent(let value):
+            try container.encode(value)
+        case .rumResourceEvent(let value):
+            try container.encode(value)
+        case .rumViewEvent(let value):
+            try container.encode(value)
+        case .rumViewUpdateEvent(let value):
+            try container.encode(value)
+        case .rumVitalEvent(let value):
+            try container.encode(value)
+        case .telemetryEvent(let value):
+            try container.encode(value)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode enum case from associated value
+        let container = try decoder.singleValueContainer()
+
+        if let value = try? container.decode(RUMVitalDurationEvent.self) {
+            self = .rumActionEvent(value: value)
+            return
+        }
+        if let value = try? container.decode(RUMVitalOperationStepEvent.self) {
+            self = .rumErrorEvent(value: value)
+            return
+        }
+        if let value = try? container.decode(RUMVitalAppLaunchEvent.self) {
+            self = .rumLongTaskEvent(value: value)
+            return
+        }
+        if let value = try? container.decode(TelemetryErrorEvent.self) {
+            self = .rumResourceEvent(value: value)
+            return
+        }
+        if let value = try? container.decode(TelemetryDebugEvent.self) {
+            self = .rumViewEvent(value: value)
+            return
+        }
+        if let value = try? container.decode(TelemetryConfigurationEvent.self) {
+            self = .rumViewUpdateEvent(value: value)
+            return
+        }
+        if let value = try? container.decode(TelemetryUsageEvent.self) {
+            self = .rumVitalEvent(value: value)
+            return
+        }
+        if let value = try? container.decode(RUMActionEvent.self) {
+            self = .telemetryEvent(value: value)
+            return
+        }
+        let error = DecodingError.Context(
+            codingPath: container.codingPath,
+            debugDescription: """
+            Failed to decode `RUMEvent`.
+            Ran out of possibilities when trying to decode the value of associated type.
+            """
+        )
+        throw DecodingError.typeMismatch(RUMEvent.self, error)
     }
 }
 
@@ -14422,4 +14506,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ed69a908b5f05a97b984498526d50c0e97284c06
+// Generated from https://github.com/DataDog/rum-events-format/tree/889442ea10c768f65a05028ac1189f1fbb8c2592

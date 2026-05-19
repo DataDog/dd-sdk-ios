@@ -14940,4 +14940,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ed69a908b5f05a97b984498526d50c0e97284c06
+// Generated from https://github.com/DataDog/rum-events-format/tree/889442ea10c768f65a05028ac1189f1fbb8c2592
