@@ -8,8 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Receiver to consume crash reports as RUM events.
-internal final class CrashReportReceiver: BusMessageReceiver, FeatureMessageReceiver {
-    typealias Message = Crash
+internal final class CrashReportReceiver: BusMessageReceiver {
     private struct AdjustedCrashTimings {
         /// Crash date read from `CrashReport`. It uses device time.
         let crashDate: Date
@@ -59,18 +58,10 @@ internal final class CrashReportReceiver: BusMessageReceiver, FeatureMessageRece
     }
 
     func receive(message: Crash, from core: DatadogCoreProtocol) {
-        _ = send(report: message.report, with: message.context)
+        send(report: message.report, with: message.context)
     }
 
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(crash as Crash) = message else {
-            return false
-        }
-
-        return send(report: crash.report, with: crash.context)
-    }
-
-    private func send(report: DDCrashReport, with context: CrashContext) -> Bool {
+    private func send(report: DDCrashReport, with context: CrashContext) {
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
         // from the moment of crash), but this is the best approximation we can get.
@@ -105,18 +96,17 @@ internal final class CrashReportReceiver: BusMessageReceiver, FeatureMessageRece
                 )
             } else {
                 DD.logger.debug("There was a crash in previous session, but it is ignored due to another crash already present in the last view.")
-                return false
             }
 
-            return true
+            return
         }
 
         if let lastRUMSessionState = context.lastRUMSessionState {
             sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings)
-            return true
+            return
         }
 
-        return sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings)
+        sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings)
     }
 
     /// If the crash occurred in an existing RUM session and we know its `lastRUMViewEvent` we send the error using that session UUID and link
@@ -205,7 +195,7 @@ internal final class CrashReportReceiver: BusMessageReceiver, FeatureMessageRece
         _ crashReport: DDCrashReport,
         crashContext: CrashContext,
         using crashTimings: AdjustedCrashTimings
-    ) -> Bool {
+    ) {
         let sessionID = uuidGenerator.generateUnique()
         let sampled = DeterministicSampler(
             uuid: sessionID.rawValue,
@@ -214,7 +204,7 @@ internal final class CrashReportReceiver: BusMessageReceiver, FeatureMessageRece
 
         guard sampled else {
             DD.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")
-            return false
+            return
         }
 
         // We can ignore `sessionState` for building the rule as we can assume there was no session sent - otherwise,
@@ -263,8 +253,6 @@ internal final class CrashReportReceiver: BusMessageReceiver, FeatureMessageRece
         if let newRUMView = newRUMView {
             send(crashReport: crashReport, to: newRUMView, using: crashTimings)
         }
-
-        return true
     }
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.

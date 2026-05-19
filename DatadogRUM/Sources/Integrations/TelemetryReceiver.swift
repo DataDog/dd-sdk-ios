@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal final class TelemetryReceiver: FeatureMessageReceiver {
+internal final class TelemetryReceiver: BusMessageReceiver {
     /// Maximum number of telemetry events allowed per RUM  sessions.
     static let maxEventsPerSessions: Int = 100
 
@@ -24,6 +24,9 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     let sampler: Sampler
     /// Additional sampler for configuration telemetry events, applied in addition to the `sampler`.
     let configurationExtraSampler: Sampler
+
+    /// "RUM Session Ended" controller to count SDK errors and upload quality metrics.
+    let sessionEndedMetric: SessionEndedMetricController
 
     /// Keeps track of current session
     @ReadWriteLock
@@ -44,47 +47,36 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///   - dateProvider: Current device time provider.
     ///   - sampler: Telemetry events sampler.
     ///   - configurationExtraSampler: Extra sampler for configuration events (applied on top of `sampler`).
+    ///   - sessionEndedMetric: Controller for tracking session-ended metric data.
     init(
         featureScope: FeatureScope,
         dateProvider: DateProvider,
         sampler: Sampler,
-        configurationExtraSampler: Sampler
+        configurationExtraSampler: Sampler,
+        sessionEndedMetric: SessionEndedMetricController
     ) {
         self.featureScope = featureScope
         self.dateProvider = dateProvider
         self.sampler = sampler
         self.configurationExtraSampler = configurationExtraSampler
+        self.sessionEndedMetric = sessionEndedMetric
     }
 
-    /// Receives a message from the bus.
-    ///
-    /// The receiver will only consume `TelemetryMessage`.
-    ///
-    /// - Parameters:
-    ///   - message: The message to consume.
-    ///   - core: The core sending the message.
-    /// - Returns: `true` if the message is a `.telemetry` case.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .telemetry(telemetry) = message else {
-            return false
-        }
-
-        return receive(telemetry: telemetry)
-    }
-
-    /// Receives a Telemetry message from the bus.
-    ///
-    /// - Parameter telemetry: The telemetry message to consume.
-    /// - Returns: Always `true`.
-    private func receive(telemetry: TelemetryMessage) -> Bool {
+    func receive(message telemetry: TelemetryMessage, from core: DatadogCoreProtocol) {
         switch telemetry {
         case let .debug(id, message, attributes):
             debug(id: id, message: message, attributes: attributes)
         case let .error(id, message, kind, stack):
+            sessionEndedMetric.track(sdkErrorKind: kind, in: nil)
             error(id: id, message: message, kind: kind, stack: stack)
         case .configuration(let configuration):
             send(configuration: configuration)
         case let .metric(metric):
+            if metric.name == UploadQualityMetric.name {
+                sessionEndedMetric.track(uploadQuality: metric.attributes, in: nil)
+                // Upload quality metrics are intercepted for the session-ended metric and not forwarded.
+                return
+            }
             if sampled(event: metric) {
                 send(metric: metric)
             }
@@ -93,8 +85,6 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 send(usage: usage)
             }
         }
-
-        return true
     }
 
     private func sampled(event: SampledTelemetry) -> Bool {

@@ -30,22 +30,19 @@ class ErrorMessageReceiverTests: XCTestCase {
 
     func testReceivePartialLogError() throws {
         // When
-        let message: FeatureMessage = .payload(
-            RUMErrorMessage(
-                time: Date(),
-                message: "message-test",
-                source: "logger",
-                type: nil,
-                stack: nil,
-                attributes: [:],
-                binaryImages: nil
-            )
+        let message = RUMErrorMessage(
+            time: Date(),
+            message: "message-test",
+            source: "logger",
+            type: nil,
+            stack: nil,
+            attributes: [:],
+            binaryImages: nil
         )
 
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
+        receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         let event: RUMErrorEvent = try XCTUnwrap(featureScope.eventsWritten().last, "It should send error")
         XCTAssertEqual(event.error.message, "message-test")
         XCTAssertEqual(event.error.source, .logger)
@@ -55,25 +52,22 @@ class ErrorMessageReceiverTests: XCTestCase {
         // Given
         let mockAttribute: String = .mockRandom()
         let mockBinaryImage: BinaryImage = .mockRandom()
-        let message: FeatureMessage = .payload(
-            RUMErrorMessage(
-                time: Date(),
-                message: "message-test",
-                source: "custom",
-                type: "type-test",
-                stack: "stack-test",
-                attributes: [
-                    "any-key": mockAttribute
-                ],
-                binaryImages: [mockBinaryImage]
-            )
+        let message = RUMErrorMessage(
+            time: Date(),
+            message: "message-test",
+            source: "custom",
+            type: "type-test",
+            stack: "stack-test",
+            attributes: [
+                "any-key": mockAttribute
+            ],
+            binaryImages: [mockBinaryImage]
         )
 
         // When
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
+        receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         let event: RUMErrorEvent = try XCTUnwrap(featureScope.eventsWritten().last, "It should send error")
         XCTAssertEqual(event.error.message, "message-test")
         XCTAssertEqual(event.error.type, "type-test")
