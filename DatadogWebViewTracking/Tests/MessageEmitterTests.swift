@@ -138,7 +138,8 @@ class MessageEmitterTests: XCTestCase {
 
         // Given
         let telemetry = TelemetryReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: telemetry)
+        let core = PassthroughCoreMock()
+        core.subscribe(receiver: telemetry)
         let bridge = MessageEmitter(logsSampler: .mockAny(), core: core)
 
         // When
