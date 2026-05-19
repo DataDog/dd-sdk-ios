@@ -19,18 +19,12 @@ internal protocol RUMContextObserver {
 }
 
 /// Receives RUM context from `DatadogCore` and notifies it through `RUMContextObserver` interface.
-internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
+internal final class RUMContextReceiver: BusMessageReceiver, RUMContextObserver {
     /// Notifies new `RUMContext` or `nil` if current RUM session is not sampled.
     private var onNew: ((RUMCoreContext?) -> Void)?
     private var previous: RUMCoreContext?
 
-    // MARK: - FeatureMessageReceiver
-
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .context(context) = message else {
-            return false
-        }
-
+    func receive(message context: DatadogContext, from core: DatadogCoreProtocol) {
         let new = context.additionalContext(ofType: RUMCoreContext.self)
 
         // Notify only if it has changed:
@@ -38,8 +32,6 @@ internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
             onNew?(new)
             previous = new
         }
-
-        return true
     }
 
     // MARK: - RUMContextObserver
