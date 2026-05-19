@@ -299,6 +299,11 @@ public enum Datadog {
 
         CoreRegistry.register(core, named: instanceName)
 
+        // Report any error encountered while reading the on-disk cache at init.
+        if let loadError = core.remoteConfigCache?.loadError {
+            core.telemetry.error("[RemoteConfig] Failed to load cached configuration from disk", error: loadError)
+        }
+
         // Trigger remote config fetch if an ID was provided.
         // The fetch is async — init returns immediately and does not wait for it.
         if let rawID = configuration.remoteConfigurationID {
@@ -306,13 +311,16 @@ public enum Datadog {
             if id.isEmpty {
                 core.telemetry.error("[RemoteConfig] remoteConfigurationID must not be blank")
             } else if let endpoint = configuration.site.remoteConfigurationURL(for: id) {
-                let session = configuration.remoteConfigurationSession ?? {
-                    let sessionConfig: URLSessionConfiguration = .ephemeral
-                    sessionConfig.urlCache = nil
-                    sessionConfig.connectionProxyDictionary = configuration.proxyConfiguration
-                    return URLSession(configuration: sessionConfig)
-                }()
-                core.fetchRemoteConfiguration(from: endpoint, session: session)
+                // Cache is always non-nil here: the convenience init creates it for any non-empty ID.
+                if let cache = core.remoteConfigCache {
+                    let fetcher: RemoteConfigurationFetcher
+                    if let session = configuration.remoteConfigurationSession {
+                        fetcher = RemoteConfigurationFetcher(cache: cache, telemetry: core.telemetry, session: session)
+                    } else {
+                        fetcher = RemoteConfigurationFetcher(cache: cache, connectionProxyDictionary: configuration.proxyConfiguration, telemetry: core.telemetry)
+                    }
+                    fetcher.fetch(from: endpoint)
+                }
             } else {
                 core.telemetry.error("[RemoteConfig] Could not build CDN URL for remoteConfigurationID '\(id)'")
             }
@@ -436,12 +444,22 @@ extension DatadogCore {
         )
         let isRunFromExtension = bundleType == .iOSAppExtension
 
+        let directory = try CoreDirectory(
+            in: configuration.systemDirectory(),
+            instanceName: instanceName,
+            site: configuration.site
+        )
+
+        let remoteConfigCache: RemoteConfigurationCache?
+        if let rawID = configuration.remoteConfigurationID {
+            let id = rawID.trimmingCharacters(in: .whitespacesAndNewlines)
+            remoteConfigCache = id.isEmpty ? nil : RemoteConfigurationCache(id: id, directory: directory.coreDirectory)
+        } else {
+            remoteConfigCache = nil
+        }
+
         self.init(
-            directory: try CoreDirectory(
-                in: configuration.systemDirectory(),
-                instanceName: instanceName,
-                site: configuration.site
-            ),
+            directory: directory,
             dateProvider: configuration.dateProvider,
             initialConsent: trackingConsent,
             performance: performance,
@@ -478,7 +496,8 @@ extension DatadogCore {
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            isRunFromExtension: isRunFromExtension
+            isRunFromExtension: isRunFromExtension,
+            remoteConfigCache: remoteConfigCache
         )
 
         telemetry.configuration(

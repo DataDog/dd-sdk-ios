@@ -9,39 +9,46 @@ import DatadogInternal
 
 /// Manages the on-disk cache of the remote configuration JSON document.
 ///
-/// The cache is a single file `remote-config.json` stored at the root of
-/// the SDK's private core directory:
+/// The cache is a single file named after the remote configuration ID, stored at
+/// the root of the SDK's private core directory:
 ///
-///     /Library/Caches/com.datadoghq/v2/<instance-uuid>/remote-config.json
+///     /Library/Caches/com.datadoghq/v2/<instance-uuid>/<config-id>.json
 ///
 /// The file contains raw JSON bytes exactly as received from the CDN.
 /// Parsing and applying those values is handled separately.
 internal final class RemoteConfigurationCache {
-    private static let fileName = "remote-config.json"
-
     private let fileURL: URL
 
     /// Raw JSON bytes from the previous CDN fetch, read synchronously at init.
-    /// `nil` when no cache exists yet (first launch, or remoteConfigurationID was never set).
+    /// `nil` when no cache exists yet (first launch, or no file on disk).
     /// Consumed by the config-application layer once parsing and applying remote values is implemented.
     private(set) var data: Data?
 
-    init(directory: Directory) {
-        self.fileURL = directory.url.appendingPathComponent(Self.fileName)
+    /// Error encountered when reading the cache file at init, if any.
+    /// `nil` when the file was absent (expected on first launch) or read successfully.
+    private(set) var loadError: Error?
+
+    init(id: String, directory: Directory) {
+        self.fileURL = directory.url.appendingPathComponent("\(id).json")
         // Synchronous read on the caller's thread (main thread during SDK init).
         // Acceptable because the file is small (a single JSON document) and only
         // present after a previous successful fetch — absent on first launch.
-        self.data = Self.readFromDisk(at: fileURL)
+        let (data, error) = Self.readFromDisk(at: fileURL)
+        self.data = data
+        self.loadError = error
     }
 
     // MARK: - Private
 
-    private static func readFromDisk(at url: URL) -> Data? {
-        guard FileManager.default.fileExists(atPath: url.path)
-        else {
-            return nil
+    private static func readFromDisk(at url: URL) -> (Data?, Error?) {
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            return (nil, nil)
         }
-        return try? Data(contentsOf: url)
+        do {
+            return (try Data(contentsOf: url), nil)
+        } catch {
+            return (nil, error)
+        }
     }
 
     // MARK: - Internal

@@ -12,7 +12,7 @@ import DatadogInternal
 ///
 /// Rules:
 /// - Fetch is always asynchronous — never blocks the caller.
-/// - On success (2xx, non-empty body, valid JSON): calls `cache.save(_:)`.
+/// - On success (2xx, non-empty body): calls `cache.save(_:)`.
 /// - On any failure: reports a telemetry error and leaves the existing cache untouched.
 internal final class RemoteConfigurationFetcher {
     private let cache: RemoteConfigurationCache
@@ -22,11 +22,22 @@ internal final class RemoteConfigurationFetcher {
     init(
         cache: RemoteConfigurationCache,
         telemetry: Telemetry,
-        session: URLSession = URLSession(configuration: .ephemeral)
+        session: URLSession
     ) {
         self.cache = cache
         self.telemetry = telemetry
         self.session = session
+    }
+
+    convenience init(
+        cache: RemoteConfigurationCache,
+        connectionProxyDictionary: [AnyHashable: Any]?,
+        telemetry: Telemetry
+    ) {
+        let config = URLSessionConfiguration.ephemeral
+        config.urlCache = nil
+        config.connectionProxyDictionary = connectionProxyDictionary
+        self.init(cache: cache, telemetry: telemetry, session: URLSession(configuration: config))
     }
 
     /// Fires a background GET request to `endpoint`.
@@ -35,6 +46,8 @@ internal final class RemoteConfigurationFetcher {
     /// - Parameter didComplete: Called when the fetch (and any write) is done.
     ///   Pass `nil` in production; inject a closure in tests to await completion.
     func fetch(from endpoint: URL, didComplete: (() -> Void)? = nil) {
+        // TODO RUM-16386: Add ETag-based conditional requests (If-None-Match / 304) and
+        // TTL-based revalidation (skip fetch if cached config is < 5 min old).
         let cache = self.cache
         let telemetry = self.telemetry
         let task = session.dataTask(with: endpoint) { data, response, error in
@@ -66,15 +79,7 @@ internal final class RemoteConfigurationFetcher {
                 return
             }
 
-            // 4. Invalid JSON
-            // Intentional allocate-and-discard: we only need to validate the bytes
-            // are well-formed JSON before caching. The parsed object is thrown away.
-            // This guarantees the cache never contains non-JSON data, so future
-            // parsing layers can trust the cached bytes without re-validating.
-            guard (try? JSONSerialization.jsonObject(with: data)) != nil else {
-                telemetry.error("[RemoteConfig] Response is not valid JSON")
-                return
-            }
+            // TODO RUM-16387: Validate the schema before saving
 
             // All checks passed — persist to disk
             if !cache.save(data) {

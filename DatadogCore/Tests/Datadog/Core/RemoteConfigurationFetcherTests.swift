@@ -63,7 +63,7 @@ class RemoteConfigurationFetcherTests: XCTestCase {
     override func setUp() {
         coreDir = temporaryUniqueCoreDirectory()
         coreDir.create()
-        cache = RemoteConfigurationCache(directory: coreDir.coreDirectory)
+        cache = RemoteConfigurationCache(id: "test-id", directory: coreDir.coreDirectory)
     }
 
     override func tearDown() {
@@ -89,7 +89,7 @@ class RemoteConfigurationFetcherTests: XCTestCase {
         fetcher.fetch(from: endpoint, didComplete: { expectation.fulfill() })
         wait(for: [expectation], timeout: 2)
 
-        let freshCache = RemoteConfigurationCache(directory: coreDir.coreDirectory)
+        let freshCache = RemoteConfigurationCache(id: "test-id", directory: coreDir.coreDirectory)
         XCTAssertEqual(freshCache.data, payload, "Cache must contain the CDN response")
         XCTAssertFalse(
             telemetry.messages.contains {
@@ -117,7 +117,7 @@ class RemoteConfigurationFetcherTests: XCTestCase {
         wait(for: [expectation], timeout: 2)
 
         XCTAssertEqual(
-            RemoteConfigurationCache(directory: coreDir.coreDirectory).data,
+            RemoteConfigurationCache(id: "test-id", directory: coreDir.coreDirectory).data,
             existing,
             "Existing cache must be preserved after a network error"
         )
@@ -146,7 +146,7 @@ class RemoteConfigurationFetcherTests: XCTestCase {
         fetcher.fetch(from: endpoint, didComplete: { expectation.fulfill() })
         wait(for: [expectation], timeout: 2)
 
-        XCTAssertEqual(RemoteConfigurationCache(directory: coreDir.coreDirectory).data, existing)
+        XCTAssertEqual(RemoteConfigurationCache(id: "test-id", directory: coreDir.coreDirectory).data, existing)
         XCTAssertTrue(
             telemetry.messages.contains {
                 if case .error = $0 {
@@ -172,7 +172,7 @@ class RemoteConfigurationFetcherTests: XCTestCase {
         fetcher.fetch(from: endpoint, didComplete: { expectation.fulfill() })
         wait(for: [expectation], timeout: 2)
 
-        XCTAssertEqual(RemoteConfigurationCache(directory: coreDir.coreDirectory).data, existing)
+        XCTAssertEqual(RemoteConfigurationCache(id: "test-id", directory: coreDir.coreDirectory).data, existing)
         XCTAssertTrue(
             telemetry.messages.contains {
                 if case .error = $0 {
@@ -184,12 +184,13 @@ class RemoteConfigurationFetcherTests: XCTestCase {
         )
     }
 
-    func testInvalidJSONDoesNotOverwriteExistingCache() {
-        let existing = Data("{\"v\":1}".utf8)
-        cache.save(existing)
+    func testNonJSONBodyIsSavedToCache() {
+        // JSON schema validation is deferred (TODO RUM-16387), so any non-empty 2xx
+        // body is accepted and written to cache as-is.
+        let nonJSON = Data("this is not json".utf8)
 
         MockURLProtocol.requestHandler = { request in
-            (okResponse(for: request.url!), Data("this is not json".utf8))
+            (okResponse(for: request.url!), nonJSON)
         }
 
         let telemetry = TelemetryMock()
@@ -198,22 +199,24 @@ class RemoteConfigurationFetcherTests: XCTestCase {
         fetcher.fetch(from: endpoint, didComplete: { expectation.fulfill() })
         wait(for: [expectation], timeout: 2)
 
-        XCTAssertEqual(RemoteConfigurationCache(directory: coreDir.coreDirectory).data, existing)
-        XCTAssertTrue(
+        XCTAssertEqual(
+            RemoteConfigurationCache(id: "test-id", directory: coreDir.coreDirectory).data,
+            nonJSON,
+            "Non-JSON body must be saved until schema validation is implemented"
+        )
+        XCTAssertFalse(
             telemetry.messages.contains {
-                if case .error = $0 {
-                    return true
-                }
+                if case .error = $0 { return true }
                 return false
             },
-            "A telemetry error must be reported"
+            "No telemetry error expected when body is non-empty and status is 2xx"
         )
     }
 
     func testDiskWriteFailureReportsTelemetry() {
         // Use a cache pointing at a non-existent directory so the write will fail
         let missingDir = Directory(url: URL(fileURLWithPath: "/no/such/path/"))
-        let brokenCache = RemoteConfigurationCache(directory: missingDir)
+        let brokenCache = RemoteConfigurationCache(id: "test-id", directory: missingDir)
 
         MockURLProtocol.requestHandler = { request in
             (okResponse(for: request.url!), Data("{}".utf8))

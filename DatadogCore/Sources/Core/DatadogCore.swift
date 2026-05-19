@@ -56,11 +56,10 @@ internal final class DatadogCore {
     let bus = MessageBus()
 
     /// Cache of the remote configuration JSON fetched from the CDN.
-    /// Created at init using this core's directory. `data` is `nil` on first
-    /// launch (or when `remoteConfigurationID` was never set); populated either
-    /// from disk (previous successful fetch) or in-memory after the first
-    /// successful fetch in the current session.
-    private let remoteConfigCache: RemoteConfigurationCache
+    /// `nil` when `remoteConfigurationID` was not set at init.
+    /// `data` is `nil` on first launch; populated from disk (previous successful
+    /// fetch) or in-memory after the first successful fetch in the current session.
+    internal let remoteConfigCache: RemoteConfigurationCache?
 
     /// Registry for Features.
     @ReadWriteLock
@@ -93,6 +92,7 @@ internal final class DatadogCore {
     ///   - encryption: The on-disk data encryption.
     ///   - contextProvider: The core context provider.
     ///   - applicationVersion: The application version.
+    ///   - remoteConfigCache: Pre-built cache for remote configuration; `nil` when no ID was configured.
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,
@@ -104,7 +104,8 @@ internal final class DatadogCore {
         applicationVersion: String,
         maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool,
-        isRunFromExtension: Bool = false
+        isRunFromExtension: Bool = false,
+        remoteConfigCache: RemoteConfigurationCache? = nil
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
@@ -121,7 +122,7 @@ internal final class DatadogCore {
         self.contextProvider.subscribe(\.accountInfo, to: accountInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
-        self.remoteConfigCache = RemoteConfigurationCache(directory: directory.coreDirectory)
+        self.remoteConfigCache = remoteConfigCache
         // connect the core to the message bus.
         // the bus will keep a weak ref to the core.
         bus.connect(core: self)
@@ -260,19 +261,6 @@ internal final class DatadogCore {
     func clearAllData() {
         allStorages.forEach { $0.clearAllData() }
         allDataStores.forEach { $0.clearAllData() }
-    }
-
-    /// Fetches the remote configuration document from the CDN and caches it to disk.
-    ///
-    /// Called from `Datadog.initialize()` when `remoteConfigurationID` is set.
-    /// The fetch is fire-and-forget — SDK init does not wait for it.
-    internal func fetchRemoteConfiguration(from endpoint: URL, session: URLSession) {
-        let fetcher = RemoteConfigurationFetcher(
-            cache: remoteConfigCache,
-            telemetry: telemetry,
-            session: session
-        )
-        fetcher.fetch(from: endpoint)
     }
 
     /// Adds a message receiver to the bus.
