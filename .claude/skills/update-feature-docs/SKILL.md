@@ -46,6 +46,14 @@ To add a new feature doc to the system, just create a `*_FEATURE.md` file with t
    - **Deprecated public cases not documented** — walk every public enum case, method, and property, including those marked `@available(*, deprecated, message:)`. Deprecated cases stay on the public API and must appear in the doc with a clear deprecation note, otherwise customers reading the doc won't know they exist or that they're being phased out.
    - Outdated code examples
 
+5b. **Audit every code snippet for compile-readiness** — for every constructor call, method call, and type reference in every code snippet (Quick Start and any inline examples):
+   - Locate the corresponding `init` / `func` / `struct` / `class` / `enum` declaration in the tracked source files (or in extension files providing convenience overloads).
+   - Confirm every parameter **without** a default value (`= ...`) is supplied in the snippet, with the correct label.
+   - Confirm parameter labels and argument ordering match the source.
+   - **Watch especially for newly-required parameters added to existing initializers.** A required parameter added to an existing `init` is the highest-risk drift — the constructor still looks "the same" at a glance, and the source diff is a one-line addition that is easy to skim past. Example regression: `DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled:)` gained the required `isLegacyDetectionEnabled` argument and the snippet was not updated, causing a compile failure customers hit.
+   - Placeholder identifiers (e.g. `<client_token>`, `MyCustomViewsPredicate`, `myView`) and user-defined helpers (e.g. `scrubURL`) are illustrative and need not resolve — only **SDK** API calls must be valid.
+   - If you find any mismatch, fix the snippet (this counts as a content update — proceed to step 6).
+
 6. **Update the feature doc** — apply all necessary changes:
    - Update the Quick Start example to reflect the current API
    - Update the Configuration Categories section
