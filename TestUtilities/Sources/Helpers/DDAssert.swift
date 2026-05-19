@@ -269,7 +269,14 @@ private func _flatten(_ value: Any, prefix: String) -> [String: NSObject] {
         }
         var result: [String: NSObject] = [:]
         for (key, child) in dict {
-            let newPrefix = prefix.isEmpty ? key : "\(prefix).\(key)"
+            // Escape special path chars so keys are unambiguous: `\` is the escape char, `.` separates dict levels,
+            // `[` and `]` delimit array indices. Order matters: backslashes first, then the rest.
+            let escapedKey = key
+                .replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: ".", with: "\\.")
+                .replacingOccurrences(of: "[", with: "\\[")
+                .replacingOccurrences(of: "]", with: "\\]")
+            let newPrefix = prefix.isEmpty ? escapedKey : "\(prefix).\(escapedKey)"
             for (childKey, childValue) in _flatten(child, prefix: newPrefix) {
                 result[childKey] = childValue
             }
@@ -283,7 +290,8 @@ private func _flatten(_ value: Any, prefix: String) -> [String: NSObject] {
         }
         var result: [String: NSObject] = [:]
         for (index, child) in array.enumerated() {
-            let newPrefix = prefix.isEmpty ? "\(index)" : "\(prefix).\(index)"
+            // Use bracket notation so array index `0` is unambiguous vs dict key `"0"`
+            let newPrefix = "\(prefix)[\(index)]"
             for (childKey, childValue) in _flatten(child, prefix: newPrefix) {
                 result[childKey] = childValue
             }
