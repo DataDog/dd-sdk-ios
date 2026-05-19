@@ -112,6 +112,53 @@ class UIScrollViewDelegateProxyTests: XCTestCase {
         scrollView.setContentOffset(CGPoint(x: 0, y: 100), animated: false)
     }
 
+    // MARK: - Regression for RUM-16361: Forwarding after originalDelegate deallocates
+
+    /// Reproduces the crash reported in:
+    /// - RUM-16361 / RUMS-5941 (Salesforce escalation; Kidsnote SDK 3.9.1, SOOP SDK 3.11.0)
+    /// - https://github.com/DataDog/dd-sdk-ios/issues/2867 (Shaadi, SDK 3.10.0)
+    ///
+    /// Crash signature:
+    ///   NSInvalidArgumentException
+    ///   -[DatadogRUM.UIScrollViewDelegateProxy scrollViewDidScroll:]: unrecognized selector
+    ///   ___forwarding___ → _CF_forwarding_prep_0 → _notifyDidScroll
+    ///
+    /// Mechanism (production):
+    /// A UIViewController owns its UIScrollView AND is its delegate. When the VC deallocates,
+    /// its `deallocating` flag is set BEFORE its associated objects are released. Inside that
+    /// window, UIKit may dispatch `scrollViewDidScroll:` to the still-alive proxy (e.g. from
+    /// layout invalidation during the scroll view's own teardown). The proxy does not implement
+    /// that selector directly, so the ObjC runtime invokes `forwardingTarget(for:)` — which
+    /// reads the weak `originalDelegate` (now nil because the VC is mid-dealloc) and returns
+    /// nil. The runtime then raises "unrecognized selector".
+    ///
+    /// Why prior fixes missed it:
+    /// - PR #2776 tied proxy lifetime to delegate lifetime, but the proxy is still alive during
+    ///   the VC's dealloc body. The bug is about reading `originalDelegate` after the delegate's
+    ///   `deallocating` flag is set, not about the proxy outliving the delegate by minutes.
+    /// - PR #2791 added a setter re-entrancy guard; orthogonal code path.
+    func test_whenOriginalDelegateIsDeallocated_dispatchingForwardedSelector_doesNotCrash() {
+        // Given - a proxy whose original delegate has been deallocated. The weak
+        // `originalDelegate` reference must be nil; the proxy itself is still alive.
+        var delegate: MockScrollViewDelegate? = MockScrollViewDelegate()
+        let proxy = UIScrollViewDelegateProxy(originalDelegate: delegate, handler: handler)
+        delegate = nil
+
+        XCTAssertNil(proxy.originalDelegate, "Sanity: weak reference must be nil after delegate deallocates")
+
+        // When - UIKit dispatches a forwarded UIScrollViewDelegate selector to the proxy.
+        // `perform(_:with:)` exercises the same ObjC forwarding chain UIKit uses internally
+        // (objc_msgSend → forwardingTarget(for:) → forwardInvocation:).
+        let scrollView = UIScrollView()
+        _ = proxy.perform(
+            #selector(UIScrollViewDelegate.scrollViewDidScroll(_:)),
+            with: scrollView
+        )
+
+        // Then - the proxy must handle the dispatch without crashing. The unfixed proxy raises
+        // NSInvalidArgumentException from inside `perform`, which XCTest reports as a failure.
+    }
+
     // MARK: - Circular Proxy Chain (regression for RxSwift-style delegate proxy conflict)
 
     func testRespondsTo_withCircularProxyChain_doesNotCauseInfiniteRecursion() {
