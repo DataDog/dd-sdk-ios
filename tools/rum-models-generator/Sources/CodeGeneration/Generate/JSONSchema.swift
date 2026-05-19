@@ -277,7 +277,8 @@ internal class JSONSchema: Decodable {
             return
         }
 
-        // Title can be overwritten
+        // id and title can be inferred from the merged schema
+        self.id = self.id ?? otherSchema.id
         self.title = self.title ?? otherSchema.title
 
         // Description can be overwritten

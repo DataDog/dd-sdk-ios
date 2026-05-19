@@ -180,12 +180,14 @@ internal class JSONSchemaToJSONTypeTransformer {
     /// 1. `title` (existing behaviour, used by all RUM event schemas)
     /// 2. A direct `const` value on the subschema (e.g. `{"type":"string","const":"all"}` → `"all"`)
     /// 3. The const value of a shared discriminator property across all object siblings
+    /// 4. `$id` propagated from a `$ref` target via allOf merging (e.g. `"rum-sdk-config-ios"`)
     private func resolveVariantName(_ subschema: JSONSchema, discriminatorKey: String?) -> String? {
         if let title = subschema.title { return title }
         if let const = subschema.const { return const.value.description }
         if let key = discriminatorKey {
             return subschema.properties?[key]?.const?.value.description
         }
+        if let id = subschema.id { return id }
         return nil
     }
 
