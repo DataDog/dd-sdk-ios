@@ -49,6 +49,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let trackNativeLongTasks: Bool?
     public let trackNativeViews: Bool?
     public let trackNetworkRequests: Bool?
+    public let trackResourceHeaders: String?
     public let trackResources: Bool?
     public let trackSessionAcrossSubdomains: Bool?
     public let trackUserInteractions: Bool?
@@ -412,6 +413,7 @@ extension Telemetry {
         trackNativeLongTasks: Bool? = nil,
         trackNativeViews: Bool? = nil,
         trackNetworkRequests: Bool? = nil,
+        trackResourceHeaders: String? = nil,
         trackResources: Bool? = nil,
         trackSessionAcrossSubdomains: Bool? = nil,
         trackUserInteractions: Bool? = nil,
@@ -470,6 +472,7 @@ extension Telemetry {
             trackNativeLongTasks: trackNativeLongTasks,
             trackNativeViews: trackNativeViews,
             trackNetworkRequests: trackNetworkRequests,
+            trackResourceHeaders: trackResourceHeaders,
             trackResources: trackResources,
             trackSessionAcrossSubdomains: trackSessionAcrossSubdomains,
             trackUserInteractions: trackUserInteractions,
@@ -613,6 +616,7 @@ extension ConfigurationTelemetry {
             trackNativeLongTasks: other.trackNativeLongTasks ?? trackNativeLongTasks,
             trackNativeViews: other.trackNativeViews ?? trackNativeViews,
             trackNetworkRequests: other.trackNetworkRequests ?? trackNetworkRequests,
+            trackResourceHeaders: other.trackResourceHeaders ?? trackResourceHeaders,
             trackResources: other.trackResources ?? trackResources,
             trackSessionAcrossSubdomains: other.trackSessionAcrossSubdomains ?? trackSessionAcrossSubdomains,
             trackUserInteractions: other.trackUserInteractions ?? trackUserInteractions,

@@ -334,6 +334,14 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         let trackUserInteractions = false
         #endif
 
+        let trackResourceHeaders: String? = {
+            switch configuration.urlSessionTracking?.trackResourceHeaders {
+            case .none, .disabled: return nil
+            case .defaults: return "default_headers"
+            case .custom: return "custom"
+            }
+        }()
+
         core.telemetry.configuration(
             appHangThreshold: configuration.appHangThreshold?.dd.toInt64Milliseconds,
             invTimeThresholdMs: configuration.nextViewActionPredicate?.invTimeThresholdMs,
@@ -350,6 +358,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             trackNativeLongTasks: configuration.longTaskThreshold != nil,
             trackNativeViews: trackNativeViews,
             trackNetworkRequests: configuration.urlSessionTracking != nil,
+            trackResourceHeaders: trackResourceHeaders,
             trackUserInteractions: trackUserInteractions,
             useFirstPartyHosts: configuration.urlSessionTracking?.firstPartyHostsTracing != nil
         )
