@@ -131,6 +131,13 @@ namespace dd::profiler {
     class profile;
 }
 
+/**
+ * Releases heap-backed memory owned by a stack trace.
+ *
+ * @param trace Pointer to stack trace to clean up (can be nullptr).
+ */
+void stack_trace_destroy(stack_trace_t* trace);
+
 extern "C" {
 #endif
 
@@ -178,7 +185,6 @@ typedef enum {
     DD_PROFILER_STATUS_TIMEOUT = 4,           ///< Profiler was stopped due to timeout
     DD_PROFILER_STATUS_PREWARMED = 5,         ///< Profiler was not started due to prewarming
     DD_PROFILER_STATUS_ALLOCATION_FAILED = 6, ///< Memory allocation failed
-    DD_PROFILER_STATUS_ALREADY_STARTED = 7,   ///< Failed to start profiler because it is already started
 } dd_profiler_status_t;
 
 /**

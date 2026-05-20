@@ -194,6 +194,18 @@ final class DDProfilerTests: XCTestCase {
         XCTAssertNil(dd_profiler_get_profile(), "Profile should be nil when profiler was never started")
     }
 
+    func testDDProfiler_flushProfile_whenNotStarted_returnsNil() {
+        // Given
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED, "Precondition: profiler should not be started")
+
+        // When
+        let profile = dd_profiler_flush_and_get_profile()
+
+        // Then
+        XCTAssertNil(profile, "Flush should not create a profile when profiler was never started")
+        XCTAssertNil(dd_profiler_get_profile(), "Profile should remain nil")
+    }
+
     func testDDProfiler_getProfile_whenRunning_returnsValidProfile() {
         // Given
         XCTAssertEqual(dd_profiler_start(), 1)
@@ -225,6 +237,33 @@ final class DDProfilerTests: XCTestCase {
 
         // Then
         XCTAssertNotNil(profile, "Profile should still be available after stopping")
+    }
+
+    func testDDProfiler_flushProfileAfterStopping_returnsStoppedProfile() {
+        // Given
+        XCTAssertEqual(dd_profiler_start(), 1)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING, "Profiler should be running")
+
+        for i in 0..<2_000 {
+            _ = sqrt(Double(i))
+            if i % 100 == 0 {
+                Thread.sleep(forTimeInterval: 0.002)
+            }
+        }
+
+        dd_profiler_stop()
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED, "Profiler should be stopped")
+
+        // When
+        let profile = dd_profiler_flush_and_get_profile()
+
+        // Then
+        XCTAssertNotNil(profile, "Flush should return the stopped profile")
+        if let profile {
+            XCTAssertGreaterThan(dd_pprof_sample_count(profile), 0, "Stopped profile should contain harvested samples")
+            dd_pprof_destroy(profile)
+        }
+        XCTAssertNotNil(dd_profiler_get_profile(), "Flush should rotate to a fresh active profile")
     }
 
     func testDDProfiler_destroy_clearsAllData() {
@@ -302,12 +341,12 @@ final class DDProfilerTests: XCTestCase {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
     }
 
-    func testStop_unblocksPendingFlushRequest() {
+    func testConcurrentStopAndFlush_completeWithoutDeadlock() {
         // Given
         XCTAssertEqual(dd_profiler_start(), 1)
         Thread.sleep(forTimeInterval: 0.05) // Allow sampling to begin
 
-        let flushReturned = expectation(description: "Flush returns after stop")
+        let flushReturned = expectation(description: "Concurrent flush returns")
 
         // When
         DispatchQueue.global().async {
