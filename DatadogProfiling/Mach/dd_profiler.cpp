@@ -18,14 +18,32 @@
 #include <mutex>
 #include <new>
 #include <random>
+#include <utility>
 
 // Profiling sampling backstop (see `callback`).
 // Typical profile span is ~1 minute; this cutoff includes additional slack beyond that.
 // The extra time avoids stopping sampling while the profile is still being processed.
-static constexpr int64_t DD_PROFILER_TIMEOUT_NS = 90000000000ULL; // 1:30 minutes
+static constexpr int64_t DD_PROFILER_TIMEOUT_NS = 90000000000LL; // 1:30 minutes
 static constexpr double DD_PROFILER_MAX_SAMPLE_RATE = 100.0;
 // Maximum queued aggregation batch memory before new batches are dropped.
 static constexpr uint64_t DD_PROFILER_DEFAULT_HARD_LIMIT_BYTES = 64ULL * 1024ULL * 1024ULL;
+
+/*
+ * Architecture note
+ *
+ * The Swift profiling feature coordinates the C++ Mach profiler layer through
+ * the public C API below. The Mach profiler state is backed by a process-wide
+ * singleton (`g_dd_profiler`).
+ *
+ * The C++ profiler owns two long-lived profiler threads while running:
+ * - `mach_sampling_profiler` owns the sampling thread, which captures raw
+ *   stack traces and hands off completed buffers.
+ * - `aggregation_worker` owns the aggregation thread, which drains buffers,
+ *   runs profile aggregation and executes flush barriers in order.
+ *
+ * Public C API calls such as start, stop and flush run on external caller
+ * threads and are serialized by `g_dd_profiler_mutex`.
+ */
 
 static dd_profiler_diagnostics_t empty_diagnostics() {
     return {0, 0, 0};
@@ -229,7 +247,6 @@ public:
     void stop() {
         if (!profiler) return;
         status = DD_PROFILER_STATUS_STOPPED;
-        profiler->request_stop();
         profiler->stop_sampling();
     }
 
@@ -263,16 +280,18 @@ public:
      * @return The harvested profile, or nullptr if no profile exists.
      */
     profile* flush_and_get_profile() {
-        profile_swap_context swap_context{
-            this,
-            new (std::nothrow) dd::profiler::profile(sampling_interval_ns),
-            nullptr
+        if (!profiler) {
+            return nullptr;
+        }
+
+        dd::profiler::profile* next_profile = new (std::nothrow) dd::profiler::profile(sampling_interval_ns);
+        dd::profiler::profile* flushed_profile = nullptr;
+        auto swap_profile = [this, next_profile, &flushed_profile] {
+            swap_profile_at_flush_boundary(next_profile, flushed_profile);
         };
 
-        if (profiler) {
-            profiler->request_flush(swap_profile_action, &swap_context);
-        } else {
-            swap_profile_action(&swap_context);
+        if (!profiler->request_flush(swap_profile)) {
+            swap_profile();
         }
 
         {
@@ -282,50 +301,41 @@ public:
             }
         }
 
-        return swap_context.flushed_profile;
+        return flushed_profile;
     }
 
     dd_profiler_diagnostics_t diagnostics() {
         dd_profiler_diagnostics_t result = empty_diagnostics();
 
         if (profiler) {
-            profiler->consume_diagnostics(&result);
+            profiler->consume_diagnostics(result);
         }
 
         return result;
     }
 
 private:
-    struct profile_swap_context {
-        dd_profiler* profiler;
-        dd::profiler::profile* next_profile;
-        dd::profiler::profile* flushed_profile;
-    };
-
     /**
      * @brief Swaps the active profile at a flush boundary.
      *
-     * Moves the current active profile into `flushed_profile` and installs
-     * `next_profile` as the new active profile under `profile_mutex`.
+     * Moves the current active profile into `flushed_profile` and installs the
+     * `next_profile` under `profile_mutex`.
      *
-     * @param ctx Pointer to `profile_swap_context`
+     * @param next_profile Profile to install as the active profile.
+     * @param flushed_profile Set to the previously active profile.
      */
-    static void swap_profile_action(void* ctx) {
-        if (!ctx) return;
+    void swap_profile_at_flush_boundary(
+        dd::profiler::profile* next_profile,
+        dd::profiler::profile*& flushed_profile
+    ) {
+        std::lock_guard<std::mutex> lock(profile_mutex);
 
-        auto* swap_context = static_cast<profile_swap_context*>(ctx);
-        dd_profiler* profiler = swap_context->profiler;
-        if (!profiler) return;
+        flushed_profile = profile;
+        profile = next_profile;
 
-        std::lock_guard<std::mutex> lock(profiler->profile_mutex);
-
-        swap_context->flushed_profile = profiler->profile;
-        profiler->profile = swap_context->next_profile;
-        swap_context->next_profile = nullptr;
-
-        if (!profiler->profile) {
-            profiler->status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
-            if (profiler->profiler) profiler->profiler->request_stop();
+        if (!profile) {
+            status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
+            if (profiler) profiler->request_stop();
         }
     }
 

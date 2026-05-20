@@ -14,6 +14,7 @@
 #if !TARGET_OS_WATCH
 
 #include <atomic>
+#include <functional>
 #include <mach/mach.h>
 #include <mach/thread_act.h>
 #include <mach/thread_info.h>
@@ -52,7 +53,7 @@ class aggregation_worker;
  */
 class mach_sampling_profiler {
 public:
-    using flush_action_t = void (*)(void* ctx);
+    using flush_action_t = std::function<void()>;
 
     /**
      * @brief Constructs a new profiler instance
@@ -93,8 +94,10 @@ public:
      *
      * If provided, `action` runs after all work before this request has
      * completed and before later buffered work is processed.
+     *
+     * @return true when the flush barrier was processed by the aggregation worker.
      */
-    void request_flush(flush_action_t action = nullptr, void* action_ctx = nullptr);
+    bool request_flush(flush_action_t action = {});
 
     /**
      * @brief Requests that sampling stop at the next safe point.
@@ -106,7 +109,7 @@ public:
     /**
      * @brief Returns and resets diagnostics accumulated since the last consume.
      */
-    void consume_diagnostics(dd_profiler_diagnostics_t* out);
+    void consume_diagnostics(dd_profiler_diagnostics_t& out);
 
     /**
      * @brief Atomic flag indicating whether the sampling loop should keep running.

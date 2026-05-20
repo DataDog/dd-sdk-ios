@@ -180,8 +180,6 @@ extension ProfilingContext.Status {
             self = .stopped(reason: .prewarmed)
         case DD_PROFILER_STATUS_ALLOCATION_FAILED:
             self = .error(reason: .memoryAllocationFailed)
-        case DD_PROFILER_STATUS_ALREADY_STARTED:
-            self = .error(reason: .alreadyStarted)
         default:
             self = .unknown
         }
