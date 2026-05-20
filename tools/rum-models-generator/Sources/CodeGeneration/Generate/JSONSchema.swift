@@ -105,7 +105,9 @@ internal class JSONSchema: Decodable {
         from container: KeyedDecodingContainer<CodingKeys>
     ) throws -> JSONSchema? {
         if let bool = try? container.decode(Bool.self, forKey: .additionalProperties) {
-            guard bool else { return nil }
+            guard bool else {
+                return nil
+            }
             let schema = JSONSchema()
             schema.type = .object
             return schema

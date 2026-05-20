@@ -9,7 +9,7 @@ import CodeGeneration
 
 /// Adjusts naming and structure of generated code for Remote Configuration.
 public class RCCodeDecorator: SwiftCodeDecorator {
-    public override init(sharedTypeNames: [String] = []) {
+    override public init(sharedTypeNames: [String] = []) {
         super.init(sharedTypeNames: sharedTypeNames)
     }
 
