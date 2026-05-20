@@ -13,15 +13,6 @@ public class RCCodeDecorator: SwiftCodeDecorator {
         super.init(sharedTypeNames: sharedTypeNames)
     }
 
-    // MARK: - Naming Conventions
-
-    override public func format(enumCaseName: String) -> String {
-        // $id-based variant names are hyphenated (e.g. "rum-sdk-config-ios").
-        // Use only the last component as the case label ("ios").
-        enumCaseName.contains("-") ? enumCaseName.components(separatedBy: "-").last ?? enumCaseName
-                                   : super.format(enumCaseName: enumCaseName)
-    }
-
     // MARK: - Types customisation
 
     override public func transform(primitive: SwiftPrimitiveType) -> SwiftPrimitiveType {

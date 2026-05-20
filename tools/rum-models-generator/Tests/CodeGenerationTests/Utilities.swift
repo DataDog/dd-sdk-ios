@@ -35,8 +35,6 @@ public func XCTAssertEqual(
             XCTAssertEqual(expected, received, file: file, line: line)
         } else if let expected = expected as? SwiftEnum, let received = received as? SwiftEnum {
             XCTAssertEqual(expected, received, file: file, line: line)
-        } else if let expected = expected as? SwiftAssociatedTypeEnum, let received = received as? SwiftAssociatedTypeEnum {
-            XCTAssertEqual(String(describing: expected), String(describing: received), file: file, line: line)
         } else {
             XCTFail("Expected \(type(of: expected)), but received \(type(of: received))", file: file, line: line)
         }

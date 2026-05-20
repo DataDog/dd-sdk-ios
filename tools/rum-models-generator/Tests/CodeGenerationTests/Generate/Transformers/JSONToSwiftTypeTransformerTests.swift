@@ -155,7 +155,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
-        XCTAssertEqual(expected, try XCTUnwrap(actual[0] as? SwiftStruct))
+        XCTAssertEqual(expected, actual[0])
     }
 
     func testTransformingJSONObjectWithStringEnumerationIntoSwiftStruct() throws {
@@ -210,7 +210,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
-        XCTAssertEqual(expected, try XCTUnwrap(actual[0] as? SwiftStruct))
+        XCTAssertEqual(expected, actual[0])
     }
 
     func testTransformingJSONObjectWithIntegerEnumerationIntoSwiftStruct() throws {
@@ -263,7 +263,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
-        XCTAssertEqual(expected, try XCTUnwrap(actual[0] as? SwiftStruct))
+        XCTAssertEqual(expected, actual[0])
     }
 
     // MARK: - Transforming `additionalProperties`
@@ -329,7 +329,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
-        XCTAssertEqual(expected, try XCTUnwrap(actual[0] as? SwiftStruct))
+        XCTAssertEqual(expected, actual[0])
     }
 
     func testTransformingNestedJSONObjectWithAnyAdditionalPropertiesIntoSwiftDictionaryInsideRootStruct() throws {
@@ -395,7 +395,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
-        XCTAssertEqual(expected, try XCTUnwrap(actual[0] as? SwiftStruct))
+        XCTAssertEqual(expected, actual[0])
     }
 
     func testTransformingNestedJSONObjectWithPropertiesAndAdditionalPropertiesIntoSwiftStruct() throws {
@@ -478,7 +478,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
-        XCTAssertEqual(expected, try XCTUnwrap(actual[0] as? SwiftStruct))
+        XCTAssertEqual(expected, actual[0])
     }
 
     func testTransformingRootJSONObjectWithAdditionalPropertiesIntoSwiftStruct() throws {
@@ -502,10 +502,13 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             )
         )
 
-        // Root objects with additionalProperties are now supported — they generate a dictionary property.
-        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
-        XCTAssertEqual(actual.count, 1)
-        XCTAssertTrue(actual[0] is SwiftStruct)
+        XCTAssertThrowsError(try JSONToSwiftTypeTransformer().transform(jsonType: object)) { error in
+            let exceptionDescription = (error as? Exception)?.description ?? ""
+            XCTAssertTrue(
+                exceptionDescription.contains("Transforming root `JSONObject`")
+                && exceptionDescription.contains("is not supported")
+            )
+        }
     }
 
     func testTransformingJSONObjectPropertyWithAdditionalPropertiesAndConflictingFlags() throws {
@@ -569,7 +572,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
-        XCTAssertEqual(expected, try XCTUnwrap(actual[0] as? SwiftStruct))
+        XCTAssertEqual(expected, actual[0])
     }
 
     // MARK: - Transforming `JSONOneOfs`
@@ -616,14 +619,44 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             ]
         )
 
+        let expected: [SwiftStruct] = [
+            SwiftStruct(
+                name: "Child1",
+                comment: nil,
+                properties: [
+                    SwiftStruct.Property(
+                        name: "child1Property",
+                        comment: nil,
+                        type: SwiftPrimitive<Int>(),
+                        isOptional: false,
+                        mutability: .immutable,
+                        defaultValue: nil,
+                        codingKey: .static(value: "child1Property")
+                    )
+                ],
+                conformance: []
+            ),
+            SwiftStruct(
+                name: "Child2",
+                comment: nil,
+                properties: [
+                    SwiftStruct.Property(
+                        name: "child2Property",
+                        comment: nil,
+                        type: SwiftPrimitive<Int>(),
+                        isOptional: false,
+                        mutability: .immutable,
+                        defaultValue: nil,
+                        codingKey: .static(value: "child2Property")
+                    )
+                ],
+                conformance: []
+            )
+        ]
+
         let actual = try JSONToSwiftTypeTransformer().transform(jsonType: oneOfs)
 
-        XCTAssertEqual(actual.count, 1)
-        let rootEnum = try XCTUnwrap(actual[0] as? SwiftAssociatedTypeEnum)
-        XCTAssertEqual(rootEnum.name, "RootMultitype")
-        XCTAssertEqual(rootEnum.cases.map(\.label), ["Child1", "Child2"])
-        XCTAssertTrue(rootEnum.cases[0].associatedType is SwiftStruct)
-        XCTAssertTrue(rootEnum.cases[1].associatedType is SwiftStruct)
+        XCTAssertEqual(expected, actual)
     }
 
     func testTransformingNestedJSONUnion() throws {
@@ -745,7 +778,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
 
         XCTAssertEqual(actual.count, 1)
-        XCTAssertEqual(expected, try XCTUnwrap(actual[0] as? SwiftStruct))
+        XCTAssertEqual(expected, actual[0])
     }
 
     func testTransformingRootJSONOneOfsWithNestedJSONUnion() throws {
@@ -806,14 +839,15 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             ]
         )
 
-        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: rootOneOfs)
+        let expected: [SwiftStruct] = [
+            SwiftStruct(name: "Nested 1A", comment: nil, properties: [], conformance: []),
+            SwiftStruct(name: "Nested 1B", comment: nil, properties: [], conformance: []),
+            SwiftStruct(name: "Nested 2A", comment: nil, properties: [], conformance: []),
+            SwiftStruct(name: "Nested 2B", comment: nil, properties: [], conformance: []),
+        ]
 
-        XCTAssertEqual(actual.count, 1)
-        let rootEnum = try XCTUnwrap(actual[0] as? SwiftAssociatedTypeEnum)
-        XCTAssertEqual(rootEnum.name, "Root oneOf")
-        XCTAssertEqual(rootEnum.cases.map(\.label), ["Root 1", "Root 2"])
-        XCTAssertTrue(rootEnum.cases[0].associatedType is SwiftAssociatedTypeEnum)
-        XCTAssertTrue(rootEnum.cases[1].associatedType is SwiftAssociatedTypeEnum)
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: rootOneOfs)
+        XCTAssertEqual(expected, actual)
     }
 
     func testTransformingRootJSONUnionWithMixedOneOfTypes() throws {
@@ -857,13 +891,13 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
             ]
         )
 
-        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: rootOneOfs)
+        let expected: [SwiftStruct] = [
+            SwiftStruct(name: "JSONObject 1A", comment: nil, properties: [], conformance: []),
+            SwiftStruct(name: "JSONObject 1B", comment: nil, properties: [], conformance: []),
+            SwiftStruct(name: "JSONObject 2", comment: nil, properties: [], conformance: []),
+        ]
 
-        XCTAssertEqual(actual.count, 1)
-        let rootEnum = try XCTUnwrap(actual[0] as? SwiftAssociatedTypeEnum)
-        XCTAssertEqual(rootEnum.name, "Root oneOf")
-        XCTAssertEqual(rootEnum.cases.map(\.label), ["Root 1", "Root 2"])
-        XCTAssertTrue(rootEnum.cases[0].associatedType is SwiftAssociatedTypeEnum)
-        XCTAssertTrue(rootEnum.cases[1].associatedType is SwiftStruct)
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: rootOneOfs)
+        XCTAssertEqual(expected, actual)
     }
 }

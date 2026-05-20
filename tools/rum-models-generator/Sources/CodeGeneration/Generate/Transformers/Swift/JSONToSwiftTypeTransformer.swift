@@ -8,15 +8,46 @@ import Foundation
 
 /// Transforms `JSONObject` schema into `SwiftStruct` schema.
 internal class JSONToSwiftTypeTransformer {
-    func transform(jsonType: JSONType) throws -> [SwiftType] {
-        var root = try transformJSONToAnyType(jsonType)
+    func transform(jsonType: JSONType) throws -> [SwiftStruct] {
+        return try transform(rootJSONType: jsonType)
+    }
 
-        // Apply mutable property resolution to root structs.
-        if let `struct` = root as? SwiftStruct {
-            root = resolveTransitiveMutableProperties(in: `struct`)
+    // MARK: - Transforming root types
+
+    func transform(rootJSONType: JSONType) throws -> [SwiftStruct] {
+        switch rootJSONType {
+        case let jsonObject as JSONObject:
+            return [try transform(rootJSONObject: jsonObject)]
+        case let jsonUnion as JSONUnionType:
+            return try transform(rootJSONUnion: jsonUnion)
+        default:
+            throw Exception.unimplemented("Transforming root object of type `\(type(of: rootJSONType))` is not supported.")
+        }
+    }
+
+    private func transform(rootJSONObject: JSONObject) throws -> SwiftStruct {
+        guard rootJSONObject.additionalProperties == nil else {
+            throw Exception.unimplemented("Transforming root `JSONObject` with `additionalProperties` is not supported.")
+        }
+        var `struct` = try transformJSONObjectToStruct(rootJSONObject)
+        `struct` = resolveTransitiveMutableProperties(in: `struct`)
+        return `struct`
+    }
+
+    private func transform(rootJSONUnion: JSONUnionType) throws -> [SwiftStruct] {
+        let numberOfTypes = rootJSONUnion.types.count
+        let jsonObjects = rootJSONUnion.types.compactMap { $0.type as? JSONObject }
+        let jsonUnion = rootJSONUnion.types.compactMap { $0.type as? JSONUnionType }
+
+        guard (jsonObjects.count + jsonUnion.count) == numberOfTypes else {
+            let mixedTypes = rootJSONUnion.types.map { "\(type(of: $0))" }
+            throw Exception.unimplemented("Transforming root `JSONOneOfs` with mixed `oneOf` types is not supported (mixed types: \(mixedTypes)).")
         }
 
-        return [root]
+        let transformedJSONOneOfs = try jsonUnion.flatMap { try transform(rootJSONUnion: $0) }
+        let transformedJSONObjects = try jsonObjects.map { try transform(rootJSONObject: $0) }
+
+        return transformedJSONOneOfs + transformedJSONObjects
     }
 
     // MARK: - Transforming ambiguous types
