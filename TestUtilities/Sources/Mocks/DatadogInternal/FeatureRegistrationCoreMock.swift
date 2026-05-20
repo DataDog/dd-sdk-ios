@@ -35,7 +35,7 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
         FeatureRegistrationCoreMock.referenceCount -= 1
     }
 
-    public var remoteConfiguration: RemoteConfiguration? { nil }
+    public var remoteConfiguration: RemoteConfiguration? = nil
 
     // MARK: - Supported
 
