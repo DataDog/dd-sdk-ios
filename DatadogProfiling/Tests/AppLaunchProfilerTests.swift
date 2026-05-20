@@ -258,7 +258,6 @@ final class AppLaunchProfilerTests: XCTestCase {
             (DD_PROFILER_STATUS_TIMEOUT, .stopped(reason: .timeout)),
             (DD_PROFILER_STATUS_PREWARMED, .stopped(reason: .prewarmed)),
             (DD_PROFILER_STATUS_ALLOCATION_FAILED, .error(reason: .memoryAllocationFailed)),
-            (DD_PROFILER_STATUS_ALREADY_STARTED, .error(reason: .alreadyStarted))
         ]
 
         for (cStatus, swiftStatus) in cases {

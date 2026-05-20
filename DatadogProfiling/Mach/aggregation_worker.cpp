@@ -9,39 +9,25 @@
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include <algorithm>
-#include <cstdio>
-#include <cstdlib>
 #include <new>
 
 namespace dd::profiler {
 
-static void destroy_stack_trace_payload(stack_trace_t* trace) {
-    if (!trace) return;
-
-    if (trace->thread_name) {
-        std::free((void*)trace->thread_name);
-        trace->thread_name = nullptr;
-    }
-
-    if (trace->frames) {
-        std::free(trace->frames);
-        trace->frames = nullptr;
-    }
-}
-
 aggregation_worker::aggregation_worker(
-    size_t buffer_capacity,
+    size_t initial_buffer_size,
     uint32_t max_stack_depth,
     stack_trace_callback_t callback,
     void* ctx,
     uint64_t hard_limit_bytes,
     qos_class_t worker_qos)
-    : buffer_capacity(buffer_capacity)
-    , max_stack_depth(max_stack_depth)
-    , worker_qos(worker_qos)
-    , callback(callback)
-    , ctx(ctx)
-    , hard_limit_bytes(hard_limit_bytes) {
+    : config{
+        initial_buffer_size,
+        max_stack_depth,
+        worker_qos,
+        callback,
+        ctx,
+        hard_limit_bytes
+    } {
 }
 
 aggregation_worker::~aggregation_worker() {
@@ -57,25 +43,22 @@ void* aggregation_worker::worker_thread_entry(void* arg) {
 bool aggregation_worker::start() {
     std::lock_guard<std::mutex> lock(work_mutex);
 
-    if (worker_thread_started) {
+    if (has_worker_thread) {
         return false;
     }
 
     clear_pending_work_locked();
-    reusable_buffers.clear();
     next_flush_id = 0;
     completed_flush_id = 0;
     pending_bytes = 0;
-    dropped_batch_count = 0;
-    dropped_sample_count = 0;
-    max_pending_bytes = 0;
+    diagnostics = dd_profiler_diagnostics_t{};
     producer_finished = false;
     worker_finished = false;
     worker_mach_thread.store(MACH_PORT_NULL, std::memory_order_relaxed);
 
     pthread_attr_t worker_attr;
     pthread_attr_init(&worker_attr);
-    pthread_attr_set_qos_class_np(&worker_attr, worker_qos, 0);
+    pthread_attr_set_qos_class_np(&worker_attr, config.worker_qos, 0);
 
     int result = pthread_create(&worker_thread, &worker_attr, worker_thread_entry, this);
     pthread_attr_destroy(&worker_attr);
@@ -87,24 +70,15 @@ bool aggregation_worker::start() {
     }
 
     worker_mach_thread.store(pthread_mach_thread_np(worker_thread), std::memory_order_relaxed);
-    worker_thread_started = true;
+    has_worker_thread = true;
     return true;
 }
 
 void aggregation_worker::stop() {
-    if (is_worker_thread()) {
-        std::lock_guard<std::mutex> lock(work_mutex);
-        producer_finished = true;
-        work_cv.notify_all();
-        flush_cv.notify_all();
-        return;
-    }
-
     {
         std::lock_guard<std::mutex> lock(work_mutex);
-        if (!worker_thread_started && worker_finished) {
+        if (!has_worker_thread && worker_finished) {
             clear_pending_work_locked();
-            reusable_buffers.clear();
             worker_mach_thread.store(MACH_PORT_NULL, std::memory_order_relaxed);
             return;
         }
@@ -114,59 +88,46 @@ void aggregation_worker::stop() {
         flush_cv.notify_all();
     }
 
-    if (worker_thread_started) {
+    if (has_worker_thread) {
         pthread_join(worker_thread, nullptr);
     }
 
     {
         std::lock_guard<std::mutex> lock(work_mutex);
-        worker_thread_started = false;
+        has_worker_thread = false;
         worker_mach_thread.store(MACH_PORT_NULL, std::memory_order_relaxed);
         clear_pending_work_locked();
-        reusable_buffers.clear();
         worker_finished = true;
         producer_finished = true;
     }
 }
 
-void aggregation_worker::request_flush(flush_action_t action, void* action_ctx) {
+bool aggregation_worker::request_flush(flush_action_t action) {
     std::unique_lock<std::mutex> lock(work_mutex);
-    bool execute_inline = false;
+
+    if (worker_finished) {
+        return false;
+    }
 
     const uint64_t flush_id = ++next_flush_id;
-    if (worker_finished) {
-        completed_flush_id = flush_id;
-        execute_inline = true;
+
+    flush_barrier barrier{
+        flush_id,
+        std::move(action)
+    };
+
+    if (producer_finished) {
+        pending_work.emplace_back(std::move(barrier));
+        work_cv.notify_one();
     } else {
-        work_item barrier{
-            work_item::kind::flush_barrier,
-            {},
-            flush_id,
-            action,
-            action_ctx
-        };
-
-        if (producer_finished) {
-            pending_work.push_back(std::move(barrier));
-            work_cv.notify_one();
-        } else {
-            requested_flushes.push_back(std::move(barrier));
-        }
-
-        flush_cv.wait(lock, [this, flush_id] {
-            return completed_flush_id >= flush_id || worker_finished;
-        });
-
-        if (completed_flush_id < flush_id && worker_finished) {
-            completed_flush_id = flush_id;
-            execute_inline = true;
-        }
+        requested_flushes.push_back(std::move(barrier));
     }
 
-    lock.unlock();
-    if (execute_inline && action) {
-        action(action_ctx);
-    }
+    flush_cv.wait(lock, [this, flush_id] {
+        return completed_flush_id >= flush_id || worker_finished;
+    });
+
+    return completed_flush_id >= flush_id;
 }
 
 void aggregation_worker::enqueue_active_buffer(std::vector<stack_trace_t>& active_buffer) {
@@ -180,36 +141,34 @@ void aggregation_worker::enqueue_active_buffer(std::vector<stack_trace_t>& activ
     {
         std::lock_guard<std::mutex> lock(work_mutex);
         std::vector<stack_trace_t> batch;
+
+        // Transfer ownership of captured traces to the worker queue. The
+        // sampler keeps using `active_buffer` after this call returns.
         batch.swap(active_buffer);
 
-        if (!reusable_buffers.empty()) {
-            active_buffer = std::move(reusable_buffers.back());
-            reusable_buffers.pop_back();
-        }
-
         const uint64_t batch_bytes = batch_footprint_bytes(batch);
-        if (pending_bytes + batch_bytes > hard_limit_bytes) {
-            dropped_batch_count += 1;
-            dropped_sample_count += batch.size();
-            max_pending_bytes = std::max(max_pending_bytes, pending_bytes + batch_bytes);
+        if (pending_bytes + batch_bytes > config.hard_limit_bytes) {
+            // Enforce a hard queue-memory limit without blocking the sampling
+            // loop. Dropped samples are reported through diagnostics.
+            diagnostics.dropped_batch_count += 1;
+            diagnostics.dropped_sample_count += batch.size();
+            diagnostics.max_pending_bytes = std::max(diagnostics.max_pending_bytes, pending_bytes + batch_bytes);
             dropped_batch = std::move(batch);
             did_drop = true;
         } else {
             pending_bytes += batch_bytes;
-            max_pending_bytes = std::max(max_pending_bytes, pending_bytes);
-            pending_work.push_back({
-                work_item::kind::batch,
+            diagnostics.max_pending_bytes = std::max(diagnostics.max_pending_bytes, pending_bytes);
+            pending_work.emplace_back(batch_item{
                 std::move(batch),
-                0,
-                nullptr,
-                nullptr,
                 batch_bytes
             });
         }
     }
 
     if (did_drop) {
-        destroy_batch(dropped_batch);
+        // Destroy trace payloads outside the queue lock; cleanup can release
+        // frame and thread-name allocations.
+        free_batch_payloads(dropped_batch);
     }
 
     if (!did_drop) {
@@ -218,9 +177,9 @@ void aggregation_worker::enqueue_active_buffer(std::vector<stack_trace_t>& activ
 
     if (active_buffer.capacity() == 0) {
         try {
-            // Best effort: overflow handoff keeps sampling moving even if we
-            // cannot immediately reserve the next full-capacity buffer.
-            active_buffer.reserve(buffer_capacity);
+            // Best effort: restore the sampler's expected batch capacity after
+            // handing off the previous buffer.
+            active_buffer.reserve(config.initial_buffer_size);
         } catch (const std::bad_alloc&) {
             return;
         }
@@ -240,7 +199,7 @@ void aggregation_worker::service_pending_flush_request(std::vector<stack_trace_t
     {
         std::lock_guard<std::mutex> lock(work_mutex);
         while (!requested_flushes.empty()) {
-            pending_work.push_back(std::move(requested_flushes.front()));
+            pending_work.emplace_back(std::move(requested_flushes.front()));
             requested_flushes.pop_front();
         }
     }
@@ -255,7 +214,7 @@ void aggregation_worker::finish_producer(std::vector<stack_trace_t>& active_buff
     {
         std::lock_guard<std::mutex> lock(work_mutex);
         while (!requested_flushes.empty()) {
-            pending_work.push_back(std::move(requested_flushes.front()));
+            pending_work.emplace_back(std::move(requested_flushes.front()));
             requested_flushes.pop_front();
         }
 
@@ -268,7 +227,7 @@ void aggregation_worker::finish_producer(std::vector<stack_trace_t>& active_buff
 
 bool aggregation_worker::is_worker_thread() {
     std::lock_guard<std::mutex> lock(work_mutex);
-    return worker_thread_started && pthread_equal(pthread_self(), worker_thread);
+    return has_worker_thread && pthread_equal(pthread_self(), worker_thread);
 }
 
 bool aggregation_worker::is_worker_thread(thread_t thread) {
@@ -276,24 +235,15 @@ bool aggregation_worker::is_worker_thread(thread_t thread) {
     return worker_thread_id != MACH_PORT_NULL && thread == worker_thread_id;
 }
 
-void aggregation_worker::consume_diagnostics(dd_profiler_diagnostics_t* out) {
-    if (!out) {
-        return;
-    }
-
+void aggregation_worker::consume_diagnostics(dd_profiler_diagnostics_t& out) {
     std::lock_guard<std::mutex> lock(work_mutex);
-    out->dropped_batch_count = dropped_batch_count;
-    out->dropped_sample_count = dropped_sample_count;
-    out->max_pending_bytes = max_pending_bytes;
-
-    dropped_batch_count = 0;
-    dropped_sample_count = 0;
-    max_pending_bytes = pending_bytes;
+    out = diagnostics;
+    diagnostics = dd_profiler_diagnostics_t{0, 0, pending_bytes};
 }
 
 void aggregation_worker::worker_main() {
     while (true) {
-        work_item item{work_item::kind::flush_barrier, {}, 0};
+        work_item item{flush_barrier{}};
 
         {
             std::unique_lock<std::mutex> lock(work_mutex);
@@ -315,49 +265,45 @@ void aggregation_worker::worker_main() {
             pending_work.pop_front();
         }
 
-        if (item.item_kind == work_item::kind::batch) {
-            if (callback && !item.traces.empty()) {
-                callback(item.traces.data(), item.traces.size(), ctx);
+        if (auto* batch = std::get_if<batch_item>(&item)) {
+            if (config.callback && !batch->traces.empty()) {
+                config.callback(batch->traces.data(), batch->traces.size(), config.ctx);
             }
 
-            destroy_batch(item.traces);
-            recycle_batch(std::move(item.traces), item.footprint_bytes);
+            free_batch_payloads(batch->traces);
+            complete_batch(batch->footprint_bytes);
             continue;
         }
 
-        if (item.action) {
-            item.action(item.action_ctx);
+        auto& barrier = std::get<flush_barrier>(item);
+        if (barrier.action) {
+            barrier.action();
         }
 
         {
             std::lock_guard<std::mutex> lock(work_mutex);
-            completed_flush_id = std::max(completed_flush_id, item.flush_id);
+            completed_flush_id = std::max(completed_flush_id, barrier.flush_id);
         }
 
         flush_cv.notify_all();
     }
 }
 
-void aggregation_worker::recycle_batch(std::vector<stack_trace_t>&& batch, uint64_t footprint_bytes) {
-    batch.clear();
-
+void aggregation_worker::complete_batch(uint64_t footprint_bytes) {
     std::lock_guard<std::mutex> lock(work_mutex);
     pending_bytes = pending_bytes > footprint_bytes ? pending_bytes - footprint_bytes : 0;
-    if (reusable_buffers.size() < max_reusable_buffers) {
-        reusable_buffers.push_back(std::move(batch));
-    }
 }
 
-void aggregation_worker::destroy_batch(std::vector<stack_trace_t>& batch) {
+void aggregation_worker::free_batch_payloads(std::vector<stack_trace_t>& batch) {
     for (auto& trace : batch) {
-        destroy_stack_trace_payload(&trace);
+        stack_trace_destroy(&trace);
     }
 }
 
 void aggregation_worker::clear_pending_work_locked() {
     for (auto& item : pending_work) {
-        if (item.item_kind == work_item::kind::batch) {
-            destroy_batch(item.traces);
+        if (auto* batch = std::get_if<batch_item>(&item)) {
+            free_batch_payloads(batch->traces);
         }
     }
 
@@ -368,7 +314,7 @@ void aggregation_worker::clear_pending_work_locked() {
 
 uint64_t aggregation_worker::batch_footprint_bytes(const std::vector<stack_trace_t>& batch) const {
     const uint64_t trace_storage_bytes = static_cast<uint64_t>(batch.capacity()) * sizeof(stack_trace_t);
-    const uint64_t frame_storage_bytes = static_cast<uint64_t>(batch.size()) * max_stack_depth * sizeof(stack_frame_t);
+    const uint64_t frame_storage_bytes = static_cast<uint64_t>(batch.size()) * config.max_stack_depth * sizeof(stack_frame_t);
     uint64_t thread_name_bytes = 0;
 
     for (const auto& trace : batch) {

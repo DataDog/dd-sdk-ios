@@ -14,8 +14,10 @@
 #include <atomic>
 #include <condition_variable>
 #include <deque>
+#include <functional>
 #include <mutex>
 #include <pthread.h>
+#include <variant>
 #include <vector>
 
 namespace dd::profiler {
@@ -23,18 +25,23 @@ namespace dd::profiler {
 /**
  * @brief Serialized worker that drains sampled stack-trace batches in-order.
  *
- * The aggregation worker owns the aggregation thread, flush barriers, and a
- * small reusable buffer pool used to decouple sample capture from heavy
- * callback work. Under bursty load it can temporarily accept additional
- * overflow buffers, then shrink back to the reusable pool as the worker
- * catches up.
+ * The aggregation worker owns the aggregation thread and flush barriers used
+ * to decouple sample capture from heavy callback work while preserving ordered
+ * profile boundaries.
+ *
+ * ## Flush Ordering
+ * Flush requests are first stored in `requested_flushes`. The producer moves
+ * them into `pending_work` only at a safe point, after handing off the active
+ * sampling buffer. This places each flush barrier after the in-progress batch
+ * in the worker's ordered stream, so the flush action observes a complete
+ * sample boundary.
  */
 class aggregation_worker {
 public:
-    using flush_action_t = void (*)(void* ctx);
+    using flush_action_t = std::function<void()>;
 
     aggregation_worker(
-        size_t buffer_capacity,
+        size_t initial_buffer_size,
         uint32_t max_stack_depth,
         stack_trace_callback_t callback,
         void* ctx,
@@ -46,7 +53,25 @@ public:
     aggregation_worker(const aggregation_worker&) = delete;
     aggregation_worker& operator=(const aggregation_worker&) = delete;
 
+    /**
+     * @brief Starts the aggregation thread.
+     *
+     * Resets queued work, diagnostics and lifecycle state before creating a new
+     * worker thread. Returns false if the worker is already running or if the
+     * thread cannot be created.
+     */
     bool start();
+
+    /**
+     * @brief Stops the aggregation thread.
+     *
+     * Marks the producer as finished, wakes the worker, waits for queued work to
+     * drain, then joins the worker thread and resets its state.
+     *
+     * Must be called from a non-worker thread because the stop path joins the
+     * worker thread. Profiler-owned callback paths should request an
+     * asynchronous stop at the profiler lifecycle layer instead.
+     */
     void stop();
 
     /**
@@ -54,14 +79,18 @@ public:
      *
      * If provided, `action` runs on the aggregation worker after all earlier
      * work has completed and before later batches are processed.
+     *
+     * @return true when the flush barrier was processed by the worker.
      */
-    void request_flush(flush_action_t action = nullptr, void* action_ctx = nullptr);
+    bool request_flush(flush_action_t action = {});
 
     /**
      * @brief Hands off the active sampling buffer without blocking the sampler.
      *
-     * When no reusable buffer is immediately available, the sampler rotates
-     * into a temporary overflow buffer instead of waiting or dropping work.
+     * Moves the buffer contents into the worker queue and leaves
+     * `active_buffer` empty for continued sampling. If queuing the batch would
+     * exceed the configured memory limit, the batch is dropped and recorded in
+     * diagnostics.
      */
     void enqueue_active_buffer(std::vector<stack_trace_t>& active_buffer);
 
@@ -88,42 +117,43 @@ public:
     /**
      * @brief Returns and resets diagnostics accumulated since the last consume.
      */
-    void consume_diagnostics(dd_profiler_diagnostics_t* out);
+    void consume_diagnostics(dd_profiler_diagnostics_t& out);
 
 private:
-    struct work_item {
-        enum class kind {
-            batch,
-            flush_barrier
-        };
+    struct configuration {
+        size_t initial_buffer_size;
+        uint32_t max_stack_depth;
+        qos_class_t worker_qos;
+        stack_trace_callback_t callback;
+        void* ctx;
+        uint64_t hard_limit_bytes;
+    };
 
-        kind item_kind;
+    struct batch_item {
         std::vector<stack_trace_t> traces;
-        uint64_t flush_id = 0;
-        flush_action_t action = nullptr;
-        void* action_ctx = nullptr;
         uint64_t footprint_bytes = 0;
     };
 
-    size_t buffer_capacity;
-    uint32_t max_stack_depth;
-    qos_class_t worker_qos;
-    stack_trace_callback_t callback;
-    void* ctx;
-    uint64_t hard_limit_bytes;
+    struct flush_barrier {
+        uint64_t flush_id = 0;
+        flush_action_t action;
+    };
+
+    using work_item = std::variant<batch_item, flush_barrier>;
+
+    const configuration config;
 
     pthread_t worker_thread{};
-    bool worker_thread_started = false;
+    bool has_worker_thread = false;
     /// Cached Mach thread id for hot-path internal-thread filtering.
     std::atomic<thread_t> worker_mach_thread{MACH_PORT_NULL};
 
     /// Ordered stream consumed by the worker thread.
     std::deque<work_item> pending_work;
     /// Flush barriers requested by external callers and awaiting a producer safe point.
-    std::deque<work_item> requested_flushes;
-    /// Recycled buffers retained for future producer handoff.
-    std::vector<std::vector<stack_trace_t>> reusable_buffers;
+    std::deque<flush_barrier> requested_flushes;
 
+    /// Protects queued work, flush progress, worker lifecycle flags and diagnostics counters.
     std::mutex work_mutex;
     /// Wakes the aggregation thread when new batches or flush barriers are queued.
     std::condition_variable work_cv;
@@ -132,23 +162,18 @@ private:
     uint64_t next_flush_id = 0;
     uint64_t completed_flush_id = 0;
     uint64_t pending_bytes = 0;
-    uint64_t dropped_batch_count = 0;
-    uint64_t dropped_sample_count = 0;
-    uint64_t max_pending_bytes = 0;
+    dd_profiler_diagnostics_t diagnostics{};
     /// Set once the producer has handed off its final buffer.
     bool producer_finished = true;
     /// Set once the worker has drained all queued work and exited.
     bool worker_finished = true;
 
-    // Keep a small hot pool of reusable buffers; extra overflow buffers are
-    // released once the worker drains them so bursty growth stays temporary.
-    static constexpr size_t max_reusable_buffers = 4;
     static constexpr size_t sampled_thread_name_capacity = 64;
 
     static void* worker_thread_entry(void* arg);
     void worker_main();
-    void recycle_batch(std::vector<stack_trace_t>&& batch, uint64_t footprint_bytes);
-    static void destroy_batch(std::vector<stack_trace_t>& batch);
+    void complete_batch(uint64_t footprint_bytes);
+    static void free_batch_payloads(std::vector<stack_trace_t>& batch);
     void clear_pending_work_locked();
     uint64_t batch_footprint_bytes(const std::vector<stack_trace_t>& batch) const;
 };
