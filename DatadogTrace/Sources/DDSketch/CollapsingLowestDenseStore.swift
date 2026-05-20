@@ -63,8 +63,12 @@ internal struct CollapsingLowestDenseStore {
     private var isEmpty: Bool = true
 
     init(maxNumBins: Int) {
-        precondition(maxNumBins > 0, "maxNumBins must be positive")
-        self.maxNumBins = maxNumBins
+        // An SDK must never crash the host app on internal misuse. A non-positive
+        // `maxNumBins` has no sensible interpretation, so we clamp to 1 and keep
+        // the store operational. The resulting store will only ever hold one bin,
+        // which makes percentiles degenerate, but no metric outside this sketch
+        // is affected.
+        self.maxNumBins = Swift.max(1, maxNumBins)
         self.bins = []
     }
 

@@ -38,11 +38,30 @@ internal struct LogarithmicMapping {
     /// Go reference: https://github.com/DataDog/sketches-go/blob/master/ddsketch/mapping/logarithmic_mapping.go
     private static let maxSafeExpArgument: Double = 709.0
 
-    init(relativeAccuracy: Double) {
-        precondition(relativeAccuracy > 0 && relativeAccuracy < 1, "relativeAccuracy must be in (0, 1)")
+    /// Lower bound for the `relativeAccuracy` clamp. Values below this would make
+    /// `gamma` round to `1.0` in double precision and `multiplier = 1 / log(gamma)`
+    /// non-finite, which would later trap when converting raw indices to `Int`.
+    private static let minSafeRelativeAccuracy: Double = 0.0001
 
-        self.relativeAccuracy = relativeAccuracy
-        self.gamma = (1 + relativeAccuracy) / (1 - relativeAccuracy)
+    /// Upper bound for the `relativeAccuracy` clamp. Values too close to `1.0`
+    /// produce a tiny `(1 - r)` denominator and an enormous `gamma`. The bound
+    /// here is generous; the production value used by `DDSketch.makeForStats()`
+    /// is `0.01`.
+    private static let maxSafeRelativeAccuracy: Double = 0.9999
+
+    init(relativeAccuracy: Double) {
+        // An SDK must never crash the host app on internal misuse. The math is
+        // only well-defined for `relativeAccuracy` in `(0, 1)`, and even then the
+        // open-interval boundaries produce non-finite intermediate values that
+        // would trap downstream. We clamp to a safe inner range; the resulting
+        // sketch stays operational and only this one sketch is affected.
+        let clamped = Swift.min(
+            Swift.max(relativeAccuracy, LogarithmicMapping.minSafeRelativeAccuracy),
+            LogarithmicMapping.maxSafeRelativeAccuracy
+        )
+
+        self.relativeAccuracy = clamped
+        self.gamma = (1 + clamped) / (1 - clamped)
         self.multiplier = 1.0 / log(gamma)
         self.indexOffset = 0.0
 

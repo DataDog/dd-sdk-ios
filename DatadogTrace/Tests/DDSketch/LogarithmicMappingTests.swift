@@ -133,4 +133,67 @@ final class LogarithmicMappingTests: XCTestCase {
             "finer accuracy should use more bins for the same range"
         )
     }
+
+    // MARK: - Example-Based Indices
+
+    func testIndex_knownValuesAt1PercentAccuracy() {
+        // With relativeAccuracy = 0.01:
+        //   gamma      = 1.01 / 0.99 ≈ 1.020_202
+        //   multiplier = 1 / log(gamma) ≈ 49.998_333
+        // Therefore index(v) = floor(log(v) * 49.998_333).
+        //
+        // The integer outputs below are exact for this multiplier; they pin the
+        // indexing math to specific reference points instead of relying on
+        // property-style assertions alone.
+        let mapping = LogarithmicMapping(relativeAccuracy: 0.01)
+
+        // log(1.0) * 49.998... = 0       -> bin 0
+        XCTAssertEqual(mapping.index(for: 1.0), 0)
+        // log(100) * 49.998... ≈ 230.250 -> bin 230
+        XCTAssertEqual(mapping.index(for: 100.0), 230)
+        // log(1e6) * 49.998... ≈ 690.752 -> bin 690
+        XCTAssertEqual(mapping.index(for: 1_000_000.0), 690)
+        // log(0.1) * 49.998... ≈ -115.13 -> bin -116 (floor for negative rawIndex)
+        XCTAssertEqual(mapping.index(for: 0.1), -116)
+    }
+
+    // MARK: - Defensive Initialization
+
+    func testInit_clampsZeroAccuracy_keepsMathFinite() {
+        // A `relativeAccuracy` of 0 would make `log(gamma) == 0` and `multiplier`
+        // non-finite, which would later trap when converting raw indices to `Int`.
+        // The init must clamp into a safe range and keep all derived values finite.
+        let mapping = LogarithmicMapping(relativeAccuracy: 0)
+
+        XCTAssertGreaterThan(mapping.relativeAccuracy, 0)
+        XCTAssertLessThan(mapping.relativeAccuracy, 1)
+        XCTAssertTrue(mapping.gamma.isFinite)
+        XCTAssertTrue(mapping.multiplier.isFinite)
+        XCTAssertTrue(mapping.minIndexableValue.isFinite)
+        XCTAssertTrue(mapping.maxIndexableValue.isFinite)
+
+        // Indexing must not crash on a clamped mapping.
+        let idx = mapping.index(for: 100.0)
+        XCTAssertGreaterThanOrEqual(idx, Int(Int32.min))
+        XCTAssertLessThanOrEqual(idx, Int(Int32.max))
+    }
+
+    func testInit_clampsNegativeAccuracy_keepsMathFinite() {
+        let mapping = LogarithmicMapping(relativeAccuracy: -0.5)
+
+        XCTAssertGreaterThan(mapping.relativeAccuracy, 0)
+        XCTAssertTrue(mapping.gamma.isFinite)
+        XCTAssertTrue(mapping.multiplier.isFinite)
+    }
+
+    func testInit_clampsAccuracyAtOrAboveOne_keepsMathFinite() {
+        let one = LogarithmicMapping(relativeAccuracy: 1.0)
+        XCTAssertLessThan(one.relativeAccuracy, 1)
+        XCTAssertTrue(one.gamma.isFinite)
+        XCTAssertTrue(one.multiplier.isFinite)
+
+        let tooLarge = LogarithmicMapping(relativeAccuracy: 5.0)
+        XCTAssertLessThan(tooLarge.relativeAccuracy, 1)
+        XCTAssertTrue(tooLarge.gamma.isFinite)
+    }
 }
