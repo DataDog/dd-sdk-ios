@@ -9,7 +9,7 @@
 // swiftlint:disable all
 
 /// RUM Browser & Mobile SDKs Remote Configuration properties
-public struct RUMSdkConfig: Codable {
+public struct RemoteConfiguration: Codable {
     /// RUM feature Remote Configuration properties
     public let rum: RUM?
 
