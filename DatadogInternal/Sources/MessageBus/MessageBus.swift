@@ -177,8 +177,8 @@ public struct NOPMessageBus: MessageBus {
     /// no-op
     public func unsubscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver { }
 
-    /// no-op
-    public func send<Message>(message: Message, else fallback: @escaping () -> Void) where Message: BusMessage { }
+    /// No subscribers are ever registered, so `fallback` is always invoked.
+    public func send<Message>(message: Message, else fallback: @escaping () -> Void) where Message: BusMessage { fallback() }
 }
 
 /// Adapts a free closure to `BusMessageReceiver`. Internal-only — exposed exclusively
