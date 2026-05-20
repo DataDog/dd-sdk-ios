@@ -21,6 +21,7 @@
 #include <mach/thread_status.h>
 #include <mach/machine/thread_state.h>
 #include <new>
+#include <utility>
 
 // Address validation constants and macros
 //
@@ -453,23 +454,25 @@ void mach_sampling_profiler::stop_sampling() {
     }
 }
 
-void mach_sampling_profiler::request_flush(flush_action_t action, void* action_ctx) {
+bool mach_sampling_profiler::request_flush(flush_action_t action) {
     if (worker) {
-        worker->request_flush(action, action_ctx);
+        return worker->request_flush(std::move(action));
     }
+
+    return false;
 }
 
 void mach_sampling_profiler::request_stop() {
     should_sample.store(false, std::memory_order_relaxed);
 }
 
-void mach_sampling_profiler::consume_diagnostics(dd_profiler_diagnostics_t* out) {
+void mach_sampling_profiler::consume_diagnostics(dd_profiler_diagnostics_t& out) {
     if (worker) {
         worker->consume_diagnostics(out);
-    } else if (out) {
-        out->dropped_batch_count = 0;
-        out->dropped_sample_count = 0;
-        out->max_pending_bytes = 0;
+    } else {
+        out.dropped_batch_count = 0;
+        out.dropped_sample_count = 0;
+        out.max_pending_bytes = 0;
     }
 }
 

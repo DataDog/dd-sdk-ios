@@ -48,7 +48,6 @@ void dd_delete_profiling_defaults(void);
  * @param timeout_ns Timeout in nanoseconds after which profiling automatically stops
  *                   - Default: 5000000000ULL (5 seconds)
  *                   - Timeout checking occurs during sample processing
- *
  * @param hard_limit_bytes Maximum queued batch memory before new batches are dropped
  *                         - 0 uses the default production limit
  *
