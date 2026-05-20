@@ -69,15 +69,15 @@ class RemoteConfigurationCacheTests: XCTestCase {
 
     // MARK: Failure resilience
 
-    func testSaveReturnsTrueOnSuccess() {
+    func testSaveReturnsNilOnSuccess() {
         let cache = RemoteConfigurationCache(id: "test-id", directory: coreDir.coreDirectory)
-        XCTAssertTrue(cache.save(Data("{\"k\":\"v\"}".utf8)))
+        XCTAssertNil(cache.save(Data("{\"k\":\"v\"}".utf8)))
     }
 
-    func testSaveReturnsFalseWhenDirectoryMissing() {
+    func testSaveReturnsErrorWhenDirectoryMissing() {
         let missing = Directory(url: URL(fileURLWithPath: "/no/such/path/"))
         let cache   = RemoteConfigurationCache(id: "test-id", directory: missing)
-        XCTAssertFalse(cache.save(Data("{\"k\":\"v\"}".utf8)))
+        XCTAssertNotNil(cache.save(Data("{\"k\":\"v\"}".utf8)))
     }
 
     func testLoadErrorSetWhenFileIsCorrupt() throws {

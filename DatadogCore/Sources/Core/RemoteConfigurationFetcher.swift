@@ -82,8 +82,8 @@ internal final class RemoteConfigurationFetcher {
             // TODO RUM-16387: Validate the schema before saving
 
             // All checks passed — persist to disk
-            if !cache.save(data) {
-                telemetry.error("[RemoteConfig] Failed to write remote configuration to disk")
+            if let error = cache.save(data) {
+                telemetry.error("[RemoteConfig] Failed to write remote configuration to disk", error: error)
             }
         }
         task.resume()

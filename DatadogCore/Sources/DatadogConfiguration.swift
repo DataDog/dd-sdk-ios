@@ -130,6 +130,9 @@ extension Datadog {
         /// raw JSON to disk for use on subsequent launches.
         ///
         /// Default is `nil` — no fetch is performed.
+        ///
+        /// RFC also specifies a `requireRemoteConfiguration` flag: when `true` and no cache
+        /// exists, `Datadog.initialize` should return without starting the SDK. Not yet implemented.
         public var remoteConfigurationID: String? = nil
 
         /// Creates a Datadog SDK Configuration object.
@@ -244,10 +247,5 @@ extension Datadog {
 
         /// The default application state provider for accessing [application state](https://developer.apple.com/documentation/uikit/uiapplication/state).
         internal var appStateProvider: AppStateProvider = DefaultAppStateProvider()
-
-        /// Override the URLSession used for remote configuration fetching. For tests only.
-        /// When `nil` (the default), `Datadog.initialize()` builds a session from
-        /// `proxyConfiguration` — matching the proxy behaviour of the main HTTP client.
-        internal var remoteConfigurationSession: URLSession? = nil
     }
 }

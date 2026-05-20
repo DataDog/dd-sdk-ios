@@ -55,11 +55,9 @@ internal final class DatadogCore {
     /// The message-bus instance.
     let bus = MessageBus()
 
-    /// Cache of the remote configuration JSON fetched from the CDN.
+    /// Owns the remote configuration cache and fetch lifecycle.
     /// `nil` when `remoteConfigurationID` was not set at init.
-    /// `data` is `nil` on first launch; populated from disk (previous successful
-    /// fetch) or in-memory after the first successful fetch in the current session.
-    internal let remoteConfigCache: RemoteConfigurationCache?
+    internal let remoteConfiguration: RemoteConfiguration?
 
     /// Registry for Features.
     @ReadWriteLock
@@ -92,7 +90,7 @@ internal final class DatadogCore {
     ///   - encryption: The on-disk data encryption.
     ///   - contextProvider: The core context provider.
     ///   - applicationVersion: The application version.
-    ///   - remoteConfigCache: Pre-built cache for remote configuration; `nil` when no ID was configured.
+    ///   - remoteConfigurationID: The remote configuration ID; `nil` when not configured.
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,
@@ -105,7 +103,7 @@ internal final class DatadogCore {
         maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool,
         isRunFromExtension: Bool = false,
-        remoteConfigCache: RemoteConfigurationCache? = nil
+        remoteConfigurationID: String? = nil
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
@@ -122,7 +120,7 @@ internal final class DatadogCore {
         self.contextProvider.subscribe(\.accountInfo, to: accountInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
-        self.remoteConfigCache = remoteConfigCache
+        self.remoteConfiguration = remoteConfigurationID.map { RemoteConfiguration(id: $0, directory: directory.coreDirectory) }
         // connect the core to the message bus.
         // the bus will keep a weak ref to the core.
         bus.connect(core: self)
