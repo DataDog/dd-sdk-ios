@@ -188,6 +188,29 @@ final class CollapsingLowestDenseStoreTests: XCTestCase {
         XCTAssertEqual(totalCount, 2.0)
     }
 
+    func testCollapse_whenNewValueFarAboveRange_resetsToFloor() {
+        // When the new value is so far above the existing range that
+        // `adjustedMin >= maxIndex`, the entire previous range collapses into the
+        // new floor in a single step. This exercises the early-return branch of
+        // `collapse()`.
+        var store = CollapsingLowestDenseStore(maxNumBins: 3)
+        store.add(index: 0, count: 2.0)
+        store.add(index: 1, count: 3.0)
+        // adjustedMin = 100 - 3 + 1 = 98, which is >> maxIndex (1).
+        store.add(index: 100, count: 1.0)
+
+        XCTAssertTrue(store.isCollapsed)
+        XCTAssertEqual(store.count, 6.0)
+        XCTAssertEqual(store.minIndex, 98)
+        XCTAssertEqual(store.maxIndex, 100)
+
+        let (counts, indexOffset) = store.contiguousBins()
+        XCTAssertEqual(indexOffset, 98)
+        // All previous counts (2 + 3 = 5) folded into the new floor at index 98;
+        // the new value (1) lands at the new top index 100.
+        XCTAssertEqual(Array(counts), [5.0, 0.0, 1.0])
+    }
+
     func testCollapse_monotonicallyIncreasing_staysBounded() {
         var store = CollapsingLowestDenseStore(maxNumBins: 10)
 
@@ -203,6 +226,54 @@ final class CollapsingLowestDenseStoreTests: XCTestCase {
 
         let totalCount = counts.reduce(0, +)
         XCTAssertEqual(totalCount, 1_001)
+    }
+
+    // MARK: - Example-Based Collapse
+
+    func testFixture_upwardCollapseProducesExpectedBinLayout() {
+        // Concrete example pinning the upward-collapse layout end-to-end:
+        // five consecutive adds at indices 0..4 into a store with maxNumBins = 4
+        // force a collapse where indices 0 and 1 fold into the new floor (bin 1).
+        var store = CollapsingLowestDenseStore(maxNumBins: 4)
+        for i in 0...4 {
+            store.add(index: i, count: 1.0)
+        }
+
+        // After the collapse: adjustedMin = 4 - 4 + 1 = 1.
+        //   bin 1 = 2 (folded from old indices 0 and 1)
+        //   bin 2 = 1 (preserved)
+        //   bin 3 = 1 (preserved)
+        //   bin 4 = 1 (newly added)
+        XCTAssertTrue(store.isCollapsed)
+        XCTAssertEqual(store.count, 5.0)
+        XCTAssertEqual(store.minIndex, 1)
+        XCTAssertEqual(store.maxIndex, 4)
+
+        let (counts, indexOffset) = store.contiguousBins()
+        XCTAssertEqual(indexOffset, 1)
+        XCTAssertEqual(Array(counts), [2.0, 1.0, 1.0, 1.0])
+    }
+
+    // MARK: - Defensive Initialization
+
+    func testInit_clampsZeroMaxNumBinsToOne() {
+        // A non-positive `maxNumBins` would have no sensible interpretation; the SDK
+        // must not crash on internal misuse, so the store clamps to 1 and stays operational.
+        var store = CollapsingLowestDenseStore(maxNumBins: 0)
+        XCTAssertEqual(store.maxNumBins, 1)
+
+        store.add(index: 5, count: 1.0)
+        store.add(index: 6, count: 1.0) // would trigger collapse since maxNumBins == 1
+        XCTAssertEqual(store.count, 2.0)
+        XCTAssertTrue(store.isCollapsed)
+    }
+
+    func testInit_clampsNegativeMaxNumBinsToOne() {
+        var store = CollapsingLowestDenseStore(maxNumBins: -10)
+        XCTAssertEqual(store.maxNumBins, 1)
+
+        store.add(index: 0, count: 3.0)
+        XCTAssertEqual(store.count, 3.0)
     }
 
     // MARK: - Large Sparse Range
