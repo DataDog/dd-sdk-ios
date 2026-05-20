@@ -199,6 +199,50 @@ final class DDSketchTests: XCTestCase {
         XCTAssertEqual(sketch1.toProtoBytes(), sketch2.toProtoBytes())
     }
 
+    // MARK: - Example-Based Protobuf Layout
+
+    func testFixture_emptySketch_encodesOnlyMapping() {
+        // An empty sketch with default config (`makeForStats()`) encodes only the
+        // IndexMapping field. The positive/negative stores are empty and
+        // `zeroCount == 0`, all of which the encoder skips (proto3 default).
+        //
+        // Expected byte-by-byte layout:
+        //   [0]  = 0x0A   tag: field 1 (mapping), wire type 2 (length-delimited)
+        //   [1]  = 0x09   length: 9 bytes of mapping payload
+        //   [2]  = 0x09   tag: field 1 (gamma) within mapping, wire type 1 (fixed64)
+        //   [3..10]       gamma as little-endian IEEE 754 double
+        let sketch = DDSketch.makeForStats()
+        let bytes = sketch.toProtoBytes()
+
+        XCTAssertEqual(bytes.count, 11)
+        XCTAssertEqual(bytes[0], 0x0A)
+        XCTAssertEqual(bytes[1], 0x09)
+        XCTAssertEqual(bytes[2], 0x09)
+
+        let gamma = bytes.subdata(in: 3..<11).withUnsafeBytes { $0.load(as: Double.self) }
+        XCTAssertEqual(gamma, 1.01 / 0.99, accuracy: 1e-12)
+    }
+
+    func testFixture_singleZeroValue_encodesMappingAndZeroCount() {
+        // Adding `0.0` to an empty sketch increments only `zeroCount`; both stores
+        // stay empty. The encoded payload is therefore the 11-byte mapping (as in
+        // the empty-sketch case) followed by the `zeroCount` field.
+        //
+        // Expected layout for the zeroCount tail:
+        //   [11] = 0x21   tag: field 4 (zeroCount), wire type 1 (fixed64)
+        //   [12..19]      1.0 as little-endian IEEE 754 double
+        var sketch = DDSketch.makeForStats()
+        sketch.add(0.0)
+        let bytes = sketch.toProtoBytes()
+
+        XCTAssertEqual(bytes.count, 20)
+        XCTAssertEqual(bytes[0], 0x0A) // same mapping prefix as the empty case
+        XCTAssertEqual(bytes[11], 0x21)
+
+        let zeroCountValue = bytes.subdata(in: 12..<20).withUnsafeBytes { $0.load(as: Double.self) }
+        XCTAssertEqual(zeroCountValue, 1.0)
+    }
+
     // MARK: - Protobuf Round-Trip Validation
 
     func testProtoBytes_canBeParsed() throws {
