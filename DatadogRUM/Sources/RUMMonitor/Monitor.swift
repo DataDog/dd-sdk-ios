@@ -98,7 +98,7 @@ internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 internal class Monitor: RUMCommandSubscriber {
     /// RUM feature scope.
     let featureScope: FeatureScope
-    let scopes: RUMApplicationScope
+    let applicationScope: RUMApplicationScope
     let dateProvider: DateProvider
 
     @ReadWriteLock
@@ -116,7 +116,7 @@ internal class Monitor: RUMCommandSubscriber {
         dateProvider: DateProvider
     ) {
         self.featureScope = dependencies.featureScope
-        self.scopes = RUMApplicationScope(dependencies: dependencies)
+        self.applicationScope = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
         self.fatalErrorContext = dependencies.fatalErrorContext
         self.rumUUIDGenerator = dependencies.rumUUIDGenerator
@@ -134,10 +134,10 @@ internal class Monitor: RUMCommandSubscriber {
 
             let transformedCommand = self.transform(command: command)
 
-            _ = self.scopes.process(command: transformedCommand, context: context, writer: writer)
+            _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
 
             if let debugging = self.debugging {
-                debugging.debug(applicationScope: self.scopes)
+                debugging.debug(applicationScope: self.applicationScope)
             }
         }
 
@@ -148,13 +148,11 @@ internal class Monitor: RUMCommandSubscriber {
                     return nil
                 }
 
-                guard let activeSession = self.scopes.activeSession else {
+                guard let activeSession = self.applicationScope.activeSession else {
                     return nil
                 }
 
-                let context = activeSession.viewScopes.last?.context ??
-                                activeSession.context ??
-                                self.scopes.context
+                let context = activeSession.viewScopes.last?.context ?? activeSession.context
 
                 return RUMCoreContext(
                     applicationID: context.rumApplicationID,
@@ -224,7 +222,7 @@ extension Monitor: RUMMonitorProtocol {
         // Synchronise it through the context thread to make sure we return the correct
         // sessionID after all other events have been processed (also on the context thread):
         featureScope.context { [weak self] _ in
-            guard let activeSession = self?.scopes.activeSession else {
+            guard let activeSession = self?.applicationScope.activeSession else {
                 completion(nil)
                 return
             }
@@ -476,6 +474,7 @@ extension Monitor: RUMMonitorProtocol {
                 operationKey: operationKey,
                 stepType: .start,
                 failureReason: nil,
+                options: options,
                 time: dateProvider.now,
                 attributes: attributes
             )
@@ -549,7 +548,7 @@ extension Monitor: RUMMonitorProtocol {
                 guard let self = self else {
                     return
                 }
-                self.debugging?.debug(applicationScope: self.scopes)
+                self.debugging?.debug(applicationScope: self.applicationScope)
             }
         }
         get {

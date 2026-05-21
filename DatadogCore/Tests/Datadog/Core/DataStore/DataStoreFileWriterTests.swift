@@ -45,7 +45,7 @@ class DataStoreFileWriterTests: XCTestCase {
 
     func testWritingData() throws {
         // When
-        let maxLength = maxTLVDataLength
+        let maxLength = maxDataStoreTLVDataLength
         let min = Data()
         let max: Data = .mockRandom(ofSize: maxLength)
         let overflow: Data = .mockRandom(ofSize: maxLength + 1)

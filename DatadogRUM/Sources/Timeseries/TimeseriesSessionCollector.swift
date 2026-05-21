@@ -186,7 +186,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                     data: batch,
                     end: end,
                     id: eventID,
-                    name: "memory",
                     schema: .object,
                     start: start
                 ),
@@ -234,7 +233,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                     data: batch,
                     end: end,
                     id: eventID,
-                    name: "cpu",
                     schema: .object,
                     start: start
                 ),

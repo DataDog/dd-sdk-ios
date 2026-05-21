@@ -19,7 +19,7 @@ import Foundation
 /// Registering multiple handlers will aggregate instrumentation.
 internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The Feature name: "network-instrumentation".
-    static let name = "network-instrumentation"
+    static var name: String { Feature.networkInstrumentation }
 
     /// Network Instrumentation serial queue for safe and serialized access to the
     /// `URLSessionTask` interceptions.
@@ -360,8 +360,11 @@ extension NetworkInstrumentationFeature {
     /// - Parameter request: The URLRequest to check.
     /// - Returns: `true` if the request is an SDK internal request, `false` otherwise.
     private func isDatadogIntakeRequest(_ request: URLRequest?) -> Bool {
-        // Check for DD-REQUEST-ID header (present in all SDK upload requests, including custom endpoints)
-        return request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddRequestIDHeaderField) != nil
+        // Every Datadog intake request authenticates with `DD-API-KEY`. This catches both this SDK's
+        // own uploads (preventing recursion) and other Datadog tooling that may run in the same
+        // process (e.g. `DatadogSDKTesting`'s CI Visibility uploader, which would otherwise pollute
+        // interception expectations via the global `__NSCFLocalSessionTask.resume` swizzle in tests).
+        return request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddAPIKeyHeaderField) != nil
     }
 
     /// Helper structure that optionally contains a trace context and captured state, used to pass this

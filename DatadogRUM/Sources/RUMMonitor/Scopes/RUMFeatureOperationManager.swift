@@ -35,12 +35,14 @@ internal class RUMFeatureOperationManager {
 
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
+    private let sessionSampler: DeterministicSampler
 
     // MARK: - Initialization
 
-    init(parent: RUMContextProvider, dependencies: RUMScopeDependencies) {
+    init(parent: RUMContextProvider, dependencies: RUMScopeDependencies, sessionSampler: DeterministicSampler) {
         self.parent = parent
         self.dependencies = dependencies
+        self.sessionSampler = sessionSampler
     }
 
     // MARK: - Public Interface
@@ -91,8 +93,28 @@ internal class RUMFeatureOperationManager {
             .merging(activeView?.attributes ?? [:]) { $1 }
             .merging(command.attributes) { $1 }
 
+        var profiling: RUMVitalOperationStepEvent.DD.Profiling?
+        if let profilingContext = context.additionalContext(ofType: ProfilingContext.self) {
+            profiling = .init(errorReason: profilingContext.error, status: profilingContext.profilingStatus)
+        }
+
+        if shouldSendOperationMessage(for: command) {
+            let message = OperationMessage(
+                attributes: parent.rumContextAttributes,
+                operation: Vital(
+                    id: command.vitalId,
+                    name: command.name,
+                    operationKey: command.operationKey,
+                    stepType: command.stepType,
+                    date: command.time,
+                    serverTimeOffset: context.serverTimeOffset
+                )
+            )
+            dependencies.featureScope.send(message: .payload(message))
+        }
+
         let vitalEvent = RUMVitalOperationStepEvent(
-            dd: .init(),
+            dd: .init(profiling: profiling),
             account: .init(context: context),
             application: .init(id: parent.context.rumApplicationID),
             buildId: context.buildId,
@@ -124,6 +146,20 @@ internal class RUMFeatureOperationManager {
         )
 
         writer.write(value: vitalEvent)
+    }
+
+    private func shouldSendOperationMessage(for command: RUMOperationStepVitalCommand) -> Bool {
+        switch command.stepType {
+        case .start:
+            guard let options = command.options as? ProfilingOptions else {
+                return false
+            }
+            return sessionSampler.combined(with: options.sampleRate).sample()
+        case .end:
+            return true
+        case .update, .retry:
+            return false
+        }
     }
 
     private func trackOperationStart(name: String, operationKey: String?, lookupKey: String) {
@@ -198,5 +234,41 @@ internal class RUMFeatureOperationManager {
         } else {
             return "`\(name)`"
         }
+    }
+}
+
+private extension ProfilingContext {
+    /**
+     * Returns the profiling status reported for app launch.
+     *
+     * Returns:
+     *  - `.running` when the profiler is actively running, or when it was manually stopped or timed out.
+     *  - `.stopped` when the profiler was not started, was sampled out, or the app launch was prewarmed.
+     *  - `.error` when the profiler encountered an error while starting or it is in an unknown status.
+     */
+    var profilingStatus: RUMVitalOperationStepEvent.DD.Profiling.Status {
+        switch self.status {
+        case .running: return .running
+        case .stopped: return .stopped
+        case .error: return .error
+        case .unknown: return .error
+        }
+    }
+
+    /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+    ///
+    /// Possible values:
+    /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+    var error: RUMVitalOperationStepEvent.DD.Profiling.ErrorReason? {
+        // RUM-15325: Update RUM schema with the mobile profiler errors
+        if case .error(reason: let reason) = self.status {
+            switch reason {
+            case .memoryAllocationFailed:
+                return .unexpectedException
+            case .alreadyStarted:
+                return nil
+            }
+        }
+        return nil
     }
 }

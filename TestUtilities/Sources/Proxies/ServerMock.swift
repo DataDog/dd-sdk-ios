@@ -248,19 +248,29 @@ public class ServerMock {
         precondition(!doesInterceptSession, "This instance of `ServerMock` already intercepts the `URLSession`. Re-use the existing one.")
         doesInterceptSession = true
 
+        let configuration: URLSessionConfiguration = .ephemeral
+        // Tag every request emitted by this session with our UUID. `ServerMockProtocol` uses it
+        // for delivery routing; `isMyRequest(_:)` uses it to scope test handlers to this session.
+        configuration.httpAdditionalHeaders = [ddURLSessionUUIDHeaderField: urlSessionUUID.uuidString]
+
         #if os(watchOS)
         // On watchOS, `URLProtocol` is non-functional. We swizzle `__NSCFLocalSessionTask._onqueue_resume`
         // instead to intercept requests and deliver mocked responses directly via the task's internal callbacks.
         taskResumeSwizzler = try? .build()
         taskResumeSwizzler?.swizzle()
-        return URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: nil)
         #else
-        let configuration: URLSessionConfiguration = .ephemeral
-        // Set utility header so we can identify this request in `ServerMockProtocol`.
-        configuration.httpAdditionalHeaders = [ddURLSessionUUIDHeaderField: urlSessionUUID.uuidString]
         configuration.protocolClasses = [ServerMockProtocol.self]
-        return URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
         #endif
+
+        return URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
+    }
+
+    /// Returns `true` if `request` was produced by this `ServerMock`'s intercepted `URLSession`.
+    ///
+    /// Test handlers can use this to ignore traffic from foreign URLSessions sharing the
+    /// process-global `__NSCFLocalSessionTask.resume` swizzle.
+    public func isMyRequest(_ request: URLRequest) -> Bool {
+        return request.value(forHTTPHeaderField: ddURLSessionUUIDHeaderField) == urlSessionUUID.uuidString
     }
 
     // MARK: - Waiting for total number of requests

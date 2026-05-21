@@ -14,7 +14,13 @@ public struct AttributesSanitizer {
         public static let maxNestedLevelsInAttributeName: Int = 10
         /// Maximum number of attributes in log.
         /// If this number is exceeded, extra attributes will be ignored.
-        public static let maxNumberOfAttributes: Int = 128
+        public static let maxNumberOfAttributes: Int = 256
+        /// Maximum length of a string attribute value, measured in UTF-16 code units (Swift `String.utf16.count`).
+        /// Values exceeding this will be truncated. This matches the backend hard limit — the backend measures
+        /// length using Java's `String.length()`, which counts UTF-16 code units. For ASCII and most accented
+        /// characters this is equivalent to Swift's `String.count`, but emoji may differ
+        /// (e.g. 👩🏻 = 1 grapheme cluster but 4 UTF-16 code units).
+        public static let maxAttributeValueLength: Int = 25_600
     }
 
     let featureName: String
@@ -63,6 +69,34 @@ public struct AttributesSanitizer {
             }
         }
         return sanitized
+    }
+
+    // MARK: - Attribute values sanitization
+
+    /// Truncates string attribute values exceeding `Constraints.maxAttributeValueLength`.
+    public func sanitizeValues(for attributes: [String: Encodable]) -> [String: Encodable] {
+        return Dictionary(uniqueKeysWithValues: attributes.map { key, value in
+            guard let string = value.dd.decode(String.self),
+                  string.utf16.count > Constraints.maxAttributeValueLength else {
+                return (key, value)
+            }
+            DD.logger.warn(
+                """
+                \(featureName) attribute '\(key)' value was truncated from \(string.utf16.count) to \
+                \(Constraints.maxAttributeValueLength) UTF-16 code units to match Datadog constraints.
+                """
+            )
+            var utf16Count = 0
+            let truncated = string.prefix(while: { char in
+                let newCount = utf16Count + char.utf16.count
+                guard newCount <= Constraints.maxAttributeValueLength else {
+                    return false
+                }
+                utf16Count = newCount
+                return true
+            })
+            return (key, String(truncated))
+        })
     }
 
     // MARK: - Attributes count limitting

@@ -25,7 +25,6 @@ public final class objc_WebViewTracking: NSObject {
     ///   - hosts: A set of hosts instrumented with Browser SDK to capture Datadog events from.
     ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
     ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
-    ///   - core: Datadog SDK core to use for tracking.
     @objc
     public static func enable(
         webView: WKWebView,

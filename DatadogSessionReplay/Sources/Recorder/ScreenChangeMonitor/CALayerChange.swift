@@ -15,13 +15,13 @@
 #if os(iOS)
 import QuartzCore
 
-internal struct CALayerChange: Equatable {
-    enum Aspect: Int8, CaseIterable {
+internal struct CALayerChange: Sendable, Equatable {
+    enum Aspect: Int8, CaseIterable, Sendable {
         case display
         case draw
         case layout
 
-        struct Set: OptionSet {
+        struct Set: OptionSet, Sendable {
             let rawValue: Int8
 
             init(rawValue: Int8) {
@@ -34,7 +34,7 @@ internal struct CALayerChange: Equatable {
         }
     }
 
-    weak var layer: CALayer?
+    var layer: CALayerReference
     var aspects: Aspect.Set
 }
 #endif

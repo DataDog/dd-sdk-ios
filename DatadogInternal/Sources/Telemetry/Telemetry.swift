@@ -49,11 +49,13 @@ public struct ConfigurationTelemetry: Equatable {
     public let trackNativeLongTasks: Bool?
     public let trackNativeViews: Bool?
     public let trackNetworkRequests: Bool?
+    public let trackResourceHeaders: String?
     public let trackResources: Bool?
     public let trackSessionAcrossSubdomains: Bool?
     public let trackUserInteractions: Bool?
     public let trackViewsManually: Bool?
     public let unityVersion: String?
+    public let mauiVersion: String?
     public let useAllowedTracingUrls: Bool?
     public let useBeforeSend: Bool?
     public let useExcludedActivityUrls: Bool?
@@ -411,11 +413,13 @@ extension Telemetry {
         trackNativeLongTasks: Bool? = nil,
         trackNativeViews: Bool? = nil,
         trackNetworkRequests: Bool? = nil,
+        trackResourceHeaders: String? = nil,
         trackResources: Bool? = nil,
         trackSessionAcrossSubdomains: Bool? = nil,
         trackUserInteractions: Bool? = nil,
         trackViewsManually: Bool? = nil,
         unityVersion: String? = nil,
+        mauiVersion: String? = nil,
         useAllowedTracingUrls: Bool? = nil,
         useBeforeSend: Bool? = nil,
         useExcludedActivityUrls: Bool? = nil,
@@ -468,11 +472,13 @@ extension Telemetry {
             trackNativeLongTasks: trackNativeLongTasks,
             trackNativeViews: trackNativeViews,
             trackNetworkRequests: trackNetworkRequests,
+            trackResourceHeaders: trackResourceHeaders,
             trackResources: trackResources,
             trackSessionAcrossSubdomains: trackSessionAcrossSubdomains,
             trackUserInteractions: trackUserInteractions,
             trackViewsManually: trackViewsManually,
             unityVersion: unityVersion,
+            mauiVersion: mauiVersion,
             useAllowedTracingUrls: useAllowedTracingUrls,
             useBeforeSend: useBeforeSend,
             useExcludedActivityUrls: useExcludedActivityUrls,
@@ -610,11 +616,13 @@ extension ConfigurationTelemetry {
             trackNativeLongTasks: other.trackNativeLongTasks ?? trackNativeLongTasks,
             trackNativeViews: other.trackNativeViews ?? trackNativeViews,
             trackNetworkRequests: other.trackNetworkRequests ?? trackNetworkRequests,
+            trackResourceHeaders: other.trackResourceHeaders ?? trackResourceHeaders,
             trackResources: other.trackResources ?? trackResources,
             trackSessionAcrossSubdomains: other.trackSessionAcrossSubdomains ?? trackSessionAcrossSubdomains,
             trackUserInteractions: other.trackUserInteractions ?? trackUserInteractions,
             trackViewsManually: other.trackViewsManually ?? trackViewsManually,
             unityVersion: other.unityVersion ?? unityVersion,
+            mauiVersion: other.mauiVersion ?? mauiVersion,
             useAllowedTracingUrls: other.useAllowedTracingUrls ?? useAllowedTracingUrls,
             useBeforeSend: other.useBeforeSend ?? useBeforeSend,
             useExcludedActivityUrls: other.useExcludedActivityUrls ?? useExcludedActivityUrls,
