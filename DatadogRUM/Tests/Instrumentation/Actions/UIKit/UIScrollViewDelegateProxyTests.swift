@@ -112,51 +112,117 @@ class UIScrollViewDelegateProxyTests: XCTestCase {
         scrollView.setContentOffset(CGPoint(x: 0, y: 100), animated: false)
     }
 
-    // MARK: - Regression for RUM-16361: Forwarding after originalDelegate deallocates
+    // MARK: - RUM-16361: Forwarding crash regression
 
-    /// Reproduces the crash reported in:
-    /// - RUM-16361 / RUMS-5941 (Salesforce escalation; Kidsnote SDK 3.9.1, SOOP SDK 3.11.0)
-    /// - https://github.com/DataDog/dd-sdk-ios/issues/2867 (Shaadi, SDK 3.10.0)
+    /// Reproduces the crash from RUMS-5962 / RUMS-5941 and GH #2867.
     ///
-    /// Crash signature:
-    ///   NSInvalidArgumentException
-    ///   -[DatadogRUM.UIScrollViewDelegateProxy scrollViewDidScroll:]: unrecognized selector
-    ///   ___forwarding___ → _CF_forwarding_prep_0 → _notifyDidScroll
+    /// Crash signature: `-[DatadogRUM.UIScrollViewDelegateProxy <selector>]: unrecognized
+    /// selector`, dispatched from `_notifyDidScroll` during view-controller teardown.
     ///
-    /// Mechanism (production):
-    /// A UIViewController owns its UIScrollView AND is its delegate. When the VC deallocates,
-    /// its `deallocating` flag is set BEFORE its associated objects are released. Inside that
-    /// window, UIKit may dispatch `scrollViewDidScroll:` to the still-alive proxy (e.g. from
-    /// layout invalidation during the scroll view's own teardown). The proxy does not implement
-    /// that selector directly, so the ObjC runtime invokes `forwardingTarget(for:)` — which
-    /// reads the weak `originalDelegate` (now nil because the VC is mid-dealloc) and returns
-    /// nil. The runtime then raises "unrecognized selector".
-    ///
-    /// Why prior fixes missed it:
-    /// - PR #2776 tied proxy lifetime to delegate lifetime, but the proxy is still alive during
-    ///   the VC's dealloc body. The bug is about reading `originalDelegate` after the delegate's
-    ///   `deallocating` flag is set, not about the proxy outliving the delegate by minutes.
-    /// - PR #2791 added a setter re-entrancy guard; orthogonal code path.
+    /// Mechanism: a VC that owns its scroll view AND is its delegate hits a dealloc-time
+    /// race — the VC's `deallocating` flag zeros the weak `originalDelegate` while the
+    /// proxy is still alive. UIKit dispatches a cached selector to the proxy; the proxy
+    /// doesn't implement it directly; `forwardingTarget(for:)` returns nil; the runtime
+    /// raises "unrecognized selector".
     func test_whenOriginalDelegateIsDeallocated_dispatchingForwardedSelector_doesNotCrash() {
-        // Given - a proxy whose original delegate has been deallocated. The weak
-        // `originalDelegate` reference must be nil; the proxy itself is still alive.
+        // Given - a proxy whose original delegate has been deallocated.
         var delegate: MockScrollViewDelegate? = MockScrollViewDelegate()
         let proxy = UIScrollViewDelegateProxy(originalDelegate: delegate, handler: handler)
         delegate = nil
 
-        XCTAssertNil(proxy.originalDelegate, "Sanity: weak reference must be nil after delegate deallocates")
+        XCTAssertNil(proxy.originalDelegate, "weak reference must be nil after delegate deallocates")
 
-        // When - UIKit dispatches a forwarded UIScrollViewDelegate selector to the proxy.
-        // `perform(_:with:)` exercises the same ObjC forwarding chain UIKit uses internally
-        // (objc_msgSend → forwardingTarget(for:) → forwardInvocation:).
+        // When - `perform(_:with:)` exercises the same ObjC forwarding chain UIKit uses
+        // internally (objc_msgSend → forwardingTarget(for:) → forwardInvocation:).
         let scrollView = UIScrollView()
         _ = proxy.perform(
             #selector(UIScrollViewDelegate.scrollViewDidScroll(_:)),
             with: scrollView
         )
 
-        // Then - the proxy must handle the dispatch without crashing. The unfixed proxy raises
-        // NSInvalidArgumentException from inside `perform`, which XCTest reports as a failure.
+        // Then - the proxy handles the dispatch without crashing.
+    }
+
+    /// Same mechanism as above, but with a UITableViewDelegate selector — proves the fix
+    /// covers selectors outside `UIScrollViewDelegate`. Mirrors the RxCocoa-wrapped
+    /// `tableView:estimatedHeightForHeaderInSection:` crash from RUMS-5941.
+    func test_whenOriginalDelegateIsDeallocated_dispatchingUITableViewDelegateSelector_doesNotCrash() {
+        // Given - a proxy whose original delegate (a UITableViewDelegate) has been deallocated.
+        var delegate: MockTableViewDelegate? = MockTableViewDelegate()
+        let proxy = UIScrollViewDelegateProxy(originalDelegate: delegate, handler: handler)
+        delegate = nil
+
+        XCTAssertNil(proxy.originalDelegate, "weak reference must be nil after delegate deallocates")
+
+        // When - dispatch a UITableViewDelegate selector via the ObjC forwarding chain.
+        let tableView = UITableView()
+        _ = proxy.perform(
+            #selector(UITableViewDelegate.tableView(_:estimatedHeightForHeaderInSection:)),
+            with: tableView,
+            with: 0
+        )
+
+        // Then - the proxy handles the dispatch without crashing.
+    }
+
+    /// Verifies that non-void forwarded selectors get a zero/nil default return (instead
+    /// of undefined bytes) when the original delegate is gone. Uses an object-returning
+    /// UIScrollViewDelegate selector since `perform(_:with:)` can only validate object
+    /// returns; the underlying `setReturnValue:` fix in the base class zeros the entire
+    /// `methodReturnLength`, so verifying one return type implicitly covers all of them.
+    func test_whenOriginalDelegateIsDeallocated_dispatchingNonVoidForwardedSelector_returnsZeroedDefault() {
+        // Given - a proxy whose original delegate has been deallocated.
+        var delegate: MockScrollViewDelegate? = MockScrollViewDelegate()
+        let proxy = UIScrollViewDelegateProxy(originalDelegate: delegate, handler: handler)
+        delegate = nil
+
+        XCTAssertNil(proxy.originalDelegate)
+
+        // When - dispatching `viewForZooming(in:)` (returns UIView?) through the forwarding chain.
+        let result = proxy.perform(
+            #selector(UIScrollViewDelegate.viewForZooming(in:)),
+            with: UIScrollView()
+        )
+
+        // Then - the proxy must return nil (zeroed object pointer), not garbage.
+        XCTAssertNil(result, "Expected nil for object-typed forwarded selector when delegate is gone")
+    }
+
+    // MARK: - RUM-16361: Forwarding happy path (via __dd_private_DDForwardingProxyBase)
+
+    /// Proves alive-delegate forwarding still works end-to-end for a UIScrollViewDelegate
+    /// selector the proxy does NOT implement directly.
+    func test_whenOriginalDelegateIsAlive_dispatchingForwardedSelector_reachesTheOriginalDelegate() {
+        // Given - a proxy whose original delegate is alive and counts calls.
+        let delegate = CountingDelegate()
+        let proxy = UIScrollViewDelegateProxy(originalDelegate: delegate, handler: handler)
+
+        // When - dispatch a forwarded UIScrollViewDelegate selector.
+        _ = proxy.perform(
+            #selector(UIScrollViewDelegate.scrollViewDidScroll(_:)),
+            with: UIScrollView()
+        )
+
+        // Then - the call reached the original delegate.
+        XCTAssertEqual(delegate.scrollViewDidScrollCount, 1)
+    }
+
+    /// Same as above for a UITableViewDelegate selector — exercises the protocol-lookup
+    /// branch in the base class's `methodSignatureForSelector:`.
+    func test_whenOriginalDelegateIsAlive_dispatchingUITableViewDelegateSelector_reachesTheOriginalDelegate() {
+        // Given - a proxy whose UITableViewDelegate target is alive and counts calls.
+        let delegate = CountingDelegate()
+        let proxy = UIScrollViewDelegateProxy(originalDelegate: delegate, handler: handler)
+
+        // When - dispatch a UITableViewDelegate selector via the ObjC forwarding chain.
+        _ = proxy.perform(
+            #selector(UITableViewDelegate.tableView(_:estimatedHeightForHeaderInSection:)),
+            with: UITableView(),
+            with: 0
+        )
+
+        // Then - the call reached the original delegate.
+        XCTAssertEqual(delegate.estimatedHeightCallCount, 1)
     }
 
     // MARK: - Circular Proxy Chain (regression for RxSwift-style delegate proxy conflict)
@@ -198,6 +264,28 @@ private class MockScrollViewHandler: UIScrollViewHandler {
 
 private class MockScrollViewDelegate: NSObject, UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    }
+}
+
+private class MockTableViewDelegate: NSObject, UITableViewDelegate {
+    func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
+        44
+    }
+}
+
+/// Counts forwarded calls. Conforms to UITableViewDelegate (which extends UIScrollViewDelegate),
+/// so satisfies both forwarding paths exercised by the happy-path tests.
+private class CountingDelegate: NSObject, UITableViewDelegate {
+    var scrollViewDidScrollCount = 0
+    var estimatedHeightCallCount = 0
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        scrollViewDidScrollCount += 1
+    }
+
+    func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
+        estimatedHeightCallCount += 1
+        return 44
     }
 }
 
