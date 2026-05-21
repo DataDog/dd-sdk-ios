@@ -62,6 +62,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         uiKitRUMActionsPredicate: UIKitRUMActionsPredicate?,
         swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate?,
         swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate?,
+        scrollAndSwipeActionsDisabled: Bool,
         longTaskThreshold: TimeInterval?,
         appHangThreshold: TimeInterval?,
         mainQueue: DispatchQueue,
@@ -135,10 +136,11 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         }()
 
         #if !os(tvOS)
-        // Create scroll handler and swizzler if UIKit action tracking is enabled:
+        // Create scroll handler and swizzler if UIKit action tracking is enabled
+        // AND the `disableScrollAndSwipeActions` feature flag is not set:
         let scrollHandler: RUMScrollHandler?
         let scrollViewSwizzler: UIScrollViewSwizzler?
-        if let uiKitRUMActionsPredicate = uiKitRUMActionsPredicate {
+        if let uiKitRUMActionsPredicate = uiKitRUMActionsPredicate, !scrollAndSwipeActionsDisabled {
             let handler = RUMScrollHandler(
                 dateProvider: dateProvider,
                 predicate: uiKitRUMActionsPredicate
