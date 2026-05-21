@@ -8,9 +8,23 @@
 
 import UIKit
 
+// swiftlint:disable duplicate_imports
+#if SPM_BUILD
+    #if swift(>=6.0)
+    internal import DatadogRUMPrivate
+    #else
+    @_implementationOnly import DatadogRUMPrivate
+    #endif
+#endif
+// swiftlint:enable duplicate_imports
+
 /// A proxy that wraps the original UIScrollView delegate to intercept scroll lifecycle events
 /// while forwarding all calls to the original delegate transparently.
-internal final class UIScrollViewDelegateProxy: NSObject, UIScrollViewDelegate {
+///
+/// Inherits from `__dd_private_DDForwardingProxyBase` so that any delegate selector forwarded
+/// through this proxy is safely dropped (rather than crashing) when `originalDelegate` is
+/// mid-dealloc. See RUM-16361.
+internal final class UIScrollViewDelegateProxy: __dd_private_DDForwardingProxyBase, UIScrollViewDelegate {
     /// The original delegate receiving forwarded calls.
     weak var originalDelegate: UIScrollViewDelegate?
 
@@ -45,6 +59,14 @@ internal final class UIScrollViewDelegateProxy: NSObject, UIScrollViewDelegate {
 
     // MARK: - Forwarding
 
+    /// Provides the current forwarding target to `__dd_private_DDForwardingProxyBase`.
+    /// When `originalDelegate` is `nil` (e.g. mid-dealloc), the base class returns a benign
+    /// method signature and silently drops the invocation in `forwardInvocation:` — closing
+    /// the `unrecognized selector` crash family (RUM-16361, GH #2867).
+    override func forwardingTargetOrNil() -> Any? {
+        return originalDelegate
+    }
+
     /// Guards against re-entrant calls to `responds(to:)` that arise when a third-party
     /// delegate proxy (e.g. RxSwift's `DelegateProxy`) and this proxy hold mutual references,
     /// causing infinite recursion.
@@ -61,14 +83,6 @@ internal final class UIScrollViewDelegateProxy: NSObject, UIScrollViewDelegate {
         isRespondingToSelector = true
         defer { isRespondingToSelector = false }
         return originalDelegate?.responds(to: aSelector) ?? false
-    }
-
-    // swiftlint:disable:next implicitly_unwrapped_optional
-    override func forwardingTarget(for aSelector: Selector!) -> Any? {
-        if let original = originalDelegate, original.responds(to: aSelector) {
-            return original
-        }
-        return super.forwardingTarget(for: aSelector)
     }
 }
 
