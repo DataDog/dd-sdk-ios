@@ -355,11 +355,12 @@ private func _DDAssertDiff<T: Encodable>(
 public func DDAssertDiff<T: Encodable>(
     _ expression1: @autoclosure () throws -> T,
     _ expression2: @autoclosure () throws -> T,
+    _ message: @autoclosure () -> String = "",
     file: StaticString = #filePath,
     line: UInt = #line,
     _ verify: (DiffResult) -> Void
 ) {
-    _DDEvaluateAssertion(message: "", file: file, line: line) {
+    _DDEvaluateAssertion(message: message(), file: file, line: line) {
         let result = try _DDAssertDiff(expression1(), expression2())
         verify(result)
     }
