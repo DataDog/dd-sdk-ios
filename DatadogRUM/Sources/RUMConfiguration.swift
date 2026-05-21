@@ -694,6 +694,14 @@ extension RUM.Configuration {
     /// Feature Flag available in RUM
     public enum FeatureFlag: String {
         case none
+        /// When `true`, disables automatic scroll and swipe action tracking
+        /// performed by the SDK via `UIScrollView.delegate` swizzling.
+        /// Defaults to `false`. Has no effect if `uiKitActionsPredicate` is `nil`.
+        ///
+        /// Note: in addition to suppressing `action.type = scroll/swipe` events, it also means these
+        /// gestures will no longer count as candidate "last interactions" for INV
+        /// (Interaction-to-Next-View) attribution.
+        case disableScrollAndSwipeActions
     }
 }
 

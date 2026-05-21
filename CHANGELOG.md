@@ -3,6 +3,7 @@
 - [FIX] Prevent crash misattribution when an inactive RUM view emits a terminal event after `stopResource()`. See [#2948][]
 - [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
 - [FIX] Fix `NSInvalidArgumentException` ("unrecognized selector") crash in automatic scroll action tracking when UIKit dispatches a cached delegate method after the original `UIScrollViewDelegate` has been deallocated. See [#2942][].
+- [IMPROVEMENT] Add `disableScrollAndSwipeActions` feature flag in RUM configuration to opt out of automatic scroll and swipe action tracking. See [#2944][].
 
 # 3.11.0 / 12-05-2026
 
@@ -1151,6 +1152,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2859]: https://github.com/DataDog/dd-sdk-ios/pull/2859
 [#2948]: https://github.com/DataDog/dd-sdk-ios/pull/2948
 [#2942]: https://github.com/DataDog/dd-sdk-ios/pull/2942
+[#2944]: https://github.com/DataDog/dd-sdk-ios/pull/2944
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
