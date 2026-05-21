@@ -20,6 +20,8 @@ import QuartzCore
 @_exported import struct DatadogInternal.RUMActionEvent
 @_exported import struct DatadogInternal.RUMLongTaskEvent
 @_exported import struct DatadogInternal.ProfilingOptions
+@_exported import protocol DatadogInternal.CACurrentMediaTimeProvider
+@_exported import struct DatadogInternal.MediaTimeProvider
 // swiftlint:enable duplicate_imports
 
 extension RUM {

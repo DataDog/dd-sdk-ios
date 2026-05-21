@@ -3713,7 +3713,6 @@
 			isa = PBXGroup;
 			children = (
 				11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */,
-				11A2F2492E70CC08006EDC52 /* MediaTimeProvider.swift */,
 			);
 			path = Providers;
 			sourceTree = "<group>";
@@ -6395,6 +6394,7 @@
 				D23039BC298D5235001A1FA3 /* DeviceInfo.swift */,
 				D23039BE298D5235001A1FA3 /* LaunchInfo.swift */,
 				861FD6872DF3366400F59823 /* LocaleInfo.swift */,
+				11A2F2492E70CC08006EDC52 /* MediaTimeProvider.swift */,
 				D23039B9298D5235001A1FA3 /* NetworkConnectionInfo.swift */,
 				11B5439E2DE9C40B006F6C0A /* OperatingSystem+Utils.swift */,
 				D23039B8298D5235001A1FA3 /* Sysctl.swift */,
@@ -8916,6 +8916,7 @@
 				D22F06D729DAFD500026CC3C /* FixedWidthInteger+Convenience.swift in Sources */,
 				3C08F9D02C2D652D002B0FF2 /* Storage.swift in Sources */,
 				D23039E5298D5236001A1FA3 /* DateProvider.swift in Sources */,
+				11A2F24B2E70CC08006EDC52 /* MediaTimeProvider.swift in Sources */,
 				861FD6892DF3366400F59823 /* LocaleInfo.swift in Sources */,
 				D23039E0298D5235001A1FA3 /* DatadogCoreProtocol.swift in Sources */,
 				5BFDD7A92E28FDD3009A2CEE /* RUMWebViewContext.swift in Sources */,
@@ -9485,7 +9486,6 @@
 				AA0001012A000002000B0001 /* UIScrollViewDelegateProxy.swift in Sources */,
 				AA0001012A000001000B0001 /* RUMScrollHandler.swift in Sources */,
 				11A2F24A2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */,
-				11A2F24B2E70CC08006EDC52 /* MediaTimeProvider.swift in Sources */,
 				D29A9F5229DD85BB005C54A4 /* RUMUUIDGenerator.swift in Sources */,
 				61DCC84E2C071DCD00CB59E5 /* TelemetryInterceptor.swift in Sources */,
 				4062CCAEB02C9EEF6761F4F8 /* HeatmapIdentifierStore.swift in Sources */,

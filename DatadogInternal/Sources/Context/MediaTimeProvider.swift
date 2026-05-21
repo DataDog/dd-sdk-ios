@@ -10,6 +10,11 @@ import QuartzCore
 #endif
 
 /// Provides current media uptime.
+/// Media uptime is a monotonic clock value, expressed in seconds, that is **not** affected by
+/// wall-clock corrections (NTP, DST, manual changes). Only deltas between two readings carry
+/// meaning — the absolute value is implementation-defined. Use this provider in combination
+/// with a `DateProvider` whenever you need a duration that must be `>= 0` regardless of
+/// wall-clock adjustments.
 public protocol CACurrentMediaTimeProvider: Sendable {
     /// Current media uptime.
     var current: CFTimeInterval { get }

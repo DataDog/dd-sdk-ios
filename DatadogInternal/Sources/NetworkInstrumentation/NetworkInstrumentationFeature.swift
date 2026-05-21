@@ -33,6 +33,11 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
     let networkContextProvider: NetworkContextProvider
 
+    /// The media uptime provider to calculate the deltas between request start and completion.
+    /// Captured alongside `Date()` at start and end; the delta is used to build `endDate` so
+    /// that `endDate >= startDate` always holds.
+    let mediaTimeProvider: CACurrentMediaTimeProvider
+
     /// The list of registered handlers.
     ///
     /// Accessing this list will acquire a read-write lock for fast read operation when mutating
@@ -56,10 +61,12 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
     init(
         networkContextProvider: NetworkContextProvider,
-        messageReceiver: FeatureMessageReceiver
+        messageReceiver: FeatureMessageReceiver,
+        mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider()
     ) {
         self.networkContextProvider = networkContextProvider
         self.messageReceiver = messageReceiver
+        self.mediaTimeProvider = mediaTimeProvider
     }
 
     /// Configures network instrumentation for the specified tracking mode.
@@ -425,7 +432,11 @@ extension NetworkInstrumentationFeature {
         let request = ImmutableRequest(request: currentRequest)
 
         // Capture start time before entering the queue for more accurate timing.
+        // `startMediaTime` is captured from a monotonic clock so the duration computed at
+        // completion is immune to wall-clock corrections that
+        // could otherwise produce `endDate < startDate` and crash range-based consumers.
         let startTime = Date()
+        let startMediaTime = mediaTimeProvider.current
 
         queue.async { [weak self] in
             guard let self = self else {
@@ -456,7 +467,7 @@ extension NetworkInstrumentationFeature {
             // Capture approximate start time for all modes
             // This enables Trace to work in automatic mode (where `URLSessionTaskMetrics` are unavailable)
             if interception.startDate == nil {
-                interception.register(startDate: startTime)
+                interception.register(startDate: startTime, mediaTime: startMediaTime)
             }
 
             if let traceContext = instrumentationContexts.compactMap({ $0.traceContext }).first {
@@ -531,7 +542,10 @@ extension NetworkInstrumentationFeature {
     ///   - error: If an error occurred, an error object indicating how the transfer failed, otherwise NULL.
     func task(_ task: URLSessionTask, didCompleteWithError error: Error?) {
         // Capture end time before entering the queue for more accurate timing.
+        // `endMediaTime` is from the same monotonic clock as `startMediaTime` so the derived
+        // duration is guaranteed `>= 0` regardless of wall-clock corrections.
         let endTime = Date()
+        let endMediaTime = mediaTimeProvider.current
 
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
@@ -551,7 +565,7 @@ extension NetworkInstrumentationFeature {
             }
 
             if interception.isDone {
-                self.finish(task: task, interception: interception, endDate: endTime)
+                self.finish(task: task, interception: interception, endDate: endTime, endMediaTime: endMediaTime)
             }
         }
     }
@@ -560,11 +574,11 @@ extension NetworkInstrumentationFeature {
         handlers.reduce(.init()) { $0 + $1.firstPartyHosts } + additionalFirstPartyHosts
     }
 
-    private func finish(task: URLSessionTask, interception: URLSessionTaskInterception, endDate: Date?) {
+    private func finish(task: URLSessionTask, interception: URLSessionTaskInterception, endDate: Date?, endMediaTime: CFTimeInterval? = nil) {
         // Register `endDate` if provided.
         // Note: in registered delegate mode, `endDate` is `nil` because `URLSessionTaskMetrics` provides accurate timing.
         if let endDate {
-            interception.register(endDate: endDate)
+            interception.register(endDate: endDate, mediaTime: endMediaTime)
         }
 
         handlers.forEach { $0.interceptionDidComplete(interception: interception) }
@@ -578,7 +592,10 @@ extension NetworkInstrumentationFeature {
     ///   - state: The new state of the task (maps to URLSessionTask.State: 0=running, 1=suspended, 2=canceling, 3=completed).
     func task(_ task: URLSessionTask, didChangeToState state: Int) {
         // Capture end time before entering the queue for more accurate timing.
+        // `endMediaTime` is from the same monotonic clock as `startMediaTime` so the derived
+        // duration is guaranteed `>= 0` regardless of wall-clock corrections.
         let endTime = Date()
+        let endMediaTime = mediaTimeProvider.current
 
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
@@ -610,7 +627,7 @@ extension NetworkInstrumentationFeature {
             // This ensures we capture the response data through completion handler swizzling before finishing.
             // The completion handler will call finish() after capturing the data.
             if interception.isDone && !task.dd.hasCompletion {
-                self.finish(task: task, interception: interception, endDate: endTime)
+                self.finish(task: task, interception: interception, endDate: endTime, endMediaTime: endMediaTime)
             }
         }
     }
