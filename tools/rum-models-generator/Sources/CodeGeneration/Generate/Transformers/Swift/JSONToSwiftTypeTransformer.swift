@@ -229,16 +229,13 @@ internal class JSONToSwiftTypeTransformer {
             }
 
             // Deduplicate labels by appending an index to any that collide.
-            var rawLabels = try jsonUnion.types.map { try labelNameFromType(of: $0.type) }
-            if Set(rawLabels).count < rawLabels.count {
-                var seen: [String: Int] = [:]
-                rawLabels = rawLabels.map { label in
-                    let count = seen[label, default: 0]
-                    seen[label] = count + 1
-                    return count == 0 ? label : "\(label)\(count)"
-                }
+            var seen: [String: Int] = [:]
+            caseLabels = try jsonUnion.types.map { schema in
+                let label = try labelNameFromType(of: schema.type)
+                let count = seen[label, default: 0]
+                seen[label] = count + 1
+                return count == 0 ? label : "\(label)\(count)"
             }
-            caseLabels = rawLabels
         }
 
         return SwiftAssociatedTypeEnum(

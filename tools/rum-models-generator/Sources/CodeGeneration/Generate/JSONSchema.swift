@@ -183,6 +183,23 @@ internal class JSONSchema: Decodable {
 
     // MARK: - Resolving Schema References
 
+    /// Navigates a JSON Pointer path from a root schema, returning `nil` for any unsupported step.
+    private static func navigate(_ path: ArraySlice<String>, in schema: JSONSchema) -> JSONSchema? {
+        guard let key = path.first else {
+            return schema
+        }
+        switch key {
+        case "$defs":
+            return path.dropFirst().first.flatMap { schema.defs?[$0] }.flatMap { navigate(path.dropFirst(2), in: $0) }
+        case "properties":
+            return path.dropFirst().first.flatMap { schema.properties?[$0] }.flatMap { navigate(path.dropFirst(2), in: $0) }
+        case "items":
+            return schema.items.flatMap { navigate(path.dropFirst(), in: $0) }
+        default:
+            return nil
+        }
+    }
+
     /// Resolves `$ref` recursively.
     ///
     /// All sub-schemas with `$ref`, including `self` will be resolved.
@@ -192,58 +209,54 @@ internal class JSONSchema: Decodable {
     /// - Parameters:
     ///   - directory: The directory in which to look for referred schemas.
     ///   - reader: The schema file reader.
-    ///   - defs: In-document `$defs` from the root schema, used to resolve `#/$defs/X` refs.
-    func resolveReferences(in directory: URL, using reader: JSONSchemaReader, defs: [String: JSONSchema]? = nil) throws {
-        // If this schema defines its own `$defs`, resolve them first so they're ready as resolution targets.
-        // Use this schema's own defs merged with any inherited defs from the parent.
-        let effectiveDefs = self.defs ?? defs
-        if let ownDefs = self.defs {
-            try ownDefs.values.forEach {
-                try $0.resolveReferences(in: directory, using: reader, defs: effectiveDefs)
-            }
+    ///   - root: The document root schema, used to resolve in-document `#/...` refs.
+    func resolveReferences(in directory: URL, using reader: JSONSchemaReader, root: JSONSchema? = nil) throws {
+        let effectiveRoot = root ?? self
+
+        // resolve `$defs` entries first so they're ready as resolution targets
+        try self.defs?.values.forEach {
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
         }
 
         // resolve `properties.$ref`
         try properties?.map(\.value).forEach {
-            try $0.resolveReferences(in: directory, using: reader, defs: effectiveDefs)
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
         }
 
         // resolve `items.$ref`
         try items.map {
-            try $0.resolveReferences(in: directory, using: reader, defs: defs)
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
         }
 
         // resolve `oneOf[].$ref`
         // `oneOf` schemas are kept as orphans
         try oneOf?.forEach {
-            try $0.resolveReferences(in: directory, using: reader, defs: defs)
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
         }
 
         // resolve `allOf[].$ref`
         // merge `allOf` schemas with `self`
         try allOf?.forEach {
-            try $0.resolveReferences(in: directory, using: reader, defs: defs)
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
             merge(with: $0)
         }
 
         // resolve `anyOf[].$ref`
         try anyOf?.forEach {
-            try $0.resolveReferences(in: directory, using: reader, defs: defs)
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
         }
 
         // resolve `$ref`
         try ref.map { ref in
-            if ref.hasPrefix("#/") {
-                // In-document reference: resolve from `$defs` (e.g. `#/$defs/TypeName`)
-                let components = ref.dropFirst(2).split(separator: "/").map(String.init)
-                guard components.first == "$defs", components.count == 2, let defName = components.last else {
+            if ref.hasPrefix("#") {
+                // In-document reference using JSON Pointer (e.g. `#/$defs/TypeName`, `#/properties/foo`, `#`)
+                let parts = ref.dropFirst().split(separator: "/").map(String.init)
+                guard let resolved = Self.navigate(parts[...], in: effectiveRoot) else {
                     throw Exception.unimplemented("Unsupported in-document $ref path: \(ref)")
                 }
-                merge(with: defs?[defName])
+                merge(with: resolved)
             } else {
-                let url = directory.appendingPathComponent(ref)
-                let schema = try reader.read(url)
-                merge(with: schema)
+                merge(with: try reader.read(directory.appendingPathComponent(ref)))
             }
         }
 
