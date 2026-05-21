@@ -336,10 +336,10 @@ private func _DDAssertDiff<T: Encodable>(
 
     let commonKeys = keys1.intersection(keys2)
     let equalKeys = commonKeys.filter { key in
-        guard let value1 = flat1[key], let value2 = flat2[key] else {
+        guard let lhs = flat1[key], let rhs = flat2[key] else {
             return false
         }
-        return leafEqual(value1, value2)
+        return leafEqual(lhs, rhs)
     }
     let differentKeys = commonKeys.subtracting(equalKeys)
     let removedKeys = keys1.subtracting(keys2)
@@ -356,7 +356,7 @@ public func DDAssertDiff<T: Encodable>(
     _ expression1: @autoclosure () throws -> T,
     _ expression2: @autoclosure () throws -> T,
     _ message: @autoclosure () -> String = "",
-    file: StaticString = #filePath,
+    file: StaticString = #fileID,
     line: UInt = #line,
     _ verify: (DiffResult) -> Void
 ) {
@@ -373,7 +373,7 @@ public extension DiffResult {
         different: [String] = [],
         added: [String] = [],
         removed: [String] = [],
-        file: StaticString = #filePath,
+        file: StaticString = #fileID,
         line: UInt = #line
     ) {
         XCTAssertEqual(differentKeyPaths, different.sorted(), file: file, line: line)
