@@ -75,11 +75,11 @@
     }
 #endif
 
-    // 4. Final fallback: assume a void-returning, single-object-argument selector.
-    // The invocation is still dropped safely; for non-void selectors outside every known
-    // protocol the return register may contain garbage, but the call itself does not crash.
-    // If a customer surfaces a selector that hits this fallback, add its protocol above.
-    return [NSMethodSignature signatureWithObjCTypes:"v@:@"];
+    // 4. Final fallback: minimal void(self, _cmd) signature. Selectors with explicit
+    // arguments must have their signatures recovered above; assuming any argument layout
+    // here would risk misdescribing the ABI of unknown selectors. If a customer surfaces a
+    // selector that hits this fallback, add its protocol to `knownProtocols` above.
+    return [NSMethodSignature signatureWithObjCTypes:"v@:"];
 }
 
 - (void)forwardInvocation:(NSInvocation *)anInvocation {
