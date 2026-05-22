@@ -373,6 +373,46 @@ final class ProfileCxxTests: XCTestCase {
         XCTAssertEqual(unpackedProfile.pointee.n_sample_type, 1, "Should have one sample type")
     }
 
+    func testProfileAggregation_withCPUTimingEnabled_serializesWallAndCPUValues() throws {
+        // Given
+        let profile = try XCTUnwrap(dd_pprof_create_with_cpu_time(10_000_000, true))
+        defer { dd_pprof_destroy(profile) }
+
+        let trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        trace.pointee = .mockWith(
+            tid: 1,
+            addresses: [0x100001000, 0x100002000],
+            samplingIntervalNanos: 10_000_000,
+            cpuTimeNanos: 4_000_000
+        )
+        defer { dd_free(trace) }
+
+        // When
+        dd_pprof_add_samples(profile, trace, 1)
+
+        var data: UnsafeMutablePointer<UInt8>?
+        let size = dd_pprof_serialize(profile, &data)
+        defer { dd_pprof_free_serialized_data(data) }
+
+        // Then
+        let unpackedProfile = try XCTUnwrap(perftools__profiles__profile__unpack(nil, size, data))
+        defer { perftools__profiles__profile__free_unpacked(unpackedProfile, nil) }
+
+        XCTAssertEqual(unpackedProfile.pointee.n_sample_type, 2, "CPU timing should add a second sample type")
+
+        let wallSampleType = try XCTUnwrap(unpackedProfile.pointee.sample_type[0])
+        let cpuSampleType = try XCTUnwrap(unpackedProfile.pointee.sample_type[1])
+        let wallType = try XCTUnwrap(unpackedProfile.pointee.string_table[Int(wallSampleType.pointee.type)])
+        let cpuType = try XCTUnwrap(unpackedProfile.pointee.string_table[Int(cpuSampleType.pointee.type)])
+        XCTAssertEqual(String(cString: wallType), "wall-time")
+        XCTAssertEqual(String(cString: cpuType), "cpu-time")
+
+        let sample = try XCTUnwrap(unpackedProfile.pointee.sample[0])
+        XCTAssertEqual(sample.pointee.n_value, 2)
+        XCTAssertEqual(sample.pointee.value[0], 10_000_000)
+        XCTAssertEqual(sample.pointee.value[1], 4_000_000)
+    }
+
     func testProfileAggregation_withMissingImageCache_fallsBackToBinaryLookup() throws {
         // Given
         let profile = try XCTUnwrap(dd_pprof_create(10_000_000))
