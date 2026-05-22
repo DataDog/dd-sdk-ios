@@ -52,6 +52,8 @@ typedef struct stack_trace {
     uint64_t timestamp;
     /** Actual sampling interval in nanoseconds for this sample */
     uint64_t sampling_interval_nanos;
+    /** CPU time consumed by this thread since the previous sample */
+    uint64_t cpu_time_nanos;
     /** The stack frames array */
     stack_frame_t* frames;
     /** Number of frames in the trace */
@@ -74,6 +76,8 @@ typedef struct sampling_config {
     uint32_t max_thread_count;  // default: 100
     /** QoS class for the sampling thread */
     qos_class_t qos_class;
+    /** Whether samples should include a CPU-time value */
+    uint8_t record_cpu_time;
 } sampling_config_t;
 
 /**
@@ -100,7 +104,8 @@ static const sampling_config_t SAMPLING_CONFIG_DEFAULT = {
     SAMPLING_CONFIG_DEFAULT_BUFFER_SIZE,     // max_buffer_size
     SAMPLING_CONFIG_DEFAULT_STACK_DEPTH,     // max_stack_depth
     SAMPLING_CONFIG_DEFAULT_THREAD_COUNT,    // max_thread_count
-    QOS_CLASS_USER_INTERACTIVE               // qos_class
+    QOS_CLASS_USER_INTERACTIVE,              // qos_class
+    0                                        // record_cpu_time
 };
 
 /**
@@ -122,6 +127,7 @@ typedef void (*stack_trace_callback_t)(stack_trace_t* traces, size_t count, void
 #define DD_PROFILING_USER_DEFAULTS_SUITE_NAME "com.datadoghq.ios-sdk.profiling"
 #define DD_PROFILING_IS_ENABLED_KEY "is_profiling_enabled"
 #define DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY "profiling_app_launch_sample_rate"
+#define DD_PROFILING_RECORD_CPU_TIME_KEY "profiling_record_cpu_time"
 
 #ifdef __cplusplus
 

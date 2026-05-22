@@ -30,6 +30,9 @@ extension Profiling {
         /// Default: `5.0`.
         public var continuousSampleRate: SampleRate
 
+        /// Feature flags to preview features in Profiling.
+        public var featureFlags: FeatureFlags
+
         // MARK: - Internal
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
@@ -42,11 +45,13 @@ extension Profiling {
         public init(
             customEndpoint: URL? = nil,
             applicationLaunchSampleRate: SampleRate = 5,
-            continuousSampleRate: SampleRate = 5
+            continuousSampleRate: SampleRate = 5,
+            featureFlags: FeatureFlags = .defaults
         ) {
             self.customEndpoint = customEndpoint
             self.applicationLaunchSampleRate = applicationLaunchSampleRate
             self.continuousSampleRate = continuousSampleRate
+            self.featureFlags = featureFlags
         }
 
         /// Merges the remote configuration on top of this in-code configuration.
@@ -69,6 +74,32 @@ extension Profiling {
                 self.continuousSampleRate = SampleRate(continuousSampleRate)
             }
         }
+    }
+}
+
+extension Profiling.Configuration {
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+
+    /// Feature flags available in Profiling.
+    public enum FeatureFlag: String {
+        /// Adds CPU-time sample values alongside wall-time sample values.
+        case cpuTimeSamples
+    }
+}
+
+extension Profiling.Configuration.FeatureFlags {
+    /// The default feature flags applied to Profiling configuration.
+    public static var defaults: Self {
+        [
+            .cpuTimeSamples: false,
+        ]
+    }
+
+    /// Accesses a feature flag value.
+    ///
+    /// Returns false by default.
+    public subscript(flag: Key) -> Bool {
+        self[flag, default: false]
     }
 }
 
