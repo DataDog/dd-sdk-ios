@@ -272,11 +272,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeViewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
                 appLaunchManager.process(command, context: context, writer: writer)
+                dependencies.timeseriesCollector?.pause()
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
                     startApplicationLaunchView(on: appLifecycleCommand, context: context, writer: writer)
                 }
                 hadApplicationLaunchViewWhenEnteringBackground = nil
+                dependencies.timeseriesCollector?.resume()
 
             case let operationStepVitalCommand as RUMOperationStepVitalCommand:
                 let activeView = viewScopes.first { $0.isActiveView }
