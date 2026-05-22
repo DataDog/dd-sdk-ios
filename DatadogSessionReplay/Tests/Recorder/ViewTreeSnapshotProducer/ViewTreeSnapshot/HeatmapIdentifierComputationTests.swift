@@ -131,6 +131,7 @@ struct HeatmapIdentifierComputationTests {
     func registryPopulation() {
         // Given
         let parent = UIView(frame: .init(x: 0, y: 0, width: 320, height: 480))
+        parent.backgroundColor = .blue
         let child = UIView(frame: .init(x: 0, y: 0, width: 100, height: 100))
         child.backgroundColor = .red
         parent.addSubview(child)
@@ -153,6 +154,34 @@ struct HeatmapIdentifierComputationTests {
         #expect(heatmapCache.identifiers[ObjectIdentifier(parent)] != nil)
         #expect(heatmapCache.identifiers[ObjectIdentifier(child)] != nil)
         #expect(heatmapCache.identifiers[ObjectIdentifier(parent)] != heatmapCache.identifiers[ObjectIdentifier(child)])
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips heatmap cache write for views that produce no rendered nodes")
+    func skipsCacheForViewsWithEmptySemantics() {
+        // Given
+        let parent = UIView(frame: .init(x: 0, y: 0, width: 320, height: 480))
+        let child = UIView(frame: .init(x: 0, y: 0, width: 100, height: 100))
+        child.backgroundColor = .red
+        parent.addSubview(child)
+
+        let recorder = ViewTreeRecorder(
+            nodeRecorders: [UIViewRecorder(identifier: UUID())],
+            bundleIdentifier: "com.example.app"
+        )
+        let heatmapCache = HeatmapCache()
+        let context = ViewTreeRecordingContext.mockWith(
+            recorder: .mockWith(rumContext: .mockWith(viewPath: "Home")),
+            coordinateSpace: parent,
+            heatmapCache: heatmapCache
+        )
+
+        // When
+        _ = recorder.record(parent, in: context)
+
+        // Then
+        #expect(heatmapCache.identifiers[ObjectIdentifier(parent)] == nil)
+        #expect(heatmapCache.identifiers[ObjectIdentifier(child)] != nil)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

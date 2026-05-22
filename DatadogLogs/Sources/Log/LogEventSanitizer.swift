@@ -54,6 +54,7 @@ internal struct LogEventSanitizer {
         userAttributes = removeInvalidAttributes(userAttributes)
         userAttributes = removeReservedAttributes(userAttributes)
         userAttributes = attributesSanitizer.sanitizeKeys(for: userAttributes)
+        userAttributes = attributesSanitizer.sanitizeValues(for: userAttributes)  // truncate at 25,600 chars
         let userAttributesLimit = AttributesSanitizer.Constraints.maxNumberOfAttributes - (rawAttributes.internalAttributes?.count ?? 0)
         userAttributes = attributesSanitizer.limitNumberOf(attributes: userAttributes, to: userAttributesLimit)
 

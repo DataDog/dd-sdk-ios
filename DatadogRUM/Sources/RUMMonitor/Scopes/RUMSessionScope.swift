@@ -32,6 +32,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
     private(set) var viewScopes: [RUMViewScope] = [] {
         didSet {
+            activeView = viewScopes.last(where: { $0.isActiveView })
             if !state.hasTrackedAnyView && !viewScopes.isEmpty {
                 state = RUMSessionState(
                     sessionUUID: state.sessionUUID,
@@ -44,11 +45,17 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
     }
 
+    /// Current active view.
+    private var activeView: RUMViewScope?
+
+    /// If there is an active view.
+    private var hasActiveView: Bool { activeView != nil }
+
     /// Information about the application state since `RUM.enable()` was called.
     private let applicationState: RUMApplicationState
     /// Feature Operation manager for processing Feature Operation commands.
     private lazy var featureOperationManager: RUMFeatureOperationManager = {
-        RUMFeatureOperationManager(parent: self, dependencies: dependencies)
+        RUMFeatureOperationManager(parent: self, dependencies: dependencies, sessionSampler: sampler)
     }()
     /// App launch manager to process TTID and TTFD commands.
     private lazy var appLaunchManager: RUMAppLaunchManager = {
@@ -194,21 +201,21 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Transfer active View to new `RUMViewScope`:
         if transferActiveView {
             if let lastActiveView = expiredSession.viewScopes.last(where: { $0.isActiveView }) {
-                self.viewScopes = [
-                    RUMViewScope(
-                        isInitialView: false,
-                        parent: self,
-                        dependencies: dependencies,
-                        identity: lastActiveView.identity,
-                        path: lastActiveView.viewPath,
-                        name: lastActiveView.viewName,
-                        customTimings: lastActiveView.customTimings,
-                        startTime: startTime,
-                        serverTimeOffset: context.serverTimeOffset,
-                        interactionToNextViewMetric: interactionToNextViewMetric,
-                        viewIndexInSession: nextViewIndex
-                    )
-                ]
+                let activeView = RUMViewScope(
+                    isInitialView: false,
+                    parent: self,
+                    dependencies: dependencies,
+                    identity: lastActiveView.identity,
+                    path: lastActiveView.viewPath,
+                    name: lastActiveView.viewName,
+                    customTimings: lastActiveView.customTimings,
+                    startTime: startTime,
+                    serverTimeOffset: context.serverTimeOffset,
+                    interactionToNextViewMetric: interactionToNextViewMetric,
+                    viewIndexInSession: nextViewIndex
+                )
+                self.viewScopes = [activeView]
+                self.activeView = activeView
                 nextViewIndex += 1
             } else {
                 self.viewScopes = []
@@ -221,6 +228,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     var context: RUMContext {
         var context = parent.context
         context.sessionID = sessionUUID
+        context.activeViewID = activeView?.viewUUID
+        context.activeViewName = activeView?.viewName
         context.isSessionActive = isActive
         context.sessionPrecondition = startPrecondition
         return context
@@ -270,7 +279,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 startView(on: startViewCommand, context: context)
                 appLaunchManager.process(command, context: context, writer: writer)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
-                hadApplicationLaunchViewWhenEnteringBackground = activeViewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+                hadApplicationLaunchViewWhenEnteringBackground = activeView?.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
                 appLaunchManager.process(command, context: context, writer: writer)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
@@ -279,7 +288,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 hadApplicationLaunchViewWhenEnteringBackground = nil
 
             case let operationStepVitalCommand as RUMOperationStepVitalCommand:
-                let activeView = viewScopes.first { $0.isActiveView }
                 // Forward command to the feature operation manager
                 featureOperationManager.process(
                     operationStepVitalCommand,
@@ -288,12 +296,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     activeView: activeView
                 )
             case let command as RUMTimeToInitialDisplayCommand:
-                appLaunchManager.process(command, context: context, writer: writer, activeView: viewScopes.first { $0.isActiveView })
+                appLaunchManager.process(command, context: context, writer: writer, activeView: activeView)
                 dependencies.renderLoopObserver?.unregister(dependencies.firstFrameReader)
                 // command doesn't need to be propagated to other scopes
                 return true
             case let command as RUMTimeToFullDisplayCommand:
-                appLaunchManager.process(command, context: context, writer: writer, activeView: viewScopes.first { $0.isActiveView })
+                appLaunchManager.process(command, context: context, writer: writer, activeView: activeView)
                 // command doesn't need to be propagated to other scopes
                 return true
             default:
@@ -326,16 +334,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         return isActive || !viewScopes.isEmpty
-    }
-
-    /// If there is an active view.
-    private var hasActiveView: Bool {
-        return viewScopes.contains { $0.isActiveView }
-    }
-
-    /// The path of the active view (if any).
-    private var activeViewPath: String? {
-        return viewScopes.last(where: { $0.isActiveView })?.viewPath
     }
 
     // MARK: - RUMCommands Processing

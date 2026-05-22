@@ -90,8 +90,9 @@ public struct NOPDataStore: DataStore {
 
     /// no-op
     public func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {}
-    /// no-op
-    public func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {}
+    public func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+        callback(.noValue)
+    }
     /// no-op
     public func removeValue(forKey key: String) {}
     /// no-op

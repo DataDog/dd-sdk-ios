@@ -24,6 +24,10 @@ define_arg "device" "" "Specifies the simulator device for running tests, e.g., 
 check_for_help "$@"
 parse_args "$@"
 
+# Suppress lint Build Phase in SmokeTests projects; the standalone CI Lint job
+# already covers SmokeTests sources.
+export SKIP_LINT=1
+
 echo_subtitle "Run 'make clean install test OS=\"$os\" PLATFORM=\"$platform\" DEVICE=\"$device\"' in '$test_directory'"
 echo_succ "Smoke testing for git ref: '$(current_git_ref)'"
 cd "$test_directory" && make clean install test OS="$os" PLATFORM="$platform" DEVICE="$device"

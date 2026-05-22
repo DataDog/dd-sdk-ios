@@ -32,6 +32,9 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     let traceContextInjection: TraceContextInjection
     /// Telemetry interface for tracking SDK usage
     let telemetry: Telemetry
+    /// HTTP status codes whose `resource.name` span tag will be replaced with the status code string.
+    /// Defaults to `Trace.Configuration.URLSessionTracking.defaultRedactedStatusCodes` for backward compatibility.
+    let redactedStatusCodes: Set<Int>
 
     weak var tracer: DatadogTracer?
 
@@ -54,7 +57,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         samplingRate: SampleRate,
         firstPartyHosts: FirstPartyHosts,
         traceContextInjection: TraceContextInjection,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        redactedStatusCodes: Set<Int> = Trace.Configuration.URLSessionTracking.defaultRedactedStatusCodes
     ) {
         self.tracer = tracer
         self.contextReceiver = contextReceiver
@@ -62,6 +66,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         self.firstPartyHosts = firstPartyHosts
         self.traceContextInjection = traceContextInjection
         self.telemetry = telemetry
+        self.redactedStatusCodes = redactedStatusCodes
     }
 
     func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
@@ -296,9 +301,12 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             span.setTag(key: OTTags.httpStatusCode, value: httpStatusCode)
             if let error = httpResponse.asClientError() {
                 span.setError(error, file: "", line: 0)
-                if httpStatusCode == 404 {
-                    span.setTag(key: SpanTags.resource, value: "404")
-                }
+            }
+
+            // Redaction is intentionally independent of error classification: a status code can be
+            // redacted regardless of whether it is a client error (4xx), server error (5xx), or any other code.
+            if redactedStatusCodes.contains(httpStatusCode) {
+                span.setTag(key: SpanTags.resource, value: String(httpStatusCode))
             }
         }
 

@@ -120,11 +120,25 @@ extension Trace {
                 )
             }
 
+            /// The default set of HTTP status codes whose `resource.name` span tag is redacted.
+            public static let defaultRedactedStatusCodes: Set<Int> = [404]
+
+            /// The set of HTTP status codes whose `resource.name` span tag will be replaced
+            /// with the status code string (e.g. `"404"`). An empty set disables all redaction.
+            /// Defaults to `defaultRedactedStatusCodes` (`[404]`) for backward compatibility.
+            public var redactedStatusCodes: Set<Int>
+
             /// Configuration for automatic network requests tracing.
             /// - Parameters:
             ///   - firstPartyHostsTracing: Distributed tracing configuration for particular first-party hosts.
-            public init(firstPartyHostsTracing: FirstPartyHostsTracing) {
+            ///   - redactedStatusCodes: HTTP status codes whose `resource.name` span tag is replaced with the
+            ///     status code string. Defaults to `defaultRedactedStatusCodes` for backward compatibility.
+            public init(
+                firstPartyHostsTracing: FirstPartyHostsTracing,
+                redactedStatusCodes: Set<Int> = defaultRedactedStatusCodes
+            ) {
                 self.firstPartyHostsTracing = firstPartyHostsTracing
+                self.redactedStatusCodes = redactedStatusCodes
             }
         }
 

@@ -45,12 +45,12 @@ public enum Trace {
         try core.register(feature: trace)
 
         // If `URLSession` tracking is configured, register `URLSessionHandler` to enable distributed tracing:
-        if let firstPartyHostsTracing = configuration.urlSessionTracking?.firstPartyHostsTracing {
+        if let urlSessionTracking = configuration.urlSessionTracking {
             let firstPartyHosts: FirstPartyHosts
             let traceContextInjection: TraceContextInjection
             let tracingSampleRate: SampleRate
 
-            switch firstPartyHostsTracing {
+            switch urlSessionTracking.firstPartyHostsTracing {
             case let .trace(hosts, sampleRate, injection):
                 tracingSampleRate = sampleRate
                 firstPartyHosts = FirstPartyHosts(hosts)
@@ -67,7 +67,8 @@ public enum Trace {
                 samplingRate: configuration.debugSDK ? 100 : tracingSampleRate,
                 firstPartyHosts: firstPartyHosts,
                 traceContextInjection: traceContextInjection,
-                telemetry: core.telemetry
+                telemetry: core.telemetry,
+                redactedStatusCodes: urlSessionTracking.redactedStatusCodes
             )
 
             try core.register(urlSessionHandler: urlSessionHandler)

@@ -41,13 +41,13 @@ class TLVBlockTests: XCTestCase {
     }
 
     func testSerialize_largeBytesBlock() throws {
-        let largeData: Data = .mockRandom(ofSize: 10_000_000) // 10MB
+        let largeData: Data = .mockRandom(ofSize: 4 * 1_024 * 1_024) // 4MB — within the 5MB limit
         let blockData = try Block(type: .one, data: largeData).serialize()
 
-        XCTAssertEqual(blockData.count, 10_000_006)
-        // TLV representation: T=0x0000, L=0x00989680, V=<largeData>
-        XCTAssertEqual(blockData.prefix(6), Data([0x01, 0x00, 0x80, 0x96, 0x98, 0x00]))
-        XCTAssertEqual(blockData.suffix(10_000_000), largeData)
+        XCTAssertEqual(blockData.count, 4 * 1_024 * 1_024 + 6)
+        // TLV representation: T=0x0001 (little-endian), L=4MB as little-endian UInt32, V=<largeData>
+        XCTAssertEqual(blockData.prefix(6), Data([0x01, 0x00, 0x00, 0x00, 0x40, 0x00]))
+        XCTAssertEqual(blockData.suffix(4 * 1_024 * 1_024), largeData)
     }
 
     func testSerialize_withLengthExceedingLimit() throws {

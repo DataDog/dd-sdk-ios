@@ -4,6 +4,11 @@ if [ ! -f "Package.swift" ]; then
 	echo "\`run-linter.sh\` must be run in repository root folder: \`./tools/lint/run-linter.sh\`"; exit 1
 fi
 
+if [[ "${SKIP_LINT}" = "1" ]]; then
+	echo "warning: SwiftLint skipped (SKIP_LINT=1 in environment)"
+	exit 0
+fi
+
 automatic_fix=""
 while :; do
     case $1 in

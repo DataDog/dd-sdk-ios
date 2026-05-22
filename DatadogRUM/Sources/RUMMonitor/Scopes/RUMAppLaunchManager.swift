@@ -69,7 +69,16 @@ private extension RUMAppLaunchManager {
             profiling = .init(errorReason: profilingContext.error, status: profilingContext.profilingStatus)
         }
 
-        sendProfilerStopMessage(id: ttidVitalId, activeView: activeView)
+        sendTTIDMessageToProfiler(
+            vital: .init(
+                id: ttidVitalId,
+                name: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric.ttid.name,
+                date: context.launchInfo.processLaunchDate,
+                serverTimeOffset: context.serverTimeOffset,
+                duration: ttid.dd.toInt64Nanoseconds
+            ),
+            activeView: activeView
+        )
 
         dependencies.appStateManager.previousAppStateInfo { [weak self] previousAppStateInfo in
             self?.dependencies.appStateManager.currentAppStateInfo { [weak self] currentAppStateInfo in
@@ -191,7 +200,9 @@ private extension RUMAppLaunchManager {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: RUMEventAttributes(contextInfo: attributes),
-            date: context.launchInfo.processLaunchDate.timeIntervalSince1970.dd.toInt64Milliseconds,
+            date: context.launchInfo.processLaunchDate
+                .addingTimeInterval(context.serverTimeOffset)
+                .timeIntervalSince1970.dd.toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             os: context.os,
@@ -216,19 +227,11 @@ private extension RUMAppLaunchManager {
         telemetryController.track(ttidEvent: vitalEvent, context: context)
     }
 
-    func sendProfilerStopMessage(id: String, activeView: RUMViewScope?) {
-        var context: [String: Encodable] = [
-            RUMContextAttributes.IDs.applicationID: parent.context.rumApplicationID,
-            RUMContextAttributes.IDs.sessionID: parent.context.sessionID.toRUMDataFormat,
-            RUMContextAttributes.IDs.vitalID: id
-        ]
+    func sendTTIDMessageToProfiler(vital: Vital, activeView: RUMViewScope?) {
+        var contextAttributes: [String: Encodable] = parent.rumContextAttributes
+        contextAttributes[RUMCoreContext.IDs.vitalID] = vital.id
 
-        if let activeView {
-            context[RUMContextAttributes.IDs.viewID] = [activeView.viewUUID.toRUMDataFormat]
-            context[RUMContextAttributes.IDs.viewName] = [activeView.viewName]
-        }
-
-        dependencies.featureScope.send(message: .payload(ProfilerStop(context: context)))
+        dependencies.featureScope.send(message: .payload(TTIDMessage(attributes: contextAttributes, ttid: vital)))
     }
 }
 
@@ -300,17 +303,18 @@ private extension ProfilingContext {
     var profilingStatus: RUMVitalAppLaunchEvent.DD.Profiling.Status {
         switch self.status {
         case .running: return .running
-        case let .stopped(reason):
-            if reason == .manual || reason == .timeout {
-                return .running
-            }
-            return .stopped
+        case .stopped: return .stopped
         case .error: return .error
         case .unknown: return .error
         }
     }
 
+    /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+    ///
+    /// Possible values:
+    /// - `unexpected-exception`: An exception occurred when starting the Profiler.
     var error: RUMVitalAppLaunchEvent.DD.Profiling.ErrorReason? {
+        // RUM-15325: Update RUM schema with the mobile profiler errors
         if case .error(reason: let reason) = self.status {
             switch reason {
             case .memoryAllocationFailed:

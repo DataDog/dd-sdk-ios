@@ -762,7 +762,7 @@ class RUMSessionStopTests: RUMSessionTestsBase {
             XCTAssertNil(session2.timeToInitialDisplay)
             DDAssertEqual(session2.sessionStartDate, processLaunchDate + timeToSDKInit + dt1 + dt2 + dt3 + dt4, accuracy: accuracy)
             DDAssertEqual(session2.duration, dt5, accuracy: accuracy)
-            XCTAssertEqual(session2.sessionPrecondition, .explicitStop)
+            XCTAssertEqual(session2.sessionPrecondition, given == given1 ? .backgroundLaunch : .prewarm)
             XCTAssertEqual(session2.views.count, 1)
             XCTAssertEqual(session2.views[0].name, backgroundViewName)
             DDAssertEqual(session2.views[0].duration, dt5, accuracy: accuracy)

@@ -81,10 +81,10 @@ final class SampleRateTests: XCTestCase {
     }
 
     func testNormalization() {
-        XCTAssertEqual(SampleRate(42).normalized, 42)
-        XCTAssertEqual(SampleRate(0).normalized, 0)
-        XCTAssertEqual(SampleRate(100).normalized, 100)
-        XCTAssertEqual(SampleRate(-10).normalized, 0)
-        XCTAssertEqual(SampleRate(298).normalized, 100)
+        XCTAssertEqual(SampleRate(42).normalizedSampleRate, 42)
+        XCTAssertEqual(SampleRate(0).normalizedSampleRate, 0)
+        XCTAssertEqual(SampleRate(100).normalizedSampleRate, 100)
+        XCTAssertEqual(SampleRate(-10).normalizedSampleRate, 0)
+        XCTAssertEqual(SampleRate(298).normalizedSampleRate, 100)
     }
 }

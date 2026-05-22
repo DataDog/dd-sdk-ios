@@ -22,7 +22,7 @@ internal struct DataStoreFileReader {
     func read() throws -> (Data, DataStoreKeyVersion) {
         let reader = DataStoreBlockReader(
             input: try file.stream(),
-            maxBlockLength: maxTLVDataLength
+            maxBlockLength: maxDataStoreTLVDataLength
         )
         let blocks = try reader.all()
 
