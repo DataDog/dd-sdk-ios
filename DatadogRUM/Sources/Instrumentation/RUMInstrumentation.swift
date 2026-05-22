@@ -56,13 +56,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     // MARK: - Initialization
 
     #if !os(watchOS)
+    //swiftlint:disable function_default_parameter_at_end
     init(
         featureScope: FeatureScope,
         uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?,
         uiKitRUMActionsPredicate: UIKitRUMActionsPredicate?,
         swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate?,
         swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate?,
-        scrollAndSwipeActionsDisabled: Bool,
+        scrollAndSwipeActionsDisabled: Bool = false,
         longTaskThreshold: TimeInterval?,
         appHangThreshold: TimeInterval?,
         mainQueue: DispatchQueue,
@@ -196,6 +197,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.appHangs?.start()
         self.memoryWarningMonitor?.start()
     }
+    //swiftlint:enable function_default_parameter_at_end
 
     #else
 
