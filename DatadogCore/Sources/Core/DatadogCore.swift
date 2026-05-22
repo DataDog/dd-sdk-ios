@@ -57,7 +57,7 @@ internal final class DatadogCore {
 
     /// Owns the remote configuration cache and fetch lifecycle.
     /// `nil` when `remoteConfigurationID` was not set at init.
-    internal let remoteConfiguration: RemoteConfiguration?
+    internal let synchronizer: RemoteConfigurationSynchronizer?
 
     /// Registry for Features.
     @ReadWriteLock
@@ -120,7 +120,7 @@ internal final class DatadogCore {
         self.contextProvider.subscribe(\.accountInfo, to: accountInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
-        self.remoteConfiguration = remoteConfigurationID.map { RemoteConfiguration(id: $0, directory: directory.coreDirectory) }
+        self.synchronizer = remoteConfigurationID.map { RemoteConfigurationSynchronizer(id: $0, directory: directory.coreDirectory) }
         // connect the core to the message bus.
         // the bus will keep a weak ref to the core.
         bus.connect(core: self)

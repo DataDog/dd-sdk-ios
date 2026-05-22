@@ -12,7 +12,7 @@ import DatadogInternal
 
 // MARK: MockURLProtocol
 
-private class MockURLProtocol: URLProtocol {
+class MockURLProtocol: URLProtocol {
     /// Set this before each test to control what the mock returns.
     static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data?))?
 
@@ -39,7 +39,7 @@ private class MockURLProtocol: URLProtocol {
 
 // MARK: Helper
 
-private func mockSession() -> URLSession {
+func mockSession() -> URLSession {
     let config = URLSessionConfiguration.ephemeral
     config.protocolClasses = [MockURLProtocol.self]
     return URLSession(configuration: config)

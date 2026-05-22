@@ -532,7 +532,7 @@ class DatadogTests: XCTestCase {
 
         // Then
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        XCTAssertNil(core.remoteConfiguration)
+        XCTAssertNil(core.synchronizer)
     }
 
     func testGivenRemoteConfigurationID_remoteConfigurationIsCreated() throws {
@@ -546,7 +546,7 @@ class DatadogTests: XCTestCase {
 
         // Then
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
-        XCTAssertNotNil(core.remoteConfiguration)
+        XCTAssertNotNil(core.synchronizer)
     }
 
     func testCustomSDKInstance() throws {

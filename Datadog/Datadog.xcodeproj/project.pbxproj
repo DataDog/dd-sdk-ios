@@ -19,11 +19,9 @@
 		09A936A12F0EB989000B6379 /* SamplingPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369B2F0EB989000B6379 /* SamplingPriority.swift */; };
 		09A936A22F0EB989000B6379 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369C2F0EB989000B6379 /* SpanContext.swift */; };
 		1019DFB52FA38A54006599B4 /* RemoteConfigurationCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1019DFB42FA38A4C006599B4 /* RemoteConfigurationCacheTests.swift */; };
-		1019DFB72FA38AC9006599B4 /* RemoteConfigurationCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1019DFB62FA38AC3006599B4 /* RemoteConfigurationCache.swift */; };
 		1019DFB92FA390A9006599B4 /* RemoteConfigurationFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1019DFB82FA39077006599B4 /* RemoteConfigurationFetcherTests.swift */; };
-		1019DFBB2FA3910A006599B4 /* RemoteConfigurationFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1019DFBA2FA39108006599B4 /* RemoteConfigurationFetcher.swift */; };
 		1019DFD92FB1BB2E006599B4 /* DatadogSiteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1019DFD82FB1BB23006599B4 /* DatadogSiteTests.swift */; };
-		10E9062A2FBDB81A002D5F45 /* RemoteConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E906292FBDB818002D5F45 /* RemoteConfiguration.swift */; };
+		10E9062A2FBDB81A002D5F45 /* RemoteConfigurationSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E906292FBDB818002D5F45 /* RemoteConfigurationSynchronizer.swift */; };
 		10E9062C2FBDBA4B002D5F45 /* RemoteConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E9062B2FBDBA3C002D5F45 /* RemoteConfigurationTests.swift */; };
 		11030D5F2D959EAD00732D5F /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; };
 		11030D6D2D95A48B00732D5F /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; };
@@ -1778,11 +1776,9 @@
 		09A9369C2F0EB989000B6379 /* SpanContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanContext.swift; sourceTree = "<group>"; };
 		0D2A20EFB1D82D0B8AC781F9 /* HeatmapMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapMocks.swift; sourceTree = "<group>"; };
 		1019DFB42FA38A4C006599B4 /* RemoteConfigurationCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationCacheTests.swift; sourceTree = "<group>"; };
-		1019DFB62FA38AC3006599B4 /* RemoteConfigurationCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationCache.swift; sourceTree = "<group>"; };
 		1019DFB82FA39077006599B4 /* RemoteConfigurationFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationFetcherTests.swift; sourceTree = "<group>"; };
-		1019DFBA2FA39108006599B4 /* RemoteConfigurationFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationFetcher.swift; sourceTree = "<group>"; };
 		1019DFD82FB1BB23006599B4 /* DatadogSiteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogSiteTests.swift; sourceTree = "<group>"; };
-		10E906292FBDB818002D5F45 /* RemoteConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfiguration.swift; sourceTree = "<group>"; };
+		10E906292FBDB818002D5F45 /* RemoteConfigurationSynchronizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationSynchronizer.swift; sourceTree = "<group>"; };
 		10E9062B2FBDBA3C002D5F45 /* RemoteConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationTests.swift; sourceTree = "<group>"; };
 		11014EACF1FB9927DAD57822 /* EvaluationMocks.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationMocks.swift; sourceTree = "<group>"; };
 		11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesMetric.swift; sourceTree = "<group>"; };
@@ -4470,9 +4466,7 @@
 		61133B9E2423979B00786299 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				10E906292FBDB818002D5F45 /* RemoteConfiguration.swift */,
-				1019DFBA2FA39108006599B4 /* RemoteConfigurationFetcher.swift */,
-				1019DFB62FA38AC3006599B4 /* RemoteConfigurationCache.swift */,
+				10E906292FBDB818002D5F45 /* RemoteConfigurationSynchronizer.swift */,
 				D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */,
 				D214DAA429E072D7004D0AE8 /* MessageBus.swift */,
 				D2EFA866286DA82700F1FAA6 /* Context */,
@@ -7902,14 +7896,12 @@
 				D2A7840F29A53B2F003B03BB /* Directory.swift in Sources */,
 				61D3E0DB277B23F1008BE766 /* KronosNSTimer+ClosureKit.swift in Sources */,
 				D20605A92874C1CD0047275C /* NetworkConnectionInfoPublisher.swift in Sources */,
-				1019DFB72FA38AC9006599B4 /* RemoteConfigurationCache.swift in Sources */,
 				614396722A67D74F00197326 /* BatchMetrics.swift in Sources */,
 				D20605A6287476230047275C /* ServerOffsetPublisher.swift in Sources */,
 				613E792F2577B0F900DFCC17 /* Reader.swift in Sources */,
 				A731B8042EE1DD0D003D1E4F /* CrossPlatformExtension.swift in Sources */,
 				61D3E0D3277B23F1008BE766 /* KronosDNSResolver.swift in Sources */,
 				D2DC4BF627F484AA00E4FB96 /* DataEncryption.swift in Sources */,
-				1019DFBB2FA3910A006599B4 /* RemoteConfigurationFetcher.swift in Sources */,
 				11EA5C2E2DC3CCA500E8DFA2 /* DatadogConfiguration.swift in Sources */,
 				D2FB1254292E0E96005B13F8 /* TrackingConsentPublisher.swift in Sources */,
 				61D3E0D6277B23F1008BE766 /* KronosClock.swift in Sources */,
@@ -7925,7 +7917,7 @@
 				617699182A860D9D0030022B /* HTTPClient.swift in Sources */,
 				D21C26C528A3B49C005DD405 /* FeatureStorage.swift in Sources */,
 				61133BD42423979B00786299 /* FileReader.swift in Sources */,
-				10E9062A2FBDB81A002D5F45 /* RemoteConfiguration.swift in Sources */,
+				10E9062A2FBDB81A002D5F45 /* RemoteConfigurationSynchronizer.swift in Sources */,
 				D29294E0291D5ED100F8EFF9 /* ApplicationVersionPublisher.swift in Sources */,
 				61D3E0D9277B23F1008BE766 /* KronosNTPProtocol.swift in Sources */,
 				61D3E0DA277B23F1008BE766 /* KronosTimeFreeze.swift in Sources */,

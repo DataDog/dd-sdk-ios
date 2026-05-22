@@ -299,12 +299,6 @@ public enum Datadog {
 
         CoreRegistry.register(core, named: instanceName)
 
-        if let id = configuration.remoteConfigurationID,
-           let endpoint = configuration.site.remoteConfigurationURL(for: id) {
-            // remoteConfiguration is always non-nil here — DatadogCore creates it for any non-nil remoteConfigurationID.
-            core.remoteConfiguration?.start(from: endpoint, connectionProxyDictionary: configuration.proxyConfiguration, telemetry: core.telemetry)
-        }
-
         deleteV1Folders(in: core)
 
         DD.logger = InternalLogger(
@@ -470,6 +464,13 @@ extension DatadogCore {
             isRunFromExtension: isRunFromExtension,
             remoteConfigurationID: configuration.remoteConfigurationID
         )
+
+        if let synchronizer = self.synchronizer,
+           let id = configuration.remoteConfigurationID,
+           let host = configuration.site.remoteConfigurationHost,
+           let endpoint = RemoteConfigurationSynchronizer.endpoint(for: id, host: host) {
+            synchronizer.start(from: endpoint, connectionProxyDictionary: configuration.proxyConfiguration, telemetry: telemetry)
+        }
 
         telemetry.configuration(
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,

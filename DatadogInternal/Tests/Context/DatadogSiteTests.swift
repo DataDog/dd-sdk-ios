@@ -9,75 +9,37 @@ import XCTest
 import DatadogInternal
 
 class DatadogSiteTests: XCTestCase {
-    // MARK: - remoteConfigurationURL per site
+    // MARK: - remoteConfigurationHost per site
 
-    func testUS1RemoteConfigurationURL() {
-        let url = DatadogSite.us1.remoteConfigurationURL(for: "abc-123")
-        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.com/v1/abc-123.json")
+    func testUS1RemoteConfigurationHost() {
+        XCTAssertEqual(DatadogSite.us1.remoteConfigurationHost, "sdk-configuration.browser-intake-datadoghq.com")
     }
 
-    func testUS3RemoteConfigurationURL() {
-        let expected = "https://sdk-configuration.browser-intake-us3-datadoghq.com/v1/abc-123.json"
-        XCTAssertEqual(DatadogSite.us3.remoteConfigurationURL(for: "abc-123")?.absoluteString, expected)
+    func testUS3RemoteConfigurationHost() {
+        XCTAssertEqual(DatadogSite.us3.remoteConfigurationHost, "sdk-configuration.browser-intake-us3-datadoghq.com")
     }
 
-    func testUS5RemoteConfigurationURL() {
-        let expected = "https://sdk-configuration.browser-intake-us5-datadoghq.com/v1/abc-123.json"
-        XCTAssertEqual(DatadogSite.us5.remoteConfigurationURL(for: "abc-123")?.absoluteString, expected)
+    func testUS5RemoteConfigurationHost() {
+        XCTAssertEqual(DatadogSite.us5.remoteConfigurationHost, "sdk-configuration.browser-intake-us5-datadoghq.com")
     }
 
-    func testEU1RemoteConfigurationURL() {
-        let url = DatadogSite.eu1.remoteConfigurationURL(for: "abc-123")
-        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.eu/v1/abc-123.json")
+    func testEU1RemoteConfigurationHost() {
+        XCTAssertEqual(DatadogSite.eu1.remoteConfigurationHost, "sdk-configuration.browser-intake-datadoghq.eu")
     }
 
-    func testAP1RemoteConfigurationURL() {
-        let expected = "https://sdk-configuration.browser-intake-ap1-datadoghq.com/v1/abc-123.json"
-        XCTAssertEqual(DatadogSite.ap1.remoteConfigurationURL(for: "abc-123")?.absoluteString, expected)
+    func testAP1RemoteConfigurationHost() {
+        XCTAssertEqual(DatadogSite.ap1.remoteConfigurationHost, "sdk-configuration.browser-intake-ap1-datadoghq.com")
     }
 
-    func testAP2RemoteConfigurationURL() {
-        let expected = "https://sdk-configuration.browser-intake-ap2-datadoghq.com/v1/abc-123.json"
-        XCTAssertEqual(DatadogSite.ap2.remoteConfigurationURL(for: "abc-123")?.absoluteString, expected)
+    func testAP2RemoteConfigurationHost() {
+        XCTAssertEqual(DatadogSite.ap2.remoteConfigurationHost, "sdk-configuration.browser-intake-ap2-datadoghq.com")
     }
 
-    func testUS1FedRemoteConfigurationURL() {
-        let url = DatadogSite.us1_fed.remoteConfigurationURL(for: "abc-123")
-        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-ddog-gov.com/v1/abc-123.json")
+    func testUS1FedRemoteConfigurationHost() {
+        XCTAssertEqual(DatadogSite.us1_fed.remoteConfigurationHost, "sdk-configuration.browser-intake-ddog-gov.com")
     }
 
-    func testUS2FedRemoteConfigurationURL() {
-        let expected = "https://sdk-configuration.browser-intake-us2-ddog-gov.com/v1/abc-123.json"
-        XCTAssertEqual(DatadogSite.us2_fed.remoteConfigurationURL(for: "abc-123")?.absoluteString, expected)
-    }
-
-    // MARK: - ID encoding
-
-    func testIDWithSpacesIsPercentEncoded() {
-        let url = DatadogSite.us1.remoteConfigurationURL(for: "hello world")
-        let expected = "https://sdk-configuration.browser-intake-datadoghq.com/v1/hello%20world.json"
-        XCTAssertNotNil(url, "URL must be constructed even when id contains spaces")
-        XCTAssertEqual(url?.absoluteString, expected)
-    }
-
-    func testIDWithSlashDoesNotProduceExtraPathSegments() {
-        // A slash in the ID must be encoded as %2F, not left as a literal path separator.
-        // Without this, "a/b" would produce …/v1/a/b.json (wrong path) instead of …/v1/a%2Fb.json.
-        let url = DatadogSite.us1.remoteConfigurationURL(for: "a/b")
-        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.com/v1/a%2Fb.json")
-    }
-
-    func testIDWithQuestionMarkDoesNotProduceQueryString() {
-        // A `?` in the ID must be encoded as %3F so it doesn't start a query string.
-        // Without this, "id?query" would produce …/v1/id?query.json (malformed URL).
-        let url = DatadogSite.us1.remoteConfigurationURL(for: "id?query")
-        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.com/v1/id%3Fquery.json")
-    }
-
-    func testIDWithHashDoesNotProduceFragment() {
-        // A `#` in the ID must be encoded as %23 so it doesn't start a URL fragment.
-        // Without this, "id#section" would produce …/v1/id#section.json (truncated path).
-        let url = DatadogSite.us1.remoteConfigurationURL(for: "id#section")
-        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.com/v1/id%23section.json")
+    func testUS2FedRemoteConfigurationHost() {
+        XCTAssertEqual(DatadogSite.us2_fed.remoteConfigurationHost, "sdk-configuration.browser-intake-us2-ddog-gov.com")
     }
 }

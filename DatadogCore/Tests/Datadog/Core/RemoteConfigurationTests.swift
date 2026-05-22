@@ -8,38 +8,6 @@ import XCTest
 import TestUtilities
 @testable import DatadogCore
 
-// MARK: - MockURLProtocol
-
-private class MockURLProtocol: URLProtocol {
-    static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data?))?
-
-    override class func canInit(with request: URLRequest) -> Bool { true }
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
-
-    override func startLoading() {
-        guard let handler = MockURLProtocol.requestHandler else {
-            client?.urlProtocolDidFinishLoading(self)
-            return
-        }
-        do {
-            let (response, data) = try handler(request)
-            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-            if let data = data { client?.urlProtocol(self, didLoad: data) }
-            client?.urlProtocolDidFinishLoading(self)
-        } catch {
-            client?.urlProtocol(self, didFailWithError: error)
-        }
-    }
-
-    override func stopLoading() {}
-}
-
-private func mockSession() -> URLSession {
-    let config = URLSessionConfiguration.ephemeral
-    config.protocolClasses = [MockURLProtocol.self]
-    return URLSession(configuration: config)
-}
-
 // MARK: - Tests
 
 class RemoteConfigurationTests: XCTestCase {
@@ -61,10 +29,37 @@ class RemoteConfigurationTests: XCTestCase {
         super.tearDown()
     }
 
+    // MARK: endpoint(for:host:)
+
+    func testEndpointBuildsCorrectURL() {
+        let url = RemoteConfigurationSynchronizer.endpoint(for: "abc-123", host: "sdk-configuration.browser-intake-datadoghq.com")
+        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.com/v1/abc-123.json")
+    }
+
+    func testEndpointPercentEncodesSpacesInID() {
+        let url = RemoteConfigurationSynchronizer.endpoint(for: "hello world", host: "sdk-configuration.browser-intake-datadoghq.com")
+        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.com/v1/hello%20world.json")
+    }
+
+    func testEndpointEncodesSlashSoItDoesNotProduceExtraPathSegments() {
+        let url = RemoteConfigurationSynchronizer.endpoint(for: "a/b", host: "sdk-configuration.browser-intake-datadoghq.com")
+        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.com/v1/a%2Fb.json")
+    }
+
+    func testEndpointEncodesQuestionMarkSoItDoesNotProduceQueryString() {
+        let url = RemoteConfigurationSynchronizer.endpoint(for: "id?query", host: "sdk-configuration.browser-intake-datadoghq.com")
+        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.com/v1/id%3Fquery.json")
+    }
+
+    func testEndpointEncodesHashSoItDoesNotProduceFragment() {
+        let url = RemoteConfigurationSynchronizer.endpoint(for: "id#section", host: "sdk-configuration.browser-intake-datadoghq.com")
+        XCTAssertEqual(url?.absoluteString, "https://sdk-configuration.browser-intake-datadoghq.com/v1/id%23section.json")
+    }
+
     // MARK: Init
 
     func testInitCreatesCacheForGivenID() {
-        let rc = RemoteConfiguration(id: "abc", directory: coreDir.coreDirectory)
+        let rc = RemoteConfigurationSynchronizer(id: "abc", directory: coreDir.coreDirectory)
         // Cache is created — no data yet on first launch, no error either.
         XCTAssertNil(rc.cache.data)
         XCTAssertNil(rc.cache.loadError)
@@ -80,7 +75,7 @@ class RemoteConfigurationTests: XCTestCase {
         try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: fileURL.path)
         defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: fileURL.path) }
 
-        let rc = RemoteConfiguration(id: id, directory: coreDir.coreDirectory)
+        let rc = RemoteConfigurationSynchronizer(id: id, directory: coreDir.coreDirectory)
         XCTAssertNotNil(rc.cache.loadError, "Precondition: cache must have a loadError")
 
         // When
@@ -105,7 +100,7 @@ class RemoteConfigurationTests: XCTestCase {
         MockURLProtocol.requestHandler = { request in
             (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data("{}".utf8))
         }
-        let rc = RemoteConfiguration(id: "clean-id", directory: coreDir.coreDirectory)
+        let rc = RemoteConfigurationSynchronizer(id: "clean-id", directory: coreDir.coreDirectory)
         XCTAssertNil(rc.cache.loadError, "Precondition: no load error expected")
 
         // When
@@ -122,5 +117,28 @@ class RemoteConfigurationTests: XCTestCase {
             },
             "start() must not report a telemetry error when there is no load error"
         )
+    }
+
+    func testStartFetchesAndPopulatesCache() {
+        // Given
+        let payload = Data("{\"session_sample_rate\":50}".utf8)
+        MockURLProtocol.requestHandler = { request in
+            (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, payload)
+        }
+        let rc = RemoteConfigurationSynchronizer(id: "fetch-id", directory: coreDir.coreDirectory)
+        let expectation = expectation(description: "fetch completes")
+
+        // When
+        rc.start(
+            from: URL(string: "https://example.com")!,
+            connectionProxyDictionary: nil,
+            telemetry: TelemetryMock(),
+            session: session,
+            didComplete: { expectation.fulfill() }
+        )
+        wait(for: [expectation], timeout: 2)
+
+        // Then — the fetched payload must be written to cache
+        XCTAssertEqual(rc.cache.data, payload, "cache.data must be populated after a successful fetch")
     }
 }
