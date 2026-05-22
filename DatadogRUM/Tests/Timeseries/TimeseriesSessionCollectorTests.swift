@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -375,6 +377,136 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertTrue(featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }.isEmpty)
     }
 
+    // MARK: - Pause / resume
+
+    func testWhenPaused_itStopsCollectingSamples() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            compressionSampler: { false }
+        )
+
+        let samplingExpectation = self.expectation(description: "initial samples collected")
+        samplingExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { samplingExpectation.fulfill() }
+
+        collector.start(sessionID: "session-pause", applicationID: "app-1", sessionType: .user)
+        waitForExpectations(timeout: 2)
+
+        let countBeforePause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertGreaterThan(countBeforePause, 0, "Should have collected events before pause")
+
+        // When — pause and wait for more potential samples
+        let pauseExpectation = self.expectation(description: "pause settled")
+        collector.pause()
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { pauseExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // Then — pause() flushes the partial buffer; no further events written
+        let countAfterPause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertGreaterThanOrEqual(countAfterPause, countBeforePause, "pause() must not drop buffered data")
+
+        let countAfterSettle = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertEqual(countAfterPause, countAfterSettle, "No further events should be written while paused")
+        collector.stop()
+    }
+
+    func testWhenResumedAfterPause_itContinuesSampling() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            compressionSampler: { false }
+        )
+
+        collector.start(sessionID: "session-resume", applicationID: "app-1", sessionType: .user)
+
+        let pauseExpectation = self.expectation(description: "pause settled")
+        collector.pause()
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.1) { pauseExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        let countAfterPause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+
+        // When — resume and let samples accumulate
+        let resumeExpectation = self.expectation(description: "resumed samples collected")
+        resumeExpectation.assertForOverFulfill = false
+        collector.resume()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { resumeExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then — new events were written after resume
+        let countAfterResume = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertGreaterThan(countAfterResume, countAfterPause, "Expected new events after resume")
+    }
+
+    func testWhenCollectInBackgroundEnabled_pauseIsNoOp() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            collectInBackground: true,
+            cpuUsageProvider: { nil },
+            compressionSampler: { false }
+        )
+
+        let startExpectation = self.expectation(description: "initial samples")
+        startExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { startExpectation.fulfill() }
+
+        collector.start(sessionID: "session-bg", applicationID: "app-1", sessionType: .user)
+        waitForExpectations(timeout: 2)
+
+        let countBeforePause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertGreaterThan(countBeforePause, 0)
+
+        // When — pause should be a no-op
+        let afterPauseExpectation = self.expectation(description: "sampling continues after pause")
+        afterPauseExpectation.assertForOverFulfill = false
+        collector.pause()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { afterPauseExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then — events keep accumulating
+        let countAfterPause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertGreaterThan(countAfterPause, countBeforePause, "Sampling should continue when collectInBackground = true")
+    }
+
+    func testWhenPauseCalledBeforeStart_itIsNoOp() {
+        // Given — collector not yet started
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil }
+        )
+
+        // When / Then — should not crash
+        collector.pause()
+        collector.resume()
+
+        let settleExpectation = self.expectation(description: "settle")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.1) { settleExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        XCTAssertTrue(featureScope.eventsWritten.isEmpty)
+    }
+
     // MARK: - Timeseries range
 
     func testTimestampsAreMonotonicallyIncreasing() {
@@ -409,3 +541,5 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.timeseries.end, timestamps.last)
     }
 }
+
+#endif
