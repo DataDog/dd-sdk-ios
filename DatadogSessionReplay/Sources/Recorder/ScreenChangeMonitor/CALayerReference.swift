@@ -20,18 +20,6 @@ internal struct CALayerReference: @unchecked Sendable {
         layer.map(ObjectIdentifier.init)
     }
 
-    var `class`: AnyClass? {
-        layer.map {
-            type(of: $0)
-        }
-    }
-
-    var delegateClass: AnyClass? {
-        layer?.delegate.flatMap {
-            type(of: $0)
-        }
-    }
-
     private weak var layer: CALayer?
 
     init(_ layer: CALayer) {

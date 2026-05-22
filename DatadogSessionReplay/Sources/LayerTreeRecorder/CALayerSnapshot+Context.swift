@@ -1,0 +1,31 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+#if os(iOS)
+import Foundation
+import WebKit
+
+@preconcurrency import DatadogInternal
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot {
+    struct Context {
+        let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
+        let imagePrivacyLevel: ImagePrivacyLevel
+        let webViewCache: NSHashTable<WKWebView>
+
+        init(
+            textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
+            imagePrivacyLevel: ImagePrivacyLevel,
+            webViewCache: NSHashTable<WKWebView> = .weakObjects()
+        ) {
+            self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
+            self.imagePrivacyLevel = imagePrivacyLevel
+            self.webViewCache = webViewCache
+        }
+    }
+}
+#endif

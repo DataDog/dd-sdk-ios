@@ -39,5 +39,13 @@ internal extension CGColor {
     /// Casts receiver to valid `CGColor` object.
     /// Returns value only if this underlying `CFTypeRef` is of `CGColor.typeID` type.
     var safeCast: CGColor? { sanitize(value: self, expectedTypeID: CGColor.typeID) }
+
+    static func safeCast(_ value: Any?) -> CGColor? {
+        guard let value, CFGetTypeID(value as CFTypeRef) == typeID else {
+            return nil
+        }
+        // swiftlint:disable:next force_cast
+        return (value as! CGColor)
+    }
 }
 #endif
