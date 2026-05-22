@@ -74,7 +74,7 @@ namespace dd::profiler {
 void perftools_profiles_profile_add_strings(const std::vector<std::string>& strings, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
 
 /** @brief Set sample type definitions (e.g., "cpu"/"nanoseconds", "wall"/"nanoseconds") */
-void perftools_profiles_profile_set_sample_type(int64_t type, int64_t unit, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
+void perftools_profiles_profile_set_sample_type(const profile& prof, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
 
 /** @brief Set period type and value for sampling interval */
 void perftools_profiles_profile_set_period(int64_t type, int64_t unit, int64_t period, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
@@ -117,7 +117,7 @@ size_t profile_pprof_pack(const profile& prof, uint8_t** data) {
     
     // Convert each component of the profile to protobuf format
     perftools_profiles_profile_add_strings(prof.strings(), pprof, &profile_allocator);
-    perftools_profiles_profile_set_sample_type(prof.wall_time_str_id(), prof.nanoseconds_str_id(), pprof, &profile_allocator);
+    perftools_profiles_profile_set_sample_type(prof, pprof, &profile_allocator);
     perftools_profiles_profile_set_period(prof.wall_time_str_id(), prof.nanoseconds_str_id(), static_cast<int64_t>(prof.sampling_interval_ns()), pprof, &profile_allocator);
     perftools_profiles_profile_add_mappings(prof.mappings(), pprof, &profile_allocator);
     perftools_profiles_profile_add_locations(prof.locations(), pprof, &profile_allocator);
@@ -174,20 +174,26 @@ void perftools_profiles_profile_add_strings(const std::vector<std::string>& stri
     }
 }
 
-void perftools_profiles_profile_set_sample_type(int64_t type, int64_t unit, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
-    // Create wall-time sample types
-    pprof->n_sample_type = 1;
+void perftools_profiles_profile_set_sample_type(const profile& prof, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
+    pprof->n_sample_type = prof.cpu_time_enabled() ? 2 : 1;
     pprof->sample_type = static_cast<Perftools__Profiles__ValueType**>(
         pb_alloc(allocator, pprof->n_sample_type * sizeof(Perftools__Profiles__ValueType*))
     );
-    
-    auto* sample_type_0 = static_cast<Perftools__Profiles__ValueType*>(
-        pb_alloc(allocator, sizeof(Perftools__Profiles__ValueType))
-    );
-    perftools__profiles__value_type__init(sample_type_0);
-    sample_type_0->type = type;
-    sample_type_0->unit = unit;
-    pprof->sample_type[0] = sample_type_0;
+
+    auto add_sample_type = [&](size_t index, int64_t type, int64_t unit) {
+        auto* sample_type = static_cast<Perftools__Profiles__ValueType*>(
+            pb_alloc(allocator, sizeof(Perftools__Profiles__ValueType))
+        );
+        perftools__profiles__value_type__init(sample_type);
+        sample_type->type = type;
+        sample_type->unit = unit;
+        pprof->sample_type[index] = sample_type;
+    };
+
+    add_sample_type(0, prof.wall_time_str_id(), prof.nanoseconds_str_id());
+    if (prof.cpu_time_enabled()) {
+        add_sample_type(1, prof.cpu_time_str_id(), prof.nanoseconds_str_id());
+    }
 }
 
 void perftools_profiles_profile_set_period(int64_t type, int64_t unit, int64_t period, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator) {
