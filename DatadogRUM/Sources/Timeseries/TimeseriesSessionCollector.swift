@@ -10,6 +10,8 @@ import DatadogInternal
 /// Defines the interface for collecting timeseries data during a RUM session.
 internal protocol TimeseriesCollecting: AnyObject {
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType)
+    func pause()
+    func resume()
     func stop()
 }
 
@@ -24,6 +26,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let compressionSampler: () -> Bool
     private let batchSize: Int
     private let samplingInterval: TimeInterval
+    private let collectInBackground: Bool
     private let featureScope: FeatureScope
     private let totalRAM: Double
 
@@ -34,6 +37,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionType: RUMSessionType = .user
     private var useDeltaCompression: Bool = false
     private var timer: DispatchSourceTimer?
+    private var isPaused: Bool = false
 
     /// All buffer mutations and timer events run on this queue.
     private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
@@ -43,12 +47,14 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         featureScope: FeatureScope,
         batchSize: Int = 30,
         samplingInterval: TimeInterval = 1,
+        collectInBackground: Bool = false,
         cpuUsageProvider: (() -> Double?)? = nil,
         compressionSampler: @escaping () -> Bool = { Bool.random() }
     ) {
         self.memoryReader = memoryReader
         self.batchSize = batchSize
         self.samplingInterval = samplingInterval
+        self.collectInBackground = collectInBackground
         self.featureScope = featureScope
         self.totalRAM = Double(ProcessInfo.processInfo.physicalMemory)
         self.cpuUsageProvider = cpuUsageProvider ?? { TimeseriesSessionCollector.processCPU() }
@@ -108,13 +114,39 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.useDeltaCompression = self.compressionSampler()
             self.memoryBuffer = []
             self.cpuBuffer = []
+            self.isPaused = false
 
             self.timer?.cancel()
-            let timer = DispatchSource.makeTimerSource(queue: self.queue)
-            timer.schedule(deadline: .now() + samplingInterval, repeating: samplingInterval)
-            timer.setEventHandler { [weak self] in self?.sample() }
-            timer.resume()
-            self.timer = timer
+            self.timer = self.makeTimer()
+        }
+    }
+
+    /// Suspends sampling and flushes buffered data. Session state is preserved for `resume()`. Idempotent.
+    /// No-op when `collectInBackground` is `true`.
+    func pause() {
+        queue.async { [weak self] in
+            guard let self = self else {
+                return
+            }
+            if self.collectInBackground || self.isPaused || self.timer == nil {
+                return
+            }
+            self.timer?.cancel()
+            self.timer = nil
+            self.isPaused = true
+            self.flushMemory()
+            self.flushCPU()
+        }
+    }
+
+    /// Resumes sampling after `pause()`. Idempotent — only takes effect if currently paused.
+    func resume() {
+        queue.async { [weak self] in
+            guard let self = self, self.isPaused else {
+                return
+            }
+            self.isPaused = false
+            self.timer = self.makeTimer()
         }
     }
 
@@ -126,9 +158,18 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             }
             self.timer?.cancel()
             self.timer = nil
+            self.isPaused = false
             self.flushMemory()
             self.flushCPU()
         }
+    }
+
+    private func makeTimer() -> DispatchSourceTimer {
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now() + samplingInterval, repeating: samplingInterval)
+        timer.setEventHandler { [weak self] in self?.sample() }
+        timer.resume()
+        return timer
     }
 
     // MARK: - Private
