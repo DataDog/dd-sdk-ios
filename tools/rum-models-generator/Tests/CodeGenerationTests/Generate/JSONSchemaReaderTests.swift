@@ -92,6 +92,69 @@ final class JSONSchemaReaderTests: XCTestCase {
         XCTAssertEqual(schema.anyOf?[2].oneOf?[1].properties?["propertyInC2"]?.type, .string)
     }
 
+    func testDecodingTypeAsArray() throws {
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-decoding-type-as-array", withExtension: "json")!
+
+        let schema = try JSONSchemaReader().read(file)
+
+        let nullableArrayProp = try XCTUnwrap(schema.properties?["nullableArrayProp"])
+        XCTAssertEqual(nullableArrayProp.type, .array)
+        XCTAssertEqual(nullableArrayProp.items?.type, .string)
+
+        let nullableStringProp = try XCTUnwrap(schema.properties?["nullableStringProp"])
+        XCTAssertEqual(nullableStringProp.type, .string)
+
+        let nullPrecedesType = try XCTUnwrap(schema.properties?["nullPrecedesType"])
+        XCTAssertEqual(nullPrecedesType.type, .integer)
+    }
+
+    func testReadingSchemaWithDefs() throws {
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-schema-with-defs", withExtension: "json")!
+
+        let schema = try JSONSchemaReader().read(file)
+
+        XCTAssertEqual(schema.defs?.count, 2)
+
+        let statusType = try XCTUnwrap(schema.defs?["StatusType"])
+        XCTAssertEqual(statusType.type, .string)
+        XCTAssertEqual(statusType.description, "Status description")
+        XCTAssertEqual(statusType.enum, [.string("active"), .string("inactive")])
+
+        let countType = try XCTUnwrap(schema.defs?["CountType"])
+        XCTAssertEqual(countType.type, .integer)
+        XCTAssertEqual(countType.description, "Count description")
+    }
+
+    func testResolvingInDocumentRef() throws {
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-schema-with-in-document-ref", withExtension: "json")!
+
+        let schema = try JSONSchemaReader().read(file)
+
+        let status = try XCTUnwrap(schema.properties?["status"])
+        XCTAssertEqual(status.type, .string)
+        XCTAssertEqual(status.description, "The status")
+        XCTAssertEqual(status.enum, [.string("pending"), .string("active"), .string("closed")])
+
+        let name = try XCTUnwrap(schema.properties?["name"])
+        XCTAssertEqual(name.type, .string)
+    }
+
+    func testResolvingAnyOfRef() throws {
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-schema-with-anyof-ref", withExtension: "json")!
+
+        let schema = try JSONSchemaReader().read(file)
+
+        XCTAssertEqual(schema.anyOf?.count, 2)
+
+        let typeA = try XCTUnwrap(schema.anyOf?[0])
+        XCTAssertEqual(typeA.title, "TypeA")
+        XCTAssertEqual(typeA.properties?["valueA"]?.type, .string)
+
+        let typeB = try XCTUnwrap(schema.anyOf?[1])
+        XCTAssertEqual(typeB.title, "TypeB")
+        XCTAssertEqual(typeB.properties?["valueB"]?.type, .integer)
+    }
+
     func testReadingSchemaWithOneOfWithoutTitle() throws {
         let file = Bundle.module.url(forResource: "Fixtures/fixture-schema-with-oneof-without-title", withExtension: "json")!
 

@@ -9,7 +9,7 @@ all: env-check repo-setup dependencies templates
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos spm-build-watchos \
 		e2e-upload \
 		benchmark-build benchmark-upload \
-		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
+		models-generate rum-models-generate sr-models-generate rc-models-generate models-verify rum-models-verify sr-models-verify rc-models-verify \
 		api-surface spi-docs-build \
 		profiling-protoc \
 		dogfood-shopist dogfood-datadog-app \
@@ -311,15 +311,16 @@ templates:
 	@$(ECHO_TITLE) "make templates"
 	./tools/xcode-templates/install-xcode-templates.sh
 
-# Generate data models from https://github.com/DataDog/rum-events-format
+# Generate data models from rum-events-format ('rum', 'sr') or dd-go ('rc')
 models-generate:
-	@$(call require_param,PRODUCT) # 'rum' or 'sr'
+	@$(call require_param,PRODUCT) # 'rum', 'sr', or 'rc'
 	@$(call require_param,GIT_REF)
 	@$(ECHO_TITLE) "make models-generate PRODUCT='$(PRODUCT)' GIT_REF='$(GIT_REF)'"
 	./tools/rum-models-generator/run.py generate $(PRODUCT) --git_ref=$(GIT_REF) --skip_objc $(SKIP_OBJC_TYPES)
-# Validate data models against https://github.com/DataDog/rum-events-format
+
+# Validate data models against rum-events-format ('rum', 'sr') or dd-go ('rc')
 models-verify:
-	@$(call require_param,PRODUCT) # 'rum' or 'sr'
+	@$(call require_param,PRODUCT) # 'rum', 'sr', or 'rc'
 	@$(ECHO_TITLE) "make models-verify PRODUCT='$(PRODUCT)'"
 	./tools/rum-models-generator/run.py verify $(PRODUCT) --skip_objc $(SKIP_OBJC_TYPES)
 
@@ -340,6 +341,15 @@ sr-models-generate:
 # Validate SR data models
 sr-models-verify:
 	@$(MAKE) models-verify PRODUCT="sr"
+
+# Generate RC data models (uses gh CLI to authenticate against the private dd-go repo)
+rc-models-generate:
+	@:$(eval GIT_REF ?= prod)
+	GITHUB_TOKEN="$$(gh auth token)" $(MAKE) models-generate PRODUCT="rc" GIT_REF="$(GIT_REF)"
+
+# Validate RC data models (uses gh CLI to authenticate against the private dd-go repo)
+rc-models-verify:
+	GITHUB_TOKEN="$$(gh auth token)" $(MAKE) models-verify PRODUCT="rc"
 
 # Generate profiling protobuf-c files from pprof proto
 protoc-pprof:
