@@ -15,7 +15,7 @@ public enum RUMPayloadMessages {
 /// Signals that the active RUM view was stopped with no new view starting.
 ///
 /// Sent by RUM to crash-context consumers so they can clear any cached view event.
-public struct RUMViewReset: BusMessage {
+public struct RUMViewResetMessage: BusMessage {
     public static let key = "rum-view-reset"
     public init() {}
 }

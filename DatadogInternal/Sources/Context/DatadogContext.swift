@@ -7,7 +7,7 @@
 import Foundation
 
 public struct DatadogContext: BusMessage {
-    public static let key = "core.context"
+    public static let key = "core-context"
 
     // MARK: - Datadog Specific
 

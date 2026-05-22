@@ -131,14 +131,10 @@ public final class MessageBusSubscription {
 /// - Prefer immutable value types (`struct`, or `enum` for closed variants). A
 ///   `BusMessage` should survive queue hops without aliasing surprises.
 /// - `key` is a stable identifier used for diagnostics and telemetry. It must be
-///   globally unique across the SDK; namespaced identifiers
+///   globally unique across the SDK.
 ///   (e.g. `"rum.session.start"`) are recommended.
 public protocol BusMessage {
     /// A stable, globally unique identifier for this message kind.
-    ///
-    /// Used by logs, telemetry, and any out-of-band consumer that refers to messages
-    /// by name. Treat the string as part of the public contract — changing it is a
-    /// breaking change for downstream tooling.
     static var key: String { get }
 }
 

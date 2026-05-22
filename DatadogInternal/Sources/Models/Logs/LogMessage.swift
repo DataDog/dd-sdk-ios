@@ -7,7 +7,7 @@
 import Foundation
 
 public struct LogMessage: BusMessage {
-    public static let key = "log-message"
+    public static let key = "log"
 
     /// Log levels ordered by their severity, with `.debug` being the least severe and
     /// `.critical` being the most severe.
