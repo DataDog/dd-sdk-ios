@@ -144,7 +144,6 @@ let package = Package(
             name: "DatadogRUMTests",
             dependencies: [
                 .target(name: "DatadogRUM"),
-                .target(name: "DatadogRUMPrivate"),
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogRUM/Tests"

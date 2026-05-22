@@ -154,15 +154,15 @@ class UIScrollViewDelegateProxyTests: XCTestCase {
 
         XCTAssertNil(proxy.originalDelegate, "weak reference must be nil after delegate deallocates")
 
-        // When - dispatch a UITableViewDelegate selector via the ObjC forwarding chain.
-        let tableView = UITableView()
-        _ = proxy.perform(
-            #selector(UITableViewDelegate.tableView(_:estimatedHeightForHeaderInSection:)),
-            with: tableView,
-            with: 0
-        )
+        // When - dispatch a UITableViewDelegate selector with a correctly typed function
+        // pointer (scalar `Int` argument, `CGFloat` return).
+        let selector = #selector(UITableViewDelegate.tableView(_:estimatedHeightForHeaderInSection:))
+        typealias EstimatedHeightIMP = @convention(c) (AnyObject, Selector, UITableView, Int) -> CGFloat
+        let implementation = unsafeBitCast(proxy.method(for: selector), to: EstimatedHeightIMP.self)
+        let result = implementation(proxy, selector, UITableView(), 0)
 
-        // Then - the proxy handles the dispatch without crashing.
+        // Then - the proxy handles the dispatch without crashing, returning the zeroed default.
+        XCTAssertEqual(result, 0)
     }
 
     /// Verifies that non-void forwarded selectors get a zero/nil default return (instead
@@ -214,15 +214,16 @@ class UIScrollViewDelegateProxyTests: XCTestCase {
         let delegate = CountingDelegate()
         let proxy = UIScrollViewDelegateProxy(originalDelegate: delegate, handler: handler)
 
-        // When - dispatch a UITableViewDelegate selector via the ObjC forwarding chain.
-        _ = proxy.perform(
-            #selector(UITableViewDelegate.tableView(_:estimatedHeightForHeaderInSection:)),
-            with: UITableView(),
-            with: 0
-        )
+        // When - dispatch a UITableViewDelegate selector with a correctly typed function
+        // pointer (scalar `Int` argument, `CGFloat` return).
+        let selector = #selector(UITableViewDelegate.tableView(_:estimatedHeightForHeaderInSection:))
+        typealias EstimatedHeightIMP = @convention(c) (AnyObject, Selector, UITableView, Int) -> CGFloat
+        let implementation = unsafeBitCast(proxy.method(for: selector), to: EstimatedHeightIMP.self)
+        let result = implementation(proxy, selector, UITableView(), 0)
 
-        // Then - the call reached the original delegate.
+        // Then - the call reached the original delegate and returned its value.
         XCTAssertEqual(delegate.estimatedHeightCallCount, 1)
+        XCTAssertEqual(result, 44)
     }
 
     // MARK: - Circular Proxy Chain (regression for RxSwift-style delegate proxy conflict)
