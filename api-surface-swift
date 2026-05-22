@@ -449,6 +449,7 @@ public enum RUM
     public typealias FeatureFlags = [FeatureFlag: Bool]
     public enum FeatureFlag: String
         case none
+        case disableScrollAndSwipeActions
 [?] extension RUM.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
