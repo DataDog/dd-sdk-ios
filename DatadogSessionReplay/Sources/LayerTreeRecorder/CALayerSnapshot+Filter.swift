@@ -10,6 +10,7 @@ import QuartzCore
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
+    /// Captured subset of Core Animation filters that affect layer rendering.
     enum Filter: Sendable, Equatable {
         case blur(CGFloat)
         case gaussianBlur(CGFloat)
@@ -31,6 +32,7 @@ extension CALayerSnapshot {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.Filter {
+    /// Reads a supported layer filter. Unknown enabled filters are kept by name.
     init?(_ filterValue: Any) {
         guard
             let filterClass = NSClassFromString(["CA", "Filter"].joined()),
@@ -105,6 +107,7 @@ extension CALayerSnapshot.Filter {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
+    /// A 4-by-5 color transform matrix used by layer filters.
     struct ColorMatrix: Sendable, Equatable {
         var m11: Float = 1
         var m12: Float = 0

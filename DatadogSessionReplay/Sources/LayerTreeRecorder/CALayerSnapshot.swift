@@ -4,14 +4,6 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Immutable representation of a captured `CALayer` hierarchy.
-//
-// The snapshot is built on the main actor and stores the geometry, styling and identity
-// metadata required by downstream optimization and rendering passes. It resolves privacy
-// and stores layer frames in the root coordinate space.
-
 #if os(iOS)
 @preconcurrency import CoreGraphics
 @preconcurrency import DatadogInternal
@@ -20,6 +12,12 @@ import Foundation
 import QuartzCore
 import UIKit
 
+/// Snapshot of a `CALayer` subtree.
+///
+/// It stores the layer identity, geometry, style, privacy state, and semantic
+/// payload needed by later Session Replay recording steps.
+/// Frames are captured in the root layer coordinate space, matching the
+/// coordinate space used by Session Replay wireframes.
 @available(iOS 13.0, tvOS 13.0, *)
 internal struct CALayerSnapshot: Sendable {
     let layer: CALayerReference
@@ -38,7 +36,8 @@ internal struct CALayerSnapshot: Sendable {
     let position: CGPoint
     let zPosition: CGFloat
     let transform: CATransform3D
-    // The layer's frame in the root coordinate space
+
+    /// The layer's frame in the root layer coordinate space.
     let absoluteFrame: CGRect
 
     let sublayers: [CALayerSnapshot]
@@ -134,7 +133,7 @@ extension CALayerSnapshot {
         )
 
         if let cornerRadiiValue = layer.value(forKey: "cornerRadii") as? NSValue {
-            // SwiftUI layers use the cornerRadii property instead
+            // SwiftUI layers store per-corner radii separately.
             cornerRadiiValue.getValue(&cornerRadii)
         }
 

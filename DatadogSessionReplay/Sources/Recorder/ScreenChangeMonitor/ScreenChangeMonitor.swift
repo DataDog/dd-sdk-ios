@@ -4,18 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Coordinates observation of `CALayer` activity for screen updates. Swizzles
-// `CALayer` to observe changes and aggregates them into time-windowed changesets
-// delivered via the provided handler.
-//
-// Call `start()` to begin observing and receiving changesets; call
-// `stop()` to end observation and clear pending state.
-
 #if os(iOS)
 import Foundation
 
+/// Observes screen changes from `CALayer` activity.
+///
+/// `start()` begins layer observation and delivers batched changesets through
+/// `handler`. `stop()` ends observation and clears pending changes.
 internal final class ScreenChangeMonitor {
     var handler: ((CALayerChangeset) -> Void)? {
         get { layerChangeAggregator.handler }

@@ -4,14 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Represents the layer changes accumulated over a time interval,
-// keyed by layer identity. Provides lookup of changed aspects for a layer reference.
-
 #if os(iOS)
 import QuartzCore
 
+/// Layer changes collected over one delivery window.
+///
+/// Changes are keyed by layer identity. Callers can ask which aspects changed
+/// for a live layer reference.
 internal struct CALayerChangeset: Sendable, Equatable {
     var isEmpty: Bool {
         changes.isEmpty
