@@ -4,19 +4,15 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Adapter that bridges `ScreenChangeMonitor` to the Scheduler protocol.
-//
-// This scheduler executes the scheduled operations when screen changes are detected
-// (display, draw, layout), rate-limited to a minimum interval. Unlike timer-based
-// scheduling, this approach executes operations only when visual changes occur,
-// reducing unnecessary work.
-
 #if os(iOS)
 import Foundation
 import DatadogInternal
 
+/// Runs scheduled work when the screen changes.
+///
+/// It uses `ScreenChangeMonitor` to detect layer display, draw, and layout
+/// changes, then runs scheduled operations at most once per minimum interval.
+/// This avoids waking the recorder when nothing visual changed.
 internal final class ScreenChangeScheduler: Scheduler {
     let queue: Queue = MainQueue()
 

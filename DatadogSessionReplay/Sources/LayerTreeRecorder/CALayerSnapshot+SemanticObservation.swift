@@ -4,13 +4,6 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Semantic classification for captured layer snapshots.
-//
-// Semantics let the capture pipeline attach meaning beyond raw layer geometry so downstream
-// stages can branch on behavior, such as subtree traversal and rendering strategy.
-
 #if os(iOS)
 import Foundation
 import QuartzCore
@@ -19,8 +12,11 @@ import WebKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
+    /// Semantic meaning captured for a layer, plus the traversal decision for its descendants.
     struct SemanticObservation: Sendable, Equatable {
         var semantics: Semantics
+
+        /// When `true`, the semantic payload owns how this layer is represented and descendants are not captured.
         var ignoreSubtree: Bool = false
     }
 }
@@ -49,7 +45,7 @@ extension CALayerSnapshot.SemanticObservation {
         case _ as UIActivityIndicatorView:
             self.init(semantics: .activityIndicator, ignoreSubtree: true)
         case let label as UILabel where label.attributedText == nil:
-            // Attributed text falls through to layer semantics
+            // Attributed text falls through to layer semantics and will be rendered from the layer image.
             self.init(label: label)
         case let imageView as UIImageView:
             self.init(imageView: imageView)

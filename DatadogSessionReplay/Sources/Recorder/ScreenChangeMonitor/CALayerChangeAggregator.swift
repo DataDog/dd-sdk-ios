@@ -4,15 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Aggregates observed `CALayer` changes over time and delivers changesets at a
-// minimum interval. Records which aspects changed per layer and invokes a
-// handler with a `CALayerChangeset` for batching, correlation, and reporting.
-
 #if os(iOS)
 import QuartzCore
 
+/// Collects layer changes and delivers them in throttled batches.
+///
+/// The aggregator merges changes for the same layer inside one delivery window.
+/// It ignores changes triggered while a batch is being delivered.
 internal final class CALayerChangeAggregator {
     var handler: ((CALayerChangeset) -> Void)?
 

@@ -4,21 +4,16 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Provides stable replay identifiers for `CALayer` instances.
-//
-// IDs are lazily assigned and stored on each layer through associated objects, so
-// once assigned they remain stable for that layer's lifetime. ID generation is
-// configurable through a task-local generator to make tests deterministic, while
-// production defaults to an auto-incrementing generator with wraparound.
-
 #if os(iOS)
 import Foundation
 import QuartzCore
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
+    /// Stable identifier for this layer in Session Replay snapshots.
+    ///
+    /// The ID is created the first time it is read and then stored on the layer.
+    /// It stays stable for the layer lifetime.
     @MainActor var replayID: Int64 {
         if let value = objc_getAssociatedObject(self, &ReplayID.key) as? Int64 {
             return value
@@ -35,6 +30,7 @@ extension CALayer {
 internal struct ReplayIDGenerator: Sendable {
     var next: @Sendable @MainActor () -> Int64
 
+    /// Live generator. IDs are stable for a layer lifetime, not across app launches.
     @MainActor static var autoincrementing: Self {
         var currentID: Int64 = 0
         let maxID = Int64(Int32.max)
@@ -48,6 +44,7 @@ internal struct ReplayIDGenerator: Sendable {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
+    /// Overrides replay ID generation for deterministic snapshot tests.
     @MainActor
     static func withReplayIDGenerator<R>(
         _ generator: ReplayIDGenerator,

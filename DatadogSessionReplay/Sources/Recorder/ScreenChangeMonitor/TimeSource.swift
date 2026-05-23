@@ -4,14 +4,10 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Minimal abstraction for retrieving current time values used by screen
-// change monitoring internals.
-
 #if os(iOS)
 import Foundation
 
+/// Provides the current time used by screen change monitoring.
 internal protocol TimeSource {
     var now: TimeInterval { get }
 }

@@ -7,6 +7,10 @@
 #if os(iOS)
 import Foundation
 
+/// Records layer-tree changes.
+///
+/// Only one recording task runs at a time. New requests are ignored while the
+/// current task is still running.
 @available(iOS 13.0, tvOS 13.0, *)
 internal actor LayerRecorder: LayerRecording {
     private var recordTask: Task<Void, Never>?
@@ -23,6 +27,7 @@ internal actor LayerRecorder: LayerRecording {
     }
 
     private func record(_: CALayerChangeset, context _: LayerRecordingContext) async {
+        // TODO: PANA-XXXX Implement recording
     }
 }
 #endif
