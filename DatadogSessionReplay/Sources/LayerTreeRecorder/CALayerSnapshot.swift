@@ -127,14 +127,18 @@ extension CALayerSnapshot {
                 )
             } ?? []
 
-        var cornerRadii = CornerRadii(
-            cornerRadius: layer.cornerRadius,
-            maskedCorners: layer.maskedCorners
-        )
+        var cornerRadii = CornerRadii()
 
         if let cornerRadiiValue = layer.value(forKey: "cornerRadii") as? NSValue {
             // SwiftUI layers store per-corner radii separately.
             cornerRadiiValue.getValue(&cornerRadii)
+        }
+
+        if cornerRadii == .zero {
+            cornerRadii = CornerRadii(
+                cornerRadius: layer.cornerRadius,
+                maskedCorners: layer.maskedCorners
+            )
         }
 
         self.init(

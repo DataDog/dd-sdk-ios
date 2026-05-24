@@ -27,7 +27,7 @@ internal actor LayerRecorder: LayerRecording {
     }
 
     private func record(_: CALayerChangeset, context _: LayerRecordingContext) async {
-        // TODO: PANA-XXXX Implement recording
+        // TODO: PANA-1234 Implement recording
     }
 }
 #endif
