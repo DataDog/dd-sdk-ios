@@ -29,10 +29,10 @@ internal protocol LayerTreeSnapshotBuilding: AnyObject {
 @available(iOS 13.0, tvOS 13.0, *)
 @MainActor
 internal final class LayerTreeSnapshotBuilder: LayerTreeSnapshotBuilding {
-    private let layerProvider: any CALayerProvider
+    private let layerProvider: any LayerProvider
     private let webViewCache: NSHashTable<WKWebView> = .weakObjects()
 
-    init(layerProvider: any CALayerProvider) {
+    init(layerProvider: any LayerProvider) {
         self.layerProvider = layerProvider
     }
 
