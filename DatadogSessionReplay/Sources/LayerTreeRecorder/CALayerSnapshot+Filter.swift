@@ -12,18 +12,11 @@ import QuartzCore
 extension CALayerSnapshot {
     /// Captured subset of Core Animation filters that affect layer rendering.
     enum Filter: Sendable, Equatable {
-        case blur(CGFloat)
+        case glassBackground
         case gaussianBlur(CGFloat)
-
         case colorMatrix(ColorMatrix)
-        case vibrantColorMatrix(ColorMatrix)
-
-        case displacement(CGFloat)
-
-        case luminanceCurve(CGFloat)
         case saturate(CGFloat)
         case brightness(CGFloat)
-        case threshold(CGFloat)
         case multiplyColor(CGColor)
 
         case unknown(String)
@@ -45,40 +38,20 @@ extension CALayerSnapshot.Filter {
         }
 
         switch name {
-        case "blurFilter":
-            guard let radius = filter.value(forKey: "inputRadius") as? CGFloat else {
-                return nil
-            }
-            self = .blur(radius)
-        case "gaussianBlur":
+        case "glassBackground":
+            self = .glassBackground
+        case "gaussianBlur", "variableBlur":
             guard let radius = filter.value(forKey: "inputRadius") as? CGFloat else {
                 return nil
             }
             self = .gaussianBlur(radius)
-        case "colorMatrix":
+        case "colorMatrix", "vibrantColorMatrix":
             guard let value = filter.value(forKey: "inputColorMatrix") as? NSValue else {
                 return nil
             }
             var colorMatrix = CALayerSnapshot.ColorMatrix()
             value.getValue(&colorMatrix)
             self = .colorMatrix(colorMatrix)
-        case "vibrantColorMatrix":
-            guard let value = filter.value(forKey: "inputColorMatrix") as? NSValue else {
-                return nil
-            }
-            var colorMatrix = CALayerSnapshot.ColorMatrix()
-            value.getValue(&colorMatrix)
-            self = .vibrantColorMatrix(colorMatrix)
-        case "displacementMap":
-            guard let amount = filter.value(forKey: "inputAmount") as? CGFloat else {
-                return nil
-            }
-            self = .displacement(amount)
-        case "luminanceCurveMap":
-            guard let amount = filter.value(forKey: "inputAmount") as? CGFloat else {
-                return nil
-            }
-            self = .luminanceCurve(amount)
         case "colorSaturate":
             guard let amount = filter.value(forKey: "inputAmount") as? CGFloat else {
                 return nil
@@ -89,11 +62,6 @@ extension CALayerSnapshot.Filter {
                 return nil
             }
             self = .brightness(amount)
-        case "thresholdFilter":
-            guard let amount = filter.value(forKey: "inputAmount") as? CGFloat else {
-                return nil
-            }
-            self = .threshold(amount)
         case "multiplyColor":
             guard let color = CGColor.safeCast(filter.value(forKey: "inputColor")) else {
                 return nil

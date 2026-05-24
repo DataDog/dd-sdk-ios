@@ -12,6 +12,8 @@ import QuartzCore
 extension CALayerSnapshot {
     /// Radius values for each layer corner.
     struct CornerRadii: Sendable, Equatable {
+        static let zero = CornerRadii()
+
         var topLeft: CGSize
         var topRight: CGSize
         var bottomLeft: CGSize
