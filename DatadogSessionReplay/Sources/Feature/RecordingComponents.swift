@@ -17,7 +17,12 @@ internal struct RecordingComponents {
         configuration: SessionReplay.Configuration
     ) throws {
         if #available(iOS 13.0, tvOS 13.0, *), configuration.featureFlags[.layerTreeRecording] {
-            self = try .layerTreeRecordingComponents(core: core, configuration: configuration)
+            // This is purely defensive, as `SessionReplay.enable()` initializes on the main thread
+            self = try runOnMainThreadSync {
+                try MainActor.assumeIsolated {
+                    try .layerTreeRecordingComponents(core: core, configuration: configuration)
+                }
+            }
         } else {
             self = try .viewTreeRecordingComponents(core: core, configuration: configuration)
         }
@@ -90,6 +95,7 @@ internal struct RecordingComponents {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @MainActor
     private static func layerTreeRecordingComponents(
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
@@ -100,6 +106,13 @@ internal struct RecordingComponents {
             queue: telemetryQueue
         )
 
+        let keyWindowObserver = KeyWindowObserver()
+        let touchSnapshotProducer = WindowTouchSnapshotProducer(windowObserver: keyWindowObserver)
+        let layerRecorder = LayerRecorder(
+            snapshotBuilder: LayerTreeSnapshotBuilder(layerProvider: keyWindowObserver),
+            uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
+            touchSnapshotProducer: touchSnapshotProducer
+        )
         let screenChangeMonitor = try ScreenChangeMonitor(minimumDeliveryInterval: 0.1)
         let recordingCoordinator = LayerTreeRecordingCoordinator(
             screenChangeMonitor: screenChangeMonitor,
@@ -107,7 +120,7 @@ internal struct RecordingComponents {
             imagePrivacy: configuration.imagePrivacyLevel,
             touchPrivacy: configuration.touchPrivacyLevel,
             srContextPublisher: SRContextPublisher(core: core),
-            layerRecording: LayerRecorder(),
+            layerRecording: layerRecorder,
             replaySampleRate: configuration.debugSDK ? 100 : configuration.replaySampleRate,
             telemetry: telemetry,
             startRecordingImmediately: configuration.startRecordingImmediately

@@ -44,7 +44,7 @@ struct LayerTreeSnapshotBuilderTests {
 
     @available(iOS 13.0, tvOS 13.0, *)
     @MainActor
-    private final class TestCALayerProvider: CALayerProvider {
+    private final class TestLayerProvider: LayerProvider {
         var rootLayer: CALayer?
 
         init(rootLayer: CALayer?) {
@@ -56,7 +56,7 @@ struct LayerTreeSnapshotBuilderTests {
     @Test("Returns nil when root layer is unavailable")
     func returnsNilWhenRootLayerIsUnavailable() {
         // Given
-        let builder = LayerTreeSnapshotBuilder(layerProvider: TestCALayerProvider(rootLayer: nil))
+        let builder = LayerTreeSnapshotBuilder(layerProvider: TestLayerProvider(rootLayer: nil))
 
         // When
         let snapshot = builder.createSnapshot(context: Fixtures.context())
@@ -82,7 +82,7 @@ struct LayerTreeSnapshotBuilderTests {
             viewServerTimeOffset: 3,
             date: Date(timeIntervalSince1970: 12)
         )
-        let builder = LayerTreeSnapshotBuilder(layerProvider: TestCALayerProvider(rootLayer: rootLayer))
+        let builder = LayerTreeSnapshotBuilder(layerProvider: TestLayerProvider(rootLayer: rootLayer))
 
         // When
         let snapshot = try #require(builder.createSnapshot(context: context))
@@ -110,7 +110,7 @@ struct LayerTreeSnapshotBuilderTests {
         let webView = WKWebView()
         rootLayer.addSublayer(webView.layer)
 
-        let builder = LayerTreeSnapshotBuilder(layerProvider: TestCALayerProvider(rootLayer: rootLayer))
+        let builder = LayerTreeSnapshotBuilder(layerProvider: TestLayerProvider(rootLayer: rootLayer))
 
         // When
         let snapshot = try #require(builder.createSnapshot(context: Fixtures.context()))
@@ -134,7 +134,7 @@ struct LayerTreeSnapshotBuilderTests {
         let webView = WKWebView()
         rootLayer.addSublayer(webView.layer)
 
-        let builder = LayerTreeSnapshotBuilder(layerProvider: TestCALayerProvider(rootLayer: rootLayer))
+        let builder = LayerTreeSnapshotBuilder(layerProvider: TestLayerProvider(rootLayer: rootLayer))
         let expectedSlots = Set([webView.hash])
 
         // When
