@@ -44,7 +44,7 @@ extension CALayerSnapshot.SemanticObservation {
         switch layer.delegate {
         case _ as UIActivityIndicatorView:
             self.init(semantics: .activityIndicator, ignoreSubtree: true)
-        case let label as UILabel where label.attributedText?.hasMultipleAttributeRuns == false:
+        case let label as UILabel where !label.hasAttributedText:
             // Attributed text falls through to layer semantics and will be rendered from the layer image.
             self.init(label: label)
         case let imageView as UIImageView:
@@ -98,8 +98,17 @@ extension CALayerSnapshot.SemanticObservation {
     }
 }
 
+extension UILabel {
+    fileprivate var hasAttributedText: Bool {
+        guard let attributedText else {
+            return false
+        }
+        return attributedText.hasMultipleRuns
+    }
+}
+
 extension NSAttributedString {
-    fileprivate var hasMultipleAttributeRuns: Bool {
+    fileprivate var hasMultipleRuns: Bool {
         guard length > 0 else {
             return false
         }

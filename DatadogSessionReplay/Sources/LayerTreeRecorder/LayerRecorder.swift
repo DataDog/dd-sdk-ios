@@ -7,7 +7,7 @@
 #if os(iOS)
 import Foundation
 
-/// Records layer-tree changes.
+/// Records layer tree changes.
 ///
 /// Only one recording task runs at a time. New requests are ignored while the
 /// current task is still running.
