@@ -59,7 +59,7 @@ struct LayerTreeSnapshotBuilderTests {
         let builder = LayerTreeSnapshotBuilder(layerProvider: TestLayerProvider(rootLayer: nil))
 
         // When
-        let snapshot = builder.createSnapshot(context: Fixtures.context())
+        let snapshot = builder.takeSnapshot(context: Fixtures.context())
 
         // Then
         #expect(snapshot == nil)
@@ -85,7 +85,7 @@ struct LayerTreeSnapshotBuilderTests {
         let builder = LayerTreeSnapshotBuilder(layerProvider: TestLayerProvider(rootLayer: rootLayer))
 
         // When
-        let snapshot = try #require(builder.createSnapshot(context: context))
+        let snapshot = try #require(builder.takeSnapshot(context: context))
 
         // Then
         #expect(snapshot.date == Date(timeIntervalSince1970: 15))
@@ -113,7 +113,7 @@ struct LayerTreeSnapshotBuilderTests {
         let builder = LayerTreeSnapshotBuilder(layerProvider: TestLayerProvider(rootLayer: rootLayer))
 
         // When
-        let snapshot = try #require(builder.createSnapshot(context: Fixtures.context()))
+        let snapshot = try #require(builder.takeSnapshot(context: Fixtures.context()))
 
         // Then
         #expect(snapshot.webViewSlotIDs == Set([webView.hash]))
@@ -138,9 +138,9 @@ struct LayerTreeSnapshotBuilderTests {
         let expectedSlots = Set([webView.hash])
 
         // When
-        _ = builder.createSnapshot(context: Fixtures.context())
+        _ = builder.takeSnapshot(context: Fixtures.context())
         webView.layer.removeFromSuperlayer()
-        let snapshot = try #require(builder.createSnapshot(context: Fixtures.context()))
+        let snapshot = try #require(builder.takeSnapshot(context: Fixtures.context()))
 
         // Then
         #expect(snapshot.root.sublayers.isEmpty)

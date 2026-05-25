@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import Foundation
+@preconcurrency import DatadogInternal
 
 /// Records layer tree changes.
 ///
@@ -47,19 +48,7 @@ internal actor LayerRecorder: LayerRecording {
     }
 
     private func record(_: CALayerChangeset, context: LayerRecordingContext) async {
-        let (layerTreeSnapshot, touchSnapshot) = await MainActor.run { [snapshotBuilder, touchSnapshotProducer] in
-            let layerTreeSnapshot = snapshotBuilder.createSnapshot(context: context)
-            let touchSnapshot = layerTreeSnapshot.flatMap { _ in
-                touchSnapshotProducer.takeSnapshot(
-                    context: .init(
-                        touchPrivacy: context.touchPrivacy,
-                        viewServerTimeOffset: context.viewServerTimeOffset
-                    )
-                )
-            }
-
-            return (layerTreeSnapshot, touchSnapshot)
-        }
+        let (layerTreeSnapshot, touchSnapshot) = await takeSnapshot(context: context)
 
         guard let layerTreeSnapshot else {
             return
@@ -67,6 +56,34 @@ internal actor LayerRecorder: LayerRecording {
 
         _ = (layerTreeSnapshot, touchSnapshot)
         // TODO: PANA-7436 Process captured layer tree and touch snapshots
+    }
+
+    private func takeSnapshot(context: LayerRecordingContext) async -> (LayerTreeSnapshot?, TouchSnapshot?) {
+        return await MainActor.run { [snapshotBuilder, touchSnapshotProducer] in
+            do {
+                return try objc_rethrow { () -> (LayerTreeSnapshot?, TouchSnapshot?) in
+                    guard let layerTreeSnapshot = snapshotBuilder.takeSnapshot(context: context) else {
+                        return (nil, nil)
+                    }
+                    let touchSnapshot = touchSnapshotProducer.takeSnapshot(
+                        context: .init(
+                            touchPrivacy: context.touchPrivacy,
+                            viewServerTimeOffset: context.viewServerTimeOffset
+                        )
+                    )
+                    return (layerTreeSnapshot, touchSnapshot)
+                }
+            } catch let objc as ObjcException {
+                context.telemetry.error(
+                    "[SR] Failed to take snapshot due to Objective-C runtime exception",
+                    error: objc.error
+                )
+                return (nil, nil)
+            } catch {
+                context.telemetry.error("[SR] Failed to take snapshot", error: error)
+                return (nil, nil)
+            }
+        }
     }
 }
 #endif
