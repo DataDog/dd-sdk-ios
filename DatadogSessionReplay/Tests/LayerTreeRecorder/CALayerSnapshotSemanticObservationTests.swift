@@ -74,7 +74,7 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records single-run attributed label semantics")
+    @Test("Records single run attributed label semantics")
     func recordsSingleRunAttributedLabelSemantics() {
         // Given
         let label = UILabel()
@@ -106,7 +106,7 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records multi-run attributed label as layer semantics")
+    @Test("Records multi run attributed label as layer semantics")
     func recordsMultiRunAttributedLabelAsLayerSemantics() {
         // Given
         let label = UILabel()
