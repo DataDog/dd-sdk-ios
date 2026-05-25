@@ -56,7 +56,7 @@ internal final class DatadogCore {
     let bus = MessageBus()
 
     /// Owns the remote configuration cache and fetch lifecycle.
-    /// `nil` when `remoteConfigurationID` was not set at init.
+    /// `nil` when `remoteConfiguration` was not set at init.
     internal let synchronizer: RemoteConfigurationSynchronizer?
 
     /// Registry for Features.
@@ -90,7 +90,7 @@ internal final class DatadogCore {
     ///   - encryption: The on-disk data encryption.
     ///   - contextProvider: The core context provider.
     ///   - applicationVersion: The application version.
-    ///   - remoteConfigurationID: The remote configuration ID; `nil` when not configured.
+    ///   - remoteConfiguration: The remote configuration ID and site; `nil` when not configured.
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,
@@ -103,7 +103,7 @@ internal final class DatadogCore {
         maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool,
         isRunFromExtension: Bool = false,
-        remoteConfigurationID: String? = nil
+        remoteConfiguration: (id: String, site: DatadogSite)? = nil
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
@@ -120,7 +120,9 @@ internal final class DatadogCore {
         self.contextProvider.subscribe(\.accountInfo, to: accountInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
-        self.synchronizer = remoteConfigurationID.map { RemoteConfigurationSynchronizer(id: $0, directory: directory.coreDirectory) }
+        self.synchronizer = remoteConfiguration.map {
+            RemoteConfigurationSynchronizer(id: $0.id, site: $0.site, directory: directory.coreDirectory, httpClient: httpClient)
+        }
         // connect the core to the message bus.
         // the bus will keep a weak ref to the core.
         bus.connect(core: self)

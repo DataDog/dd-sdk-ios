@@ -462,14 +462,13 @@ extension DatadogCore {
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
             isRunFromExtension: isRunFromExtension,
-            remoteConfigurationID: configuration.remoteConfigurationID
+            remoteConfiguration: configuration.remoteConfigurationID.map { ($0, configuration.site) }
         )
 
-        if let synchronizer = self.synchronizer,
-           let id = configuration.remoteConfigurationID,
-           let host = configuration.site.remoteConfigurationHost,
-           let endpoint = RemoteConfigurationSynchronizer.endpoint(for: id, host: host) {
-            synchronizer.start(from: endpoint, connectionProxyDictionary: configuration.proxyConfiguration, telemetry: telemetry)
+        synchronizer?.sync { [weak self] result in
+            if case .failure(let error) = result {
+                self?.telemetry.error("[RemoteConfig] Sync failed", error: error)
+            }
         }
 
         telemetry.configuration(

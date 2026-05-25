@@ -122,6 +122,10 @@ internal struct File: WritableFile, ReadableFile, FileProtocol, Equatable {
         return stream
     }
 
+    func read() throws -> Data {
+        return try Data(contentsOf: url)
+    }
+
     func size() throws -> UInt64 {
         let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
         return attributes[.size] as? UInt64 ?? 0
