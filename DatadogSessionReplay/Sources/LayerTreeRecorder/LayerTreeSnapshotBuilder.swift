@@ -22,7 +22,7 @@ internal struct LayerTreeSnapshot: Sendable {
 @available(iOS 13.0, tvOS 13.0, *)
 @MainActor
 internal protocol LayerTreeSnapshotBuilding: AnyObject {
-    func createSnapshot(context: LayerRecordingContext) -> LayerTreeSnapshot?
+    func takeSnapshot(context: LayerRecordingContext) -> LayerTreeSnapshot?
 }
 
 /// Builds immutable snapshots from the current root layer.
@@ -36,7 +36,7 @@ internal final class LayerTreeSnapshotBuilder: LayerTreeSnapshotBuilding {
         self.layerProvider = layerProvider
     }
 
-    func createSnapshot(context: LayerRecordingContext) -> LayerTreeSnapshot? {
+    func takeSnapshot(context: LayerRecordingContext) -> LayerTreeSnapshot? {
         guard let rootLayer = layerProvider.rootLayer else {
             return nil
         }
