@@ -397,7 +397,6 @@
 		5BF2BC752FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF2BC742FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift */; };
 		5BF2BC772FC4D8E0000E999C /* LayerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF2BC762FC4D8E0000E999C /* LayerProvider.swift */; };
 		5BF2BC792FC4D8E0000E999C /* LayerTreeSnapshotBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF2BC782FC4D8E0000E999C /* LayerTreeSnapshotBuilder.swift */; };
-		5BF2BC7B2FC60425000E999C /* LayerRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF2BC7A2FC60425000E999C /* LayerRecorderTests.swift */; };
 		5BF7B51F2E44F7D300E0B772 /* ShapeResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF7B51E2E44F7CE00E0B772 /* ShapeResource.swift */; };
 		5BF802732E9CD14100097B0E /* RUMFlagEvaluationReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */; };
 		5BF802752E9CD28900097B0E /* RUMFlagEvaluationReporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF802742E9CD28500097B0E /* RUMFlagEvaluationReporterTests.swift */; };
@@ -2246,7 +2245,6 @@
 		5BF2BC742FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerTreeSnapshotBuilderTests.swift; sourceTree = "<group>"; };
 		5BF2BC762FC4D8E0000E999C /* LayerProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerProvider.swift; sourceTree = "<group>"; };
 		5BF2BC782FC4D8E0000E999C /* LayerTreeSnapshotBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerTreeSnapshotBuilder.swift; sourceTree = "<group>"; };
-		5BF2BC7A2FC60425000E999C /* LayerRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerRecorderTests.swift; sourceTree = "<group>"; };
 		5BF7B51E2E44F7CE00E0B772 /* ShapeResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResource.swift; sourceTree = "<group>"; };
 		5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFlagEvaluationReporter.swift; sourceTree = "<group>"; };
 		5BF802742E9CD28500097B0E /* RUMFlagEvaluationReporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFlagEvaluationReporterTests.swift; sourceTree = "<group>"; };
@@ -4052,7 +4050,6 @@
 				5BF2BC722FC46F4A000E999C /* CALayerSnapshotFilterTests.swift */,
 				5BF2BC6D2FC42A00000E999C /* CALayerSnapshotSemanticObservationTests.swift */,
 				5BF2BC662FC10001000E999C /* CALayerSnapshotTests.swift */,
-				5BF2BC7A2FC60425000E999C /* LayerRecorderTests.swift */,
 				5BF2BC742FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift */,
 			);
 			path = LayerTreeRecorder;
@@ -8558,7 +8555,6 @@
 				5BF2BC732FC46F4A000E999C /* CALayerSnapshotFilterTests.swift in Sources */,
 				5BF2BC6E2FC42A00000E999C /* CALayerSnapshotSemanticObservationTests.swift in Sources */,
 				5BF2BC672FC10001000E999C /* CALayerSnapshotTests.swift in Sources */,
-				5BF2BC7B2FC60425000E999C /* LayerRecorderTests.swift in Sources */,
 				5BF2BC752FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift in Sources */,
 				61054FB82A6EE1BA00AAA894 /* UIDatePickerRecorderTests.swift in Sources */,
 				962D72C52CF7806300F86EF0 /* GraphicsImageReflectionTests.swift in Sources */,
