@@ -22,7 +22,8 @@ Pod::Spec.new do |s|
 
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
 
-  s.source_files = ["DatadogRUM/Sources/**/*.swift"]
+  s.source_files = ["DatadogRUM/Sources/**/*.swift",
+                    "DatadogRUM/Private/**/*.{h,m}"]
 
   s.resource_bundle = {
     "DatadogRUM" => "DatadogRUM/Resources/PrivacyInfo.xcprivacy"
