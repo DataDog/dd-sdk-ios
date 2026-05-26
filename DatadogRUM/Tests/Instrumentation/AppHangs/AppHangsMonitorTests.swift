@@ -321,7 +321,7 @@ class AppHangsMonitorTests: XCTestCase {
         // Assert exactly which fields the recovery code mutates — catches PII leak regressions
         // by ensuring no other fields are silently added or modified during recovery.
         DDAssertDiff(lastView, viewEvent) { diffs in
-            diffs.assertExact(
+            try diffs.assertExact(
                 different: [
                     "_dd.document_version",
                     "date",
