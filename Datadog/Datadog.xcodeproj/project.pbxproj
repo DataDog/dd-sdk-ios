@@ -1185,6 +1185,7 @@
 		D2C5D52B2B84F6AB00B63F36 /* WebViewRecordReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C5D52A2B84F6AB00B63F36 /* WebViewRecordReceiver.swift */; };
 		D2C5D52D2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C5D52C2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift */; };
 		D2C7E3AB28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */; };
+		D2CC33E92FBEF4A400377194 /* RCDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2CC33E72FBEF4A400377194 /* RCDataModels.swift */; };
 		D2D0E1F22E3CE59700BA4113 /* mach_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */; };
 		D2D0E1F82E3CE73700BA4113 /* mach_sampling_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */; };
 		D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */; };
@@ -2909,6 +2910,7 @@
 		D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryStatusPublisherTests.swift; sourceTree = "<group>"; };
 		D2CBC26A294383F200134409 /* WebViewEventReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewEventReceiver.swift; sourceTree = "<group>"; };
 		D2CBC26D294395A300134409 /* RUMContextAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContextAttributes.swift; sourceTree = "<group>"; };
+		D2CC33E72FBEF4A400377194 /* RCDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCDataModels.swift; sourceTree = "<group>"; };
 		D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mach_profiler.cpp; sourceTree = "<group>"; };
 		D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mach_sampling_profiler.cpp; sourceTree = "<group>"; };
 		D2D0E2012E3CEF1200BA4113 /* MachProfilerCAPITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MachProfilerCAPITests.swift; sourceTree = "<group>"; };
@@ -4992,6 +4994,7 @@
 				619F5CEB2BF5089B004BFE70 /* RUM */,
 				D2EA0F442C0E1A8700CB20F8 /* SessionReplay */,
 				D25C834D2B88A261008E73B1 /* WebViewTracking */,
+				D2CC33E82FBEF4A400377194 /* RC */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -6569,6 +6572,14 @@
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
+			sourceTree = "<group>";
+		};
+		D2CC33E82FBEF4A400377194 /* RC */ = {
+			isa = PBXGroup;
+			children = (
+				D2CC33E72FBEF4A400377194 /* RCDataModels.swift */,
+			);
+			path = RC;
 			sourceTree = "<group>";
 		};
 		D2D748282DC1210A00C61353 /* Logs */ = {
@@ -8440,6 +8451,7 @@
 				D2EBEE2929BA160F00B15732 /* HTTPHeadersWriter.swift in Sources */,
 				D2432CF929EDB22C00D93657 /* Flushable.swift in Sources */,
 				96CD20652ED4808900B4686E /* URLSessionTaskStateSwizzler.swift in Sources */,
+				D2CC33E92FBEF4A400377194 /* RCDataModels.swift in Sources */,
 				D23039F7298D5236001A1FA3 /* AttributesSanitizer.swift in Sources */,
 				D23039EB298D5236001A1FA3 /* DatadogFeature.swift in Sources */,
 				D2BEEDBA2B33638F0065F3AC /* NetworkInstrumentationSwizzler.swift in Sources */,

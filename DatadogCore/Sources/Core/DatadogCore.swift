@@ -79,6 +79,10 @@ internal final class DatadogCore {
     /// Maximum number of batches per upload.
     internal let maxBatchesPerUpload: Int
 
+    /// The last successfully fetched and cached remote configuration, if any.
+    @ReadWriteLock
+    var remoteConfiguration: RemoteConfiguration? = nil
+
     /// Creates a core instance.
     ///
     /// - Parameters:

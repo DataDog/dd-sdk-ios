@@ -35,6 +35,8 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
         FeatureRegistrationCoreMock.referenceCount -= 1
     }
 
+    public var remoteConfiguration: RemoteConfiguration? = nil
+
     // MARK: - Supported
 
     public func register<T>(feature: T) throws where T: DatadogFeature {
