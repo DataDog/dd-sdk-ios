@@ -1,6 +1,8 @@
 module DatadogMachProfiler {
   header "dd_profiler.h"
   header "dd_pprof.h"
+  header "memory_profiler.h"
+  header "vm_region_walker.h"
   export *
 
   explicit module Cxx {
@@ -21,6 +23,7 @@ module DatadogMachProfiler {
       header "dd_profiler_testing.h"
       header "dd_pprof_testing.h"
       header "safe_read_testing.h"
+      header "memory_profiler_testing.h"
       export *
   }
 }
