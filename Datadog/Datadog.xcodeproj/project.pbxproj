@@ -34,6 +34,13 @@
 		110B0ECB2DF0ABC6008ABA19 /* DeterministicSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */; };
 		110DD1B22EEB6BBD002F3B8B /* ProfilingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1B02EEB6BB5002F3B8B /* ProfilingConfiguration.swift */; };
 		110DD1B52EEB7090002F3B8B /* ProfilingConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1B32EEB7080002F3B8B /* ProfilingConfigurationTests.swift */; };
+		CEB62C3E321F2A6F83985A92 /* memory_profiler.h in Headers */ = {isa = PBXBuildFile; fileRef = CEB62C3E321F2A6F83985A91 /* memory_profiler.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		FE3401B54794431DB4F8C89B /* vm_region_walker.h in Headers */ = {isa = PBXBuildFile; fileRef = FE3401B54794431DB4F8C89A /* vm_region_walker.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		ED3FB762D1EB7D05283646F5 /* memory_profiler_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = ED3FB762D1EB7D05283646F4 /* memory_profiler_testing.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		91BAB55D44F69081BA5D712D /* memory_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2FC76A051A617C43EE892F27 /* memory_profiler.cpp */; };
+		5758EA9EBBDBC85CC8E869A0 /* vm_region_walker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE62FA3360B654023351D624 /* vm_region_walker.cpp */; };
+		E3CEAE0D612BFA0876A576F2 /* MemoryProfilerPOC.swift in Sources */ = {isa = PBXBuildFile; fileRef = D339B0C9A915E6A2C9AA4A65 /* MemoryProfilerPOC.swift */; };
+		7FF044DD3F678ED05D8F975B /* MemoryProfilerPOCTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC1F17BA7C149F3634429D2 /* MemoryProfilerPOCTests.swift */; };
 		110DD1B72EEC3E45002F3B8B /* SafeReadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */; };
 		110DD1BB2EEC3EE7002F3B8B /* safe_read_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */; };
 		110DD1BE2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1BC2EEC708E002F3B8B /* ProfilerFeatureTests.swift */; };
@@ -1902,6 +1909,13 @@
 		110B0ECA2DF0ABBE008ABA19 /* DeterministicSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeterministicSampler.swift; sourceTree = "<group>"; };
 		110DD1B02EEB6BB5002F3B8B /* ProfilingConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingConfiguration.swift; sourceTree = "<group>"; };
 		110DD1B32EEB7080002F3B8B /* ProfilingConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingConfigurationTests.swift; sourceTree = "<group>"; };
+		CEB62C3E321F2A6F83985A91 /* memory_profiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory_profiler.h; sourceTree = "<group>"; };
+		FE3401B54794431DB4F8C89A /* vm_region_walker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vm_region_walker.h; sourceTree = "<group>"; };
+		ED3FB762D1EB7D05283646F4 /* memory_profiler_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory_profiler_testing.h; sourceTree = "<group>"; };
+		2FC76A051A617C43EE892F27 /* memory_profiler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory_profiler.cpp; sourceTree = "<group>"; };
+		CE62FA3360B654023351D624 /* vm_region_walker.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vm_region_walker.cpp; sourceTree = "<group>"; };
+		D339B0C9A915E6A2C9AA4A65 /* MemoryProfilerPOC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryProfilerPOC.swift; sourceTree = "<group>"; };
+		3AC1F17BA7C149F3634429D2 /* MemoryProfilerPOCTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryProfilerPOCTests.swift; sourceTree = "<group>"; };
 		110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeReadTests.swift; sourceTree = "<group>"; };
 		110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = safe_read_testing.h; sourceTree = "<group>"; };
 		110DD1BC2EEC708E002F3B8B /* ProfilerFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilerFeatureTests.swift; sourceTree = "<group>"; };
@@ -6359,6 +6373,9 @@
 				118AAE052EBBB74D0018E745 /* dd_profiler_testing.h */,
 				D233E7FE2E4B588B00E7CFDE /* dd_pprof.h */,
 				D2F0E8A02F5C000100E7CFDE /* dd_pprof_testing.h */,
+				CEB62C3E321F2A6F83985A91 /* memory_profiler.h */,
+				FE3401B54794431DB4F8C89A /* vm_region_walker.h */,
+				ED3FB762D1EB7D05283646F4 /* memory_profiler_testing.h */,
 				D229FF592E3BA298009CCD62 /* dd_profiler.h */,
 				D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */,
 				D2E937272E53324A00FECA76 /* profile_pprof_packer.h */,
@@ -6379,6 +6396,8 @@
 				D233E7ED2E4B588000E7CFDE /* protobuf-c.c */,
 				115792E12F4504E900AEE829 /* binary_image_resolver.cpp */,
 				D233E8012E4B653F00E7CFDE /* dd_pprof.cpp */,
+				2FC76A051A617C43EE892F27 /* memory_profiler.cpp */,
+				CE62FA3360B654023351D624 /* vm_region_walker.cpp */,
 				D2D0E1F12E3CE59700BA4113 /* dd_profiler.cpp */,
 				D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */,
 				D233E7E92E4B588000E7CFDE /* profile_pprof_packer.cpp */,
@@ -6918,6 +6937,7 @@
 		D2C9F1BE2E3B8A6D008397FD /* DatadogProfiling */ = {
 			isa = PBXGroup;
 			children = (
+				D339B0C9A915E6A2C9AA4A65 /* MemoryProfilerPOC.swift */,
 				1188486A2F717DD8008D2919 /* DatadogProfiler.swift */,
 				D233E7C22E4625D400E7CFDE /* ProfileEvent.swift */,
 				D233E7CA2E46264500E7CFDE /* ProfilerFeature.swift */,
@@ -6957,6 +6977,7 @@
 				11A14A632F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift */,
 				D233E7DD2E4A109100E7CFDE /* ProfilingTest.swift */,
 				D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */,
+				3AC1F17BA7C149F3634429D2 /* MemoryProfilerPOCTests.swift */,
 				110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */,
 				1121FD0B2EE848F700297156 /* SDKMetrics */,
 			);
@@ -7203,6 +7224,9 @@
 				D2E9372F2E53325900FECA76 /* protobuf-c.h in Headers */,
 				D2E9372B2E53325200FECA76 /* profile.pb-c.h in Headers */,
 				115792E62F4504F700AEE829 /* binary_image_resolver.h in Headers */,
+				CEB62C3E321F2A6F83985A92 /* memory_profiler.h in Headers */,
+				FE3401B54794431DB4F8C89B /* vm_region_walker.h in Headers */,
+				ED3FB762D1EB7D05283646F5 /* memory_profiler_testing.h in Headers */,
 				D2E9371A2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
 				A1B2C3D52F90000100ABCDEF /* aggregation_worker.h in Headers */,
 				D229FFA92E3BCA9B009CCD62 /* dd_profiler.h in Headers */,
@@ -8874,6 +8898,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				91BAB55D44F69081BA5D712D /* memory_profiler.cpp in Sources */,
+				5758EA9EBBDBC85CC8E869A0 /* vm_region_walker.cpp in Sources */,
+				E3CEAE0D612BFA0876A576F2 /* MemoryProfilerPOC.swift in Sources */,
 				D2D0E1F82E3CE73700BA4113 /* mach_sampling_profiler.cpp in Sources */,
 				D233E7CC2E46264600E7CFDE /* ProfilerFeature.swift in Sources */,
 				110DD1B22EEB6BBD002F3B8B /* ProfilingConfiguration.swift in Sources */,
@@ -9469,6 +9496,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1162323A2F866B4000F20ABC /* MockThread.swift in Sources */,
+				7FF044DD3F678ED05D8F975B /* MemoryProfilerPOCTests.swift in Sources */,
 				110DD1B72EEC3E45002F3B8B /* SafeReadTests.swift in Sources */,
 				D233E7E42E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
 				D262DA662E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,
