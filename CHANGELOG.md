@@ -1,7 +1,6 @@
 # Unreleased
 
 - [FIX] Fix `NSInvalidArgumentException` ("unrecognized selector") crash in automatic scroll action tracking when UIKit dispatches a cached delegate method after the original `UIScrollViewDelegate` has been deallocated. See [#2942][].
-- [IMPROVEMENT] Add `disableScrollAndSwipeActions` feature flag in RUM configuration to opt out of automatic scroll and swipe action tracking. See [#2944][].
 - [IMPROVEMENT] Add `trackScrollAndSwipeActions` feature flag in RUM configuration to opt out of automatic scroll and swipe action tracking. See [#2944][].
 
 # 3.11.0 / 12-05-2026
