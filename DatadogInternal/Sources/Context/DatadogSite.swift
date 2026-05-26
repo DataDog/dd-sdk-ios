@@ -34,18 +34,29 @@ public enum DatadogSite: String {
 }
 
 extension DatadogSite {
-    public var endpoint: URL {
+    /// The intake hostname for this site (e.g. `browser-intake-datadoghq.com`).
+    public var host: String {
         switch self {
-        // swiftlint:disable force_unwrapping
-        case .us1: return URL(string: "https://browser-intake-datadoghq.com/")!
-        case .us3: return URL(string: "https://browser-intake-us3-datadoghq.com/")!
-        case .us5: return URL(string: "https://browser-intake-us5-datadoghq.com/")!
-        case .eu1: return URL(string: "https://browser-intake-datadoghq.eu/")!
-        case .ap1: return URL(string: "https://browser-intake-ap1-datadoghq.com/")!
-        case .ap2: return URL(string: "https://browser-intake-ap2-datadoghq.com/")!
-        case .us1_fed: return URL(string: "https://browser-intake-ddog-gov.com/")!
-        case .us2_fed: return URL(string: "https://browser-intake-us2-ddog-gov.com/")!
-        // swiftlint:enable force_unwrapping
+        case .us1: return "browser-intake-datadoghq.com"
+        case .us3: return "browser-intake-us3-datadoghq.com"
+        case .us5: return "browser-intake-us5-datadoghq.com"
+        case .eu1: return "browser-intake-datadoghq.eu"
+        case .ap1: return "browser-intake-ap1-datadoghq.com"
+        case .ap2: return "browser-intake-ap2-datadoghq.com"
+        case .us1_fed: return "browser-intake-ddog-gov.com"
+        case .us2_fed: return "browser-intake-us2-ddog-gov.com"
         }
+    }
+
+    public var endpoint: URL {
+        // swiftlint:disable:next force_unwrapping
+        URL(string: "https://\(host)/")!
+    }
+
+    /// The base CDN URL for fetching remote configuration documents.
+    /// The full URL (with API version path and ID) is constructed by `RemoteConfigurationSynchronizer`.
+    public var remoteConfigurationEndpoint: URL {
+        // swiftlint:disable:next force_unwrapping
+        URL(string: "https://sdk-configuration.\(host)/")!
     }
 }

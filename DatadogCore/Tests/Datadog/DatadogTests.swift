@@ -12,6 +12,8 @@ import TestUtilities
 @testable import DatadogTrace
 @testable import DatadogCore
 
+// MARK: DatadogTests
+
 class DatadogTests: XCTestCase {
     private var printFunction: PrintFunctionSpy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var defaultConfig = Datadog.Configuration(clientToken: "abc-123", env: "tests")
@@ -519,6 +521,32 @@ class DatadogTests: XCTestCase {
         XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.logs"))
         XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.traces"))
         XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.rum"))
+    }
+
+    // MARK: Remote Configuration
+
+    func testGivenNoRemoteConfigurationID_cacheIsNotCreated() throws {
+        // When
+        Datadog.initialize(with: defaultConfig, trackingConsent: .granted)
+        defer { Datadog.flushAndDeinitialize() }
+
+        // Then
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        XCTAssertNil(core.synchronizer)
+    }
+
+    func testGivenRemoteConfigurationID_remoteConfigurationIsCreated() throws {
+        // Given
+        var config = defaultConfig
+        config.remoteConfigurationID = "test-id"
+
+        // When
+        Datadog.initialize(with: config, trackingConsent: .granted)
+        defer { Datadog.flushAndDeinitialize() }
+
+        // Then
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        XCTAssertNotNil(core.synchronizer)
     }
 
     func testCustomSDKInstance() throws {

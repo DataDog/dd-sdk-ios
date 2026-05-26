@@ -123,6 +123,18 @@ extension Datadog {
         /// `false` by default.
         public var backgroundTasksEnabled: Bool
 
+        /// The remote configuration ID used to fetch SDK settings from the Datadog CDN.
+        ///
+        /// When non-nil, the SDK constructs a CDN URL from this ID and the resolved `site`,
+        /// fetches the remote config document asynchronously at startup, and caches the
+        /// raw JSON to disk for use on subsequent launches.
+        ///
+        /// Default is `nil` — no fetch is performed.
+        ///
+        /// RFC also specifies a `requireRemoteConfiguration` flag: when `true` and no cache
+        /// exists, `Datadog.initialize` should return without starting the SDK. Not yet implemented.
+        public var remoteConfigurationID: String? = nil
+
         /// Creates a Datadog SDK Configuration object.
         ///
         /// - Parameters:
@@ -169,6 +181,11 @@ extension Datadog {
         ///                                 Tasks are normally stopped when there's nothing to upload or when encountering
         ///                                 any upload blocker such us no internet connection or low battery.
         ///                                 By default it's set to `false`.
+        ///
+        ///   - remoteConfigurationID:      The identifier used to fetch SDK settings from the Datadog CDN.
+        ///                                 When non-nil, the SDK fetches the remote configuration document
+        ///                                 asynchronously at startup and caches the raw JSON for subsequent launches.
+        ///                                 Default is `nil` — no fetch is performed.
         public init(
             clientToken: String,
             env: String,
@@ -182,7 +199,8 @@ extension Datadog {
             encryption: DataEncryption? = nil,
             serverDateProvider: ServerDateProvider? = nil,
             batchProcessingLevel: BatchProcessingLevel = .medium,
-            backgroundTasksEnabled: Bool = false
+            backgroundTasksEnabled: Bool = false,
+            remoteConfigurationID: String? = nil
         ) {
             self.clientToken = clientToken
             self.env = env
@@ -197,6 +215,7 @@ extension Datadog {
             self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
             self.batchProcessingLevel = batchProcessingLevel
             self.backgroundTasksEnabled = backgroundTasksEnabled
+            self.remoteConfigurationID = remoteConfigurationID
         }
 
         // MARK: - Internal

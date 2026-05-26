@@ -273,6 +273,15 @@ public final class objc_Configuration: NSObject {
         set { sdkConfiguration.backgroundTasksEnabled = newValue }
     }
 
+    /// The remote configuration ID used to fetch SDK settings from the Datadog CDN at startup.
+    ///
+    /// When non-nil, the SDK asynchronously fetches and caches the remote configuration document.
+    /// Default is `nil` — no fetch is performed.
+    public var remoteConfigurationID: String? {
+        get { sdkConfiguration.remoteConfigurationID }
+        set { sdkConfiguration.remoteConfigurationID = newValue }
+    }
+
     /// Creates a Datadog SDK Configuration object.
     ///
     /// - Parameters:

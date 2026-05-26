@@ -35,6 +35,21 @@ internal class URLSessionClient: HTTPClient {
         self.session = session
     }
 
+    func fetch(request: URLRequest, completion: @escaping (Result<(HTTPURLResponse, Data), Error>) -> Void) {
+        let task = session.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            guard let http = response as? HTTPURLResponse, let data = data else {
+                completion(.failure(URLSessionTransportInconsistencyException()))
+                return
+            }
+            completion(.success((http, data)))
+        }
+        task.resume()
+    }
+
     func send(request: URLRequest, delegate: URLSessionTaskDelegate?, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
         let task = session.dataTask(with: request) { data, response, error in
             completion(httpClientResult(for: (data, response, error)))

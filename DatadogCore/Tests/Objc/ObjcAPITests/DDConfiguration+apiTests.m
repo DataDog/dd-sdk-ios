@@ -67,6 +67,8 @@
     configuration.additionalConfiguration = @{@"additional": @"config"};
     [configuration setEncryption:[CustomDDDataEncryption new]];
     configuration.backgroundTasksEnabled = true;
+    configuration.remoteConfigurationID = @"abc-123";
+    configuration.remoteConfigurationID = nil;
 }
 
 - (void)testDatadogCrashReporterAPI {

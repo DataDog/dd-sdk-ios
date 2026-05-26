@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 //swiftlint:disable duplicate_imports
@@ -297,6 +298,7 @@ public enum Datadog {
         CITestIntegration.active?.startIntegration()
 
         CoreRegistry.register(core, named: instanceName)
+
         deleteV1Folders(in: core)
 
         DD.logger = InternalLogger(
@@ -415,12 +417,14 @@ extension DatadogCore {
         )
         let isRunFromExtension = bundleType == .iOSAppExtension
 
+        let directory = try CoreDirectory(
+            in: configuration.systemDirectory(),
+            instanceName: instanceName,
+            site: configuration.site
+        )
+
         self.init(
-            directory: try CoreDirectory(
-                in: configuration.systemDirectory(),
-                instanceName: instanceName,
-                site: configuration.site
-            ),
+            directory: directory,
             dateProvider: configuration.dateProvider,
             initialConsent: trackingConsent,
             performance: performance,
@@ -457,8 +461,15 @@ extension DatadogCore {
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            isRunFromExtension: isRunFromExtension
+            isRunFromExtension: isRunFromExtension,
+            remoteConfiguration: configuration.remoteConfigurationID.map { ($0, configuration.site) }
         )
+
+        synchronizer?.sync { [weak self] result in
+            if case .failure(let error) = result {
+                self?.telemetry.error("[RemoteConfig] Sync failed", error: error)
+            }
+        }
 
         telemetry.configuration(
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,

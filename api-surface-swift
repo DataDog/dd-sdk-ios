@@ -59,7 +59,8 @@ public extension Datadog
         public var bundle: Bundle
         public var batchProcessingLevel: BatchProcessingLevel
         public var backgroundTasksEnabled: Bool
-        public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,version: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil,batchProcessingLevel: BatchProcessingLevel = .medium,backgroundTasksEnabled: Bool = false)
+        public var remoteConfigurationID: String? = nil
+        public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,version: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil,batchProcessingLevel: BatchProcessingLevel = .medium,backgroundTasksEnabled: Bool = false,remoteConfigurationID: String? = nil)
 public class SharedContext: NSObject
     public let userId: String?
     public let accountId: String?
@@ -1318,6 +1319,8 @@ public protocol FlagsClientProtocol: AnyObject
     func setEvaluationContext(_ context: FlagsEvaluationContext,completion: @escaping (Result<Void, FlagsError>) -> Void)
     func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue
 [?] extension FlagsClientProtocol
+    public var state: FlagsStateObservable
+[?] extension FlagsClientProtocol
     public func setEvaluationContext(_ context: FlagsEvaluationContext)
     public func setEvaluationContext(_ context: FlagsEvaluationContext) async throws
 [?] extension FlagsClientProtocol
@@ -1333,7 +1336,7 @@ public protocol FlagsClientProtocol: AnyObject
     public func getIntegerDetails(key: String, defaultValue: Int) -> FlagDetails<Int>
     public func getDoubleDetails(key: String, defaultValue: Double) -> FlagDetails<Double>
     public func getObjectDetails(key: String, defaultValue: AnyValue) -> FlagDetails<AnyValue>
-public enum FlagsClientState: Equatable
+public enum FlagsClientState: Sendable
     case notReady
     case ready
     case reconciling
