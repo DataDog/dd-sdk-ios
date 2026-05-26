@@ -546,10 +546,35 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertEqual(buckets[0].duration, bucketDuration)
     }
 
-    func testExportedGroupedStatsHasEmptySketchPlaceholders() {
+    // MARK: - Latency Sketches
+
+    func testOkSpanPopulatesOkSummaryNotErrorSummary() {
         let concentrator = makeConcentrator(now: 0)
 
         concentrator.add(SpanSnapshot.mockWith(
+            isError: false,
+            startTime: 0,
+            duration: 1_000_000_000, // 1s
+            isTopLevel: true
+        ))
+
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+        let stats = buckets[0].stats[0]
+
+        // An empty DDSketch encodes only the mapping field (11 bytes); a sketch
+        // that has recorded at least one value also encodes a positive store.
+        // The ok summary must therefore be longer than the empty (mapping-only)
+        // baseline, and the error summary must be exactly the baseline.
+        let emptySketchBytes = DDSketch.makeForStats().toProtoBytes()
+        XCTAssertGreaterThan(stats.okSummary.count, emptySketchBytes.count)
+        XCTAssertEqual(stats.errorSummary, emptySketchBytes)
+    }
+
+    func testErrorSpanPopulatesErrorSummaryNotOkSummary() {
+        let concentrator = makeConcentrator(now: 0)
+
+        concentrator.add(SpanSnapshot.mockWith(
+            isError: true,
             startTime: 0,
             duration: 1_000_000_000,
             isTopLevel: true
@@ -557,8 +582,120 @@ class StatsConcentratorTests: XCTestCase {
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
         let stats = buckets[0].stats[0]
-        XCTAssertEqual(stats.okSummary, Data())
-        XCTAssertEqual(stats.errorSummary, Data())
+
+        let emptySketchBytes = DDSketch.makeForStats().toProtoBytes()
+        XCTAssertEqual(stats.okSummary, emptySketchBytes)
+        XCTAssertGreaterThan(stats.errorSummary.count, emptySketchBytes.count)
+    }
+
+    func testMixedOkAndErrorSpans_populateBothSummaries() {
+        let concentrator = makeConcentrator(now: 0)
+
+        // Two ok spans + one error span, all into the same aggregation group.
+        for _ in 0..<2 {
+            concentrator.add(SpanSnapshot.mockWith(
+                isError: false,
+                startTime: 0,
+                duration: 500_000_000, // 0.5s
+                isTopLevel: true
+            ))
+        }
+        concentrator.add(SpanSnapshot.mockWith(
+            isError: true,
+            startTime: 0,
+            duration: 2_000_000_000, // 2s
+            isTopLevel: true
+        ))
+
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+        XCTAssertEqual(buckets.count, 1)
+        let stats = buckets[0].stats[0]
+
+        XCTAssertEqual(stats.hits, 3)
+        XCTAssertEqual(stats.errors, 1)
+
+        // Both sketches contain values now, so both must exceed the empty baseline.
+        let emptySketchBytes = DDSketch.makeForStats().toProtoBytes()
+        XCTAssertGreaterThan(stats.okSummary.count, emptySketchBytes.count)
+        XCTAssertGreaterThan(stats.errorSummary.count, emptySketchBytes.count)
+    }
+
+    func testIneligibleSpansDoNotContributeToSummaries() {
+        let concentrator = makeConcentrator(now: 0)
+
+        // Ineligible (not top-level, not measured, no qualifying span_kind).
+        concentrator.add(SpanSnapshot.mockWith(
+            isError: false,
+            startTime: 0,
+            duration: 1_000_000_000,
+            isTopLevel: false,
+            isMeasured: false
+        ))
+
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+        XCTAssertTrue(buckets.isEmpty, "ineligible spans must not produce any group")
+    }
+
+    /// Fixture-style cross-check: the bytes emitted for a populated `okSummary` are
+    /// exactly what a `DDSketch` built independently from the same input produces.
+    /// Catches any future regression where the wiring stops feeding the sketch the
+    /// raw `Double(duration)` we expect.
+    func testOkSummaryBytesMatchIndependentlyBuiltSketch() {
+        let concentrator = makeConcentrator(now: 0)
+        let durations: [Nanoseconds] = [100_000_000, 250_000_000, 1_000_000_000, 2_500_000_000]
+
+        for duration in durations {
+            concentrator.add(SpanSnapshot.mockWith(
+                isError: false,
+                startTime: 0,
+                duration: duration,
+                isTopLevel: true
+            ))
+        }
+
+        var reference = DDSketch.makeForStats()
+        for duration in durations {
+            reference.add(Double(duration))
+        }
+
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+        let stats = buckets[0].stats[0]
+        XCTAssertEqual(stats.okSummary, reference.toProtoBytes())
+    }
+
+    /// Two spans with different resources land in two distinct aggregation groups.
+    /// Each group's sketch must reflect only its own span's duration, not the other's.
+    func testDistinctAggregationKeysGetIndependentSketches() {
+        let concentrator = makeConcentrator(now: 0)
+
+        concentrator.add(SpanSnapshot.mockWith(
+            resource: "GET /a",
+            isError: false,
+            startTime: 0,
+            duration: 100_000_000,
+            isTopLevel: true
+        ))
+        concentrator.add(SpanSnapshot.mockWith(
+            resource: "GET /b",
+            isError: false,
+            startTime: 0,
+            duration: 2_000_000_000,
+            isTopLevel: true
+        ))
+
+        var sketchA = DDSketch.makeForStats()
+        sketchA.add(100_000_000)
+        var sketchB = DDSketch.makeForStats()
+        sketchB.add(2_000_000_000)
+
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+        XCTAssertEqual(buckets.count, 1)
+        let allStats = buckets[0].stats
+        XCTAssertEqual(allStats.count, 2)
+
+        let statsByResource = Dictionary(uniqueKeysWithValues: allStats.map { ($0.resource, $0) })
+        XCTAssertEqual(statsByResource["GET /a"]?.okSummary, sketchA.toProtoBytes())
+        XCTAssertEqual(statsByResource["GET /b"]?.okSummary, sketchB.toProtoBytes())
     }
 
     // MARK: - Thread Safety

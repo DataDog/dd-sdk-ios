@@ -35,19 +35,48 @@ internal struct AggregationKey: Hashable, Sendable {
 
 // MARK: - Grouped Stats
 
-/// Running counters for a single aggregation key within a time bucket.
+/// Running counters and latency distributions for a single aggregation key within a
+/// time bucket.
+///
 /// Counters use `Double` to support fractional weighted sampling (weight per span).
 /// Currently weight is always 1.0, so these are effectively integers.
+///
+/// `duration` is the total nanoseconds across all spans in the group; `okSummary` and
+/// `errorSummary` are DDSketches tracking the distribution of those same durations
+/// split by `isError`. Both representations are required by the v1.2.0 stats payload.
+///
+/// Each sketch is bounded by `DDSketch.makeForStats()` to 2048 bins (max ~16 KB per
+/// sketch), so a fully saturated group caps at roughly 32 KB of sketch memory.
 internal final class GroupedStats {
     var hits: Double = 0
     var topLevelHits: Double = 0
     var errors: Double = 0
     var duration: Double = 0
+    var okSummary: DDSketch = .makeForStats()
+    var errorSummary: DDSketch = .makeForStats()
     /// Peer tags stored as `"key:value"` pairs for export, matching Go's `matchingPeerTags`.
     let peerTags: [String]
 
     init(peerTags: [String]) {
         self.peerTags = peerTags
+    }
+
+    /// Absorbs a single span into the group: bumps the relevant counters and adds the
+    /// span's duration (in nanoseconds) to the matching latency sketch.
+    func update(with snapshot: SpanSnapshot) {
+        let durationDouble = Double(snapshot.duration)
+
+        hits += 1
+        duration += durationDouble
+        if snapshot.isTopLevel {
+            topLevelHits += 1
+        }
+        if snapshot.isError {
+            errors += 1
+            errorSummary.add(durationDouble)
+        } else {
+            okSummary.add(durationDouble)
+        }
     }
 }
 
@@ -217,15 +246,7 @@ internal final class StatsConcentrator: @unchecked Sendable {
             let bucket = buckets[bucketKey, default: StatsBucket(start: bucketKey, duration: bucketDuration)]
 
             let group = bucket.groups[aggregationKey, default: GroupedStats(peerTags: peerTagStrings)]
-
-            group.hits += 1
-            if snapshot.isError {
-                group.errors += 1
-            }
-            group.duration += Double(snapshot.duration)
-            if snapshot.isTopLevel {
-                group.topLevelHits += 1
-            }
+            group.update(with: snapshot)
 
             bucket.groups[aggregationKey] = group
             buckets[bucketKey] = bucket
@@ -266,8 +287,8 @@ internal final class StatsConcentrator: @unchecked Sendable {
                         errors: StatsUtils.stochasticRound(group.errors),
                         duration: StatsUtils.stochasticRound(group.duration),
                         topLevelHits: StatsUtils.stochasticRound(group.topLevelHits),
-                        okSummary: Data(),
-                        errorSummary: Data(),
+                        okSummary: group.okSummary.toProtoBytes(),
+                        errorSummary: group.errorSummary.toProtoBytes(),
                         peerTags: group.peerTags,
                         serviceSource: key.serviceSource
                     )
