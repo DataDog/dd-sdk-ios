@@ -218,7 +218,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
             swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
             swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate,
-            scrollAndSwipeActionsDisabled: configuration.featureFlags[.disableScrollAndSwipeActions],
+            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions],
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
             mainQueue: configuration.mainQueue,
