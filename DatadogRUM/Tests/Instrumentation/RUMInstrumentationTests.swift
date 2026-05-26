@@ -144,6 +144,7 @@ class RUMInstrumentationTests: XCTestCase {
         }
     }
 
+    #if !os(tvOS)
     func testWhenScrollAndSwipeActionsTrackingIsDisabled_itDoesNotInstrumentUIScrollView() throws {
         // When
         let instrumentation = RUMInstrumentation(
@@ -175,6 +176,7 @@ class RUMInstrumentationTests: XCTestCase {
             XCTAssertNil(instrumentation.scrollHandler)
         }
     }
+    #endif
 
     func testWhenOnlyLongTasksThresholdIsConfigured_itInstrumentsRunLoop() throws {
         // When
