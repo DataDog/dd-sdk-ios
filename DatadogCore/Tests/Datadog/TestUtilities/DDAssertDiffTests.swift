@@ -278,7 +278,7 @@ class DDAssertDiffTests: XCTestCase {
         let value2 = Foo(a: 1, b: "world")
 
         DDAssertDiff(value1, value2) { diffs in
-            diffs.assertExact(different: ["b"])
+            try diffs.assertExact(different: ["b"])
         }
     }
 }

@@ -253,7 +253,7 @@ public func DDAssertEqual(_ date1: Date?, _ date2: Date, accuracy: TimeInterval,
     }
 }
 
-public struct DiffResult {
+public struct JSONDiff {
     /// Key paths where the values differ between the two objects.
     public let differentKeyPaths: [String]
     /// Key paths present in `expression1` but missing in `expression2`.
@@ -265,6 +265,9 @@ public struct DiffResult {
 private func _flatten(_ value: Any, prefix: String) -> [String: NSObject] {
     if let dict = value as? [String: Any] {
         if dict.isEmpty {
+            guard !prefix.isEmpty else {
+                return [:]
+            }
             return [prefix: NSDictionary()]
         }
         var result: [String: NSObject] = [:]
@@ -286,6 +289,9 @@ private func _flatten(_ value: Any, prefix: String) -> [String: NSObject] {
 
     if let array = value as? [Any] {
         if array.isEmpty {
+            guard !prefix.isEmpty else {
+                return [:]
+            }
             return [prefix: NSArray()]
         }
         var result: [String: NSObject] = [:]
@@ -316,7 +322,7 @@ private func leafEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
 private func _DDAssertDiff<T: Encodable>(
     _ expression1: @autoclosure () throws -> T,
     _ expression2: @autoclosure () throws -> T
-) throws -> DiffResult {
+) throws -> JSONDiff {
     let value1 = try expression1()
     let value2 = try expression2()
 
@@ -345,7 +351,7 @@ private func _DDAssertDiff<T: Encodable>(
     let removedKeys = keys1.subtracting(keys2)
     let addedKeys = keys2.subtracting(keys1)
 
-    return DiffResult(
+    return JSONDiff(
         differentKeyPaths: differentKeys.sorted(),
         removedKeyPaths: removedKeys.sorted(),
         addedKeyPaths: addedKeys.sorted()
@@ -358,26 +364,34 @@ public func DDAssertDiff<T: Encodable>(
     _ message: @autoclosure () -> String = "",
     file: StaticString = #fileID,
     line: UInt = #line,
-    _ verify: (DiffResult) -> Void
+    _ verify: (JSONDiff) throws -> Void
 ) {
     _DDEvaluateAssertion(message: message(), file: file, line: line) {
         let result = try _DDAssertDiff(expression1(), expression2())
-        verify(result)
+        try verify(result)
     }
 }
 
-public extension DiffResult {
+public extension JSONDiff {
     /// Asserts the diff contains exactly these key paths in each category.
     /// Pass empty arrays (or omit) for categories you expect to be empty.
     func assertExact(
         different: [String] = [],
         added: [String] = [],
-        removed: [String] = [],
-        file: StaticString = #fileID,
-        line: UInt = #line
-    ) {
-        XCTAssertEqual(differentKeyPaths, different.sorted(), file: file, line: line)
-        XCTAssertEqual(addedKeyPaths, added.sorted(), file: file, line: line)
-        XCTAssertEqual(removedKeyPaths, removed.sorted(), file: file, line: line)
+        removed: [String] = []
+    ) throws {
+        var failures: [String] = []
+        if differentKeyPaths != different.sorted() {
+            failures.append("differentKeyPaths: \(differentKeyPaths) != \(different.sorted())")
+        }
+        if addedKeyPaths != added.sorted() {
+            failures.append("addedKeyPaths: \(addedKeyPaths) != \(added.sorted())")
+        }
+        if removedKeyPaths != removed.sorted() {
+            failures.append("removedKeyPaths: \(removedKeyPaths) != \(removed.sorted())")
+        }
+        if !failures.isEmpty {
+            throw DDAssertError.expectedFailure(failures.joined(separator: "; "))
+        }
     }
 }
