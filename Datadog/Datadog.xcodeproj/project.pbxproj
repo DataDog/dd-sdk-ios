@@ -974,6 +974,7 @@
 		D233E8002E4B588B00E7CFDE /* dd_pprof.h in Headers */ = {isa = PBXBuildFile; fileRef = D233E7FE2E4B588B00E7CFDE /* dd_pprof.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D233E8022E4B653F00E7CFDE /* dd_pprof.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D233E8012E4B653F00E7CFDE /* dd_pprof.cpp */; };
 		D234613228B7713000055D4C /* FeatureContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D234613028B7712F00055D4C /* FeatureContextTests.swift */; };
+		D236DF772FC5F99E002F9B74 /* RUMViewScope_.swift in Sources */ = {isa = PBXBuildFile; fileRef = D236DF762FC5F99E002F9B74 /* RUMViewScope_.swift */; };
 		D240687B27CF982C00C04F44 /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; };
 		D240687C27CF982C00C04F44 /* DatadogCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D240687D27CF982D00C04F44 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
@@ -2872,6 +2873,7 @@
 		D234613028B7712F00055D4C /* FeatureContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureContextTests.swift; sourceTree = "<group>"; };
 		D2355B262E4E05CE000DDF5F /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		D236BE2729520FED00676E67 /* CrashReportReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportReceiver.swift; sourceTree = "<group>"; };
+		D236DF762FC5F99E002F9B74 /* RUMViewScope_.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewScope_.swift; sourceTree = "<group>"; };
 		D240688527CFA64A00C04F44 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D242C2A02A14D747004B4980 /* RemoteLoggerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemoteLoggerTests.swift; sourceTree = "<group>"; };
 		D2432CF829EDB22C00D93657 /* Flushable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flushable.swift; sourceTree = "<group>"; };
@@ -5492,6 +5494,7 @@
 				61C2C20624C098FC00C0321C /* RUMSessionScope.swift */,
 				61494CB924CB126F0082C633 /* RUMUserActionScope.swift */,
 				61C2C21124C5951400C0321C /* RUMViewScope.swift */,
+				D236DF762FC5F99E002F9B74 /* RUMViewScope_.swift */,
 				61494B7827F3522C0082BBCC /* Utils */,
 			);
 			path = Scopes;
@@ -9075,6 +9078,7 @@
 				111201C32E93C13000375DA3 /* AppStateManager.swift in Sources */,
 				111201C42E93C13000375DA3 /* AppStateInfo.swift in Sources */,
 				61C713A52A3B78F900FA735A /* RUMMonitorProtocol+Internal.swift in Sources */,
+				D236DF772FC5F99E002F9B74 /* RUMViewScope_.swift in Sources */,
 				D29A9F5129DD85BB005C54A4 /* LongTaskObserver.swift in Sources */,
 				615E2B952D425F5600D85243 /* ViewEndedMetric.swift in Sources */,
 				864A707D2DDF743900AC0619 /* AccessibilityReader.swift in Sources */,
