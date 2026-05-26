@@ -3,7 +3,6 @@
 - [FIX] Prevent crash misattribution when an inactive RUM view emits a terminal event after `stopResource()`. See [#2948][]
 - [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
 - [FIX] Fix `NSInvalidArgumentException` ("unrecognized selector") crash in automatic scroll action tracking when UIKit dispatches a cached delegate method after the original `UIScrollViewDelegate` has been deallocated. See [#2942][].
-- [IMPROVEMENT] Add `disableScrollAndSwipeActions` feature flag in RUM configuration to opt out of automatic scroll and swipe action tracking. See [#2944][].
 - [IMPROVEMENT] Add `trackScrollAndSwipeActions` feature flag in RUM configuration to opt out of automatic scroll and swipe action tracking. See [#2944][].
 
 # 3.11.0 / 12-05-2026
