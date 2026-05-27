@@ -310,17 +310,20 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             }
         }
 
+        // Ensure `endTime >= startTime` before constructing the range below.
+        let safeEndTime = max(startTime, endTime)
+
         if let history = contextReceiver.context.applicationStateHistory {
-            let fetchDuration = startTime...endTime
+            let fetchDuration = startTime...safeEndTime
             let foregroundDuration = history.foregroundDuration(during: fetchDuration)
             span.setTag(key: SpanTags.foregroundDuration, value: foregroundDuration.dd.toNanoseconds)
 
             let didStartInBackground = history.state(at: startTime) == .background
-            let doesEndInBackground = history.state(at: endTime) == .background
+            let doesEndInBackground = history.state(at: safeEndTime) == .background
             span.setTag(key: SpanTags.isBackground, value: didStartInBackground || doesEndInBackground)
         }
 
-        span.finish(at: endTime)
+        span.finish(at: safeEndTime)
     }
 
     /// Creates a helper struct with collected elements from a possible parent span context.
