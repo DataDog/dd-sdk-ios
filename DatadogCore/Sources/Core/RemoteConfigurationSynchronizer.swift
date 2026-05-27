@@ -26,6 +26,8 @@ internal final class RemoteConfigurationSynchronizer {
     @ReadWriteLock
     private(set) var cache: Result<Data, Error>
 
+    private static let ttl: TimeInterval = 5 * 60
+
     init(id: String, site: DatadogSite, directory: Directory, httpClient: HTTPClient) {
         self.id = id
         self.site = site
@@ -49,31 +51,55 @@ internal final class RemoteConfigurationSynchronizer {
 
     // MARK: - Internal
 
-    /// Fires an async CDN fetch and updates the cache on success.
+    /// Fires a CDN fetch and updates the cache on success.
+    ///
+    /// The completion handler may be called synchronously on the caller's thread when
+    /// a fresh cached value is available (TTL not exceeded). Otherwise it is called
+    /// asynchronously on the URLSession callback queue.
     ///
     /// - Parameter completionHandler: Called with the fetch result when the operation (and any cache write) is done.
     func sync(_ completionHandler: @escaping (Result<Data, Error>) -> Void) {
-        // TODO RUM-16386: Add ETag-based conditional requests (If-None-Match / 304) and
-        // TTL-based revalidation (skip fetch if cached config is < 5 min old).
+        // Skip fetch if cached config is less than 5 minutes old.
+        // The TTL clock resets only when new data is written (2xx response).
+        // A 304 does not update modifiedAt, so the next sync will still hit the network —
+        // this is intentional: the 5-minute window measures time since the last confirmed write.
+        if case .success = cache,
+           let date = try? directory.file(named: "\(id).json").modifiedAt(),
+           Date().timeIntervalSince(date) < Self.ttl {
+            completionHandler(cache)
+            return
+        }
 
-        let endpoint = site.remoteConfigurationEndpoint
+        // Build request with conditional ETag header if a previous ETag is stored
+        var request = URLRequest(url: site.remoteConfigurationEndpoint
             .appendingPathComponent("v1")
             .appendingPathComponent(id)
-            .appendingPathExtension("json")
+            .appendingPathExtension("json"))
 
-        httpClient.fetch(request: URLRequest(url: endpoint)) { result in
+        if let data = try? directory.file(named: "\(id).etag").read(),
+           let etag = String(data: data, encoding: .utf8) {
+            request.setValue(etag, forHTTPHeaderField: "If-None-Match")
+        }
+
+        httpClient.fetch(request: request) { result in
             switch result {
             case .failure(let error):
                 completionHandler(.failure(error))
 
             case .success(let (http, data)):
-                // 1. Non-2xx HTTP status
+                // 1. Not Modified — existing cache is still valid
+                if http.statusCode == 304 {
+                    completionHandler(self.cache)
+                    return
+                }
+
+                // 2. Non-2xx HTTP status
                 guard (200..<300).contains(http.statusCode) else {
                     completionHandler(.failure(RemoteConfigurationError.httpError(http.statusCode)))
                     return
                 }
 
-                // 2. Empty body
+                // 3. Empty body
                 guard !data.isEmpty else {
                     completionHandler(.failure(RemoteConfigurationError.emptyBody))
                     return
@@ -82,11 +108,22 @@ internal final class RemoteConfigurationSynchronizer {
                 // TODO RUM-16387: Validate the schema before saving
 
                 // All checks passed — persist to disk and update in-memory cache.
-                // createFile creates or atomically replaces the file, so no existence check needed.
+                // File.write uses .atomic (write to temp, then rename), so the update is
+                // all-or-nothing: the existing file is never left in a truncated state.
                 do {
-                    let file = try self.directory.createFile(named: "\(self.id).json")
-                    try file.write(data: data)
+                    try File(url: self.directory.url.appendingPathComponent("\(self.id).json")).write(data: data)
                     self.cache = .success(data)
+
+                    // Store ETag for conditional requests on the next sync.
+                    // allHeaderFields["ETag"] uses case-sensitive Swift String equality, so we
+                    // search case-insensitively to handle servers that vary capitalisation.
+                    let etag = http.allHeaderFields
+                        .first { ($0.key as? String)?.caseInsensitiveCompare("ETag") == .orderedSame }
+                        .flatMap { $0.value as? String }
+                    if let etag = etag {
+                        try? File(url: self.directory.url.appendingPathComponent("\(self.id).etag")).write(data: Data(etag.utf8))
+                    }
+
                     completionHandler(.success(data))
                 } catch {
                     completionHandler(.failure(error))
@@ -96,7 +133,14 @@ internal final class RemoteConfigurationSynchronizer {
     }
 }
 
-private enum RemoteConfigurationError: Error {
+private enum RemoteConfigurationError: Error, LocalizedError {
     case httpError(Int)
     case emptyBody
+
+    var errorDescription: String? {
+        switch self {
+        case .httpError(let code): return "Non-2xx response: HTTP \(code)"
+        case .emptyBody: return "Empty response body"
+        }
+    }
 }
