@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FIX] Fix `NSInvalidArgumentException` ("unrecognized selector") crash in automatic scroll action tracking when UIKit dispatches a cached delegate method after the original `UIScrollViewDelegate` has been deallocated. See [#2942][].
+- [IMPROVEMENT] Add `trackScrollAndSwipeActions` feature flag in RUM configuration to opt out of automatic scroll and swipe action tracking. See [#2944][].
 
 # 3.11.0 / 12-05-2026
 
@@ -1147,6 +1148,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2866]: https://github.com/DataDog/dd-sdk-ios/pull/2866
 [#2891]: https://github.com/DataDog/dd-sdk-ios/pull/2891
 [#2942]: https://github.com/DataDog/dd-sdk-ios/pull/2942
+[#2944]: https://github.com/DataDog/dd-sdk-ios/pull/2944
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
