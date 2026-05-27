@@ -195,21 +195,23 @@ extension RUMViewScope_ {
 
         // --- Pseudocode for when the build is implemented ---
         //
-        // let documentVersion = (viewEvent?.dd.documentVersion ?? 0) + 1
-        // let fullEvent = buildRUMViewEvent(on: command, context: context, documentVersion: documentVersion)
+        // let fullEvent = buildRUMViewEvent(on: command, context: context)
         //
         // guard let mappedEvent = dependencies.eventBuilder.build(from: fullEvent) else {
         //     return  // mapper dropped it; viewEvent unchanged so documentVersion doesn't advance
         // }
         //
         // let isFirstEvent = (viewEvent == nil)  // capture before updating stored state
-        // viewEvent = mappedEvent
         //
         // if isFirstEvent {
-        //     writer.write(value: mappedEvent, ...)             // full RUMViewEvent
+        //     viewEvent = mappedEvent
+        //     writer.write(value: mappedEvent, ...)                   // full RUMViewEvent (documentVersion = 1)
         // } else {
-        //     let update = RUMViewUpdateEvent(projecting: mappedEvent)
-        //     writer.write(value: update, ...)                  // projected RUMViewUpdateEvent
+        //     let update = viewEvent!.update(from: mappedEvent)       // self provides documentVersion (+1), event wins all fields
+        //     viewEvent = mappedEvent
+        //     writer.write(value: update, ...)                        // RUMViewUpdateEvent
         // }
     }
 }
+
+// RUMViewEvent.update(from:) is implemented in RUMViewEvent+ViewUpdateProjection.swift

@@ -1197,6 +1197,7 @@
 		D2C5D5282B83FD5300B63F36 /* WebViewMessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AE740F2AD6EE4E008DB9BB /* WebViewMessageTests.swift */; };
 		D2C5D52B2B84F6AB00B63F36 /* WebViewRecordReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C5D52A2B84F6AB00B63F36 /* WebViewRecordReceiver.swift */; };
 		D2C5D52D2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C5D52C2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift */; };
+		D2C6C3DC2FC702E900ED1F5C /* RUMViewEvent+Update.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C6C3DB2FC702E900ED1F5C /* RUMViewEvent+Update.swift */; };
 		D2C7E3AB28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */; };
 		D2D0E1F22E3CE59700BA4113 /* mach_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */; };
 		D2D0E1F82E3CE73700BA4113 /* mach_sampling_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */; };
@@ -2931,6 +2932,7 @@
 		D2C5D52A2B84F6AB00B63F36 /* WebViewRecordReceiver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewRecordReceiver.swift; sourceTree = "<group>"; };
 		D2C5D52C2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewRecordReceiverTests.swift; sourceTree = "<group>"; };
 		D2C5D52F2B84F71200B63F36 /* WebRecordIntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebRecordIntegrationTests.swift; sourceTree = "<group>"; };
+		D2C6C3DB2FC702E900ED1F5C /* RUMViewEvent+Update.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMViewEvent+Update.swift"; sourceTree = "<group>"; };
 		D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryStatusPublisherTests.swift; sourceTree = "<group>"; };
 		D2CBC26A294383F200134409 /* WebViewEventReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewEventReceiver.swift; sourceTree = "<group>"; };
 		D2CBC26D294395A300134409 /* RUMContextAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContextAttributes.swift; sourceTree = "<group>"; };
@@ -5389,6 +5391,7 @@
 				61494CB924CB126F0082C633 /* RUMUserActionScope.swift */,
 				61C2C21124C5951400C0321C /* RUMViewScope.swift */,
 				D236DF762FC5F99E002F9B74 /* RUMViewScope_.swift */,
+				D2C6C3DB2FC702E900ED1F5C /* RUMViewEvent+Update.swift */,
 				61494B7827F3522C0082BBCC /* Utils */,
 			);
 			path = Scopes;
@@ -8855,6 +8858,7 @@
 				61C713A72A3B78F900FA735A /* RUMMonitorProtocol+Convenience.swift in Sources */,
 				D29A9F6829DD85BB005C54A4 /* RUMContextAttributes.swift in Sources */,
 				11E6D59F2E6B1468004D2F87 /* FirstFrameReader.swift in Sources */,
+				D2C6C3DC2FC702E900ED1F5C /* RUMViewEvent+Update.swift in Sources */,
 				D29A9F6329DD85BB005C54A4 /* RUMMonitor.swift in Sources */,
 				D29A9F7029DD85BB005C54A4 /* RUMContextProvider.swift in Sources */,
 				61DA6F6C2BB57E32009537E5 /* FatalErrorBuilder.swift in Sources */,
