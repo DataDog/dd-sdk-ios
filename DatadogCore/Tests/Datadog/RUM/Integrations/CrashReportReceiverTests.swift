@@ -364,8 +364,8 @@ class CrashReportReceiverTests: XCTestCase {
 
         // Assert exactly which fields the recovery code mutates — catches PII leak regressions
         // by ensuring no other fields are silently added or modified during recovery.
-        DDAssertDiff(lastRUMViewEvent, sendRUMViewEvent) { diffs in
-            try diffs.assertExact(different: [
+        DDAssertJSONDiff(lastRUMViewEvent, sendRUMViewEvent) { diffs in
+            diffs.assertExact(different: [
                 "_dd.document_version",
                 "date",
                 "ddtags",
