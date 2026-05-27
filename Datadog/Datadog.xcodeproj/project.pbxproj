@@ -370,6 +370,8 @@
 		5BF2BC752FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF2BC742FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift */; };
 		5BF2BC772FC4D8E0000E999C /* LayerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF2BC762FC4D8E0000E999C /* LayerProvider.swift */; };
 		5BF2BC792FC4D8E0000E999C /* LayerTreeSnapshotBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF2BC782FC4D8E0000E999C /* LayerTreeSnapshotBuilder.swift */; };
+		CC33CC1DDED24454BB35E631 /* OcclusionMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C61BC8C730F46F1A8EF112E /* OcclusionMap.swift */; };
+		17EFC9D8185942399E05BDB4 /* OcclusionMapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F2ED47E396E4030BF5D0469 /* OcclusionMapTests.swift */; };
 		5BF7B51F2E44F7D300E0B772 /* ShapeResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF7B51E2E44F7CE00E0B772 /* ShapeResource.swift */; };
 		5BF802732E9CD14100097B0E /* RUMFlagEvaluationReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */; };
 		5BF802752E9CD28900097B0E /* RUMFlagEvaluationReporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF802742E9CD28500097B0E /* RUMFlagEvaluationReporterTests.swift */; };
@@ -2102,6 +2104,8 @@
 		5BF2BC742FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerTreeSnapshotBuilderTests.swift; sourceTree = "<group>"; };
 		5BF2BC762FC4D8E0000E999C /* LayerProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerProvider.swift; sourceTree = "<group>"; };
 		5BF2BC782FC4D8E0000E999C /* LayerTreeSnapshotBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerTreeSnapshotBuilder.swift; sourceTree = "<group>"; };
+		7C61BC8C730F46F1A8EF112E /* OcclusionMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcclusionMap.swift; sourceTree = "<group>"; };
+		3F2ED47E396E4030BF5D0469 /* OcclusionMapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcclusionMapTests.swift; sourceTree = "<group>"; };
 		5BF7B51E2E44F7CE00E0B772 /* ShapeResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResource.swift; sourceTree = "<group>"; };
 		5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFlagEvaluationReporter.swift; sourceTree = "<group>"; };
 		5BF802742E9CD28500097B0E /* RUMFlagEvaluationReporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFlagEvaluationReporterTests.swift; sourceTree = "<group>"; };
@@ -3883,6 +3887,7 @@
 				5BF2BC6B2FC2B2F7000E999C /* CALayerReplayIDTests.swift */,
 				5BF2BC702FC46A00000E999C /* CALayerSnapshotContextMock.swift */,
 				5BF2BC722FC46F4A000E999C /* CALayerSnapshotFilterTests.swift */,
+				3F2ED47E396E4030BF5D0469 /* OcclusionMapTests.swift */,
 				5BF2BC6D2FC42A00000E999C /* CALayerSnapshotSemanticObservationTests.swift */,
 				5BF2BC662FC10001000E999C /* CALayerSnapshotTests.swift */,
 				5BF2BC742FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift */,
@@ -5929,6 +5934,7 @@
 				B73450122F9F200100000001 /* LayerTreeRecordingCoordinator.swift */,
 				B73450132F9F200100000001 /* LayerRecorder.swift */,
 				5BF2BC782FC4D8E0000E999C /* LayerTreeSnapshotBuilder.swift */,
+				7C61BC8C730F46F1A8EF112E /* OcclusionMap.swift */,
 			);
 			path = LayerTreeRecorder;
 			sourceTree = "<group>";
@@ -8213,6 +8219,7 @@
 				B73450222F9F200100000001 /* LayerTreeRecordingCoordinator.swift in Sources */,
 				B73450232F9F200100000001 /* LayerRecorder.swift in Sources */,
 				5BF2BC792FC4D8E0000E999C /* LayerTreeSnapshotBuilder.swift in Sources */,
+				CC33CC1DDED24454BB35E631 /* OcclusionMap.swift in Sources */,
 				61054E8B2A6EE10A00AAA894 /* SessionReplayFeature.swift in Sources */,
 				61054E992A6EE10A00AAA894 /* WireframesBuilder.swift in Sources */,
 				61054E892A6EE10A00AAA894 /* NodeIDGenerator.swift in Sources */,
@@ -8351,6 +8358,7 @@
 				5BF2BC6E2FC42A00000E999C /* CALayerSnapshotSemanticObservationTests.swift in Sources */,
 				5BF2BC672FC10001000E999C /* CALayerSnapshotTests.swift in Sources */,
 				5BF2BC752FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift in Sources */,
+				17EFC9D8185942399E05BDB4 /* OcclusionMapTests.swift in Sources */,
 				61054FB82A6EE1BA00AAA894 /* UIDatePickerRecorderTests.swift in Sources */,
 				962D72C52CF7806300F86EF0 /* GraphicsImageReflectionTests.swift in Sources */,
 				61054FA32A6EE1BA00AAA894 /* Diff+SRWireframesTests.swift in Sources */,
