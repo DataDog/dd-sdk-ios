@@ -679,8 +679,11 @@ extension RUMViewScope {
                 completion: completionHandler
             )
 
-            // Update fatal error context with recent RUM view:
-            dependencies.fatalErrorContext.view = event
+            // Only update fatal error context when this event describes the still-active view,
+            // an inactive view's terminal event must not clobber the active view's pointer.
+            if isActiveView {
+                dependencies.fatalErrorContext.view = event
+            }
 
             // Track this view in Session Ended metric:
             var instrumentationType: InstrumentationType?

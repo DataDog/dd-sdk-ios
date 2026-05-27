@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FIX] Prevent crash misattribution when an inactive RUM view emits a terminal event after `stopResource()`. See [#2948][]
 - [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
 
 # 3.11.0 / 12-05-2026
@@ -1147,6 +1148,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2866]: https://github.com/DataDog/dd-sdk-ios/pull/2866
 [#2891]: https://github.com/DataDog/dd-sdk-ios/pull/2891
 [#2859]: https://github.com/DataDog/dd-sdk-ios/pull/2859
+[#2948]: https://github.com/DataDog/dd-sdk-ios/pull/2948
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
