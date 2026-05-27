@@ -31,6 +31,13 @@ internal class RUMViewScope_: RUMScope, RUMContextProvider {
     /// version == 1 → send full RUMViewEvent; version > 1 → send RUMViewUpdateEvent.
     private var version: UInt = 0
 
+    /// Placeholder for child resource scopes — always empty until child scope support is implemented.
+    private(set) var resourceScopes: [String: RUMResourceScope] = [:]
+    /// Placeholder for child user action scope — always nil until child scope support is implemented.
+    private(set) var userActionScope: RUMUserActionScope?
+    /// Internal view attributes (cross-platform) — storage placeholder until sendViewEvent is implemented.
+    private(set) var internalAttributes: [AttributeKey: AttributeValue] = [:]
+
     private(set) var isActiveView = true
     private var didReceiveStartCommand = false
     private var needsViewUpdate = false
@@ -65,7 +72,7 @@ internal class RUMViewScope_: RUMScope, RUMContextProvider {
         context.activeViewID = viewUUID
         context.activeViewPath = viewPath
         context.activeViewName = viewName
-        // TODO: set context.activeUserActionID = userActionScope?.actionUUID when userActionScope is added
+        context.activeUserActionID = userActionScope?.actionUUID
         return context
     }
 }
@@ -100,7 +107,7 @@ extension RUMViewScope_ {
 
         case let command as RUMAddViewAttributesCommand where isActiveView:
             if command.areInternalAttributes {
-                // TODO: store in internalAttributes dict (prerequisite for sendViewEvent —
+                // TODO: RUM-16486 store in internalAttributes dict (prerequisite for sendViewEvent —
                 // needed for CrossPlatformAttributes.customINVValue and Flutter FBC metric)
                 break
             } else {
@@ -130,7 +137,7 @@ extension RUMViewScope_ {
 
         case let command as RUMAddViewLoadingTime where isActiveView:
             attributes.merge(command.attributes) { $1 }
-            needsViewUpdate = true // TODO: honour command.overwrite like RUMViewScope
+            needsViewUpdate = true // TODO: RUM-16486 honour command.overwrite like RUMViewScope
 
         case let command as RUMAddViewTimingCommand where isActiveView:
             attributes.merge(command.attributes) { $1 }
@@ -138,26 +145,26 @@ extension RUMViewScope_ {
             needsViewUpdate = true
 
         case is RUMStartResourceCommand where isActiveView:
-            break // TODO: child resource scopes
+            break // TODO: RUM-16486 child resource scopes
 
         case is RUMStartUserActionCommand where isActiveView:
-            break // TODO: child action scopes
+            break // TODO: RUM-16486 child action scopes
 
         case is RUMAddUserActionCommand where isActiveView:
-            break // TODO: child action scopes
+            break // TODO: RUM-16486 child action scopes
 
         case is RUMErrorCommand where isActiveView:
-            break // TODO: error events
+            break // TODO: RUM-16486 error events
 
         case is RUMAddLongTaskCommand where isActiveView:
-            break // TODO: long task events
+            break // TODO: RUM-16486 long task events
 
         case let command as RUMAddFeatureFlagEvaluationCommand where isActiveView:
             featureFlags[command.name] = command.value
             needsViewUpdate = true
 
         case is RUMUpdatePerformanceMetric where isActiveView:
-            break // TODO: performance metrics
+            break // TODO: RUM-16486 performance metrics
 
         case _ as RUMOperationStepVitalCommand where isActiveView:
             needsViewUpdate = true
@@ -175,18 +182,18 @@ extension RUMViewScope_ {
             }
         }
 
-        // TODO: change to `return !(!isActiveView && resourceScopes.isEmpty)` when child resource scopes are added
+        // TODO: RUM-16486 change to `return !(!isActiveView && resourceScopes.isEmpty)` when child resource scopes are added
         return isActiveView
     }
 
     private func sendViewEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
-        // TODO: build and write RUMViewEvent (full snapshot, same as RUMViewScope.sendViewUpdateEvent)
+        // TODO: RUM-16486 build and write RUMViewEvent (full snapshot, same as RUMViewScope.sendViewUpdateEvent)
         // Prerequisite: add viewIndexInSession parameter to init (needed for event metadata)
         // Prerequisite: add internalAttributes storage (Fix 1 above)
     }
 
     private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
-        // TODO: build and write RUMViewUpdateEvent
+        // TODO: RUM-16486 build and write RUMViewUpdateEvent
         // Prerequisite: add RUMSanitizableEvent conformance to RUMViewUpdateEvent
         // Prerequisite: add RUMViewUpdateEvent entry to RUMEventsMapper
     }

@@ -1331,6 +1331,36 @@ extension RUMViewScope {
     }
 }
 
+extension RUMViewScope_ {
+    public static func mockAny() -> RUMViewScope_ {
+        return mockWith()
+    }
+
+    static func mockWith(
+        isInitialView: Bool = false,
+        parent: RUMContextProvider = RUMContextProviderMock(),
+        dependencies: RUMScopeDependencies = .mockAny(),
+        identity: ViewIdentifier = .mockViewIdentifier(),
+        path: String = .mockAny(),
+        name: String = .mockAny(),
+        customTimings: [String: Int64] = [:],
+        startTime: Date = .mockAny(),
+        serverTimeOffset: TimeInterval = .zero
+    ) -> RUMViewScope_ {
+        return RUMViewScope_(
+            isInitialView: isInitialView,
+            parent: parent,
+            dependencies: dependencies,
+            identity: identity,
+            path: path,
+            name: name,
+            customTimings: customTimings,
+            startTime: startTime,
+            serverTimeOffset: serverTimeOffset
+        )
+    }
+}
+
 extension RUMResourceScope {
     static func mockWith(
         parent: RUMContextProvider,
