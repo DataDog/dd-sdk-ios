@@ -68,7 +68,13 @@ public class URLSessionTaskInterception {
     public private(set) var startDate: Date?
 
     /// Approximate end time captured in Automatic mode when interception completes.
+    /// Guaranteed to be `>= startDate` once registered via `register(endDate:mediaTime:)`.
     internal var endDate: Date?
+
+    /// Monotonic uptime captured alongside `startDate` / `endDate`. Used to derive `endDate`
+    /// immune to wall-clock corrections (NTP, DST, manual changes).
+    internal var startMediaTime: CFTimeInterval?
+    internal var endMediaTime: CFTimeInterval?
 
     /// Returns the most accurate start time available.
     /// Prefers `URLSessionTaskMetrics` timing (registered delegate mode) over approximate timing (automatic mode).
@@ -145,12 +151,28 @@ public class URLSessionTaskInterception {
         self.responseSize = responseSize
     }
 
-    func register(startDate: Date) {
+    func register(startDate: Date, mediaTime: CFTimeInterval? = nil) {
         self.startDate = startDate
+        self.startMediaTime = mediaTime
     }
 
-    func register(endDate: Date) {
-        self.endDate = endDate
+    /// Registers the end date and guarantees `endDate >= startDate`.
+    /// When both media times are available, derives `endDate` from the monotonic delta;
+    /// otherwise clamps to `max(endDate, startDate)`.
+    func register(endDate: Date, mediaTime: CFTimeInterval? = nil) {
+        self.endMediaTime = mediaTime
+
+        guard let startDate else {
+            self.endDate = endDate
+            return
+        }
+
+        if let startMediaTime, let endMediaTime = mediaTime {
+            let monotonicDuration = max(0, endMediaTime - startMediaTime)
+            self.endDate = startDate.addingTimeInterval(monotonicDuration)
+        } else {
+            self.endDate = max(endDate, startDate)
+        }
     }
 
     /// Tells if the interception is done.

@@ -449,6 +449,7 @@ public enum RUM
     public typealias FeatureFlags = [FeatureFlag: Bool]
     public enum FeatureFlag: String
         case none
+        case trackScrollAndSwipeActions
 [?] extension RUM.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -566,11 +567,6 @@ public enum PerformanceMetric
     case flutterBuildTime
     case flutterRasterTime
     case jsFrameTimeSeconds
-public protocol CACurrentMediaTimeProvider: Sendable
-    var current: CFTimeInterval
-public struct MediaTimeProvider: CACurrentMediaTimeProvider
-    public init()
-    public var current: CFTimeInterval
 
 # ----------------------------------
 # API surface for DatadogCrashReporting:

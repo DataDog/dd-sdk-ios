@@ -138,6 +138,68 @@ class URLSessionTaskInterceptionTests: XCTestCase {
         XCTAssertNil(interception.fetchStartDate)
         XCTAssertNil(interception.fetchEndDate)
     }
+
+    // MARK: - Monotonic-clock-based duration
+
+    func testFetchDates_whenMediaTimesAreProvided_endDateIsDerivedFromMonotonicDelta() {
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .automatic)
+        let startDate = Date.mockDecember15th2019At10AMUTC()
+        let startMediaTime: CFTimeInterval = 1_000
+        let endMediaTime: CFTimeInterval = 1_002.5
+
+        // When
+        interception.register(startDate: startDate, mediaTime: startMediaTime)
+        // Register an `endDate` value that is INCONSISTENT with the monotonic delta — the
+        // monotonic timestamps should win because they're the safer source of duration.
+        let bogusEndDate = startDate.addingTimeInterval(-10)
+        interception.register(endDate: bogusEndDate, mediaTime: endMediaTime)
+
+        // Then
+        XCTAssertEqual(interception.fetchStartDate, startDate)
+        XCTAssertEqual(interception.fetchEndDate, startDate.addingTimeInterval(2.5))
+    }
+
+    func testFetchDates_whenEndDateIsBeforeStartDateAndNoMediaTimes_endDateIsClampedToStartDate() {
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .automatic)
+        let startDate = Date.mockDecember15th2019At10AMUTC()
+        let earlierEndDate = startDate.addingTimeInterval(-3)
+
+        // When — wall-clock corrected backwards mid-request (e.g. NTP), no monotonic data.
+        interception.register(startDate: startDate)
+        interception.register(endDate: earlierEndDate)
+
+        // Then — endDate must be `>= startDate` to keep `startDate...endDate` ranges valid.
+        XCTAssertEqual(interception.fetchStartDate, startDate)
+        XCTAssertEqual(interception.fetchEndDate, startDate)
+    }
+
+    func testFetchDates_whenEndDateIsAfterStartDateAndNoMediaTimes_endDateIsPreserved() {
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .automatic)
+        let startDate = Date.mockDecember15th2019At10AMUTC()
+        let endDate = startDate.addingTimeInterval(3)
+
+        // When
+        interception.register(startDate: startDate)
+        interception.register(endDate: endDate)
+
+        // Then
+        XCTAssertEqual(interception.fetchStartDate, startDate)
+        XCTAssertEqual(interception.fetchEndDate, endDate)
+    }
+
+    func testFetchDates_whenStartDateIsMissing_endDateIsStoredAsRegistered() {
+        // It is possible (defensively) that `endDate` is registered without a prior `startDate`.
+        // In that case we cannot anchor or clamp; simply store the value as registered.
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny(), trackingMode: .automatic)
+        let endDate = Date.mockDecember15th2019At10AMUTC()
+
+        // When
+        interception.register(endDate: endDate, mediaTime: 1_002)
+
+        // Then
+        XCTAssertNil(interception.fetchStartDate)
+        XCTAssertEqual(interception.fetchEndDate, endDate)
+    }
 }
 
 class ResourceMetricsTests: XCTestCase {
