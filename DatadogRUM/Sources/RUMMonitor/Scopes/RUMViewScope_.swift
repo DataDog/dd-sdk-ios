@@ -26,10 +26,13 @@ internal class RUMViewScope_: RUMScope, RUMContextProvider {
     private(set) var customTimings: [String: Int64] = [:]
     private(set) var featureFlags: [String: Encodable] = [:]
 
-    /// Current version of this View, used for routing and `documentVersion`.
-    /// Starts at 0; incremented in `process` before each send.
-    /// version == 1 → send full RUMViewEvent; version > 1 → send RUMViewUpdateEvent.
-    private var version: UInt = 0
+    /// The last full view event sent through the mapper.
+    /// - `nil`      → no event has been sent yet → next send writes a full `RUMViewEvent`.
+    /// - non-`nil`  → at least one event was sent → next send projects a `RUMViewUpdateEvent`.
+    ///
+    /// Storing the mapper-transformed event allows the projection to honour any scrubbing
+    /// applied by the user's `viewEventMapper` on the first event.
+    private var viewEvent: RUMViewEvent?
 
     /// Placeholder for child resource scopes — always empty until child scope support is implemented.
     private(set) var resourceScopes: [String: RUMResourceScope] = [:]
@@ -83,8 +86,7 @@ extension RUMViewScope_ {
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         needsViewUpdate = false
 
-        let hasSentNoViewUpdatesYet = version == 0
-        if isInitialView, hasSentNoViewUpdatesYet {
+        if isInitialView, viewEvent == nil {
             needsViewUpdate = true
         }
 
@@ -174,27 +176,40 @@ extension RUMViewScope_ {
         }
 
         if needsViewUpdate {
-            version += 1
-            if version == 1 {
-                sendViewEvent(on: command, context: context, writer: writer)
-            } else {
-                sendViewUpdateEvent(on: command, context: context, writer: writer)
-            }
+            sendViewEvent(on: command, context: context, writer: writer)
         }
 
         // TODO: RUM-16486 change to `return !(!isActiveView && resourceScopes.isEmpty)` when child resource scopes are added
         return isActiveView
     }
 
+    /// Builds a full `RUMViewEvent`, runs it through the view mapper, then:
+    /// - writes it directly as `RUMViewEvent`  when `viewEvent == nil` (first send), or
+    /// - projects it to `RUMViewUpdateEvent`   when `viewEvent != nil` (subsequent sends).
+    ///
+    /// In both cases the mapped event is stored in `viewEvent` for future projections.
     private func sendViewEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
-        // TODO: RUM-16486 build and write RUMViewEvent (full snapshot, same as RUMViewScope.sendViewUpdateEvent)
+        // TODO: RUM-16486 build RUMViewEvent from current scope state (port from RUMViewScope.sendViewUpdateEvent)
         // Prerequisite: add viewIndexInSession parameter to init (needed for event metadata)
-        // Prerequisite: add internalAttributes storage (Fix 1 above)
-    }
+        // Prerequisite: populate internalAttributes via RUMAddViewAttributesCommand
 
-    private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
-        // TODO: RUM-16486 build and write RUMViewUpdateEvent
-        // Prerequisite: add RUMSanitizableEvent conformance to RUMViewUpdateEvent
-        // Prerequisite: add RUMViewUpdateEvent entry to RUMEventsMapper
+        // --- Pseudocode for when the build is implemented ---
+        //
+        // let documentVersion = (viewEvent?.dd.documentVersion ?? 0) + 1
+        // let fullEvent = buildRUMViewEvent(on: command, context: context, documentVersion: documentVersion)
+        //
+        // guard let mappedEvent = dependencies.eventBuilder.build(from: fullEvent) else {
+        //     return  // mapper dropped it; viewEvent unchanged so documentVersion doesn't advance
+        // }
+        //
+        // let isFirstEvent = (viewEvent == nil)  // capture before updating stored state
+        // viewEvent = mappedEvent
+        //
+        // if isFirstEvent {
+        //     writer.write(value: mappedEvent, ...)             // full RUMViewEvent
+        // } else {
+        //     let update = RUMViewUpdateEvent(projecting: mappedEvent)
+        //     writer.write(value: update, ...)                  // projected RUMViewUpdateEvent
+        // }
     }
 }
