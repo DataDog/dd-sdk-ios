@@ -4,21 +4,21 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// `CALayerSwizzler` observes `CALayer` display, drawing, and layout without
-// altering its behavior.
-
 #if os(iOS)
 import QuartzCore
 import DatadogInternal
 
+/// Receives layer callbacks from `CALayerSwizzler`.
 internal protocol CALayerObserver: AnyObject {
     func layerDidDisplay(_ layer: CALayer)
     func layerDidDraw(_ layer: CALayer, in context: CGContext)
     func layerDidLayoutSublayers(_ layer: CALayer)
 }
 
+/// Observes `CALayer` display, drawing, and layout callbacks.
+///
+/// Swizzled methods call the original implementation first, then notify the
+/// observer.
 internal final class CALayerSwizzler {
     private let display: Display
     private let draw: Draw

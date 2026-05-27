@@ -4,18 +4,16 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Defines timer abstractions used by screen change monitoring.
-
 #if os(iOS)
 import Foundation
 import Dispatch
 
+/// A scheduled timer that can be cancelled.
 internal protocol ScheduledTimer {
     func cancel()
 }
 
+/// Schedules one-shot timers for screen change monitoring.
 internal protocol TimerScheduler: TimeSource {
     func schedule(after interval: TimeInterval, _ action: @escaping () -> Void) -> any ScheduledTimer
 }

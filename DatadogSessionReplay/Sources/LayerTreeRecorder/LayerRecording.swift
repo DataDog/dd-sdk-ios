@@ -8,6 +8,7 @@
 import Foundation
 @preconcurrency import DatadogInternal
 
+/// Immutable inputs needed to build one layer recording.
 @available(iOS 13.0, tvOS 13.0, *)
 internal struct LayerRecordingContext: Sendable {
     let textAndInputPrivacy: TextAndInputPrivacyLevel
@@ -24,6 +25,7 @@ internal struct LayerRecordingContext: Sendable {
 
 @available(iOS 13.0, tvOS 13.0, *)
 internal protocol LayerRecording {
+    /// Schedules a recording from collected screen changes.
     func scheduleRecording(_ changeset: CALayerChangeset, context: LayerRecordingContext) async
 }
 #endif
