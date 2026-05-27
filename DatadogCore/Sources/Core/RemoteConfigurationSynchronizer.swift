@@ -70,13 +70,16 @@ internal final class RemoteConfigurationSynchronizer {
             return
         }
 
-        // Build request with conditional ETag header if a previous ETag is stored
+        // Build request with conditional ETag header if a previous ETag is stored.
+        // Only send If-None-Match when the cache is usable — if cache is .failure,
+        // a 304 response would leave us with no data to serve.
         var request = URLRequest(url: site.remoteConfigurationEndpoint
             .appendingPathComponent("v1")
             .appendingPathComponent(id)
             .appendingPathExtension("json"))
 
-        if let data = try? directory.file(named: "\(id).etag").read(),
+        if case .success = cache,
+           let data = try? directory.file(named: "\(id).etag").read(),
            let etag = String(data: data, encoding: .utf8) {
             request.setValue(etag, forHTTPHeaderField: "If-None-Match")
         }

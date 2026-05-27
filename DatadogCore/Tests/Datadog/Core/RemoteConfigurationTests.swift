@@ -354,6 +354,32 @@ class RemoteConfigurationTests: XCTestCase {
         XCTAssertEqual(storedETag, "xyz789")
     }
 
+    func testSyncDoesNotSendIfNoneMatchWhenCacheIsFailure() throws {
+        // Given — ETag file exists but JSON cache is unreadable (cache is .failure)
+        try Data("abc123".utf8).write(
+            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.etag"),
+            options: .atomic
+        )
+        // No .json file → cache will be .failure after init
+
+        var capturedRequest: URLRequest?
+        MockURLProtocol.requestHandler = { request in
+            capturedRequest = request
+            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data("{}".utf8))
+        }
+
+        let rc = makeSynchronizer()
+        let expectation = expectation(description: "sync completes")
+
+        rc.sync { _ in expectation.fulfill() }
+        wait(for: [expectation], timeout: 2)
+
+        XCTAssertNil(
+            capturedRequest?.value(forHTTPHeaderField: "If-None-Match"),
+            "Must not send If-None-Match when cache is .failure — a 304 would leave us with no data"
+        )
+    }
+
     func testSyncSendsIfNoneMatchHeaderWhenETagStored() throws {
         // Given — store an ETag from a previous fetch
         try Data("abc123".utf8).write(
