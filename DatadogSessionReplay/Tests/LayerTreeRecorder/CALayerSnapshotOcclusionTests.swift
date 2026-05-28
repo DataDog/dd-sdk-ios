@@ -75,58 +75,6 @@ struct CALayerSnapshotOcclusionTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test(
-        "Is not axis-aligned for transforms with rotation or perspective",
-        arguments: [
-            CATransform3DMakeRotation(.pi / 4, 0, 0, 1),
-            CATransform3DMakeRotation(.pi / 4, 1, 0, 0),
-            CATransform3DMakeRotation(.pi / 4, 0, 1, 0),
-            {
-                var transform = CATransform3DIdentity
-                transform.m14 = -1 / 500
-                return transform
-            }(),
-            {
-                var transform = CATransform3DIdentity
-                transform.m24 = -1 / 500
-                return transform
-            }(),
-            {
-                var transform = CATransform3DIdentity
-                transform.m34 = -1 / 500
-                return transform
-            }(),
-        ]
-    )
-    func isNotAxisAlignedForNonTrivialTransforms(transform: CATransform3D) throws {
-        // Given
-        let layer = CALayer()
-        layer.bounds = CGRect(x: 0, y: 0, width: 10, height: 10)
-        layer.transform = transform
-
-        // When
-        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
-
-        // Then
-        #expect(!snapshot.isAxisAligned)
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Is axis-aligned when scaled uniformly")
-    func isAxisAlignedWhenScaledUniformly() throws {
-        // Given
-        let layer = CALayer()
-        layer.bounds = CGRect(x: 0, y: 0, width: 10, height: 10)
-        layer.transform = CATransform3DMakeScale(2, 2, 1)
-
-        // When
-        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
-
-        // Then
-        #expect(snapshot.isAxisAligned)
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Is an occluder when fully opaque with a solid background")
     func isOccluderWhenFullyOpaqueWithSolidBackground() throws {
         // Given
@@ -361,6 +309,37 @@ struct CALayerSnapshotOcclusionTests {
                 CGRect(x: 0, y: 0, width: 40, height: 40)
             ]
         )
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Keeps a covered content-bearing leaf when it casts a shadow")
+    func keepsCoveredContentBearingLeafWhenItCastsShadow() throws {
+        // Given
+        let root = CALayer()
+        root.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+
+        let behindColor = UIColor.green.cgColor
+        let behind = CALayer()
+        behind.frame = CGRect(x: 16, y: 16, width: 32, height: 32)
+        behind.backgroundColor = behindColor
+        behind.shadowColor = UIColor.black.cgColor
+        behind.shadowOpacity = 1
+        behind.zPosition = 0
+        root.addSublayer(behind)
+
+        let frontColor = UIColor.red.cgColor
+        let front = CALayer()
+        front.frame = CGRect(x: 16, y: 16, width: 32, height: 32)
+        front.backgroundColor = frontColor
+        front.zPosition = 1
+        root.addSublayer(front)
+
+        // When
+        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
+        let result = try #require(snapshot.removingOccluded())
+
+        // Then
+        #expect(result.sublayers.map(\.backgroundColor) == [behindColor, frontColor])
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

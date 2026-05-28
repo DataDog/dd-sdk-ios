@@ -343,6 +343,8 @@
 		5B9CB9E72E420ACB005485E6 /* ImageRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E62E420AC4005485E6 /* ImageRendererTests.swift */; };
 		5BA8C3042E784C0200B1DA80 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
 		5BA8C3102E785A2000B1DA80 /* Flags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C30F2E785A2000B1DA80 /* Flags.swift */; };
+		5BB09C9D2FC89A5A003DB9FF /* CATransform3D+AxisAligned.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB09C9C2FC89A49003DB9FF /* CATransform3D+AxisAligned.swift */; };
+		5BB09C9F2FC89F0C003DB9FF /* CATransform3DAxisAlignedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB09C9E2FC89F04003DB9FF /* CATransform3DAxisAlignedTests.swift */; };
 		5BB294AD2E8286B200CAA44B /* ExposureEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */; };
 		5BB294B02E82CCA400CAA44B /* ExposureRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */; };
 		5BB294BD2E82E66500CAA44B /* FlagValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294BC2E82E66200CAA44B /* FlagValue.swift */; };
@@ -2084,6 +2086,8 @@
 		5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogFlags.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BA8C30F2E785A2000B1DA80 /* Flags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flags.swift; sourceTree = "<group>"; };
 		5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsTests.swift; sourceTree = "<group>"; };
+		5BB09C9C2FC89A49003DB9FF /* CATransform3D+AxisAligned.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CATransform3D+AxisAligned.swift"; sourceTree = "<group>"; };
+		5BB09C9E2FC89F04003DB9FF /* CATransform3DAxisAlignedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CATransform3DAxisAlignedTests.swift; sourceTree = "<group>"; };
 		5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureEvent.swift; sourceTree = "<group>"; };
 		5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureRequestBuilderTests.swift; sourceTree = "<group>"; };
 		5BB294BC2E82E66200CAA44B /* FlagValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagValue.swift; sourceTree = "<group>"; };
@@ -3891,6 +3895,7 @@
 			isa = PBXGroup;
 			children = (
 				5BF2BC6B2FC2B2F7000E999C /* CALayerReplayIDTests.swift */,
+				5BB09C9E2FC89F04003DB9FF /* CATransform3DAxisAlignedTests.swift */,
 				5BF2BC702FC46A00000E999C /* CALayerSnapshotContextMock.swift */,
 				5BF2BC722FC46F4A000E999C /* CALayerSnapshotFilterTests.swift */,
 				AB7890CD1234EF567890ABCD /* CALayerSnapshotOcclusionTests.swift */,
@@ -5933,6 +5938,7 @@
 			children = (
 				5BF2BA9E2FBF1391000E999C /* CALayer+ReplayID.swift */,
 				5BF2BA9A2FBDBF84000E999C /* CALayerSnapshot.swift */,
+				5BB09C9C2FC89A49003DB9FF /* CATransform3D+AxisAligned.swift */,
 				5BF2BC692FC085DB000E999C /* CALayerSnapshot+Context.swift */,
 				5BF2BAA22FBF3529000E999C /* CALayerSnapshot+CornerRadii.swift */,
 				5BF2BAA42FBF39AF000E999C /* CALayerSnapshot+Filter.swift */,
@@ -8212,6 +8218,7 @@
 				61054E812A6EE10A00AAA894 /* UIStepperRecorder.swift in Sources */,
 				61054E632A6EE10A00AAA894 /* SessionReplayConfiguration.swift in Sources */,
 				61054E702A6EE10A00AAA894 /* TouchSnapshotProducer.swift in Sources */,
+				5BB09C9D2FC89A5A003DB9FF /* CATransform3D+AxisAligned.swift in Sources */,
 				D2C5D52B2B84F6AB00B63F36 /* WebViewRecordReceiver.swift in Sources */,
 				61054E652A6EE10A00AAA894 /* AppWindowObserver.swift in Sources */,
 				A74A72812B0CEE4900771FEB /* ResourceRequestBuilder.swift in Sources */,
@@ -8389,6 +8396,7 @@
 				61054F972A6EE1BA00AAA894 /* UIImage+SessionReplayTests.swift in Sources */,
 				5B9CB9E72E420ACB005485E6 /* ImageRendererTests.swift in Sources */,
 				61054FB02A6EE1BA00AAA894 /* ViewTreeSnapshotBuilderTests.swift in Sources */,
+				5BB09C9F2FC89F0C003DB9FF /* CATransform3DAxisAlignedTests.swift in Sources */,
 				5B7448462EFBC7E5003E622C /* ScreenChangeSchedulerTests.swift in Sources */,
 				61054FB12A6EE1BA00AAA894 /* NodeIDGeneratorTests.swift in Sources */,
 				5B7448372EFAED99003E622C /* CALayerSwizzlerTests.swift in Sources */,

@@ -12,16 +12,7 @@ import Foundation
 extension CALayerSnapshot {
     /// A Boolean value indicating whether the layer draws any content.
     var drawsContent: Bool {
-        contentsClass != nil || hasBackgroundColor || hasBorder
-    }
-
-    /// A Boolean value indicating whether the layer's transform contains no rotation, skew, or perspective.
-    var isAxisAligned: Bool {
-        transform.m12 == 0 && transform.m21 == 0
-            && transform.m13 == 0 && transform.m23 == 0
-            && transform.m31 == 0 && transform.m32 == 0
-            && transform.m14 == 0 && transform.m24 == 0
-            && transform.m34 == 0
+        contentsClass != nil || hasBackgroundColor || hasBorder || hasVisibleShadow
     }
 
     /// A Boolean value indicating whether the layer paints its frame as an opaque rectangle.
@@ -29,11 +20,12 @@ extension CALayerSnapshot {
         opacity == 1
             && backgroundColor?.alpha == 1
             && mask == nil
-            && isAxisAligned
+            && transform.isAxisAligned
             && (compositingFilter == nil || compositingFilter == .normal)
             && (filters.isEmpty || filters.allSatisfy(\.preservesOpacity))
     }
 
+    /// Returns a copy of the layer tree without layers fully hidden by opaque front siblings.
     func removingOccluded() -> CALayerSnapshot? {
         var occlusionMap = OcclusionMap(size: absoluteFrame.size)
 
@@ -114,10 +106,15 @@ extension CALayerSnapshot {
         return borderColor.alpha > 0
     }
 
+    fileprivate var hasVisibleShadow: Bool {
+        shadowOpacity > 0 && (shadowColor?.alpha ?? 0) > 0
+    }
+
     fileprivate var preservesSublayerOcclusion: Bool {
         opacity == 1
             && mask == nil
-            && isAxisAligned
+            && transform.isAxisAligned
+            && sublayerTransform.isAxisAligned
             && (compositingFilter == nil || compositingFilter == .normal)
             && (filters.isEmpty || filters.allSatisfy(\.preservesOpacity))
     }
@@ -139,6 +136,7 @@ extension CALayerSnapshot {
 
         var visibleLayers: [CALayerSnapshot] = []
 
+        // `sorted` is stable (SE-0372), so equal `zPosition` preserves capture sibling order
         sublayers.sorted {
             $0.zPosition < $1.zPosition
         }
@@ -156,7 +154,7 @@ extension CALayerSnapshot {
 
         if visibleLayers.isEmpty {
             if drawsContent {
-                if occlusionMap.isCovered(visibleFrame) {
+                if !hasVisibleShadow && occlusionMap.isCovered(visibleFrame) {
                     return nil
                 }
             } else {
@@ -181,9 +179,13 @@ extension CALayerSnapshot {
 extension CALayerSnapshot.Filter {
     fileprivate var preservesOpacity: Bool {
         switch self {
-        case .gaussianBlur, .saturate, .brightness, .multiplyColor:
+        case .saturate, .brightness:
             return true
-        case .glassBackground, .colorMatrix, .unknown:
+        case .gaussianBlur(let radius) where radius == 0:
+            return true
+        case .multiplyColor(let color) where color.alpha == 1:
+            return true
+        default:
             return false
         }
     }
