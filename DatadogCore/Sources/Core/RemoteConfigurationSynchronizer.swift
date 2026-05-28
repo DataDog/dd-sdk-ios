@@ -100,9 +100,7 @@ internal final class RemoteConfigurationSynchronizer {
                     try File(url: self.directory.url.appendingPathComponent("\(self.id).json")).write(data: data)
                     self.cache = .success(data)
 
-                    // Store ETag for conditional requests on the next sync.
-                    // Case-insensitive search: allHeaderFields["ETag"] is case-sensitive in Swift
-                    // due to AnyHashable bridging, so we look up by lowercased key.
+                    // Store ETag for conditional requests on the next sync
                     if let etag = http.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "etag" })?.value as? String {
                         try? File(url: self.directory.url.appendingPathComponent("\(self.id).etag")).write(data: Data(etag.utf8))
                     }
