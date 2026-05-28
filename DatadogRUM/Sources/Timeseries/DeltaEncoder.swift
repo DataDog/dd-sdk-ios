@@ -40,18 +40,18 @@ internal enum DeltaEncoder {
         for (index, sample) in batch.enumerated() {
             if index == 0 {
                 ts.append(sample.timestamp)
-                memoryMax.append(Int64(round(sample.dataPoint.memoryMax * Double(scale))))
-                memoryPercent.append(Int64(round(sample.dataPoint.memoryPercent * Double(scale))))
+                memoryMax.append(Int64.ddWithNoOverflow(sample.dataPoint.memoryMax * Double(scale)))
+                memoryPercent.append(Int64.ddWithNoOverflow(sample.dataPoint.memoryPercent * Double(scale)))
             } else {
                 let prev = batch[index - 1]
                 ts.append(sample.timestamp - prev.timestamp)
                 memoryMax.append(
-                    Int64(round(sample.dataPoint.memoryMax * Double(scale))) -
-                    Int64(round(prev.dataPoint.memoryMax * Double(scale)))
+                    Int64.ddWithNoOverflow(sample.dataPoint.memoryMax * Double(scale)) -
+                    Int64.ddWithNoOverflow(prev.dataPoint.memoryMax * Double(scale))
                 )
                 memoryPercent.append(
-                    Int64(round(sample.dataPoint.memoryPercent * Double(scale))) -
-                    Int64(round(prev.dataPoint.memoryPercent * Double(scale)))
+                    Int64.ddWithNoOverflow(sample.dataPoint.memoryPercent * Double(scale)) -
+                    Int64.ddWithNoOverflow(prev.dataPoint.memoryPercent * Double(scale))
                 )
             }
         }
@@ -88,13 +88,13 @@ internal enum DeltaEncoder {
         for (index, sample) in batch.enumerated() {
             if index == 0 {
                 ts.append(sample.timestamp)
-                cpuUsage.append(Int64(round(sample.dataPoint.cpuUsage * Double(scale))))
+                cpuUsage.append(Int64.ddWithNoOverflow(sample.dataPoint.cpuUsage * Double(scale)))
             } else {
                 let prev = batch[index - 1]
                 ts.append(sample.timestamp - prev.timestamp)
                 cpuUsage.append(
-                    Int64(round(sample.dataPoint.cpuUsage * Double(scale))) -
-                    Int64(round(prev.dataPoint.cpuUsage * Double(scale)))
+                    Int64.ddWithNoOverflow(sample.dataPoint.cpuUsage * Double(scale)) -
+                    Int64.ddWithNoOverflow(prev.dataPoint.cpuUsage * Double(scale))
                 )
             }
         }
