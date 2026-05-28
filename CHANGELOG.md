@@ -2,6 +2,7 @@
 
 - [FIX] Prevent crash misattribution when an inactive RUM view emits a terminal event after `stopResource()`. See [#2948][]
 - [FIX] Fix wrong types in the `objc_LogEventDevice` properties definition. See [#2966][]
+- [IMPROVEMENT] Add `logger` case to `RUMErrorSource` (Swift) and `DDRUMErrorSource` (Obj-C) for cross-platform parity. See [#2949][]
 - [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
 - [IMPROVEMENT] Align public RUM session IDs with event formatting. See [#2956][]
 
@@ -1162,6 +1163,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2948]: https://github.com/DataDog/dd-sdk-ios/pull/2948
 [#2956]: https://github.com/DataDog/dd-sdk-ios/pull/2956
 [#2966]: https://github.com/DataDog/dd-sdk-ios/pull/2966
+[#2949]: https://github.com/DataDog/dd-sdk-ios/pull/2949
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

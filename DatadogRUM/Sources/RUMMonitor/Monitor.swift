@@ -88,6 +88,7 @@ internal enum RUMInternalErrorSource: String, Decodable {
         case .network: self = .network
         case .webview: self = .webview
         case .console: self = .console
+        case .logger: self = .logger
         }
     }
 }
