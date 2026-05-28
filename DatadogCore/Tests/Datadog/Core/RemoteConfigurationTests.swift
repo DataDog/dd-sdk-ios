@@ -287,6 +287,30 @@ class RemoteConfigurationTests: XCTestCase {
         XCTAssertEqual(storedETag, "abc123")
     }
 
+    func testSyncDeletesStaleETagWhenResponseHasNoETag() throws {
+        // Given — a stale ETag file from a previous fetch
+        try Data("old-etag".utf8).write(
+            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.etag"),
+            options: .atomic
+        )
+
+        // When — server returns 200 with new data but no ETag header
+        MockURLProtocol.requestHandler = { request in
+            (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data("{}".utf8))
+        }
+        let rc = makeSynchronizer()
+        let expectation = expectation(description: "sync completes")
+        rc.sync { _ in expectation.fulfill() }
+        wait(for: [expectation], timeout: 2)
+
+        // Then — stale ETag file must be deleted so it is never sent as If-None-Match
+        let etagFileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.etag")
+        XCTAssertFalse(
+            FileManager.default.fileExists(atPath: etagFileURL.path),
+            "Stale ETag must be deleted when 200 response carries no ETag"
+        )
+    }
+
     func testSyncDoesNotSendIfNoneMatchWhenCacheIsFailure() throws {
         // Given — ETag file exists but JSON cache is unreadable (cache is .failure)
         try Data("abc123".utf8).write(

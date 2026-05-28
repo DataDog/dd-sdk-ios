@@ -100,9 +100,14 @@ internal final class RemoteConfigurationSynchronizer {
                     try File(url: self.directory.url.appendingPathComponent("\(self.id).json")).write(data: data)
                     self.cache = .success(data)
 
-                    // Store ETag for conditional requests on the next sync
+                    // Store ETag for conditional requests on the next sync.
+                    // If the response has no ETag, delete any stale validator so we
+                    // never send If-None-Match for a different representation.
+                    let etagFile = File(url: self.directory.url.appendingPathComponent("\(self.id).etag"))
                     if let etag = http.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "etag" })?.value as? String {
-                        try? File(url: self.directory.url.appendingPathComponent("\(self.id).etag")).write(data: Data(etag.utf8))
+                        try? etagFile.write(data: Data(etag.utf8))
+                    } else {
+                        try? etagFile.delete()
                     }
 
                     completionHandler(.success(data))
