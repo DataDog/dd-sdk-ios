@@ -134,7 +134,7 @@ extension CALayerSnapshot {
             cornerRadiiValue.getValue(&cornerRadii)
         }
 
-        if cornerRadii == .zero {
+        if cornerRadii == .zero, layer.cornerRadius > 0 {
             cornerRadii = CornerRadii(
                 cornerRadius: layer.cornerRadius,
                 maskedCorners: layer.maskedCorners

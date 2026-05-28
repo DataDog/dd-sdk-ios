@@ -150,26 +150,6 @@ struct CALayerSnapshotFilterTests {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-extension NSObject {
-    fileprivate static func makeCAFilter(type: String) throws -> NSObject {
-        guard
-            let filterClass = NSClassFromString("CAFilter"),
-            let filter = (filterClass as AnyObject).perform(
-                NSSelectorFromString("filterWithType:"),
-                with: type
-            )?
-            .takeUnretainedValue() as? NSObject
-        else {
-            struct CAFilterNotFound: Error {}
-            throw CAFilterNotFound()
-        }
-
-        filter.perform(NSSelectorFromString("setDefaults"))
-        return filter
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
 private extension CALayerSnapshot.ColorMatrix {
     var nsValue: NSValue {
         var value = self
