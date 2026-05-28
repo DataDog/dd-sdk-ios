@@ -229,7 +229,7 @@ extension Monitor: RUMMonitorProtocol {
 
             var sessionIdValue: String? = nil
             if activeSession.sampler.isSampled, activeSession.sessionUUID != .nullUUID {
-                sessionIdValue = activeSession.sessionUUID.rawValue.uuidString
+                sessionIdValue = activeSession.sessionUUID.rawValue.uuidString.lowercased()
             }
 
             completion(sessionIdValue)
