@@ -50,12 +50,15 @@ internal actor LayerRecorder: LayerRecording {
     private func record(_: CALayerChangeset, context: LayerRecordingContext) async {
         let (layerTreeSnapshot, touchSnapshot) = await takeSnapshot(context: context)
 
-        guard let layerTreeSnapshot else {
+        guard
+            let layerTreeSnapshot,
+            let root = layerTreeSnapshot.root.removingOccluded()
+        else {
             return
         }
 
-        _ = (layerTreeSnapshot, touchSnapshot)
-        // TODO: PANA-7436 Process captured layer tree and touch snapshots
+        _ = (root, touchSnapshot)
+        // TODO: PANA-7550 Process optimized layer tree and touch snapshots
     }
 
     private func takeSnapshot(context: LayerRecordingContext) async -> (LayerTreeSnapshot?, TouchSnapshot?) {

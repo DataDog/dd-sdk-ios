@@ -31,7 +31,17 @@ extension CALayerSnapshot {
             && mask == nil
             && isAxisAligned
             && (compositingFilter == nil || compositingFilter == .normal)
-            && !filters.contains(where: \.affectsOpacity)
+            && (filters.isEmpty || filters.allSatisfy(\.preservesOpacity))
+    }
+
+    func removingOccluded() -> CALayerSnapshot? {
+        var occlusionMap = OcclusionMap(size: absoluteFrame.size)
+
+        return removingOccluded(
+            clip: absoluteFrame,
+            preservesSublayerOcclusion: preservesSublayerOcclusion,
+            into: &occlusionMap
+        )
     }
 
     /// Returns the rectangles this layer contributes to the occlusion map.
@@ -103,15 +113,77 @@ extension CALayerSnapshot {
         }
         return borderColor.alpha > 0
     }
+
+    fileprivate var preservesSublayerOcclusion: Bool {
+        opacity == 1
+            && mask == nil
+            && isAxisAligned
+            && (compositingFilter == nil || compositingFilter == .normal)
+            && (filters.isEmpty || filters.allSatisfy(\.preservesOpacity))
+    }
+
+    fileprivate func removingOccluded(
+        clip: CGRect,
+        preservesSublayerOcclusion: Bool,
+        into occlusionMap: inout OcclusionMap
+    ) -> CALayerSnapshot? {
+        let visibleFrame = absoluteFrame.intersection(clip)
+
+        guard !visibleFrame.isEmpty else {
+            return nil
+        }
+
+        let clip = masksToBounds ? visibleFrame : clip
+        let preservesSublayerOcclusion = preservesSublayerOcclusion
+            && self.preservesSublayerOcclusion
+
+        var visibleLayers: [CALayerSnapshot] = []
+
+        sublayers.sorted {
+            $0.zPosition < $1.zPosition
+        }
+        // We reverse separately to preserve the capture order on layers with equal `zPosition`
+        .reversed()
+        .forEach { sublayer in
+            if let visibleLayer = sublayer.removingOccluded(
+                clip: clip,
+                preservesSublayerOcclusion: preservesSublayerOcclusion,
+                into: &occlusionMap
+            ) {
+                visibleLayers.append(visibleLayer)
+            }
+        }
+
+        if visibleLayers.isEmpty {
+            if drawsContent {
+                if occlusionMap.isCovered(visibleFrame) {
+                    return nil
+                }
+            } else {
+                return nil
+            }
+        }
+
+        if preservesSublayerOcclusion && isOccluder {
+            occlusionRects(in: visibleFrame).forEach {
+                occlusionMap.insert($0)
+            }
+        }
+
+        var result = self
+        result.sublayers = visibleLayers.reversed()
+
+        return result
+    }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.Filter {
-    fileprivate var affectsOpacity: Bool {
+    fileprivate var preservesOpacity: Bool {
         switch self {
-        case .glassBackground, .colorMatrix, .unknown:
-            return true
         case .gaussianBlur, .saturate, .brightness, .multiplyColor:
+            return true
+        case .glassBackground, .colorMatrix, .unknown:
             return false
         }
     }
