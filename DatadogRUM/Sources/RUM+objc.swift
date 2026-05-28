@@ -305,6 +305,8 @@ public enum objc_RUMErrorSource: Int {
     case webview
     /// Error originated in a web console (used by bridges).
     case console
+    /// Error originated in a logger.
+    case logger
     /// Custom error source.
     case custom
 
@@ -315,6 +317,7 @@ public enum objc_RUMErrorSource: Int {
         case .webview: return .webview
         case .custom: return .custom
         case .console: return .console
+        case .logger: return .logger
         default: return .custom
         }
     }
