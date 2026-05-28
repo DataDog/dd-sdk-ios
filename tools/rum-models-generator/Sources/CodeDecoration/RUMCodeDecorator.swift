@@ -15,6 +15,7 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
     public init() {
         super.init(
             sharedTypeNames: [
+                "DDProfiling",
                 "RUMConnectivity",
                 "RUMUser",
                 "RUMMethod",
@@ -154,6 +155,10 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
 
         if fixedName == "Graphql" {
             fixedName = "RUMGraphql"
+        }
+
+        if fixedName == "Profiling" {
+            fixedName = "DDProfiling"
         }
 
         return fixedName

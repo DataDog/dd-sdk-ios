@@ -666,6 +666,7 @@ public class objc_RUMErrorEventDDConfiguration: NSObject
     public var traceSampleRate: NSNumber?
 public class objc_RUMErrorEventDDProfiling: NSObject
     public var errorReason: objc_RUMErrorEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMErrorEventDDProfilingQuotaReason
     public var status: objc_RUMErrorEventDDProfilingStatus
 public enum objc_RUMErrorEventDDProfilingErrorReason: Int
     case none
@@ -673,6 +674,15 @@ public enum objc_RUMErrorEventDDProfilingErrorReason: Int
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+public enum objc_RUMErrorEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 public enum objc_RUMErrorEventDDProfilingStatus: Int
     case none
     case starting
@@ -1036,6 +1046,7 @@ public class objc_RUMLongTaskEventDDConfiguration: NSObject
     public var traceSampleRate: NSNumber?
 public class objc_RUMLongTaskEventDDProfiling: NSObject
     public var errorReason: objc_RUMLongTaskEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMLongTaskEventDDProfilingQuotaReason
     public var status: objc_RUMLongTaskEventDDProfilingStatus
 public enum objc_RUMLongTaskEventDDProfilingErrorReason: Int
     case none
@@ -1043,6 +1054,15 @@ public enum objc_RUMLongTaskEventDDProfilingErrorReason: Int
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+public enum objc_RUMLongTaskEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 public enum objc_RUMLongTaskEventDDProfilingStatus: Int
     case none
     case starting
@@ -1625,6 +1645,7 @@ public enum objc_RUMViewEventDDPageStatesState: Int
     case terminated
 public class objc_RUMViewEventDDProfiling: NSObject
     public var errorReason: objc_RUMViewEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMViewEventDDProfilingQuotaReason
     public var status: objc_RUMViewEventDDProfilingStatus
 public enum objc_RUMViewEventDDProfilingErrorReason: Int
     case none
@@ -1632,6 +1653,15 @@ public enum objc_RUMViewEventDDProfilingErrorReason: Int
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+public enum objc_RUMViewEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 public enum objc_RUMViewEventDDProfilingStatus: Int
     case none
     case starting
@@ -2405,6 +2435,7 @@ public class objc_RUMVitalAppLaunchEventDDConfiguration: NSObject
     public var traceSampleRate: NSNumber?
 public class objc_RUMVitalAppLaunchEventDDProfiling: NSObject
     public var errorReason: objc_RUMVitalAppLaunchEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMVitalAppLaunchEventDDProfilingQuotaReason
     public var status: objc_RUMVitalAppLaunchEventDDProfilingStatus
 public enum objc_RUMVitalAppLaunchEventDDProfilingErrorReason: Int
     case none
@@ -2412,6 +2443,15 @@ public enum objc_RUMVitalAppLaunchEventDDProfilingErrorReason: Int
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+public enum objc_RUMVitalAppLaunchEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 public enum objc_RUMVitalAppLaunchEventDDProfilingStatus: Int
     case none
     case starting
@@ -2625,6 +2665,7 @@ public class objc_RUMVitalDurationEventDDConfiguration: NSObject
     public var traceSampleRate: NSNumber?
 public class objc_RUMVitalDurationEventDDProfiling: NSObject
     public var errorReason: objc_RUMVitalDurationEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMVitalDurationEventDDProfilingQuotaReason
     public var status: objc_RUMVitalDurationEventDDProfilingStatus
 public enum objc_RUMVitalDurationEventDDProfilingErrorReason: Int
     case none
@@ -2632,6 +2673,15 @@ public enum objc_RUMVitalDurationEventDDProfilingErrorReason: Int
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+public enum objc_RUMVitalDurationEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 public enum objc_RUMVitalDurationEventDDProfilingStatus: Int
     case none
     case starting
@@ -2834,6 +2884,7 @@ public class objc_RUMVitalOperationStepEventDDConfiguration: NSObject
     public var traceSampleRate: NSNumber?
 public class objc_RUMVitalOperationStepEventDDProfiling: NSObject
     public var errorReason: objc_RUMVitalOperationStepEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMVitalOperationStepEventDDProfilingQuotaReason
     public var status: objc_RUMVitalOperationStepEventDDProfilingStatus
 public enum objc_RUMVitalOperationStepEventDDProfilingErrorReason: Int
     case none
@@ -2841,6 +2892,15 @@ public enum objc_RUMVitalOperationStepEventDDProfilingErrorReason: Int
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+public enum objc_RUMVitalOperationStepEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 public enum objc_RUMVitalOperationStepEventDDProfilingStatus: Int
     case none
     case starting
@@ -3033,6 +3093,10 @@ public class objc_TelemetryConfigurationEventDD: NSObject
     public var formatVersion: NSNumber
 public class objc_TelemetryConfigurationEventAction: NSObject
     public var id: String
+    public var idValue: objc_TelemetryConfigurationEventActionRUMActionID
+public class objc_TelemetryConfigurationEventActionRUMActionID: NSObject
+    public var string: String?
+    public var stringsArray: [String]?
 public class objc_TelemetryConfigurationEventApplication: NSObject
     public var id: String
 public class objc_TelemetryConfigurationEventSession: NSObject
@@ -3229,6 +3293,10 @@ public class objc_TelemetryDebugEventDD: NSObject
     public var formatVersion: NSNumber
 public class objc_TelemetryDebugEventAction: NSObject
     public var id: String
+    public var idValue: objc_TelemetryDebugEventActionRUMActionID
+public class objc_TelemetryDebugEventActionRUMActionID: NSObject
+    public var string: String?
+    public var stringsArray: [String]?
 public class objc_TelemetryDebugEventApplication: NSObject
     public var id: String
 public class objc_TelemetryDebugEventSession: NSObject
@@ -3284,6 +3352,10 @@ public class objc_TelemetryErrorEventDD: NSObject
     public var formatVersion: NSNumber
 public class objc_TelemetryErrorEventAction: NSObject
     public var id: String
+    public var idValue: objc_TelemetryErrorEventActionRUMActionID
+public class objc_TelemetryErrorEventActionRUMActionID: NSObject
+    public var string: String?
+    public var stringsArray: [String]?
 public class objc_TelemetryErrorEventApplication: NSObject
     public var id: String
 public class objc_TelemetryErrorEventSession: NSObject

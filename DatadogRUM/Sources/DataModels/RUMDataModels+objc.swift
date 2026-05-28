@@ -1487,6 +1487,10 @@ public class objc_RUMErrorEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMErrorEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMErrorEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -1495,7 +1499,7 @@ public class objc_RUMErrorEventDDProfiling: NSObject {
 @objc(DDRUMErrorEventDDProfilingErrorReason)
 @_spi(objc)
 public enum objc_RUMErrorEventDDProfilingErrorReason: Int {
-    internal init(swift: RUMErrorEvent.DD.Profiling.ErrorReason?) {
+    internal init(swift: DDProfiling.ErrorReason?) {
         switch swift {
         case nil: self = .none
         case .notSupportedByBrowser?: self = .notSupportedByBrowser
@@ -1505,7 +1509,7 @@ public enum objc_RUMErrorEventDDProfilingErrorReason: Int {
         }
     }
 
-    internal var toSwift: RUMErrorEvent.DD.Profiling.ErrorReason? {
+    internal var toSwift: DDProfiling.ErrorReason? {
         switch self {
         case .none: return nil
         case .notSupportedByBrowser: return .notSupportedByBrowser
@@ -1522,10 +1526,49 @@ public enum objc_RUMErrorEventDDProfilingErrorReason: Int {
     case unexpectedException
 }
 
+@objc(DDRUMErrorEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMErrorEventDDProfilingQuotaReason: Int {
+    internal init(swift: DDProfiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: DDProfiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
+}
+
 @objc(DDRUMErrorEventDDProfilingStatus)
 @_spi(objc)
 public enum objc_RUMErrorEventDDProfilingStatus: Int {
-    internal init(swift: RUMErrorEvent.DD.Profiling.Status?) {
+    internal init(swift: DDProfiling.Status?) {
         switch swift {
         case nil: self = .none
         case .starting?: self = .starting
@@ -1535,7 +1578,7 @@ public enum objc_RUMErrorEventDDProfilingStatus: Int {
         }
     }
 
-    internal var toSwift: RUMErrorEvent.DD.Profiling.Status? {
+    internal var toSwift: DDProfiling.Status? {
         switch self {
         case .none: return nil
         case .starting: return .starting
@@ -3345,6 +3388,10 @@ public class objc_RUMLongTaskEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMLongTaskEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMLongTaskEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -3353,7 +3400,7 @@ public class objc_RUMLongTaskEventDDProfiling: NSObject {
 @objc(DDRUMLongTaskEventDDProfilingErrorReason)
 @_spi(objc)
 public enum objc_RUMLongTaskEventDDProfilingErrorReason: Int {
-    internal init(swift: RUMLongTaskEvent.DD.Profiling.ErrorReason?) {
+    internal init(swift: DDProfiling.ErrorReason?) {
         switch swift {
         case nil: self = .none
         case .notSupportedByBrowser?: self = .notSupportedByBrowser
@@ -3363,7 +3410,7 @@ public enum objc_RUMLongTaskEventDDProfilingErrorReason: Int {
         }
     }
 
-    internal var toSwift: RUMLongTaskEvent.DD.Profiling.ErrorReason? {
+    internal var toSwift: DDProfiling.ErrorReason? {
         switch self {
         case .none: return nil
         case .notSupportedByBrowser: return .notSupportedByBrowser
@@ -3380,10 +3427,49 @@ public enum objc_RUMLongTaskEventDDProfilingErrorReason: Int {
     case unexpectedException
 }
 
+@objc(DDRUMLongTaskEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMLongTaskEventDDProfilingQuotaReason: Int {
+    internal init(swift: DDProfiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: DDProfiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
+}
+
 @objc(DDRUMLongTaskEventDDProfilingStatus)
 @_spi(objc)
 public enum objc_RUMLongTaskEventDDProfilingStatus: Int {
-    internal init(swift: RUMLongTaskEvent.DD.Profiling.Status?) {
+    internal init(swift: DDProfiling.Status?) {
         switch swift {
         case nil: self = .none
         case .starting?: self = .starting
@@ -3393,7 +3479,7 @@ public enum objc_RUMLongTaskEventDDProfilingStatus: Int {
         }
     }
 
-    internal var toSwift: RUMLongTaskEvent.DD.Profiling.Status? {
+    internal var toSwift: DDProfiling.Status? {
         switch self {
         case .none: return nil
         case .starting: return .starting
@@ -6340,6 +6426,10 @@ public class objc_RUMViewEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMViewEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMViewEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -6348,7 +6438,7 @@ public class objc_RUMViewEventDDProfiling: NSObject {
 @objc(DDRUMViewEventDDProfilingErrorReason)
 @_spi(objc)
 public enum objc_RUMViewEventDDProfilingErrorReason: Int {
-    internal init(swift: RUMViewEvent.DD.Profiling.ErrorReason?) {
+    internal init(swift: DDProfiling.ErrorReason?) {
         switch swift {
         case nil: self = .none
         case .notSupportedByBrowser?: self = .notSupportedByBrowser
@@ -6358,7 +6448,7 @@ public enum objc_RUMViewEventDDProfilingErrorReason: Int {
         }
     }
 
-    internal var toSwift: RUMViewEvent.DD.Profiling.ErrorReason? {
+    internal var toSwift: DDProfiling.ErrorReason? {
         switch self {
         case .none: return nil
         case .notSupportedByBrowser: return .notSupportedByBrowser
@@ -6375,10 +6465,49 @@ public enum objc_RUMViewEventDDProfilingErrorReason: Int {
     case unexpectedException
 }
 
+@objc(DDRUMViewEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMViewEventDDProfilingQuotaReason: Int {
+    internal init(swift: DDProfiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: DDProfiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
+}
+
 @objc(DDRUMViewEventDDProfilingStatus)
 @_spi(objc)
 public enum objc_RUMViewEventDDProfilingStatus: Int {
-    internal init(swift: RUMViewEvent.DD.Profiling.Status?) {
+    internal init(swift: DDProfiling.Status?) {
         switch swift {
         case nil: self = .none
         case .starting?: self = .starting
@@ -6388,7 +6517,7 @@ public enum objc_RUMViewEventDDProfilingStatus: Int {
         }
     }
 
-    internal var toSwift: RUMViewEvent.DD.Profiling.Status? {
+    internal var toSwift: DDProfiling.Status? {
         switch self {
         case .none: return nil
         case .starting: return .starting
@@ -10284,6 +10413,10 @@ public class objc_RUMVitalAppLaunchEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMVitalAppLaunchEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMVitalAppLaunchEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -10292,7 +10425,7 @@ public class objc_RUMVitalAppLaunchEventDDProfiling: NSObject {
 @objc(DDRUMVitalAppLaunchEventDDProfilingErrorReason)
 @_spi(objc)
 public enum objc_RUMVitalAppLaunchEventDDProfilingErrorReason: Int {
-    internal init(swift: RUMVitalAppLaunchEvent.DD.Profiling.ErrorReason?) {
+    internal init(swift: DDProfiling.ErrorReason?) {
         switch swift {
         case nil: self = .none
         case .notSupportedByBrowser?: self = .notSupportedByBrowser
@@ -10302,7 +10435,7 @@ public enum objc_RUMVitalAppLaunchEventDDProfilingErrorReason: Int {
         }
     }
 
-    internal var toSwift: RUMVitalAppLaunchEvent.DD.Profiling.ErrorReason? {
+    internal var toSwift: DDProfiling.ErrorReason? {
         switch self {
         case .none: return nil
         case .notSupportedByBrowser: return .notSupportedByBrowser
@@ -10319,10 +10452,49 @@ public enum objc_RUMVitalAppLaunchEventDDProfilingErrorReason: Int {
     case unexpectedException
 }
 
+@objc(DDRUMVitalAppLaunchEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventDDProfilingQuotaReason: Int {
+    internal init(swift: DDProfiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: DDProfiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
+}
+
 @objc(DDRUMVitalAppLaunchEventDDProfilingStatus)
 @_spi(objc)
 public enum objc_RUMVitalAppLaunchEventDDProfilingStatus: Int {
-    internal init(swift: RUMVitalAppLaunchEvent.DD.Profiling.Status?) {
+    internal init(swift: DDProfiling.Status?) {
         switch swift {
         case nil: self = .none
         case .starting?: self = .starting
@@ -10332,7 +10504,7 @@ public enum objc_RUMVitalAppLaunchEventDDProfilingStatus: Int {
         }
     }
 
-    internal var toSwift: RUMVitalAppLaunchEvent.DD.Profiling.Status? {
+    internal var toSwift: DDProfiling.Status? {
         switch self {
         case .none: return nil
         case .starting: return .starting
@@ -11397,6 +11569,10 @@ public class objc_RUMVitalDurationEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMVitalDurationEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMVitalDurationEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -11405,7 +11581,7 @@ public class objc_RUMVitalDurationEventDDProfiling: NSObject {
 @objc(DDRUMVitalDurationEventDDProfilingErrorReason)
 @_spi(objc)
 public enum objc_RUMVitalDurationEventDDProfilingErrorReason: Int {
-    internal init(swift: RUMVitalDurationEvent.DD.Profiling.ErrorReason?) {
+    internal init(swift: DDProfiling.ErrorReason?) {
         switch swift {
         case nil: self = .none
         case .notSupportedByBrowser?: self = .notSupportedByBrowser
@@ -11415,7 +11591,7 @@ public enum objc_RUMVitalDurationEventDDProfilingErrorReason: Int {
         }
     }
 
-    internal var toSwift: RUMVitalDurationEvent.DD.Profiling.ErrorReason? {
+    internal var toSwift: DDProfiling.ErrorReason? {
         switch self {
         case .none: return nil
         case .notSupportedByBrowser: return .notSupportedByBrowser
@@ -11432,10 +11608,49 @@ public enum objc_RUMVitalDurationEventDDProfilingErrorReason: Int {
     case unexpectedException
 }
 
+@objc(DDRUMVitalDurationEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventDDProfilingQuotaReason: Int {
+    internal init(swift: DDProfiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: DDProfiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
+}
+
 @objc(DDRUMVitalDurationEventDDProfilingStatus)
 @_spi(objc)
 public enum objc_RUMVitalDurationEventDDProfilingStatus: Int {
-    internal init(swift: RUMVitalDurationEvent.DD.Profiling.Status?) {
+    internal init(swift: DDProfiling.Status?) {
         switch swift {
         case nil: self = .none
         case .starting?: self = .starting
@@ -11445,7 +11660,7 @@ public enum objc_RUMVitalDurationEventDDProfilingStatus: Int {
         }
     }
 
-    internal var toSwift: RUMVitalDurationEvent.DD.Profiling.Status? {
+    internal var toSwift: DDProfiling.Status? {
         switch self {
         case .none: return nil
         case .starting: return .starting
@@ -12449,6 +12664,10 @@ public class objc_RUMVitalOperationStepEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMVitalOperationStepEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMVitalOperationStepEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -12457,7 +12676,7 @@ public class objc_RUMVitalOperationStepEventDDProfiling: NSObject {
 @objc(DDRUMVitalOperationStepEventDDProfilingErrorReason)
 @_spi(objc)
 public enum objc_RUMVitalOperationStepEventDDProfilingErrorReason: Int {
-    internal init(swift: RUMVitalOperationStepEvent.DD.Profiling.ErrorReason?) {
+    internal init(swift: DDProfiling.ErrorReason?) {
         switch swift {
         case nil: self = .none
         case .notSupportedByBrowser?: self = .notSupportedByBrowser
@@ -12467,7 +12686,7 @@ public enum objc_RUMVitalOperationStepEventDDProfilingErrorReason: Int {
         }
     }
 
-    internal var toSwift: RUMVitalOperationStepEvent.DD.Profiling.ErrorReason? {
+    internal var toSwift: DDProfiling.ErrorReason? {
         switch self {
         case .none: return nil
         case .notSupportedByBrowser: return .notSupportedByBrowser
@@ -12484,10 +12703,49 @@ public enum objc_RUMVitalOperationStepEventDDProfilingErrorReason: Int {
     case unexpectedException
 }
 
+@objc(DDRUMVitalOperationStepEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventDDProfilingQuotaReason: Int {
+    internal init(swift: DDProfiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: DDProfiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
+}
+
 @objc(DDRUMVitalOperationStepEventDDProfilingStatus)
 @_spi(objc)
 public enum objc_RUMVitalOperationStepEventDDProfilingStatus: Int {
-    internal init(swift: RUMVitalOperationStepEvent.DD.Profiling.Status?) {
+    internal init(swift: DDProfiling.Status?) {
         switch swift {
         case nil: self = .none
         case .starting?: self = .starting
@@ -12497,7 +12755,7 @@ public enum objc_RUMVitalOperationStepEventDDProfilingStatus: Int {
         }
     }
 
-    internal var toSwift: RUMVitalOperationStepEvent.DD.Profiling.Status? {
+    internal var toSwift: DDProfiling.Status? {
         switch self {
         case .none: return nil
         case .starting: return .starting
@@ -13465,7 +13723,41 @@ public class objc_TelemetryConfigurationEventAction: NSObject {
     }
 
     public var id: String {
-        root.swiftModel.action!.id
+        switch root.swiftModel.action!.id {
+        case .string(let value):
+            return value
+        case .stringsArray(let value):
+            return value.first ?? ""
+        }
+    }
+
+    public var idValue: objc_TelemetryConfigurationEventActionRUMActionID {
+        objc_TelemetryConfigurationEventActionRUMActionID(root: root)
+    }
+}
+
+@objc(DDTelemetryConfigurationEventActionRUMActionID)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryConfigurationEventActionRUMActionID: NSObject {
+    internal let root: objc_TelemetryConfigurationEvent
+
+    internal init(root: objc_TelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    public var string: String? {
+        guard case .string(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
+    }
+
+    public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -14449,7 +14741,41 @@ public class objc_TelemetryDebugEventAction: NSObject {
     }
 
     public var id: String {
-        root.swiftModel.action!.id
+        switch root.swiftModel.action!.id {
+        case .string(let value):
+            return value
+        case .stringsArray(let value):
+            return value.first ?? ""
+        }
+    }
+
+    public var idValue: objc_TelemetryDebugEventActionRUMActionID {
+        objc_TelemetryDebugEventActionRUMActionID(root: root)
+    }
+}
+
+@objc(DDTelemetryDebugEventActionRUMActionID)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryDebugEventActionRUMActionID: NSObject {
+    internal let root: objc_TelemetryDebugEvent
+
+    internal init(root: objc_TelemetryDebugEvent) {
+        self.root = root
+    }
+
+    public var string: String? {
+        guard case .string(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
+    }
+
+    public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -14727,7 +15053,41 @@ public class objc_TelemetryErrorEventAction: NSObject {
     }
 
     public var id: String {
-        root.swiftModel.action!.id
+        switch root.swiftModel.action!.id {
+        case .string(let value):
+            return value
+        case .stringsArray(let value):
+            return value.first ?? ""
+        }
+    }
+
+    public var idValue: objc_TelemetryErrorEventActionRUMActionID {
+        objc_TelemetryErrorEventActionRUMActionID(root: root)
+    }
+}
+
+@objc(DDTelemetryErrorEventActionRUMActionID)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEventActionRUMActionID: NSObject {
+    internal let root: objc_TelemetryErrorEvent
+
+    internal init(root: objc_TelemetryErrorEvent) {
+        self.root = root
+    }
+
+    public var string: String? {
+        guard case .string(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
+    }
+
+    public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -14940,4 +15300,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ed69a908b5f05a97b984498526d50c0e97284c06
+// Generated from https://github.com/DataDog/rum-events-format/tree/2e1fe49897be86e72c0c2f0c2ae052c0d5f826eb
