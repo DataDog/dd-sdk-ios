@@ -671,4 +671,75 @@ extension PrivacyOverrides: AnyMockable, RandomMockable {
         return override
     }
 }
+
+// MARK: - LayerTreeRecorder Mocks
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension LayerRecordingContext: AnyMockable, RandomMockable {
+    public static func mockAny() -> LayerRecordingContext {
+        return .mockWith()
+    }
+
+    public static func mockRandom() -> LayerRecordingContext {
+        return LayerRecordingContext(
+            textAndInputPrivacy: .mockRandom(),
+            imagePrivacy: .mockRandom(),
+            touchPrivacy: .mockRandom(),
+            applicationID: .mockRandom(),
+            sessionID: .mockRandom(),
+            viewID: .mockRandom(),
+            viewServerTimeOffset: .mockRandom(),
+            viewPath: .mockRandom(),
+            date: .mockRandom(),
+            telemetry: TelemetryMock()
+        )
+    }
+
+    @_spi(Internal)
+    public static func mockWith(
+        textAndInputPrivacy: TextAndInputPrivacyLevel = .mockAny(),
+        imagePrivacy: ImagePrivacyLevel = .mockAny(),
+        touchPrivacy: TouchPrivacyLevel = .mockAny(),
+        applicationID: String = .mockAny(),
+        sessionID: String = .mockAny(),
+        viewID: String = .mockAny(),
+        viewServerTimeOffset: TimeInterval? = nil,
+        viewPath: String = .mockAny(),
+        date: Date = .mockAny(),
+        telemetry: Telemetry = TelemetryMock()
+    ) -> LayerRecordingContext {
+        return LayerRecordingContext(
+            textAndInputPrivacy: textAndInputPrivacy,
+            imagePrivacy: imagePrivacy,
+            touchPrivacy: touchPrivacy,
+            applicationID: applicationID,
+            sessionID: sessionID,
+            viewID: viewID,
+            viewServerTimeOffset: viewServerTimeOffset,
+            viewPath: viewPath,
+            date: date,
+            telemetry: telemetry
+        )
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension LayerTreeSnapshot {
+    @_spi(Internal)
+    public static func mockWith(
+        date: Date = .mockAny(),
+        context: LayerRecordingContext = .mockAny(),
+        viewportSize: CGSize = .mockAny(),
+        root: CALayerSnapshot,
+        webViewSlotIDs: Set<Int> = []
+    ) -> LayerTreeSnapshot {
+        return LayerTreeSnapshot(
+            date: date,
+            context: context,
+            viewportSize: viewportSize,
+            root: root,
+            webViewSlotIDs: webViewSlotIDs
+        )
+    }
+}
 #endif

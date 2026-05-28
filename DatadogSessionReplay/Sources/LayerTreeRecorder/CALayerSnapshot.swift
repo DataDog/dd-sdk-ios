@@ -40,7 +40,7 @@ internal struct CALayerSnapshot: Sendable {
     /// The layer's frame in the root layer coordinate space.
     let absoluteFrame: CGRect
 
-    let sublayers: [CALayerSnapshot]
+    var sublayers: [CALayerSnapshot]
     let sublayerTransform: CATransform3D
 
     let mask: CALayerReference?
