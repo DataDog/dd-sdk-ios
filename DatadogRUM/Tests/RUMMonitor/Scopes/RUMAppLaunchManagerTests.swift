@@ -92,6 +92,22 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertNotNil(event.version)
     }
 
+    func testTTIDCommand_includesProfilingQuotaReason() throws {
+        // Given
+        let ttid = 2.0
+        let command: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(ttid)
+        )
+        mockContext.set(additionalContext: ProfilingContext(status: .running, quotaReason: .quotaExceeded))
+
+        // When
+        manager.process(command, context: mockContext, writer: mockWriter)
+
+        // Then
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).first)
+        XCTAssertEqual(event.dd.profiling?.quotaReason, .quotaExceeded)
+    }
+
     func testTTIDCommand_appliesServerTimeOffsetToAppLaunchEventAndProfilerMessage() throws {
         // Given
         let featureScope = FeatureScopeMock()

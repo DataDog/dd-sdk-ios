@@ -21,6 +21,7 @@ internal protocol ProfilingHandler {
     var attributes: [AttributeKey: AttributeValue] { get }
     var currentServerTimeOffset: TimeInterval { get }
     var operation: ProfilingOperation { get }
+    var quotaReason: ProfilingContext.QuotaReason? { get }
 
     var featureScope: FeatureScope { get }
     var telemetryController: ProfilingTelemetryController { get }
@@ -28,9 +29,11 @@ internal protocol ProfilingHandler {
 }
 
 extension ProfilingHandler {
+    var quotaReason: ProfilingContext.QuotaReason? { nil }
+
     @discardableResult
     func updateProfilingContext() -> ProfilingContext {
-        let profilingContext = ProfilingContext(status: .current)
+        let profilingContext = ProfilingContext(status: .current, quotaReason: quotaReason)
         self.featureScope.set(context: profilingContext)
 
         return profilingContext

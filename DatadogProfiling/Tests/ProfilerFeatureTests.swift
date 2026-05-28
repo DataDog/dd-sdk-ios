@@ -37,13 +37,7 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertNil(userDefaults.value(forKey: DD_PROFILING_IS_ENABLED_KEY))
 
         // When
-        _ = ProfilerFeature(
-            core: core,
-            configuration: .init(),
-            requestBuilder: requestBuilder,
-            telemetryController: telemetryController,
-            userDefaults: userDefaults
-        )
+        _ = makeFeature()
 
         // Then
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_IS_ENABLED_KEY) as? Bool, true)
@@ -55,13 +49,7 @@ final class ProfilerFeatureTests: XCTestCase {
         let newSampleRate: SampleRate = 23
 
         // When
-        _ = ProfilerFeature(
-            core: core,
-            configuration: .init(applicationLaunchSampleRate: newSampleRate),
-            requestBuilder: requestBuilder,
-            telemetryController: telemetryController,
-            userDefaults: userDefaults
-        )
+        _ = makeFeature(configuration: .init(applicationLaunchSampleRate: newSampleRate))
 
         // Then
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, newSampleRate)
@@ -76,13 +64,7 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
 
         // When
-        _ = ProfilerFeature(
-            core: core,
-            configuration: .init(applicationLaunchSampleRate: lowerSampleRate),
-            requestBuilder: requestBuilder,
-            telemetryController: telemetryController,
-            userDefaults: userDefaults
-        )
+        _ = makeFeature(configuration: .init(applicationLaunchSampleRate: lowerSampleRate))
 
         // Then
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, lowerSampleRate)
@@ -97,13 +79,7 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
 
         // When
-        _ = ProfilerFeature(
-            core: core,
-            configuration: .init(applicationLaunchSampleRate: higherSampleRate),
-            requestBuilder: requestBuilder,
-            telemetryController: telemetryController,
-            userDefaults: userDefaults
-        )
+        _ = makeFeature(configuration: .init(applicationLaunchSampleRate: higherSampleRate))
 
         // Then
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
@@ -156,19 +132,19 @@ final class ProfilerFeatureTests: XCTestCase {
     func testMessageReceiver_updatesContinuousProfileSamplingWhenRUMContextChanges() {
         // Given
         let core = PassthroughCoreMock()
-        let feature = ProfilerFeature(
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        let feature = makeFeature(
             core: core,
             configuration: .init(continuousSampleRate: 100),
-            requestBuilder: requestBuilder,
-            telemetryController: telemetryController,
-            userDefaults: userDefaults
+            quotaChecker: quotaChecker
         )
 
         let unsampledContext: DatadogContext = .mockWith(
             additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 0)]
         )
+        let sessionID = UUID(uuidString: "abcdef01-2345-6789-abcd-ef0123456789")!
         let sampledContext: DatadogContext = .mockWith(
-            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 100)]
+            additionalContext: [RUMCoreContext.mockWith(sessionID: sessionID, sessionSampleRate: 100)]
         )
 
         // When
@@ -182,18 +158,19 @@ final class ProfilerFeatureTests: XCTestCase {
 
         // Then
         XCTAssertEqual(feature.profilingSamplerProvider.continuousProfilingSampled, true)
+        XCTAssertEqual(
+            quotaChecker.receivedContexts.compactMap { $0.additionalContext(ofType: RUMCoreContext.self)?.sessionID },
+            [
+                unsampledContext.additionalContext(ofType: RUMCoreContext.self)?.sessionID,
+                sessionID.uuidString.lowercased()
+            ]
+        )
     }
 
     func testMessageReceiver_keepsPreviousContinuousProfileSampling_whenContextHasNoRUM() {
         // Given
         let core = PassthroughCoreMock()
-        let feature = ProfilerFeature(
-            core: core,
-            configuration: .init(continuousSampleRate: 100),
-            requestBuilder: requestBuilder,
-            telemetryController: telemetryController,
-            userDefaults: userDefaults
-        )
+        let feature = makeFeature(core: core, configuration: .init(continuousSampleRate: 100))
 
         let unsampledContext: DatadogContext = .mockWith(
             additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 0)]
@@ -211,6 +188,42 @@ final class ProfilerFeatureTests: XCTestCase {
 
         // Then
         XCTAssertEqual(feature.profilingSamplerProvider.continuousProfilingSampled, false)
+    }
+
+    func testMessageReceiver_requestsQuotaAsSoonAsContextChanges() {
+        // Given
+        let core = PassthroughCoreMock()
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        let feature = makeFeature(
+            core: core,
+            configuration: .init(continuousSampleRate: 100),
+            quotaChecker: quotaChecker
+        )
+        let context: DatadogContext = .mockWith(
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 100)]
+        )
+
+        // When
+        _ = feature.messageReceiver.receive(message: .context(context), from: core)
+        _ = feature.messageReceiver.receive(message: .context(context), from: core)
+
+        // Then
+        XCTAssertEqual(quotaChecker.receivedContexts.count, 2)
+    }
+
+    private func makeFeature(
+        core: DatadogCoreProtocol = PassthroughCoreMock(),
+        configuration: Profiling.Configuration = .init(),
+        quotaChecker: ProfilingQuotaChecking = ProfilingQuotaCheckerMock()
+    ) -> ProfilerFeature {
+        ProfilerFeature(
+            core: core,
+            configuration: configuration,
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            quotaChecker: quotaChecker,
+            userDefaults: userDefaults
+        )
     }
 }
 

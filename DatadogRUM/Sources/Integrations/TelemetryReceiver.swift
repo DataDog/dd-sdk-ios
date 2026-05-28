@@ -123,7 +123,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
             let event = TelemetryDebugEvent(
                 dd: .init(),
-                action: rum?.userActionID.map { .init(id: $0) },
+                action: rum?.userActionID.map { .init(id: .string(value: $0)) },
                 application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(self.sampler.samplingRate),
@@ -169,7 +169,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
             let event = TelemetryErrorEvent(
                 dd: .init(),
-                action: rum?.userActionID.map { .init(id: $0) },
+                action: rum?.userActionID.map { .init(id: .string(value: $0)) },
                 application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(self.sampler.samplingRate),
@@ -200,7 +200,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
             let event = TelemetryUsageEvent(
                 dd: .init(),
-                action: rum?.userActionID.map { .init(id: $0) },
+                action: rum?.userActionID.map { .init(id: .string(value: $0)) },
                 application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(usage.sampleRate.composed(with: self.sampler.samplingRate)),
@@ -240,7 +240,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
             let event = TelemetryConfigurationEvent(
                 dd: .init(),
-                action: rum?.userActionID.map { .init(id: $0) },
+                action: rum?.userActionID.map { .init(id: .string(value: $0)) },
                 application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(self.configurationExtraSampler.samplingRate.composed(with: self.sampler.samplingRate)),
@@ -284,7 +284,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
             let event = TelemetryDebugEvent(
                 dd: .init(),
-                action: rum?.userActionID.map { .init(id: $0) },
+                action: rum?.userActionID.map { .init(id: .string(value: $0)) },
                 application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(effectiveSampleRate),

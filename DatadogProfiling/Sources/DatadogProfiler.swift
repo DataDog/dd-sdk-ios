@@ -42,6 +42,7 @@ internal final class DatadogProfiler: ProfilingHandler {
     private let profilingConditions: ProfilingConditions
     private let profilingInterval: TimeInterval
     private let minProfileDuration: TimeInterval
+    private let quotaChecker: ProfilingQuotaChecking
     private var timer: DispatchSourceTimer?
 
     let featureScope: FeatureScope
@@ -74,6 +75,7 @@ internal final class DatadogProfiler: ProfilingHandler {
     init?(
         core: DatadogCoreProtocol,
         profilingSamplerProvider: ProfilingSamplerProvider,
+        quotaChecker: ProfilingQuotaChecking,
         queue: DispatchQueue = DatadogProfiler.defaultQueue,
         telemetryController: ProfilingTelemetryController = .init(),
         profilingConditions: ProfilingConditions = .init(),
@@ -94,6 +96,7 @@ internal final class DatadogProfiler: ProfilingHandler {
         self.featureScope = core.scope(for: ProfilerFeature.self)
         self.queue = queue
         self.profilingSamplerProvider = profilingSamplerProvider
+        self.quotaChecker = quotaChecker
         self.telemetryController = telemetryController
         self.profilingConditions = profilingConditions
         self.profilingInterval = profilingInterval
@@ -329,10 +332,12 @@ private extension DatadogProfiler {
     }
 
     var canWriteProfile: Bool {
-        // At least Custom Profiling is running
-        self.currentRUMVitals.count > 0
-        // Continuous Profiling is sampled in and there are events of interest
-        || (profilingSamplerProvider.continuousProfilingSampled == true && (hangs.count > 0 || longTasks.count > 0))
+        let hasCustomProfilingData = currentRUMVitals.count > 0
+        let hasContinuousProfilingData = profilingSamplerProvider.continuousProfilingSampled == true
+            && (hangs.count > 0 || longTasks.count > 0)
+        let hasQuotaToUpload = quotaChecker.currentQuotaCheckResult?.decision != .quotaKO
+
+        return (hasCustomProfilingData || hasContinuousProfilingData) && hasQuotaToUpload
     }
 
     func shouldKeepProfilerRunning() -> Bool {

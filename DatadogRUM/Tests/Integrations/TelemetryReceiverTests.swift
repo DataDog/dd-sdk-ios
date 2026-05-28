@@ -102,7 +102,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.application?.id, rumContext.applicationID)
         XCTAssertEqual(event?.session?.id, rumContext.sessionID)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
-        XCTAssertEqual(event?.action?.id, rumContext.userActionID)
+        assertActionID(event?.action?.id, equals: rumContext.userActionID)
         XCTAssertEqual(event?.telemetry.telemetryInfo["foo"] as? Int, 42)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
@@ -122,7 +122,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.application?.id, rumContext.applicationID)
         XCTAssertEqual(event?.session?.id, rumContext.sessionID)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
-        XCTAssertEqual(event?.action?.id, rumContext.userActionID)
+        assertActionID(event?.action?.id, equals: rumContext.userActionID)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
@@ -508,7 +508,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.application?.id, rumContext.applicationID)
         XCTAssertEqual(event?.session?.id, rumContext.sessionID)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
-        XCTAssertEqual(event?.action?.id, rumContext.userActionID)
+        assertActionID(event?.action?.id, equals: rumContext.userActionID)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
         let device = try XCTUnwrap(event?.telemetry.device)
         XCTAssertEqual(device.model, deviceMock.model)
@@ -537,7 +537,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.application?.id, rumContext.applicationID)
         XCTAssertEqual(event?.session?.id, sessionIDOverride)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
-        XCTAssertEqual(event?.action?.id, rumContext.userActionID)
+        assertActionID(event?.action?.id, equals: rumContext.userActionID)
         XCTAssertNil(event?.telemetry.telemetryInfo[SDKMetricFields.sessionIDOverrideKey], "It should delete `sessionIDOverrideKey` from metric attributes")
     }
 
@@ -621,6 +621,24 @@ class TelemetryReceiverTests: XCTestCase {
               case .trackWebView = usage else {
             XCTFail("Expected .telemetryMobileFeaturesUsage(.trackWebView)")
             return
+        }
+    }
+}
+
+private extension TelemetryReceiverTests {
+    func assertActionID(
+        _ actionID: RUMActionID?,
+        equals expectedValue: String?,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        switch (actionID, expectedValue) {
+        case (.none, .none):
+            return
+        case let (.some(.string(value: actualValue)), .some(expectedValue)):
+            XCTAssertEqual(actualValue, expectedValue, file: file, line: line)
+        default:
+            XCTFail("Unexpected action identifier value: \(String(describing: actionID))", file: file, line: line)
         }
     }
 }

@@ -743,7 +743,11 @@ extension RUMViewScope {
 
         var profiling: RUMErrorEvent.DD.Profiling?
         if let profilingContext = context.additionalContext(ofType: ProfilingContext.self) {
-            profiling = .init(errorReason: profilingContext.errorEventErrorReason, status: profilingContext.errorEventProfilingStatus)
+            profiling = .init(
+                errorReason: profilingContext.errorEventErrorReason,
+                quotaReason: profilingContext.errorEventQuotaReason,
+                status: profilingContext.errorEventProfilingStatus
+            )
         }
 
         let errorEvent = RUMErrorEvent(
@@ -850,7 +854,11 @@ extension RUMViewScope {
 
         var profiling: RUMLongTaskEvent.DD.Profiling?
         if let profilingContext = context.additionalContext(ofType: ProfilingContext.self) {
-            profiling = .init(errorReason: profilingContext.longTaskErrorReason, status: profilingContext.longTaskProfilingStatus)
+            profiling = .init(
+                errorReason: profilingContext.longTaskErrorReason,
+                quotaReason: profilingContext.longTaskQuotaReason,
+                status: profilingContext.longTaskProfilingStatus
+            )
         }
 
         let longTaskEvent = RUMLongTaskEvent(
@@ -1020,6 +1028,10 @@ private extension ProfilingContext {
         return nil
     }
 
+    var longTaskQuotaReason: RUMLongTaskEvent.DD.Profiling.QuotaReason? {
+        quotaReason.flatMap { RUMLongTaskEvent.DD.Profiling.QuotaReason(rawValue: $0.rawValue) }
+    }
+
     /**
      * Returns the profiling status reported for app launch.
      *
@@ -1052,5 +1064,9 @@ private extension ProfilingContext {
             }
         }
         return nil
+    }
+
+    var errorEventQuotaReason: RUMErrorEvent.DD.Profiling.QuotaReason? {
+        quotaReason.flatMap { RUMErrorEvent.DD.Profiling.QuotaReason(rawValue: $0.rawValue) }
     }
 }

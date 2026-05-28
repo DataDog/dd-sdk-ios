@@ -66,7 +66,11 @@ private extension RUMAppLaunchManager {
 
         var profiling: RUMVitalAppLaunchEvent.DD.Profiling?
         if let profilingContext = context.additionalContext(ofType: ProfilingContext.self) {
-            profiling = .init(errorReason: profilingContext.error, status: profilingContext.profilingStatus)
+            profiling = .init(
+                errorReason: profilingContext.error,
+                quotaReason: profilingContext.appLaunchQuotaReason,
+                status: profilingContext.profilingStatus
+            )
         }
 
         sendTTIDMessageToProfiler(
@@ -324,5 +328,9 @@ private extension ProfilingContext {
             }
         }
         return nil
+    }
+
+    var appLaunchQuotaReason: RUMVitalAppLaunchEvent.DD.Profiling.QuotaReason? {
+        quotaReason.flatMap { RUMVitalAppLaunchEvent.DD.Profiling.QuotaReason(rawValue: $0.rawValue) }
     }
 }

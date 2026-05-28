@@ -95,7 +95,11 @@ internal class RUMFeatureOperationManager {
 
         var profiling: RUMVitalOperationStepEvent.DD.Profiling?
         if let profilingContext = context.additionalContext(ofType: ProfilingContext.self) {
-            profiling = .init(errorReason: profilingContext.error, status: profilingContext.profilingStatus)
+            profiling = .init(
+                errorReason: profilingContext.error,
+                quotaReason: profilingContext.operationQuotaReason,
+                status: profilingContext.profilingStatus
+            )
         }
 
         if shouldSendOperationMessage(for: command) {
@@ -270,5 +274,9 @@ private extension ProfilingContext {
             }
         }
         return nil
+    }
+
+    var operationQuotaReason: RUMVitalOperationStepEvent.DD.Profiling.QuotaReason? {
+        quotaReason.flatMap { RUMVitalOperationStepEvent.DD.Profiling.QuotaReason(rawValue: $0.rawValue) }
     }
 }

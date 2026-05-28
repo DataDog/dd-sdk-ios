@@ -127,6 +127,23 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         )
     }
 
+    func testFeatureOperationCommand_includesProfilingQuotaReason() throws {
+        // Given
+        let command = RUMOperationStepVitalCommand.mockWith(
+            stepType: .start,
+            options: ProfilingOptions(sampleRate: .maxSampleRate)
+        )
+        let view: RUMViewScope = .mockAny()
+        mockContext.set(additionalContext: ProfilingContext(status: .running, quotaReason: .quotaExceeded))
+
+        // When
+        manager.process(command, context: mockContext, writer: mockWriter, activeView: view)
+
+        // Then
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).first)
+        XCTAssertEqual(event.dd.profiling?.quotaReason, .quotaExceeded)
+    }
+
     func testProcess_MultipleOperations_CreatesCorrectNumberOfEvents() {
         // Given
         let commandCount = Int.random(in: 1...10)

@@ -26,6 +26,7 @@ final class ProfilingHandlerTests: XCTestCase {
             attributes: [:],
             currentServerTimeOffset: .zero,
             operation: .appLaunch,
+            quotaReason: nil,
             featureScope: core.scope(for: ProfilerFeature.self),
             telemetryController: .init(),
             encoder: JSONEncoder()
@@ -82,6 +83,19 @@ final class ProfilingHandlerTests: XCTestCase {
         XCTAssertEqual(result.status, .stopped(reason: .manual))
         let stored = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
         XCTAssertEqual(stored.status, .stopped(reason: .manual))
+    }
+
+    func testUpdateProfilingContext_whenQuotaReasonIsProvided_storesIt() throws {
+        // Given
+        handler.quotaReason = .quotaExceeded
+
+        // When
+        let result = handler.updateProfilingContext()
+
+        // Then
+        XCTAssertEqual(result.quotaReason, .quotaExceeded)
+        let stored = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
+        XCTAssertEqual(stored.quotaReason, .quotaExceeded)
     }
 
     // MARK: - write(profile:rumVitals:)
@@ -272,6 +286,7 @@ final class ProfilingHandlerTests: XCTestCase {
             attributes: [:],
             currentServerTimeOffset: .zero,
             operation: .customProfiling,
+            quotaReason: nil,
             featureScope: featureScope,
             telemetryController: .init(telemetry: telemetry),
             encoder: JSONEncoder()
@@ -303,6 +318,7 @@ private final class ProfilingHandlerMock: ProfilingHandler {
     var attributes: [AttributeKey: AttributeValue]
     var currentServerTimeOffset: TimeInterval
     var operation: ProfilingOperation
+    var quotaReason: ProfilingContext.QuotaReason?
     var featureScope: FeatureScope
     var telemetryController: ProfilingTelemetryController
     var encoder: JSONEncoder
@@ -311,6 +327,7 @@ private final class ProfilingHandlerMock: ProfilingHandler {
         attributes: [AttributeKey: AttributeValue],
         currentServerTimeOffset: TimeInterval,
         operation: ProfilingOperation,
+        quotaReason: ProfilingContext.QuotaReason?,
         featureScope: FeatureScope,
         telemetryController: ProfilingTelemetryController,
         encoder: JSONEncoder
@@ -318,6 +335,7 @@ private final class ProfilingHandlerMock: ProfilingHandler {
         self.attributes = attributes
         self.currentServerTimeOffset = currentServerTimeOffset
         self.operation = operation
+        self.quotaReason = quotaReason
         self.featureScope = featureScope
         self.telemetryController = telemetryController
         self.encoder = encoder

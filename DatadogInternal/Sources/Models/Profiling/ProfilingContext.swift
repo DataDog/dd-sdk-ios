@@ -34,6 +34,17 @@ public struct ProfilingContext: AdditionalContext {
     /// The context key used to identify profiling context in the core context.
     public static let key = "profiling"
 
+    /// The reason provided by the profiling quota admission API.
+    public enum QuotaReason: String, Equatable {
+        case quotaOk = "quota_ok"
+        case quotaExceeded = "quota_exceeded"
+        case orgDisabled = "org_disabled"
+        case backendUnavailable = "backend_unavailable"
+        case undefined = "undefined"
+        case timeout = "timeout"
+        case apiError = "api-error"
+    }
+
     /// Represents the current status of profiling operations.
     ///
     /// This enum maps directly to the underlying C profiler status codes
@@ -79,10 +90,15 @@ public struct ProfilingContext: AdditionalContext {
     /// The current profiling status.
     public let status: Status
 
+    /// The reason provided by the profiling quota admission API.
+    public let quotaReason: QuotaReason?
+
     /// Creates a new profiling context with the specified status.
     ///
     /// - Parameter status: The current profiling status to be included in the context.
-    public init(status: Status) {
+    /// - Parameter quotaReason: The reason provided by the profiling quota admission API.
+    public init(status: Status, quotaReason: QuotaReason? = nil) {
         self.status = status
+        self.quotaReason = quotaReason
     }
 }

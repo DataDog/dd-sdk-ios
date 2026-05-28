@@ -2139,6 +2139,40 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewUpdate.view.error.count, 1)
     }
 
+    func testWhenViewErrorIsAdded_itIncludesProfilingQuotaReason() throws {
+        var context = self.context
+        context.set(additionalContext: ProfilingContext(status: .running, quotaReason: .quotaExceeded))
+
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+                    time: currentTime.addingTimeInterval(1),
+                    message: "view error"
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(event.dd.profiling?.quotaReason, .quotaExceeded)
+    }
+
     func testWhenViewErrorIsAddedWithConfiguredSource_itSendsErrorEventWithCorrectSource() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
@@ -2984,6 +3018,42 @@ class RUMViewScopeTests: XCTestCase {
 
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.longTask?.count, 1)
+    }
+
+    func testWhenLongTaskIsAdded_itIncludesProfilingQuotaReason() throws {
+        var context = self.context
+        context.set(additionalContext: ProfilingContext(status: .running, quotaReason: .quotaExceeded))
+
+        let startViewDate: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: startViewDate,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand(
+                    time: startViewDate.addingTimeInterval(1),
+                    attributes: [:],
+                    duration: 1.0
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
+        XCTAssertEqual(event.dd.profiling?.quotaReason, .quotaExceeded)
     }
 
     func testGivenStartedView_whenLongTaskWithAttributesIsAdded_itDoesNotUpdateViewAttributes() throws {
