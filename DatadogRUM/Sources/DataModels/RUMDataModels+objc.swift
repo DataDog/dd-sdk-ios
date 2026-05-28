@@ -1487,6 +1487,10 @@ public class objc_RUMErrorEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMErrorEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMErrorEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -1520,6 +1524,45 @@ public enum objc_RUMErrorEventDDProfilingErrorReason: Int {
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+}
+
+@objc(DDRUMErrorEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMErrorEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMErrorEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 }
 
 @objc(DDRUMErrorEventDDProfilingStatus)
@@ -3345,6 +3388,10 @@ public class objc_RUMLongTaskEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMLongTaskEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMLongTaskEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -3378,6 +3425,45 @@ public enum objc_RUMLongTaskEventDDProfilingErrorReason: Int {
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+}
+
+@objc(DDRUMLongTaskEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMLongTaskEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMLongTaskEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMLongTaskEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 }
 
 @objc(DDRUMLongTaskEventDDProfilingStatus)
@@ -6340,6 +6426,10 @@ public class objc_RUMViewEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMViewEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMViewEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -6373,6 +6463,45 @@ public enum objc_RUMViewEventDDProfilingErrorReason: Int {
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+}
+
+@objc(DDRUMViewEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMViewEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMViewEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 }
 
 @objc(DDRUMViewEventDDProfilingStatus)
@@ -10284,6 +10413,10 @@ public class objc_RUMVitalAppLaunchEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMVitalAppLaunchEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMVitalAppLaunchEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -10317,6 +10450,45 @@ public enum objc_RUMVitalAppLaunchEventDDProfilingErrorReason: Int {
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+}
+
+@objc(DDRUMVitalAppLaunchEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMVitalAppLaunchEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMVitalAppLaunchEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 }
 
 @objc(DDRUMVitalAppLaunchEventDDProfilingStatus)
@@ -11397,6 +11569,10 @@ public class objc_RUMVitalDurationEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMVitalDurationEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMVitalDurationEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -11430,6 +11606,45 @@ public enum objc_RUMVitalDurationEventDDProfilingErrorReason: Int {
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+}
+
+@objc(DDRUMVitalDurationEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMVitalDurationEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMVitalDurationEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 }
 
 @objc(DDRUMVitalDurationEventDDProfilingStatus)
@@ -12449,6 +12664,10 @@ public class objc_RUMVitalOperationStepEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMVitalOperationStepEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMVitalOperationStepEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -12482,6 +12701,45 @@ public enum objc_RUMVitalOperationStepEventDDProfilingErrorReason: Int {
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+}
+
+@objc(DDRUMVitalOperationStepEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMVitalOperationStepEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMVitalOperationStepEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 }
 
 @objc(DDRUMVitalOperationStepEventDDProfilingStatus)
@@ -13464,8 +13722,33 @@ public class objc_TelemetryConfigurationEventAction: NSObject {
         self.root = root
     }
 
-    public var id: String {
-        root.swiftModel.action!.id
+    public var id: objc_TelemetryConfigurationEventActionRUMActionID {
+        objc_TelemetryConfigurationEventActionRUMActionID(root: root)
+    }
+}
+
+@objc(DDTelemetryConfigurationEventActionRUMActionID)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryConfigurationEventActionRUMActionID: NSObject {
+    internal let root: objc_TelemetryConfigurationEvent
+
+    internal init(root: objc_TelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    public var string: String? {
+        guard case .string(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
+    }
+
+    public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -14448,8 +14731,33 @@ public class objc_TelemetryDebugEventAction: NSObject {
         self.root = root
     }
 
-    public var id: String {
-        root.swiftModel.action!.id
+    public var id: objc_TelemetryDebugEventActionRUMActionID {
+        objc_TelemetryDebugEventActionRUMActionID(root: root)
+    }
+}
+
+@objc(DDTelemetryDebugEventActionRUMActionID)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryDebugEventActionRUMActionID: NSObject {
+    internal let root: objc_TelemetryDebugEvent
+
+    internal init(root: objc_TelemetryDebugEvent) {
+        self.root = root
+    }
+
+    public var string: String? {
+        guard case .string(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
+    }
+
+    public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -14726,8 +15034,33 @@ public class objc_TelemetryErrorEventAction: NSObject {
         self.root = root
     }
 
-    public var id: String {
-        root.swiftModel.action!.id
+    public var id: objc_TelemetryErrorEventActionRUMActionID {
+        objc_TelemetryErrorEventActionRUMActionID(root: root)
+    }
+}
+
+@objc(DDTelemetryErrorEventActionRUMActionID)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEventActionRUMActionID: NSObject {
+    internal let root: objc_TelemetryErrorEvent
+
+    internal init(root: objc_TelemetryErrorEvent) {
+        self.root = root
+    }
+
+    public var string: String? {
+        guard case .string(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
+    }
+
+    public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -14940,4 +15273,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ed69a908b5f05a97b984498526d50c0e97284c06
+// Generated from https://github.com/DataDog/rum-events-format/tree/2e1fe49897be86e72c0c2f0c2ae052c0d5f826eb
