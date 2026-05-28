@@ -64,10 +64,7 @@ private extension RUMAppLaunchManager {
         self.timeToInitialDisplay = ttid
         let ttidVitalId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
 
-        var profiling: RUMVitalAppLaunchEvent.DD.Profiling?
-        if let profilingContext = context.additionalContext(ofType: ProfilingContext.self) {
-            profiling = .init(errorReason: profilingContext.error, status: profilingContext.profilingStatus)
-        }
+        let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
         sendTTIDMessageToProfiler(
             vital: .init(
@@ -180,7 +177,7 @@ private extension RUMAppLaunchManager {
         context: DatadogContext,
         writer: Writer,
         activeView: RUMViewScope?,
-        profiling: RUMVitalAppLaunchEvent.DD.Profiling? = nil
+        profiling: DDProfiling? = nil
     ) {
         let vital = RUMVitalAppLaunchEvent.Vital(
             appLaunchMetric: appLaunchMetric,
@@ -285,44 +282,5 @@ private extension RUMVitalAppLaunchEvent.Vital.AppLaunchMetric {
         case .ttid: return "time_to_initial_display"
         case .ttfd: return "time_to_full_display"
         }
-    }
-}
-
-private extension ProfilingContext {
-    /**
-     * Returns the profiling status reported for app launch.
-     *
-     * Returns:
-     *  - `.running` when the profiler is actively running, or when it was manually stopped or timed out.
-     *  - `.stopped` when the profiler was not started, was sampled out, or the app launch was prewarmed.
-     *  - `.error` when the profiler encountered an error while starting or it is in an unknown status.
-     *
-     * Note: the implementation currently maps `.stopped(.manual)` and `.stopped(.timeout)` to `.running`
-     * because those cases indicate profiling collected enough samples to be associated with the launch.
-     */
-    var profilingStatus: RUMVitalAppLaunchEvent.DD.Profiling.Status {
-        switch self.status {
-        case .running: return .running
-        case .stopped: return .stopped
-        case .error: return .error
-        case .unknown: return .error
-        }
-    }
-
-    /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-    ///
-    /// Possible values:
-    /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-    var error: RUMVitalAppLaunchEvent.DD.Profiling.ErrorReason? {
-        // RUM-15325: Update RUM schema with the mobile profiler errors
-        if case .error(reason: let reason) = self.status {
-            switch reason {
-            case .memoryAllocationFailed:
-                return .unexpectedException
-            case .alreadyStarted:
-                return nil
-            }
-        }
-        return nil
     }
 }

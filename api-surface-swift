@@ -589,7 +589,6 @@ public protocol CrashReportingPlugin: AnyObject
 
 public enum WebViewTracking
     public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate,in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func enable(webView: WKWebView,hostPatterns: [String],logsSampleRate: SampleRate = .maxSampleRate,in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func disable(webView: WKWebView)
 [?] extension InternalExtension where ExtendedType == WebViewTracking
     public class AbstractMessageEmitter
@@ -1566,4 +1565,5 @@ public enum Profiling
     public struct Configuration
         public var customEndpoint: URL?
         public var applicationLaunchSampleRate: SampleRate
-        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5)
+        public var continuousSampleRate: SampleRate
+        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5,continuousSampleRate: SampleRate = 5)

@@ -2503,6 +2503,224 @@ final class ObjcInteropPrinterTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
+    func testPrintingObjcInteropKeepsLegacyStringAccessorForCompatibleAssociatedTypeEnumProperty() throws {
+        let telemetryEvent = SwiftStruct(
+            name: "TelemetryDebugEvent",
+            comment: nil,
+            properties: [
+                .mock(
+                    propertyName: "action",
+                    type: SwiftStruct(
+                        name: "Action",
+                        comment: nil,
+                        properties: [
+                            .mock(
+                                propertyName: "id",
+                                type: SwiftTypeReference(referencedTypeName: "RUMActionID"),
+                                isOptional: false,
+                                mutability: .immutable
+                            )
+                        ],
+                        conformance: []
+                    ),
+                    isOptional: true,
+                    mutability: .immutable
+                )
+            ],
+            conformance: []
+        )
+
+        let rumActionID = SwiftAssociatedTypeEnum(
+            name: "RUMActionID",
+            comment: nil,
+            cases: [
+                SwiftAssociatedTypeEnum.Case(label: "string", associatedType: SwiftPrimitive<String>()),
+                SwiftAssociatedTypeEnum.Case(label: "stringsArray", associatedType: SwiftArray(element: SwiftPrimitive<String>()))
+            ],
+            conformance: []
+        )
+
+        let expected = """
+        // MARK: - Swift
+
+        public struct TelemetryDebugEvent {
+            public let action: Action?
+
+            ///
+            /// - Parameters:
+            ///   - action:
+            public init(
+                action: Action? = nil
+            ) {
+                self.action = action
+            }
+
+            public struct Action {
+                public let id: RUMActionID
+
+                ///
+                /// - Parameters:
+                ///   - id:
+                public init(
+                    id: RUMActionID
+                ) {
+                    self.id = id
+                }
+            }
+        }
+
+        public enum RUMActionID {
+            case string(value: String)
+            case stringsArray(value: [String])
+        }
+
+        // MARK: - ObjcInterop
+
+        @objc(DDTelemetryDebugEvent)
+        @objcMembers
+        @_spi(objc)
+        public class objc_TelemetryDebugEvent: NSObject {
+            public internal(set) var swiftModel: TelemetryDebugEvent
+            internal var root: objc_TelemetryDebugEvent { self }
+
+            public init(swiftModel: TelemetryDebugEvent) {
+                self.swiftModel = swiftModel
+            }
+
+            public var action: objc_TelemetryDebugEventAction? {
+                root.swiftModel.action != nil ? objc_TelemetryDebugEventAction(root: root) : nil
+            }
+        }
+
+        @objc(DDTelemetryDebugEventAction)
+        @objcMembers
+        @_spi(objc)
+        public class objc_TelemetryDebugEventAction: NSObject {
+            internal let root: objc_TelemetryDebugEvent
+
+            internal init(root: objc_TelemetryDebugEvent) {
+                self.root = root
+            }
+
+            public var id: String {
+                switch root.swiftModel.action!.id {
+                case .string(let value):
+                    return value
+                case .stringsArray(let value):
+                    return value.first ?? ""
+                }
+            }
+
+            public var idValue: objc_TelemetryDebugEventActionRUMActionID {
+                objc_TelemetryDebugEventActionRUMActionID(root: root)
+            }
+        }
+
+        @objc(DDTelemetryDebugEventActionRUMActionID)
+        @objcMembers
+        @_spi(objc)
+        public class objc_TelemetryDebugEventActionRUMActionID: NSObject {
+            internal let root: objc_TelemetryDebugEvent
+
+            internal init(root: objc_TelemetryDebugEvent) {
+                self.root = root
+            }
+
+            public var string: String? {
+                guard case .string(let value) = root.swiftModel.action!.id else {
+                    return nil
+                }
+                return value
+            }
+
+            public var stringsArray: [String]? {
+                guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+                    return nil
+                }
+                return value
+            }
+        }
+
+        """
+
+        let actual = try printSwiftWithObjcInterop(for: [telemetryEvent, rumActionID])
+
+        XCTAssertEqual(expected, actual)
+    }
+
+    func testPrintingObjcInteropForReferencedDDTypeRemovesDuplicatedDDPrefixFromWrapperNames() throws {
+        let rumErrorEvent = SwiftStruct(
+            name: "RUMEvent",
+            comment: nil,
+            properties: [
+                .mock(
+                    propertyName: "dd",
+                    type: SwiftStruct(
+                        name: "DD",
+                        comment: nil,
+                        properties: [
+                            .mock(
+                                propertyName: "shared",
+                                type: SwiftTypeReference(referencedTypeName: "DDShared"),
+                                isOptional: true,
+                                mutability: .immutable
+                            )
+                        ],
+                        conformance: []
+                    ),
+                    isOptional: false,
+                    mutability: .immutable
+                )
+            ],
+            conformance: []
+        )
+
+        let ddShared = SwiftStruct(
+            name: "DDShared",
+            comment: nil,
+            properties: [
+                .mock(
+                    propertyName: "detail",
+                    type: SwiftEnum(
+                        name: "Detail",
+                        comment: nil,
+                        cases: [
+                            SwiftEnum.Case(label: "value1", rawValue: .string(value: "value_1"))
+                        ],
+                        conformance: []
+                    ),
+                    isOptional: true,
+                    mutability: .immutable
+                ),
+                .mock(
+                    propertyName: "status",
+                    type: SwiftEnum(
+                        name: "Status",
+                        comment: nil,
+                        cases: [
+                            SwiftEnum.Case(label: "value2", rawValue: .string(value: "value_2"))
+                        ],
+                        conformance: []
+                    ),
+                    isOptional: false,
+                    mutability: .immutable
+                )
+            ],
+            conformance: []
+        )
+
+        let actual = try printSwiftWithObjcInterop(for: [rumErrorEvent, ddShared])
+
+        XCTAssertTrue(actual.contains("public var shared: objc_RUMEventDDShared?"))
+        XCTAssertTrue(actual.contains("@objc(DDRUMEventDDShared)"))
+        XCTAssertTrue(actual.contains("public class objc_RUMEventDDShared: NSObject"))
+        XCTAssertTrue(actual.contains("@objc(DDRUMEventDDSharedDetail)"))
+        XCTAssertTrue(actual.contains("public enum objc_RUMEventDDSharedDetail: Int"))
+        XCTAssertTrue(actual.contains("@objc(DDRUMEventDDSharedStatus)"))
+        XCTAssertTrue(actual.contains("public enum objc_RUMEventDDSharedStatus: Int"))
+        XCTAssertFalse(actual.contains("DDDDShared"))
+    }
+
     func testPrintingObjcInteropForSwiftStructWithAssociatedTypeEnumArrayProperties() throws {
         let associatedTypeEnum1 = SwiftAssociatedTypeEnum(
             name: "Status1",
