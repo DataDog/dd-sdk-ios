@@ -26,8 +26,6 @@ internal final class RemoteConfigurationSynchronizer {
     @ReadWriteLock
     private(set) var cache: Result<Data, Error>
 
-    private static let ttl: TimeInterval = 5 * 60
-
     init(id: String, site: DatadogSite, directory: Directory, httpClient: HTTPClient) {
         self.id = id
         self.site = site
@@ -51,25 +49,10 @@ internal final class RemoteConfigurationSynchronizer {
 
     // MARK: - Internal
 
-    /// Fires a CDN fetch and updates the cache on success.
-    ///
-    /// The completion handler may be called synchronously on the caller's thread when
-    /// a fresh cached value is available (TTL not exceeded). Otherwise it is called
-    /// asynchronously on the URLSession callback queue.
+    /// Fires an async CDN fetch and updates the cache on success.
     ///
     /// - Parameter completionHandler: Called with the fetch result when the operation (and any cache write) is done.
     func sync(_ completionHandler: @escaping (Result<Data, Error>) -> Void) {
-        // Skip fetch if cached config is less than 5 minutes old.
-        // The TTL clock resets only when new data is written (2xx response).
-        // A 304 does not update modifiedAt, so the next sync will still hit the network —
-        // this is intentional: the 5-minute window measures time since the last confirmed write.
-        if case .success = cache,
-           let date = try? directory.file(named: "\(id).json").modifiedAt(),
-           Date().timeIntervalSince(date) < Self.ttl {
-            completionHandler(cache)
-            return
-        }
-
         // Build request with conditional ETag header if a previous ETag is stored.
         // Only send If-None-Match when the cache is usable — if cache is .failure,
         // a 304 response would leave us with no data to serve.
@@ -118,12 +101,9 @@ internal final class RemoteConfigurationSynchronizer {
                     self.cache = .success(data)
 
                     // Store ETag for conditional requests on the next sync.
-                    // allHeaderFields["ETag"] uses case-sensitive Swift String equality, so we
-                    // search case-insensitively to handle servers that vary capitalisation.
-                    let etag = http.allHeaderFields
-                        .first { ($0.key as? String)?.caseInsensitiveCompare("ETag") == .orderedSame }
-                        .flatMap { $0.value as? String }
-                    if let etag = etag {
+                    // Case-insensitive search: allHeaderFields["ETag"] is case-sensitive in Swift
+                    // due to AnyHashable bridging, so we look up by lowercased key.
+                    if let etag = http.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "etag" })?.value as? String {
                         try? File(url: self.directory.url.appendingPathComponent("\(self.id).etag")).write(data: Data(etag.utf8))
                     }
 

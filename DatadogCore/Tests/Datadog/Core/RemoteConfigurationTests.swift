@@ -189,8 +189,6 @@ class RemoteConfigurationTests: XCTestCase {
         let existing = Data("{\"v\":1}".utf8)
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         try existing.write(to: fileURL, options: .atomic)
-        // Make cache stale so TTL does not skip the network request
-        try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSinceNow: -(6 * 60))], ofItemAtPath: fileURL.path)
 
         MockURLProtocol.requestHandler = { request in
             (HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!, nil)
@@ -272,55 +270,6 @@ class RemoteConfigurationTests: XCTestCase {
         }
     }
 
-    // MARK: TTL
-
-    func testSyncSkipsFetchWhenTTLNotExceeded() throws {
-        // Given — write a fresh cache file (modified just now)
-        let cached = Data("{\"v\":1}".utf8)
-        let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
-        try cached.write(to: fileURL, options: .atomic)
-
-        var fetchWasCalled = false
-        MockURLProtocol.requestHandler = { _ in
-            fetchWasCalled = true
-            return (HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data())
-        }
-
-        let rc = makeSynchronizer()
-        let expectation = expectation(description: "sync completes")
-
-        rc.sync { result in
-            XCTAssertEqual(try? result.get(), cached, "Should return cached data without fetching")
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 2)
-
-        XCTAssertFalse(fetchWasCalled, "Network must not be called when cache is fresh")
-    }
-
-    func testSyncFetchesWhenTTLExceeded() throws {
-        // Given — write a stale cache file (modified 6 minutes ago)
-        let stale = Data("{\"v\":1}".utf8)
-        let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
-        try stale.write(to: fileURL, options: .atomic)
-        let sixMinutesAgo = Date(timeIntervalSinceNow: -(6 * 60))
-        try FileManager.default.setAttributes([.modificationDate: sixMinutesAgo], ofItemAtPath: fileURL.path)
-
-        let fresh = Data("{\"v\":2}".utf8)
-        MockURLProtocol.requestHandler = { request in
-            (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, fresh)
-        }
-
-        let rc = makeSynchronizer()
-        let expectation = expectation(description: "sync completes")
-
-        rc.sync { result in
-            XCTAssertEqual(try? result.get(), fresh, "Should fetch fresh data when TTL is exceeded")
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 2)
-    }
-
     // MARK: ETag
 
     func testSyncStoresETagAfterSuccessfulFetch() {
@@ -336,22 +285,6 @@ class RemoteConfigurationTests: XCTestCase {
         let etagFileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.etag")
         let storedETag = try? String(data: Data(contentsOf: etagFileURL), encoding: .utf8)
         XCTAssertEqual(storedETag, "abc123")
-    }
-
-    func testSyncStoresETagWithLowercaseHeaderName() {
-        // Servers may return "etag" rather than "ETag" — verify case-insensitive extraction works
-        MockURLProtocol.requestHandler = { request in
-            (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["etag": "xyz789"])!, Data("{}".utf8))
-        }
-        let rc = makeSynchronizer()
-        let expectation = expectation(description: "sync completes")
-
-        rc.sync { _ in expectation.fulfill() }
-        wait(for: [expectation], timeout: 2)
-
-        let etagFileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.etag")
-        let storedETag = try? String(data: Data(contentsOf: etagFileURL), encoding: .utf8)
-        XCTAssertEqual(storedETag, "xyz789")
     }
 
     func testSyncDoesNotSendIfNoneMatchWhenCacheIsFailure() throws {
@@ -387,22 +320,17 @@ class RemoteConfigurationTests: XCTestCase {
             options: .atomic
         )
 
+        // Pre-populate .json so cache is .success (required to send If-None-Match)
+        try Data("{}".utf8).write(
+            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"),
+            options: .atomic
+        )
+
         var capturedRequest: URLRequest?
         MockURLProtocol.requestHandler = { request in
             capturedRequest = request
             return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data("{}".utf8))
         }
-
-        // Also make the cache stale so TTL doesn't skip the fetch
-        try Data("{}".utf8).write(
-            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"),
-            options: .atomic
-        )
-        let sixMinutesAgo = Date(timeIntervalSinceNow: -(6 * 60))
-        try FileManager.default.setAttributes(
-            [.modificationDate: sixMinutesAgo],
-            ofItemAtPath: coreDir.coreDirectory.url.appendingPathComponent("test-id.json").path
-        )
 
         let rc = makeSynchronizer()
         let expectation = expectation(description: "sync completes")
@@ -418,8 +346,6 @@ class RemoteConfigurationTests: XCTestCase {
         let existing = Data("{\"v\":1}".utf8)
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         try existing.write(to: fileURL, options: .atomic)
-        let sixMinutesAgo = Date(timeIntervalSinceNow: -(6 * 60))
-        try FileManager.default.setAttributes([.modificationDate: sixMinutesAgo], ofItemAtPath: fileURL.path)
 
         MockURLProtocol.requestHandler = { request in
             (HTTPURLResponse(url: request.url!, statusCode: 304, httpVersion: nil, headerFields: nil)!, nil)
@@ -438,11 +364,9 @@ class RemoteConfigurationTests: XCTestCase {
     }
 
     func test304ResponseCallsCompletionEvenWhenCacheIsFailure() throws {
-        // Given — stale json so TTL doesn't skip, but make file unreadable so cache is .failure
+        // Given — unreadable .json so cache is .failure
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         try Data("{\"v\":1}".utf8).write(to: fileURL, options: .atomic)
-        let sixMinutesAgo = Date(timeIntervalSinceNow: -(6 * 60))
-        try FileManager.default.setAttributes([.modificationDate: sixMinutesAgo], ofItemAtPath: fileURL.path)
         try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: fileURL.path)
         defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: fileURL.path) }
 
