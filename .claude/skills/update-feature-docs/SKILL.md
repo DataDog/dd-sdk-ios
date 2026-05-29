@@ -19,7 +19,7 @@ All `*_FEATURE.md` files in the repo. Each doc's frontmatter is the source of tr
 - `verified_against_commit` — the commit the doc was last verified against
 - `tracked_files` — the public API source files whose changes should trigger a doc update
 
-To add a new feature doc to the system, just create a `*_FEATURE.md` file with the correct frontmatter — no script changes needed.
+To add a new feature doc to the system, create a `*_FEATURE.md` file following the spec in [`docs/LLM_FEATURE_DOCS_GUIDELINES.md`](../../../docs/LLM_FEATURE_DOCS_GUIDELINES.md) and modeling it on existing docs (e.g. `DatadogRUM/RUM_FEATURE.md`, `DatadogSessionReplay/SESSION_REPLAY_FEATURE.md`). Then run this skill — it will discover the new doc, audit `tracked_files` coverage, and register it in the required places. No script changes needed.
 
 ## Steps
 
@@ -39,12 +39,14 @@ To add a new feature doc to the system, just create a `*_FEATURE.md` file with t
 4. **Read the current source files in full** — read each tracked source file to understand the current public API surface.
 
 5. **Compare against the feature doc** — identify every discrepancy:
-   - New configuration options or parameters missing from the doc
-   - Removed or renamed options still mentioned in the doc
-   - Changed defaults, behaviors, or platform availability
-   - New types, enums, or feature flags not documented
-   - **Deprecated public cases not documented** — walk every public enum case, method, and property, including those marked `@available(*, deprecated, message:)`. Deprecated cases stay on the public API and must appear in the doc with a clear deprecation note, otherwise customers reading the doc won't know they exist or that they're being phased out.
-   - Outdated code examples
+   - **Configuration options** — new options missing from the doc, removed or renamed options still mentioned, changed defaults.
+   - **Public methods and properties** — for each public method/property on the tracked types (e.g. `RUMMonitor.shared()`, `startView()`, `stopView()`), confirm it appears in the doc or is intentionally excluded. Flag new public methods missing from the doc.
+   - **Types, enums, and feature flags** — confirm every public enum case (including `FeatureFlag` cases), nested type, and protocol is documented.
+   - **Deprecated public surface** — walk every case marked `@available(*, deprecated, message:)`. Deprecated cases stay on the public API and must appear in the doc with a clear deprecation note, otherwise customers reading the doc won't know they exist or that they're being phased out.
+   - **Platform support** — verify the doc's stated platform availability matches the source. Check `#if os(...)` directives and `@available(...)` annotations on tracked types; if these have changed, update the doc's Overview section.
+   - **Feature interactions** — verify the "Feature Interactions" section still holds. Look for new cross-feature dependencies (e.g. a new RUM-context read in Logs source) or removed ones.
+   - **Description accuracy** — for each documented option/method, compare the snippet's inline comment against the source's doc-comment. If the source description has been updated, update the doc to match.
+   - **Outdated code examples** — anything in the snippets that no longer reflects the API.
 
 5b. **Audit every code snippet for compile-readiness** — for every constructor call, method call, and type reference in every code snippet (Quick Start and any inline examples):
    - Locate the corresponding `init` / `func` / `struct` / `class` / `enum` declaration in the tracked source files (or in extension files providing convenience overloads).
@@ -69,7 +71,10 @@ To add a new feature doc to the system, just create a `*_FEATURE.md` file with t
 8. **Update the registries** — when adding, renaming, or removing a `*_FEATURE.md` file, also update every place that hand-lists feature docs. `tools/feature-docs-verify.sh` enforces these and will fail CI otherwise:
    - **`.github/workflows/changelog-to-confluence.yaml`** — both the `paths:` filter and the `cp` block. Use the relative path **without a leading slash** (`DatadogRUM/RUM_FEATURE.md`, not `/DatadogRUM/RUM_FEATURE.md`) — leading slashes silently never match in GitHub Actions `paths:` filters. The publish filename is kebab-case derived from the module + doc (`DatadogRUM/RUM_FEATURE.md` → `dd-sdk-ios-rum-feature.md`).
    - **`AGENTS.md`** — add the doc to the file tree under "Feature-specific docs" and to the routing table ("Where to Look First").
-   - **`docs/LLM_FEATURE_DOCS_GUIDELINES.md`** — add the doc to the expected feature-docs list.
+   - **`docs/LLM_FEATURE_DOCS_GUIDELINES.md`** — add the doc to the file inventory list.
+
+9. **Surface a reminder to the engineer** — at the end of your run, print this single-line note so it's visible right when the engineer is using the skill:
+   > "Note: `verified_against_commit` was set to `<short SHA>`. If you rebase, amend, or squash commits afterward, re-run the skill before pushing so the SHA stays reachable in the final history (otherwise CI verify will fail on a fresh clone)."
 
 ## Notes
 
