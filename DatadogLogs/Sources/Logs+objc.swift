@@ -92,12 +92,24 @@ public final class objc_Logs: NSObject {
         Logs.enable(with: configuration.configuration)
     }
 
+    public static func enable(instanceName: String, with configuration: objc_LogsConfiguration = .init()) {
+        Logs.enable(with: configuration.configuration, in: CoreRegistry.instance(named: instanceName))
+    }
+
     public static func addAttribute(forKey key: String, value: Any) {
         Logs.addAttribute(forKey: key, value: AnyEncodable(value))
     }
 
+    public static func addAttribute(forKey key: String, value: Any, instanceName: String) {
+        Logs.addAttribute(forKey: key, value: AnyEncodable(value), in: CoreRegistry.instance(named: instanceName))
+    }
+
     public static func removeAttribute(forKey key: String) {
         Logs.removeAttribute(forKey: key)
+    }
+
+    public static func removeAttribute(forKey key: String, instanceName: String) {
+        Logs.removeAttribute(forKey: key, in: CoreRegistry.instance(named: instanceName))
     }
 }
 
@@ -333,6 +345,10 @@ public final class objc_Logger: NSObject {
 
     public static func create(with configuration: objc_LoggerConfiguration = .init()) -> objc_Logger {
         return objc_Logger(sdkLogger: Logger.create(with: configuration.configuration))
+    }
+
+    public static func create(instanceName: String, with configuration: objc_LoggerConfiguration = .init()) -> objc_Logger {
+        return objc_Logger(sdkLogger: Logger.create(with: configuration.configuration, in: CoreRegistry.instance(named: instanceName)))
     }
 }
 

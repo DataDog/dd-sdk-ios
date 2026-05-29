@@ -59,6 +59,29 @@ public final class objc_WebViewTracking: NSObject {
         )
     }
 
+    /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session on a named SDK instance.
+    ///
+    /// - Parameters:
+    ///   - webView: The web-view to track.
+    ///   - hosts: A set of hosts instrumented with Browser SDK to capture Datadog events from.
+    ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
+    ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
+    ///   - instanceName: The name of the SDK instance to use for tracking.
+    @objc
+    public static func enable(
+        webView: WKWebView,
+        instanceName: String,
+        hosts: Set<String> = [],
+        logsSampleRate: SampleRate = .maxSampleRate
+    ) {
+        WebViewTracking.enable(
+            webView: webView,
+            hosts: hosts,
+            logsSampleRate: logsSampleRate,
+            in: CoreRegistry.instance(named: instanceName)
+        )
+    }
+
     /// Disables Datadog iOS SDK and Datadog Browser SDK integration.
     ///
     /// Removes Datadog's ScriptMessageHandler and UserScript from the caller.

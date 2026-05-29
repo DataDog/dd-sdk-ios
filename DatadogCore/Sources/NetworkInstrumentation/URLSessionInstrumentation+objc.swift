@@ -69,6 +69,15 @@ public final class objc_URLSessionInstrumentation: NSObject {
         URLSessionInstrumentation.enableDurationBreakdown(with: configuration.swiftConfig)
     }
 
+    /// Enables duration breakdown capture for URLSession tasks on a named SDK instance.
+    ///
+    /// - Parameters:
+    ///   - configuration: Configuration of the feature.
+    ///   - instanceName: The name of the SDK instance to use.
+    public static func enableDurationBreakdown(with configuration: objc_URLSessionInstrumentationConfiguration, instanceName: String) {
+        URLSessionInstrumentation.enableDurationBreakdown(with: configuration.swiftConfig, in: CoreRegistry.instance(named: instanceName))
+    }
+
     /// Enables URLSession instrumentation.
     ///
     /// - Parameters:
@@ -76,6 +85,16 @@ public final class objc_URLSessionInstrumentation: NSObject {
     @available(*, deprecated, renamed: "enableDurationBreakdown(with:)", message: "Use enableDurationBreakdown(with:) instead.")
     public static func enable(configuration: objc_URLSessionInstrumentationConfiguration) {
         URLSessionInstrumentation.enable(with: configuration.swiftConfig)
+    }
+
+    /// Enables URLSession instrumentation on a named SDK instance.
+    ///
+    /// - Parameters:
+    ///   - configuration: Configuration of the feature.
+    ///   - instanceName: The name of the SDK instance to use.
+    @available(*, deprecated, renamed: "enableDurationBreakdown(with:instanceName:)", message: "Use enableDurationBreakdown(with:instanceName:) instead.")
+    public static func enable(configuration: objc_URLSessionInstrumentationConfiguration, instanceName: String) {
+        URLSessionInstrumentation.enable(with: configuration.swiftConfig, in: CoreRegistry.instance(named: instanceName))
     }
 
     /// Disables URLSession instrumentation.
