@@ -33,7 +33,7 @@ internal struct DistributedTracing {
     }
 }
 
-internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RUMCommandPublisher {
+internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupportingDistributedTracing, RUMCommandPublisher {
     /// Captured state for RUM URL session handler
     struct RUMURLSessionHandlerCapturedState: URLSessionHandlerCapturedState {
         /// Whether GraphQL headers were detected in the request
@@ -240,6 +240,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
             DD.logger.debug("Failed to encode GraphQL errors array: \(error)")
             return nil
         }
+    }
+
+    var distributedTracingSampleRate: SampleRate? {
+        distributedTracing?.samplingRate
     }
 }
 

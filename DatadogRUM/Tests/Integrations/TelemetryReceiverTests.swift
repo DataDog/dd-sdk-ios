@@ -428,6 +428,22 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
+    // MARK: - Track Resource Headers Configuration Telemetry
+
+    func testSendTelemetryConfiguration_trackResourceHeaders() {
+        // Given
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
+        let telemetry = TelemetryMock(with: receiver)
+        let trackResourceHeaders: TelemetryConfigurationEvent.Telemetry.Configuration.TrackResourceHeaders = [.defaultHeaders, .custom].randomElement()!
+
+        // When
+        telemetry.configuration(trackResourceHeaders: trackResourceHeaders.rawValue)
+
+        // Then
+        let event = featureScope.eventsWritten(ofType: TelemetryConfigurationEvent.self).first
+        XCTAssertEqual(event?.telemetry.configuration.trackResourceHeaders, trackResourceHeaders)
+    }
+
     // MARK: - Metrics Telemetry Events
 
     func testSendTelemetryMetric() throws {

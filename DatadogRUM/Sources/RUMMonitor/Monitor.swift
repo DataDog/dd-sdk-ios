@@ -152,9 +152,7 @@ internal class Monitor: RUMCommandSubscriber {
                     return nil
                 }
 
-                let context = activeSession.viewScopes.last?.context ??
-                                activeSession.context ??
-                                self.scopes.context
+                let context = activeSession.viewScopes.last?.context ?? activeSession.context
 
                 return RUMCoreContext(
                     applicationID: context.rumApplicationID,

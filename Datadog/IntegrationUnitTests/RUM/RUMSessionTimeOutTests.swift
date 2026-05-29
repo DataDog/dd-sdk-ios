@@ -750,7 +750,7 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
                 XCTAssertNil(session2.timeToInitialDisplay)
                 DDAssertEqual(session2.sessionStartDate, processLaunchDate + timeToSDKInit + dt1 + dt2 + sessionTimeoutDuration + dt3, accuracy: accuracy)
                 DDAssertEqual(session2.duration, dt4, accuracy: accuracy)
-                XCTAssertEqual(session2.sessionPrecondition, .inactivityTimeout)
+                XCTAssertEqual(session2.sessionPrecondition, given == given1 ? .backgroundLaunch : .prewarm)
                 XCTAssertEqual(session2.views.count, 1)
                 XCTAssertEqual(session2.views[0].name, backgroundViewName)
                 DDAssertEqual(session2.views[0].duration, dt4, accuracy: accuracy)
