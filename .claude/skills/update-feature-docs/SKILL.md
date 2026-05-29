@@ -30,11 +30,18 @@ To add a new feature doc to the system, create a `*_FEATURE.md` file following t
    - If `verified_against_commit` is missing, treat the doc as fully out of date and proceed to step 4 — the diff in step 3 cannot be computed.
    - **Audit `tracked_files` coverage** against the doc's "Key Files" section. Every public-API source file path referenced in "Key Files" must also appear in `tracked_files`. This audit must happen *here*, before step 3 — otherwise drift in untracked files is silently ignored. If any are missing, add them to `tracked_files` and treat the doc as fully out of date so the newly-tracked files are inspected in step 4.
 
-3. **Get the diff since that commit** — run:
+3. **Get the diff since that commit** — first ensure the tracked source files have no uncommitted changes:
+   ```
+   git diff HEAD -- <tracked_files>
+   ```
+   If this returns anything, **abort** and tell the engineer:
+   > "Tracked source files have uncommitted changes. Please commit your API changes first, then re-run the skill — otherwise the diff in step 3 won't see them and I'd report the doc as up to date even though CI would fail later."
+
+   Then run the actual drift check:
    ```
    git diff <verified_against_commit>..HEAD -- <tracked_files>
    ```
-   If there is no diff for a doc, it is up to date — skip steps 4–7 for that doc and move to the next one. **Do not skip step 8** — registry coverage must be checked even when every doc is fresh.
+   If there is no diff for a doc, its own tracked source files are unchanged — skip steps 4–6 for that doc. **Do not skip step 5b**: cross-feature drift (e.g. a RUM API change affecting Session Replay's Quick Start) won't show up in this doc's `tracked_files` diff. **Do not skip step 8** either — registry coverage must be checked even when every doc is fresh.
 
 4. **Read the current source files in full** — read each tracked source file to understand the current public API surface.
 
@@ -48,8 +55,8 @@ To add a new feature doc to the system, create a `*_FEATURE.md` file following t
    - **Description accuracy** — for each documented option/method, compare the snippet's inline comment against the source's doc-comment. If the source description has been updated, update the doc to match.
    - **Outdated code examples** — anything in the snippets that no longer reflects the API.
 
-5b. **Audit every code snippet for compile-readiness** — for every constructor call, method call, and type reference in every code snippet (Quick Start and any inline examples):
-   - Locate the corresponding `init` / `func` / `struct` / `class` / `enum` declaration in the tracked source files (or in extension files providing convenience overloads).
+5b. **Audit every code snippet for compile-readiness** — runs for every doc on every skill invocation, **even if step 3's diff was empty**. This is the only check that catches cross-feature drift (e.g. a RUM predicate change breaking Session Replay's Quick Start). For every constructor call, method call, and type reference in every code snippet (Quick Start and any inline examples):
+   - Locate the corresponding `init` / `func` / `struct` / `class` / `enum` declaration **anywhere in the SDK source**, not just this doc's `tracked_files`. Snippets often reference types from other features (e.g. Session Replay's Quick Start uses `RUM.Configuration` and `DefaultSwiftUIRUMViewsPredicate` from DatadogRUM). Use the "Feature Interactions" section of each doc as a hint for which other modules may be relevant, but resolve symbols against the actual source regardless.
    - Confirm every parameter **without** a default value (`= ...`) is supplied in the snippet, with the correct label.
    - Confirm parameter labels and argument ordering match the source.
    - **Watch especially for newly-required parameters added to existing initializers.** A required parameter added to an existing `init` is the highest-risk drift — the constructor still looks "the same" at a glance, and the source diff is a one-line addition that is easy to skim past. Example regression: `DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled:)` gained the required `isLegacyDetectionEnabled` argument and the snippet was not updated, causing a compile failure customers hit.
