@@ -37,6 +37,18 @@
     [DDSessionReplay stopRecording];
 }
 
+- (void)testSessionReplayInstanceNameAPI {
+    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100
+                                                                                        textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
+                                                                                               imagePrivacyLevel:DDImagePrivacyLevelMaskNone
+                                                                                               touchPrivacyLevel:DDTouchPrivacyLevelShow
+                                                                                                    featureFlags:nil];
+    NSString *instanceName = @"sr-test-instance";
+    [DDSessionReplay enableWith:configuration instanceName:instanceName];
+    [DDSessionReplay startRecordingWithInstanceName:instanceName];
+    [DDSessionReplay stopRecordingWithInstanceName:instanceName];
+}
+
 - (void)testStartRecordingImmediately {
     DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100
                                                                                         textAndInputPrivacyLevel:DDTextAndInputPrivacyLevelMaskAll
