@@ -58,29 +58,29 @@ extension CALayerSnapshot.CornerRadii {
 
         let topInset = max(topLeft.height, topRight.height)
         let bottomInset = max(bottomLeft.height, bottomRight.height)
-        let horizontalHeight = frame.height - topInset - bottomInset
+        let contentHeight = frame.height - topInset - bottomInset
 
-        if horizontalHeight > 0 {
+        if contentHeight > 0 {
             rects.append(
                 CGRect(
                     x: frame.minX,
                     y: frame.minY + topInset,
                     width: frame.width,
-                    height: horizontalHeight
+                    height: contentHeight
                 )
             )
         }
 
         let leftInset = max(topLeft.width, bottomLeft.width)
         let rightInset = max(topRight.width, bottomRight.width)
-        let verticalWidth = frame.width - leftInset - rightInset
+        let contentWidth = frame.width - leftInset - rightInset
 
-        if verticalWidth > 0 {
+        if contentWidth > 0 {
             rects.append(
                 CGRect(
                     x: frame.minX + leftInset,
                     y: frame.minY,
-                    width: verticalWidth,
+                    width: contentWidth,
                     height: frame.height
                 )
             )
