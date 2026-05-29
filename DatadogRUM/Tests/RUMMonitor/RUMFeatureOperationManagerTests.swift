@@ -168,6 +168,9 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         // Names outside the schema facet-path set are warned about but still
         // emitted — the backend is the source of truth on character-set policy,
         // so client-side drop would force an SDK bump if the rule were relaxed.
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
         for invalidName in invalidCharacterSetNames {
             let command = RUMOperationStepVitalCommand.mockWith(name: invalidName)
 
@@ -186,10 +189,19 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         for (emitted, expected) in zip(vitalEvents, invalidCharacterSetNames) {
             XCTAssertEqual(emitted.vital.name, expected)
         }
+
+        // A warning is logged for each non-conforming name.
+        XCTAssertEqual(dd.logger.warnMessages.count, invalidCharacterSetNames.count)
+        for (message, name) in zip(dd.logger.warnMessages, invalidCharacterSetNames) {
+            XCTAssertTrue(message.contains(name), "Expected warning to mention '\(name)', got: \(message)")
+        }
     }
 
     func testProcess_OperationWithNameInSchemaCharacterSet_CreatesVitalEvent() {
         // Given — exercises every allowed character class
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
         let validNames = ["login", "step42", "login-v2", "user_login", "login.v2", "login@prod", "login$1", "LoginV2"]
         for validName in validNames {
             let command = RUMOperationStepVitalCommand.mockWith(name: validName)
@@ -203,9 +215,10 @@ class RUMFeatureOperationManagerTests: XCTestCase {
             )
         }
 
-        // Then
+        // Then — every event is emitted and no warnings are produced.
         let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
         XCTAssertEqual(vitalEvents.count, validNames.count)
+        XCTAssertNil(dd.logger.warnLog)
     }
 
     func testProcess_OperationKeyOutsideNameCharacterSet_CreatesVitalEvent() {
@@ -225,8 +238,11 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(vitalEvents.count, 1)
     }
 
-    func testProcess_OperationWithInvalidOperationKey_DoesNotCreateVitalEvent() {
-        // Given
+    func testProcess_OperationWithBlankOperationKey_LogsWarningAndCreatesVitalEvent() throws {
+        // operationKey is optional — a blank value warns but does not discard the event.
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
         for invalidOpKey in invalidNames {
             let command = RUMOperationStepVitalCommand.mockWith(name: .mockAny(), operationKey: invalidOpKey)
 
@@ -239,9 +255,12 @@ class RUMFeatureOperationManagerTests: XCTestCase {
             )
         }
 
-        // Then
+        // Then — events are emitted and a warning is logged for each blank key.
         let vitalEvents = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
-        XCTAssertEqual(vitalEvents.count, 0)
+        XCTAssertEqual(vitalEvents.count, invalidNames.count)
+        XCTAssertEqual(dd.logger.warnMessages.count, invalidNames.count)
+        let warnMessage = try XCTUnwrap(dd.logger.warnLog?.message)
+        XCTAssertTrue(warnMessage.contains("operationKey"), "Expected warning to mention 'operationKey', got: \(warnMessage)")
     }
 
     // MARK: Warning Logs Tests
