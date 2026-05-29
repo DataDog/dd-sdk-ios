@@ -120,6 +120,23 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
     }
 
+    #if !os(tvOS)
+    func testWhenEnabledWithEmptyFeatureFlags_scrollAndSwipeTrackingRemainsEnabled() throws {
+        // Given
+        config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
+        config.featureFlags = [:]
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        DDAssertActiveSwizzlings(["sendEvent:", "setDelegate:", "delegate"])
+        XCTAssertNotNil(rum.instrumentation.scrollViewSwizzler)
+        XCTAssertNotNil(rum.instrumentation.scrollHandler)
+    }
+    #endif
+
     func testWhenEnabledWithNoInstrumentations() throws {
         // Given
         config.uiKitViewsPredicate = nil
