@@ -71,6 +71,7 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
 
     /// Get the currently active session ID. Returns `nil` if no sessions are currently active or if
     /// the current session is sampled out.
+    /// The returned value matches the `session.id` field in emitted RUM events.
     /// This method uses an asynchronous callback to ensure all pending RUM events have been processed
     /// up to the moment of the call.
     /// - Parameters:

@@ -120,7 +120,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         // Then
         let metric = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
         let expectedSessionID = try XCTUnwrap(currentSessionID)
-        XCTAssertEqual(metric.session?.id, expectedSessionID.lowercased())
+        XCTAssertEqual(metric.session?.id, expectedSessionID)
         XCTAssertEqual(metric.attributes?.hasBackgroundEventsTrackingEnabled, rumConfig.trackBackgroundEvents)
     }
 

@@ -156,10 +156,10 @@ internal class Monitor: RUMCommandSubscriber {
 
                 return RUMCoreContext(
                     applicationID: context.rumApplicationID,
-                    sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+                    sessionID: context.sessionID.toRUMDataFormat,
                     sessionSampler: activeSession.sampler,
-                    viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
-                    userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
+                    viewID: context.activeViewID?.toRUMDataFormat,
+                    userActionID: context.activeUserActionID?.toRUMDataFormat,
                     viewServerTimeOffset: activeSession.viewScopes.last?.serverTimeOffset,
                     viewPath: context.activeViewPath
                 )
@@ -229,7 +229,7 @@ extension Monitor: RUMMonitorProtocol {
 
             var sessionIdValue: String? = nil
             if activeSession.sampler.isSampled, activeSession.sessionUUID != .nullUUID {
-                sessionIdValue = activeSession.sessionUUID.rawValue.uuidString
+                sessionIdValue = activeSession.sessionUUID.toRUMDataFormat
             }
 
             completion(sessionIdValue)
