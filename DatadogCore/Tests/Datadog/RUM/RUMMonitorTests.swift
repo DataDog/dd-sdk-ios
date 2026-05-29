@@ -46,8 +46,13 @@ class RUMMonitorTests: XCTestCase {
         let expectation = XCTestExpectation(description: "currentSessionID callback received")
         monitor.currentSessionID { sessionId in
             // Then
-            XCTAssertNotNil(sessionId)
+            guard let sessionId else {
+                XCTFail("Expected a session ID")
+                expectation.fulfill()
+                return
+            }
             XCTAssertEqual(capturedSession, sessionId)
+            XCTAssertEqual(sessionId, sessionId.lowercased())
             expectation.fulfill()
         }
 
@@ -891,6 +896,7 @@ class RUMMonitorTests: XCTestCase {
         config.sessionSampleRate = keepAllSessions ? 100 : 0
         config.onSessionStart = { sessionID, isDiscarded in
             XCTAssertTrue(sessionID.matches(regex: .uuidRegex))
+            XCTAssertEqual(sessionID, sessionID.lowercased())
             XCTAssertEqual(isDiscarded, !keepAllSessions)
             expectation.fulfill()
         }
