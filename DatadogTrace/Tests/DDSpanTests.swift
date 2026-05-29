@@ -258,6 +258,81 @@ class DDSpanTests: XCTestCase {
         )
     }
 
+    // MARK: - EventMapper Invocation Count
+    //
+    // The `SpanEventMapper` must run at most once per finished span. When client-side stats is
+    // enabled, the stats path builds the `SpanEvent` (running the mapper) to derive the snapshot,
+    // and the same event is reused for upload when sampled in. Running the mapper twice would
+    // amplify any side effects the customer's mapper relies on and would double the per-span cost
+    // for high-volume mappers.
+
+    func testWhenStatsEnabled_eventMapperRunsExactlyOnce_forSampledInSpan() {
+        let invocations = MapperInvocationCounter()
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            samplingProvider: TracerSamplerProviderMock.mockKeepAll(),
+            spanEventBuilder: .mockWith(eventsMapper: invocations.mapper)
+        )
+        tracer.onSpanFinished = { _ in /* stats hook installed */ }
+
+        tracer.startSpan(operationName: .mockAny()).finish()
+
+        XCTAssertEqual(invocations.count, 1)
+        let envelopes: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(envelopes.count, 1, "Sampled-in span should produce one upload")
+    }
+
+    func testWhenStatsEnabled_eventMapperRunsExactlyOnce_forSampledOutSpan() {
+        let invocations = MapperInvocationCounter()
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            samplingProvider: TracerSamplerProviderMock.mockRejectAll(),
+            spanEventBuilder: .mockWith(eventsMapper: invocations.mapper)
+        )
+
+        var snapshotDelivered = false
+        tracer.onSpanFinished = { _ in snapshotDelivered = true }
+
+        tracer.startSpan(operationName: .mockAny()).finish()
+
+        XCTAssertEqual(invocations.count, 1, "Mapper must run for the snapshot even when sampled out")
+        XCTAssertTrue(snapshotDelivered)
+        let envelopes: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(envelopes.count, 0, "Sampled-out span must not be uploaded")
+    }
+
+    func testWhenStatsDisabled_eventMapperOnlyRunsOnUploadPath_forSampledInSpan() {
+        let invocations = MapperInvocationCounter()
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            samplingProvider: TracerSamplerProviderMock.mockKeepAll(),
+            spanEventBuilder: .mockWith(eventsMapper: invocations.mapper)
+        )
+        XCTAssertNil(tracer.onSpanFinished)
+
+        tracer.startSpan(operationName: .mockAny()).finish()
+
+        XCTAssertEqual(invocations.count, 1)
+    }
+
+    func testWhenStatsDisabled_eventMapperDoesNotRun_forSampledOutSpan() {
+        let invocations = MapperInvocationCounter()
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            samplingProvider: TracerSamplerProviderMock.mockRejectAll(),
+            spanEventBuilder: .mockWith(eventsMapper: invocations.mapper)
+        )
+        XCTAssertNil(tracer.onSpanFinished)
+
+        tracer.startSpan(operationName: .mockAny()).finish()
+
+        XCTAssertEqual(invocations.count, 0, "Mapper must not run when stats is disabled and span is sampled out")
+    }
+
     func testWhenOnlyMalformedSpanTagsAdded_itSendsSpanWithoutCustomTags() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
@@ -292,5 +367,19 @@ class DDSpanTests: XCTestCase {
             dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute") }.count,
             2
         )
+    }
+}
+
+/// Reference-typed counter used to count `SpanEventMapper` invocations across closure captures.
+/// Tests rely on `PassthroughCoreMock` running synchronously on the calling thread, so no
+/// locking is required.
+private final class MapperInvocationCounter {
+    private(set) var count = 0
+
+    var mapper: SpanEventMapper {
+        return { event in
+            self.count += 1
+            return event
+        }
     }
 }
