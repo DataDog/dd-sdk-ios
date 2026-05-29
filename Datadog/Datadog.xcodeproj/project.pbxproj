@@ -222,6 +222,7 @@
 		1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1434A4662B7F8D880072E3BB /* DebugOTelTracingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */; };
 		144CDB9AFBDFF0B7EB10B4A3 /* EvaluationAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA681535D980BA99B12659B /* EvaluationAggregatorTests.swift */; };
+		17EFC9D8185942399E05BDB4 /* OcclusionMapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F2ED47E396E4030BF5D0469 /* OcclusionMapTests.swift */; };
 		261255872E2167E40015042B /* BaggageHeaderMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255862E2167E40015042B /* BaggageHeaderMerger.swift */; };
 		2612558B2E2167F10015042B /* BaggageHeaderMergerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255892E2167F10015042B /* BaggageHeaderMergerTests.swift */; };
 		261255952E2167F10015042B /* HeaderProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261255932E2167F10015042B /* HeaderProcessorTests.swift */; };
@@ -342,6 +343,8 @@
 		5B9CB9E72E420ACB005485E6 /* ImageRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E62E420AC4005485E6 /* ImageRendererTests.swift */; };
 		5BA8C3042E784C0200B1DA80 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
 		5BA8C3102E785A2000B1DA80 /* Flags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C30F2E785A2000B1DA80 /* Flags.swift */; };
+		5BB09C9D2FC89A5A003DB9FF /* CATransform3D+AxisAligned.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB09C9C2FC89A49003DB9FF /* CATransform3D+AxisAligned.swift */; };
+		5BB09C9F2FC89F0C003DB9FF /* CATransform3DAxisAlignedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB09C9E2FC89F04003DB9FF /* CATransform3DAxisAlignedTests.swift */; };
 		5BB294AD2E8286B200CAA44B /* ExposureEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */; };
 		5BB294B02E82CCA400CAA44B /* ExposureRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */; };
 		5BB294BD2E82E66500CAA44B /* FlagValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB294BC2E82E66200CAA44B /* FlagValue.swift */; };
@@ -808,6 +811,7 @@
 		AA0001012A000004000C0001 /* RUMScrollHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000004000A0001 /* RUMScrollHandlerTests.swift */; };
 		AA0001012A000006000C0001 /* UIScrollViewDelegateProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000006000A0001 /* UIScrollViewDelegateProxyTests.swift */; };
 		AA0001012A000007000C0001 /* UIScrollViewSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012A000007000A0001 /* UIScrollViewSwizzlerTests.swift */; };
+		AB1234CD5678EF901234ABCD /* CALayerSnapshot+Occlusion.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3456EF7890AB123456CDEF /* CALayerSnapshot+Occlusion.swift */; };
 		AF9357FB8B8BF79EDD56F7C0 /* FlagsEvaluationFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD117A3F5E4EFA0335A8268F /* FlagsEvaluationFeature.swift */; };
 		B202DBC9FC73EEF0D237D306 /* HeatmapIdentifierComputationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42F610A698379D300D06E515 /* HeatmapIdentifierComputationTests.swift */; };
 		B3E46CAB2D91B3AD00BABF66 /* NetworkContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E46CAA2D91B3A400BABF66 /* NetworkContextProvider.swift */; };
@@ -818,6 +822,8 @@
 		B73450232F9F200100000001 /* LayerRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73450132F9F200100000001 /* LayerRecorder.swift */; };
 		B73450522F9F240000000001 /* CALayerReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73450512F9F240000000001 /* CALayerReference.swift */; };
 		B73450622F9F240000000001 /* CALayerChangesetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B73450612F9F240000000001 /* CALayerChangesetTests.swift */; };
+		BC9876FA1234CDEF56789ABC /* NSObject+CAFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5432ABCD901234FEDCBA98 /* NSObject+CAFilter.swift */; };
+		CC33CC1DDED24454BB35E631 /* OcclusionMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C61BC8C730F46F1A8EF112E /* OcclusionMap.swift */; };
 		CD91654B77EEEB08CD20B3B0 /* HeatmapIdentifierStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC78B982F5C5B87E754DF44 /* HeatmapIdentifierStoreTests.swift */; };
 		D2056C212BBFE05A0085BC76 /* WireframesBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2056C202BBFE05A0085BC76 /* WireframesBuilderTests.swift */; };
 		D20605A3287464F40047275C /* ContextValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A2287464F40047275C /* ContextValuePublisher.swift */; };
@@ -1277,6 +1283,7 @@
 		E2AA55E72C32C6D9002FEF28 /* ApplicationNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E62C32C6D9002FEF28 /* ApplicationNotifications.swift */; };
 		E2AA55EA2C32C76A002FEF28 /* WatchKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA55E92C32C76A002FEF28 /* WatchKitExtensions.swift */; };
 		E996B2C5B9B268490842F924 /* HeatmapAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E3DACDED0DB3C9908B93EB9 /* HeatmapAttributes.swift */; };
+		EF5678AB9012CD345678EFAB /* CALayerSnapshotOcclusionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7890CD1234EF567890ABCD /* CALayerSnapshotOcclusionTests.swift */; };
 		F603F12B2CAEA4FA0088E6B7 /* DDInternalLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F603F1282CAEA4E90088E6B7 /* DDInternalLoggerTests.swift */; };
 		F603F1302CAEA7620088E6B7 /* DDInternalLogger+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F603F12D2CAEA7590088E6B7 /* DDInternalLogger+apiTests.m */; };
 /* End PBXBuildFile section */
@@ -2021,6 +2028,7 @@
 		3CFF4F962C09E64C006F191D /* WatchdogTerminationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationMonitor.swift; sourceTree = "<group>"; };
 		3CFF4FA32C0E0FE5006F191D /* WatchdogTerminationCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationCheckerTests.swift; sourceTree = "<group>"; };
 		3CFF5D482B555F4F00FC483A /* OTelTracerProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelTracerProvider.swift; sourceTree = "<group>"; };
+		3F2ED47E396E4030BF5D0469 /* OcclusionMapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcclusionMapTests.swift; sourceTree = "<group>"; };
 		42F610A698379D300D06E515 /* HeatmapIdentifierComputationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierComputationTests.swift; sourceTree = "<group>"; };
 		49274903288048AA00ECD49B /* InternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalProxyTests.swift; sourceTree = "<group>"; };
 		49274908288048F400ECD49B /* RUMInternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMInternalProxyTests.swift; sourceTree = "<group>"; };
@@ -2078,6 +2086,8 @@
 		5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogFlags.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BA8C30F2E785A2000B1DA80 /* Flags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flags.swift; sourceTree = "<group>"; };
 		5BA8C3122E785A5E00B1DA80 /* FlagsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsTests.swift; sourceTree = "<group>"; };
+		5BB09C9C2FC89A49003DB9FF /* CATransform3D+AxisAligned.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CATransform3D+AxisAligned.swift"; sourceTree = "<group>"; };
+		5BB09C9E2FC89F04003DB9FF /* CATransform3DAxisAlignedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CATransform3DAxisAlignedTests.swift; sourceTree = "<group>"; };
 		5BB294AB2E8286AC00CAA44B /* ExposureEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureEvent.swift; sourceTree = "<group>"; };
 		5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureRequestBuilderTests.swift; sourceTree = "<group>"; };
 		5BB294BC2E82E66200CAA44B /* FlagValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagValue.swift; sourceTree = "<group>"; };
@@ -2556,6 +2566,7 @@
 		61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewIdentifier.swift; sourceTree = "<group>"; };
 		6482FB0D2EE885C20042234B /* FlagsClientInternal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientInternal.swift; sourceTree = "<group>"; };
 		6FE4202BC457504AC37A51D6 /* HeatmapIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifier.swift; sourceTree = "<group>"; };
+		7C61BC8C730F46F1A8EF112E /* OcclusionMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcclusionMap.swift; sourceTree = "<group>"; };
 		7D0DE1D82F8B4F7FA24BD2C9 /* RecordingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordingController.swift; sourceTree = "<group>"; };
 		86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityValuesMock.swift; sourceTree = "<group>"; };
 		861FD6842DF2EAED00F59823 /* LocaleInfoPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleInfoPublisherTests.swift; sourceTree = "<group>"; };
@@ -2684,6 +2695,7 @@
 		AA0001012A000005000A0001 /* UIScrollViewHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIScrollViewHandler.swift; sourceTree = "<group>"; };
 		AA0001012A000006000A0001 /* UIScrollViewDelegateProxyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIScrollViewDelegateProxyTests.swift; sourceTree = "<group>"; };
 		AA0001012A000007000A0001 /* UIScrollViewSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIScrollViewSwizzlerTests.swift; sourceTree = "<group>"; };
+		AB7890CD1234EF567890ABCD /* CALayerSnapshotOcclusionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerSnapshotOcclusionTests.swift; sourceTree = "<group>"; };
 		B3BBBCB0265E71C600943419 /* VitalMemoryReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalMemoryReader.swift; sourceTree = "<group>"; };
 		B3BBBCBB265E71D100943419 /* VitalMemoryReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalMemoryReaderTests.swift; sourceTree = "<group>"; };
 		B3E46CAA2D91B3A400BABF66 /* NetworkContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkContextProvider.swift; sourceTree = "<group>"; };
@@ -2700,6 +2712,7 @@
 		C63A979F48771C3277A41396 /* EvaluationLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationLogger.swift; sourceTree = "<group>"; };
 		C6C1B70A65975B9FEDEDA74E /* DatadogCoreProtocol+Heatmaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DatadogCoreProtocol+Heatmaps.swift"; sourceTree = "<group>"; };
 		CD117A3F5E4EFA0335A8268F /* FlagsEvaluationFeature.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FlagsEvaluationFeature.swift; sourceTree = "<group>"; };
+		CD3456EF7890AB123456CDEF /* CALayerSnapshot+Occlusion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CALayerSnapshot+Occlusion.swift"; sourceTree = "<group>"; };
 		D115C155135BEF011C5D0A3F /* FlagEvaluationEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FlagEvaluationEvent.swift; sourceTree = "<group>"; };
 		D1E553EF33633FBFBB288899 /* HeatmapIdentifierStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierStore.swift; sourceTree = "<group>"; };
 		D2056C202BBFE05A0085BC76 /* WireframesBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireframesBuilderTests.swift; sourceTree = "<group>"; };
@@ -3005,6 +3018,7 @@
 		D2FB1256292E0F0B005B13F8 /* TrackingConsentPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsentPublisherTests.swift; sourceTree = "<group>"; };
 		D2FB125C292FBB56005B13F8 /* Datadog+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Datadog+Internal.swift"; sourceTree = "<group>"; };
 		D2FCA238271D896E0020286F /* SwiftUIExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIExtensions.swift; sourceTree = "<group>"; };
+		DE5432ABCD901234FEDCBA98 /* NSObject+CAFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSObject+CAFilter.swift"; sourceTree = "<group>"; };
 		E11625D727B681D200E428C6 /* CITestIntegration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CITestIntegration.swift; sourceTree = "<group>"; };
 		E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CITestIntegrationTests.swift; sourceTree = "<group>"; };
 		E179FB4D28F80A6400CC2698 /* PerformanceMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceMetric.swift; sourceTree = "<group>"; };
@@ -3881,11 +3895,15 @@
 			isa = PBXGroup;
 			children = (
 				5BF2BC6B2FC2B2F7000E999C /* CALayerReplayIDTests.swift */,
+				5BB09C9E2FC89F04003DB9FF /* CATransform3DAxisAlignedTests.swift */,
 				5BF2BC702FC46A00000E999C /* CALayerSnapshotContextMock.swift */,
 				5BF2BC722FC46F4A000E999C /* CALayerSnapshotFilterTests.swift */,
+				AB7890CD1234EF567890ABCD /* CALayerSnapshotOcclusionTests.swift */,
+				DE5432ABCD901234FEDCBA98 /* NSObject+CAFilter.swift */,
 				5BF2BC6D2FC42A00000E999C /* CALayerSnapshotSemanticObservationTests.swift */,
 				5BF2BC662FC10001000E999C /* CALayerSnapshotTests.swift */,
 				5BF2BC742FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift */,
+				3F2ED47E396E4030BF5D0469 /* OcclusionMapTests.swift */,
 			);
 			path = LayerTreeRecorder;
 			sourceTree = "<group>";
@@ -5920,15 +5938,18 @@
 			children = (
 				5BF2BA9E2FBF1391000E999C /* CALayer+ReplayID.swift */,
 				5BF2BA9A2FBDBF84000E999C /* CALayerSnapshot.swift */,
+				5BB09C9C2FC89A49003DB9FF /* CATransform3D+AxisAligned.swift */,
 				5BF2BC692FC085DB000E999C /* CALayerSnapshot+Context.swift */,
 				5BF2BAA22FBF3529000E999C /* CALayerSnapshot+CornerRadii.swift */,
 				5BF2BAA42FBF39AF000E999C /* CALayerSnapshot+Filter.swift */,
+				CD3456EF7890AB123456CDEF /* CALayerSnapshot+Occlusion.swift */,
 				5BF2BA9C2FBDC047000E999C /* CALayerSnapshot+SemanticObservation.swift */,
 				5BF2BC762FC4D8E0000E999C /* LayerProvider.swift */,
 				B73450112F9F200100000001 /* LayerRecording.swift */,
 				B73450122F9F200100000001 /* LayerTreeRecordingCoordinator.swift */,
 				B73450132F9F200100000001 /* LayerRecorder.swift */,
 				5BF2BC782FC4D8E0000E999C /* LayerTreeSnapshotBuilder.swift */,
+				7C61BC8C730F46F1A8EF112E /* OcclusionMap.swift */,
 			);
 			path = LayerTreeRecorder;
 			sourceTree = "<group>";
@@ -8197,6 +8218,7 @@
 				61054E812A6EE10A00AAA894 /* UIStepperRecorder.swift in Sources */,
 				61054E632A6EE10A00AAA894 /* SessionReplayConfiguration.swift in Sources */,
 				61054E702A6EE10A00AAA894 /* TouchSnapshotProducer.swift in Sources */,
+				5BB09C9D2FC89A5A003DB9FF /* CATransform3D+AxisAligned.swift in Sources */,
 				D2C5D52B2B84F6AB00B63F36 /* WebViewRecordReceiver.swift in Sources */,
 				61054E652A6EE10A00AAA894 /* AppWindowObserver.swift in Sources */,
 				A74A72812B0CEE4900771FEB /* ResourceRequestBuilder.swift in Sources */,
@@ -8213,6 +8235,8 @@
 				B73450222F9F200100000001 /* LayerTreeRecordingCoordinator.swift in Sources */,
 				B73450232F9F200100000001 /* LayerRecorder.swift in Sources */,
 				5BF2BC792FC4D8E0000E999C /* LayerTreeSnapshotBuilder.swift in Sources */,
+				CC33CC1DDED24454BB35E631 /* OcclusionMap.swift in Sources */,
+				AB1234CD5678EF901234ABCD /* CALayerSnapshot+Occlusion.swift in Sources */,
 				61054E8B2A6EE10A00AAA894 /* SessionReplayFeature.swift in Sources */,
 				61054E992A6EE10A00AAA894 /* WireframesBuilder.swift in Sources */,
 				61054E892A6EE10A00AAA894 /* NodeIDGenerator.swift in Sources */,
@@ -8351,6 +8375,9 @@
 				5BF2BC6E2FC42A00000E999C /* CALayerSnapshotSemanticObservationTests.swift in Sources */,
 				5BF2BC672FC10001000E999C /* CALayerSnapshotTests.swift in Sources */,
 				5BF2BC752FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift in Sources */,
+				17EFC9D8185942399E05BDB4 /* OcclusionMapTests.swift in Sources */,
+				EF5678AB9012CD345678EFAB /* CALayerSnapshotOcclusionTests.swift in Sources */,
+				BC9876FA1234CDEF56789ABC /* NSObject+CAFilter.swift in Sources */,
 				61054FB82A6EE1BA00AAA894 /* UIDatePickerRecorderTests.swift in Sources */,
 				962D72C52CF7806300F86EF0 /* GraphicsImageReflectionTests.swift in Sources */,
 				61054FA32A6EE1BA00AAA894 /* Diff+SRWireframesTests.swift in Sources */,
@@ -8369,6 +8396,7 @@
 				61054F972A6EE1BA00AAA894 /* UIImage+SessionReplayTests.swift in Sources */,
 				5B9CB9E72E420ACB005485E6 /* ImageRendererTests.swift in Sources */,
 				61054FB02A6EE1BA00AAA894 /* ViewTreeSnapshotBuilderTests.swift in Sources */,
+				5BB09C9F2FC89F0C003DB9FF /* CATransform3DAxisAlignedTests.swift in Sources */,
 				5B7448462EFBC7E5003E622C /* ScreenChangeSchedulerTests.swift in Sources */,
 				61054FB12A6EE1BA00AAA894 /* NodeIDGeneratorTests.swift in Sources */,
 				5B7448372EFAED99003E622C /* CALayerSwizzlerTests.swift in Sources */,
