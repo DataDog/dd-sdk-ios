@@ -241,12 +241,13 @@ internal class RUMFeatureOperationManager {
 
     /// Validates the operation key: non-blank. The schema does not restrict
     /// the character set for `operation_key`.
+    /// A blank value is warned about but the event is still emitted — `operationKey`
+    /// is optional, so a blank value should not discard the entire operation step.
     private func validateOperationKey(_ value: String, stepType: RUMVitalOperationStepEvent.Vital.StepType) -> Bool {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        guard !trimmed.isEmpty else {
-            DD.logger.error("Operation `operationKey`, when provided, cannot be empty or contain only whitespace/line breaks. \(stepType) command will be ignored.")
-            return false
+        if trimmed.isEmpty {
+            DD.logger.warn("Operation `operationKey`, when provided, cannot be empty or contain only whitespace/line breaks. The \(stepType) command will still be emitted.")
         }
 
         return true
