@@ -12,7 +12,7 @@ import Foundation
 extension CALayerSnapshot {
     /// A Boolean value indicating whether the layer draws any content.
     var drawsContent: Bool {
-        contentsClass != nil || hasBackgroundColor || hasBorder || hasVisibleShadow
+        observation.ignoreSubtree || contentsClass != nil || hasBackgroundColor || hasBorder || hasVisibleShadow
     }
 
     /// A Boolean value indicating whether the layer paints its frame as an opaque rectangle.
