@@ -42,6 +42,8 @@
 		110DD1B72EEC3E45002F3B8B /* SafeReadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */; };
 		110DD1BB2EEC3EE7002F3B8B /* safe_read_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */; };
 		110DD1BE2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110DD1BC2EEC708E002F3B8B /* ProfilerFeatureTests.swift */; };
+		11A14A622F9B740000B1C0DE /* ProfilingQuotaChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A14A612F9B740000B1C0DE /* ProfilingQuotaChecker.swift */; };
+		11A14A642F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A14A632F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift */; };
 		111201C32E93C13000375DA3 /* AppStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BF2E93C13000375DA3 /* AppStateManager.swift */; };
 		111201C42E93C13000375DA3 /* AppStateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BE2E93C13000375DA3 /* AppStateInfo.swift */; };
 		1121FD002EE319F000297156 /* ProfilingTelemetryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */; };
@@ -1871,6 +1873,8 @@
 		110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeReadTests.swift; sourceTree = "<group>"; };
 		110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = safe_read_testing.h; sourceTree = "<group>"; };
 		110DD1BC2EEC708E002F3B8B /* ProfilerFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilerFeatureTests.swift; sourceTree = "<group>"; };
+		11A14A612F9B740000B1C0DE /* ProfilingQuotaChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingQuotaChecker.swift; sourceTree = "<group>"; };
+		11A14A632F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingQuotaCheckerTests.swift; sourceTree = "<group>"; };
 		111201BE2E93C13000375DA3 /* AppStateInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateInfo.swift; sourceTree = "<group>"; };
 		111201BF2E93C13000375DA3 /* AppStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateManager.swift; sourceTree = "<group>"; };
 		1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAttributesIntegrationTests.swift; sourceTree = "<group>"; };
@@ -6807,6 +6811,7 @@
 				110DD1B02EEB6BB5002F3B8B /* ProfilingConfiguration.swift */,
 				118848592F6C50EC008D2919 /* ProfilingHandler.swift */,
 				1162323D2F87D8F600F20ABC /* ProfilingContextMessageReceiver.swift */,
+				11A14A612F9B740000B1C0DE /* ProfilingQuotaChecker.swift */,
 				1162323F2F87FA5D00F20ABC /* ProfilingSamplerProvider.swift */,
 				D233E7C32E4625D400E7CFDE /* RequestBuilder.swift */,
 				1126B2512EBAB22600A74226 /* PrivacyInfo.xcprivacy */,
@@ -6836,6 +6841,7 @@
 				1E03E4DD559B4F63BD5A292E /* ProfilingConditionsTests.swift */,
 				110DD1B32EEB7080002F3B8B /* ProfilingConfigurationTests.swift */,
 				BD6D5C2849404C4EAD7FF7E3 /* ProfilingHandlerTests.swift */,
+				11A14A632F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift */,
 				D233E7DD2E4A109100E7CFDE /* ProfilingTest.swift */,
 				D233E7E32E4A2AFE00E7CFDE /* RequestBuilderTests.swift */,
 				110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */,
@@ -8730,6 +8736,7 @@
 				D233E7C62E4625D400E7CFDE /* Profiling.swift in Sources */,
 				11C4E5922F571F86002196F4 /* ProfileAttachments.swift in Sources */,
 				1162323E2F87D8FC00F20ABC /* ProfilingContextMessageReceiver.swift in Sources */,
+				11A14A622F9B740000B1C0DE /* ProfilingQuotaChecker.swift in Sources */,
 				116232402F87FA6F00F20ABC /* ProfilingSamplerProvider.swift in Sources */,
 				1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */,
 				D2D0E1F22E3CE59700BA4113 /* dd_profiler.cpp in Sources */,
@@ -9316,6 +9323,7 @@
 				110DD1B52EEB7090002F3B8B /* ProfilingConfigurationTests.swift in Sources */,
 				110DD1BE2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */,
 				0EFAE08216FC46BC84FEDF88 /* ProfilingHandlerTests.swift in Sources */,
+				11A14A642F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift in Sources */,
 				A6DC5EA853D947FA9FEA4743 /* ProfilingConditionsTests.swift in Sources */,
 				D27465832E7BFEC600C47FE2 /* AppLaunchProfilerTests.swift in Sources */,
 				D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,

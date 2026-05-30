@@ -2058,8 +2058,10 @@ class RUMViewScopeTests: XCTestCase {
         let completionExpectation = expectation(description: "Error processing completion")
 
         let hasReplay: Bool = .mockRandom()
+        let quotaReason: DDProfiling.QuotaReason = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
+        context.set(additionalContext: ProfilingContext(status: .running, quotaReason: quotaReason))
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -2137,6 +2139,10 @@ class RUMViewScopeTests: XCTestCase {
 
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.error.count, 1)
+
+        // Profiling Status
+        XCTAssertEqual(error.dd.profiling?.status, .running)
+        XCTAssertEqual(error.dd.profiling?.quotaReason, quotaReason)
     }
 
     func testWhenViewErrorIsAddedWithConfiguredSource_itSendsErrorEventWithCorrectSource() throws {
@@ -2915,8 +2921,10 @@ class RUMViewScopeTests: XCTestCase {
 
     func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
         let hasReplay: Bool = .mockRandom()
+        let quotaReason: DDProfiling.QuotaReason = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
+        context.set(additionalContext: ProfilingContext(status: .running, quotaReason: quotaReason))
 
         let startViewDate: Date = .mockDecember15th2019At10AMUTC()
 
@@ -2984,6 +2992,10 @@ class RUMViewScopeTests: XCTestCase {
 
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.longTask?.count, 1)
+
+        // Profiling Status
+        XCTAssertEqual(event.dd.profiling?.status, .running)
+        XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
     }
 
     func testGivenStartedView_whenLongTaskWithAttributesIsAdded_itDoesNotUpdateViewAttributes() throws {
