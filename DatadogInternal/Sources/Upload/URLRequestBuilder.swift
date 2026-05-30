@@ -20,6 +20,7 @@ public struct URLRequestBuilder {
         public static let contentEncodingHeaderField = "Content-Encoding"
         public static let userAgentHeaderField = "User-Agent"
         public static let ddAPIKeyHeaderField = "DD-API-KEY"
+        public static let ddClientTokenHeaderField = "DD-CLIENT-TOKEN"
         public static let ddEVPOriginHeaderField = "DD-EVP-ORIGIN"
         public static let ddEVPOriginVersionHeaderField = "DD-EVP-ORIGIN-VERSION"
         public static let ddRequestIDHeaderField = "DD-REQUEST-ID"
@@ -81,6 +82,11 @@ public struct URLRequestBuilder {
         /// Datadog request authentication header.
         public static func ddAPIKeyHeader(clientToken: String) -> HTTPHeader {
             return HTTPHeader(field: ddAPIKeyHeaderField, value: { clientToken })
+        }
+
+        /// Datadog client token authentication header.
+        public static func ddClientTokenHeader(clientToken: String) -> HTTPHeader {
+            return HTTPHeader(field: ddClientTokenHeaderField, value: { clientToken })
         }
 
         /// An observability and troubleshooting Datadog header for tracking the origin which is sending the request.
