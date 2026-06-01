@@ -277,7 +277,7 @@ extension RUM {
         /// RUM session start callback.
         ///
         /// It takes 2 arguments:
-        /// - Newly started session ID.
+        /// - Newly started session ID, matching the `session.id` field in emitted RUM events.
         /// - Flag indicating whether or not the session was discarded due to the sampling rate.
         /// Keep the implementation fast and do not make any assumptions on the thread that runs this callback.
         ///
@@ -538,7 +538,7 @@ extension RUM.Configuration {
     ///   - actionEventMapper: Custom mapper for RUM action events. Default: `nil`.
     ///   - errorEventMapper: Custom mapper for RUM error events. Default: `nil`.
     ///   - longTaskEventMapper: Custom mapper for RUM long task events. Default: `nil`.
-    ///   - onSessionStart: RUM session start callback. Default: `nil`.
+    ///   - onSessionStart: RUM session start callback receiving a session ID matching emitted RUM event `session.id`. Default: `nil`.
     ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
     ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
     ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`.

@@ -436,6 +436,7 @@ class RUMTests: XCTestCase {
         config.onSessionStart = { sessionID, isDiscarded in
             // Then
             XCTAssertTrue(sessionID.matches(regex: .uuidRegex))
+            XCTAssertEqual(sessionID, sessionID.lowercased())
             expectation.fulfill()
         }
 

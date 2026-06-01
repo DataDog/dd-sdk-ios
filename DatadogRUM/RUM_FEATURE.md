@@ -141,6 +141,7 @@ RUM.enable(
         
         // Session start callback
         onSessionStart: { sessionId, isDiscarded in
+            // `sessionId` matches the emitted RUM event `session.id`
             print("Session \(sessionId) started, sampled out: \(isDiscarded)")
         },
         
