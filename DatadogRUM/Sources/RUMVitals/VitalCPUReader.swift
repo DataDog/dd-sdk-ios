@@ -24,6 +24,7 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
         self.telemetry = telemetry
         notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: ApplicationNotifications.willResignActive, object: nil)
         notificationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: ApplicationNotifications.didBecomeActive, object: nil)
+        lastReadActiveTicks = readUtilizedTicks()
     }
 
     func readVitalData() -> Double? {
