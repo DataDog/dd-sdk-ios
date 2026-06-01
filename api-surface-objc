@@ -86,6 +86,7 @@ public final class objc_URLSessionInstrumentation: NSObject
     public static func enable(configuration: objc_URLSessionInstrumentationConfiguration)
     public static func enable(configuration: objc_URLSessionInstrumentationConfiguration, instanceName: String)
     public static func disable(delegateClass: URLSessionDataDelegate.Type)
+    public static func disable(delegateClass: URLSessionDataDelegate.Type, instanceName: String)
 
 # ----------------------------------
 # API surface for DatadogLogs:

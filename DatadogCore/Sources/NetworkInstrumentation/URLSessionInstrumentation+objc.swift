@@ -103,4 +103,12 @@ public final class objc_URLSessionInstrumentation: NSObject {
     public static func disable(delegateClass: URLSessionDataDelegate.Type) {
         URLSessionInstrumentation.disable(delegateClass: delegateClass)
     }
+
+    /// Disables URLSession instrumentation on a named SDK instance.
+    /// - Parameters:
+    ///   - delegateClass: The delegate class to unbind.
+    ///   - instanceName: The name of the SDK instance to disable.
+    public static func disable(delegateClass: URLSessionDataDelegate.Type, instanceName: String) {
+        URLSessionInstrumentation.disable(delegateClass: delegateClass, in: CoreRegistry.instance(named: instanceName))
+    }
 }

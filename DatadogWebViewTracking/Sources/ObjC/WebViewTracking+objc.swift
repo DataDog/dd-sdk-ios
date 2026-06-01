@@ -61,6 +61,9 @@ public final class objc_WebViewTracking: NSObject {
 
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session on a named SDK instance.
     ///
+    /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified
+    /// `hosts`, web events will be correlated with the RUM session from native SDK.
+    ///
     /// - Parameters:
     ///   - webView: The web-view to track.
     ///   - instanceName: The name of the SDK instance to use for tracking.
