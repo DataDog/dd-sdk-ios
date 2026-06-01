@@ -867,6 +867,102 @@ class WebViewTrackingTests: XCTestCase {
         // Then - disable clears user scripts so the duplicate guard passes again on re-enable
         XCTAssertEqual(trackWebViewUsageCount, 2)
     }
+
+    // MARK: - Wildcard host patterns
+
+    func testItAddsUserScriptWithHostPatterns() throws {
+        let config = WKWebViewConfiguration()
+        let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
+
+        try WebViewTracking.enableOrThrow(
+            tracking: webView,
+            hostPatterns: ["*.shopist.io", "preview-*.example.com"],
+            logsSampleRate: 100,
+            in: PassthroughCoreMock()
+        )
+
+        let script = try XCTUnwrap(controller.userScripts.last)
+        XCTAssertEqual(script.source, """
+        /* DatadogEventBridge */
+        window.DatadogEventBridge = {
+            send(msg) {
+                window.webkit.messageHandlers.DatadogEventBridge.postMessage(msg)
+            },
+            getAllowedWebViewHosts() {
+                return '[]'
+            },
+            getAllowedWebViewHostPatterns() {
+                return '["*.shopist.io","preview-*.example.com"]'
+            },
+            getCapabilities() {
+                return '[]'
+            },
+            getPrivacyLevel() {
+                return 'mask'
+            },
+            getIsTraceSampled() {
+                return 'null'
+            }
+        }
+        """)
+    }
+
+    func testLegacyPathDoesNotEmitHostPatternsMethod() throws {
+        let mockSanitizer = HostsSanitizerMock()
+        let config = WKWebViewConfiguration()
+        let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
+
+        try WebViewTracking.enableOrThrow(
+            tracking: webView,
+            hosts: ["shopist.io"],
+            hostsSanitizer: mockSanitizer,
+            logsSampleRate: 100,
+            in: PassthroughCoreMock()
+        )
+
+        let script = try XCTUnwrap(controller.userScripts.last)
+        XCTAssertFalse(script.source.contains("getAllowedWebViewHostPatterns"))
+    }
+
+    func testItDropsPatternWithMoreThanOneWildcard() throws {
+        let config = WKWebViewConfiguration()
+        let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
+
+        try WebViewTracking.enableOrThrow(
+            tracking: webView,
+            hostPatterns: ["*.foo.*.bar", "shopist.io"],
+            logsSampleRate: 100,
+            in: PassthroughCoreMock()
+        )
+
+        let script = try XCTUnwrap(controller.userScripts.last)
+        XCTAssertTrue(script.source.contains("\"shopist.io\""))
+        XCTAssertFalse(script.source.contains("*.foo.*.bar"))
+    }
+
+    func testItLowercasesHostPatterns() throws {
+        let config = WKWebViewConfiguration()
+        let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
+
+        try WebViewTracking.enableOrThrow(
+            tracking: webView,
+            hostPatterns: ["*.SHOPIST.IO", "Preview-*.Example.COM"],
+            logsSampleRate: 100,
+            in: PassthroughCoreMock()
+        )
+
+        let script = try XCTUnwrap(controller.userScripts.last)
+        XCTAssertTrue(script.source.contains("\"*.shopist.io\""))
+        XCTAssertTrue(script.source.contains("\"preview-*.example.com\""))
+    }
 }
 
 #endif
