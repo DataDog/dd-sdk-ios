@@ -9,6 +9,9 @@
 - [FIX] Prevent crash misattribution when an inactive RUM view emits a terminal event after `stopResource()`. See [#2948][]
 - [FIX] Fix wrong types in the `objc_LogEventDevice` properties definition. See [#2966][]
 - [FIX] Expose RUM operation options to Objective-C from `DatadogRUM`. See [#2969][]
+- [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
+- [IMPROVEMENT] Align public RUM session IDs with event formatting. See [#2956][]
+- [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. Patterns like `"*.example.com"` and `"preview-*.shopist.io"` are matched in Browser SDK using plain string operations. See [#2959][]
 
 # 3.11.1 / 28-05-2026
 
