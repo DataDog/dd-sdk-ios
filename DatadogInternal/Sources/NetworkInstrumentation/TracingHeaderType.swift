@@ -12,7 +12,7 @@ import Foundation
 /// - `b3` - Open Telemetry B3 [Single header](https://github.com/openzipkin/b3-propagation#single-headers).
 /// - `b3multi` - Open Telemetry B3 [Multiple headers](https://github.com/openzipkin/b3-propagation#multiple-headers).
 /// - `tracecontext` - W3C [Trace Context header](https://www.w3.org/TR/trace-context/#tracestate-header)
-public enum TracingHeaderType: Hashable {
+public enum TracingHeaderType: Hashable, Sendable {
     case datadog
     case b3
     case b3multi
