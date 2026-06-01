@@ -190,7 +190,7 @@ internal final class DDSpan: OTSpan {
                 logFields: self.logFields
             )
 
-            onSpanFinished(SpanSnapshot(from: event))
+            onSpanFinished(SpanSnapshot(from: event, startTime: self.startTime))
 
             if self.ddContext.samplingDecision.samplingPriority.isKept {
                 let envelope = SpanEventsEnvelope(span: event, environment: context.env)
