@@ -59,9 +59,18 @@ internal struct SpanSnapshot: Encodable, Sendable {
 extension SpanSnapshot {
     /// Creates a snapshot from a post-mapper `SpanEvent`.
     ///
-    /// All fields are read from the event (and its `tags`), so any mutation applied by
-    /// the user-configured `SpanEventMapper` is reflected in the stats aggregation.
-    init(from event: SpanEvent) {
+    /// All field values that the `SpanEventMapper` may mutate (resource, service,
+    /// operation name, tags, isError) are read from the event so that any mutation
+    /// applied by the user-configured mapper is reflected in stats aggregation.
+    ///
+    /// - Parameter event: the post-mapper `SpanEvent`.
+    /// - Parameter startTime: the raw device-local span start time. `SpanEvent.startTime`
+    ///   has already been shifted by `context.serverTimeOffset` for trace uploads, but
+    ///   `StatsConcentrator.flush(now:)` runs against the device-local clock. Using the
+    ///   server-adjusted time here would bucket snapshots in the future relative to
+    ///   the flush clock on devices whose clock is behind the server, delaying or
+    ///   dropping stats. Stats stay on the device-local clock.
+    init(from event: SpanEvent, startTime: Date) {
         let spanKind = event.tags[SpanTags.kind]
         let httpStatusCode: UInt32 = {
             guard let raw = event.tags[OTTags.httpStatusCode],
@@ -71,6 +80,11 @@ extension SpanSnapshot {
             }
             return uint32
         }()
+        // A span is "top level" when it is a service entry point. Root spans (no
+        // parent) always qualify. Spans with a `parentID` set still qualify when the
+        // parent lives in a different service (distributed-tracing continuation) or
+        // when the user explicitly marks the span with `_dd.top_level`. Mirrors the
+        // dd-trace-go convention (`_top_level` tag).
         let isTopLevel = event.parentID == nil || event.tags["_dd.top_level"] == "1"
         let isMeasured = event.tags["_dd.measured"] == "1"
         let serviceSource = event.tags["_dd.svc_src"] ?? ""
@@ -89,11 +103,16 @@ extension SpanSnapshot {
             service: event.serviceName,
             operationName: event.operationName,
             resource: event.resource,
-            type: event.tags["span.type"] ?? "custom",
+            // `SpanEventEncoder.encode` writes `"custom"` unconditionally for the
+            // span's top-level type, regardless of any `span.type` tag the mapper
+            // may set. The snapshot must match so stats and uploads agree on every
+            // aggregation dimension. If the encoder ever starts honoring
+            // `span.type`, this value needs to be updated in lock-step.
+            type: "custom",
             spanKind: spanKind,
             httpStatusCode: httpStatusCode,
             isError: event.isError,
-            startTime: event.startTime.timeIntervalSince1970.dd.toNanoseconds,
+            startTime: startTime.timeIntervalSince1970.dd.toNanoseconds,
             duration: event.duration.dd.toNanoseconds,
             isTopLevel: isTopLevel,
             isMeasured: isMeasured,
