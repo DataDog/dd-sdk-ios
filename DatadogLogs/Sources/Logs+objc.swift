@@ -92,7 +92,7 @@ public final class objc_Logs: NSObject {
         Logs.enable(with: configuration.configuration)
     }
 
-    public static func enable(instanceName: String, with configuration: objc_LogsConfiguration = .init()) {
+    public static func enable(with configuration: objc_LogsConfiguration, instanceName: String) {
         Logs.enable(with: configuration.configuration, in: CoreRegistry.instance(named: instanceName))
     }
 
@@ -347,7 +347,7 @@ public final class objc_Logger: NSObject {
         return objc_Logger(sdkLogger: Logger.create(with: configuration.configuration))
     }
 
-    public static func create(instanceName: String, with configuration: objc_LoggerConfiguration = .init()) -> objc_Logger {
+    public static func create(with configuration: objc_LoggerConfiguration, instanceName: String) -> objc_Logger {
         return objc_Logger(sdkLogger: Logger.create(with: configuration.configuration, in: CoreRegistry.instance(named: instanceName)))
     }
 }
