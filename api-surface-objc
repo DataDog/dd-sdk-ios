@@ -3357,8 +3357,8 @@ public enum objc_RUMErrorSource: Int
     case network
     case webview
     case console
-    case logger
     case custom
+    case logger
 public enum objc_RUMActionType: Int
     case tap
     case scroll

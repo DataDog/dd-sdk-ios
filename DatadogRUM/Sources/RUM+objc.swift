@@ -305,10 +305,10 @@ public enum objc_RUMErrorSource: Int {
     case webview
     /// Error originated in a web console (used by bridges).
     case console
-    /// Error originated in a logger.
-    case logger
     /// Custom error source.
     case custom
+    /// Error originated in a logger.
+    case logger
 
     internal var swiftType: RUMErrorSource {
         switch self {
