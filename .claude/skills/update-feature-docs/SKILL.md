@@ -41,7 +41,7 @@ To add a new feature doc to the system, create a `*_FEATURE.md` file following t
    ```
    git diff <verified_against_commit>..HEAD -- <tracked_files>
    ```
-   If there is no diff for a doc, its own tracked source files are unchanged — skip steps 4–6 for that doc. **Do not skip step 5b**: cross-feature drift (e.g. a RUM API change affecting Session Replay's Quick Start) won't show up in this doc's `tracked_files` diff. **Do not skip step 8** either — registry coverage must be checked even when every doc is fresh.
+   If there is no diff for a doc, its own tracked source files are unchanged — skip steps 4–6 for that doc (no content updates needed). **Do not skip step 5b**: cross-feature drift (e.g. a RUM API change affecting Session Replay's Quick Start) won't show up in this doc's `tracked_files` diff. **Do not skip step 7**: even with no content changes, every skill invocation is a fresh verification — the frontmatter should be bumped so `verified_against_commit` points at a recently-pushed SHA rather than an older one that may not be reachable on a fresh clone. **Do not skip step 8** either — registry coverage must be checked even when every doc is fresh.
 
 4. **Read the current source files in full** — read each tracked source file to understand the current public API surface.
 
@@ -69,7 +69,7 @@ To add a new feature doc to the system, create a `*_FEATURE.md` file following t
    - Update Troubleshooting if relevant
    - Fix any stale descriptions or defaults
 
-7. **Update the frontmatter** — set:
+7. **Update the frontmatter** — runs on every skill invocation, **even when steps 4–6 were skipped**. A skill run is itself a verification event; bumping the frontmatter records that and keeps `verified_against_commit` pointing at a recently-pushed SHA (older SHAs may be unreachable on a fresh clone in CI). Set:
    - `tracked_files` → if it was missing or out of date, write the list derived in step 2
    - `verified_against_commit` → current HEAD commit hash (use `git rev-parse --short=9 HEAD`)
    - `sdk_version` → current version from `DatadogCore.podspec`
