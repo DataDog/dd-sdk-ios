@@ -952,6 +952,36 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertFalse(span.isError, "5xx responses are not client errors and should not set the error flag")
     }
 
+    // MARK: - Defensive against inverted timestamps (start > end)
+
+    func testGivenInterceptionWithEndBeforeStart_itDoesNotCrashAndStillEmitsSpan() throws {
+        // Reproduces the crash reported in https://github.com/DataDog/dd-sdk-ios/issues/2939.
+        // where `fetchStartDate > fetchEndDate` (e.g. wall-clock corrected backwards mid-request).
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        // Given — `URLSessionTaskMetrics` with start > end
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: .mockAny(), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(addingTimeInterval: 10),
+                    end: .mockDecember15th2019At10AMUTC()
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then — does not crash and still emits a span with a non-negative foreground duration.
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let envelope: SpanEventsEnvelope? = core.events().last
+        let span = try XCTUnwrap(envelope?.spans.first)
+        XCTAssertEqual(span.tags[SpanTags.foregroundDuration], "0")
+    }
+
     private func assert(capturedState: URLSessionHandlerCapturedState?, has span: OTSpan?) {
         guard let state = capturedState as? TracingURLSessionHandler.TracingURLSessionHandlerCapturedState else {
             XCTFail("Expected TracingURLSessionHandlerCapturedState instance, got \(String(describing: capturedState))")

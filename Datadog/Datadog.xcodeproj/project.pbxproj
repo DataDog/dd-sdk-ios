@@ -752,6 +752,9 @@
 		9678E2772E55CD200094B106 /* RUMFeatureOperationManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9678E2752E55CD200094B106 /* RUMFeatureOperationManagerTests.swift */; };
 		96867B992D08826B004AE0BC /* TextReflectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96867B982D08826B004AE0BC /* TextReflectionTests.swift */; };
 		96867B9B2D0883DD004AE0BC /* ColorReflectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96867B9A2D0883DD004AE0BC /* ColorReflectionTests.swift */; };
+		968A6CA02FBF2EBD00B87826 /* DDForwardingProxyBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 968A6C9F2FBF2EBD00B87826 /* DDForwardingProxyBase.m */; };
+		968A6CAB2FBF2FB100B87826 /* DDForwardingProxyBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 968A6CA92FBF2FB100B87826 /* DDForwardingProxyBase.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		968A6CAD2FBF3DEF00B87826 /* DatadogRUM.h in Headers */ = {isa = PBXBuildFile; fileRef = 968A6CAC2FBF3DEF00B87826 /* DatadogRUM.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		969B3B212C33F80500D62400 /* UIActivityIndicatorRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */; };
 		969B3B232C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 969B3B222C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift */; };
 		96CD20652ED4808900B4686E /* URLSessionTaskStateSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96CD20632ED4808900B4686E /* URLSessionTaskStateSwizzler.swift */; };
@@ -2617,6 +2620,9 @@
 		9678E2752E55CD200094B106 /* RUMFeatureOperationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeatureOperationManagerTests.swift; sourceTree = "<group>"; };
 		96867B982D08826B004AE0BC /* TextReflectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextReflectionTests.swift; sourceTree = "<group>"; };
 		96867B9A2D0883DD004AE0BC /* ColorReflectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorReflectionTests.swift; sourceTree = "<group>"; };
+		968A6C9F2FBF2EBD00B87826 /* DDForwardingProxyBase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDForwardingProxyBase.m; sourceTree = "<group>"; };
+		968A6CA92FBF2FB100B87826 /* DDForwardingProxyBase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDForwardingProxyBase.h; sourceTree = "<group>"; };
+		968A6CAC2FBF3DEF00B87826 /* DatadogRUM.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DatadogRUM.h; path = TargetSupport/DatadogRUM/DatadogRUM.h; sourceTree = SOURCE_ROOT; };
 		969B3B202C33F80500D62400 /* UIActivityIndicatorRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIActivityIndicatorRecorder.swift; sourceTree = "<group>"; };
 		969B3B222C33F81E00D62400 /* UIActivityIndicatorRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIActivityIndicatorRecorderTests.swift; sourceTree = "<group>"; };
 		96CD20632ED4808900B4686E /* URLSessionTaskStateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskStateSwizzler.swift; sourceTree = "<group>"; };
@@ -3560,7 +3566,6 @@
 			isa = PBXGroup;
 			children = (
 				11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */,
-				11A2F2492E70CC08006EDC52 /* MediaTimeProvider.swift */,
 			);
 			path = Providers;
 			sourceTree = "<group>";
@@ -4440,6 +4445,7 @@
 		61133B78242393DE00786299 = {
 			isa = PBXGroup;
 			children = (
+				968A6C9E2FBF2E5700B87826 /* DatadogRUMPrivate */,
 				61133B9C2423979B00786299 /* DatadogCore */,
 				9E68FB52244707FD0013A8AA /* DatadogPrivate */,
 				61133C122423990D00786299 /* DatadogCoreTests */,
@@ -5781,6 +5787,25 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		968A6C9E2FBF2E5700B87826 /* DatadogRUMPrivate */ = {
+			isa = PBXGroup;
+			children = (
+				968A6CAA2FBF2FB100B87826 /* include */,
+				968A6C9F2FBF2EBD00B87826 /* DDForwardingProxyBase.m */,
+			);
+			name = DatadogRUMPrivate;
+			path = ../DatadogRUM/Private;
+			sourceTree = "<group>";
+		};
+		968A6CAA2FBF2FB100B87826 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				968A6CAC2FBF3DEF00B87826 /* DatadogRUM.h */,
+				968A6CA92FBF2FB100B87826 /* DDForwardingProxyBase.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
 		9E06058F26EF904200F5F935 /* LongTasks */ = {
 			isa = PBXGroup;
 			children = (
@@ -6177,6 +6202,7 @@
 				D23039BC298D5235001A1FA3 /* DeviceInfo.swift */,
 				D23039BE298D5235001A1FA3 /* LaunchInfo.swift */,
 				861FD6872DF3366400F59823 /* LocaleInfo.swift */,
+				11A2F2492E70CC08006EDC52 /* MediaTimeProvider.swift */,
 				D23039B9298D5235001A1FA3 /* NetworkConnectionInfo.swift */,
 				11B5439E2DE9C40B006F6C0A /* OperatingSystem+Utils.swift */,
 				D23039B8298D5235001A1FA3 /* Sysctl.swift */,
@@ -6944,6 +6970,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				968A6CAD2FBF3DEF00B87826 /* DatadogRUM.h in Headers */,
+				968A6CAB2FBF2FB100B87826 /* DDForwardingProxyBase.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8669,6 +8697,7 @@
 				D22F06D729DAFD500026CC3C /* FixedWidthInteger+Convenience.swift in Sources */,
 				3C08F9D02C2D652D002B0FF2 /* Storage.swift in Sources */,
 				D23039E5298D5236001A1FA3 /* DateProvider.swift in Sources */,
+				11A2F24B2E70CC08006EDC52 /* MediaTimeProvider.swift in Sources */,
 				861FD6892DF3366400F59823 /* LocaleInfo.swift in Sources */,
 				D23039E0298D5235001A1FA3 /* DatadogCoreProtocol.swift in Sources */,
 				D27465812E7B1C4D00C47FE2 /* ProfilingMessages.swift in Sources */,
@@ -8995,6 +9024,7 @@
 				D29A9F5C29DD85BB005C54A4 /* RUMSessionScope.swift in Sources */,
 				A7E6EA822D3146AD00997201 /* AnonymousIdentifierManager.swift in Sources */,
 				D29A9F6629DD85BB005C54A4 /* RUMUser.swift in Sources */,
+				968A6CA02FBF2EBD00B87826 /* DDForwardingProxyBase.m in Sources */,
 				D29A9F8229DD85BB005C54A4 /* UIKitRUMUserActionsPredicate.swift in Sources */,
 				3C5CD8CD2C3ECB9400B12303 /* MemoryWarningReporter.swift in Sources */,
 				D29A9F8E29DD8665005C54A4 /* SwiftUIExtensions.swift in Sources */,
@@ -9012,7 +9042,6 @@
 				AA0001012A000002000B0001 /* UIScrollViewDelegateProxy.swift in Sources */,
 				AA0001012A000001000B0001 /* RUMScrollHandler.swift in Sources */,
 				11A2F24A2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */,
-				11A2F24B2E70CC08006EDC52 /* MediaTimeProvider.swift in Sources */,
 				D29A9F5229DD85BB005C54A4 /* RUMUUIDGenerator.swift in Sources */,
 				61DCC84E2C071DCD00CB59E5 /* TelemetryInterceptor.swift in Sources */,
 				4062CCAEB02C9EEF6761F4F8 /* HeatmapIdentifierStore.swift in Sources */,

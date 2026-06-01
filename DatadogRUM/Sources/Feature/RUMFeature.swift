@@ -231,6 +231,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
             swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
             swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate,
+            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
             mainQueue: configuration.mainQueue,

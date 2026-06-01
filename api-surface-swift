@@ -449,6 +449,7 @@ public enum RUM
     public typealias FeatureFlags = [FeatureFlag: Bool]
     public enum FeatureFlag: String
         case none
+        case trackScrollAndSwipeActions
 [?] extension RUM.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -566,11 +567,6 @@ public enum PerformanceMetric
     case flutterBuildTime
     case flutterRasterTime
     case jsFrameTimeSeconds
-public protocol CACurrentMediaTimeProvider: Sendable
-    var current: CFTimeInterval
-public struct MediaTimeProvider: CACurrentMediaTimeProvider
-    public init()
-    public var current: CFTimeInterval
 
 # ----------------------------------
 # API surface for DatadogCrashReporting:
@@ -591,7 +587,7 @@ public protocol CrashReportingPlugin: AnyObject
 
 public enum WebViewTracking
     public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate,in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func disable(webView: WKWebView, in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func disable(webView: WKWebView)
 [?] extension InternalExtension where ExtendedType == WebViewTracking
     public class AbstractMessageEmitter
         public func send(body: Any, slotId: String? = nil)
