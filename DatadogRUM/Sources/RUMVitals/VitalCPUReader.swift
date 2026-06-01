@@ -11,8 +11,9 @@ import DatadogInternal
 internal class VitalCPUReader: SamplingBasedVitalReader {
     /// host_cpu_load_info_count is 4 (tested in iOS 14.4)
     private static let host_cpu_load_info_count = MemoryLayout<host_cpu_load_info>.stride / MemoryLayout<integer_t>.stride
-    private var totalInactiveTicks: UInt64 = 0
-    private var utilizedTicksWhenResigningActive: UInt64? = nil
+    private var totalActiveTicks: UInt64? = nil
+    private var lastReadActiveTicks: UInt64? = nil
+
     /// Telemetry interface.
     private let telemetry: Telemetry
 
@@ -26,12 +27,34 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
     }
 
     func readVitalData() -> Double? {
-        if let ticks = readUtilizedTicks() {
-            let ongoingInactiveTicks = ticks - (utilizedTicksWhenResigningActive ?? ticks)
-            let inactiveTicks = totalInactiveTicks + ongoingInactiveTicks
-            return Double(ticks - inactiveTicks)
+        addActiveTicks()
+        if let totalActiveTicks {
+            return Double(totalActiveTicks)
         }
         return nil
+    }
+
+    private func addActiveTicks() {
+        // If lastReadActiveTicks isn't set, we're currently not the active application.
+        guard let lastActiveTicks = lastReadActiveTicks else {
+            return
+        }
+
+        if let ticks = readUtilizedTicks() {
+            var activeTicks: UInt64 = totalActiveTicks ?? 0
+
+            if ticks < lastActiveTicks {
+                // Ticks overflowed back to 0. The number of elapsed active ticks is the current number of ticks
+                // plus the number of ticks since the last read to a UInt32 overflow
+                activeTicks &+= ticks + (UInt64(UInt32.max) - lastActiveTicks)
+            } else {
+                let elapsedTicks = ticks - lastActiveTicks
+                activeTicks &+= elapsedTicks
+            }
+
+            totalActiveTicks = activeTicks
+            lastReadActiveTicks = ticks
+        }
     }
 
     // TODO: RUMM-1276 appWillResignActive&appDidBecomeActive are called in main thread
@@ -39,18 +62,17 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
 
     @objc
     private func appWillResignActive() {
-        utilizedTicksWhenResigningActive = readUtilizedTicks()
-    }
-    @objc
-    private func appDidBecomeActive() {
-        if let previouslyReadTicks = utilizedTicksWhenResigningActive,
-           let currentTicks = readUtilizedTicks() {
-            utilizedTicksWhenResigningActive = nil
-            totalInactiveTicks += currentTicks - previouslyReadTicks
-        }
+        // Before resigning active, log the current active ticks
+        addActiveTicks()
+        lastReadActiveTicks = nil
     }
 
-    private func readUtilizedTicks() -> UInt64? {
+    @objc
+    private func appDidBecomeActive() {
+        lastReadActiveTicks = readUtilizedTicks()
+    }
+
+    internal func readUtilizedTicks() -> UInt64? {
         // it must be set to host_cpu_load_info_count_size >= host_cpu_load_info_count
         // implementation: https://github.com/opensource-apple/xnu/blob/master/osfmk/kern/host.c#L425
         var host_cpu_load_info_count_size = mach_msg_type_number_t(Self.host_cpu_load_info_count)

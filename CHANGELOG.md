@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FIX] Prevent a crash from `VitalCPUReader` when `cpu_ticks.0` rolls over. 
 - [FIX] Prevent crash misattribution when an inactive RUM view emits a terminal event after `stopResource()`. See [#2948][]
 - [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
 

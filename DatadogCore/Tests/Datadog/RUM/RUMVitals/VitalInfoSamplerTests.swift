@@ -8,6 +8,7 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
 @testable import DatadogRUM
 
 class VitalInfoSamplerTests: XCTestCase {
@@ -114,7 +115,17 @@ class VitalInfoSamplerTests: XCTestCase {
             )
         }
 
+        // Application must be active for CPU samples to be registered
+        NotificationCenter.default.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+
         let samplingExpectation = expectation(description: "sampling expectation")
+
+        // Do some work to push up CPU usage
+        for _ in 0...100_000 {
+            let random = Double.random(in: Double.leastNonzeroMagnitude...Double.greatestFiniteMagnitude)
+            _ = tan(random).squareRoot()
+        }
+
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
             samplingExpectation.fulfill()
         }
@@ -122,6 +133,7 @@ class VitalInfoSamplerTests: XCTestCase {
         waitForExpectations(timeout: 1.0) { _ in
             XCTAssertGreaterThan(sampler.cpu.meanValue!, 0.0)
             XCTAssertGreaterThan(sampler.cpu.sampleCount, 1)
+            XCTAssertGreaterThan(sampler.cpu.greatestDiff!, 0.0)
             XCTAssertGreaterThan(sampler.memory.meanValue!, 0.0)
             XCTAssertGreaterThan(sampler.memory.sampleCount, 1)
             XCTAssertGreaterThan(sampler.refreshRate.meanValue!, 0.0)

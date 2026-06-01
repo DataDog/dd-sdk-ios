@@ -10,9 +10,10 @@ import DatadogInternal
 
 class VitalCPUReaderTest: XCTestCase {
     let testNotificationCenter = NotificationCenter()
-    lazy var cpuReader = VitalCPUReader(notificationCenter: testNotificationCenter)
 
     func testWhenCPUUnderHeavyLoadItMeasuresHigherCPUTicks() throws {
+        let cpuReader = VitalCPUReader(notificationCenter: testNotificationCenter)
+        testNotificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         let repetitions = 3
 
         // The CPU ticks consumed during heavy processing are not always greater than those during light processing.
@@ -20,9 +21,9 @@ class VitalCPUReaderTest: XCTestCase {
         // To minimize false positives, an average is calculated over n repetitions.
         let utilizationArray: [(highUtilization: Double, sleepUtilization: Double)] = try (0..<repetitions).map { _ in
             // calculates the utilization under heavy processing
-            let highLoadResult = try utilizationAndDuration(heavyLoad)
+            let highLoadResult = try utilizationAndDuration(cpuReader: cpuReader, heavyLoad)
 
-            let sleepResult = try utilizationAndDuration {
+            let sleepResult = try utilizationAndDuration(cpuReader: cpuReader) {
                 // The sleep duration should be the same as the heavy load duration
                 Thread.sleep(forTimeInterval: highLoadResult.duration)
             }
@@ -39,6 +40,9 @@ class VitalCPUReaderTest: XCTestCase {
 
     #if !os(watchOS)
     func testWhenInactiveAppStateItIgnoresCPUTicks() throws {
+        let cpuReader = VitalCPUReader(notificationCenter: testNotificationCenter)
+
+        testNotificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         let baseline = try XCTUnwrap(cpuReader.readVitalData())
         testNotificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
         heavyLoad()
@@ -54,7 +58,29 @@ class VitalCPUReaderTest: XCTestCase {
     }
     #endif
 
-    private func utilizationAndDuration(_ block: () -> Void) throws -> (utilization: Double, duration: Double) {
+    func testTickCounterOverflowAccumulatesCorrectly() {
+        // Simulate a UInt32 tick counter that wraps from near UInt32.max back to 0.
+        // Without overflow handling the subtraction would underflow, producing a wildly wrong result.
+        let reader = ControllableVitalCPUReader(notificationCenter: testNotificationCenter)
+
+        // Given:
+        // App becomes active just as counter is about to roll over. The third read does result
+        // in an active rollover.
+        let startTick = UInt64(UInt32.max) - 10
+        reader.mockTicks = [startTick, startTick + 5, 20]
+        testNotificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+
+        // When:
+        let firstRead = reader.readVitalData()
+        let secondRead = reader.readVitalData()
+
+        // First interval: startTick + 5 = 5
+        XCTAssertEqual(firstRead, 5.0)
+        // Overflow interval: 20 + 10 ticks from rollover = 30
+        XCTAssertEqual(secondRead, 30.0)
+    }
+
+    private func utilizationAndDuration(cpuReader: VitalCPUReader, _ block: () -> Void) throws -> (utilization: Double, duration: Double) {
         let startTime = CFAbsoluteTimeGetCurrent()
         let startUtilization = try XCTUnwrap(cpuReader.readVitalData())
 
@@ -66,6 +92,14 @@ class VitalCPUReaderTest: XCTestCase {
         let utilizedTicks = endUtilization - startUtilization
 
         return (utilizedTicks / duration, duration)
+    }
+}
+
+private class ControllableVitalCPUReader: VitalCPUReader {
+    var mockTicks: [UInt64] = []
+
+    override func readUtilizedTicks() -> UInt64? {
+        mockTicks.isEmpty ? nil : mockTicks.removeFirst()
     }
 }
 
