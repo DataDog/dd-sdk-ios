@@ -93,10 +93,7 @@ internal class RUMFeatureOperationManager {
             .merging(activeView?.attributes ?? [:]) { $1 }
             .merging(command.attributes) { $1 }
 
-        var profiling: RUMVitalOperationStepEvent.DD.Profiling?
-        if let profilingContext = context.additionalContext(ofType: ProfilingContext.self) {
-            profiling = .init(errorReason: profilingContext.error, status: profilingContext.profilingStatus)
-        }
+        let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
         if shouldSendOperationMessage(for: command) {
             let message = OperationMessage(
@@ -234,41 +231,5 @@ internal class RUMFeatureOperationManager {
         } else {
             return "`\(name)`"
         }
-    }
-}
-
-private extension ProfilingContext {
-    /**
-     * Returns the profiling status reported for app launch.
-     *
-     * Returns:
-     *  - `.running` when the profiler is actively running, or when it was manually stopped or timed out.
-     *  - `.stopped` when the profiler was not started, was sampled out, or the app launch was prewarmed.
-     *  - `.error` when the profiler encountered an error while starting or it is in an unknown status.
-     */
-    var profilingStatus: RUMVitalOperationStepEvent.DD.Profiling.Status {
-        switch self.status {
-        case .running: return .running
-        case .stopped: return .stopped
-        case .error: return .error
-        case .unknown: return .error
-        }
-    }
-
-    /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-    ///
-    /// Possible values:
-    /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-    var error: RUMVitalOperationStepEvent.DD.Profiling.ErrorReason? {
-        // RUM-15325: Update RUM schema with the mobile profiler errors
-        if case .error(reason: let reason) = self.status {
-            switch reason {
-            case .memoryAllocationFailed:
-                return .unexpectedException
-            case .alreadyStarted:
-                return nil
-            }
-        }
-        return nil
     }
 }
