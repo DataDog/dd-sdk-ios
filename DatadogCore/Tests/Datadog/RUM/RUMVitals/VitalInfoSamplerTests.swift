@@ -113,19 +113,18 @@ class VitalInfoSamplerTests: XCTestCase {
                 refreshRateReader: refreshRateReader,
                 frequency: 0.1
             )
+            sampler.takeSample()
         }
 
-        // Application must be active for CPU samples to be registered
-        NotificationCenter.default.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        _ = Date()
+        DispatchQueue.concurrentPerform(iterations: 100) { iteration in
+            for _ in 1...10_000 {
+                let random = Double.random(in: Double.leastNonzeroMagnitude...Double.greatestFiniteMagnitude)
+                _ = tan(random).squareRoot()
+            }
+        }
 
         let samplingExpectation = expectation(description: "sampling expectation")
-
-        // Do some work to push up CPU usage
-        for _ in 0...100_000 {
-            let random = Double.random(in: Double.leastNonzeroMagnitude...Double.greatestFiniteMagnitude)
-            _ = tan(random).squareRoot()
-        }
-
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
             samplingExpectation.fulfill()
         }
