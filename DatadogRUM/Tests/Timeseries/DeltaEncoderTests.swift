@@ -51,7 +51,30 @@ class DeltaEncoderTests: XCTestCase {
         XCTAssertEqual(memoryPercent, [100_000, 100_000, 5_000])
     }
 
+    func testEncodeMemory_doesNotCrashOnOverflowBoundaryValues() throws {
+        // Values scaled to near Int64.max / Int64.min to exercise subtractingReportingOverflow
+        let hugeBytes = Double(Int64.max) / 10_000.0
+        let samples: [RUMTimeseriesMemoryEvent.Timeseries.Data] = [
+            .init(dataPoint: .init(memoryMax: hugeBytes, memoryPercent: 100.0), timestamp: Int64.max),
+            .init(dataPoint: .init(memoryMax: 0.0, memoryPercent: 0.0), timestamp: 0)
+        ]
+        // Should not crash
+        let result = try XCTUnwrap(DeltaEncoder.encodeMemory(samples))
+        XCTAssertNotNil(result["memory_max"] as? [Int64])
+    }
+
     // MARK: - CPU encoding
+
+    func testEncodeCPU_doesNotCrashOnOverflowBoundaryValues() throws {
+        let hugeCPU = Double(Int64.max) / 10_000.0
+        let samples: [RUMTimeseriesCpuEvent.Timeseries.Data] = [
+            .init(dataPoint: .init(cpuUsage: hugeCPU), timestamp: Int64.max),
+            .init(dataPoint: .init(cpuUsage: 0.0), timestamp: 0)
+        ]
+        // Should not crash
+        let result = try XCTUnwrap(DeltaEncoder.encodeCPU(samples))
+        XCTAssertNotNil(result["value"] as? [Int64])
+    }
 
     func testEncodeCPU_returnsNilForEmptyBatch() {
         XCTAssertNil(DeltaEncoder.encodeCPU([]))
