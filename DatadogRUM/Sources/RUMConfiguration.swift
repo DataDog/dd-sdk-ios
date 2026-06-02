@@ -336,6 +336,11 @@ extension RUM {
         /// Default: `false`.
         public var enableTimeseries: Bool
 
+        /// The number of samples collected before a timeseries batch is flushed.
+        ///
+        /// Default: `30`.
+        public var timeseriesBatchSize: Int
+
         /// Feature flags to preview features in RUM.
         public var featureFlags: FeatureFlags
 
@@ -563,6 +568,7 @@ extension RUM.Configuration {
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
     ///   - enableTimeseries: Enables collection of memory and CPU timeseries events. Default: `false`.
+    ///   - timeseriesBatchSize: The number of samples collected before a timeseries batch is flushed. Default: `30`.
     ///   - featureFlags: Experimental feature flags.
     /// 
     /// - Note: On watchOS, automatic UIKit and SwiftUI view/action tracking is unavailable. The predicate parameters will be ignored.
@@ -599,6 +605,7 @@ extension RUM.Configuration {
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
         enableTimeseries: Bool = false,
+        timeseriesBatchSize: Int = 30,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -629,6 +636,7 @@ extension RUM.Configuration {
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
         self.enableTimeseries = enableTimeseries
+        self.timeseriesBatchSize = timeseriesBatchSize
         self.featureFlags = featureFlags
     }
     #else
@@ -656,6 +664,7 @@ extension RUM.Configuration {
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
         enableTimeseries: Bool = false,
+        timeseriesBatchSize: Int = 30,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -681,6 +690,7 @@ extension RUM.Configuration {
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
         self.enableTimeseries = enableTimeseries
+        self.timeseriesBatchSize = timeseriesBatchSize
         self.featureFlags = featureFlags
     }
     #endif
