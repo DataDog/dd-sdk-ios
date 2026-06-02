@@ -31,7 +31,7 @@ tracked_files:
 
 Trace records spans that are sent to Datadog APM. It supports manual instrumentation via the OpenTracing API or the OpenTelemetry API after `Trace.enable()`. 
 
-Trace can also connect to automatic `URLSession` network instrumentation; for that automatic URLSession path, configured first-party hosts gate distributed tracing header injection and Trace's local URLSession span creation. Requests tracked as RUM resources rely on RUM distributed tracing metadata so APM can derive the corresponding request span.
+Trace can also connect to automatic `URLSession` network instrumentation; for that automatic URLSession path, configured first-party hosts gate distributed tracing header injection and Trace's local URLSession span creation. Avoid enabling Trace `urlSessionTracking` and RUM `urlSessionTracking` for the same requests; if RUM owns resource tracking, use RUM `firstPartyHostsTracing` for APM correlation.
 
 Trace requires initialization via `Datadog.initialize()` before enabling.
 
@@ -226,7 +226,7 @@ Re-exported from `DatadogInternal` so they are available with `import DatadogTra
 ### Automatic Network Instrumentation
 Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` network instrumentation layer. The URLSession layer observes requests broadly; Trace uses the configured first-party hosts to decide where distributed tracing applies:
 - **First-party hosts**: `.trace(hosts:sampleRate:traceControlInjection:)` injects Datadog AND W3C `tracecontext` headers. Use `.traceWithHeaders(hostsWithHeaders:...)` to pick header types per host (Datadog, B3, B3 multi, W3C).
-- **Trace spans**: Trace records URLSession spans only for first-party requests. If RUM also tracks the request as a resource, the Trace handler skips creating its own request span. APM can derive the corresponding request span from the RUM resource only when RUM URLSession distributed tracing is configured for that resource and propagates a sampled trace context (for example, the request host matches RUM `firstPartyHostsTracing`).
+- **Trace spans**: Trace records URLSession spans only for first-party requests when Trace owns automatic URLSession tracking. Avoid enabling Trace `urlSessionTracking` and RUM `urlSessionTracking` for the same requests; the overlap is a current limitation and can produce undefined or incorrect behavior. If RUM owns resource tracking, configure RUM `urlSessionTracking.firstPartyHostsTracing` so RUM resources carry trace context for APM correlation.
 - **Sampling**: `firstPartyHostsTracing.sampleRate` is the URLSession distributed tracing propagation rate. If RUM context is available, propagation and RUM resources use the composed RUM session and first-party tracing decision; for example, `sessionSampleRate: 50` and `firstPartyHostsTracing.sampleRate: 80` produce a 40% propagated trace context rate.
 - **Injection strategy**: `traceControlInjection` — `.sampled` (default) only injects context on sampled first-party requests; `.all` injects context, including drop decisions, on every matching first-party request.
 - **Status-code redaction**: `redactedStatusCodes` (default `[404]`) replaces the `resource.name` tag with the status code string for matching responses. Pass an empty set to disable.
@@ -262,7 +262,7 @@ For non-`URLSession` HTTP clients, build headers yourself:
 1. `urlSessionTracking` must be configured on `Trace.Configuration` — Trace is not connected to automatic URLSession instrumentation by default.
 2. The request URL's host must match a host in `firstPartyHostsTracing` (no `http(s)://` prefix in the configured hosts).
 3. Verify the URLSession distributed tracing sample rate (`firstPartyHostsTracing` `sampleRate`) is > 0. If debugging propagated headers or RUM resource trace context, also verify the composed RUM session and first-party tracing rate is > 0.
-4. If RUM also tracks the request as a resource, configure RUM `urlSessionTracking.firstPartyHostsTracing` for the same host; otherwise RUM can mark the request as a RUM resource without the trace context APM needs to derive the corresponding request span.
+4. Avoid overlapping Trace `urlSessionTracking` and RUM `urlSessionTracking` for the same requests. If RUM owns resource tracking, configure RUM `urlSessionTracking.firstPartyHostsTracing` for APM correlation instead of also enabling Trace URLSession tracking for those requests.
 5. `URLSessionInstrumentation.enableDurationBreakdown(...)` is only needed for DNS / SSL / TTFB timing, not for basic automatic URLSession tracing. For HTTP clients not covered by `URLSession` instrumentation, wrap the request in a manual span and, if the client exposes outbound header mutation, copy headers from `HTTPHeadersWriter` / `W3CHTTPHeadersWriter` / `B3HTTPHeadersWriter` into the client's request/header API.
 
 ### "Resource name shows just `404`"
