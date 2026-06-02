@@ -13,7 +13,7 @@ import DatadogInternal
 /// All floating-point fields are scaled by `10^precision` and stored as `Int64`.
 internal enum DeltaEncoder {
     private static let precision = 4
-    private static let scale = Int64(10_000)
+    private static let scale = 10_000.0
 
     /// Encodes a batch of memory samples using delta compression.
     ///
@@ -40,19 +40,20 @@ internal enum DeltaEncoder {
         for (index, sample) in batch.enumerated() {
             if index == 0 {
                 ts.append(sample.timestamp)
-                memoryMax.append(Int64.ddWithNoOverflow(sample.dataPoint.memoryMax * Double(scale)))
-                memoryPercent.append(Int64.ddWithNoOverflow(sample.dataPoint.memoryPercent * Double(scale)))
+                memoryMax.append(Int64.ddWithNoOverflow(sample.dataPoint.memoryMax * scale))
+                memoryPercent.append(Int64.ddWithNoOverflow(sample.dataPoint.memoryPercent * scale))
             } else {
                 let prev = batch[index - 1]
-                ts.append(sample.timestamp - prev.timestamp)
-                memoryMax.append(
-                    Int64.ddWithNoOverflow(sample.dataPoint.memoryMax * Double(scale)) -
-                    Int64.ddWithNoOverflow(prev.dataPoint.memoryMax * Double(scale))
-                )
-                memoryPercent.append(
-                    Int64.ddWithNoOverflow(sample.dataPoint.memoryPercent * Double(scale)) -
-                    Int64.ddWithNoOverflow(prev.dataPoint.memoryPercent * Double(scale))
-                )
+                let (tsDelta, _) = sample.timestamp.subtractingReportingOverflow(prev.timestamp)
+                ts.append(tsDelta)
+                let curMax = Int64.ddWithNoOverflow(sample.dataPoint.memoryMax * scale)
+                let prevMax = Int64.ddWithNoOverflow(prev.dataPoint.memoryMax * scale)
+                let (maxDelta, _) = curMax.subtractingReportingOverflow(prevMax)
+                memoryMax.append(maxDelta)
+                let curPct = Int64.ddWithNoOverflow(sample.dataPoint.memoryPercent * scale)
+                let prevPct = Int64.ddWithNoOverflow(prev.dataPoint.memoryPercent * scale)
+                let (pctDelta, _) = curPct.subtractingReportingOverflow(prevPct)
+                memoryPercent.append(pctDelta)
             }
         }
 
@@ -88,14 +89,15 @@ internal enum DeltaEncoder {
         for (index, sample) in batch.enumerated() {
             if index == 0 {
                 ts.append(sample.timestamp)
-                cpuUsage.append(Int64.ddWithNoOverflow(sample.dataPoint.cpuUsage * Double(scale)))
+                cpuUsage.append(Int64.ddWithNoOverflow(sample.dataPoint.cpuUsage * scale))
             } else {
                 let prev = batch[index - 1]
-                ts.append(sample.timestamp - prev.timestamp)
-                cpuUsage.append(
-                    Int64.ddWithNoOverflow(sample.dataPoint.cpuUsage * Double(scale)) -
-                    Int64.ddWithNoOverflow(prev.dataPoint.cpuUsage * Double(scale))
-                )
+                let (tsDelta, _) = sample.timestamp.subtractingReportingOverflow(prev.timestamp)
+                ts.append(tsDelta)
+                let cur = Int64.ddWithNoOverflow(sample.dataPoint.cpuUsage * scale)
+                let prv = Int64.ddWithNoOverflow(prev.dataPoint.cpuUsage * scale)
+                let (delta, _) = cur.subtractingReportingOverflow(prv)
+                cpuUsage.append(delta)
             }
         }
 
