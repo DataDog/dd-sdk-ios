@@ -18,7 +18,7 @@ tracked_files:
 
 ## Overview
 
-Trace records spans that are sent to Datadog APM. It supports manual instrumentation via the OpenTracing API or the OpenTelemetry API, and can connect Trace to automatic `URLSession` network instrumentation. Distributed tracing headers and Trace spans are applied only to configured first-party hosts. Trace requires initialization via `Datadog.initialize()` before enabling.
+Trace records spans that are sent to Datadog APM. It supports manual instrumentation via the OpenTracing API or the OpenTelemetry API after `Trace.enable()`. Trace can also connect to automatic `URLSession` network instrumentation; for that automatic URLSession path, configured first-party hosts gate distributed tracing header injection and automatic network span creation. Trace requires initialization via `Datadog.initialize()` before enabling.
 
 ## Quick Start Example
 
