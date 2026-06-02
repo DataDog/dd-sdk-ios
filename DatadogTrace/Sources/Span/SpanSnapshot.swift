@@ -64,12 +64,13 @@ extension SpanSnapshot {
     /// applied by the user-configured mapper is reflected in stats aggregation.
     ///
     /// - Parameter event: the post-mapper `SpanEvent`.
-    /// - Parameter startTime: the raw device-local span start time. `SpanEvent.startTime`
-    ///   has already been shifted by `context.serverTimeOffset` for trace uploads, but
-    ///   `StatsConcentrator.flush(now:)` runs against the device-local clock. Using the
-    ///   server-adjusted time here would bucket snapshots in the future relative to
-    ///   the flush clock on devices whose clock is behind the server, delaying or
-    ///   dropping stats. Stats stay on the device-local clock.
+    /// - Parameter startTime: the raw device-local span start time.
+    ///
+    /// - Note: `SpanEvent.startTime` has already been shifted by `context.serverTimeOffset`
+    ///   for trace uploads, but `StatsConcentrator.flush(now:)` runs against the device-local
+    ///   clock. Using the server-adjusted time here would bucket snapshots in the future
+    ///   relative to the flush clock on devices whose clock is behind the server, delaying
+    ///   or dropping stats. Stats stay on the device-local clock.
     init(from event: SpanEvent, startTime: Date) {
         let spanKind = event.tags[SpanTags.kind]
         let httpStatusCode: UInt32 = {
