@@ -204,7 +204,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 }) else { return nil }
                 return TimeseriesSessionCollector(
                     memoryReader: vitalsReaders.memory,
-                    featureScope: featureScope
+                    featureScope: featureScope,
+                    batchSize: configuration.timeseriesBatchSize
                 )
             }()
         )
