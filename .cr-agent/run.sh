@@ -6,8 +6,9 @@
 # -----------------------------------------------------------
 #
 # Entry point for the `Code Review` CI job.
-# Clones rum-ai-toolkit, mints a short-lived GitHub token via dd-octo-sts,
-# then hands off to the toolkit's `review.sh` which runs the `cr-agent`.
+# Clones rum-ai-toolkit over HTTPS using a short-lived dd-octo-sts token,
+# mints a second dd-octo-sts token for posting PR comments, then hands off
+# to the toolkit's `review.sh` which runs the `cr-agent`.
 
 set -eo pipefail
 
@@ -15,9 +16,16 @@ set -eo pipefail
 TOOLKIT_REF="ncreated/feat/cr-agent"
 TOOLKIT_DIR="$CI_PROJECT_DIR/.rum-ai-toolkit"
 
+echo "▸ Minting rum-ai-toolkit clone token via dd-octo-sts..."
+TOOLKIT_TOKEN=$(dd-octo-sts --disable-tracing token \
+    --scope DataDog/rum-ai-toolkit --policy dd-sdk-ios.gitlab.clone)
+
 echo "▸ Cloning rum-ai-toolkit ($TOOLKIT_REF)..."
 git clone --depth 1 --branch "$TOOLKIT_REF" \
-    "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ddbuild.io/DataDog/rum-ai-toolkit.git" "$TOOLKIT_DIR"
+    "https://x-access-token:${TOOLKIT_TOKEN}@github.com/DataDog/rum-ai-toolkit.git" "$TOOLKIT_DIR"
+
+# Clone token no longer needed after clone; revoke it explicitly (least privilege).
+dd-octo-sts --disable-tracing revoke -t "$TOOLKIT_TOKEN"
 
 echo "▸ Installing cr-agent venv..."
 make -C "$TOOLKIT_DIR/tools/cr-agent" install
@@ -25,7 +33,7 @@ make -C "$TOOLKIT_DIR/tools/cr-agent" install
 echo "▸ Minting GitHub token via dd-octo-sts (policy: self.cr-agent)..."
 GITHUB_TOKEN=$(dd-octo-sts --disable-tracing token --scope DataDog/dd-sdk-ios --policy self.cr-agent)
 export GITHUB_TOKEN
-trap 'dd-octo-sts --disable-tracing revoke' EXIT
+trap 'dd-octo-sts --disable-tracing revoke -t "$GITHUB_TOKEN"' EXIT
 
 echo "▸ Handing off to review.sh..."
 exec "$TOOLKIT_DIR/tools/cr-agent/review.sh"
