@@ -96,7 +96,7 @@ Trace.enable(
             redactedStatusCodes: [404]
         ),
 
-        // Enrich every span with the current RUM view, action and session IDs
+        // Enrich spans with sampled-in RUM session, view and action IDs when available
         // Default: true
         bundleWithRumEnabled: true,
 
@@ -233,7 +233,7 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 ### Span Enrichment
 - **Service**: `service` (default: SDK service value) — overrides the `service.name` tag.
 - **Global tags**: `tags` — applied to every span from the default tracer.
-- **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — adds `_dd.application.id`, `_dd.session.id`, `_dd.view.id`, `_dd.action.id` tags so spans are linked to the active RUM context.
+- **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — adds `_dd.application.id`, `_dd.session.id`, `_dd.view.id`, `_dd.action.id` tags only when a RUM context exists and the RUM session is sampled in. Spans from sampled-out RUM sessions are still sent, but they are not linked to RUM.
 - **Network info**: `networkInfoEnabled` (default: `false`) — adds reachability, connection type, mobile carrier, etc. to every span and span log.
 
 ### Event Modification
@@ -265,8 +265,9 @@ This is the default `redactedStatusCodes: [404]` redaction. Pass an empty set on
 
 ### "Span not linked to RUM session"
 1. Make sure `RUM.enable(...)` is called and a RUM session is active.
-2. Verify `bundleWithRumEnabled: true` (default).
-3. Spans created before RUM is enabled or outside an active RUM view will be missing some `_dd.*` tags.
+2. Verify the RUM session is sampled in (`RUM.Configuration.sessionSampleRate`); sampled-out RUM sessions do not add RUM linkage tags to spans.
+3. Verify `bundleWithRumEnabled: true` (default).
+4. Spans created before RUM is enabled or outside an active RUM view may miss some `_dd.*` tags.
 
 ### "Child span has no parent"
 Child spans inherit the active span only when one is set. Either pass a parent context explicitly via `startSpan(operationName:childOf:)`, or call `parent.setActive()` before creating children in the same execution context.
@@ -276,7 +277,7 @@ Returned when `Datadog.initialize()` was not called or `Trace.enable()` was not 
 
 ## Feature Interactions
 
-- **RUM**: When `bundleWithRumEnabled` is `true`, every span is enriched with the current RUM view / session / action IDs so traces and RUM events can be correlated. For URLSession distributed tracing, an active RUM context also makes the tracing sample decision deterministic and composes `firstPartyHostsTracing.sampleRate` with the RUM session sample rate.
+- **RUM**: When `bundleWithRumEnabled` is `true` and the current RUM session is sampled in, spans are enriched with the current RUM view / session / action IDs so traces and RUM events can be correlated. For URLSession distributed tracing, an active RUM context also makes the tracing sample decision deterministic and composes `firstPartyHostsTracing.sampleRate` with the RUM session sample rate.
 - **Logs**: `OTSpan.log(...)` and `OTSpan.setError(...)` write through the Logs feature. If `DatadogLogs` is not enabled, logs attached to spans are dropped (with a warning); the span itself is still sent.
 - **Crash Reporting**: Independent — crashes do not require Trace.
 - **WebView Tracking**: Independent — see `DatadogWebViewTracking/Sources/WebViewTracking.swift`.
