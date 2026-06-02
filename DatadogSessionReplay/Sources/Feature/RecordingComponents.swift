@@ -111,7 +111,8 @@ internal struct RecordingComponents {
         let layerRecorder = LayerRecorder(
             snapshotBuilder: LayerTreeSnapshotBuilder(layerProvider: keyWindowObserver),
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
-            touchSnapshotProducer: touchSnapshotProducer
+            touchSnapshotProducer: touchSnapshotProducer,
+            imageSnapshotter: ImageSnapshotter(telemetry: telemetry)
         )
         let screenChangeMonitor = try ScreenChangeMonitor(minimumDeliveryInterval: 0.1)
         let recordingCoordinator = LayerTreeRecordingCoordinator(

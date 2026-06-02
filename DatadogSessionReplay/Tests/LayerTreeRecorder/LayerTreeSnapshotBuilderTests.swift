@@ -120,7 +120,7 @@ struct LayerTreeSnapshotBuilderTests {
         #expect(snapshot.root.sublayers.count == 1)
         #expect(snapshot.root.sublayers[0].observation == .init(
             semantics: .webView(.init(slotID: webView.hash)),
-            ignoreSubtree: true
+            ignoreSublayers: true
         ))
     }
 

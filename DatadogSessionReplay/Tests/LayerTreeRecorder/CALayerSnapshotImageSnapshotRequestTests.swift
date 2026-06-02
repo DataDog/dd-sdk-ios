@@ -1,0 +1,315 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+#if os(iOS)
+import DatadogInternal
+import QuartzCore
+import Testing
+import UIKit
+import WebKit
+
+@testable import DatadogSessionReplay
+
+@MainActor
+struct CALayerSnapshotImageSnapshotRequestTests {
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for plain layer with contents")
+    func createsRequestForPlainLayerWithContents() throws {
+        // Given
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 40)
+        layer.contents = NSObject()
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.replayID == snapshot.replayID)
+        #expect(request.layer == snapshot.layer)
+        #expect(request.visibleFrame == snapshot.absoluteFrame)
+        #expect(request.hasContentChanges == false)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for plain layer with content changes")
+    func createsRequestForPlainLayerWithContentChanges() throws {
+        // Given
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 40)
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        let changeset = CALayerChangeset.mockChange(for: layer, aspects: .display)
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: changeset, cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.layer == snapshot.layer)
+        #expect(request.hasContentChanges)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for plain layer with cached snapshot data")
+    func createsRequestForPlainLayerWithCachedSnapshotData() throws {
+        // Given
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 40)
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+
+        let imageSnapshot = Self.mockImageSnapshot()
+        let snapshotData = Self.mockSnapshotData(snapshot: imageSnapshot)
+        let cache = ImageSnapshotCache()
+        cache.setSnapshotData(snapshotData, forReplayID: snapshot.replayID)
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.layer == snapshot.layer)
+        #expect(request.previousSnapshotData?.snapshot === imageSnapshot)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips plain layer without contents, content changes, or cache")
+    func skipsPlainLayerWithoutContentsChangesOrCachedSnapshotData() throws {
+        // Given
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 40)
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for layer subclass without contents")
+    func createsRequestForLayerSubclassWithoutContents() throws {
+        // Given
+        let layer = CATextLayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 40)
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.replayID == snapshot.replayID)
+        #expect(request.layerClass == CATextLayer.self)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for semantic image layer")
+    func createsRequestForSemanticImageLayer() throws {
+        // Given
+        let imageView = UIImageView(image: UIImage())
+        imageView.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        imageView.layer.contents = NSObject()
+
+        let child = CATextLayer()
+        child.frame = CGRect(x: 10, y: 10, width: 20, height: 20)
+        imageView.layer.addSublayer(child)
+
+        let snapshot = try #require(CALayerSnapshot(from: imageView.layer, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.replayID == snapshot.replayID)
+        #expect(request.layer.matches(imageView.layer))
+        #expect(request.hasContents)
+        #expect(!requests.contains { $0.layer.matches(child) })
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips web view layer")
+    func skipsWebViewLayer() throws {
+        // Given
+        let webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        webView.layer.contents = NSObject()
+        let snapshot = try #require(CALayerSnapshot(from: webView.layer, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips private layer")
+    func skipsPrivateLayer() throws {
+        // Given
+        let view = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        view.dd.sessionReplayPrivacyOverrides.hide = true
+        view.layer.contents = NSObject()
+        let snapshot = try #require(CALayerSnapshot(from: view.layer, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Clips request visible frame to masking ancestor")
+    func clipsRequestVisibleFrameToMaskingAncestor() throws {
+        // Given
+        let root = CALayer()
+        root.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+
+        let clippingLayer = CALayer()
+        clippingLayer.frame = CGRect(x: 10, y: 10, width: 40, height: 40)
+        clippingLayer.masksToBounds = true
+        root.addSublayer(clippingLayer)
+
+        let child = CATextLayer()
+        child.frame = CGRect(x: 20, y: 20, width: 40, height: 40)
+        clippingLayer.addSublayer(child)
+
+        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.layer.matches(child))
+        #expect(request.visibleFrame == CGRect(x: 30, y: 30, width: 20, height: 20))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Does not clip request visible frame to non-masking ancestor")
+    func doesNotClipRequestVisibleFrameToNonMaskingAncestor() throws {
+        // Given
+        let root = CALayer()
+        root.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+
+        let container = CALayer()
+        container.frame = CGRect(x: 10, y: 10, width: 40, height: 40)
+        container.masksToBounds = false
+        root.addSublayer(container)
+
+        let child = CATextLayer()
+        child.frame = CGRect(x: 20, y: 20, width: 90, height: 90)
+        container.addSublayer(child)
+
+        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.layer.matches(child))
+        #expect(request.visibleFrame == CGRect(x: 30, y: 30, width: 70, height: 70))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Keeps traversing image-capable container")
+    func keepsTraversingImageCapableContainer() throws {
+        // Given
+        let root = CALayer()
+        root.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+
+        let parent = CALayer()
+        parent.frame = CGRect(x: 0, y: 0, width: 100, height: 100)
+        parent.contents = NSObject()
+        root.addSublayer(parent)
+
+        let child = CATextLayer()
+        child.frame = CGRect(x: 10, y: 10, width: 20, height: 20)
+        parent.addSublayer(child)
+
+        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.layer.matches(child))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Keeps traversing when container image would include web view")
+    func keepsTraversingWhenContainerImageWouldIncludeWebView() throws {
+        // Given
+        let root = CALayer()
+        root.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+
+        let parent = CALayer()
+        parent.frame = CGRect(x: 0, y: 0, width: 100, height: 100)
+        parent.contents = NSObject()
+        root.addSublayer(parent)
+
+        let webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+        parent.addSublayer(webView.layer)
+
+        let child = CATextLayer()
+        child.frame = CGRect(x: 50, y: 50, width: 20, height: 20)
+        parent.addSublayer(child)
+
+        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.contains { $0.layer.matches(child) })
+        #expect(!requests.contains { $0.layer.matches(parent) })
+        #expect(!requests.contains { $0.layer.matches(webView.layer) })
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    private static func mockImageSnapshot() -> ImageSnapshot {
+        ImageSnapshot(
+            image: UIImage(),
+            frame: .zero,
+            textAndInputPrivacyLevel: .maskAll,
+            imagePrivacyLevel: .maskAll
+        )
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    private static func mockSnapshotData(
+        snapshot: ImageSnapshot,
+        localRect: CGRect = .zero,
+        bounds: CGRect = .zero
+    ) -> ImageSnapshotData {
+        ImageSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds)
+    }
+}
+
+#endif
