@@ -458,6 +458,26 @@ public enum objc_RUMFeatureOperationFailureReason: Int {
     }
 }
 
+@objc(DDOperationOptions)
+@objcMembers
+@_spi(objc)
+public class objc_OperationOptions: NSObject {
+    internal let swiftType: OperationOptions
+
+    internal init(swiftType: OperationOptions) {
+        self.swiftType = swiftType
+    }
+}
+
+@objc(DDProfilingOptions)
+@objcMembers
+@_spi(objc)
+public final class objc_ProfilingOptions: objc_OperationOptions {
+    public init(sampleRate: Float) {
+        super.init(swiftType: ProfilingOptions(sampleRate: sampleRate))
+    }
+}
+
 @objc(DDRUMFirstPartyHostsTracing)
 @objcMembers
 @_spi(objc)
