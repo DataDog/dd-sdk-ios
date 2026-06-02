@@ -88,7 +88,8 @@ internal final class VitalInfoSampler {
         refreshRateReader.unregister(refreshRatePublisher)
     }
 
-    private func takeSample() {
+    // Note: This is internal for use in testing. Do not call this in regular usage.
+    internal func takeSample() {
         if let newCPUSample = cpuReader.readVitalData() {
             cpuPublisher.mutateAsync { cpuInfo in
                 cpuInfo.addSample(newCPUSample)
