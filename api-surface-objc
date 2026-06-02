@@ -3396,6 +3396,9 @@ public enum objc_RUMFeatureOperationFailureReason: Int
     case error
     case abandoned
     case other
+public class objc_OperationOptions: NSObject
+public final class objc_ProfilingOptions: objc_OperationOptions
+    public init(sampleRate: Float)
 public class objc_FirstPartyHostsTracing: NSObject
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>])
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>], sampleRate: Float)

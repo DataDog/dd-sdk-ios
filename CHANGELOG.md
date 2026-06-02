@@ -5,6 +5,7 @@
 - [FIX] Fix wrong types in the `objc_LogEventDevice` properties definition. See [#2966][]
 - [IMPROVEMENT] Add `logger` case to `RUMErrorSource` (Swift) and `DDRUMErrorSource` (Obj-C) for cross-platform parity. See [#2949][]
 - [FIX] Add `logger` case to `RUMErrorSource` (Swift) and `DDRUMErrorSource` (Obj-C) for cross-platform parity. See [#2952][]
+- [FIX] Expose RUM operation options to Objective-C from `DatadogRUM`. See [#2969][]
 - [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
 - [IMPROVEMENT] Align public RUM session IDs with event formatting. See [#2956][]
 
@@ -1168,6 +1169,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2949]: https://github.com/DataDog/dd-sdk-ios/pull/2949
 [#2952]: https://github.com/DataDog/dd-sdk-ios/pull/2952
 [#2968]: https://github.com/DataDog/dd-sdk-ios/pull/2968
+[#2969]: https://github.com/DataDog/dd-sdk-ios/pull/2969
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
