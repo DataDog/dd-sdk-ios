@@ -12,12 +12,12 @@ import WebKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
-    /// Semantic meaning captured for a layer, plus the traversal decision for its descendants.
+    /// Semantic meaning captured for a layer, plus the traversal decision for its sublayers.
     struct SemanticObservation: Sendable, Equatable {
         var semantics: Semantics
 
-        /// When `true`, the semantic payload owns how this layer is represented and descendants are not captured.
-        var ignoreSubtree: Bool = false
+        /// When `true`, the semantic payload owns how this layer is represented and sublayers are not captured.
+        var ignoreSublayers: Bool = false
     }
 }
 
@@ -43,7 +43,7 @@ extension CALayerSnapshot.SemanticObservation {
     init(layer: CALayer, context: CALayerSnapshot.Context) {
         switch layer.delegate {
         case _ as UIActivityIndicatorView:
-            self.init(semantics: .activityIndicator, ignoreSubtree: true)
+            self.init(semantics: .activityIndicator, ignoreSublayers: true)
         case let label as UILabel where !label.hasAttributedText:
             // Attributed text falls through to layer semantics and will be rendered from the layer image.
             self.init(label: label)
@@ -93,7 +93,7 @@ extension CALayerSnapshot.SemanticObservation {
                     lineBreakMode: label.lineBreakMode
                 )
             ),
-            ignoreSubtree: true
+            ignoreSublayers: true
         )
     }
 }
@@ -148,7 +148,7 @@ extension CALayerSnapshot.SemanticObservation {
                     tintColor: imageView.tintColor
                 )
             ),
-            ignoreSubtree: true
+            ignoreSublayers: true
         )
     }
 }
@@ -164,7 +164,7 @@ extension CALayerSnapshot.SemanticObservation {
     fileprivate init(progressView: UIProgressView) {
         self.init(
             semantics: .progress(.init(progress: progressView.progress)),
-            ignoreSubtree: true
+            ignoreSublayers: true
         )
     }
 }
@@ -180,7 +180,7 @@ extension CALayerSnapshot.SemanticObservation {
     fileprivate init(stepper: UIStepper) {
         self.init(
             semantics: .stepper(.init(value: stepper.value)),
-            ignoreSubtree: true
+            ignoreSublayers: true
         )
     }
 }
@@ -204,7 +204,7 @@ extension CALayerSnapshot.SemanticObservation {
                     isSecureTextEntry: textView.isSecureTextEntry
                 )
             ),
-            ignoreSubtree: true
+            ignoreSublayers: true
         )
     }
 }
@@ -243,7 +243,7 @@ extension CALayerSnapshot.SemanticObservation {
     fileprivate init(switchControl: UISwitch) {
         self.init(
             semantics: .switchControl(.init(isOn: switchControl.isOn)),
-            ignoreSubtree: true
+            ignoreSublayers: true
         )
     }
 }
@@ -259,7 +259,7 @@ extension CALayerSnapshot.SemanticObservation {
     fileprivate init(webView: WKWebView) {
         self.init(
             semantics: .webView(.init(slotID: webView.hash)),
-            ignoreSubtree: true
+            ignoreSublayers: true
         )
     }
 }

@@ -29,8 +29,8 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records activity indicator semantics and ignores subtree")
-    func recordsActivityIndicatorSemanticsAndIgnoresSubtree() {
+    @Test("Records activity indicator semantics and ignores sublayers")
+    func recordsActivityIndicatorSemanticsAndIgnoresSublayers() {
         // Given
         let activityIndicator = UIActivityIndicatorView(style: .medium)
 
@@ -38,12 +38,12 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: activityIndicator.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .activityIndicator, ignoreSubtree: true))
+        #expect(observation == .init(semantics: .activityIndicator, ignoreSublayers: true))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records label semantics and ignores subtree")
-    func recordsLabelSemanticsAndIgnoresSubtree() {
+    @Test("Records label semantics and ignores sublayers")
+    func recordsLabelSemanticsAndIgnoresSublayers() {
         // Given
         let font = UIFont.boldSystemFont(ofSize: 14)
         let label = UILabel()
@@ -69,7 +69,7 @@ struct CALayerSnapshotSemanticObservationTests {
                     lineBreakMode: .byTruncatingMiddle
                 )
             ),
-            ignoreSubtree: true
+            ignoreSublayers: true
         ))
     }
 
@@ -101,7 +101,7 @@ struct CALayerSnapshotSemanticObservationTests {
                     lineBreakMode: label.lineBreakMode
                 )
             ),
-            ignoreSubtree: true
+            ignoreSublayers: true
         ))
     }
 
@@ -123,8 +123,8 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records image semantics and ignores subtree")
-    func recordsImageSemanticsAndIgnoresSubtree() {
+    @Test("Records image semantics and ignores sublayers")
+    func recordsImageSemanticsAndIgnoresSublayers() {
         // Given
         let image = UIImage()
         let highlightedImage = UIImage()
@@ -145,13 +145,13 @@ struct CALayerSnapshotSemanticObservationTests {
                     tintColor: .green
                 )
             ),
-            ignoreSubtree: true
+            ignoreSublayers: true
         ))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records progress semantics and ignores subtree")
-    func recordsProgressSemanticsAndIgnoresSubtree() {
+    @Test("Records progress semantics and ignores sublayers")
+    func recordsProgressSemanticsAndIgnoresSublayers() {
         // Given
         let progressView = UIProgressView()
         progressView.progress = 0.75
@@ -160,12 +160,12 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: progressView.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .progress(.init(progress: 0.75)), ignoreSubtree: true))
+        #expect(observation == .init(semantics: .progress(.init(progress: 0.75)), ignoreSublayers: true))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records stepper semantics and ignores subtree")
-    func recordsStepperSemanticsAndIgnoresSubtree() {
+    @Test("Records stepper semantics and ignores sublayers")
+    func recordsStepperSemanticsAndIgnoresSublayers() {
         // Given
         let stepper = UIStepper()
         stepper.value = 7
@@ -174,12 +174,12 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: stepper.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .stepper(.init(value: 7)), ignoreSubtree: true))
+        #expect(observation == .init(semantics: .stepper(.init(value: 7)), ignoreSublayers: true))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records text view semantics and ignores subtree")
-    func recordsTextViewSemanticsAndIgnoresSubtree() {
+    @Test("Records text view semantics and ignores sublayers")
+    func recordsTextViewSemanticsAndIgnoresSublayers() {
         // Given
         let textView = UITextView()
         textView.text = "Body"
@@ -198,13 +198,13 @@ struct CALayerSnapshotSemanticObservationTests {
                     isSecureTextEntry: true
                 )
             ),
-            ignoreSubtree: true
+            ignoreSublayers: true
         ))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records text field semantics and keeps subtree")
-    func recordsTextFieldSemanticsAndKeepsSubtree() {
+    @Test("Records text field semantics and keeps sublayers")
+    func recordsTextFieldSemanticsAndKeepsSublayers() {
         // Given
         let textField = UITextField()
         textField.text = "Value"
@@ -227,8 +227,8 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records switch semantics and ignores subtree")
-    func recordsSwitchSemanticsAndIgnoresSubtree() {
+    @Test("Records switch semantics and ignores sublayers")
+    func recordsSwitchSemanticsAndIgnoresSublayers() {
         // Given
         let switchControl = UISwitch()
         switchControl.isOn = true
@@ -237,7 +237,7 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: switchControl.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .switchControl(.init(isOn: true)), ignoreSubtree: true))
+        #expect(observation == .init(semantics: .switchControl(.init(isOn: true)), ignoreSublayers: true))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -252,7 +252,7 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: webView.layer, context: context)
 
         // Then
-        #expect(observation == .init(semantics: .webView(.init(slotID: webView.hash)), ignoreSubtree: true))
+        #expect(observation == .init(semantics: .webView(.init(slotID: webView.hash)), ignoreSublayers: true))
         #expect(webViewCache.allObjects.first === webView)
     }
 }
