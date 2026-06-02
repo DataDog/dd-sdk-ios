@@ -29,7 +29,11 @@ tracked_files:
 
 ## Overview
 
-Trace records spans that are sent to Datadog APM. It supports manual instrumentation via the OpenTracing API or the OpenTelemetry API after `Trace.enable()`. Trace can also connect to automatic `URLSession` network instrumentation; for that automatic URLSession path, configured first-party hosts gate distributed tracing header injection and automatic network span creation. Trace requires initialization via `Datadog.initialize()` before enabling.
+Trace records spans that are sent to Datadog APM. It supports manual instrumentation via the OpenTracing API or the OpenTelemetry API after `Trace.enable()`. 
+
+Trace can also connect to automatic `URLSession` network instrumentation; for that automatic URLSession path, configured first-party hosts gate distributed tracing header injection and Trace's local URLSession span creation. Requests tracked as RUM resources rely on RUM distributed tracing metadata so APM can derive the corresponding request span.
+
+Trace requires initialization via `Datadog.initialize()` before enabling.
 
 ## Quick Start Example
 
@@ -69,7 +73,7 @@ Trace.enable(
             "build_flavor": "release"
         ],
 
-        // Automatic URLSession distributed tracing - provide config to enable
+        // Automatic URLSession network instrumentation with distributed tracing
         // Default: nil (disabled)
         urlSessionTracking: Trace.Configuration.URLSessionTracking(
             // Choose how distributed tracing headers are injected:
@@ -77,11 +81,11 @@ Trace.enable(
             //     - Injects Datadog AND W3C `tracecontext` headers
             //   .traceWithHeaders(hostsWithHeaders:sampleRate:traceControlInjection:)
             //     - Injects only the header types you specify per host
-            // sampleRate is the distributed tracing sample rate (default: 100).
-            // If RUM is active, the effective rate is composed with the
-            // RUM session sample rate (e.g. 50% RUM and 80% trace => 40%).
-            // traceControlInjection: .sampled (only sampled requests carry context)
-            //                        or .all (every request carries context).
+            // sampleRate is the URLSession distributed tracing propagation rate (default: 100).
+            // If RUM context is available, propagated trace context and RUM resources
+            // use the composed rate (e.g. 50% RUM and 80% trace => 40%).
+            // traceControlInjection: .sampled (only sampled first-party requests carry context)
+            //                        or .all (every matching first-party request carries context).
             //                        Default: .sampled
             firstPartyHostsTracing: .trace(
                 hosts: ["api.example.com", "example.com"],
@@ -216,15 +220,15 @@ Re-exported from `DatadogInternal` so they are available with `import DatadogTra
 ### Sampling
 - **Spans (default tracer)**: `sampleRate` (default: 100%) — applies to spans created via `Tracer.shared()` / `OTelTracerProvider`.
 - **Per-root-span override**: `tracer.startRootSpan(operationName:..., customSampleRate:)` overrides `sampleRate` for a specific root span.
-- **URLSession distributed tracing**: `urlSessionTracking.firstPartyHostsTracing` carries its own `sampleRate`, separate from `Trace.Configuration.sampleRate`. It controls whether first-party URLSession requests are sampled and whether their sampling decision is propagated. When RUM context is active, the effective rate is composed with the RUM session sampler (`rum sessionSampleRate * firstPartyHostsTracing.sampleRate / 100`). Without RUM context, the configured first-party sample rate is used directly.
+- **URLSession distributed tracing**: `urlSessionTracking.firstPartyHostsTracing` carries its own `sampleRate`, separate from `Trace.Configuration.sampleRate`. It controls first-party URLSession distributed tracing propagation and the sampling decision recorded in injected contexts. When RUM context is available, propagated trace context and RUM resources use the RUM-composed sampler (`rum sessionSampleRate * firstPartyHostsTracing.sampleRate / 100`). Without RUM context, the configured first-party sample rate is used directly. This composed rate is not a blanket local `urlsession.request` span emission rate.
 - **Force keep / drop**: `span.keepTrace()` and `span.dropTrace()` (or set `SpanTags.manualKeep` / `SpanTags.manualDrop` directly). Should be called on the root span immediately after creation.
 
 ### Automatic Network Instrumentation
 Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` network instrumentation layer. The URLSession layer observes requests broadly; Trace uses the configured first-party hosts to decide where distributed tracing applies:
 - **First-party hosts**: `.trace(hosts:sampleRate:traceControlInjection:)` injects Datadog AND W3C `tracecontext` headers. Use `.traceWithHeaders(hostsWithHeaders:...)` to pick header types per host (Datadog, B3, B3 multi, W3C).
-- **Trace spans**: Trace records URLSession spans only for first-party requests, unless the request is already tracked as a RUM resource. In that case, the RUM backend creates the trace span on behalf of the resource.
-- **Sampling**: `firstPartyHostsTracing.sampleRate` is the URLSession distributed tracing rate. If RUM is active, it is composed with the RUM session sample rate; for example, `sessionSampleRate: 50` and `firstPartyHostsTracing.sampleRate: 80` produce an effective 40% URLSession trace rate.
-- **Injection strategy**: `traceControlInjection` — `.sampled` (default) only injects context on sampled requests; `.all` injects on every request, letting downstream services make sampling decisions.
+- **Trace spans**: Trace records URLSession spans only for first-party requests. If RUM also tracks the request as a resource, the Trace handler skips creating its own request span. APM can derive the corresponding request span from the RUM resource only when RUM URLSession distributed tracing is configured for that resource and propagates a sampled trace context (for example, the request host matches RUM `firstPartyHostsTracing`).
+- **Sampling**: `firstPartyHostsTracing.sampleRate` is the URLSession distributed tracing propagation rate. If RUM context is available, propagation and RUM resources use the composed RUM session and first-party tracing decision; for example, `sessionSampleRate: 50` and `firstPartyHostsTracing.sampleRate: 80` produce a 40% propagated trace context rate.
+- **Injection strategy**: `traceControlInjection` — `.sampled` (default) only injects context on sampled first-party requests; `.all` injects context, including drop decisions, on every matching first-party request.
 - **Status-code redaction**: `redactedStatusCodes` (default `[404]`) replaces the `resource.name` tag with the status code string for matching responses. Pass an empty set to disable.
 - **Duration breakdown**: For DNS / SSL / TTFB timing, also call `URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: YourURLSessionDelegate.self))` after `Trace.enable()`.
 
@@ -233,7 +237,7 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 ### Span Enrichment
 - **Service**: `service` (default: SDK service value) — overrides the `service.name` tag.
 - **Global tags**: `tags` — applied to every span from the default tracer.
-- **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — adds `_dd.application.id`, `_dd.session.id`, `_dd.view.id`, `_dd.action.id` tags only when a RUM context exists and the RUM session is sampled in. Spans from sampled-out RUM sessions are still sent, but they are not linked to RUM.
+- **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — adds `_dd.application.id`, `_dd.session.id`, `_dd.view.id`, `_dd.action.id` tags only when a RUM context exists and the RUM session is sampled in. Trace spans from sampled-out RUM sessions can still be sent according to Trace sampling, but they are not linked to RUM.
 - **Network info**: `networkInfoEnabled` (default: `false`) — adds reachability, connection type, mobile carrier, etc. to every span and span log.
 
 ### Event Modification
@@ -250,15 +254,16 @@ For non-`URLSession` HTTP clients, build headers yourself:
 
 ### "No traces appearing"
 1. Check `Datadog.initialize()` and `Trace.enable()` were called.
-2. For manual spans, verify `Trace.Configuration.sampleRate` is > 0. For automatic URLSession network instrumentation, verify `firstPartyHostsTracing.sampleRate` and any composed RUM session rate are > 0.
+2. For manual spans, verify `Trace.Configuration.sampleRate` is > 0. For automatic URLSession network instrumentation, verify `firstPartyHostsTracing.sampleRate` is > 0; for propagated or RUM resource trace contexts, also verify any composed RUM session rate is > 0.
 3. Verify spans are actually finished (`span.finish()`) — unfinished spans are not sent.
 4. Check the `eventMapper` is not raising / corrupting the event.
 
 ### "Network requests not traced"
 1. `urlSessionTracking` must be configured on `Trace.Configuration` — Trace is not connected to automatic URLSession instrumentation by default.
 2. The request URL's host must match a host in `firstPartyHostsTracing` (no `http(s)://` prefix in the configured hosts).
-3. Verify the URLSession distributed tracing sample rate (`firstPartyHostsTracing` `sampleRate`) is > 0. If RUM is active, also verify the effective rate after composition with the RUM session sample rate is > 0.
-4. For SDK-managed sessions, no extra delegate is required. For third-party HTTP clients, inject headers manually with `HTTPHeadersWriter` / `W3CHTTPHeadersWriter` / `B3HTTPHeadersWriter`.
+3. Verify the URLSession distributed tracing sample rate (`firstPartyHostsTracing` `sampleRate`) is > 0. If debugging propagated headers or RUM resource trace context, also verify the composed RUM session and first-party tracing rate is > 0.
+4. If RUM also tracks the request as a resource, configure RUM `urlSessionTracking.firstPartyHostsTracing` for the same host; otherwise RUM can mark the request as a RUM resource without the trace context APM needs to derive the corresponding request span.
+5. `URLSessionInstrumentation.enableDurationBreakdown(...)` is only needed for DNS / SSL / TTFB timing, not for basic automatic URLSession tracing. For HTTP clients not covered by `URLSession` instrumentation, wrap the request in a manual span and, if the client exposes outbound header mutation, copy headers from `HTTPHeadersWriter` / `W3CHTTPHeadersWriter` / `B3HTTPHeadersWriter` into the client's request/header API.
 
 ### "Resource name shows just `404`"
 This is the default `redactedStatusCodes: [404]` redaction. Pass an empty set on `URLSessionTracking(redactedStatusCodes:)` to disable, or pass a custom set to control which status codes get redacted.
@@ -277,7 +282,7 @@ Returned when `Datadog.initialize()` was not called or `Trace.enable()` was not 
 
 ## Feature Interactions
 
-- **RUM**: When `bundleWithRumEnabled` is `true` and the current RUM session is sampled in, spans are enriched with the current RUM view / session / action IDs so traces and RUM events can be correlated. For URLSession distributed tracing, an active RUM context also makes the tracing sample decision deterministic and composes `firstPartyHostsTracing.sampleRate` with the RUM session sample rate.
+- **RUM**: When `bundleWithRumEnabled` is `true` and the current RUM session is sampled in, spans are enriched with the current RUM view / session / action IDs so traces and RUM events can be correlated. For URLSession distributed tracing, an available RUM context also makes propagated trace context and RUM resource trace decisions deterministic by composing `firstPartyHostsTracing.sampleRate` with the RUM session sample rate.
 - **Logs**: `OTSpan.log(...)` and `OTSpan.setError(...)` write through the Logs feature. If `DatadogLogs` is not enabled, logs attached to spans are dropped (with a warning); the span itself is still sent.
 - **Crash Reporting**: Independent — crashes do not require Trace.
 - **WebView Tracking**: Independent — see `DatadogWebViewTracking/Sources/WebViewTracking.swift`.
