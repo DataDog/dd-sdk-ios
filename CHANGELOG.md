@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FIX] Prevent a crash from `VitalCPUReader` when the CPU tick counter rolls over. See [#2968][]
 - [FIX] Prevent crash misattribution when an inactive RUM view emits a terminal event after `stopResource()`. See [#2948][]
 - [FIX] Fix wrong types in the `objc_LogEventDevice` properties definition. See [#2966][]
 - [IMPROVEMENT] Add `logger` case to `RUMErrorSource` (Swift) and `DDRUMErrorSource` (Obj-C) for cross-platform parity. See [#2949][]
@@ -1168,6 +1169,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2966]: https://github.com/DataDog/dd-sdk-ios/pull/2966
 [#2949]: https://github.com/DataDog/dd-sdk-ios/pull/2949
 [#2952]: https://github.com/DataDog/dd-sdk-ios/pull/2952
+[#2968]: https://github.com/DataDog/dd-sdk-ios/pull/2968
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
