@@ -1,7 +1,7 @@
 ---
 last_updated: 2026-06-02
 sdk_version: 3.11.0
-verified_against_commit: 6dbb01bba
+verified_against_commit: f3a6d91c1
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
@@ -10,6 +10,17 @@ tracked_files:
   - DatadogTrace/Sources/OpenTracing/OTSpan.swift
   - DatadogTrace/Sources/OpenTracing/OTFormat.swift
   - DatadogTrace/Sources/OpenTelemetry/OTelTracerProvider.swift
+  - DatadogTrace/Sources/Objc/Tracing/Trace+objc.swift
+  - DatadogTrace/Sources/Objc/OpenTracing/OTTracer+objc.swift
+  - DatadogTrace/Sources/Objc/OpenTracing/OTSpan+objc.swift
+  - DatadogTrace/Sources/Objc/OpenTracing/OTSpanContext+objc.swift
+  - DatadogTrace/Sources/Objc/Tracing/DDSpan+objc.swift
+  - DatadogTrace/Sources/Objc/Tracing/DDSpanContext+objc.swift
+  - DatadogTrace/Sources/Objc/Tracing/Propagation/HTTPHeadersWriter+objc.swift
+  - DatadogTrace/Sources/Objc/Tracing/Propagation/W3CHTTPHeadersWriter+objc.swift
+  - DatadogTrace/Sources/Objc/Tracing/Propagation/B3HTTPHeadersWriter+objc.swift
+  - DatadogTrace/Sources/Objc/Tracing/Propagation/TraceContextInjection+objc.swift
+  - DatadogInternal/Sources/NetworkInstrumentation/TracingHeaderType+objc.swift
   - DatadogTrace/Sources/Feature/TraceFeature.swift
   - DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift
 ---
@@ -150,12 +161,15 @@ let otelSpan = otelTracer.spanBuilder(spanName: "load-products").startSpan()
 otelSpan.end()
 
 // 5. (Optional) Manual distributed-tracing header injection
+let requestSpan = tracer.startSpan(operationName: "network-request")
 let writer = HTTPHeadersWriter(traceContextInjection: .sampled) // Datadog headers
 // Or: W3CHTTPHeadersWriter()                                   // W3C `tracecontext`
 // Or: B3HTTPHeadersWriter(injectEncoding: .single)             // B3 single or multi
-tracer.inject(spanContext: span.context, writer: writer)
+tracer.inject(spanContext: requestSpan.context, writer: writer)
 var request = URLRequest(url: URL(string: "https://api.example.com/v2/products")!)
 writer.traceHeaderFields.forEach { request.setValue($1, forHTTPHeaderField: $0) }
+// Perform the request, then finish when it completes.
+requestSpan.finish()
 ```
 
 ## Key Files
@@ -178,6 +192,13 @@ writer.traceHeaderFields.forEach { request.setValue($1, forHTTPHeaderField: $0) 
 
 ### Public API — OpenTelemetry
 - **`DatadogTrace/Sources/OpenTelemetry/OTelTracerProvider.swift`** — `OTelTracerProvider` to register with `OpenTelemetry.registerTracerProvider(...)` and use the standard OpenTelemetry `Tracer` / `SpanBuilder` API.
+
+### Public API — Objective-C Bridge
+- **`DatadogTrace/Sources/Objc/Tracing/Trace+objc.swift`** — Objective-C Trace entry point and configuration bridge (`DDTrace`, `DDTraceConfiguration`, `DDTraceURLSessionTracking`, `DDTracer`).
+- **`DatadogTrace/Sources/Objc/OpenTracing/OTTracer+objc.swift`**, **`OTSpan+objc.swift`**, **`OTSpanContext+objc.swift`** — Objective-C OpenTracing protocols and constants.
+- **`DatadogTrace/Sources/Objc/Tracing/DDSpan+objc.swift`**, **`DDSpanContext+objc.swift`** — Objective-C wrappers around Datadog span and span context implementations.
+- **`DatadogTrace/Sources/Objc/Tracing/Propagation/*+objc.swift`** — Objective-C wrappers for Datadog, W3C, B3 header writers and trace context injection.
+- **`DatadogInternal/Sources/NetworkInstrumentation/TracingHeaderType+objc.swift`** — Objective-C tracing header type constants used by Trace URLSession configuration.
 
 ### Public API — Distributed Tracing Headers
 Re-exported from `DatadogInternal` so they are available with `import DatadogTrace`:
