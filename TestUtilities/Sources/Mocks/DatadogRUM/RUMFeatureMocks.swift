@@ -932,7 +932,10 @@ extension RUMOperationStepVitalCommand: AnyMockable, RandomMockable {
     public static func mockRandom() -> RUMOperationStepVitalCommand {
         return mockWith(
             vitalId: .mockRandom(),
-            name: .mockRandom(),
+            // vital.name must match the schema facet-path character set
+            // (letters, digits, - _ . @ $). Use alphanumerics to avoid
+            // generating whitespace and tripping the API-boundary validator.
+            name: .mockRandom(among: .alphanumerics),
             operationKey: .mockRandom(),
             stepType: .mockRandom(),
             failureReason: .mockRandom(),
