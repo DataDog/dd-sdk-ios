@@ -17,7 +17,7 @@ TOOLKIT_DIR="$CI_PROJECT_DIR/.rum-ai-toolkit"
 
 echo "▸ Cloning rum-ai-toolkit ($TOOLKIT_REF)..."
 git clone --depth 1 --branch "$TOOLKIT_REF" \
-    "git@github.com:DataDog/rum-ai-toolkit.git" "$TOOLKIT_DIR"
+    "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ddbuild.io/DataDog/rum-ai-toolkit.git" "$TOOLKIT_DIR"
 
 echo "▸ Installing cr-agent venv..."
 make -C "$TOOLKIT_DIR/tools/cr-agent" install
