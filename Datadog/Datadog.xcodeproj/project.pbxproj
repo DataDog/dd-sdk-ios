@@ -85,7 +85,6 @@
 		1166C59E2F76D840008E34BC /* TTIDMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C59D2F76D839008E34BC /* TTIDMessage.swift */; };
 		1166C5A22F76EBCD008E34BC /* ProfilingOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C5A02F76EBC1008E34BC /* ProfilingOptions.swift */; };
 		1166C5A52F76EC0B008E34BC /* OperationOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C5A32F76EC05008E34BC /* OperationOptions.swift */; };
-		1166C5AA2F76ED7A008E34BC /* ProfilingOptions+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C5A92F76ED6F008E34BC /* ProfilingOptions+objc.swift */; };
 		116F84062CFDD06700705755 /* SampleRateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116F84052CFDD06700705755 /* SampleRateTests.swift */; };
 		117ADDD92EAA8A90008BD9D8 /* StartupTypeHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ADDD82EAA8A90008BD9D8 /* StartupTypeHandlerTests.swift */; };
 		117E52222D91A61A00A8E930 /* DatadogSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */; platformFilter = ios; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -2028,7 +2027,6 @@
 		1166C59D2F76D839008E34BC /* TTIDMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTIDMessage.swift; sourceTree = "<group>"; };
 		1166C5A02F76EBC1008E34BC /* ProfilingOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingOptions.swift; sourceTree = "<group>"; };
 		1166C5A32F76EC05008E34BC /* OperationOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationOptions.swift; sourceTree = "<group>"; };
-		1166C5A92F76ED6F008E34BC /* ProfilingOptions+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProfilingOptions+objc.swift"; sourceTree = "<group>"; };
 		116F84052CFDD06700705755 /* SampleRateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleRateTests.swift; sourceTree = "<group>"; };
 		117ADDD82EAA8A90008BD9D8 /* StartupTypeHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTypeHandlerTests.swift; sourceTree = "<group>"; };
 		118246772D90416A00E3D16F /* DirectoriesStub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoriesStub.swift; sourceTree = "<group>"; };
