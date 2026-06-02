@@ -23,6 +23,11 @@
 - [FIX] Fix wrong types in the `objc_LogEventDevice` properties definition. See [#2966][]
 - [FIX] Expose RUM operation options to Objective-C from `DatadogRUM`. See [#2969][]
 - [IMPROVEMENT] Add Objective-C API support for custom SDK instance names across all modules. See [#2955][]
+- [IMPROVEMENT] Add `logger` case to `RUMErrorSource` (Swift) and `DDRUMErrorSource` (Obj-C) for cross-platform parity. See [#2949][]
+- [FIX] Add `logger` case to `RUMErrorSource` (Swift) and `DDRUMErrorSource` (Obj-C) for cross-platform parity. See [#2952][]
+- [FIX] Expose RUM operation options to Objective-C from `DatadogRUM`. See [#2969][]
+- [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
+- [IMPROVEMENT] Align public RUM session IDs with event formatting. See [#2956][]
 
 # 3.11.1 / 28-05-2026
 
@@ -1201,6 +1206,11 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2859]: https://github.com/DataDog/dd-sdk-ios/pull/2859
 [#2948]: https://github.com/DataDog/dd-sdk-ios/pull/2948
 [#2956]: https://github.com/DataDog/dd-sdk-ios/pull/2956
+[#2966]: https://github.com/DataDog/dd-sdk-ios/pull/2966
+[#2949]: https://github.com/DataDog/dd-sdk-ios/pull/2949
+[#2952]: https://github.com/DataDog/dd-sdk-ios/pull/2952
+[#2968]: https://github.com/DataDog/dd-sdk-ios/pull/2968
+[#2969]: https://github.com/DataDog/dd-sdk-ios/pull/2969
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
