@@ -181,7 +181,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     // MARK: - Session restart
 
-    func testWhenStartIsCalledAgain_itUsesNewSessionMetadata() {
+    func testWhenStartIsCalledAgain_itUsesNewSessionMetadata() throws {
         // Given
         memoryReader.vitalData = 512_000
         let collector = TimeseriesSessionCollector(
@@ -215,13 +215,13 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         // Then — the flushed event should carry session-2 metadata
         let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
-        let lastEvent = try! XCTUnwrap(events.last)
+        let lastEvent = try XCTUnwrap(events.last)
         XCTAssertEqual(lastEvent.session.id, "session-2")
     }
 
     // MARK: - Schema coin flip
 
-    func testWhenDeltaCompressionSampled_itWritesDeltaEventForMemory() {
+    func testWhenDeltaCompressionSampled_itWritesDeltaEventForMemory() throws {
         // Given
         memoryReader.vitalData = 1_000_000
         let collector = TimeseriesSessionCollector(
@@ -248,11 +248,11 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let anyEncodableEvents = featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }
         XCTAssertFalse(anyEncodableEvents.isEmpty, "Expected delta-schema AnyEncodable event")
 
-        let jsonData = try! JSONEncoder().encode(anyEncodableEvents[0])
-        let dict = try! XCTUnwrap(try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
-        let tsDict = try! XCTUnwrap(dict["timeseries"] as? [String: Any])
+        let jsonData = try JSONEncoder().encode(anyEncodableEvents[0])
+        let dict = try XCTUnwrap(try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
+        let tsDict = try XCTUnwrap(dict["timeseries"] as? [String: Any])
         XCTAssertEqual(tsDict["schema"] as? String, "delta-object")
-        let dataDict = try! XCTUnwrap(tsDict["data"] as? [String: Any])
+        let dataDict = try XCTUnwrap(tsDict["data"] as? [String: Any])
         XCTAssertEqual(dataDict["resolution"] as? String, "ns")
         XCTAssertNotNil(dataDict["ts"])
         XCTAssertNotNil(dataDict["memory_max"])
@@ -286,7 +286,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertTrue(featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }.isEmpty)
     }
 
-    func testWhenDeltaCompressionSampled_itWritesDeltaEventForCPU() {
+    func testWhenDeltaCompressionSampled_itWritesDeltaEventForCPU() throws {
         // Given
         memoryReader.vitalData = nil
         let collector = TimeseriesSessionCollector(
@@ -313,11 +313,11 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let anyEncodableEvents = featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }
         XCTAssertFalse(anyEncodableEvents.isEmpty, "Expected delta-schema AnyEncodable event")
 
-        let jsonData = try! JSONEncoder().encode(anyEncodableEvents[0])
-        let dict = try! XCTUnwrap(try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
-        let tsDict = try! XCTUnwrap(dict["timeseries"] as? [String: Any])
+        let jsonData = try JSONEncoder().encode(anyEncodableEvents[0])
+        let dict = try XCTUnwrap(try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
+        let tsDict = try XCTUnwrap(dict["timeseries"] as? [String: Any])
         XCTAssertEqual(tsDict["schema"] as? String, "delta-scalar")
-        let dataDict = try! XCTUnwrap(tsDict["data"] as? [String: Any])
+        let dataDict = try XCTUnwrap(tsDict["data"] as? [String: Any])
         XCTAssertEqual(dataDict["resolution"] as? String, "ns")
         XCTAssertNotNil(dataDict["ts"])
         XCTAssertNotNil(dataDict["value"])
