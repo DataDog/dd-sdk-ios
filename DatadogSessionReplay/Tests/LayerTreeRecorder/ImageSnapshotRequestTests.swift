@@ -169,31 +169,6 @@ struct ImageSnapshotRequestTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Layer subclass with visual animation needs snapshot")
-    func layerSubclassWithVisualAnimationNeedsSnapshot() throws {
-        // Given
-        let rootLayer = CALayer()
-        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
-
-        let layer = CATextLayer()
-        layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
-        layer.add(CABasicAnimation(keyPath: "opacity"), forKey: "opacity")
-        rootLayer.addSublayer(layer)
-
-        let request = ImageSnapshotRequest.mockAny(
-            layer: layer,
-            previousSnapshotData: .mockAny(localRect: layer.bounds, bounds: layer.bounds)
-        )
-
-        // When
-        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
-
-        // Then
-        #expect(resolvedRequest.localRect == layer.bounds)
-        #expect(resolvedRequest.needsSnapshot)
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Layer subclass with geometry animation does not need snapshot")
     func layerSubclassWithGeometryAnimationDoesNotNeedSnapshot() throws {
         // Given

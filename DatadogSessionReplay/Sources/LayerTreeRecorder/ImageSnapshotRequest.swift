@@ -95,7 +95,7 @@ extension ImageSnapshotRequest {
         let needsSnapshot = if layerClass == CALayer.self {
             (hasContents && isNew) || hasContentChanges || snapshotRectDidChange || snapshotBoundsDidChange
         } else {
-            isNew || hasContentChanges || layer.hasVisualAnimation || snapshotRectDidChange || snapshotBoundsDidChange
+            isNew || hasContentChanges || snapshotRectDidChange || snapshotBoundsDidChange
         }
 
         let localRect = snapshotWillBePartial ? visibleLocalRect : bounds
@@ -106,30 +106,6 @@ extension ImageSnapshotRequest {
             frame: layer.convert(localRect, to: rootLayer),
             needsSnapshot: needsSnapshot
         )
-    }
-}
-
-extension CALayer {
-    private enum Constants {
-        static let geometryKeys: Set<String> = [
-            "position",
-            "position.x",
-            "position.y",
-            "zPosition",
-            "anchorPoint",
-            "anchorPoint.x",
-            "anchorPoint.y"
-        ]
-    }
-
-    fileprivate var hasVisualAnimation: Bool {
-        guard let animationKeys = animationKeys(), !animationKeys.isEmpty else {
-            return false
-        }
-
-        return animationKeys.contains {
-            !Constants.geometryKeys.contains($0)
-        }
     }
 }
 
