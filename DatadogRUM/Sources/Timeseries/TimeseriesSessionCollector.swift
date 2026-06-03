@@ -175,7 +175,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     // MARK: - Private
 
     private func sample() {
-        let now = Int64(Date().timeIntervalSince1970 * 1_000_000_000)
+        let now = Int64.ddWithNoOverflow(Date().timeIntervalSince1970 * 1_000_000_000)
 
         if let bytes = memoryReader.readVitalData() {
             let memoryPercent = totalRAM > 0 ? bytes / totalRAM * 100 : 0
