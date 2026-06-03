@@ -129,6 +129,51 @@ internal final class MsgPackEncoder {
         }
     }
 
+    /// Writes an unsigned 32-bit integer using the smallest MsgPack format that fits.
+    ///
+    /// Compared to `writeInt(_:)`, this never emits negative-int formats: values in
+    /// `[Int32.max + 1, UInt32.max]` are encoded as `uint32`, which matches the
+    /// protobuf-derived intake schema for fields like `HTTPStatusCode`.
+    func writeUInt(_ value: UInt32) {
+        switch value {
+        case ...UInt32(Size.posFixnumMax):
+            buffer.append(UInt8(value))
+        case ...UInt32(Size.oneByteMax):
+            buffer.append(Format.uint8)
+            buffer.append(UInt8(value))
+        case ...UInt32(Size.twoByteMax):
+            buffer.append(Format.uint16)
+            putUInt16(UInt16(value))
+        default:
+            buffer.append(Format.uint32)
+            putUInt32(value)
+        }
+    }
+
+    /// Writes an unsigned 64-bit integer using the smallest MsgPack format that fits.
+    ///
+    /// Compared to `writeLong(_:)`, this never emits negative-int formats: values in
+    /// `[Int64.max + 1, UInt64.max]` are encoded as `uint64`, which matches the
+    /// protobuf-derived intake schema for fields like `Hits`, `Errors`, and `Duration`.
+    func writeULong(_ value: UInt64) {
+        switch value {
+        case ...UInt64(Size.posFixnumMax):
+            buffer.append(UInt8(value))
+        case ...UInt64(Size.oneByteMax):
+            buffer.append(Format.uint8)
+            buffer.append(UInt8(value))
+        case ...UInt64(Size.twoByteMax):
+            buffer.append(Format.uint16)
+            putUInt16(UInt16(value))
+        case ...UInt64(UInt32.max):
+            buffer.append(Format.uint32)
+            putUInt32(UInt32(value))
+        default:
+            buffer.append(Format.uint64)
+            putUInt64(value)
+        }
+    }
+
     // MARK: - Collections
 
     func startMap(elementCount: Int) {
@@ -191,30 +236,39 @@ internal final class MsgPackEncoder {
 
     // MARK: - Big-endian writers
 
+    private func putUInt16(_ value: UInt16) {
+        buffer.append(UInt8(truncatingIfNeeded: value >> 8))
+        buffer.append(UInt8(truncatingIfNeeded: value))
+    }
+
+    private func putUInt32(_ value: UInt32) {
+        buffer.append(UInt8(truncatingIfNeeded: value >> 24))
+        buffer.append(UInt8(truncatingIfNeeded: value >> 16))
+        buffer.append(UInt8(truncatingIfNeeded: value >> 8))
+        buffer.append(UInt8(truncatingIfNeeded: value))
+    }
+
+    private func putUInt64(_ value: UInt64) {
+        buffer.append(UInt8(truncatingIfNeeded: value >> 56))
+        buffer.append(UInt8(truncatingIfNeeded: value >> 48))
+        buffer.append(UInt8(truncatingIfNeeded: value >> 40))
+        buffer.append(UInt8(truncatingIfNeeded: value >> 32))
+        buffer.append(UInt8(truncatingIfNeeded: value >> 24))
+        buffer.append(UInt8(truncatingIfNeeded: value >> 16))
+        buffer.append(UInt8(truncatingIfNeeded: value >> 8))
+        buffer.append(UInt8(truncatingIfNeeded: value))
+    }
+
     private func putInt16(_ value: Int16) {
-        let unsigned = UInt16(bitPattern: value)
-        buffer.append(UInt8(truncatingIfNeeded: unsigned >> 8))
-        buffer.append(UInt8(truncatingIfNeeded: unsigned))
+        putUInt16(UInt16(bitPattern: value))
     }
 
     private func putInt32(_ value: Int32) {
-        let unsigned = UInt32(bitPattern: value)
-        buffer.append(UInt8(truncatingIfNeeded: unsigned >> 24))
-        buffer.append(UInt8(truncatingIfNeeded: unsigned >> 16))
-        buffer.append(UInt8(truncatingIfNeeded: unsigned >> 8))
-        buffer.append(UInt8(truncatingIfNeeded: unsigned))
+        putUInt32(UInt32(bitPattern: value))
     }
 
     private func putInt64(_ value: Int64) {
-        let unsigned = UInt64(bitPattern: value)
-        buffer.append(UInt8(truncatingIfNeeded: unsigned >> 56))
-        buffer.append(UInt8(truncatingIfNeeded: unsigned >> 48))
-        buffer.append(UInt8(truncatingIfNeeded: unsigned >> 40))
-        buffer.append(UInt8(truncatingIfNeeded: unsigned >> 32))
-        buffer.append(UInt8(truncatingIfNeeded: unsigned >> 24))
-        buffer.append(UInt8(truncatingIfNeeded: unsigned >> 16))
-        buffer.append(UInt8(truncatingIfNeeded: unsigned >> 8))
-        buffer.append(UInt8(truncatingIfNeeded: unsigned))
+        putUInt64(UInt64(bitPattern: value))
     }
 
     // MARK: - Constants
@@ -280,6 +334,7 @@ internal final class MsgPackEncoder {
     private enum Size {
         static let fixCollectionMax = 15
         static let fixStrMax = 31
+        static let posFixnumMax = 127
         static let oneByteMax = 255
         static let twoByteMax = 65_535
     }
