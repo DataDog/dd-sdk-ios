@@ -19,7 +19,7 @@ internal struct ClientStatsPayload {
     let service: String
     let tracerVersion: String
     let runtimeID: String
-    let sequenceNumber: Int64
+    let sequenceNumber: UInt64
     let stats: [ClientStatsBucket]
 
     func toMsgPackPayload() -> Data {
@@ -51,7 +51,7 @@ internal struct ClientStatsPayload {
         encoder.writeString(runtimeID)
 
         encoder.writeRawString(Field.sequence)
-        encoder.writeLong(sequenceNumber)
+        encoder.writeULong(sequenceNumber)
 
         encoder.writeRawString(Field.service)
         encoder.writeString(service)
@@ -66,6 +66,9 @@ internal struct ClientStatsPayload {
         static let version = Data("Version".utf8)
         static let stats = Data("Stats".utf8)
         static let lang = Data("Lang".utf8)
+        /// Platform identifier on the wire, matching Android's `"android"`. Distinct
+        /// from the spans `lang` tag (`"swift"`); the stats intake keys off platform,
+        /// not language.
         static let langValue = Data("ios".utf8)
         static let tracerVersion = Data("TracerVersion".utf8)
         static let runtimeID = Data("RuntimeID".utf8)
@@ -78,18 +81,18 @@ internal struct ClientStatsPayload {
 ///
 /// Field names and order match `ClientStatsBucket.EncodeMsg` in `stats_gen.go`.
 internal struct ClientStatsBucket {
-    let start: Int64
-    let duration: Int64
+    let start: UInt64
+    let duration: UInt64
     let stats: [ClientGroupedStats]
 
     func encode(into encoder: MsgPackEncoder) {
         encoder.startMap(elementCount: Field.bucketFieldCount)
 
         encoder.writeRawString(Field.start)
-        encoder.writeLong(start)
+        encoder.writeULong(start)
 
         encoder.writeRawString(Field.duration)
-        encoder.writeLong(duration)
+        encoder.writeULong(duration)
 
         encoder.writeRawString(Field.stats)
         encoder.startArray(elementCount: stats.count)
@@ -115,14 +118,14 @@ internal struct ClientGroupedStats {
     let service: String
     let name: String
     let resource: String
-    let httpStatusCode: Int32
+    let httpStatusCode: UInt32
     let type: String
     let spanKind: String
     let isTraceRoot: Trilean
-    let hits: Int64
-    let errors: Int64
-    let duration: Int64
-    let topLevelHits: Int64
+    let hits: UInt64
+    let errors: UInt64
+    let duration: UInt64
+    let topLevelHits: UInt64
     let okSummary: Data
     let errorSummary: Data
     let peerTags: [String]
@@ -141,19 +144,19 @@ internal struct ClientGroupedStats {
         encoder.writeString(resource)
 
         encoder.writeRawString(Field.httpStatusCode)
-        encoder.writeInt(httpStatusCode)
+        encoder.writeUInt(httpStatusCode)
 
         encoder.writeRawString(Field.type)
         encoder.writeString(type)
 
         encoder.writeRawString(Field.hits)
-        encoder.writeLong(hits)
+        encoder.writeULong(hits)
 
         encoder.writeRawString(Field.errors)
-        encoder.writeLong(errors)
+        encoder.writeULong(errors)
 
         encoder.writeRawString(Field.duration)
-        encoder.writeLong(duration)
+        encoder.writeULong(duration)
 
         encoder.writeRawString(Field.okSummary)
         encoder.writeBinary(okSummary)
@@ -165,7 +168,7 @@ internal struct ClientGroupedStats {
         encoder.writeBoolean(false)
 
         encoder.writeRawString(Field.topLevelHits)
-        encoder.writeLong(topLevelHits)
+        encoder.writeULong(topLevelHits)
 
         encoder.writeRawString(Field.spanKind)
         encoder.writeString(spanKind)
