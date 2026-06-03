@@ -734,9 +734,6 @@
 		61DA8CB828647A500074A606 /* InternalLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB728647A500074A606 /* InternalLoggerTests.swift */; };
 		61DB33B225DEDFC200F7EA71 /* CustomObjcViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 61DB33B125DEDFC200F7EA71 /* CustomObjcViewController.m */; };
 		61DCC8472C05CD0000CB59E5 /* SessionEndedMetricControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DCC8462C05CD0000CB59E5 /* SessionEndedMetricControllerTests.swift */; };
-		61DCC8482C05CD0000CB59E5 /* SessionEndedMetricControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DCC8462C05CD0000CB59E5 /* SessionEndedMetricControllerTests.swift */; };
-		B51668F3A97DEAC2917B0F44 /* TimeseriesSessionCollectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F8C00B87F71287FB535342C /* TimeseriesSessionCollectorTests.swift */; };
-		21A5D61036FA5C28E71ED824 /* TimeseriesSessionCollectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F8C00B87F71287FB535342C /* TimeseriesSessionCollectorTests.swift */; };
 		BB1A2B3C4D5E6F7800000004 /* DeltaEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1A2B3C4D5E6F7800000003 /* DeltaEncoder.swift */; };
 		BB1A2B3C4D5E6F7800000005 /* DeltaEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1A2B3C4D5E6F7800000003 /* DeltaEncoder.swift */; };
 		7F8C00B87F71287FB535342E /* DeltaEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F8C00B87F71287FB535342D /* DeltaEncoderTests.swift */; };
