@@ -295,6 +295,124 @@ class MsgPackEncoderTests: XCTestCase {
         XCTAssertEqual(encoder.getBytes(), Data([0xD3, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
     }
 
+    // MARK: - UInt32 (writeUInt)
+
+    func testWriteUIntPositiveFixNumZero() {
+        encoder.writeUInt(0)
+        XCTAssertEqual(encoder.getBytes(), Data([0x00]))
+    }
+
+    func testWriteUIntPositiveFixNumUpperBoundary() {
+        encoder.writeUInt(127)
+        XCTAssertEqual(encoder.getBytes(), Data([0x7F]))
+    }
+
+    func testWriteUIntUInt8LowerBoundary() {
+        encoder.writeUInt(128)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCC, 0x80]))
+    }
+
+    func testWriteUIntUInt8UpperBoundary() {
+        encoder.writeUInt(255)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCC, 0xFF]))
+    }
+
+    func testWriteUIntUInt16LowerBoundary() {
+        encoder.writeUInt(256)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCD, 0x01, 0x00]))
+    }
+
+    func testWriteUIntUInt16UpperBoundary() {
+        encoder.writeUInt(65_535)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCD, 0xFF, 0xFF]))
+    }
+
+    func testWriteUIntUInt32LowerBoundary() {
+        encoder.writeUInt(65_536)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCE, 0x00, 0x01, 0x00, 0x00]))
+    }
+
+    func testWriteUIntAtInt32Max() {
+        encoder.writeUInt(UInt32(Int32.max))
+        XCTAssertEqual(encoder.getBytes(), Data([0xCE, 0x7F, 0xFF, 0xFF, 0xFF]))
+    }
+
+    /// Above `Int32.max`, `writeInt(_:)` would route to a negative int32 format due to the
+    /// sign-bit ambiguity. `writeUInt(_:)` must emit `uint32`.
+    func testWriteUIntAboveInt32MaxUsesUInt32Marker() {
+        encoder.writeUInt(UInt32(Int32.max) + 1)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCE, 0x80, 0x00, 0x00, 0x00]))
+    }
+
+    func testWriteUIntMaxUInt32() {
+        encoder.writeUInt(UInt32.max)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCE, 0xFF, 0xFF, 0xFF, 0xFF]))
+    }
+
+    // MARK: - UInt64 (writeULong)
+
+    func testWriteULongPositiveFixNumZero() {
+        encoder.writeULong(0)
+        XCTAssertEqual(encoder.getBytes(), Data([0x00]))
+    }
+
+    func testWriteULongPositiveFixNumUpperBoundary() {
+        encoder.writeULong(127)
+        XCTAssertEqual(encoder.getBytes(), Data([0x7F]))
+    }
+
+    func testWriteULongUInt8LowerBoundary() {
+        encoder.writeULong(128)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCC, 0x80]))
+    }
+
+    func testWriteULongUInt8UpperBoundary() {
+        encoder.writeULong(255)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCC, 0xFF]))
+    }
+
+    func testWriteULongUInt16LowerBoundary() {
+        encoder.writeULong(256)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCD, 0x01, 0x00]))
+    }
+
+    func testWriteULongUInt16UpperBoundary() {
+        encoder.writeULong(65_535)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCD, 0xFF, 0xFF]))
+    }
+
+    func testWriteULongUInt32LowerBoundary() {
+        encoder.writeULong(65_536)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCE, 0x00, 0x01, 0x00, 0x00]))
+    }
+
+    func testWriteULongUInt32UpperBoundary() {
+        encoder.writeULong(UInt64(UInt32.max))
+        XCTAssertEqual(encoder.getBytes(), Data([0xCE, 0xFF, 0xFF, 0xFF, 0xFF]))
+    }
+
+    func testWriteULongUInt64LowerBoundary() {
+        encoder.writeULong(UInt64(UInt32.max) + 1)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCF, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00]))
+    }
+
+    func testWriteULongAtInt64Max() {
+        encoder.writeULong(UInt64(Int64.max))
+        XCTAssertEqual(encoder.getBytes(), Data([0xCF, 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]))
+    }
+
+    /// Above `Int64.max`, `writeLong(_:)` would route to a negative int64 format. `writeULong(_:)`
+    /// must emit `uint64` with the high bit set.
+    func testWriteULongAboveInt64MaxUsesUInt64Marker() {
+        encoder.writeULong(UInt64(Int64.max) + 1)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCF, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
+    }
+
+    func testWriteULongMaxUInt64() {
+        encoder.writeULong(UInt64.max)
+        XCTAssertEqual(encoder.getBytes(), Data([0xCF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]))
+    }
+
     // MARK: - Map
 
     func testStartMapEmpty() {
