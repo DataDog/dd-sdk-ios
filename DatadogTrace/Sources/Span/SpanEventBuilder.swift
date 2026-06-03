@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Builds `SpanEvent` representation (for later serialization) from span information recorded in `DDSpan` and values received from global configuration.
-internal struct SpanEventBuilder: @unchecked Sendable {
+internal struct SpanEventBuilder: Sendable {
     /// Service name to encode in span.
     let service: String?
     /// Enriches traces with network connection info.
@@ -19,7 +19,6 @@ internal struct SpanEventBuilder: @unchecked Sendable {
     let eventsMapper: SpanEventMapper?
     /// If spans should be enriched with the current RUM context.
     let bundleWithRUM: Bool
-    // TODO: RUM-13222 Make Telemetry Sendable so @unchecked can be removed from SpanEventBuilder
     /// Telemetry interface.
     let telemetry: Telemetry
     /// Span attributes encoder
