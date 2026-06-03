@@ -4,9 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
-
-#if canImport(UIKit)
+#if !os(watchOS) && canImport(UIKit)
 import DatadogInternal
 
 /// Protocol defining the predicate for UIKit view controller tracking in RUM.
