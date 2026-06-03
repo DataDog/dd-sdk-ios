@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-06-01
-sdk_version: 3.11.0
-verified_against_commit: d3b6c039d
+last_updated: 2026-06-03
+sdk_version: 3.12.0
+verified_against_commit: a0fb31f68
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -169,9 +169,11 @@ RUM.enable(
         // Default: false
         collectAccessibility: false,
         
-        // Experimental feature flags (currently no active flags for RUM)
-        // Default: [:]
-        featureFlags: [:]
+        // RUM feature flags
+        // Default: .defaults ([.trackScrollAndSwipeActions: true])
+        // Set [.trackScrollAndSwipeActions: false] to disable automatic
+        // scroll/swipe action tracking and INV attribution for those gestures
+        featureFlags: .defaults
     )
 )
 
@@ -189,6 +191,11 @@ monitor.startView(key: "ProductList", name: "Product List Screen")
 
 // Add custom error
 monitor.addError(message: "Failed to load products", source: .network)
+
+// Read the active sampled-in session ID, matching emitted RUM event `session.id`
+monitor.currentSessionID { sessionId in
+    print("Current RUM session: \(sessionId ?? "none")")
+}
 
 // Stop the view
 monitor.stopView(key: "ProductList")
@@ -210,10 +217,10 @@ monitor.stopView(key: "ProductList")
 - **`DatadogRUM/Sources/RUMMonitor.swift`** - Access point for manual RUM tracking via `RUMMonitor.shared()`
 - **`DatadogRUM/Sources/RUMMonitorProtocol.swift`** - Full API for manual RUM instrumentation
   - Views: `startView()`, `stopView()`
-  - Errors: `addError()`
+  - Errors: `addError()`; sources are `.source`, `.network`, `.webview`, `.console`, `.logger`, and `.custom`
   - Resources: `startResource()`, `stopResource()`
   - Actions: `addAction()`, `startAction()`, `stopAction()`
-  - Custom attributes, timings, and feature flags
+  - Current session ID, custom attributes, timings, and feature flags
 
 ### Implementation
 - **`DatadogRUM/Sources/Feature/RUMFeature.swift`** - Internal feature implementation. Shows how configuration translates to behavior.
@@ -247,16 +254,23 @@ Event mappers allow modifying or dropping events before upload:
 
 **Note**: To filter views, use view predicates instead of the mapper.
 
+### Feature Flags
+- `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true]`.
+- `.trackScrollAndSwipeActions`: when set to `false`, disables automatic scroll and swipe action tracking done through `UIScrollView.delegate` swizzling. It has no effect unless `uiKitActionsPredicate` is configured. Disabling it also prevents scroll/swipe gestures from being considered for INV (Interaction-to-Next-View) attribution.
+- `.none`: no-op feature flag case kept in the public enum.
+
 ## Common Troubleshooting Patterns
 
 ### "No RUM data appearing"
 1. Check `Datadog.initialize()` and `RUM.enable()` were called
 2. Verify session wasn't sampled out (check `sessionSampleRate`)
+3. `currentSessionID(completion:)` returns `nil` when there is no active session or the active session is sampled out
 
 ### "Views or actions not tracked"
 1. Check if predicates are configured in RUMConfiguration
 2. For UIKit: `uiKitViewsPredicate` and `uiKitActionsPredicate` must be set
 3. For SwiftUI: `swiftUIViewsPredicate` and `swiftUIActionsPredicate` must be set, as well as UIKit predicates
+4. If scroll/swipe actions are missing while taps still appear, check `featureFlags[.trackScrollAndSwipeActions]`; setting it to `false` disables those automatic actions and their INV attribution
 
 ### "Network requests not tracked"
 1. Verify `urlSessionTracking` is configured in RUMConfiguration (RUM.enable() handles URLSessionInstrumentation internally)
