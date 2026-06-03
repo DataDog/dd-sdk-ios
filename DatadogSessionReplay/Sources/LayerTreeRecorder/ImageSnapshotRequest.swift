@@ -90,11 +90,12 @@ extension ImageSnapshotRequest {
         let snapshotWillBePartial = bounds.sizeExceeds(rootLayer.bounds)
         let snapshotRectDidChange = (lastSnapshotWasPartial || snapshotWillBePartial) &&
             !(previousSnapshotData?.localRect.equalTo(visibleLocalRect) ?? false)
+        let snapshotBoundsDidChange = previousSnapshotData.map { !$0.bounds.equalTo(bounds) } ?? false
 
         let needsSnapshot = if layerClass == CALayer.self {
-            (hasContents && isNew) || hasContentChanges || snapshotRectDidChange
+            (hasContents && isNew) || hasContentChanges || snapshotRectDidChange || snapshotBoundsDidChange
         } else {
-            isNew || hasContentChanges || layer.hasVisualAnimation || snapshotRectDidChange
+            isNew || hasContentChanges || layer.hasVisualAnimation || snapshotRectDidChange || snapshotBoundsDidChange
         }
 
         let localRect = snapshotWillBePartial ? visibleLocalRect : bounds
