@@ -21,6 +21,8 @@ class TraceConfigurationTests: XCTestCase {
         XCTAssertFalse(config.networkInfoEnabled)
         XCTAssertNil(config.eventMapper)
         XCTAssertNil(config.customEndpoint)
+        XCTAssertNil(config.customStatsEndpoint)
+        XCTAssertFalse(config.statsComputationEnabled)
     }
 
     func testDefaultURLSessionTrackingConfiguration() {

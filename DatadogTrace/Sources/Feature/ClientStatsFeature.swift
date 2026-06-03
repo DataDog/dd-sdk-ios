@@ -34,7 +34,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
         flushInterval: TimeInterval = 30
     ) {
         self.requestBuilder = StatsRequestBuilder(
-            customIntakeURL: configuration.customEndpoint,
+            customIntakeURL: configuration.customStatsEndpoint,
             telemetry: core.telemetry
         )
         self.messageReceiver = NOPFeatureMessageReceiver()
