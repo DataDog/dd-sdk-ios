@@ -22,36 +22,34 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         static let minAppHangThreshold: TimeInterval = 0.1
     }
 
-    /// Swizzles `UIViewController` for intercepting its lifecycle callbacks.
-    /// It is `nil` (no swizzling) if RUM View automatic instrumentation is not enabled.
-    let viewControllerSwizzler: DDViewControllerSwizzler?
     /// Receives interceptions of both automatic and manual instrumentations.
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
     let viewsHandler: RUMViewsHandler
 
+    #if !os(watchOS)
+    /// Swizzles `UIViewController` for intercepting its lifecycle callbacks.
+    /// It is `nil` (no swizzling) if RUM View automatic instrumentation is not enabled.
+    let viewControllerSwizzler: DDViewControllerSwizzler?
+    #endif
+
+    #if !os(watchOS)
     /// Swizzles `UIApplication` for intercepting `UIEvents` passed to the app.
     /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
     let uiApplicationSwizzler: DDApplicationSwizzler?
+    #endif
+
     /// Receives interceptions of both automatic and manual instrumentations.
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
     let actionsHandler: RUMActionsHandling
 
-    #if !os(watchOS)
-    /// Swizzles `UIViewController` for intercepting its lifecycle callbacks.
-    /// It is `nil` (no swizzling) if RUM View automatic instrumentation is not enabled.
-    let viewControllerSwizzler: UIViewControllerSwizzler?
 
-    /// Swizzles `UIApplication` for intercepting `UIEvents` passed to the app.
-    /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
-    let uiApplicationSwizzler: UIApplicationSwizzler?
 
-    #if !os(tvOS)
+    #if !os(tvOS) && !os(macOS)
     /// Swizzles `UIScrollView.delegate` setter for intercepting scroll gestures.
     /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
     let scrollViewSwizzler: UIScrollViewSwizzler?
     /// Receives scroll lifecycle events and generates RUM commands.
     let scrollHandler: RUMScrollHandler?
-    #endif
     #endif
 
     /// Instruments RUM Long Tasks. It is `nil` if long tasks tracking is not enabled.
@@ -156,7 +154,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             return nil
         }()
 
-        #if !os(tvOS)
+        #if !os(tvOS) && !os(macOS)
         // Create scroll handler and swizzler if UIKit action tracking is enabled
         // AND the `trackScrollAndSwipeActions` feature flag is set:
         let scrollHandler: RUMScrollHandler?
@@ -188,7 +186,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.actionsHandler = actionsHandler
         self.viewControllerSwizzler = viewControllerSwizzler
         self.uiApplicationSwizzler = uiApplicationSwizzler
-        #if !os(tvOS)
+        #if !os(tvOS) && !os(macOS)
         self.scrollHandler = scrollHandler
         self.scrollViewSwizzler = scrollViewSwizzler
         #endif
@@ -211,7 +209,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         // Enable configured instrumentations:
         self.viewControllerSwizzler?.swizzle()
         self.uiApplicationSwizzler?.swizzle()
-        #if !os(tvOS)
+        #if !os(tvOS) && !os(macOS)
         self.scrollViewSwizzler?.swizzle()
         #endif
         self.longTasks?.start()
@@ -271,7 +269,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         #if !os(watchOS)
         viewControllerSwizzler?.unswizzle()
         uiApplicationSwizzler?.unswizzle()
-        #if !os(tvOS)
+        #if !os(tvOS) && !os(macOS)
         scrollViewSwizzler?.unswizzle()
         #endif
         #endif
@@ -284,7 +282,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     func publish(to subscriber: RUMCommandSubscriber) {
         viewsHandler.publish(to: subscriber)
         actionsHandler.publish(to: subscriber)
-        #if !os(watchOS) && !os(tvOS)
+        #if !os(watchOS) && !os(tvOS) && !os(macOS)
         scrollHandler?.publish(to: subscriber)
         #endif
         longTasks?.publish(to: subscriber)
