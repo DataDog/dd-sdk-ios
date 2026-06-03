@@ -54,6 +54,40 @@ class VitalCPUReaderTest: XCTestCase {
     }
     #endif
 
+    func testWhenCPUCounterRollsOverWhileAppIsInactiveItDoesNotCrash() throws {
+        let tickWhenResigningActive = UInt32.max - 10
+        let tickAfterRollover: UInt32 = 20
+        let cpuReader = VitalCPUReaderMock(
+            notificationCenter: testNotificationCenter,
+            mockTicks: [
+                tickWhenResigningActive,
+                tickAfterRollover
+            ]
+        )
+
+        testNotificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+
+        let measurementWhenInactive = try XCTUnwrap(cpuReader.readVitalData())
+        XCTAssertEqual(measurementWhenInactive, Double(tickWhenResigningActive))
+    }
+
+    func testWhenCPUCounterRollsOverWhileAppIsActiveItAccumulatesElapsedTicks() throws {
+        let tickBeforeRollover = UInt32.max - 10
+        let tickAfterRollover: UInt32 = 20
+        let cpuReader = VitalCPUReaderMock(
+            notificationCenter: testNotificationCenter,
+            mockTicks: [
+                tickBeforeRollover,
+                tickAfterRollover
+            ]
+        )
+
+        let measurementBeforeRollover = try XCTUnwrap(cpuReader.readVitalData())
+        let measurementAfterRollover = try XCTUnwrap(cpuReader.readVitalData())
+
+        XCTAssertEqual(measurementAfterRollover - measurementBeforeRollover, 31.0)
+    }
+
     private func utilizationAndDuration(_ block: () -> Void) throws -> (utilization: Double, duration: Double) {
         let startTime = CFAbsoluteTimeGetCurrent()
         let startUtilization = try XCTUnwrap(cpuReader.readVitalData())
@@ -66,6 +100,21 @@ class VitalCPUReaderTest: XCTestCase {
         let utilizedTicks = endUtilization - startUtilization
 
         return (utilizedTicks / duration, duration)
+    }
+}
+
+// Overrides only the OS counter read.
+// Rollover normalization and lifecycle accounting stay in VitalCPUReader.
+private class VitalCPUReaderMock: VitalCPUReader {
+    private var mockTicks: [UInt32]
+
+    init(notificationCenter: NotificationCenter, mockTicks: [UInt32]) {
+        self.mockTicks = mockTicks
+        super.init(notificationCenter: notificationCenter)
+    }
+
+    override func readRawUtilizedTicks() -> UInt32? {
+        mockTicks.isEmpty ? nil : mockTicks.removeFirst()
     }
 }
 

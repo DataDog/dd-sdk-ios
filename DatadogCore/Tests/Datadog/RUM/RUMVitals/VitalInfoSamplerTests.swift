@@ -112,6 +112,14 @@ class VitalInfoSamplerTests: XCTestCase {
                 refreshRateReader: refreshRateReader,
                 frequency: 0.1
             )
+            sampler.takeSample()
+        }
+
+        DispatchQueue.concurrentPerform(iterations: 100) { _ in
+            for _ in 1...10_000 {
+                let random = Double.random(in: Double.leastNonzeroMagnitude...Double.greatestFiniteMagnitude)
+                _ = tan(random).squareRoot()
+            }
         }
 
         let samplingExpectation = expectation(description: "sampling expectation")
@@ -122,6 +130,7 @@ class VitalInfoSamplerTests: XCTestCase {
         waitForExpectations(timeout: 1.0) { _ in
             XCTAssertGreaterThan(sampler.cpu.meanValue!, 0.0)
             XCTAssertGreaterThan(sampler.cpu.sampleCount, 1)
+            XCTAssertGreaterThan(sampler.cpu.greatestDiff!, 0.0)
             XCTAssertGreaterThan(sampler.memory.meanValue!, 0.0)
             XCTAssertGreaterThan(sampler.memory.sampleCount, 1)
             XCTAssertGreaterThan(sampler.refreshRate.meanValue!, 0.0)
