@@ -705,12 +705,8 @@ extension Monitor: RUMMonitorViewProtocol {
         )
     }
 
-<<<<<<< HEAD
     #if !os(watchOS)
-    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
-=======
     func startView(viewController: DDViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
->>>>>>> 0fb1c94fc (UIKit related types replaced by typealiases. iOS builds, macOS does not, that's expected.)
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
