@@ -37,6 +37,8 @@ public enum RUMErrorSource {
     case webview
     /// Error originated in a web console (used by bridges).
     case console
+    /// Error originated in a logger.
+    case logger
     /// Custom error source.
     case custom
 }

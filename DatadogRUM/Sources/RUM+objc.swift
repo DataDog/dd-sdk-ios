@@ -307,6 +307,8 @@ public enum objc_RUMErrorSource: Int {
     case console
     /// Custom error source.
     case custom
+    /// Error originated in a logger.
+    case logger
 
     internal var swiftType: RUMErrorSource {
         switch self {
@@ -315,6 +317,7 @@ public enum objc_RUMErrorSource: Int {
         case .webview: return .webview
         case .custom: return .custom
         case .console: return .console
+        case .logger: return .logger
         default: return .custom
         }
     }
