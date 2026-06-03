@@ -123,15 +123,11 @@ class RemoteConfigurationTests: XCTestCase {
         XCTAssertEqual(try rc.cache.get(), payload)
     }
 
-    func testInitCacheIsFailureWhenFileIsUnreadable() throws {
-        let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
-        try Data("{\"v\":1}".utf8).write(to: fileURL, options: .atomic)
-        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: fileURL.path)
-        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: fileURL.path) }
-
+    func testInitCacheIsFailureWhenNoFileExists() {
+        // No .json file on disk — cache must be .failure (first launch)
         let rc = makeSynchronizer()
         guard case .failure = rc.cache else {
-            return XCTFail("Expected cache to be .failure when file is unreadable")
+            return XCTFail("Expected cache to be .failure when no file exists on disk")
         }
     }
 
@@ -387,12 +383,8 @@ class RemoteConfigurationTests: XCTestCase {
         XCTAssertEqual(try? rc.cache.get(), existing, "Cache must be unchanged after 304")
     }
 
-    func test304ResponseCallsCompletionEvenWhenCacheIsFailure() throws {
-        // Given — unreadable .json so cache is .failure
-        let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
-        try Data("{\"v\":1}".utf8).write(to: fileURL, options: .atomic)
-        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: fileURL.path)
-        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: fileURL.path) }
+    func test304ResponseCallsCompletionEvenWhenCacheIsFailure() {
+        // Given — no .json file, so cache is .failure
 
         MockURLProtocol.requestHandler = { request in
             (HTTPURLResponse(url: request.url!, statusCode: 304, httpVersion: nil, headerFields: nil)!, nil)
