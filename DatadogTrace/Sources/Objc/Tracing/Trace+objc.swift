@@ -52,6 +52,11 @@ public final class objc_TraceConfiguration: NSObject {
         get { swiftConfig.customEndpoint }
     }
 
+    public var customStatsEndpoint: URL? {
+        set { swiftConfig.customStatsEndpoint = newValue }
+        get { swiftConfig.customStatsEndpoint }
+    }
+
     public var statsComputationEnabled: Bool {
         set { swiftConfig.statsComputationEnabled = newValue }
         get { swiftConfig.statsComputationEnabled }
