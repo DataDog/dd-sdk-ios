@@ -7,6 +7,7 @@
 #if os(iOS)
 import Foundation
 import QuartzCore
+import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
@@ -62,12 +63,10 @@ extension CALayerSnapshot {
             return false
         }
 
-        switch observation.semantics {
-        case .layer, .activityIndicator, .image, .progress, .stepper, .text, .textField, .switchControl:
-            return true
-        case .label, .webView:
-            return false
-        }
+        return observation.allowsImageSnapshot(
+            textAndInputPrivacyLevel: textAndInputPrivacyLevel,
+            imagePrivacyLevel: imagePrivacyLevel
+        )
     }
 }
 
@@ -104,6 +103,43 @@ extension ImageSnapshotRequest {
             imagePrivacyLevel: layerSnapshot.imagePrivacyLevel,
             previousSnapshotData: previousSnapshotData
         )
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.SemanticObservation {
+    fileprivate func allowsImageSnapshot(
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
+        imagePrivacyLevel: ImagePrivacyLevel
+    ) -> Bool {
+        switch semantics {
+        case .image where imagePrivacyLevel == .maskNone:
+            return true
+        case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isBundled:
+            return true
+        case .text(let text) where textAndInputPrivacyLevel == .maskSensitiveInputs && !text.isSecureTextEntry:
+            return true
+        case .textField(let textField) where textAndInputPrivacyLevel == .maskSensitiveInputs && !textField.isSecureTextEntry:
+            return true
+        case .layer, .activityIndicator, .progress, .stepper, .switchControl:
+            return true
+        default:
+            return false
+        }
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.SemanticObservation.ImageSemantics {
+    fileprivate var isBundled: Bool {
+        guard let resolvedImage else {
+            return false
+        }
+        return resolvedImage.description.contains("named(")
+    }
+
+    private var resolvedImage: UIImage? {
+        isHighlighted ? highlightedImage ?? image : image
     }
 }
 #endif

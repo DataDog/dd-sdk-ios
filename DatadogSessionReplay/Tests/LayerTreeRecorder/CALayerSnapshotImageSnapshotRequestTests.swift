@@ -116,8 +116,8 @@ struct CALayerSnapshotImageSnapshotRequestTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Creates request for semantic image layer")
-    func createsRequestForSemanticImageLayer() throws {
+    @Test("Creates request for semantic image layer when image privacy masks none")
+    func createsRequestForSemanticImageLayerWhenImagePrivacyMasksNone() throws {
         // Given
         let imageView = UIImageView(image: UIImage())
         imageView.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
@@ -127,7 +127,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         child.frame = CGRect(x: 10, y: 10, width: 20, height: 20)
         imageView.layer.addSublayer(child)
 
-        let snapshot = try #require(CALayerSnapshot(from: imageView.layer, in: .mockAny()))
+        let snapshot = try #require(CALayerSnapshot(from: imageView.layer, in: .mockAny(imagePrivacyLevel: .maskNone)))
         let cache = ImageSnapshotCache()
 
         // When
@@ -140,6 +140,141 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.layer.matches(imageView.layer))
         #expect(request.hasContents)
         #expect(!requests.contains { $0.layer.matches(child) })
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips semantic image layer when image privacy masks all")
+    func skipsSemanticImageLayerWhenImagePrivacyMasksAll() throws {
+        // Given
+        let imageView = UIImageView(image: UIImage())
+        imageView.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        imageView.layer.contents = NSObject()
+
+        let snapshot = try #require(CALayerSnapshot(from: imageView.layer, in: .mockAny(imagePrivacyLevel: .maskAll)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips semantic image layer when image privacy masks non-bundled images")
+    func skipsSemanticImageLayerWhenImagePrivacyMasksNonBundledImages() throws {
+        // Given
+        let imageView = UIImageView(image: UIImage())
+        imageView.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        imageView.layer.contents = NSObject()
+
+        let snapshot = try #require(CALayerSnapshot(from: imageView.layer, in: .mockAny(imagePrivacyLevel: .maskNonBundledOnly)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for highlighted semantic image layer when highlighted image is bundled")
+    func createsRequestForHighlightedSemanticImageLayerWhenHighlightedImageIsBundled() throws {
+        // Given
+        let imageView = UIImageView(image: UIImage(), highlightedImage: BundledImageMock())
+        imageView.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        imageView.isHighlighted = true
+        imageView.layer.contents = NSObject()
+
+        let snapshot = try #require(CALayerSnapshot(from: imageView.layer, in: .mockAny(imagePrivacyLevel: .maskNonBundledOnly)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.layer.matches(imageView.layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for highlighted semantic image layer when fallback image is bundled")
+    func createsRequestForHighlightedSemanticImageLayerWhenFallbackImageIsBundled() throws {
+        // Given
+        let imageView = UIImageView(image: BundledImageMock())
+        imageView.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        imageView.isHighlighted = true
+        imageView.layer.contents = NSObject()
+
+        let snapshot = try #require(CALayerSnapshot(from: imageView.layer, in: .mockAny(imagePrivacyLevel: .maskNonBundledOnly)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.layer.matches(imageView.layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips semantic text layer when text privacy masks all")
+    func skipsSemanticTextLayerWhenTextPrivacyMasksAll() throws {
+        // Given
+        let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        textView.text = "Hello"
+        textView.layer.contents = NSObject()
+
+        let snapshot = try #require(CALayerSnapshot(from: textView.layer, in: .mockAny(textAndInputPrivacyLevel: .maskAll)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for semantic text layer when text privacy masks sensitive inputs")
+    func createsRequestForSemanticTextLayerWhenTextPrivacyMasksSensitiveInputs() throws {
+        // Given
+        let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        textView.text = "Hello"
+        textView.layer.contents = NSObject()
+
+        let snapshot = try #require(CALayerSnapshot(from: textView.layer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.layer.matches(textView.layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips secure semantic text layer when text privacy masks sensitive inputs")
+    func skipsSecureSemanticTextLayerWhenTextPrivacyMasksSensitiveInputs() throws {
+        // Given
+        let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        textView.text = "Hello"
+        textView.isSecureTextEntry = true
+        textView.layer.contents = NSObject()
+
+        let snapshot = try #require(CALayerSnapshot(from: textView.layer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.isEmpty)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -309,6 +444,12 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         bounds: CGRect = .zero
     ) -> ImageSnapshotData {
         ImageSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds)
+    }
+
+    private final class BundledImageMock: UIImage {
+        override var description: String {
+            "named(mock-bundled-image)"
+        }
     }
 }
 
