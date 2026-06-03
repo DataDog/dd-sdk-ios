@@ -317,4 +317,216 @@ class SpanSnapshotTests: XCTestCase {
 
         XCTAssertNotNil(capturedSnapshot, "Snapshot must be captured regardless of sampling decision")
     }
+
+    // MARK: - EventMapper Consistency
+    //
+    // The user-configured `SpanEventMapper` mutates `resource`, `operationName`, and `tags` on the
+    // `SpanEvent` immediately before upload. Because the stats `SpanSnapshot` is derived from the
+    // post-mapper event, stats and trace uploads agree on every keyed dimension. Without this,
+    // a mapper that rewrites resource names (e.g. to redact PII) would key stats off the
+    // pre-mapper values while traces carry post-mapper values, leading to dashboard inconsistency
+    // and potential cardinality explosions in the stats pipeline.
+
+    func testSnapshotReflectsMappedResourceName() throws {
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            spanEventBuilder: .mockWith(eventsMapper: { event in
+                var mapped = event
+                mapped.resource = "REDACTED"
+                return mapped
+            })
+        )
+
+        var capturedSnapshot: SpanSnapshot?
+        tracer.onSpanFinished = { capturedSnapshot = $0 }
+
+        let span = tracer.startSpan(
+            operationName: "network.request",
+            tags: [SpanTags.resource: "GET /users/12345/profile"]
+        )
+        span.finish()
+
+        let snapshot = try XCTUnwrap(capturedSnapshot)
+        XCTAssertEqual(snapshot.resource, "REDACTED")
+    }
+
+    func testSnapshotReflectsMappedOperationName() throws {
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            spanEventBuilder: .mockWith(eventsMapper: { event in
+                var mapped = event
+                mapped.operationName = "http.request.normalized"
+                return mapped
+            })
+        )
+
+        var capturedSnapshot: SpanSnapshot?
+        tracer.onSpanFinished = { capturedSnapshot = $0 }
+
+        let span = tracer.startSpan(operationName: "http.request")
+        span.finish()
+
+        let snapshot = try XCTUnwrap(capturedSnapshot)
+        XCTAssertEqual(snapshot.operationName, "http.request.normalized")
+    }
+
+    func testSnapshotReflectsMappedPeerTags() throws {
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            spanEventBuilder: .mockWith(eventsMapper: { event in
+                var mapped = event
+                mapped.tags["peer.service"] = "redacted-db"
+                return mapped
+            })
+        )
+
+        var capturedSnapshot: SpanSnapshot?
+        tracer.onSpanFinished = { capturedSnapshot = $0 }
+
+        let span = tracer.startSpan(
+            operationName: "db.query",
+            tags: ["peer.service": "postgres-primary"]
+        )
+        span.finish()
+
+        let snapshot = try XCTUnwrap(capturedSnapshot)
+        XCTAssertEqual(snapshot.peerTags["peer.service"], "redacted-db")
+    }
+
+    func testSnapshotReflectsMapperRemovingPeerTag() throws {
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            spanEventBuilder: .mockWith(eventsMapper: { event in
+                var mapped = event
+                mapped.tags.removeValue(forKey: "peer.service")
+                return mapped
+            })
+        )
+
+        var capturedSnapshot: SpanSnapshot?
+        tracer.onSpanFinished = { capturedSnapshot = $0 }
+
+        let span = tracer.startSpan(
+            operationName: "db.query",
+            tags: ["peer.service": "postgres-primary"]
+        )
+        span.finish()
+
+        let snapshot = try XCTUnwrap(capturedSnapshot)
+        XCTAssertNil(snapshot.peerTags["peer.service"])
+    }
+
+    func testSnapshotReflectsMappedHTTPStatusCode() throws {
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            spanEventBuilder: .mockWith(eventsMapper: { event in
+                var mapped = event
+                mapped.tags[OTTags.httpStatusCode] = "500"
+                return mapped
+            })
+        )
+
+        var capturedSnapshot: SpanSnapshot?
+        tracer.onSpanFinished = { capturedSnapshot = $0 }
+
+        let span = tracer.startSpan(
+            operationName: "http.request",
+            tags: [OTTags.httpStatusCode: 200]
+        )
+        span.finish()
+
+        let snapshot = try XCTUnwrap(capturedSnapshot)
+        XCTAssertEqual(snapshot.httpStatusCode, 500)
+    }
+
+    func testSnapshotStartTimeUsesDeviceLocalClock_notServerAdjusted() throws {
+        // `SpanEvent.startTime` has `context.serverTimeOffset` added for trace uploads,
+        // but `StatsConcentrator.flush(now:)` runs against the device-local clock.
+        // If the snapshot inherited the server-adjusted time, stats on a device whose
+        // clock is behind the server would be bucketed in the future relative to the
+        // flush clock and delayed or dropped. Pin the snapshot to device-local time.
+        let deviceStartDate = Date(timeIntervalSince1970: 1_000)
+        let serverOffset: TimeInterval = 5
+
+        let core = PassthroughCoreMock(context: .mockWith(serverTimeOffset: serverOffset))
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            dateProvider: RelativeDateProvider(startingFrom: deviceStartDate, advancingBySeconds: 0)
+        )
+
+        var capturedSnapshot: SpanSnapshot?
+        tracer.onSpanFinished = { capturedSnapshot = $0 }
+
+        let span = tracer.startSpan(operationName: "timed.op", startTime: deviceStartDate)
+        span.finish(at: deviceStartDate.addingTimeInterval(0.5))
+
+        let snapshot = try XCTUnwrap(capturedSnapshot)
+        XCTAssertEqual(snapshot.startTime, 1_000_000_000_000, "Snapshot must use device-local start time, not server-adjusted")
+
+        // Sanity check: the uploaded SpanEvent applies the offset, confirming the
+        // offset is in play in this test setup.
+        let envelopes: [SpanEventsEnvelope] = core.events()
+        let uploadedSpan = try XCTUnwrap(envelopes.first?.spans.first)
+        XCTAssertEqual(uploadedSpan.startTime.timeIntervalSince1970, 1_005, "SpanEvent startTime should be server-adjusted")
+    }
+
+    func testSnapshotTypeIsAlwaysCustom_evenWhenMapperSetsSpanTypeTag() throws {
+        // `SpanEventEncoder.encode` writes `"custom"` for the span's top-level `type`
+        // regardless of any `span.type` tag. The snapshot must match so stats and
+        // uploads agree on the type dimension.
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            spanEventBuilder: .mockWith(eventsMapper: { event in
+                var mapped = event
+                mapped.tags["span.type"] = "http"
+                return mapped
+            })
+        )
+
+        var capturedSnapshot: SpanSnapshot?
+        tracer.onSpanFinished = { capturedSnapshot = $0 }
+
+        let span = tracer.startSpan(operationName: "http.request")
+        span.finish()
+
+        let snapshot = try XCTUnwrap(capturedSnapshot)
+        XCTAssertEqual(snapshot.type, "custom", "Snapshot type must match the encoder's hardcoded value")
+    }
+
+    func testSnapshotMatchesUploadedSpanEvent_whenMapperRewritesResource() throws {
+        // The strongest guarantee: snapshot and uploaded trace agree on resource name post-mapper.
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            spanEventBuilder: .mockWith(eventsMapper: { event in
+                var mapped = event
+                mapped.resource = "GET /users/{id}/profile"
+                return mapped
+            })
+        )
+
+        var capturedSnapshot: SpanSnapshot?
+        tracer.onSpanFinished = { capturedSnapshot = $0 }
+
+        let span = tracer.startSpan(
+            operationName: "network.request",
+            tags: [SpanTags.resource: "GET /users/12345/profile"]
+        )
+        span.finish()
+
+        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let envelopes: [SpanEventsEnvelope] = core.events()
+        let uploadedSpan = try XCTUnwrap(envelopes.first?.spans.first)
+
+        XCTAssertEqual(snapshot.resource, uploadedSpan.resource)
+        XCTAssertEqual(snapshot.operationName, uploadedSpan.operationName)
+        XCTAssertEqual(snapshot.service, uploadedSpan.serviceName)
+        XCTAssertEqual(snapshot.isError, uploadedSpan.isError)
+    }
 }

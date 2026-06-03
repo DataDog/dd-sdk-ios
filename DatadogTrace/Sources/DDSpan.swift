@@ -130,64 +130,18 @@ internal final class DDSpan: OTSpan {
             activity.leave()
         }
 
-        ddTracer.onSpanFinished?(createSnapshot(finishTime: time))
-
-        if self.ddContext.samplingDecision.samplingPriority.isKept {
-            sendSpan(finishTime: time)
-        }
-    }
-
-    // MARK: - Snapshot
-
-    /// Creates a lightweight `SpanSnapshot` capturing the data needed for client-side stats.
-    /// Called before the sampling decision so that all spans contribute to stats.
-    private func createSnapshot(finishTime: Date) -> SpanSnapshot {
-        let tagsReducer = SpanTagsReducer(spanTags: tags, logFields: logFields)
-        let resolvedService = tagsReducer.extractedServiceName ?? eventBuilder.service ?? ""
-        let resolvedResource = tagsReducer.extractedResourceName ?? operationName
-        let resolvedOperationName = tagsReducer.extractedOperationName ?? operationName
-
-        let spanKind: String? = tags[SpanTags.kind] as? String ?? tags[OTTags.spanKind] as? String
-        let httpStatusCode = (tags[OTTags.httpStatusCode] as? Int).flatMap { UInt32(exactly: $0) } ?? 0
-        let isError = tagsReducer.extractedIsError ?? false
-        let isTopLevel = ddContext.parentSpanID == nil || (tags["_dd.top_level"] as? Int == 1)
-        let isMeasured = tags["_dd.measured"] as? Int == 1
-        let serviceSource: String = tags["_dd.svc_src"] as? String ?? ""
-
-        let peerTagKeys = [
-            "peer.service", "db.instance", "db.system",
-            "out.host", "net.peer.name", "server.address"
-        ]
-        var peerTags: [String: String] = [:]
-        for key in peerTagKeys {
-            if let value = tags[key] as? String, !value.isEmpty {
-                peerTags[key] = value
+        if let onSpanFinished = ddTracer.onSpanFinished {
+            // Client-side stats path: build the `SpanEvent` first (which runs the user-configured
+            // `SpanEventMapper`) and derive the `SpanSnapshot` from it, so stats and trace uploads
+            // agree on resource/service/tags. The same event is reused for upload when sampled in,
+            // ensuring the mapper runs exactly once per finished span.
+            buildEventAndDispatch(finishTime: time, onSpanFinished: onSpanFinished)
+        } else {
+            // Stats disabled: original flow, mapper runs only on the sampled-in upload path.
+            if self.ddContext.samplingDecision.samplingPriority.isKept {
+                sendSpan(finishTime: time)
             }
         }
-
-        let startNanos = startTime.timeIntervalSince1970.dd.toNanoseconds
-        let durationNanos = finishTime.timeIntervalSince(startTime).dd.toNanoseconds
-
-        let spanType = tags["span.type"] as? String ?? "custom"
-
-        return SpanSnapshot(
-            traceID: ddContext.traceID,
-            spanID: ddContext.spanID,
-            parentSpanID: ddContext.parentSpanID,
-            service: resolvedService,
-            operationName: resolvedOperationName,
-            resource: resolvedResource,
-            type: spanType,
-            spanKind: spanKind,
-            httpStatusCode: httpStatusCode,
-            isError: isError,
-            startTime: startNanos,
-            duration: durationNanos,
-            isTopLevel: isTopLevel,
-            isMeasured: isMeasured,
-            peerTags: peerTags,
-            serviceSource: serviceSource
-        )
     }
 
     // MARK: - Writing SpanEvent
@@ -213,6 +167,35 @@ internal final class DDSpan: OTSpan {
 
             let envelope = SpanEventsEnvelope(span: event, environment: context.env)
             writer.write(value: envelope)
+        }
+    }
+
+    /// Builds the `SpanEvent` once (running the mapper), delivers the derived `SpanSnapshot`
+    /// to the stats hook, and writes the upload envelope when the span is sampled in.
+    private func buildEventAndDispatch(finishTime: Date, onSpanFinished: @escaping (SpanSnapshot) -> Void) {
+        eventWriter.spanWriteContext { context, writer in
+            let event = self.eventBuilder.createSpanEvent(
+                context: context,
+                traceID: self.ddContext.traceID,
+                spanID: self.ddContext.spanID,
+                parentSpanID: self.ddContext.parentSpanID,
+                operationName: self.operationName,
+                startTime: self.startTime,
+                finishTime: finishTime,
+                samplingRate: self.ddContext.sampleRate / 100.0,
+                samplingPriority: self.ddContext.samplingDecision.samplingPriority,
+                samplingDecisionMaker: self.ddContext.samplingDecision.decisionMaker,
+                tags: self.tags,
+                baggageItems: self.ddContext.baggageItems.all,
+                logFields: self.logFields
+            )
+
+            onSpanFinished(SpanSnapshot(from: event, startTime: self.startTime))
+
+            if self.ddContext.samplingDecision.samplingPriority.isKept {
+                let envelope = SpanEventsEnvelope(span: event, environment: context.env)
+                writer.write(value: envelope)
+            }
         }
     }
 
