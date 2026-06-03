@@ -5,7 +5,7 @@
  */
 
 import Foundation
-@_spi(Internal)
+@preconcurrency @_spi(Internal)
 import DatadogInternal
 
 /// An entry point to Datadog Trace feature.
