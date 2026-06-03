@@ -139,8 +139,9 @@ internal class RUMDebugging {
     }
     #endif
 }
+#endif
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 internal class RUMViewOutline: RUMDebugView {
     private struct Constants {
         static let activeViewColor = #colorLiteral(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922, alpha: 1)
@@ -214,7 +215,9 @@ internal class RUMDebugView: DDView {
         fatalError("init(coder:) has not been implemented")
     }
 }
-#elseif canImport(AppKit)
+#endif
+
+#if canImport(AppKit)
 internal class RUMDebugging {
     init() {}
     func debug(applicationScope: RUMApplicationScope) {}
@@ -240,4 +243,4 @@ internal class RUMDebugView: DDView {
     }
 }
 #endif
-#endif
+
