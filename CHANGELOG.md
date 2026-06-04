@@ -11,7 +11,7 @@
 - [FIX] Expose RUM operation options to Objective-C from `DatadogRUM`. See [#2969][]
 - [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
 - [IMPROVEMENT] Align public RUM session IDs with event formatting. See [#2956][]
-- [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. Patterns like `"*.example.com"` and `"preview-*.shopist.io"` are matched in Browser SDK using plain string operations. See [#2959][]
+- [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. See [#2963][]
 
 # 3.11.1 / 28-05-2026
 
@@ -1175,6 +1175,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2952]: https://github.com/DataDog/dd-sdk-ios/pull/2952
 [#2968]: https://github.com/DataDog/dd-sdk-ios/pull/2968
 [#2969]: https://github.com/DataDog/dd-sdk-ios/pull/2969
+[#2963]: https://github.com/DataDog/dd-sdk-ios/pull/2963
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
