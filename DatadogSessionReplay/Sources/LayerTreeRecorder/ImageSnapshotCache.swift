@@ -91,15 +91,19 @@ internal final class ImageSnapshotCache {
         imageSnapshots.removeObject(forKey: replayID as NSNumber)
     }
 
+    func removeSnapshotData(forReplayIDs replayIDs: Set<Int64>) {
+        for replayID in replayIDs {
+            removeSnapshotData(forReplayID: replayID)
+        }
+    }
+
     private func removeExpiredSnapshots() {
         let expiredReplayIDs = metadata.compactMap { replayID, entry in
             frameNumber - entry.lastFrameNumber > policy.expirationFrameCount ? replayID : nil
         }
         .prefix(policy.maximumRemovals)
 
-        for replayID in expiredReplayIDs {
-            removeSnapshotData(forReplayID: replayID)
-        }
+        removeSnapshotData(forReplayIDs: Set(expiredReplayIDs))
     }
 }
 #endif

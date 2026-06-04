@@ -54,6 +54,11 @@ internal final class ImageSnapshotter: ImageSnapshotting {
         changeset: CALayerChangeset,
         timeout: TimeInterval
     ) async -> [Int64: ImageSnapshotResult] {
+        // Invalidate content changes before request extraction. Occlusion pruning can
+        // remove changed layers from the snapshot tree, but their cached images must not
+        // be reused if they become visible again later.
+        cache.removeSnapshotDataForContentChanges(in: changeset)
+
         let requests = root.imageSnapshotRequests(for: changeset, cache: cache)
         cache.updateFrameNumber(for: requests.map(\.replayID))
 
@@ -166,6 +171,17 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                 }
             }
         }
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension ImageSnapshotCache {
+    @MainActor
+    fileprivate func removeSnapshotDataForContentChanges(in changeset: CALayerChangeset) {
+        let contentChangeReplayIDs = changeset.contentChanges.compactMap {
+            $0.layer.resolve()?.replayID
+        }
+        removeSnapshotData(forReplayIDs: Set(contentChangeReplayIDs))
     }
 }
 #endif
