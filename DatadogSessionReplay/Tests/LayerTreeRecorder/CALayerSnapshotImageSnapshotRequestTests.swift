@@ -465,7 +465,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         ImageSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds)
     }
 
-    private final class BundledImageMock: UIImage {
+    private final class BundledImageMock: UIImage, @unchecked Sendable {
         override var description: String {
             "named(mock-bundled-image)"
         }

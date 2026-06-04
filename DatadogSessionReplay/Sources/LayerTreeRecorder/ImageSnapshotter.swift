@@ -112,14 +112,12 @@ internal final class ImageSnapshotter: ImageSnapshotting {
             let snapshot: ImageSnapshot
 
             if !resolvedRequest.needsSnapshot, let cachedSnapshot = request.previousSnapshotData?.snapshot {
-                snapshot = cachedSnapshot.frame.equalTo(resolvedRequest.frame)
-                    ? cachedSnapshot
-                    : ImageSnapshot(
-                        image: cachedSnapshot.image,
-                        frame: resolvedRequest.frame,
-                        textAndInputPrivacyLevel: request.textAndInputPrivacyLevel,
-                        imagePrivacyLevel: request.imagePrivacyLevel
-                    )
+                snapshot = ImageSnapshot(
+                    image: cachedSnapshot.image,
+                    frame: resolvedRequest.frame,
+                    textAndInputPrivacyLevel: request.textAndInputPrivacyLevel,
+                    imagePrivacyLevel: request.imagePrivacyLevel
+                )
             } else {
                 snapshot = ImageSnapshot(
                     image: try renderImage(
