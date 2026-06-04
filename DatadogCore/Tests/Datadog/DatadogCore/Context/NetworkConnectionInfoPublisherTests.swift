@@ -26,6 +26,31 @@ class NetworkConnectionInfoPublisherTests: XCTestCase {
     }
 }
 
+#if os(watchOS)
+// On watchOS, NWPathMonitor always reports `.unsatisfied` for non-audio-streaming apps (Apple TN3135).
+// The SDK replaces it with a NOP publisher that statically reports `.maybe` so uploads are never blocked.
+class WatchOSNetworkConnectionInfoPublisherTests: XCTestCase {
+    func testWatchOSPublisherReportsMaybeReachability() {
+        let publisher = NOPContextValuePublisher(initialValue: NetworkConnectionInfo?.some(
+            NetworkConnectionInfo(reachability: .maybe, availableInterfaces: nil, supportsIPv4: nil, supportsIPv6: nil, isExpensive: nil, isConstrained: nil)
+        ))
+
+        XCTAssertEqual(publisher.initialValue?.reachability, .maybe, "watchOS publisher must report .maybe so uploads are not blocked")
+    }
+
+    func testWatchOSPublisherNeverUpdates() {
+        let publisher = NOPContextValuePublisher(initialValue: NetworkConnectionInfo?.some(
+            NetworkConnectionInfo(reachability: .maybe, availableInterfaces: nil, supportsIPv4: nil, supportsIPv6: nil, isExpensive: nil, isConstrained: nil)
+        ))
+
+        var updateCount = 0
+        publisher.publish { _ in updateCount += 1 }
+
+        XCTAssertEqual(updateCount, 0, "watchOS publisher must never push updates — NWPathMonitor is not started")
+    }
+}
+#endif
+
 class NetworkConnectionInfoConversionTests: XCTestCase {
     typealias Reachability = NetworkConnectionInfo.Reachability
     typealias Interface = NetworkConnectionInfo.Interface
