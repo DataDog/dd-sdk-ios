@@ -16,6 +16,12 @@ internal struct CALayerChangeset: Sendable, Equatable {
         changes.isEmpty
     }
 
+    var contentChanges: [CALayerChange] {
+        changes.values.filter { change in
+            change.aspects.contains(.display) || change.aspects.contains(.draw)
+        }
+    }
+
     private let changes: [ObjectIdentifier: CALayerChange]
 
     init(_ changes: [ObjectIdentifier: CALayerChange] = [:]) {
