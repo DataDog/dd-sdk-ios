@@ -357,6 +357,7 @@
 		5B7448312EFAB819003E622C /* CALayerChangeAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74482A2EFAB819003E622C /* CALayerChangeAggregator.swift */; };
 		5B7448322EFAB819003E622C /* ScreenChangeMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74482C2EFAB819003E622C /* ScreenChangeMonitor.swift */; };
 		5B7448332EFAB819003E622C /* CALayerChangeset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74482B2EFAB819003E622C /* CALayerChangeset.swift */; };
+		7592001B2FD3000100000001 /* ScreenChangeFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592001A2FD3000100000001 /* ScreenChangeFilter.swift */; };
 		5B7448372EFAED99003E622C /* CALayerSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448362EFAED91003E622C /* CALayerSwizzlerTests.swift */; };
 		5B74483C2EFAEFC3003E622C /* CALayerObserverMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74483B2EFAEFC3003E622C /* CALayerObserverMock.swift */; };
 		5B7448402EFB0F7E003E622C /* CALayerChangeAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B74483F2EFB0F7A003E622C /* CALayerChangeAggregatorTests.swift */; };
@@ -2233,6 +2234,7 @@
 		5B74482A2EFAB819003E622C /* CALayerChangeAggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChangeAggregator.swift; sourceTree = "<group>"; };
 		5B74482B2EFAB819003E622C /* CALayerChangeset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChangeset.swift; sourceTree = "<group>"; };
 		5B74482C2EFAB819003E622C /* ScreenChangeMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenChangeMonitor.swift; sourceTree = "<group>"; };
+		7592001A2FD3000100000001 /* ScreenChangeFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenChangeFilter.swift; sourceTree = "<group>"; };
 		5B7448362EFAED91003E622C /* CALayerSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerSwizzlerTests.swift; sourceTree = "<group>"; };
 		5B74483B2EFAEFC3003E622C /* CALayerObserverMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerObserverMock.swift; sourceTree = "<group>"; };
 		5B74483F2EFB0F7A003E622C /* CALayerChangeAggregatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChangeAggregatorTests.swift; sourceTree = "<group>"; };
@@ -4012,6 +4014,7 @@
 				5B7448292EFAB819003E622C /* CALayerChange.swift */,
 				5B74482A2EFAB819003E622C /* CALayerChangeAggregator.swift */,
 				5B74482B2EFAB819003E622C /* CALayerChangeset.swift */,
+				7592001A2FD3000100000001 /* ScreenChangeFilter.swift */,
 				5B74482C2EFAB819003E622C /* ScreenChangeMonitor.swift */,
 			);
 			path = ScreenChangeMonitor;
@@ -8601,6 +8604,7 @@
 				5B7448302EFAB819003E622C /* CALayerChange.swift in Sources */,
 				B73450522F9F240000000001 /* CALayerReference.swift in Sources */,
 				5B7448312EFAB819003E622C /* CALayerChangeAggregator.swift in Sources */,
+				7592001B2FD3000100000001 /* ScreenChangeFilter.swift in Sources */,
 				5B7448322EFAB819003E622C /* ScreenChangeMonitor.swift in Sources */,
 				5B7448332EFAB819003E622C /* CALayerChangeset.swift in Sources */,
 			);

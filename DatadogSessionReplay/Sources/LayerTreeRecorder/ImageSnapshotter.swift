@@ -30,17 +30,20 @@ internal final class ImageSnapshotter: ImageSnapshotting {
     }
 
     private let cache: ImageSnapshotCache
+    private let screenChangeFilter: ScreenChangeFilter
     private let scale: CGFloat?
     private let timeSource: any TimeSource
     private let telemetry: any Telemetry
 
     init(
         cache: ImageSnapshotCache = ImageSnapshotCache(),
+        screenChangeFilter: ScreenChangeFilter = ScreenChangeFilter(),
         scale: CGFloat? = nil,
         timeSource: any TimeSource = MediaTimeSource(),
         telemetry: any Telemetry = NOPTelemetry()
     ) {
         self.cache = cache
+        self.screenChangeFilter = screenChangeFilter
         self.scale = scale
         self.timeSource = timeSource
         self.telemetry = telemetry
@@ -155,10 +158,12 @@ internal final class ImageSnapshotter: ImageSnapshotting {
         format.opaque = opaque
 
         let renderer = UIGraphicsImageRenderer(size: rect.size, format: format)
-        return try objc_rethrow {
-            renderer.image { context in
-                context.cgContext.translateBy(x: -rect.origin.x, y: -rect.origin.y)
-                layer.render(in: context.cgContext)
+        return try screenChangeFilter.ignoringChanges {
+            try objc_rethrow {
+                renderer.image { context in
+                    context.cgContext.translateBy(x: -rect.origin.x, y: -rect.origin.y)
+                    layer.render(in: context.cgContext)
+                }
             }
         }
     }

@@ -15,14 +15,18 @@ final class CALayerChangeAggregatorTests: XCTestCase {
     private let testTimerScheduler = TestTimerScheduler(now: 0)
     // swiftlint:disable:next implicitly_unwrapped_optional
     private var layerChangeAggregator: CALayerChangeAggregator!
+    // swiftlint:disable:next implicitly_unwrapped_optional
+    private var screenChangeFilter: ScreenChangeFilter!
     private var changesets: [CALayerChangeset] = []
 
     override func setUp() {
         super.setUp()
 
+        screenChangeFilter = ScreenChangeFilter()
         layerChangeAggregator = CALayerChangeAggregator(
             minimumDeliveryInterval: 0.1,
-            timerScheduler: testTimerScheduler
+            timerScheduler: testTimerScheduler,
+            screenChangeFilter: screenChangeFilter
         ) { [weak self] changeset in
             self?.changesets.append(changeset)
         }
@@ -179,6 +183,42 @@ final class CALayerChangeAggregatorTests: XCTestCase {
 
         // then
         XCTAssertEqual(changesets.count, 1, "Should ignore changes triggered while delivering")
+    }
+
+    func testIgnoresChangesWhileScreenChangeFilterIgnoresChanges() {
+        // given
+        let ignoredLayer = CALayer()
+        let acceptedLayer = CALayer()
+
+        // when
+        layerChangeAggregator.start()
+
+        testTimerScheduler.advance(to: 0.02)
+        screenChangeFilter.ignoringChanges {
+            screenChangeFilter.ignoringChanges {
+                layerChangeAggregator.layerDidDisplay(ignoredLayer)
+            }
+            layerChangeAggregator.layerDidLayoutSublayers(ignoredLayer)
+        }
+
+        testTimerScheduler.advance(to: 1.0)
+
+        // then
+        XCTAssertTrue(changesets.isEmpty)
+
+        // when
+        layerChangeAggregator.layerDidDisplay(acceptedLayer)
+        testTimerScheduler.advance(to: 1.0)
+
+        // then
+        XCTAssertEqual(
+            changesets,
+            [
+                .init(
+                    [ObjectIdentifier(acceptedLayer): CALayerChange(layer: .init(acceptedLayer), aspects: .display)]
+                )
+            ]
+        )
     }
 
     func testMergesChangesForMultipleLayersIndependently() {
