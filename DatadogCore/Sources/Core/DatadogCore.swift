@@ -553,7 +553,15 @@ extension DatadogContextProvider {
         subscribe(\.launchInfo, to: LaunchInfoPublisher(handler: appLaunchHandler, initialValue: launchInfo))
         #endif
 
+        #if os(watchOS)
+        // NWPathMonitor always reports `.unsatisfied` on watchOS for non-audio-streaming apps (Apple TN3135).
+        // URLSession uploads work fine on watchOS (proxied via paired iPhone), so assume reachable.
+        subscribe(\.networkConnectionInfo, to: NOPContextValuePublisher(initialValue: NetworkConnectionInfo?.some(
+            NetworkConnectionInfo(reachability: .maybe, availableInterfaces: nil, supportsIPv4: nil, supportsIPv6: nil, isExpensive: nil, isConstrained: nil)
+        )))
+        #else
         subscribe(\.networkConnectionInfo, to: NWPathMonitorPublisher())
+        #endif
 
         #if os(iOS) && !targetEnvironment(macCatalyst) && !(swift(>=5.9) && os(visionOS))
         subscribe(\.carrierInfo, to: CarrierInfoPublisher())
