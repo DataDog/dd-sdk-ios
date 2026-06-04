@@ -24,11 +24,13 @@ internal final class ScreenChangeMonitor {
     init(
         minimumDeliveryInterval: TimeInterval,
         timerScheduler: any TimerScheduler = .dispatchSource,
+        screenChangeFilter: ScreenChangeFilter = ScreenChangeFilter(),
         handler: ((CALayerChangeset) -> Void)? = nil
     ) throws {
         self.layerChangeAggregator = CALayerChangeAggregator(
             minimumDeliveryInterval: minimumDeliveryInterval,
             timerScheduler: timerScheduler,
+            screenChangeFilter: screenChangeFilter,
             handler: handler
         )
         self.layerSwizzler = try CALayerSwizzler(observer: layerChangeAggregator)

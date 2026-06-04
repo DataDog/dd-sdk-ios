@@ -16,6 +16,7 @@ internal final class CALayerChangeAggregator {
 
     private let minimumDeliveryInterval: TimeInterval
     private let timerScheduler: any TimerScheduler
+    private let screenChangeFilter: ScreenChangeFilter
 
     private var isRunning = false
     private var isDeliveringChanges = false
@@ -26,10 +27,12 @@ internal final class CALayerChangeAggregator {
     init(
         minimumDeliveryInterval: TimeInterval,
         timerScheduler: any TimerScheduler,
+        screenChangeFilter: ScreenChangeFilter = ScreenChangeFilter(),
         handler: ((CALayerChangeset) -> Void)? = nil
     ) {
         self.minimumDeliveryInterval = minimumDeliveryInterval
         self.timerScheduler = timerScheduler
+        self.screenChangeFilter = screenChangeFilter
         self.handler = handler
     }
 
@@ -58,8 +61,12 @@ internal final class CALayerChangeAggregator {
     }
 
     private func record(_ layer: CALayer, aspect: CALayerChange.Aspect.Set) {
-        // Only record on the main thread and ignore changes triggered in the delivery handler
-        guard Thread.isMainThread, isRunning, !isDeliveringChanges else {
+        // Only record on the main thread and ignore changes triggered by SDK work.
+        guard Thread.isMainThread else {
+            return
+        }
+
+        guard isRunning, !isDeliveringChanges, screenChangeFilter.acceptsChanges else {
             return
         }
 
