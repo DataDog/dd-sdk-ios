@@ -194,6 +194,29 @@ struct ImageSnapshotRequestTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Uses captured frame when live layer moves before resolution")
+    func usesCapturedFrameWhenLiveLayerMovesBeforeResolution() throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+        let capturedFrame = CGRect(x: 10, y: 20, width: 100, height: 40)
+        let layer = CALayer()
+        layer.frame = capturedFrame
+        rootLayer.addSublayer(layer)
+
+        let request = ImageSnapshotRequest.mockAny(layer: layer)
+
+        layer.frame = CGRect(x: 30, y: 40, width: 100, height: 40)
+
+        // When
+        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+
+        // Then
+        #expect(resolvedRequest.frame == capturedFrame)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Partial snapshot needs snapshot when visible frame changes")
     func partialSnapshotNeedsSnapshotWhenVisibleFrameChanges() throws {
         // Given
