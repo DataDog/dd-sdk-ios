@@ -192,7 +192,7 @@ extension CALayerSnapshot.SemanticObservation {
     struct TextSemantics: Sendable, Equatable {
         let text: String?
         let isEditable: Bool
-        let isSecureTextEntry: Bool
+        let isSensitiveText: Bool
     }
 
     fileprivate init(textView: UITextView) {
@@ -201,7 +201,7 @@ extension CALayerSnapshot.SemanticObservation {
                 .init(
                     text: textView.text,
                     isEditable: textView.isEditable,
-                    isSecureTextEntry: textView.isSecureTextEntry
+                    isSensitiveText: textView.dd.isSensitiveText
                 )
             ),
             ignoreSublayers: true
@@ -216,7 +216,7 @@ extension CALayerSnapshot.SemanticObservation {
     struct TextFieldSemantics: Sendable, Equatable {
         let text: String?
         let placeholder: String?
-        let isSecureTextEntry: Bool
+        let isSensitiveText: Bool
     }
 
     fileprivate init(textField: UITextField) {
@@ -225,7 +225,7 @@ extension CALayerSnapshot.SemanticObservation {
                 .init(
                     text: textField.text,
                     placeholder: textField.placeholder,
-                    isSecureTextEntry: textField.isSecureTextEntry
+                    isSensitiveText: textField.dd.isSensitiveText
                 )
             )
         )

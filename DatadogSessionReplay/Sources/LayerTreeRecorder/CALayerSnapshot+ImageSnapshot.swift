@@ -117,9 +117,9 @@ extension CALayerSnapshot.SemanticObservation {
             return true
         case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isBundled:
             return true
-        case .text(let text) where textAndInputPrivacyLevel == .maskSensitiveInputs && !text.isSecureTextEntry:
+        case .text(let text) where textAndInputPrivacyLevel == .maskSensitiveInputs && !text.isSensitiveText:
             return true
-        case .textField(let textField) where textAndInputPrivacyLevel == .maskSensitiveInputs && !textField.isSecureTextEntry:
+        case .textField(let textField) where textAndInputPrivacyLevel == .maskSensitiveInputs && !textField.isSensitiveText:
             return true
         case .layer, .activityIndicator, .progress, .stepper, .switchControl:
             return true
