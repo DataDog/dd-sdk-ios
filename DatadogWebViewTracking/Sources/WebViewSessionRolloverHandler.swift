@@ -186,22 +186,16 @@ internal final class WebViewTrackingElements: Sendable {
      Implementation note: this needs to be a class since it's a requirement for NSMapTable.
      */
 
-    /// The hosts provided by the user, after being sanitized, and concatenated on a string ready to be injected in
-    /// the JavaScript bridge.
+    /// The hosts or wildcard patterns provided by the user, after being sanitized, and concatenated on a string
+    /// ready to be injected in the JavaScript bridge.
     let allowedWebViewHostsString: String
-
-    /// Wildcard host patterns provided by the user, concatenated as a JSON-ready string.
-    /// Non-nil only when the customer used `enable(webView:hostPatterns:)`.
-    let hostPatternsString: String?
 
     /// Creates a new `WebViewTrackingElements`.
     ///
     /// - Parameters:
-    ///   - allowedWebViewHostsString: The hosts provided by the user, after being sanitized, and concatenated
-    ///   on a string ready to be injected in the JavaScript bridge.
-    ///   - hostPatternsString: Wildcard host patterns ready to be injected in the JavaScript bridge.
-    init(allowedWebViewHostsString: String, hostPatternsString: String? = nil) {
+    ///   - allowedWebViewHostsString: The hosts or wildcard patterns provided by the user, after being sanitized,
+    ///   and concatenated on a string ready to be injected in the JavaScript bridge.
+    init(allowedWebViewHostsString: String) {
         self.allowedWebViewHostsString = allowedWebViewHostsString
-        self.hostPatternsString = hostPatternsString
     }
 }

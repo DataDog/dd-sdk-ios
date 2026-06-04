@@ -891,9 +891,6 @@ class WebViewTrackingTests: XCTestCase {
                 window.webkit.messageHandlers.DatadogEventBridge.postMessage(msg)
             },
             getAllowedWebViewHosts() {
-                return '[]'
-            },
-            getAllowedWebViewHostPatterns() {
                 return '["*.shopist.io","preview-*.example.com"]'
             },
             getCapabilities() {
@@ -907,25 +904,6 @@ class WebViewTrackingTests: XCTestCase {
             }
         }
         """)
-    }
-
-    func testLegacyPathDoesNotEmitHostPatternsMethod() throws {
-        let mockSanitizer = HostsSanitizerMock()
-        let config = WKWebViewConfiguration()
-        let controller = DDUserContentController()
-        config.userContentController = controller
-        let webView = WKWebView(frame: .zero, configuration: config)
-
-        try WebViewTracking.enableOrThrow(
-            tracking: webView,
-            hosts: ["shopist.io"],
-            hostsSanitizer: mockSanitizer,
-            logsSampleRate: 100,
-            in: PassthroughCoreMock()
-        )
-
-        let script = try XCTUnwrap(controller.userScripts.last)
-        XCTAssertFalse(script.source.contains("getAllowedWebViewHostPatterns"))
     }
 
     func testItDropsPatternWithMoreThanOneWildcard() throws {
