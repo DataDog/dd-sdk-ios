@@ -54,6 +54,45 @@ struct ImageSnapshotterTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Removes cached image when changed request times out")
+    func removesCachedImageWhenChangedRequestTimesOut() async throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+        let layer = CATextLayer()
+        layer.frame = CGRect(x: 10, y: 10, width: 100, height: 40)
+        layer.backgroundColor = UIColor.red.cgColor
+        layer.contentsScale = 1
+        rootLayer.addSublayer(layer)
+
+        let snapshotter = ImageSnapshotter()
+        let firstRoot = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
+        let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
+        let firstResult = try #require(firstResults[layer.replayID])
+        let firstImageSnapshot = try firstResult.get()
+
+        layer.backgroundColor = UIColor.blue.cgColor
+        let changedRoot = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
+        let changeset = CALayerChangeset.mockChange(for: layer, aspects: .display)
+
+        // When
+        let timedOutResults = await snapshotter.takeImageSnapshots(for: changedRoot, changeset: changeset, timeout: 0)
+        let timedOutResult = try #require(timedOutResults[layer.replayID])
+
+        // Then
+        #expect(throws: ImageSnapshotError.timedOut) {
+            try timedOutResult.get()
+        }
+
+        let nextRoot = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
+        let nextResults = await snapshotter.takeImageSnapshots(for: nextRoot, changeset: .init(), timeout: 1)
+        let nextResult = try #require(nextResults[layer.replayID])
+        let nextImageSnapshot = try nextResult.get()
+        #expect(firstImageSnapshot.image !== nextImageSnapshot.image)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Reuses cached image when only frame changes")
     func reusesCachedImageWhenOnlyFrameChanges() async throws {
         // Given

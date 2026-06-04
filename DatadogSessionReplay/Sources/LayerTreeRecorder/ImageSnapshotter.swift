@@ -85,6 +85,9 @@ internal final class ImageSnapshotter: ImageSnapshotting {
 
         if firstUnprocessedIndex < requests.endIndex {
             for request in requests[firstUnprocessedIndex...] {
+                if request.hasContentChanges {
+                    cache.removeSnapshotData(forReplayID: request.replayID)
+                }
                 results[request.replayID] = .failure(.timedOut)
             }
         }
