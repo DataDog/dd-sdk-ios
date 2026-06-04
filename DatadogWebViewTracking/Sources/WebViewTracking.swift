@@ -60,9 +60,8 @@ public enum WebViewTracking {
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session,
     /// using wildcard host patterns for matching.
     ///
-    /// If the content loaded in WebView uses Datadog Browser SDK with `getAllowedWebViewHostPatterns`
-    /// support and its hostname matches one of the specified patterns, web events will be correlated
-    /// with the RUM session from native SDK.
+    /// If the content loaded in WebView uses Datadog Browser SDK and its hostname matches one of the
+    /// specified patterns, web events will be correlated with the RUM session from native SDK.
     ///
     /// Patterns support a single `*` wildcard: `"*.example.com"`, `"preview-*.shopist.io"`, `"shopist.io"`.
     /// Patterns with more than one `*` are dropped with a warning.
@@ -210,18 +209,11 @@ public enum WebViewTracking {
             return pattern.lowercased()
         }
 
-        if validPatterns.contains(where: { $0.contains("*") }) {
-            consolePrint(
-                "WebView host patterns with wildcards require Browser SDK with `getAllowedWebViewHostPatterns` support. Older Browser SDK versions will only match exact host entries.",
-                .warn
-            )
-        }
-
-        let hostPatternsString = validPatterns
+        let allowedWebViewHostsString = validPatterns
             .map { "\"\($0)\"" }
             .joined(separator: ",")
 
-        let elements = WebViewTrackingElements(allowedWebViewHostsString: "", hostPatternsString: hostPatternsString)
+        let elements = WebViewTrackingElements(allowedWebViewHostsString: allowedWebViewHostsString)
         let isTraceSampled = WebViewTracking.isTraceSampledStringValue(for: core)
 
         try WebViewSessionRolloverHandler.register(webView: webView, in: core, using: elements)
@@ -266,13 +258,6 @@ public enum WebViewTracking {
         // Share native capabilities with Browser SDK
         let capabilities = sessionReplay != nil ? "\"records\"" : ""
 
-        let hostPatternsMethodBlock: String
-        if let patternsString = elements.hostPatternsString {
-            hostPatternsMethodBlock = "\n    getAllowedWebViewHostPatterns() {\n        return '[\(patternsString)]'\n    },"
-        } else {
-            hostPatternsMethodBlock = ""
-        }
-
         let js = """
         \(Self.jsCodePrefix)
         window.\(bridgeName) = {
@@ -281,7 +266,7 @@ public enum WebViewTracking {
             },
             getAllowedWebViewHosts() {
                 return '[\(elements.allowedWebViewHostsString)]'
-            },\(hostPatternsMethodBlock)
+            },
             getCapabilities() {
                 return '[\(capabilities)]'
             },
