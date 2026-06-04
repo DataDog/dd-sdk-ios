@@ -124,6 +124,47 @@ struct ImageSnapshotterTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Refreshes privacy metadata when cached image is reused")
+    func refreshesPrivacyMetadataWhenCachedImageIsReused() async throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+        let layer = CATextLayer()
+        layer.frame = CGRect(x: 10, y: 10, width: 100, height: 40)
+        layer.backgroundColor = UIColor.red.cgColor
+        layer.contentsScale = 1
+        rootLayer.addSublayer(layer)
+
+        let snapshotter = ImageSnapshotter()
+        let firstRoot = try #require(
+            CALayerSnapshot(
+                from: rootLayer,
+                in: .mockAny(textAndInputPrivacyLevel: .maskAll, imagePrivacyLevel: .maskNone)
+            )
+        )
+        let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
+        let firstResult = try #require(firstResults[layer.replayID])
+        let firstImageSnapshot = try firstResult.get()
+
+        // When
+        let secondRoot = try #require(
+            CALayerSnapshot(
+                from: rootLayer,
+                in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs, imagePrivacyLevel: .maskAll)
+            )
+        )
+        let secondResults = await snapshotter.takeImageSnapshots(for: secondRoot, changeset: .init(), timeout: 1)
+
+        // Then
+        let secondResult = try #require(secondResults[layer.replayID])
+        let secondImageSnapshot = try secondResult.get()
+        #expect(firstImageSnapshot.image === secondImageSnapshot.image)
+        #expect(secondImageSnapshot.textAndInputPrivacyLevel == .maskSensitiveInputs)
+        #expect(secondImageSnapshot.imagePrivacyLevel == .maskAll)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Renders new image when content changes")
     func rendersNewImageWhenContentChanges() async throws {
         // Given
