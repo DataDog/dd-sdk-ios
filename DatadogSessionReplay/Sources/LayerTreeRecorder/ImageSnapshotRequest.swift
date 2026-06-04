@@ -99,11 +99,12 @@ extension ImageSnapshotRequest {
         }
 
         let localRect = snapshotWillBePartial ? visibleLocalRect : bounds
+        let frame = snapshotWillBePartial ? visibleFrame : absoluteFrame
 
         return .init(
             layer: layer,
             localRect: localRect,
-            frame: layer.convert(localRect, to: rootLayer),
+            frame: frame,
             needsSnapshot: needsSnapshot
         )
     }
