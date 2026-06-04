@@ -115,7 +115,7 @@ extension CALayerSnapshot.SemanticObservation {
         switch semantics {
         case .image where imagePrivacyLevel == .maskNone:
             return true
-        case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isBundled:
+        case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isContextual:
             return true
         case .text(let text) where textAndInputPrivacyLevel == .maskSensitiveInputs && !text.isSensitiveText:
             return true
@@ -131,11 +131,11 @@ extension CALayerSnapshot.SemanticObservation {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation.ImageSemantics {
-    fileprivate var isBundled: Bool {
+    fileprivate var isContextual: Bool {
         guard let resolvedImage else {
             return false
         }
-        return resolvedImage.description.contains("named(")
+        return resolvedImage.isContextual
     }
 
     private var resolvedImage: UIImage? {
