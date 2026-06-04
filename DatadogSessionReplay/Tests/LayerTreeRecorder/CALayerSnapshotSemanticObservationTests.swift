@@ -195,7 +195,7 @@ struct CALayerSnapshotSemanticObservationTests {
                 .init(
                     text: "Body",
                     isEditable: false,
-                    isSecureTextEntry: true
+                    isSensitiveText: true
                 )
             ),
             ignoreSublayers: true
@@ -220,7 +220,7 @@ struct CALayerSnapshotSemanticObservationTests {
                 .init(
                     text: "Value",
                     placeholder: "Placeholder",
-                    isSecureTextEntry: true
+                    isSensitiveText: true
                 )
             )
         ))

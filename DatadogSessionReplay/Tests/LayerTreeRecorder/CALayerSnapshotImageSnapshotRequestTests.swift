@@ -278,6 +278,25 @@ struct CALayerSnapshotImageSnapshotRequestTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips sensitive semantic text layer when text privacy masks sensitive inputs")
+    func skipsSensitiveSemanticTextLayerWhenTextPrivacyMasksSensitiveInputs() throws {
+        // Given
+        let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        textView.text = "hello@datadoghq.com"
+        textView.textContentType = .emailAddress
+        textView.layer.contents = NSObject()
+
+        let snapshot = try #require(CALayerSnapshot(from: textView.layer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips web view layer")
     func skipsWebViewLayer() throws {
         // Given
