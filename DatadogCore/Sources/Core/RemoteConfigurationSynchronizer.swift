@@ -53,27 +53,39 @@ internal final class RemoteConfigurationSynchronizer {
     ///
     /// - Parameter completionHandler: Called with the fetch result when the operation (and any cache write) is done.
     func sync(_ completionHandler: @escaping (Result<Data, Error>) -> Void) {
-        // TODO RUM-16386: Add ETag-based conditional requests (If-None-Match / 304) and
-        // TTL-based revalidation (skip fetch if cached config is < 5 min old).
-
-        let endpoint = site.remoteConfigurationEndpoint
+        // Build request with conditional ETag header if a previous ETag is stored.
+        // Only send If-None-Match when the cache is usable — if cache is .failure,
+        // a 304 response would leave us with no data to serve.
+        var request = URLRequest(url: site.remoteConfigurationEndpoint
             .appendingPathComponent("v1")
             .appendingPathComponent(id)
-            .appendingPathExtension("json")
+            .appendingPathExtension("json"))
 
-        httpClient.fetch(request: URLRequest(url: endpoint)) { result in
+        if case .success = cache,
+           let data = try? directory.file(named: "\(id).etag").read(),
+           let etag = String(data: data, encoding: .utf8) {
+            request.setValue(etag, forHTTPHeaderField: "If-None-Match")
+        }
+
+        httpClient.fetch(request: request) { result in
             switch result {
             case .failure(let error):
                 completionHandler(.failure(error))
 
             case .success(let (http, data)):
-                // 1. Non-2xx HTTP status
+                // 1. Not Modified — existing cache is still valid
+                if http.statusCode == 304 {
+                    completionHandler(self.cache)
+                    return
+                }
+
+                // 2. Non-2xx HTTP status
                 guard (200..<300).contains(http.statusCode) else {
                     completionHandler(.failure(RemoteConfigurationError.httpError(http.statusCode)))
                     return
                 }
 
-                // 2. Empty body
+                // 3. Empty body
                 guard !data.isEmpty else {
                     completionHandler(.failure(RemoteConfigurationError.emptyBody))
                     return
@@ -82,11 +94,26 @@ internal final class RemoteConfigurationSynchronizer {
                 // TODO RUM-16387: Validate the schema before saving
 
                 // All checks passed — persist to disk and update in-memory cache.
-                // createFile creates or atomically replaces the file, so no existence check needed.
+                // File.write uses .atomic (write to temp, then rename), so the update is
+                // all-or-nothing: the existing file is never left in a truncated state.
                 do {
-                    let file = try self.directory.createFile(named: "\(self.id).json")
-                    try file.write(data: data)
+                    try File(url: self.directory.url.appendingPathComponent("\(self.id).json")).write(data: data)
                     self.cache = .success(data)
+
+                    // Store ETag for conditional requests on the next sync.
+                    // If the response has no ETag, delete any stale validator so we
+                    // never send If-None-Match for a different representation.
+                    let etagFileName = "\(self.id).etag"
+                    if let etag = http.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "etag" })?.value as? String {
+                        let etagFile = self.directory.hasFile(named: etagFileName)
+                            ? (try? self.directory.file(named: etagFileName))
+                            : (try? self.directory.createFile(named: etagFileName))
+                        try? etagFile?.write(data: Data(etag.utf8))
+                    } else {
+                        // try? silently handles the case where the file does not exist
+                        try? self.directory.file(named: etagFileName).delete()
+                    }
+
                     completionHandler(.success(data))
                 } catch {
                     completionHandler(.failure(error))
@@ -96,7 +123,14 @@ internal final class RemoteConfigurationSynchronizer {
     }
 }
 
-private enum RemoteConfigurationError: Error {
+private enum RemoteConfigurationError: Error, LocalizedError {
     case httpError(Int)
     case emptyBody
+
+    var errorDescription: String? {
+        switch self {
+        case .httpError(let code): return "Non-2xx response: HTTP \(code)"
+        case .emptyBody: return "Empty response body"
+        }
+    }
 }

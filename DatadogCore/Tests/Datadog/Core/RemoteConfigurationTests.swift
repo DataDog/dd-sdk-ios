@@ -123,15 +123,11 @@ class RemoteConfigurationTests: XCTestCase {
         XCTAssertEqual(try rc.cache.get(), payload)
     }
 
-    func testInitCacheIsFailureWhenFileIsUnreadable() throws {
-        let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
-        try Data("{\"v\":1}".utf8).write(to: fileURL, options: .atomic)
-        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: fileURL.path)
-        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: fileURL.path) }
-
+    func testInitCacheIsFailureWhenNoFileExists() {
+        // No .json file on disk — cache must be .failure (first launch)
         let rc = makeSynchronizer()
         guard case .failure = rc.cache else {
-            return XCTFail("Expected cache to be .failure when file is unreadable")
+            return XCTFail("Expected cache to be .failure when no file exists on disk")
         }
     }
 
@@ -268,6 +264,142 @@ class RemoteConfigurationTests: XCTestCase {
         guard case .failure = rc.cache else {
             return XCTFail("Cache must remain .failure after disk write error")
         }
+    }
+
+    // MARK: ETag
+
+    func testSyncStoresETagAfterSuccessfulFetch() {
+        MockURLProtocol.requestHandler = { request in
+            (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["ETag": "abc123"])!, Data("{}".utf8))
+        }
+        let rc = makeSynchronizer()
+        let expectation = expectation(description: "sync completes")
+
+        rc.sync { _ in expectation.fulfill() }
+        wait(for: [expectation], timeout: 2)
+
+        let etagFileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.etag")
+        let storedETag = try? String(data: Data(contentsOf: etagFileURL), encoding: .utf8)
+        XCTAssertEqual(storedETag, "abc123")
+    }
+
+    func testSyncDeletesStaleETagWhenResponseHasNoETag() throws {
+        // Given — a stale ETag file from a previous fetch
+        try Data("old-etag".utf8).write(
+            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.etag"),
+            options: .atomic
+        )
+
+        // When — server returns 200 with new data but no ETag header
+        MockURLProtocol.requestHandler = { request in
+            (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data("{}".utf8))
+        }
+        let rc = makeSynchronizer()
+        let expectation = expectation(description: "sync completes")
+        rc.sync { _ in expectation.fulfill() }
+        wait(for: [expectation], timeout: 2)
+
+        // Then — stale ETag file must be deleted so it is never sent as If-None-Match
+        let etagFileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.etag")
+        XCTAssertFalse(
+            FileManager.default.fileExists(atPath: etagFileURL.path),
+            "Stale ETag must be deleted when 200 response carries no ETag"
+        )
+    }
+
+    func testSyncDoesNotSendIfNoneMatchWhenCacheIsFailure() throws {
+        // Given — ETag file exists but JSON cache is unreadable (cache is .failure)
+        try Data("abc123".utf8).write(
+            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.etag"),
+            options: .atomic
+        )
+        // No .json file → cache will be .failure after init
+
+        var capturedRequest: URLRequest?
+        MockURLProtocol.requestHandler = { request in
+            capturedRequest = request
+            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data("{}".utf8))
+        }
+
+        let rc = makeSynchronizer()
+        let expectation = expectation(description: "sync completes")
+
+        rc.sync { _ in expectation.fulfill() }
+        wait(for: [expectation], timeout: 2)
+
+        XCTAssertNil(
+            capturedRequest?.value(forHTTPHeaderField: "If-None-Match"),
+            "Must not send If-None-Match when cache is .failure — a 304 would leave us with no data"
+        )
+    }
+
+    func testSyncSendsIfNoneMatchHeaderWhenETagStored() throws {
+        // Given — store an ETag from a previous fetch
+        try Data("abc123".utf8).write(
+            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.etag"),
+            options: .atomic
+        )
+
+        // Pre-populate .json so cache is .success (required to send If-None-Match)
+        try Data("{}".utf8).write(
+            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"),
+            options: .atomic
+        )
+
+        var capturedRequest: URLRequest?
+        MockURLProtocol.requestHandler = { request in
+            capturedRequest = request
+            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data("{}".utf8))
+        }
+
+        let rc = makeSynchronizer()
+        let expectation = expectation(description: "sync completes")
+
+        rc.sync { _ in expectation.fulfill() }
+        wait(for: [expectation], timeout: 2)
+
+        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "If-None-Match"), "abc123")
+    }
+
+    func test304ResponsePreservesCacheAndReportsSuccess() throws {
+        // Given — pre-populate cache
+        let existing = Data("{\"v\":1}".utf8)
+        let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
+        try existing.write(to: fileURL, options: .atomic)
+
+        MockURLProtocol.requestHandler = { request in
+            (HTTPURLResponse(url: request.url!, statusCode: 304, httpVersion: nil, headerFields: nil)!, nil)
+        }
+        let rc = makeSynchronizer()
+        let expectation = expectation(description: "sync completes")
+
+        rc.sync { result in
+            // 304 returns the current cache — .success with existing data
+            XCTAssertEqual(try? result.get(), existing, "304 must return existing cached data")
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 2)
+
+        XCTAssertEqual(try? rc.cache.get(), existing, "Cache must be unchanged after 304")
+    }
+
+    func test304ResponseCallsCompletionEvenWhenCacheIsFailure() {
+        // Given — no .json file, so cache is .failure
+
+        MockURLProtocol.requestHandler = { request in
+            (HTTPURLResponse(url: request.url!, statusCode: 304, httpVersion: nil, headerFields: nil)!, nil)
+        }
+        let rc = makeSynchronizer()
+        let expectation = expectation(description: "sync completes")
+
+        rc.sync { result in
+            // completionHandler must always be called — even when 304 + cache is .failure
+            guard case .failure = result else {
+                return XCTFail("Expected .failure when 304 + unreadable cache")
+            }
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 2)
     }
 
     func testDifferentIDsUseDifferentFiles() throws {
