@@ -5,8 +5,8 @@
  */
 
 import Foundation
-@preconcurrency @_spi(Internal)
-import DatadogInternal
+@_spi(Internal)
+@preconcurrency import DatadogInternal
 
 /// An entry point to Datadog Trace feature.
 public enum Trace {
