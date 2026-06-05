@@ -19,7 +19,7 @@ import Foundation
 /// Registering multiple handlers will aggregate instrumentation.
 internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The Feature name: "network-instrumentation".
-    static let name = "network-instrumentation"
+    static var name: String { Feature.networkInstrumentation }
 
     /// Network Instrumentation serial queue for safe and serialized access to the
     /// `URLSessionTask` interceptions.

@@ -1,7 +1,12 @@
 ---
-last_updated: 2025-01-03
-sdk_version: 3.3.0
-verified_against_commit: 1d3e80ec5
+last_updated: 2026-06-03
+sdk_version: 3.12.0
+verified_against_commit: a0fb31f68
+tracked_files:
+  - DatadogRUM/Sources/RUM.swift
+  - DatadogRUM/Sources/RUMConfiguration.swift
+  - DatadogRUM/Sources/RUMMonitor.swift
+  - DatadogRUM/Sources/RUMMonitorProtocol.swift
 ---
 
 # RUM (Real User Monitoring) Feature
@@ -48,12 +53,14 @@ RUM.enable(
         // Default: nil (disabled)
         // Or use custom: MyCustomViewsPredicate()
         // Note: Also requires uiKitViewsPredicate for SwiftUI tracking to work correctly
+        // Note: Experimental API - may change in future releases
         swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
         
         // SwiftUI automatic action tracking - provide predicate to enable
         // Default: nil (disabled)
         // Or use custom: MyCustomActionsPredicate()
         // Note: Also requires uiKitActionsPredicate for SwiftUI tracking to work correctly
+        // Note: Experimental API - behavior differs between iOS 17 and below vs iOS 18+
         swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
         
         // Automatic network resource tracking - provide config to enable
@@ -67,7 +74,14 @@ RUM.enable(
             // Optional: Add custom attributes to resources
             resourceAttributesProvider: { request, response, data, error in
                 return ["custom.attribute": "value"]
-            }
+            },
+            // Optional: Capture HTTP headers from requests and responses
+            // Default: .disabled
+            // Options:
+            //   .disabled - No header capture
+            //   .defaults - Capture predefined common headers (cache-control, content-type, etag, etc.)
+            //   .custom([rules]) - Capture headers by custom rules
+            trackResourceHeaders: .defaults
         ),
         
         // Track user frustrations (error taps following errors)
@@ -127,6 +141,7 @@ RUM.enable(
         
         // Session start callback
         onSessionStart: { sessionId, isDiscarded in
+            // `sessionId` matches the emitted RUM event `session.id`
             print("Session \(sessionId) started, sampled out: \(isDiscarded)")
         },
         
@@ -142,13 +157,23 @@ RUM.enable(
         // Default: true
         trackMemoryWarnings: true,
         
+        // Track slow frames / view hitches
+        // Default: true
+        trackSlowFrames: true,
+        
         // SDK telemetry sampling rate (for Datadog internal monitoring)
         // Default: 20.0
         telemetrySampleRate: 20.0,
         
         // Collect accessibility settings in view events
         // Default: false
-        collectAccessibility: false
+        collectAccessibility: false,
+        
+        // RUM feature flags
+        // Default: .defaults ([.trackScrollAndSwipeActions: true])
+        // Set [.trackScrollAndSwipeActions: false] to disable automatic
+        // scroll/swipe action tracking and INV attribution for those gestures
+        featureFlags: .defaults
     )
 )
 
@@ -166,6 +191,11 @@ monitor.startView(key: "ProductList", name: "Product List Screen")
 
 // Add custom error
 monitor.addError(message: "Failed to load products", source: .network)
+
+// Read the active sampled-in session ID, matching emitted RUM event `session.id`
+monitor.currentSessionID { sessionId in
+    print("Current RUM session: \(sessionId ?? "none")")
+}
 
 // Stop the view
 monitor.stopView(key: "ProductList")
@@ -187,10 +217,10 @@ monitor.stopView(key: "ProductList")
 - **`DatadogRUM/Sources/RUMMonitor.swift`** - Access point for manual RUM tracking via `RUMMonitor.shared()`
 - **`DatadogRUM/Sources/RUMMonitorProtocol.swift`** - Full API for manual RUM instrumentation
   - Views: `startView()`, `stopView()`
-  - Errors: `addError()`
+  - Errors: `addError()`; sources are `.source`, `.network`, `.webview`, `.console`, `.logger`, and `.custom`
   - Resources: `startResource()`, `stopResource()`
   - Actions: `addAction()`, `startAction()`, `stopAction()`
-  - Custom attributes, timings, and feature flags
+  - Current session ID, custom attributes, timings, and feature flags
 
 ### Implementation
 - **`DatadogRUM/Sources/Feature/RUMFeature.swift`** - Internal feature implementation. Shows how configuration translates to behavior.
@@ -199,14 +229,16 @@ monitor.stopView(key: "ProductList")
 
 ### Automatic Tracking
 Requires configuration to be set, otherwise disabled by default:
-- **View tracking**: `uiKitViewsPredicate`, `swiftUIViewsPredicate`
-- **Action tracking**: `uiKitActionsPredicate`, `swiftUIActionsPredicate`
+- **View tracking**: `uiKitViewsPredicate`, `swiftUIViewsPredicate` *(SwiftUI: experimental)*
+- **Action tracking**: `uiKitActionsPredicate`, `swiftUIActionsPredicate` *(SwiftUI: experimental, behavior differs on iOS 17 vs iOS 18+)*
 - **Resource tracking**: `urlSessionTracking` (automatic), optionally call `URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: YourSessionDelegate.self))` for detailed timing
+- **Header capture**: `urlSessionTracking.trackResourceHeaders` — `.disabled` (default), `.defaults` (common headers), or `.custom([rules])`
 
 ### Performance Monitoring
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
 - **App hangs**: `appHangThreshold` (default: nil/disabled)
 - **Vitals**: `vitalsUpdateFrequency` (default: .average)
+- **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view
 
 ### Sampling
 - **Sessions**: `sessionSampleRate` (default: 100%)
@@ -222,16 +254,23 @@ Event mappers allow modifying or dropping events before upload:
 
 **Note**: To filter views, use view predicates instead of the mapper.
 
+### Feature Flags
+- `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true]`.
+- `.trackScrollAndSwipeActions`: when set to `false`, disables automatic scroll and swipe action tracking done through `UIScrollView.delegate` swizzling. It has no effect unless `uiKitActionsPredicate` is configured. Disabling it also prevents scroll/swipe gestures from being considered for INV (Interaction-to-Next-View) attribution.
+- `.none`: no-op feature flag case kept in the public enum.
+
 ## Common Troubleshooting Patterns
 
 ### "No RUM data appearing"
 1. Check `Datadog.initialize()` and `RUM.enable()` were called
 2. Verify session wasn't sampled out (check `sessionSampleRate`)
+3. `currentSessionID(completion:)` returns `nil` when there is no active session or the active session is sampled out
 
 ### "Views or actions not tracked"
 1. Check if predicates are configured in RUMConfiguration
 2. For UIKit: `uiKitViewsPredicate` and `uiKitActionsPredicate` must be set
-3. For SwiftUI: `swiftUIViewsPredicate` and `swiftUIActionssPredicate` must be set, as well as UIKit predicates
+3. For SwiftUI: `swiftUIViewsPredicate` and `swiftUIActionsPredicate` must be set, as well as UIKit predicates
+4. If scroll/swipe actions are missing while taps still appear, check `featureFlags[.trackScrollAndSwipeActions]`; setting it to `false` disables those automatic actions and their INV attribution
 
 ### "Network requests not tracked"
 1. Verify `urlSessionTracking` is configured in RUMConfiguration (RUM.enable() handles URLSessionInstrumentation internally)

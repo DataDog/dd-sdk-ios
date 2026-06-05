@@ -6,11 +6,10 @@
 
 import Foundation
 
-@objc(DDProfilingOptions)
-@objcMembers
-@_spi(objc)
-public final class objc_ProfilingOptions: objc_OperationOptions {
-    public init(sampleRate: Float) {
-        super.init(swiftType: ProfilingOptions(sampleRate: sampleRate))
-    }
+public enum Feature {
+    public static let networkInstrumentation = "network-instrumentation"
+
+    public static let rum = "rum"
+
+    public static let sessionReplay = "session-replay"
 }

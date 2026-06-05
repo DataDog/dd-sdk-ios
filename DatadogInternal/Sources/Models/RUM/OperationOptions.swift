@@ -4,17 +4,4 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
-
 public protocol OperationOptions {}
-
-@objc(DDOperationOptions)
-@objcMembers
-@_spi(objc)
-public class objc_OperationOptions: NSObject {
-    public var swiftType: OperationOptions
-
-    init(swiftType: OperationOptions) {
-        self.swiftType = swiftType
-    }
-}

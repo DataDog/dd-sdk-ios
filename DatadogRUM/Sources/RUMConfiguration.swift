@@ -277,7 +277,7 @@ extension RUM {
         /// RUM session start callback.
         ///
         /// It takes 2 arguments:
-        /// - Newly started session ID.
+        /// - Newly started session ID, matching the `session.id` field in emitted RUM events.
         /// - Flag indicating whether or not the session was discarded due to the sampling rate.
         /// Keep the implementation fast and do not make any assumptions on the thread that runs this callback.
         ///
@@ -428,6 +428,15 @@ extension RUM {
         internal var syntheticsEnvironment: Bool { syntheticsTestId != nil || syntheticsResultId != nil }
         internal var sessionTypeOverride: String? = ProcessInfo.processInfo.environment["DD_SESSION_TYPE"]
     }
+
+    // MARK: - Internal
+
+    /// Used by `RUMApplicationScope` to notify when a session changes.
+    ///
+    /// In normal conditions the implementation should call the configuration's `onSessionStart`
+    /// if session scope is not `nil`, and do any additional work required. Check `RUMFeature.init`
+    /// where a `SessionUpdater` is created.
+    internal typealias SessionUpdater = (RUMSessionScope?) -> Void
 }
 
 extension RUM.Configuration.URLSessionTracking {
@@ -529,7 +538,7 @@ extension RUM.Configuration {
     ///   - actionEventMapper: Custom mapper for RUM action events. Default: `nil`.
     ///   - errorEventMapper: Custom mapper for RUM error events. Default: `nil`.
     ///   - longTaskEventMapper: Custom mapper for RUM long task events. Default: `nil`.
-    ///   - onSessionStart: RUM session start callback. Default: `nil`.
+    ///   - onSessionStart: RUM session start callback receiving a session ID matching emitted RUM event `session.id`. Default: `nil`.
     ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
     ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
     ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`.

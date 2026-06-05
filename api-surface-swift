@@ -521,6 +521,7 @@ public enum RUMErrorSource
     case network
     case webview
     case console
+    case logger
     case custom
 public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject
     func addAttribute(forKey key: AttributeKey, value: AttributeValue)

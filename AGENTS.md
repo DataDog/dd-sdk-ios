@@ -35,7 +35,8 @@ docs/
 
 Feature-specific docs (in each module directory):
 ├── DatadogRUM/RUM_FEATURE.md
-└── DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
+├── DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
+└── DatadogTrace/TRACE_FEATURE.md
 ```
 
 ## Where to Look First
@@ -50,6 +51,7 @@ Feature-specific docs (in each module directory):
 | Modify a fragile area | `docs/KNOWN_CONCERNS.md` |
 | Work on RUM specifically | `DatadogRUM/RUM_FEATURE.md` |
 | Work on Session Replay specifically | `DatadogSessionReplay/SESSION_REPLAY_FEATURE.md` |
+| Work on Trace (APM) specifically | `DatadogTrace/TRACE_FEATURE.md` |
 | Update a `*_FEATURE.md` file | `docs/LLM_FEATURE_DOCS_GUIDELINES.md` |
 
 ## Critical Rules (always apply)

@@ -8,8 +8,8 @@ import Foundation
 import DatadogInternal
 import UIKit
 
-internal final class RUMFeature: DatadogRemoteFeature {
-    static let name = "rum"
+internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider {
+    static var name: String { Feature.rum }
 
     let requestBuilder: FeatureRequestBuilder
 
@@ -22,6 +22,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
     let configuration: RUM.Configuration
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
+
+    /// Used by WebViewTracking to obtain the RUM session sampler synchronously.
+    @ReadWriteLock
+    private(set) var rumSessionSampler: DeterministicSampler?
 
     /// Overrides the max file age.
     let performanceOverride: PerformancePresetOverride? = PerformancePresetOverride(
@@ -106,6 +110,15 @@ internal final class RUMFeature: DatadogRemoteFeature {
             }
         }()
 
+        let onSessionUpdate: RUM.SessionUpdater = { [onSessionStart = configuration.onSessionStart, _rumSessionSampler] sessionScope in
+            if let sessionScope {
+                let sessionID = sessionScope.sessionUUID.toRUMDataFormat
+                let isDiscarded = !sessionScope.sampler.isSampled
+                onSessionStart?(sessionID, isDiscarded)
+            }
+            _rumSessionSampler.mutate { $0 = sessionScope?.sampler }
+        }
+
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
@@ -143,7 +156,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             },
             accessibilityReader: accessibilityReader,
-            onSessionStart: configuration.onSessionStart,
+            onSessionUpdate: onSessionUpdate,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
@@ -218,7 +231,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
             swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
             swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate,
-            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions],
+            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
             mainQueue: configuration.mainQueue,
@@ -322,6 +335,14 @@ internal final class RUMFeature: DatadogRemoteFeature {
         let trackUserInteractions = false
         #endif
 
+        let trackResourceHeaders: String? = {
+            switch configuration.urlSessionTracking?.trackResourceHeaders {
+            case .none, .disabled: return nil
+            case .defaults: return "default_headers"
+            case .custom: return "custom"
+            }
+        }()
+
         core.telemetry.configuration(
             appHangThreshold: configuration.appHangThreshold?.dd.toInt64Milliseconds,
             invTimeThresholdMs: configuration.nextViewActionPredicate?.invTimeThresholdMs,
@@ -338,6 +359,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             trackNativeLongTasks: configuration.longTaskThreshold != nil,
             trackNativeViews: trackNativeViews,
             trackNetworkRequests: configuration.urlSessionTracking != nil,
+            trackResourceHeaders: trackResourceHeaders,
             trackUserInteractions: trackUserInteractions,
             useFirstPartyHosts: configuration.urlSessionTracking?.firstPartyHostsTracing != nil
         )

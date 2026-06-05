@@ -201,18 +201,18 @@ public class objc_LogEventDDDevice: NSObject
     public var architecture: String
 public class objc_LogEventDevice: NSObject
     public var architecture: String?
-    public var batteryLevel: Double?
+    public var batteryLevel: NSNumber?
     public var brand: String?
-    public var brightnessLevel: Double?
-    public var isLowRam: Bool?
+    public var brightnessLevel: NSNumber?
+    public var isLowRam: NSNumber?
     public var locale: String?
     public var locales: [String]?
-    public var logicalCpuCount: Double?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
     public var name: String?
-    public var powerSavingMode: Bool?
+    public var powerSavingMode: NSNumber?
     public var timeZone: String?
-    public var totalRam: Double?
+    public var totalRam: NSNumber?
     public var type: objc_LogEventDeviceDeviceType
 public enum objc_LogEventDeviceDeviceType: Int
     case none
@@ -3358,6 +3358,7 @@ public enum objc_RUMErrorSource: Int
     case webview
     case console
     case custom
+    case logger
 public enum objc_RUMActionType: Int
     case tap
     case scroll
@@ -3395,6 +3396,9 @@ public enum objc_RUMFeatureOperationFailureReason: Int
     case error
     case abandoned
     case other
+public class objc_OperationOptions: NSObject
+public final class objc_ProfilingOptions: objc_OperationOptions
+    public init(sampleRate: Float)
 public class objc_FirstPartyHostsTracing: NSObject
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>])
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>], sampleRate: Float)

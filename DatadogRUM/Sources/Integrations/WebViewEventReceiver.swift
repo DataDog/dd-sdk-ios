@@ -25,8 +25,10 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     /// Creates a new receiver.
     ///
     /// - Parameters:
+    ///   - featureScope: The feature scope.
     ///   - dateProvider: The date provider.
     ///   - commandSubscriber: Subscriber that can process a `RUMKeepSessionAliveCommand`.
+    ///   - viewCache: The RUM view cache.
     init(
         featureScope: FeatureScope,
         dateProvider: DateProvider,
@@ -49,7 +51,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
         case let .webview(.rum(event)):
-            receive(rum: event)
+            receive(rum: event, core: core)
         case let .webview(.telemetry(event)):
             receive(telemetry: event)
         default:
@@ -59,7 +61,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         return true
     }
 
-    private func receive(rum event: JSON) {
+    private func receive(rum event: JSON, core: DatadogCoreProtocol) {
         commandSubscriber.process(
             command: RUMKeepSessionAliveCommand(
                 time: dateProvider.now,
@@ -117,10 +119,21 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 event["session"] = session
             }
 
-            if var dd = event["_dd"] as? JSON, context.hasReplay != true {
-                // Remove stats if native replay is disabled
-                dd["replay_stats"] = nil
-                event["_dd"] = dd
+            if var dd = event["_dd"] as? JSON {
+                if context.hasReplay != true {
+                    // Remove stats if native replay is disabled
+                    dd["replay_stats"] = nil
+                    event["_dd"] = dd
+                }
+                if dd["rule_psr"] != nil,
+                   let networkInstrumentation = core.feature(
+                    named: Feature.networkInstrumentation,
+                    type: DistributedTracingSampleRateProvider.self
+                   ),
+                   let distributedTracingSampleRate = networkInstrumentation.distributedTracingSampleRate {
+                    dd["rule_psr"] = distributedTracingSampleRate.percentageProportion
+                    event["_dd"] = dd
+                }
             }
 
             // Add native anonymous_id to the event's usr object

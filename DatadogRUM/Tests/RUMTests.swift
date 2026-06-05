@@ -120,6 +120,23 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
     }
 
+    #if !os(tvOS)
+    func testWhenEnabledWithEmptyFeatureFlags_scrollAndSwipeTrackingRemainsEnabled() throws {
+        // Given
+        config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
+        config.featureFlags = [:]
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        DDAssertActiveSwizzlings(["sendEvent:", "setDelegate:", "delegate"])
+        XCTAssertNotNil(rum.instrumentation.scrollViewSwizzler)
+        XCTAssertNotNil(rum.instrumentation.scrollHandler)
+    }
+    #endif
+
     func testWhenEnabledWithNoInstrumentations() throws {
         // Given
         config.uiKitViewsPredicate = nil
@@ -285,30 +302,6 @@ class RUMTests: XCTestCase {
         XCTAssertNil(eventsMapper.longTaskEventMapper)
     }
 
-    func testWhenEnabledWithSessionStartListener() throws {
-        // Given
-        config.onSessionStart = { _, _ in }
-
-        // When
-        RUM.enable(with: config, in: core)
-
-        // Then
-        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        XCTAssertNotNil(monitor.scopes.dependencies.onSessionStart)
-    }
-
-    func testWhenEnabledWithNoSessionStartListener() throws {
-        // Given
-        config.onSessionStart = nil
-
-        // When
-        RUM.enable(with: config, in: core)
-
-        // Then
-        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        XCTAssertNil(monitor.scopes.dependencies.onSessionStart)
-    }
-
     func testWhenEnabledWithCustomEndpoint() throws {
         // Given
         let randomURL: URL = .mockRandom()
@@ -443,6 +436,7 @@ class RUMTests: XCTestCase {
         config.onSessionStart = { sessionID, isDiscarded in
             // Then
             XCTAssertTrue(sessionID.matches(regex: .uuidRegex))
+            XCTAssertEqual(sessionID, sessionID.lowercased())
             expectation.fulfill()
         }
 
