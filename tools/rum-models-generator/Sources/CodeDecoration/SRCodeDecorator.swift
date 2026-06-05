@@ -204,6 +204,8 @@ public class SRCodeDecorator: SwiftCodeDecorator {
     ) -> SwiftAssociatedTypeEnum {
         var associatedTypeEnum = associatedTypeEnum
         associatedTypeEnum.discriminatorCodingKey = codingKey
+        // `super.transform` keeps case order while renaming cases and associated types.
+        // Keep this in mind if the base transformer starts reordering cases.
         associatedTypeEnum.cases = zip(originalAssociatedTypeEnum.cases, associatedTypeEnum.cases).map { originalCase, transformedCase in
             var transformedCase = transformedCase
             transformedCase.discriminatorValue = discriminatorValue(for: codingKey, in: originalCase.associatedType)
