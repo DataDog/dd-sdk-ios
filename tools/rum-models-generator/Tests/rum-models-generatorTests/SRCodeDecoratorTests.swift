@@ -67,6 +67,11 @@ final class SRCodeDecoratorTests: XCTestCase {
                                         ),
                                         Self.property(named: "root", type: Self.compositionLayer(named: "root"), isOptional: true),
                                         Self.property(
+                                            named: "source",
+                                            type: SwiftPrimitive<Int>(),
+                                            defaultValue: 10
+                                        ),
+                                        Self.property(
                                             named: "updates",
                                             type: SwiftArray(element: Self.compositionLayerUpdate(named: "updates")),
                                             isOptional: true
@@ -114,12 +119,26 @@ final class SRCodeDecoratorTests: XCTestCase {
 
         let updates: SwiftStruct.Property = try XCTUnwrap(mutationData.properties.first { $0.name == "updates" })
         XCTAssertEqual("SRCompositionLayerUpdate", ((updates.type as? SwiftArray)?.element as? SwiftTypeReference)?.referencedTypeName)
+
+        let transformedIncrementalSnapshotRecord = try XCTUnwrap(
+            actual.swiftTypes.first { $0.typeName == "SRIncrementalSnapshotRecord" } as? SwiftStruct
+        )
+        let incrementalData = try XCTUnwrap(
+            transformedIncrementalSnapshotRecord.properties.first { $0.name == "data" }?.type as? SwiftAssociatedTypeEnum
+        )
+        XCTAssertEqual("source", incrementalData.discriminatorCodingKey)
+        XCTAssertEqual(Int64(10), incrementalData.cases.first?.discriminatorValue as? Int64)
+
+        let modifier = try XCTUnwrap(actual.swiftTypes.first { $0.typeName == "SRCompositionLayerModifier" } as? SwiftAssociatedTypeEnum)
+        XCTAssertEqual("type", modifier.discriminatorCodingKey)
+        XCTAssertEqual("clip", modifier.cases.first?.discriminatorValue as? String)
     }
 
     private static func property(
         named name: String,
         type: SwiftType,
-        isOptional: Bool = false
+        isOptional: Bool = false,
+        defaultValue: SwiftPropertyDefaultValue? = nil
     ) -> SwiftStruct.Property {
         SwiftStruct.Property(
             name: name,
@@ -127,7 +146,7 @@ final class SRCodeDecoratorTests: XCTestCase {
             type: type,
             isOptional: isOptional,
             mutability: .immutable,
-            defaultValue: nil,
+            defaultValue: defaultValue,
             codingKey: .static(value: name)
         )
     }
@@ -176,7 +195,18 @@ final class SRCodeDecoratorTests: XCTestCase {
             cases: [
                 SwiftAssociatedTypeEnum.Case(
                     label: "CompositionLayerClipModifier",
-                    associatedType: SwiftStruct(name: "CompositionLayerClipModifier", comment: nil, properties: [], conformance: [])
+                    associatedType: SwiftStruct(
+                        name: "CompositionLayerClipModifier",
+                        comment: nil,
+                        properties: [
+                            property(
+                                named: "type",
+                                type: SwiftPrimitive<String>(),
+                                defaultValue: "clip"
+                            )
+                        ],
+                        conformance: []
+                    )
                 )
             ],
             conformance: []

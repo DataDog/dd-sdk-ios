@@ -65,12 +65,14 @@ public struct SwiftAssociatedTypeEnum: SwiftType {
     public struct Case: SwiftType, SwiftPropertyDefaultValue {
         public var label: String
         public var associatedType: SwiftType
+        public var discriminatorValue: SwiftPropertyDefaultValue? = nil
     }
 
     public var name: String
     public var comment: String?
     public var cases: [Case]
     public var conformance: [SwiftProtocol]
+    public var discriminatorCodingKey: String? = nil
 }
 
 public struct SwiftStruct: SwiftType {
