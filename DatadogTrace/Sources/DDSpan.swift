@@ -22,7 +22,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
     private var operationName: String
     /// Span tags.
     @ReadWriteLock
-    private var tags: [String: OTTracer.TagValue]
+    private var tags: [String: OTTagValue]
     /// Span log fields.
     @ReadWriteLock
     private var logFields: [[String: Encodable]]
@@ -41,7 +41,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         context: DDSpanContext,
         operationName: String,
         startTime: Date,
-        tags: [String: OTTracer.TagValue],
+        tags: [String: OTTagValue],
         eventBuilder: SpanEventBuilder,
         eventWriter: SpanWriteContext
     ) {
@@ -74,7 +74,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         self.operationName = operationName
     }
 
-    func setTag(key: String, value: OTTracer.TagValue) {
+    func setTag(key: String, value: OTTagValue) {
         if warnIfFinished("setTag(key:value:)") {
             return
         }

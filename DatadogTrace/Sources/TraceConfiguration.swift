@@ -36,7 +36,7 @@ extension Trace {
         public var service: String?
 
         /// Global tags associated with each span created with the default tracer.
-        public var tags: [String: OTTracer.TagValue]?
+        public var tags: [String: OTTagValue]?
 
         /// The configuration for automatic network requests tracing.
         ///
@@ -162,7 +162,7 @@ extension Trace {
         public init(
             sampleRate: SampleRate = .maxSampleRate,
             service: String? = nil,
-            tags: [String: OTTracer.TagValue]? = nil,
+            tags: [String: OTTagValue]? = nil,
             urlSessionTracking: URLSessionTracking? = nil,
             bundleWithRumEnabled: Bool = true,
             networkInfoEnabled: Bool = false,

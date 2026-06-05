@@ -12,7 +12,7 @@ private final class MockSpan: OTSpan {
     let context: OTSpanContext = DDNoopGlobals.context
     func tracer() -> OTTracer { DDNoopGlobals.tracer }
     func setOperationName(_ operationName: String) {}
-    func setTag(key: String, value: OTTracer.TagValue) {}
+    func setTag(key: String, value: OTTagValue) {}
     func setBaggageItem(key: String, value: String) {}
     func baggageItem(withKey key: String) -> String? { nil }
     func setActive() -> OTSpan { self }

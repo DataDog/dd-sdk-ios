@@ -18,7 +18,7 @@ public protocol OTSpan: Sendable {
     ///
     /// - parameter key:   Key of the tag to set
     /// - parameter value: Value of the tag to set
-    func setTag(key: String, value: OTTracer.TagValue)
+    func setTag(key: String, value: OTTagValue)
 
     /// Add a new log with the supplied fields and timestamp
     ///

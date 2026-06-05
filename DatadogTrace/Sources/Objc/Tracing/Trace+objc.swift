@@ -146,7 +146,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
             objcTracer: self,
             swiftSpan: swiftTracer.startSpan(
                 operationName: operationName,
-                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTracer.TagValue] }
+                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTagValue] }
             )
         )
     }
@@ -173,7 +173,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
             swiftSpan: swiftTracer.startSpan(
                 operationName: operationName,
                 childOf: ddspanContext?.swiftSpanContext,
-                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTracer.TagValue] }
+                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTagValue] }
             )
         )
     }
@@ -190,7 +190,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
             swiftSpan: swiftTracer.startSpan(
                 operationName: operationName,
                 childOf: ddspanContext?.swiftSpanContext,
-                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTracer.TagValue] },
+                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTagValue] },
                 startTime: startTime
             )
         )
@@ -206,7 +206,7 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
             objcTracer: self,
             swiftSpan: swiftTracer.startRootSpan(
                 operationName: operationName,
-                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTracer.TagValue] },
+                tags: tags.flatMap { castTagsToSwift($0) as? [String: OTTagValue] },
                 startTime: startTime,
                 customSampleRate: customSampleRate?.floatValue
             )
