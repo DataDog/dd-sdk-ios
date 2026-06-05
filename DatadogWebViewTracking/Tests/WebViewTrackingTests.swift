@@ -941,6 +941,25 @@ class WebViewTrackingTests: XCTestCase {
         XCTAssertTrue(script.source.contains("\"*.shopist.io\""))
         XCTAssertTrue(script.source.contains("\"preview-*.example.com\""))
     }
+
+    func testItDropsPatternsWithInvalidCharacters() throws {
+        let config = WKWebViewConfiguration()
+        let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
+
+        try WebViewTracking.enableOrThrow(
+            tracking: webView,
+            hostPatterns: ["foo'bar.com", "back\\slash.com", "shopist.io"],
+            logsSampleRate: 100,
+            in: PassthroughCoreMock()
+        )
+
+        let script = try XCTUnwrap(controller.userScripts.last)
+        XCTAssertTrue(script.source.contains("\"shopist.io\""))
+        XCTAssertFalse(script.source.contains("foo'bar.com"))
+        XCTAssertFalse(script.source.contains("back\\\\slash.com"))
+    }
 }
 
 #endif

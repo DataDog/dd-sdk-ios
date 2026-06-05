@@ -201,12 +201,18 @@ public enum WebViewTracking {
         controller.add(messageHandler, name: bridgeName)
 
         let validPatterns: [String] = hostPatterns.compactMap { pattern in
-            let wildcardCount = pattern.filter { $0 == "*" }.count
-            if wildcardCount > 1 {
-                consolePrint("WebView host pattern \"\(pattern)\" contains more than one wildcard and will be ignored.", .warn)
+            let lowercased = pattern.lowercased()
+            let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789.-*")
+            if lowercased.unicodeScalars.contains(where: { !allowedCharacters.contains($0) }) {
+                DD.logger.warn("WebView host pattern \"\(pattern)\" contains invalid characters and will be ignored.")
                 return nil
             }
-            return pattern.lowercased()
+            let wildcardCount = lowercased.filter { $0 == "*" }.count
+            if wildcardCount > 1 {
+                DD.logger.warn("WebView host pattern \"\(pattern)\" contains more than one wildcard and will be ignored.")
+                return nil
+            }
+            return lowercased
         }
 
         let allowedWebViewHostsString = validPatterns
