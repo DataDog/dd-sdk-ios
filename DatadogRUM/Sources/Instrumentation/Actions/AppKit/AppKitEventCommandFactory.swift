@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(AppKit)
 import AppKit
 import DatadogInternal
 
@@ -155,4 +156,4 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         }
     }
 }
-
+#endif
