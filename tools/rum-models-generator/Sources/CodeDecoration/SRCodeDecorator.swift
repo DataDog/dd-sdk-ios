@@ -41,6 +41,21 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRShapeStyle",
                 "SRTextPosition",
                 "SRTextStyle",
+                // Detach composition tree types to shared, root-level definitions:
+                "SRCompositionTree",
+                "SRCompositionLayer",
+                "SRCompositionLayerChild",
+                "SRCompositionLayerChildType",
+                "SRCompositionLayerModifier",
+                "SRCompositionLayerClipModifier",
+                "SRCompositionLayerOpacityModifier",
+                "SRCompositionLayerColorMatrixModifier",
+                "SRCompositionLayerGaussianBlurModifier",
+                "SRCompositionLayerBrightnessBiasModifier",
+                "SRCompositionLayerSaturateModifier",
+                "SRCompositionLayerBackgroundMaterialModifier",
+                "SRCompositionLayerUpdate",
+                "SRCompositionTreeMutationData",
             ]
         )
     }
@@ -123,6 +138,32 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         }
         if parentWireframe != nil && fixedName == "TextStyle" {
             fixedName = "SRTextStyle"
+        }
+
+        // Detach composition tree types to shared, root-level definitions.
+        let parentCompositionTree = context.predecessorStruct(matching: { $0.name.lowercased() == "compositiontree" })
+        let parentCompositionTreeMutationData = context.predecessorStruct(
+            matching: { $0.name.lowercased() == "compositiontreemutationdata" }
+        )
+        let isNestedInCompositionTree = parentCompositionTree != nil || parentCompositionTreeMutationData != nil
+
+        if parentCompositionTree != nil && (fixedName == "Layers" || fixedName == "Root") {
+            fixedName = "SRCompositionLayer"
+        }
+        if parentCompositionTreeMutationData != nil && (fixedName == "Adds" || fixedName == "Root") {
+            fixedName = "SRCompositionLayer"
+        }
+        if parentCompositionTreeMutationData != nil && fixedName == "Updates" {
+            fixedName = "SRCompositionLayerUpdate"
+        }
+        if isNestedInCompositionTree && fixedName == "Children" {
+            fixedName = "SRCompositionLayerChild"
+        }
+        if isNestedInCompositionTree && fixedName == "ChildrenType" {
+            fixedName = "SRCompositionLayerChildType"
+        }
+        if isNestedInCompositionTree && fixedName == "Modifiers" {
+            fixedName = "SRCompositionLayerModifier"
         }
 
         // Ensure all root types have `SR` prefix:
