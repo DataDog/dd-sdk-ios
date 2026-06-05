@@ -282,6 +282,10 @@ public enum SRCompositionLayerModifier: Codable {
     case compositionLayerSaturateModifier(value: SRCompositionLayerSaturateModifier)
     case compositionLayerBackgroundMaterialModifier(value: SRCompositionLayerBackgroundMaterialModifier)
 
+    private enum DiscriminatorCodingKeys: String, CodingKey {
+        case discriminator = "type"
+    }
+
     // MARK: - Codable
 
     public func encode(to encoder: Encoder) throws {
@@ -307,45 +311,42 @@ public enum SRCompositionLayerModifier: Codable {
     }
 
     public init(from decoder: Decoder) throws {
-        // Decode enum case from associated value
+        // Decode enum case from discriminator
         let container = try decoder.singleValueContainer()
+        let discriminatorContainer = try decoder.container(keyedBy: DiscriminatorCodingKeys.self)
 
-        if let value = try? container.decode(SRCompositionLayerClipModifier.self) {
-            self = .compositionLayerClipModifier(value: value)
+        switch try discriminatorContainer.decode(String.self, forKey: .discriminator) {
+        case "clip":
+            self = .compositionLayerClipModifier(value: try container.decode(SRCompositionLayerClipModifier.self))
             return
-        }
-        if let value = try? container.decode(SRCompositionLayerOpacityModifier.self) {
-            self = .compositionLayerOpacityModifier(value: value)
+        case "opacity":
+            self = .compositionLayerOpacityModifier(value: try container.decode(SRCompositionLayerOpacityModifier.self))
             return
-        }
-        if let value = try? container.decode(SRCompositionLayerColorMatrixModifier.self) {
-            self = .compositionLayerColorMatrixModifier(value: value)
+        case "colorMatrix":
+            self = .compositionLayerColorMatrixModifier(value: try container.decode(SRCompositionLayerColorMatrixModifier.self))
             return
-        }
-        if let value = try? container.decode(SRCompositionLayerGaussianBlurModifier.self) {
-            self = .compositionLayerGaussianBlurModifier(value: value)
+        case "gaussianBlur":
+            self = .compositionLayerGaussianBlurModifier(value: try container.decode(SRCompositionLayerGaussianBlurModifier.self))
             return
-        }
-        if let value = try? container.decode(SRCompositionLayerBrightnessBiasModifier.self) {
-            self = .compositionLayerBrightnessBiasModifier(value: value)
+        case "brightnessBias":
+            self = .compositionLayerBrightnessBiasModifier(value: try container.decode(SRCompositionLayerBrightnessBiasModifier.self))
             return
-        }
-        if let value = try? container.decode(SRCompositionLayerSaturateModifier.self) {
-            self = .compositionLayerSaturateModifier(value: value)
+        case "saturate":
+            self = .compositionLayerSaturateModifier(value: try container.decode(SRCompositionLayerSaturateModifier.self))
             return
-        }
-        if let value = try? container.decode(SRCompositionLayerBackgroundMaterialModifier.self) {
-            self = .compositionLayerBackgroundMaterialModifier(value: value)
+        case "backgroundMaterial":
+            self = .compositionLayerBackgroundMaterialModifier(value: try container.decode(SRCompositionLayerBackgroundMaterialModifier.self))
             return
+        default:
+            let error = DecodingError.Context(
+                codingPath: discriminatorContainer.codingPath + [DiscriminatorCodingKeys.discriminator],
+                debugDescription: """
+                Failed to decode `SRCompositionLayerModifier`.
+                Discriminator `type` did not match any known case.
+                """
+            )
+            throw DecodingError.dataCorrupted(error)
         }
-        let error = DecodingError.Context(
-            codingPath: container.codingPath,
-            debugDescription: """
-            Failed to decode `SRCompositionLayerModifier`.
-            Ran out of possibilities when trying to decode the value of associated type.
-            """
-        )
-        throw DecodingError.typeMismatch(SRCompositionLayerModifier.self, error)
     }
 }
 
@@ -856,6 +857,10 @@ public struct SRIncrementalSnapshotRecord: Codable {
         case pointerInteractionData(value: PointerInteractionData)
         case compositionTreeMutationData(value: SRCompositionTreeMutationData)
 
+        private enum DiscriminatorCodingKeys: String, CodingKey {
+            case discriminator = "source"
+        }
+
         // MARK: - Codable
 
         public func encode(to encoder: Encoder) throws {
@@ -877,37 +882,36 @@ public struct SRIncrementalSnapshotRecord: Codable {
         }
 
         public init(from decoder: Decoder) throws {
-            // Decode enum case from associated value
+            // Decode enum case from discriminator
             let container = try decoder.singleValueContainer()
+            let discriminatorContainer = try decoder.container(keyedBy: DiscriminatorCodingKeys.self)
 
-            if let value = try? container.decode(MutationData.self) {
-                self = .mutationData(value: value)
+            switch try discriminatorContainer.decode(Int64.self, forKey: .discriminator) {
+            case 0:
+                self = .mutationData(value: try container.decode(MutationData.self))
                 return
-            }
-            if let value = try? container.decode(TouchData.self) {
-                self = .touchData(value: value)
+            case 2:
+                self = .touchData(value: try container.decode(TouchData.self))
                 return
-            }
-            if let value = try? container.decode(ViewportResizeData.self) {
-                self = .viewportResizeData(value: value)
+            case 4:
+                self = .viewportResizeData(value: try container.decode(ViewportResizeData.self))
                 return
-            }
-            if let value = try? container.decode(PointerInteractionData.self) {
-                self = .pointerInteractionData(value: value)
+            case 9:
+                self = .pointerInteractionData(value: try container.decode(PointerInteractionData.self))
                 return
-            }
-            if let value = try? container.decode(SRCompositionTreeMutationData.self) {
-                self = .compositionTreeMutationData(value: value)
+            case 10:
+                self = .compositionTreeMutationData(value: try container.decode(SRCompositionTreeMutationData.self))
                 return
+            default:
+                let error = DecodingError.Context(
+                    codingPath: discriminatorContainer.codingPath + [DiscriminatorCodingKeys.discriminator],
+                    debugDescription: """
+                    Failed to decode `Data`.
+                    Discriminator `source` did not match any known case.
+                    """
+                )
+                throw DecodingError.dataCorrupted(error)
             }
-            let error = DecodingError.Context(
-                codingPath: container.codingPath,
-                debugDescription: """
-                Failed to decode `Data`.
-                Ran out of possibilities when trying to decode the value of associated type.
-                """
-            )
-            throw DecodingError.typeMismatch(Data.self, error)
         }
 
         /// Mobile-specific. Schema of a MutationData.
