@@ -8,8 +8,10 @@ import XCTest
 @testable import DatadogTrace
 
 class StatsPayloadTests: XCTestCase {
+    private let encoder = MsgPackEncoder()
+
     private func decode(_ payload: StatsPayload) throws -> [(key: String, value: Any?)] {
-        var decoder = MsgPackTestDecoder(data: payload.toMsgPackPayload())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(payload))
         return try decoder.readMap()
     }
 
@@ -48,15 +50,33 @@ class StatsPayloadTests: XCTestCase {
         }
     }
 
-    func testStatsFieldSplicesPreEncodedBytes() throws {
-        let preEncoded1 = Data([0xC0])
-        let preEncoded2 = Data([0xC3])
-        let payload = StatsPayload(clientStats: [preEncoded1, preEncoded2], splitPayload: false)
+    func testStatsFieldEncodesNestedClientStatsPayloads() throws {
+        let payload = StatsPayload(
+            clientStats: [
+                ClientStatsPayload(
+                    hostname: "a", env: "prod", version: "1", service: "s1",
+                    tracerVersion: "1", runtimeID: "r", sequenceNumber: 1, stats: []
+                ),
+                ClientStatsPayload(
+                    hostname: "b", env: "prod", version: "1", service: "s2",
+                    tracerVersion: "1", runtimeID: "r", sequenceNumber: 2, stats: []
+                )
+            ],
+            splitPayload: false
+        )
 
         let fields = Dictionary(uniqueKeysWithValues: try decode(payload))
         let statsArray = try XCTUnwrap(fields["Stats"] as? [Any?])
         XCTAssertEqual(statsArray.count, 2)
-        XCTAssertNil(statsArray[0])
-        XCTAssertEqual(statsArray[1] as? Bool, true)
+
+        let firstEntries = try XCTUnwrap(statsArray[0] as? [(String, Any?)])
+        let firstFields = Dictionary(uniqueKeysWithValues: firstEntries.map { ($0.0, $0.1) })
+        XCTAssertEqual(firstFields["Hostname"] as? String, "a")
+        XCTAssertEqual(firstFields["Service"] as? String, "s1")
+
+        let secondEntries = try XCTUnwrap(statsArray[1] as? [(String, Any?)])
+        let secondFields = Dictionary(uniqueKeysWithValues: secondEntries.map { ($0.0, $0.1) })
+        XCTAssertEqual(secondFields["Hostname"] as? String, "b")
+        XCTAssertEqual(secondFields["Service"] as? String, "s2")
     }
 }
