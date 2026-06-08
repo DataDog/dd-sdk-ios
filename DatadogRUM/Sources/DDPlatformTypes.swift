@@ -48,6 +48,8 @@ public typealias DDCollectionViewCell = UICollectionViewCell
 // MARK: - Accessibility
 public typealias DDAccessibility = UIAccessibility
 
+public typealias FrameworkKitRUMActionsPredicate = UIKitRUMActionsPredicate
+
 #elseif canImport(AppKit)
 import AppKit
 
