@@ -23,7 +23,6 @@ public protocol AppKitRUMActionsPredicate {
     func rumAction(targetMenuItem: NSMenuItem) -> RUMAction?
 }
 
-
 /// Default implementation of `UIKitRUMActionsPredicate`.
 /// It names  RUM Actions by the `accessibilityIdentifier` or `className` otherwise.
 public struct DefaultAppKitRUMActionsPredicate {

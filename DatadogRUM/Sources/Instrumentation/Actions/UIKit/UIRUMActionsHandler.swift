@@ -19,10 +19,6 @@ internal protocol RUMActionsHandling: RUMCommandPublisher {
 }
 
 internal final class RUMActionsHandler: RUMActionsHandling {
-    /// Factory that processes `DDEvents` and creates RUM action commands.
-    /// It is `nil` when both UIKit and SwiftUI automatic instrumentations are not enabled.
-    private let eventCommandsFactory: UIEventCommandFactory?
-
     private let dateProvider: DateProvider
 
     weak var subscriber: RUMCommandSubscriber?
