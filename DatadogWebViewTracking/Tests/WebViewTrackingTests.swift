@@ -500,7 +500,7 @@ class WebViewTrackingTests: XCTestCase {
 
         XCTAssertEqual(
             dd.logger.warnLogs.map({ $0.message }),
-            Array(repeating: "`startTrackingDatadogEvents(core:hosts:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.", count: multipleTimes - 1)
+            Array(repeating: "`WebViewTracking.enable(webView:hosts:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.", count: multipleTimes - 1)
         )
     }
 
@@ -959,6 +959,37 @@ class WebViewTrackingTests: XCTestCase {
         XCTAssertTrue(script.source.contains("\"shopist.io\""))
         XCTAssertFalse(script.source.contains("foo'bar.com"))
         XCTAssertFalse(script.source.contains("back\\\\slash.com"))
+    }
+
+    func testSerializationEdgeCases() throws {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        let config = WKWebViewConfiguration()
+        let controller = DDUserContentController()
+        config.userContentController = controller
+        let webView = WKWebView(frame: .zero, configuration: config)
+
+        try WebViewTracking.enableOrThrow(
+            tracking: webView,
+            hostPatterns: [
+                "*",
+                "",
+                "https://foo.com",
+                "shopist.io",
+            ],
+            logsSampleRate: 100,
+            in: PassthroughCoreMock()
+        )
+
+        let script = try XCTUnwrap(controller.userScripts.last)
+        XCTAssertTrue(script.source.contains("\"*\""))
+        XCTAssertTrue(script.source.contains("\"\""))
+        XCTAssertTrue(script.source.contains("\"shopist.io\""))
+        XCTAssertFalse(script.source.contains("https://foo.com"))
+        XCTAssertEqual(dd.logger.warnLogs.map(\.message), [
+            "WebView host pattern \"https://foo.com\" contains invalid characters and will be ignored."
+        ])
     }
 }
 
