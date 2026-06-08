@@ -155,16 +155,16 @@ private final class _KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProto
 
     // Nesting and super-encoding are unimplemented because MsgPackEncoder handles nested
     // values transparently via `_MsgPackEncoder.encodeChild`. None of our models use these.
-    func nestedContainer<NestedKey: CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
+    func nestedContainer<NestedKey: CodingKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> { // swiftlint:disable:this unavailable_function
         fatalError("MsgPackEncoder does not support explicit nested containers; encode nested values directly")
     }
-    func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
+    func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer { // swiftlint:disable:this unavailable_function
         fatalError("MsgPackEncoder does not support explicit nested containers; encode nested values directly")
     }
-    func superEncoder() -> Encoder {
+    func superEncoder() -> Encoder { // swiftlint:disable:this unavailable_function
         fatalError("MsgPackEncoder does not support superEncoder()")
     }
-    func superEncoder(forKey key: Key) -> Encoder {
+    func superEncoder(forKey key: Key) -> Encoder { // swiftlint:disable:this unavailable_function
         fatalError("MsgPackEncoder does not support superEncoder(forKey:)")
     }
 }
@@ -236,13 +236,13 @@ private final class _UnkeyedContainer: UnkeyedEncodingContainer, _Container {
     func encode(_ value: Float) throws { throw MsgPackEncoderError.floatNotSupported(codingPath) }
     func encode(_ value: Double) throws { throw MsgPackEncoderError.floatNotSupported(codingPath) }
 
-    func nestedContainer<NestedKey: CodingKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
+    func nestedContainer<NestedKey: CodingKey>(keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> { // swiftlint:disable:this unavailable_function
         fatalError("MsgPackEncoder does not support explicit nested containers; encode nested values directly")
     }
-    func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
+    func nestedUnkeyedContainer() -> UnkeyedEncodingContainer { // swiftlint:disable:this unavailable_function
         fatalError("MsgPackEncoder does not support explicit nested containers; encode nested values directly")
     }
-    func superEncoder() -> Encoder {
+    func superEncoder() -> Encoder { // swiftlint:disable:this unavailable_function
         fatalError("MsgPackEncoder does not support superEncoder()")
     }
 }
