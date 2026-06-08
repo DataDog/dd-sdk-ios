@@ -54,12 +54,24 @@ class StatsPayloadTests: XCTestCase {
         let payload = StatsPayload(
             clientStats: [
                 ClientStatsPayload(
-                    hostname: "a", env: "prod", version: "1", service: "s1",
-                    tracerVersion: "1", runtimeID: "r", sequenceNumber: 1, stats: []
+                    hostname: "a",
+                    env: "prod",
+                    version: "1",
+                    service: "s1",
+                    tracerVersion: "1",
+                    runtimeID: "r",
+                    sequenceNumber: 1,
+                    stats: []
                 ),
                 ClientStatsPayload(
-                    hostname: "b", env: "prod", version: "1", service: "s2",
-                    tracerVersion: "1", runtimeID: "r", sequenceNumber: 2, stats: []
+                    hostname: "b",
+                    env: "prod",
+                    version: "1",
+                    service: "s2",
+                    tracerVersion: "1",
+                    runtimeID: "r",
+                    sequenceNumber: 2,
+                    stats: []
                 )
             ],
             splitPayload: false
