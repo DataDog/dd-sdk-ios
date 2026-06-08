@@ -15,7 +15,7 @@ import Foundation
 /// `ImageTag`, `ProcessTagsHash`, `ProcessTags`) are intentionally omitted because the mobile
 /// SDK uploads to intake directly without a Datadog Agent. The encoded payload is
 /// byte-for-byte aligned with the Android implementation to keep cross-platform parity.
-internal struct ClientStatsPayload {
+internal struct ClientStatsPayload: Encodable {
     let hostname: String
     let env: String
     let version: String
@@ -25,58 +25,31 @@ internal struct ClientStatsPayload {
     let sequenceNumber: UInt64
     let stats: [ClientStatsBucket]
 
-    func toMsgPackPayload() -> Data {
-        let encoder = MsgPackEncoder()
-        encoder.startMap(elementCount: Field.payloadFieldCount)
-
-        encoder.writeString(Field.hostname)
-        encoder.writeString(hostname)
-
-        encoder.writeString(Field.env)
-        encoder.writeString(env)
-
-        encoder.writeString(Field.version)
-        encoder.writeString(version)
-
-        encoder.writeString(Field.stats)
-        encoder.startArray(elementCount: stats.count)
-        for bucket in stats {
-            bucket.encode(into: encoder)
-        }
-
-        encoder.writeString(Field.lang)
-        encoder.writeString(Field.langValue)
-
-        encoder.writeString(Field.tracerVersion)
-        encoder.writeString(tracerVersion)
-
-        encoder.writeString(Field.runtimeID)
-        encoder.writeString(runtimeID)
-
-        encoder.writeString(Field.sequence)
-        encoder.writeULong(sequenceNumber)
-
-        encoder.writeString(Field.service)
-        encoder.writeString(service)
-
-        return encoder.getBytes()
+    private enum CodingKeys: String, CodingKey {
+        case hostname = "Hostname"
+        case env = "Env"
+        case version = "Version"
+        case stats = "Stats"
+        case lang = "Lang"
+        case tracerVersion = "TracerVersion"
+        case runtimeID = "RuntimeID"
+        case sequence = "Sequence"
+        case service = "Service"
     }
 
-    private enum Field {
-        static let payloadFieldCount = 9
-        static let hostname = "Hostname"
-        static let env = "Env"
-        static let version = "Version"
-        static let stats = "Stats"
-        static let lang = "Lang"
-        /// Platform identifier on the wire, matching Android's `"android"`. Distinct
-        /// from the spans `lang` tag (`"swift"`); the stats intake keys off platform,
-        /// not language.
-        static let langValue = "ios"
-        static let tracerVersion = "TracerVersion"
-        static let runtimeID = "RuntimeID"
-        static let sequence = "Sequence"
-        static let service = "Service"
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(hostname, forKey: .hostname)
+        try container.encode(env, forKey: .env)
+        try container.encode(version, forKey: .version)
+        try container.encode(stats, forKey: .stats)
+        // Platform identifier on the wire, matching Android's `"android"`. Distinct from
+        // the spans `lang` tag (`"swift"`); the stats intake keys off platform.
+        try container.encode("ios", forKey: .lang)
+        try container.encode(tracerVersion, forKey: .tracerVersion)
+        try container.encode(runtimeID, forKey: .runtimeID)
+        try container.encode(sequenceNumber, forKey: .sequence)
+        try container.encode(service, forKey: .service)
     }
 }
 
@@ -86,32 +59,22 @@ internal struct ClientStatsPayload {
 /// Field names and order match the mobile-relevant subset of `ClientStatsBucket.EncodeMsg`
 /// in `stats_gen.go`. `AgentTimeShift` is intentionally omitted because the mobile SDK is
 /// agent-less.
-internal struct ClientStatsBucket {
+internal struct ClientStatsBucket: Encodable {
     let start: UInt64
     let duration: UInt64
     let stats: [ClientGroupedStats]
 
-    func encode(into encoder: MsgPackEncoder) {
-        encoder.startMap(elementCount: Field.bucketFieldCount)
-
-        encoder.writeString(Field.start)
-        encoder.writeULong(start)
-
-        encoder.writeString(Field.duration)
-        encoder.writeULong(duration)
-
-        encoder.writeString(Field.stats)
-        encoder.startArray(elementCount: stats.count)
-        for grouped in stats {
-            grouped.encode(into: encoder)
-        }
+    private enum CodingKeys: String, CodingKey {
+        case start = "Start"
+        case duration = "Duration"
+        case stats = "Stats"
     }
 
-    private enum Field {
-        static let bucketFieldCount = 3
-        static let start = "Start"
-        static let duration = "Duration"
-        static let stats = "Stats"
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(start, forKey: .start)
+        try container.encode(duration, forKey: .duration)
+        try container.encode(stats, forKey: .stats)
     }
 }
 
@@ -122,8 +85,10 @@ internal struct ClientStatsBucket {
 /// `HTTPMethod`, `HTTPEndpoint`, `SpanDerivedPrimaryTags`, `AdditionalMetricTags`) are
 /// intentionally omitted; revisit when the v1.2.0 spec is updated for mobile.
 /// `okSummary` and `errorSummary` carry the protobuf-encoded DDSketch summaries for the
-/// OK and error latency distributions respectively.
-internal struct ClientGroupedStats {
+/// OK and error latency distributions respectively. `Synthetics` is hardcoded `false`
+/// (mobile SDK has no synthetic-test concept) and `GRPCStatusCode` is hardcoded `""`
+/// (gRPC is not yet instrumented).
+internal struct ClientGroupedStats: Encodable {
     let service: String
     let name: String
     let resource: String
@@ -140,82 +105,44 @@ internal struct ClientGroupedStats {
     let peerTags: [String]
     let serviceSource: String
 
-    func encode(into encoder: MsgPackEncoder) {
-        encoder.startMap(elementCount: Field.groupedStatsFieldCount)
-
-        encoder.writeString(Field.service)
-        encoder.writeString(service)
-
-        encoder.writeString(Field.name)
-        encoder.writeString(name)
-
-        encoder.writeString(Field.resource)
-        encoder.writeString(resource)
-
-        encoder.writeString(Field.httpStatusCode)
-        encoder.writeUInt(httpStatusCode)
-
-        encoder.writeString(Field.type)
-        encoder.writeString(type)
-
-        encoder.writeString(Field.hits)
-        encoder.writeULong(hits)
-
-        encoder.writeString(Field.errors)
-        encoder.writeULong(errors)
-
-        encoder.writeString(Field.duration)
-        encoder.writeULong(duration)
-
-        encoder.writeString(Field.okSummary)
-        encoder.writeBinary(okSummary)
-
-        encoder.writeString(Field.errorSummary)
-        encoder.writeBinary(errorSummary)
-
-        encoder.writeString(Field.synthetics)
-        encoder.writeBoolean(false)
-
-        encoder.writeString(Field.topLevelHits)
-        encoder.writeULong(topLevelHits)
-
-        encoder.writeString(Field.spanKind)
-        encoder.writeString(spanKind)
-
-        encoder.writeString(Field.peerTags)
-        encoder.startArray(elementCount: peerTags.count)
-        for tag in peerTags {
-            encoder.writeString(tag)
-        }
-
-        encoder.writeString(Field.isTraceRoot)
-        encoder.writeInt(Int32(isTraceRoot.rawValue))
-
-        encoder.writeString(Field.grpcStatusCode)
-        encoder.writeString("")
-
-        encoder.writeString(Field.serviceSource)
-        encoder.writeString(serviceSource)
+    private enum CodingKeys: String, CodingKey {
+        case service = "Service"
+        case name = "Name"
+        case resource = "Resource"
+        case httpStatusCode = "HTTPStatusCode"
+        case type = "Type"
+        case hits = "Hits"
+        case errors = "Errors"
+        case duration = "Duration"
+        case okSummary = "OkSummary"
+        case errorSummary = "ErrorSummary"
+        case synthetics = "Synthetics"
+        case topLevelHits = "TopLevelHits"
+        case spanKind = "SpanKind"
+        case peerTags = "PeerTags"
+        case isTraceRoot = "IsTraceRoot"
+        case grpcStatusCode = "GRPCStatusCode"
+        case serviceSource = "srv_src"
     }
 
-    private enum Field {
-        static let groupedStatsFieldCount = 17
-        static let service = "Service"
-        static let name = "Name"
-        static let resource = "Resource"
-        static let httpStatusCode = "HTTPStatusCode"
-        static let type = "Type"
-        static let hits = "Hits"
-        static let errors = "Errors"
-        static let duration = "Duration"
-        static let okSummary = "OkSummary"
-        static let errorSummary = "ErrorSummary"
-        static let synthetics = "Synthetics"
-        static let topLevelHits = "TopLevelHits"
-        static let spanKind = "SpanKind"
-        static let peerTags = "PeerTags"
-        static let isTraceRoot = "IsTraceRoot"
-        static let grpcStatusCode = "GRPCStatusCode"
-        static let serviceSource = "srv_src"
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(service, forKey: .service)
+        try container.encode(name, forKey: .name)
+        try container.encode(resource, forKey: .resource)
+        try container.encode(httpStatusCode, forKey: .httpStatusCode)
+        try container.encode(type, forKey: .type)
+        try container.encode(hits, forKey: .hits)
+        try container.encode(errors, forKey: .errors)
+        try container.encode(duration, forKey: .duration)
+        try container.encode(okSummary, forKey: .okSummary)
+        try container.encode(errorSummary, forKey: .errorSummary)
+        try container.encode(false, forKey: .synthetics)
+        try container.encode(topLevelHits, forKey: .topLevelHits)
+        try container.encode(spanKind, forKey: .spanKind)
+        try container.encode(peerTags, forKey: .peerTags)
+        try container.encode(isTraceRoot, forKey: .isTraceRoot)
+        try container.encode("", forKey: .grpcStatusCode)
+        try container.encode(serviceSource, forKey: .serviceSource)
     }
 }
