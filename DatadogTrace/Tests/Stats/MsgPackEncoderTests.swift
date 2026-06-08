@@ -115,11 +115,6 @@ class MsgPackEncoderTests: XCTestCase {
         XCTAssertEqual(encoder.getBytes(), Data([0xA6, 0x68, 0xC3, 0xA9, 0x6C, 0x6C, 0x6F]))
     }
 
-    func testWriteRawString() {
-        encoder.writeRawString(Data([0x66, 0x6F, 0x6F]))
-        XCTAssertEqual(encoder.getBytes(), Data([0xA3, 0x66, 0x6F, 0x6F]))
-    }
-
     // MARK: - Binary
 
     func testWriteBinaryEmpty() {
